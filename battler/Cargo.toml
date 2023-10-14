@@ -2,6 +2,10 @@
 name = "battler"
 version = "0.1.0"
 edition = "2021"
+description = "Pokémon battle engine for Rust."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+documentation = "https://docs.rs/battler"
 
 [dependencies]
 ahash = "0.8.3"
