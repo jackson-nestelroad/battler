@@ -72,7 +72,7 @@ impl EventLog {
 }
 
 #[cfg(test)]
-mod event_log_test {
+mod event_log_tests {
     use std::{
         fmt,
         fmt::Display,

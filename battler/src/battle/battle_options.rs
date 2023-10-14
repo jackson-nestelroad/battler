@@ -118,7 +118,7 @@ impl BattleOptions for TimedBattleOptions {
 }
 
 #[cfg(test)]
-mod battle_options_test {
+mod battle_options_tests {
     use serde::Deserialize;
 
     use crate::{

@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod team_preview_test {
+mod team_preview_tests {
     use battler::{
         battle::{
             Battle,

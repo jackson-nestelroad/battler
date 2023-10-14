@@ -215,7 +215,7 @@ mod resource_cache_tests {
 }
 
 #[cfg(test)]
-mod dex_test {
+mod dex_tests {
     use std::cell::RefCell;
 
     use ahash::HashMapExt;

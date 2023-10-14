@@ -188,7 +188,7 @@ impl<'d> BattleBuilder<'d> {
 }
 
 #[cfg(test)]
-mod battle_builder_test {
+mod battle_builder_tests {
     use std::iter;
 
     use crate::{
