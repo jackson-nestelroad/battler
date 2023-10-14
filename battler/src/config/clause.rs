@@ -30,9 +30,9 @@ use crate::{
 };
 
 /// The type of a clause value.
-#[derive(Debug, Clone, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
 pub enum ClauseValueType {
-    #[string = "type"]
+    #[string = "Type"]
     Type,
     #[string = "PositiveInteger"]
     PositiveInteger,
@@ -169,6 +169,31 @@ impl Clause {
 impl Identifiable for Clause {
     fn id(&self) -> &Id {
         &self.id
+    }
+}
+
+#[cfg(test)]
+mod clause_value_type_tests {
+    use crate::{
+        common::{
+            test_string_deserialization,
+            test_string_serialization,
+        },
+        config::ClauseValueType,
+    };
+
+    #[test]
+    fn serializes_to_string() {
+        test_string_serialization(ClauseValueType::Type, "Type");
+        test_string_serialization(ClauseValueType::PositiveInteger, "PositiveInteger");
+        test_string_serialization(ClauseValueType::NonNegativeInteger, "NonNegativeInteger");
+    }
+
+    #[test]
+    fn deserializes_lowercase() {
+        test_string_deserialization("type", ClauseValueType::Type);
+        test_string_deserialization("positiveinteger", ClauseValueType::PositiveInteger);
+        test_string_deserialization("nonnegativeinteger", ClauseValueType::NonNegativeInteger);
     }
 }
 
