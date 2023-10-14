@@ -1,0 +1,1625 @@
+{
+  "empty_team": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Min Team Size = 6"]
+    },
+    "team": [],
+    "expected_problems": ["You must bring at least 6 Mons (your team has 0)."]
+  },
+  "team_too_large": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Max Team Size = 2"]
+    },
+    "team": [
+      {
+        "name": "Bulbasaur",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      },
+      {
+        "name": "Bulbasaur",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      },
+      {
+        "name": "Bulbasaur",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": ["You may only bring up to 2 Mons (your team has 3)."]
+  },
+  "invalid_species": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulbasaur",
+        "species": "Nonexistent",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": ["Species Nonexistent does not exist."]
+  },
+  "invalid_ability": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Nonexistent",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": ["Ability Nonexistent (on Bulba Fett) does not exist."]
+  },
+  "invalid_item": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "item": "Nonexistent"
+      }
+    ],
+    "expected_problems": ["Item Nonexistent (on Bulba Fett) does not exist."]
+  },
+  "banned_item": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- Griseous Orb"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "item": "Griseous Orb"
+      }
+    ],
+    "expected_problems": ["Item Griseous Orb is not allowed."]
+  },
+  "not_allowed_item": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Items"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "item": "Griseous Orb"
+      }
+    ],
+    "expected_problems": ["Item Griseous Orb is not allowed."]
+  },
+  "allowed_item": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Items", "+ Griseous Orb"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "item": "Griseous Orb"
+      }
+    ],
+    "expected_problems": []
+  },
+  "name_too_long": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "This is an extremely long name. It's so long that it causes the team validator to fail!",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [
+      "Nickname \"This is an extremely long name. It's so long that it causes the team validator to fail!\" is too long (should be 30 characters or fewer)."
+    ]
+  },
+  "name_illegal_characters": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba|saur",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [
+      "Nickname \"Bulba|saur\" contains illegal characters."
+    ]
+  },
+  "default_level": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Default Level = 25"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [],
+    "want_team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 25
+      }
+    ]
+  },
+  "force_level": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Force Level = 60"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": [],
+    "want_team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 60
+      }
+    ]
+  },
+  "adjust_level_down": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Adjust Level Down = 50"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100
+      }
+    ],
+    "expected_problems": [],
+    "want_team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ]
+  },
+  "adjust_level_down_ignored": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Adjust Level Down = 50"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 25
+      }
+    ],
+    "expected_problems": [],
+    "want_team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 25
+      }
+    ]
+  },
+  "adjust_level_down_does_not_invalidate_moves": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Adjust Level Down = 50"]
+    },
+    "team": [
+      {
+        "name": "Blastoise",
+        "species": "Blastoise",
+        "ability": "Torrent",
+        "moves": ["Hydro Pump"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100
+      }
+    ],
+    "expected_problems": [],
+    "want_team": [
+      {
+        "name": "Blastoise",
+        "species": "Blastoise",
+        "ability": "Torrent",
+        "moves": ["Hydro Pump"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ]
+  },
+  "min_level": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Min Level = 50"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett (level 1) is below the minimum level of 50."
+    ]
+  },
+  "max_level": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Max Level = 50"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett (level 100) is above the maximum level of 50."
+    ]
+  },
+  "individual_ev_limit": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50,
+        "evs": {
+          "hp": 510
+        }
+      }
+    ],
+    "expected_problems": ["Bulba Fett has an EV over 255 in some stat."]
+  },
+  "over_ev_limit": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["EV Limit = 100"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50,
+        "evs": {
+          "hp": 50,
+          "atk": 50,
+          "def": 50
+        }
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett has 150 EVs, which exceeds the limit of 100."
+    ]
+  },
+  "valid_evs": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50,
+        "evs": {
+          "hp": 252,
+          "atk": 252,
+          "spe": 6
+        }
+      }
+    ],
+    "expected_problems": []
+  },
+  "individual_iv_limit": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50,
+        "ivs": {
+          "spa": 100,
+          "spd": 32
+        }
+      }
+    ],
+    "expected_problems": ["Bulba Fett has an IV over 31 in some stat."]
+  },
+  "valid_ivs": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50,
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 16,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ],
+    "expected_problems": []
+  },
+  "invalid_gender": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Same Type Clause"]
+    },
+    "team": [
+      {
+        "name": "MyRotom",
+        "species": "Rotom-Heat",
+        "ability": "Levitate",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["MyRotom must be genderless."]
+  },
+  "banned_species": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- Bulbasaur"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Bulbasaur is not allowed."]
+  },
+  "not_allowed_species": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Mons"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Bulbasaur is not allowed."]
+  },
+  "allowed_species": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Mons", "+ Bulbasaur"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "banned_legendary": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- Legendary"]
+    },
+    "team": [
+      {
+        "name": "Giratina",
+        "species": "Giratina",
+        "ability": "Pressure",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": ["Giratina (Altered) is not allowed."]
+  },
+  "max_move_count": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Max Move Count = 3"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Tackle", "Cut", "Flash", "Energy Ball", "Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett has 5 moves, which is more than the limit of 3."
+    ]
+  },
+  "invalid_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Nonexistent"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Move Nonexistent (on Bulba Fett) does not exist."]
+  },
+  "banned_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- Amnesia"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Amnesia"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Move Amnesia is not allowed."]
+  },
+  "banned_move_tag": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- Move Tag: Heal"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Giga Drain"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Move Giga Drain is not allowed."]
+  },
+  "allowed_move_tag": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Moves", "+ Move Tag: Heal"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Giga Drain"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "not_allowed_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Moves"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Amnesia"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Move Amnesia is not allowed."]
+  },
+  "allowed_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Moves", "+ Amnesia"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Amnesia"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "cannot_learn_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Water Gun"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett cannot learn Water Gun, because Water Gun is unobtainable on Bulbasaur."
+    ]
+  },
+  "only_prevo_can_learn_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmeleon",
+        "species": "Charmeleon",
+        "ability": "Blaze",
+        "moves": ["Air Cutter"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "move_not_learned_yet": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Synthesis"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett cannot learn Synthesis, because Synthesis is learned at level 33."
+    ]
+  },
+  "banned_ability": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- Overgrow"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": ["Ability Overgrow is not allowed."]
+  },
+  "not_allowed_ability": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Abilities"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": ["Ability Overgrow is not allowed."]
+  },
+  "allowed_ability": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["- All Abilities", "+ Overgrow"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": []
+  },
+  "hidden_ability": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Chlorophyll",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": []
+  },
+  "unobtainable_ability": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Torrent",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 1
+      }
+    ],
+    "expected_problems": [
+      "Bulba Fett cannot have the ability Torrent because it is unobtainable."
+    ]
+  },
+  "forme_moves": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Rotom",
+        "species": "Rotom-Heat",
+        "ability": "Levitate",
+        "moves": ["Overheat", "Hidden Power"],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": []
+  },
+  "battle_only_forme": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Darmanitan",
+        "species": "Darmanitan-Zen",
+        "ability": "Zen Mode",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [
+      "Darmanitan (Zen) is only available via in-battle transformation, so your team may not start with one."
+    ]
+  },
+  "item_induced_forme": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Giratina",
+        "species": "Giratina-Origin",
+        "ability": "Levitate",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [
+      "Giratina (Origin) is only available when holding one of the following items: Griseous Orb."
+    ]
+  },
+  "item_forced_forme": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Giratina",
+        "species": "Giratina-Altered",
+        "ability": "Levitate",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal",
+        "item": "Griseous Orb"
+      }
+    ],
+    "expected_problems": [],
+    "want_team": [
+      {
+        "name": "Giratina",
+        "species": "Giratina-Origin",
+        "ability": "Levitate",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal",
+        "level": 100,
+        "item": "Griseous Orb"
+      }
+    ]
+  },
+  "event_giveaway": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish",
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ],
+    "expected_problems": []
+  },
+  "event_with_illegal_move": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf", "Water Gun"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish"
+      }
+    ],
+    "expected_problems": [
+      "Charmander cannot learn Water Gun, because Water Gun is unobtainable on Charmander.",
+      "Charmander is unobtainable (no matching giveaway event)."
+    ]
+  },
+  "multiple_event_source": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf", "Avalanche"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish"
+      }
+    ],
+    "expected_problems": [
+      "Charmander is unobtainable (no single giveaway event allows its moveset)."
+    ]
+  },
+  "invalid_ball_for_event": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [
+      "Charmander is unobtainable (no matching giveaway event)."
+    ]
+  },
+  "invalid_shiny_for_non_shiny_event": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish",
+        "shiny": true
+      }
+    ],
+    "expected_problems": [
+      "Charmander is unobtainable (no matching giveaway event)."
+    ]
+  },
+  "invalid_ivs_for_event": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish",
+        "ivs": {
+          "hp": 0
+        }
+      }
+    ],
+    "expected_problems": [
+      "Charmander is unobtainable (no matching giveaway event)."
+    ]
+  },
+  "invalid_shiny_for_shiny_only_event": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charmander",
+        "species": "Charmander",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Avalanche"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish"
+      }
+    ],
+    "expected_problems": [
+      "Charmander is unobtainable (no matching giveaway event)."
+    ]
+  },
+  "evolved_from_event": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Charizard",
+        "species": "Charizard",
+        "ability": "Solar Power",
+        "moves": ["Slash", "Surf"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Cherish",
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ],
+    "expected_problems": []
+  },
+  "ability_clause": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Ability Clause = 2"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      },
+      {
+        "name": "Bulba Fett 2",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      },
+      {
+        "name": "Bulba Fett 3",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": [
+      "Ability Clause: Ability Overgrow appears more than 2 times in your team."
+    ]
+  },
+  "evasion_clause": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Evasion Clause"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Move Double Team is not allowed."]
+  },
+  "force_mono_type": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Force Mono Type = Water"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Bulba Fett is not Water type."]
+  },
+  "force_mono_type_satisfied": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Force Mono Type = Grass"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "force_mono_type_checks_secondary_type": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Force Mono Type = Poison"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Double Team"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "item_clause": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Item Clause"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "item": "Griseous Orb"
+      },
+      {
+        "name": "Bulba Fett 2",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "item": "Griseous Orb"
+      }
+    ],
+    "expected_problems": [
+      "You are limited to one of each item by Item Clause (you have more than one Griseous Orb)."
+    ]
+  },
+  "nickname_clause": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Nickname Clause"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      },
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      },
+      {
+        "name": "Bulbasaur",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      },
+      {
+        "name": "Bulbasaur",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal"
+      }
+    ],
+    "expected_problems": [
+      "You are limited to one of each nickname by Nickname Clause (you have more than one Mon named Bulba Fett).",
+      "You are limited to one of each nickname by Nickname Clause (you have more than one Mon named Bulbasaur)."
+    ]
+  },
+  "same_type_clause_one_mon": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Same Type Clause"]
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "same_type_clause_satisfied": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Same Type Clause"]
+    },
+    "team": [
+      {
+        "name": "Squirtle",
+        "species": "Squirtle",
+        "ability": "Torrent",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      },
+      {
+        "name": "Rotom",
+        "species": "Rotom-Wash",
+        "ability": "Levitate",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
+  "same_type_clause_unsatisfied": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Same Type Clause"]
+    },
+    "team": [
+      {
+        "name": "Squirtle",
+        "species": "Squirtle",
+        "ability": "Torrent",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      },
+      {
+        "name": "Rotom",
+        "species": "Rotom-Heat",
+        "ability": "Levitate",
+        "moves": [],
+        "nature": "Adamant",
+        "gender": "U",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": [
+      "Your team does not share a common type to satisfy Same Type Clause."
+    ]
+  },
+  "sleep_moves_clause": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Sleep Moves Clause"]
+    },
+    "team": [
+      {
+        "name": "Squirtle",
+        "species": "Squirtle",
+        "ability": "Torrent",
+        "moves": ["Yawn"],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Move Yawn is not allowed."]
+  },
+  "invalid_team": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Standard", "- Charizard"]
+    },
+    "team": [
+      {
+        "name": "Venusaur",
+        "species": "Venusaur",
+        "ability": "Chlorophyll",
+        "moves": ["Growth", "Sludge Bomb", "Giga Drain", "Weather Ball"],
+        "nature": "Modest",
+        "gender": "F",
+        "ball": "Normal",
+        "level": 100,
+        "evs": {
+          "def": 4,
+          "spa": 252,
+          "spe": 252
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "Charizard",
+        "species": "Charizard",
+        "ability": "Blaze",
+        "moves": ["Dragon Dance", "Flare Blitz", "Earthquake", "Roost"],
+        "nature": "Jolly",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100,
+        "evs": {
+          "atk": 252,
+          "spd": 4,
+          "spe": 252
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "Blastoise",
+        "species": "Blastoise",
+        "ability": "Rain Dish",
+        "moves": ["Rapid Spin", "Dark Pulse", "Aura Sphere", "Ice Beam"],
+        "nature": "Timid",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100,
+        "evs": {
+          "def": 252,
+          "spa": 252,
+          "spe": 252
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ],
+    "expected_problems": [
+      "Move Weather Ball (on Venusaur) does not exist.",
+      "Charizard is not allowed.",
+      "Blastoise has 756 EVs, which exceeds the limit of 510."
+    ]
+  },
+  "valid_team": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["Standard"]
+    },
+    "team": [
+      {
+        "name": "Venusaur",
+        "species": "Venusaur",
+        "ability": "Chlorophyll",
+        "moves": ["Growth", "Sludge Bomb", "Giga Drain", "Hidden Power"],
+        "nature": "Modest",
+        "gender": "F",
+        "ball": "Normal",
+        "level": 100,
+        "hidden_power_type": "Fire",
+        "evs": {
+          "def": 4,
+          "spa": 252,
+          "spe": 252
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "Charizard",
+        "species": "Charizard",
+        "ability": "Blaze",
+        "moves": ["Dragon Dance", "Flare Blitz", "Earthquake", "Roost"],
+        "nature": "Jolly",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100,
+        "evs": {
+          "atk": 252,
+          "spd": 4,
+          "spe": 252
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      },
+      {
+        "name": "Blastoise",
+        "species": "Blastoise",
+        "ability": "Rain Dish",
+        "moves": ["Rapid Spin", "Dark Pulse", "Aura Sphere", "Ice Beam"],
+        "nature": "Timid",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 100,
+        "evs": {
+          "def": 4,
+          "spa": 252,
+          "spe": 252
+        },
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        }
+      }
+    ],
+    "expected_problems": []
+  }
+}

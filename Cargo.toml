@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "battler",
+    "battler-test-utils",
+    "battle-sim",
+]

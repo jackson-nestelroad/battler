@@ -1,0 +1,232 @@
+{
+  "empty_side": {
+    "options": {
+      "format": {
+        "battle_type": "singles",
+        "rules": []
+      },
+      "side_1": {
+        "name": "Side 1",
+        "players": []
+      },
+      "side_2": {
+        "name": "Side 2",
+        "players": [
+          {
+            "id": "2",
+            "name": "Player 2",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ok": false,
+    "expected_error_substr": "side Side 1 has no players"
+  },
+  "side_with_too_many_players_for_singles": {
+    "options": {
+      "format": {
+        "battle_type": "singles",
+        "rules": []
+      },
+      "side_1": {
+        "name": "Side 1",
+        "players": [
+          {
+            "id": "1",
+            "name": "Player 1",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          },
+          {
+            "id": "3",
+            "name": "Player 3",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "side_2": {
+        "name": "Side 2",
+        "players": [
+          {
+            "id": "2",
+            "name": "Player 2",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ok": false,
+    "expected_error_substr": "side Side 1 has too many players for a singles battle"
+  },
+  "side_with_too_many_players_for_doubles": {
+    "options": {
+      "format": {
+        "battle_type": "doubles",
+        "rules": []
+      },
+      "side_1": {
+        "name": "Side 1",
+        "players": [
+          {
+            "id": "1",
+            "name": "Player 1",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "side_2": {
+        "name": "Side 2",
+        "players": [
+          {
+            "id": "2",
+            "name": "Player 2",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          },
+          {
+            "id": "3",
+            "name": "Player 3",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ok": false,
+    "expected_error_substr": "side Side 2 has too many players for a doubles battle"
+  },
+  "player_with_empty_team": {
+    "options": {
+      "format": {
+        "battle_type": "doubles",
+        "rules": []
+      },
+      "side_1": {
+        "name": "Side 1",
+        "players": [
+          {
+            "id": "1",
+            "name": "Player 1",
+            "team": {
+              "members": []
+            }
+          }
+        ]
+      },
+      "side_2": {
+        "name": "Side 2",
+        "players": [
+          {
+            "id": "2",
+            "name": "Player 2",
+            "team": {
+              "members": [
+                {
+                  "name": "Bulba Fett",
+                  "species": "Bulbasaur",
+                  "ability": "Overgrow",
+                  "moves": [],
+                  "nature": "Adamant",
+                  "gender": "M",
+                  "ball": "Normal",
+                  "level": 100
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ok": false,
+    "expected_error_substr": "a player has an empty team"
+  }
+}

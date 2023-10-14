@@ -1,0 +1,3 @@
+[env]
+DATA_DIR = "/Users/jackson/Code/GitHub/pokemon/battle-sim/data"
+TEST_CASE_DIR = "/Users/jackson/Code/GitHub/pokemon/battler/test_cases"
