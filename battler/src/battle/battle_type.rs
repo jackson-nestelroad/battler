@@ -18,13 +18,18 @@ pub enum BattleType {
 }
 
 impl BattleType {
-    /// The minimum team size for the battle format.
-    pub fn min_team_size(&self) -> usize {
+    /// The number of active Mons per side.
+    pub fn active_per_side(&self) -> usize {
         match self {
             Self::Singles => 1,
             Self::Doubles => 2,
             Self::Multi => 1,
         }
+    }
+
+    /// The minimum team size for the battle format.
+    pub fn min_team_size(&self) -> usize {
+        self.active_per_side()
     }
 
     /// The default picked team size for the battle format.
