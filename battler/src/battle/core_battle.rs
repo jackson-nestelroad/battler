@@ -320,6 +320,12 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
                 .map(|rule_log| battle_event!("rule", rule_log)),
         );
 
+        let player_logs = self
+            .players()
+            .map(|player| battle_event!("player", player.id(), player.side(), player.position()))
+            .collect::<Vec<_>>();
+        self.log_many(player_logs);
+
         if self.has_team_preview() {
             self.log_team_sizes();
             self.start_team_preview()?;

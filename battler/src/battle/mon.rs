@@ -140,7 +140,7 @@ impl Mon {
         }
     }
 
-    /// Switches the Mon into battle.
+    /// Switches the Mon into the given position for the player.
     pub fn switch_in(context: &mut MonContext, position: usize) {
         let mon = context.mon_mut();
         mon.active = true;

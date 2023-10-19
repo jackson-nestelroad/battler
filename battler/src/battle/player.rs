@@ -83,6 +83,7 @@ pub struct Player {
     id: String,
     name: String,
     side: usize,
+    position: usize,
     index: usize,
     choice: ChoiceState,
     request: Option<Request>,
@@ -106,6 +107,10 @@ impl Player {
         self.side
     }
 
+    pub fn position(&self) -> usize {
+        self.position
+    }
+
     pub fn index(&self) -> usize {
         self.index
     }
@@ -116,6 +121,7 @@ impl Player {
     pub fn new(
         data: PlayerData,
         side: usize,
+        position: usize,
         battle_type: &BattleType,
         dex: &Dex,
         registry: &BattleRegistry,
@@ -131,6 +137,7 @@ impl Player {
             id: data.id,
             name: data.name,
             side,
+            position,
             index: usize::MAX,
             mons,
             choice: ChoiceState::new(),

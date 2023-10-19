@@ -61,7 +61,8 @@ impl Side {
         let players = data
             .players
             .into_iter()
-            .map(|data| Player::new(data, index, battle_type, dex, registry))
+            .enumerate()
+            .map(|(i, data)| Player::new(data, index, i, battle_type, dex, registry))
             .collect::<Result<Vec<_>, _>>()?;
         Ok((
             Self {
