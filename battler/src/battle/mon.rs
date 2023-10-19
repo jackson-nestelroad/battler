@@ -28,7 +28,7 @@ impl BattleLoggable for PublicMonDetails<'_> {
         items.push(self.level.to_string().into());
         items.push(self.gender.to_string().into());
         if self.shiny {
-            items.push("true".into());
+            items.push("shiny".into());
         }
     }
 }
