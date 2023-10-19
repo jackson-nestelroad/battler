@@ -10,7 +10,9 @@ use serde_string_enum::{
 use crate::common::FastHashMap;
 
 /// A single stat value that can be boosted.
-#[derive(Debug, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+)]
 pub enum Boost {
     #[string = "atk"]
     #[alias = "Attack"]
