@@ -10,9 +10,9 @@ use std::{
 use itertools::Itertools;
 use uuid::Uuid;
 
-use super::core_battle_actions;
 use crate::{
     battle::{
+        core_battle_actions,
         Action,
         Battle,
         BattleEngineOptions,

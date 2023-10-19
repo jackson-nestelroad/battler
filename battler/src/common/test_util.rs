@@ -15,10 +15,10 @@ use serde::{
     Serialize,
 };
 
-use super::WrapResultError;
 use crate::common::{
     Error,
     FastHashMap,
+    WrapResultError,
 };
 
 pub fn test_deserialization<'a, T>(s: &str, expected: T)
