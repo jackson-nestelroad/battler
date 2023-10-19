@@ -65,10 +65,10 @@ where
     /// Returns new battle logs since the last call to [`Self::new_logs`].
     fn new_logs(&mut self) -> impl Iterator<Item = &str>;
 
-    /// Pushes a new battle event to the battle log.
-    fn push_event(&mut self, event: BattleEvent);
-    /// Pushes many battle events to the battle log.
-    fn push_many_events<I>(&mut self, events: I)
+    /// Logs a new battle event to the battle log.
+    fn log(&mut self, event: BattleEvent);
+    /// Logs many battle events to the battle log.
+    fn log_many<I>(&mut self, events: I)
     where
         I: IntoIterator<Item = BattleEvent>;
 

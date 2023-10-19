@@ -16,6 +16,15 @@ pub struct PublicMonDetails<'d> {
 pub struct Mon {
     pub data: MonData,
     pub player: usize,
+
+    active: bool,
+}
+
+// Block for getters.
+impl Mon {
+    pub fn active(&self) -> bool {
+        self.active
+    }
 }
 
 impl Mon {
@@ -24,6 +33,8 @@ impl Mon {
         Self {
             data,
             player: usize::MAX,
+
+            active: false,
         }
     }
 

@@ -107,7 +107,7 @@ impl<'b, 'd> PlayerContext<'b, 'd> {
         // See comments on [`Context::new`] for why this is safe.
         let player: &mut Player =
             unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
-        let side = player.side;
+        let side = player.side();
         let foe_side = side ^ 1;
         let side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(side)?) };
         let foe_side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(foe_side)?) };

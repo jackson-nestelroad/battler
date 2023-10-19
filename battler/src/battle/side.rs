@@ -5,6 +5,7 @@ use serde::{
 
 use crate::battle::{
     BattleRegistry,
+    BattleType,
     Player,
     PlayerData,
 };
@@ -29,17 +30,33 @@ pub struct SideData {
 ///
 /// See [`SideData`] for details.
 pub struct Side {
-    pub name: String,
-    pub index: usize,
+    name: String,
+    index: usize,
+}
+
+// Block for getters.
+impl Side {
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn index(&self) -> usize {
+        self.index
+    }
 }
 
 impl Side {
     /// Creates a new [`Side`] from [`SideData`].
-    pub fn new(data: SideData, index: usize, registry: &BattleRegistry) -> (Self, Vec<Player>) {
+    pub fn new(
+        data: SideData,
+        index: usize,
+        battle_type: &BattleType,
+        registry: &BattleRegistry,
+    ) -> (Self, Vec<Player>) {
         let players = data
             .players
             .into_iter()
-            .map(|data| Player::new(data, index, registry))
+            .map(|data| Player::new(data, index, battle_type, registry))
             .collect();
         (
             Self {

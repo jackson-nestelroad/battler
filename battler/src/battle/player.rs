@@ -14,6 +14,7 @@ use crate::{
         Action,
         Battle,
         BattleRegistry,
+        BattleType,
         Mon,
         MonHandle,
         PlayerContext,
@@ -78,25 +79,52 @@ impl ChoiceState {
 ///
 /// See [`PlayerData`] for an explanation of what a player represents.
 pub struct Player {
-    pub(crate) id: String,
-    pub(crate) name: String,
-    pub(crate) side: usize,
-    pub(crate) index: usize,
-    pub(crate) mons: Vec<MonHandle>,
-    pub(crate) choice: ChoiceState,
-
+    id: String,
+    name: String,
+    side: usize,
+    index: usize,
+    choice: ChoiceState,
     request: Option<Request>,
+    mons_left: usize,
+
+    pub mons: Vec<MonHandle>,
+    pub active: Vec<Option<MonHandle>>,
+}
+
+// Block for getters.
+impl Player {
+    pub fn id(&self) -> &str {
+        self.id.as_str()
+    }
+
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn side(&self) -> usize {
+        self.side
+    }
+
+    pub fn index(&self) -> usize {
+        self.index
+    }
 }
 
 impl Player {
     /// Creates a new [`Player`]` instance from [`PlayerData`].
-    pub fn new(data: PlayerData, side: usize, registry: &BattleRegistry) -> Self {
+    pub fn new(
+        data: PlayerData,
+        side: usize,
+        battle_type: &BattleType,
+        registry: &BattleRegistry,
+    ) -> Self {
         let mons = data
             .team
             .members
             .into_iter()
             .map(|mon_data| registry.register_mon(Mon::new(mon_data)))
             .collect();
+        let active = vec![None; battle_type.active_per_side()];
         Self {
             id: data.id,
             name: data.name,
@@ -104,7 +132,9 @@ impl Player {
             index: usize::MAX,
             mons,
             choice: ChoiceState::new(),
+            active,
             request: None,
+            mons_left: 0,
         }
     }
 
@@ -124,6 +154,11 @@ impl Player {
         } else {
             None
         }
+    }
+
+    /// Returns the number of Mons left on the Player.
+    pub fn mons_left(&self) -> usize {
+        self.mons_left
     }
 
     /// Makes a new request on the player.
@@ -302,5 +337,9 @@ impl Player {
 
         context.player_mut().choice.fulfilled = true;
         Ok(())
+    }
+
+    pub fn start_battle(&mut self) {
+        self.mons_left = self.mons.len();
     }
 }

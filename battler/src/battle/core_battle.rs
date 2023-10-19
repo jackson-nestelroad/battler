@@ -54,16 +54,17 @@ use crate::{
 ///
 /// All battle logic lives here.
 pub struct CoreBattle<'d> {
-    pub(crate) id: Uuid,
-    pub(crate) prng: PseudoRandomNumberGenerator,
-    pub(crate) dex: Dex<'d>,
-    pub(crate) log: EventLog,
-    pub(crate) registry: BattleRegistry,
-    pub(crate) queue: BattleQueue,
-    pub(crate) format: Format,
-    pub(crate) field: Field,
-    pub(crate) sides: [Side; 2],
-    pub(crate) players: Vec<Player>,
+    id: Uuid,
+    log: EventLog,
+
+    pub prng: PseudoRandomNumberGenerator,
+    pub dex: Dex<'d>,
+    pub registry: BattleRegistry,
+    pub queue: BattleQueue,
+    pub format: Format,
+    pub field: Field,
+    pub sides: [Side; 2],
+    pub players: Vec<Player>,
 
     player_ids: FastHashMap<String, usize>,
 
@@ -97,14 +98,14 @@ impl<'d> CoreBattle<'d> {
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
         let field = Field::new();
-        let (side_1, mut players) = Side::new(options.side_1, 0, &registry);
-        let (side_2, side_2_players) = Side::new(options.side_2, 1, &registry);
+        let (side_1, mut players) = Side::new(options.side_1, 0, &format.battle_type, &registry);
+        let (side_2, side_2_players) = Side::new(options.side_2, 1, &format.battle_type, &registry);
         players.extend(side_2_players);
 
         let player_ids = players
             .iter()
             .enumerate()
-            .map(move |(player_index, player)| (player.id.clone(), player_index))
+            .map(move |(player_index, player)| (player.id().to_owned(), player_index))
             .collect();
         let input_log = FastHashMap::from_iter(
             players
@@ -115,9 +116,9 @@ impl<'d> CoreBattle<'d> {
 
         let mut battle = Self {
             id,
+            log,
             prng,
             dex,
-            log,
             registry,
             queue,
             format,
@@ -186,7 +187,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     pub(crate) fn players_on_side(&self, side: usize) -> impl Iterator<Item = &Player> {
-        self.players().filter(move |player| player.side == side)
+        self.players().filter(move |player| player.side() == side)
     }
 
     fn player_index_by_id(&self, player_id: &str) -> Result<usize, Error> {
@@ -200,7 +201,7 @@ impl<'d> CoreBattle<'d> {
         &self,
         side: &Side,
     ) -> impl Iterator<Item = Result<&Mon, Error>> {
-        self.players_on_side(side.index)
+        self.players_on_side(side.index())
             .map(|player| player.mons.iter())
             .flatten()
             .map(|mon| self.registry.mon(*mon))
@@ -256,11 +257,11 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         self.log.read_out()
     }
 
-    fn push_event(&mut self, event: BattleEvent) {
+    fn log(&mut self, event: BattleEvent) {
         self.log.push(event)
     }
 
-    fn push_many_events<I>(&mut self, events: I)
+    fn log_many<I>(&mut self, events: I)
     where
         I: IntoIterator<Item = BattleEvent>,
     {
@@ -273,7 +274,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         }
         self.started = true;
 
-        self.push_event(battle_event!("battletype", self.format.battle_type));
+        self.log(battle_event!("battletype", self.format.battle_type));
 
         // Extract and sort all rule logs.
         //
@@ -298,7 +299,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
             })
             .collect::<Result<Vec<_>, _>>()?;
         rule_logs.sort();
-        self.push_many_events(
+        self.log_many(
             rule_logs
                 .into_iter()
                 .map(|rule_log| battle_event!("rule", rule_log)),
@@ -306,9 +307,9 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
 
         let team_size_events = self
             .players()
-            .map(|player| battle_event!("teamsize", player.id, player.mons.len()))
+            .map(|player| battle_event!("teamsize", player.id(), player.mons.len()))
             .collect::<Vec<_>>();
-        self.push_many_events(team_size_events);
+        self.log_many(team_size_events);
 
         if self.has_team_preview() {
             self.start_team_preview()?;
@@ -340,7 +341,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         self.players().filter_map(|player| {
             player
                 .active_request()
-                .map(|request| (player.id.clone(), request))
+                .map(|request| (player.id().to_owned(), request))
         })
     }
 
@@ -374,7 +375,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn log_current_time(&mut self) {
-        self.push_event(battle_event!(
+        self.log(battle_event!(
             "time",
             SystemTime::now()
                 .duration_since(UNIX_EPOCH)
@@ -388,15 +389,12 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn start_team_preview(&mut self) -> Result<(), Error> {
-        self.push_event(battle_event!("teampreviewstart"));
+        self.log(battle_event!("teampreviewstart"));
         let events = self
             .all_mons()
             .map(|res| match res {
                 Err(err) => Err(err),
-                Ok(mon) => Ok((
-                    mon.public_details(),
-                    AsRef::<str>::as_ref(&self.player(mon.player)?.id),
-                )),
+                Ok(mon) => Ok((mon.public_details(), self.player(mon.player)?.id())),
             })
             .map_ok(|(details, player_id)| {
                 battle_event!(
@@ -408,12 +406,12 @@ impl<'d> CoreBattle<'d> {
                 )
             })
             .collect::<Result<Vec<_>, _>>()?;
-        self.push_many_events(events);
+        self.log_many(events);
         match self.format.rules.numeric_rules.picked_team_size {
             Some(picked_team_size) => self
                 .log
                 .push(battle_event!("teampreview", picked_team_size)),
-            None => self.push_event(battle_event!("teampreview")),
+            None => self.log(battle_event!("teampreview")),
         }
         self.make_request(RequestType::TeamPreview)?;
         Ok(())
@@ -479,7 +477,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn continue_battle_internal(&mut self) -> Result<(), Error> {
-        self.push_event(battle_event!());
+        self.log(battle_event!());
         self.log_current_time();
 
         self.request = None;
@@ -510,7 +508,16 @@ impl<'d> CoreBattle<'d> {
     fn run_action(&mut self, action: Action) -> Result<(), Error> {
         match action {
             Action::Start => {
-                self.push_event(battle_event!("start"));
+                for player in self.players_mut() {
+                    player.start_battle();
+                }
+                self.log(battle_event!("start"));
+
+                for player in self.players_mut() {
+                    if player.mons_left() > 0 {
+                        // TODO: Switch in active Mons.
+                    }
+                }
             }
             Action::Team(action) => {
                 let mut context = MonContext::new(self.context(), action.mon)?;
@@ -522,7 +529,7 @@ impl<'d> CoreBattle<'d> {
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
-                self.push_event(battle_event!("residual"));
+                self.log(battle_event!("residual"));
             }
         }
         Ok(())
@@ -530,10 +537,10 @@ impl<'d> CoreBattle<'d> {
 
     fn next_turn(&mut self) -> Result<(), Error> {
         self.turn += 1;
-        self.push_event(battle_event!("turn", self.turn));
+        self.log(battle_event!("turn", self.turn));
 
         if self.turn >= 1000 {
-            self.push_event(battle_event!(
+            self.log(battle_event!(
                 "message",
                 "It is turn 1000. You have hit the turn limit!"
             ));
@@ -553,12 +560,12 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
-        self.push_event(battle_event!());
+        self.log(battle_event!());
         match side {
-            None => self.push_event(battle_event!("tie")),
+            None => self.log(battle_event!("tie")),
             Some(side) => {
                 let side = self.side(side)?;
-                self.push_event(battle_event!("win", side.name));
+                self.log(battle_event!("win", side.name()));
             }
         }
 
