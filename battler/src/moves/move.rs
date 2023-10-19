@@ -3,11 +3,6 @@ use serde::{
     Serialize,
 };
 
-use super::{
-    MonOverride,
-    MultihitType,
-    SelfDestructType,
-};
 use crate::{
     battle::PartialBoostTable,
     common::{
@@ -23,10 +18,13 @@ use crate::{
     moves::{
         Accuracy,
         DamageType,
+        MonOverride,
         MoveCategory,
         MoveFlags,
         MoveTarget,
+        MultihitType,
         OhkoType,
+        SelfDestructType,
         UserSwitchType,
     },
 };
