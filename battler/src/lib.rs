@@ -9,6 +9,7 @@ pub mod common;
 pub mod config;
 pub mod dex;
 pub mod effect;
+pub mod fxlang;
 pub mod items;
 pub mod log;
 pub mod mons;
