@@ -29,6 +29,9 @@ pub struct MonData {
     pub ability: String,
     /// Moves.
     pub moves: Vec<String>,
+    #[serde(default)]
+    // PP boosts.
+    pub pp_boosts: Vec<u8>,
     /// Nature.
     pub nature: Nature,
     /// Gender.

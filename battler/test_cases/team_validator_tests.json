@@ -803,6 +803,46 @@
       "Bulba Fett cannot learn Synthesis, because Synthesis is learned at level 33."
     ]
   },
+  "too_many_pp_boosts": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Amnesia"],
+        "pp_boosts": [4],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": ["Bulba Fett cannot have 4 PP boosts on Amnesia."]
+  },
+  "valid_pp_boosts": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": []
+    },
+    "team": [
+      {
+        "name": "Bulba Fett",
+        "species": "Bulbasaur",
+        "ability": "Overgrow",
+        "moves": ["Amnesia"],
+        "pp_boosts": [3],
+        "nature": "Adamant",
+        "gender": "M",
+        "ball": "Normal",
+        "level": 50
+      }
+    ],
+    "expected_problems": []
+  },
   "banned_ability": {
     "format": {
       "battle_type": "Singles",

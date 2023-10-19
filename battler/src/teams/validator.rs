@@ -503,7 +503,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             return result.into();
         }
 
-        for move_name in &mon.moves {
+        for (i, move_name) in mon.moves.iter().enumerate() {
             let mov = match self.dex.moves.get(move_name) {
                 DataLookupResult::Found(mov) => mov,
                 DataLookupResult::NotFound => {
@@ -514,11 +514,17 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                     return result.into();
                 }
                 DataLookupResult::Error(error) => {
-                    result.add_problem(format!("Failed to lookup move {}: {error}", move_name,));
+                    result.add_problem(format!("Failed to lookup move {}: {error}", move_name));
                     return result.into();
                 }
             };
-            result.merge(self.validate_move(mon, species, mov, state));
+            result.merge(self.validate_move(
+                mon,
+                species,
+                mov,
+                mon.pp_boosts.get(i).cloned().unwrap_or(0),
+                state,
+            ));
         }
         result.into()
     }
@@ -528,6 +534,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         mon: &'b MonData,
         species: &'d Species,
         mov: &'d Move,
+        pp_boosts: u8,
         state: &mut MonValidationState<'d>,
     ) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
@@ -561,16 +568,30 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             MoveLegality::Illegal(reason) => {
                 result.add_problem(format!(
                     "{} cannot learn {}, because {} {reason}",
-                    mon.name, mov.data.name, mov.data.name
+                    mon.name, mov.data.name, mov.data.name,
                 ));
             }
             // This should not happen.
             MoveLegality::Unknown => {
                 result.add_problem(format!(
                     "It is unknown if {} can learn {}. This is a bug in the validation algorithm.",
-                    mon.name, mov.data.name
+                    mon.name, mov.data.name,
                 ));
             }
+        }
+
+        if pp_boosts > 3 {
+            result.add_problem(format!(
+                "{} cannot have {} PP boosts on {}.",
+                mon.name, pp_boosts, mov.data.name,
+            ));
+        }
+
+        if mov.data.no_pp_boosts && pp_boosts > 0 {
+            result.add_problem(format!(
+                "Move {} on {} cannot be PP boosted.",
+                mov.data.name, mon.name,
+            ));
         }
 
         result.into()
