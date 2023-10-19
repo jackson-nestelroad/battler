@@ -37,6 +37,7 @@ impl BattleLoggable for PublicMonDetails<'_> {
 /// appears in the battle.
 pub struct ActiveMonDetals<'d> {
     pub public_details: PublicMonDetails<'d>,
+    pub name: &'d str,
     pub player_id: &'d str,
     pub position: usize,
 }
@@ -45,6 +46,7 @@ impl BattleLoggable for ActiveMonDetals<'_> {
     fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>) {
         items.push(self.player_id.into());
         items.push(self.position.to_string().into());
+        items.push(self.name.into());
         self.public_details.log(items);
     }
 }
@@ -133,8 +135,10 @@ impl Mon {
 
     /// Returns the public details for the active Mon.
     pub fn active_details<'b>(context: &'b MonContext) -> ActiveMonDetals<'b> {
+        // TODO: This should contain HP information.
         ActiveMonDetals {
             public_details: context.mon().public_details(),
+            name: &context.mon().data.name,
             player_id: context.player().id(),
             position: context.mon().position,
         }

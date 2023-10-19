@@ -211,14 +211,27 @@ mod team_preview_tests {
                 "teamsize|player-3|3",
                 "teamsize|player-4|3",
                 "start",
-                "switch|player-1|0|Bulbasaur|100|F",
-                "switch|player-2|0|Bulbasaur|100|F",
-                "switch|player-3|0|Squirtle|100|F",
-                "switch|player-4|0|Squirtle|100|M",
+                "switch|player-1|0|Bulbasaur F|Bulbasaur|100|F",
+                "switch|player-2|0|Bulbasaur F|Bulbasaur|100|F",
+                "switch|player-3|0|Squirtle F|Squirtle|100|F",
+                "switch|player-4|0|Squirtle M|Squirtle|100|M",
                 "turn|1",
             ],
         );
 
-        // TODO: Validate team orders for each player.
+        pretty_assertions::assert_eq!(
+            battle.active_requests().collect::<Vec<_>>(),
+            vec![
+                ("player-1".to_owned(), Request::Turn),
+                ("player-2".to_owned(), Request::Turn),
+                ("player-3".to_owned(), Request::Turn),
+                ("player-4".to_owned(), Request::Turn),
+            ]
+        );
+
+        // TODO: Implement switching.
+        // TODO: Turn 1: switch to Mon 1 for all players.
+        // TODO: Turn 2: switch to Mon 2 for all players.
+        // TODO: Turn 3: attempt to switch to Mon 3 for all players (should fail).
     }
 }
