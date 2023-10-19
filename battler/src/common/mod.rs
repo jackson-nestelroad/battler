@@ -1,4 +1,5 @@
 mod error;
+mod fraction;
 mod hash;
 mod id;
 mod lookup_result;
@@ -9,6 +10,7 @@ pub use error::{
     Error,
     WrapResultError,
 };
+pub use fraction::Fraction;
 pub use hash::{
     FastHashMap,
     FastHashSet,
