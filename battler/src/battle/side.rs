@@ -3,11 +3,15 @@ use serde::{
     Serialize,
 };
 
-use crate::battle::{
-    BattleRegistry,
-    BattleType,
-    Player,
-    PlayerData,
+use crate::{
+    battle::{
+        BattleRegistry,
+        BattleType,
+        Player,
+        PlayerData,
+    },
+    common::Error,
+    dex::Dex,
 };
 
 /// Data about a single side of a battle.
@@ -51,19 +55,20 @@ impl Side {
         data: SideData,
         index: usize,
         battle_type: &BattleType,
+        dex: &Dex,
         registry: &BattleRegistry,
-    ) -> (Self, Vec<Player>) {
+    ) -> Result<(Self, Vec<Player>), Error> {
         let players = data
             .players
             .into_iter()
-            .map(|data| Player::new(data, index, battle_type, registry))
-            .collect();
-        (
+            .map(|data| Player::new(data, index, battle_type, dex, registry))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok((
             Self {
                 name: data.name,
                 index,
             },
             players,
-        )
+        ))
     }
 }

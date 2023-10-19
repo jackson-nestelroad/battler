@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 ahash = "0.8.3"
 battler = { path = "../battler" }
+pretty_assertions = "1.4.0"
 serde_json = "1.0"

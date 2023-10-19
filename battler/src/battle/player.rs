@@ -28,6 +28,7 @@ use crate::{
         FastHashSet,
         WrapResultError,
     },
+    dex::Dex,
     teams::TeamData,
 };
 
@@ -116,16 +117,17 @@ impl Player {
         data: PlayerData,
         side: usize,
         battle_type: &BattleType,
+        dex: &Dex,
         registry: &BattleRegistry,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         let mons = data
             .team
             .members
             .into_iter()
-            .map(|mon_data| registry.register_mon(Mon::new(mon_data)))
-            .collect();
+            .map(|mon_data| Ok(registry.register_mon(Mon::new(mon_data, dex)?)))
+            .collect::<Result<Vec<_>, _>>()?;
         let active = vec![None; battle_type.active_per_side()];
-        Self {
+        Ok(Self {
             id: data.id,
             name: data.name,
             side,
@@ -135,7 +137,7 @@ impl Player {
             active,
             request: None,
             mons_left: 0,
-        }
+        })
     }
 
     /// Sets the index of the player, so that the player can safely reference itself.

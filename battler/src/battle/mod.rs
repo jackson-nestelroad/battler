@@ -6,6 +6,7 @@ mod battle_type;
 mod boosts;
 mod context;
 mod core_battle;
+mod core_battle_actions;
 mod field;
 mod mon;
 mod player;
@@ -49,7 +50,11 @@ pub use context::{
 };
 pub use core_battle::CoreBattle;
 pub use field::Field;
-pub use mon::Mon;
+pub use mon::{
+    ActiveMonDetals,
+    Mon,
+    PublicMonDetails,
+};
 pub use player::{
     Player,
     PlayerData,

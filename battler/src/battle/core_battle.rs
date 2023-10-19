@@ -10,6 +10,7 @@ use std::{
 use itertools::Itertools;
 use uuid::Uuid;
 
+use super::core_battle_actions;
 use crate::{
     battle::{
         Action,
@@ -74,6 +75,7 @@ pub struct CoreBattle<'d> {
     mid_turn: bool,
     started: bool,
     ended: bool,
+    next_ability_priority: u32,
 
     input_log: FastHashMap<usize, Vec<String>>,
 
@@ -98,8 +100,10 @@ impl<'d> CoreBattle<'d> {
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
         let field = Field::new();
-        let (side_1, mut players) = Side::new(options.side_1, 0, &format.battle_type, &registry);
-        let (side_2, side_2_players) = Side::new(options.side_2, 1, &format.battle_type, &registry);
+        let (side_1, mut players) =
+            Side::new(options.side_1, 0, &format.battle_type, &dex, &registry)?;
+        let (side_2, side_2_players) =
+            Side::new(options.side_2, 1, &format.battle_type, &dex, &registry)?;
         players.extend(side_2_players);
 
         let player_ids = players
@@ -132,6 +136,7 @@ impl<'d> CoreBattle<'d> {
             mid_turn: false,
             started: false,
             ended: false,
+            next_ability_priority: 0,
             input_log,
             _pin: PhantomPinned,
         };
@@ -216,6 +221,12 @@ impl<'d> CoreBattle<'d> {
     pub(crate) fn all_mons_checked(&self) -> Result<Vec<&Mon>, Error> {
         self.all_mons().collect()
     }
+
+    pub(crate) fn next_ability_priority(&mut self) -> u32 {
+        let next = self.next_ability_priority;
+        self.next_ability_priority += 1;
+        next
+    }
 }
 
 // Block for all public methods.
@@ -259,6 +270,10 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
 
     fn log(&mut self, event: BattleEvent) {
         self.log.push(event)
+    }
+
+    fn hint(&mut self, message: &str) {
+        self.log(battle_event!("-hint", message))
     }
 
     fn log_many<I>(&mut self, events: I)
@@ -305,13 +320,8 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
                 .map(|rule_log| battle_event!("rule", rule_log)),
         );
 
-        let team_size_events = self
-            .players()
-            .map(|player| battle_event!("teamsize", player.id(), player.mons.len()))
-            .collect::<Vec<_>>();
-        self.log_many(team_size_events);
-
         if self.has_team_preview() {
+            self.log_team_sizes();
             self.start_team_preview()?;
         }
 
@@ -384,6 +394,14 @@ impl<'d> CoreBattle<'d> {
         ));
     }
 
+    fn log_team_sizes(&mut self) {
+        let team_size_events = self
+            .players()
+            .map(|player| battle_event!("teamsize", player.id(), player.mons.len()))
+            .collect::<Vec<_>>();
+        self.log_many(team_size_events);
+    }
+
     fn has_team_preview(&self) -> bool {
         self.format.rules.has_rule(&Id::from_known("teampreview"))
     }
@@ -396,15 +414,7 @@ impl<'d> CoreBattle<'d> {
                 Err(err) => Err(err),
                 Ok(mon) => Ok((mon.public_details(), self.player(mon.player)?.id())),
             })
-            .map_ok(|(details, player_id)| {
-                battle_event!(
-                    "mon",
-                    player_id,
-                    details.species_name,
-                    details.level,
-                    details.gender
-                )
-            })
+            .map_ok(|(details, player_id)| battle_event!("mon", player_id, details))
             .collect::<Result<Vec<_>, _>>()?;
         self.log_many(events);
         match self.format.rules.numeric_rules.picked_team_size {
@@ -508,16 +518,26 @@ impl<'d> CoreBattle<'d> {
     fn run_action(&mut self, action: Action) -> Result<(), Error> {
         match action {
             Action::Start => {
+                self.log_team_sizes();
                 for player in self.players_mut() {
                     player.start_battle();
                 }
                 self.log(battle_event!("start"));
 
-                for player in self.players_mut() {
-                    if player.mons_left() > 0 {
-                        // TODO: Switch in active Mons.
-                    }
+                let switch_ins =
+                    self.players()
+                        .filter(|player| player.mons_left() > 0)
+                        .flat_map(|player| {
+                            player.active.iter().enumerate().filter_map(|(i, _)| {
+                                player.mons.get(i).cloned().map(|mon| (i, mon))
+                            })
+                        })
+                        .collect::<Vec<_>>();
+                for (position, mon) in switch_ins {
+                    let mut context = MonContext::new(self.context(), mon)?;
+                    core_battle_actions::switch_in(&mut context, position)?;
                 }
+                self.mid_turn = true;
             }
             Action::Team(action) => {
                 let mut context = MonContext::new(self.context(), action.mon)?;

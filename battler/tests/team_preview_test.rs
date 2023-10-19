@@ -17,7 +17,10 @@ mod team_preview_tests {
         },
         teams::TeamData,
     };
-    use battler_test_utils::TestBattleBuilder;
+    use battler_test_utils::{
+        assert_new_logs_eq,
+        TestBattleBuilder,
+    };
 
     fn team() -> Result<TeamData, Error> {
         serde_json::from_str(
@@ -127,9 +130,9 @@ mod team_preview_tests {
             ]
         );
         assert_eq!(battle.ready_to_continue(), Ok(false));
-        pretty_assertions::assert_eq!(
-            battle.new_logs().collect::<Vec<_>>(),
-            vec![
+        assert_new_logs_eq(
+            &mut battle,
+            &[
                 "battletype|Multi",
                 "rule|Endless Battle Clause: Forcing endless battles is banned",
                 "rule|Sleep Clause: Limit one foe put to sleep",
@@ -163,9 +166,8 @@ mod team_preview_tests {
                 "mon|player-4|Charmander|100|M",
                 "mon|player-4|Squirtle|100|M",
                 "teampreview|3",
-            ]
+            ],
         );
-
         // Player 1 made their choice.
         assert_eq!(battle.set_player_choice("player-1", "team 0 1 2"), Ok(()));
         pretty_assertions::assert_eq!(
@@ -193,6 +195,25 @@ mod team_preview_tests {
         // No more active requests.
         assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
         assert_eq!(battle.ready_to_continue(), Ok(true));
+        assert_eq!(battle.continue_battle(), Ok(()));
+
+        // New logs show updated team size and selected team leads.
+        assert_new_logs_eq(
+            &mut battle,
+            &[
+                "",
+                "teamsize|player-1|3",
+                "teamsize|player-2|3",
+                "teamsize|player-3|3",
+                "teamsize|player-4|3",
+                "start",
+                "switch|player-1|0|Bulbasaur|100|F",
+                "switch|player-2|0|Bulbasaur|100|F",
+                "switch|player-3|0|Squirtle|100|F",
+                "switch|player-4|0|Squirtle|100|M",
+                "turn|1",
+            ],
+        );
 
         // TODO: Validate team orders for each player.
     }
