@@ -5,7 +5,6 @@ use std::{
         Debug,
         Display,
     },
-    hash,
     hash::Hash,
     str::FromStr,
 };
@@ -18,52 +17,10 @@ use serde::{
     Serialize,
 };
 
-use crate::common::Error;
-
-/// A string that may or may not be owned.
-///
-/// An optimization that allows the [`Id`] type to directly store string references that are known
-/// to already be valid IDs.
-#[derive(Clone)]
-enum MaybeOwnedString {
-    Owned(String),
-    Unowned(&'static str),
-}
-
-impl AsRef<str> for MaybeOwnedString {
-    fn as_ref(&self) -> &str {
-        match self {
-            Self::Owned(str) => str.as_ref(),
-            Self::Unowned(str) => str,
-        }
-    }
-}
-
-impl PartialEq for MaybeOwnedString {
-    fn eq(&self, other: &Self) -> bool {
-        PartialEq::eq(self.as_ref(), other.as_ref())
-    }
-}
-
-impl Eq for MaybeOwnedString {}
-
-impl Hash for MaybeOwnedString {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        Hash::hash(self.as_ref(), state)
-    }
-}
-
-impl Display for MaybeOwnedString {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_ref())
-    }
-}
-
-impl Debug for MaybeOwnedString {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        Display::fmt(self, f)
-    }
-}
+use crate::common::{
+    Error,
+    MaybeOwnedString,
+};
 
 /// An ID for a resource.
 ///
@@ -71,7 +28,7 @@ impl Debug for MaybeOwnedString {
 ///
 /// A futher optimization would be to allocate strings in an arena for memory proximity.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Id(MaybeOwnedString);
+pub struct Id(MaybeOwnedString<'static>);
 
 /// A reference to an ID for a resource.
 ///
