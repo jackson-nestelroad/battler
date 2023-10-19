@@ -5,14 +5,36 @@ use std::{
 
 use itertools::Itertools;
 
+use crate::common::MaybeOwnedString;
+
+/// Trait for objects that can be added directly to the battle log.
+///
+/// Automatically implemented for types that implement [`Display`].
+pub trait BattleLoggable {
+    fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>);
+}
+
+impl<T> BattleLoggable for T
+where
+    T: Display,
+{
+    fn log(&self, parts: &mut Vec<MaybeOwnedString>) {
+        parts.push(MaybeOwnedString::from(format!("{self}")))
+    }
+}
+
 /// A battle event that is added to the [`EventLog`].
 ///
 /// This object should not be constructed directly. Instead, use the [`battle_event`] macro.
 pub struct BattleEvent(String);
 
 impl BattleEvent {
-    pub fn from_parts(parts: &[&dyn Display]) -> Self {
-        Self(parts.iter().map(|part| format!("{part}")).join("|"))
+    pub fn from_parts(parts: &[&dyn BattleLoggable]) -> Self {
+        let mut log_parts = Vec::with_capacity(parts.len());
+        for part in parts {
+            part.log(&mut log_parts);
+        }
+        Self(log_parts.into_iter().join("|"))
     }
 }
 
@@ -78,7 +100,13 @@ mod event_log_tests {
         fmt::Display,
     };
 
-    use crate::log::EventLog;
+    use crate::{
+        common::MaybeOwnedString,
+        log::{
+            BattleLoggable,
+            EventLog,
+        },
+    };
 
     fn last_log(log: &mut EventLog) -> &str {
         log.logs.last().unwrap()
@@ -120,5 +148,34 @@ mod event_log_tests {
             last_log(&mut log),
             "customdata|3.1415926535|234 => bulbasaur|0|1|0"
         );
+    }
+
+    struct CustomDataWithLogImplementation {
+        a: u32,
+        b: String,
+    }
+
+    impl BattleLoggable for CustomDataWithLogImplementation {
+        fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>) {
+            items.push(format!("{}", self.a).into());
+            items.push("other".into());
+            items.push(self.b.as_str().into());
+        }
+    }
+
+    #[test]
+    fn allows_custom_implementation() {
+        let mut log = EventLog::new();
+
+        log.push(battle_event!(
+            "customdata",
+            "abc",
+            CustomDataWithLogImplementation {
+                a: 234,
+                b: "bulbasaur".to_owned(),
+            },
+            0i32,
+        ));
+        assert_eq!(last_log(&mut log), "customdata|abc|234|other|bulbasaur|0");
     }
 }
