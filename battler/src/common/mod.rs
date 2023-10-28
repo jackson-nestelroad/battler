@@ -1,3 +1,4 @@
+mod captures;
 mod error;
 mod fraction;
 mod hash;
@@ -7,6 +8,7 @@ mod maybe_owned_string;
 mod strings;
 mod test_util;
 
+pub use captures::Captures;
 pub use error::{
     Error,
     WrapResultError,
