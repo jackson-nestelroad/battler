@@ -6,7 +6,9 @@ use serde_string_enum::{
 use crate::mons::Stat;
 
 /// A Mon's nature, which boosts and drops particular stat values.
-#[derive(Debug, Clone, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+)]
 pub enum Nature {
     #[string = "Hardy"]
     Hardy,
