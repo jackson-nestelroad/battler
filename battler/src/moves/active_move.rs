@@ -24,7 +24,7 @@ pub struct ActiveMove<'m> {
     /// Whether or not this move hit multiple targets.
     pub spread_hit: bool,
     /// STAB multiplier (default is 1.5).
-    pub stab_multiplier: Fraction,
+    pub stab_multiplier: Fraction<u16>,
     /// Volatile status for the move (not the user).
     pub volatile_status: Option<Id>,
 }
@@ -37,7 +37,7 @@ impl<'m> ActiveMove<'m> {
             force_stab: false,
             is_external: false,
             spread_hit: false,
-            stab_multiplier: Fraction::from(1.5),
+            stab_multiplier: Fraction::from_f64(1.5),
             volatile_status: None,
         }
     }
