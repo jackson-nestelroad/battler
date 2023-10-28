@@ -97,7 +97,7 @@ pub struct SpeciesData {
     /// Maximum HP override.
     ///
     /// This is used for Shedinja, which always has a maximum HP of 1.
-    pub max_hp: Option<u8>,
+    pub max_hp: Option<u16>,
     /// Base stats.
     pub base_stats: StatTable,
     /// Learnset, which contains all legal moves for this species.
