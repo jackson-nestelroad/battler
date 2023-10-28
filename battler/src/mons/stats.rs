@@ -52,14 +52,25 @@ pub type StatMap<T> = FastHashMap<Stat, T>;
 /// A table of stat values.
 pub type PartialStatTable = StatMap<u8>;
 
-/// Iterator over the value sof a [`StatTable`].
-pub struct StatTableValues<'s> {
+fn next_stat_for_iterator(stat: Stat) -> Option<Stat> {
+    match stat {
+        Stat::HP => Some(Stat::Atk),
+        Stat::Atk => Some(Stat::Def),
+        Stat::Def => Some(Stat::SpAtk),
+        Stat::SpAtk => Some(Stat::SpDef),
+        Stat::SpDef => Some(Stat::Spe),
+        Stat::Spe => None,
+    }
+}
+
+/// Iterator over the entries of a [`StatTable`].
+pub struct StatTableEntries<'s> {
     table: &'s StatTable,
     next_stat: Option<Stat>,
 }
 
-impl<'s> StatTableValues<'s> {
-    /// Creates a new iterator over the values in a [`StatTable`].
+impl<'s> StatTableEntries<'s> {
+    /// Creates a new iterator over the entries of a [`StatTable`].
     fn new(table: &'s StatTable) -> Self {
         Self {
             table,
@@ -68,21 +79,14 @@ impl<'s> StatTableValues<'s> {
     }
 }
 
-impl<'s> Iterator for StatTableValues<'s> {
-    type Item = u16;
+impl<'s> Iterator for StatTableEntries<'s> {
+    type Item = (Stat, u16);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let next_stat = self.next_stat?;
-        let value = self.table.get(next_stat);
-        self.next_stat = match next_stat {
-            Stat::HP => Some(Stat::Atk),
-            Stat::Atk => Some(Stat::Def),
-            Stat::Def => Some(Stat::SpAtk),
-            Stat::SpAtk => Some(Stat::SpDef),
-            Stat::SpDef => Some(Stat::Spe),
-            Stat::Spe => None,
-        };
-        Some(value)
+        let stat = self.next_stat?;
+        let value = self.table.get(stat);
+        self.next_stat = next_stat_for_iterator(stat);
+        Some((stat, value))
     }
 }
 
@@ -118,9 +122,26 @@ impl StatTable {
         }
     }
 
-    /// Creates an iterator over all stat values.
-    pub fn values<'s>(&'s self) -> StatTableValues<'s> {
-        StatTableValues::new(self)
+    /// Sets the given value in the stat table.
+    pub fn set(&mut self, stat: Stat, value: u16) {
+        let stat = match stat {
+            Stat::HP => &mut self.hp,
+            Stat::Atk => &mut self.atk,
+            Stat::Def => &mut self.def,
+            Stat::SpAtk => &mut self.spa,
+            Stat::SpDef => &mut self.spd,
+            Stat::Spe => &mut self.spe,
+        };
+        *stat = value;
+    }
+
+    /// Creates an iterator over all stat entries.
+    pub fn entries<'s>(&'s self) -> StatTableEntries<'s> {
+        StatTableEntries::new(self)
+    }
+
+    pub fn values<'s>(&'s self) -> impl Iterator<Item = u16> + 's {
+        self.entries().map(|(_, value)| value)
     }
 
     /// Sums up all stats in the table.
@@ -144,6 +165,24 @@ impl From<&PartialStatTable> for StatTable {
             spd: *value.get(&Stat::SpDef).unwrap_or(&0) as u16,
             spe: *value.get(&Stat::Spe).unwrap_or(&0) as u16,
         }
+    }
+}
+
+impl FromIterator<(Stat, u16)> for StatTable {
+    fn from_iter<T: IntoIterator<Item = (Stat, u16)>>(iter: T) -> Self {
+        let mut out = StatTable::default();
+        for (stat, value) in iter {
+            out.set(stat, value);
+        }
+        out
+    }
+}
+
+impl<'s> IntoIterator for &'s StatTable {
+    type IntoIter = StatTableEntries<'s>;
+    type Item = (Stat, u16);
+    fn into_iter(self) -> Self::IntoIter {
+        self.entries()
     }
 }
 
@@ -237,6 +276,30 @@ mod stat_table_tests {
     }
 
     #[test]
+    fn sets_associated_value() {
+        let mut st = StatTable {
+            hp: 1,
+            atk: 2,
+            def: 3,
+            spa: 4,
+            spd: 5,
+            spe: 6,
+        };
+        st.set(Stat::HP, 2);
+        st.set(Stat::Atk, 4);
+        st.set(Stat::Def, 6);
+        st.set(Stat::SpAtk, 8);
+        st.set(Stat::SpDef, 10);
+        st.set(Stat::Spe, 12);
+        assert_eq!(st.get(Stat::HP), 2);
+        assert_eq!(st.get(Stat::Atk), 4);
+        assert_eq!(st.get(Stat::Def), 6);
+        assert_eq!(st.get(Stat::SpAtk), 8);
+        assert_eq!(st.get(Stat::SpDef), 10);
+        assert_eq!(st.get(Stat::Spe), 12);
+    }
+
+    #[test]
     fn sums() {
         let st = StatTable {
             hp: 100,
@@ -261,5 +324,28 @@ mod stat_table_tests {
         };
         assert!(st.values().all(|val| val < 255));
         assert_eq!(st.values().sum::<u16>(), 680);
+    }
+
+    #[test]
+    fn from_iter_constructs_table() {
+        let st = StatTable::from_iter([
+            (Stat::HP, 108),
+            (Stat::Atk, 130),
+            (Stat::Def, 95),
+            (Stat::SpAtk, 80),
+            (Stat::SpDef, 85),
+            (Stat::Spe, 102),
+        ]);
+        assert_eq!(
+            st,
+            StatTable {
+                hp: 108,
+                atk: 130,
+                def: 95,
+                spa: 80,
+                spd: 85,
+                spe: 102,
+            }
+        )
     }
 }
