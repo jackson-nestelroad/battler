@@ -36,7 +36,7 @@ pub type MonRegistry = StrongRegistry<MonHandle, Mon>;
 /// as the battle itself.
 pub struct BattleRegistry {
     /// Registry of [`Mon`]s.
-    pub mons: MonRegistry,
+    mons: MonRegistry,
 }
 
 impl BattleRegistry {
