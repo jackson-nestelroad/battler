@@ -2,14 +2,15 @@ use std::{
     cmp,
     fmt,
     fmt::Display,
-    ops::{
-        Div,
-        Mul,
-    },
+    marker::PhantomData,
+    ops::Mul,
     str::FromStr,
 };
 
-use num::Integer;
+use num::{
+    FromPrimitive,
+    Integer,
+};
 use serde::{
     de::{
         Unexpected,
@@ -25,6 +26,10 @@ use crate::common::{
     WrapResultError,
 };
 
+/// An integer type that can be used as the inner type of [`Fraction`].
+pub trait FractionInteger: Integer + FromPrimitive + Copy {}
+impl<I> FractionInteger for I where I: Integer + FromPrimitive + Copy {}
+
 /// A fraction, usable in calculations.
 ///
 /// A fraction is serializable as:
@@ -34,55 +39,75 @@ use crate::common::{
 /// - A percentage string (`"60%"`).
 /// - A two-length array (`[2,5]`).
 #[derive(Debug, Clone)]
-pub struct Fraction {
-    num: u32,
-    den: u32,
+pub struct Fraction<I> {
+    num: I,
+    den: I,
 }
 
-impl Fraction {
+impl<I> Fraction<I>
+where
+    I: FractionInteger,
+{
     /// Creates a new fraction.
-    pub fn new(n: u32, d: u32) -> Fraction {
+    pub fn new(n: I, d: I) -> Self {
         Fraction { num: n, den: d }
     }
 
     /// Creates a new percentage as a fraction.
-    pub fn percentage(n: u32) -> Fraction {
-        Fraction { num: n, den: 100 }.simplify()
+    pub fn percentage(n: I) -> Self {
+        Fraction {
+            num: n,
+            den: I::from_u8(100).unwrap(),
+        }
+        .simplify()
+    }
+
+    /// Creates a new fraction from an [`f64`].
+    ///
+    /// Flatoing point precision is preserved by creating a fraction with a denominator of 4096.
+    pub fn from_f64(value: f64) -> Self {
+        let num = I::from_f64(value * 4096f64).unwrap();
+        Self::new(num, I::from_u16(4096).unwrap()).simplify()
     }
 
     /// The numerator of the fraction.
-    pub fn numerator(&self) -> u32 {
+    pub fn numerator(&self) -> I {
         self.num
     }
 
     /// The denominator of the fraction.
     ///
     /// A flat percentage is always out of 100.
-    pub fn denominator(&self) -> u32 {
+    pub fn denominator(&self) -> I {
         self.den
     }
 
     /// Is the fraction whole (i.e., an integer)?
     pub fn is_whole(&self) -> bool {
-        self.den == 1
+        self.den == I::one()
     }
 
     /// Simplifies the fraction.
-    pub fn simplify(&self) -> Fraction {
+    pub fn simplify(&self) -> Self {
         let n = self.numerator();
         let d = self.denominator();
         let gcd = n.gcd(&d);
         Fraction::new(n.div(gcd), d.div(gcd))
     }
 
-    /// Returns the integer representation of the percentage.
+    /// Returns the floored integer representation of the fraction.
     ///
     /// The integer will be truncated, as if performing integer division.
-    pub fn integer(&self) -> u32 {
+    pub fn floor(&self) -> I {
         self.numerator().div(self.denominator())
     }
 
-    fn normalize(a: &Fraction, b: &Fraction) -> (Fraction, Fraction) {
+    /// Returns the ceiled integer representation of the fraction.
+    pub fn ceil(&self) -> I {
+        num::Integer::div_ceil(&self.numerator(), &self.denominator())
+    }
+
+    fn normalize(a: &Fraction<I>, b: &Fraction<I>) -> (Fraction<I>, Fraction<I>) {
         let a1 = a.numerator();
         let a2 = a.denominator();
         let b1 = b.numerator();
@@ -97,25 +122,29 @@ impl Fraction {
     }
 }
 
-impl Display for Fraction {
+impl<I> Display for Fraction<I>
+where
+    I: Display,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}", self.num, self.den)
     }
 }
 
-impl From<u32> for Fraction {
-    fn from(value: u32) -> Self {
-        Self::new(value, 1)
+impl<I> From<I> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    fn from(value: I) -> Self {
+        Self::new(value, I::one())
     }
 }
 
-impl From<f64> for Fraction {
-    fn from(value: f64) -> Self {
-        Self::new((value * 4096f64).trunc() as u32, 4096).simplify()
-    }
-}
-
-impl FromStr for Fraction {
+impl<I> FromStr for Fraction<I>
+where
+    I: FractionInteger + FromStr + Display,
+    <I as FromStr>::Err: Display,
+{
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some((n, d)) = s.split_once('/') {
@@ -138,51 +167,72 @@ impl FromStr for Fraction {
     }
 }
 
-impl Into<u32> for Fraction {
-    fn into(self) -> u32 {
-        self.integer()
-    }
-}
+// impl<I> Into<I> for Fraction<I>
+// where
+//     I: Integer,
+// {
+//     fn into(self) -> I {
+//         self.floor()
+//     }
+// }
 
-impl PartialEq for Fraction {
+impl<I> PartialEq for Fraction<I>
+where
+    I: FractionInteger,
+{
     fn eq(&self, other: &Self) -> bool {
         let (a, b) = Self::normalize(self, other);
         a.numerator().eq(&b.numerator())
     }
 }
 
-impl Eq for Fraction {}
+impl<I> Eq for Fraction<I> where I: FractionInteger {}
 
-impl Ord for Fraction {
+impl<I> Ord for Fraction<I>
+where
+    I: FractionInteger,
+{
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         let (a, b) = Self::normalize(self, other);
         a.numerator().cmp(&b.numerator())
     }
 }
 
-impl PartialOrd for Fraction {
+impl<I> PartialOrd for Fraction<I>
+where
+    I: FractionInteger,
+{
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Mul<u32> for &Fraction {
-    type Output = Fraction;
-    fn mul(self, rhs: u32) -> Self::Output {
+impl<I> Mul<I> for &Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn mul(self, rhs: I) -> Self::Output {
         Self::Output::new(self.numerator().mul(rhs), self.denominator()).simplify()
     }
 }
 
-impl Mul<u32> for Fraction {
+impl<I> Mul<I> for Fraction<I>
+where
+    I: FractionInteger,
+{
     type Output = Self;
-    fn mul(self, rhs: u32) -> Self::Output {
+    fn mul(self, rhs: I) -> Self::Output {
         Mul::mul(&self, rhs)
     }
 }
 
-impl Mul<&Fraction> for &Fraction {
-    type Output = Fraction;
-    fn mul(self, rhs: &Fraction) -> Self::Output {
+impl<I> Mul<&Fraction<I>> for &Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn mul(self, rhs: &Fraction<I>) -> Self::Output {
         Self::Output::new(
             self.numerator().mul(rhs.numerator()),
             self.denominator().mul(rhs.denominator()),
@@ -191,44 +241,66 @@ impl Mul<&Fraction> for &Fraction {
     }
 }
 
-impl Mul<Fraction> for &Fraction {
-    type Output = Fraction;
-    fn mul(self, rhs: Fraction) -> Self::Output {
+impl<I> Mul<Fraction<I>> for &Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn mul(self, rhs: Fraction<I>) -> Self::Output {
         Mul::mul(self, &rhs)
     }
 }
 
-impl Mul<&Fraction> for Fraction {
+impl<I> Mul<&Fraction<I>> for Fraction<I>
+where
+    I: FractionInteger,
+{
     type Output = Self;
-    fn mul(self, rhs: &Fraction) -> Self::Output {
+    fn mul(self, rhs: &Fraction<I>) -> Self::Output {
         Mul::mul(&self, rhs)
     }
 }
 
-impl Mul<Fraction> for Fraction {
+impl<I> Mul<Fraction<I>> for Fraction<I>
+where
+    I: FractionInteger,
+{
     type Output = Self;
-    fn mul(self, rhs: Fraction) -> Self::Output {
+    fn mul(self, rhs: Fraction<I>) -> Self::Output {
         Mul::mul(&self, &rhs)
     }
 }
 
-impl Serialize for Fraction {
+impl Serialize for Fraction<u16> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         if self.is_whole() {
-            serializer.serialize_u32(self.integer())
+            serializer.serialize_u16(self.floor())
         } else {
             serializer.serialize_str(&format!("{self}"))
         }
     }
 }
 
-struct FractionVisitor;
+struct FractionVisitor<I> {
+    _phantom: PhantomData<I>,
+}
 
-impl<'de> Visitor<'de> for FractionVisitor {
-    type Value = Fraction;
+impl<I> FractionVisitor<I>
+where
+    I: Integer,
+{
+    pub fn new() -> Self {
+        Self {
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<'de> Visitor<'de> for FractionVisitor<u16> {
+    type Value = Fraction<u16>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -237,25 +309,39 @@ impl<'de> Visitor<'de> for FractionVisitor {
         )
     }
 
-    fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+    fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(Self::Value::from(v as u16))
+    }
+
+    fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
         Ok(Self::Value::from(v))
+    }
+
+    fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(Self::Value::from(v as u16))
     }
 
     fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v as u32))
+        Ok(Self::Value::from(v as u16))
     }
 
     fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v))
+        Ok(Self::Value::from_f64(v))
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
@@ -284,12 +370,12 @@ impl<'de> Visitor<'de> for FractionVisitor {
     }
 }
 
-impl<'de> Deserialize<'de> for Fraction {
+impl<'de> Deserialize<'de> for Fraction<u16> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_any(FractionVisitor)
+        deserializer.deserialize_any(FractionVisitor::<u16>::new())
     }
 }
 
@@ -384,6 +470,23 @@ mod percentage_tests {
     }
 
     #[test]
+    fn floor_division() {
+        assert_eq!(Fraction::percentage(1).floor(), 0);
+        assert_eq!(Fraction::new(77, 12).floor(), 6);
+        assert_eq!(Fraction::percentage(2500).floor(), 25);
+        assert_eq!(Fraction::new(33, 15).floor(), 2);
+        assert_eq!(Fraction::new(1020, 25).floor(), 40);
+        assert_eq!(Fraction::new(1, 2).floor(), 0);
+    }
+
+    #[test]
+    fn ceil_division() {
+        assert_eq!(Fraction::percentage(1).ceil(), 1);
+        assert_eq!(Fraction::new(77, 12).ceil(), 7);
+        assert_eq!(Fraction::percentage(2500).ceil(), 25);
+    }
+
+    #[test]
     fn integer_multiplication() {
         assert_eq!(Fraction::percentage(1) * 10000, 100.into());
         assert_eq!(Fraction::new(12, 77) * 85, Fraction::new(1020, 77));
@@ -403,12 +506,5 @@ mod percentage_tests {
             Fraction::new(1, 4) * Fraction::new(2, 4),
             Fraction::new(1, 8)
         );
-    }
-
-    #[test]
-    fn integer_conversion() {
-        assert_eq!(Fraction::new(33, 15).integer(), 2);
-        assert_eq!(Fraction::new(1020, 25).integer(), 40);
-        assert_eq!(Fraction::new(1, 2).integer(), 0);
     }
 }

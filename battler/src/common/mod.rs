@@ -13,7 +13,10 @@ pub use error::{
     Error,
     WrapResultError,
 };
-pub use fraction::Fraction;
+pub use fraction::{
+    Fraction,
+    FractionInteger,
+};
 pub use hash::{
     FastHashMap,
     FastHashSet,
