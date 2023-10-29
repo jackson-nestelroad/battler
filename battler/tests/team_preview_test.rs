@@ -18,6 +18,7 @@ mod team_preview_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
+        assert_error_message,
         assert_new_logs_eq,
         TestBattleBuilder,
     };
@@ -190,7 +191,7 @@ mod team_preview_tests {
         // Not enough Mons, auto choose the rest.
         assert_eq!(battle.set_player_choice("player-3", "team 1 2"), Ok(()));
         // Reselect Mons.
-        assert_eq!(battle.set_player_choice("player-3", "team 2 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-3", "team 2 5"), Ok(()));
         // Too many Mons, truncate the list.
         assert_eq!(
             battle.set_player_choice("player-4", "team 5 4 3 2 1 0"),
@@ -205,16 +206,15 @@ mod team_preview_tests {
         assert_new_logs_eq(
             &mut battle,
             &[
-                "",
                 "teamsize|player-1|3",
                 "teamsize|player-2|3",
                 "teamsize|player-3|3",
                 "teamsize|player-4|3",
                 "start",
-                "switch|player-1|0|Bulbasaur F|Bulbasaur|100|F",
-                "switch|player-2|0|Bulbasaur F|Bulbasaur|100|F",
-                "switch|player-3|0|Squirtle F|Squirtle|100|F",
-                "switch|player-4|0|Squirtle M|Squirtle|100|M",
+                "switch|player-1|0|Bulbasaur F|100/100||Bulbasaur|100|F",
+                "switch|player-2|0|Bulbasaur F|100/100||Bulbasaur|100|F",
+                "switch|player-3|0|Squirtle F|100/100||Squirtle|100|F",
+                "switch|player-4|0|Squirtle M|100/100||Squirtle|100|M",
                 "turn|1",
             ],
         );
@@ -229,9 +229,102 @@ mod team_preview_tests {
             ]
         );
 
-        // TODO: Implement switching.
-        // TODO: Turn 1: switch to Mon 1 for all players.
-        // TODO: Turn 2: switch to Mon 2 for all players.
-        // TODO: Turn 3: attempt to switch to Mon 3 for all players (should fail).
+        // Turn 1: each player switches to Mon 1.
+        assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-3", "switch 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-4", "switch 1"), Ok(()));
+
+        assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
+        assert_eq!(battle.ready_to_continue(), Ok(true));
+        assert_eq!(battle.continue_battle(), Ok(()));
+
+        assert_new_logs_eq(
+            &mut battle,
+            &[
+                "switch|player-1|0|Charmander F|100/100||Charmander|100|F",
+                "switch|player-2|0|Charmander F|100/100||Charmander|100|F",
+                "switch|player-3|0|Squirtle M|100/100||Squirtle|100|M",
+                "switch|player-4|0|Charmander M|100/100||Charmander|100|M",
+                "residual",
+                "turn|2",
+            ],
+        );
+
+        // Turn 2: each player switches to Mon 2.
+        assert_eq!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-3", "switch 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-4", "switch 2"), Ok(()));
+
+        assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
+        assert_eq!(battle.ready_to_continue(), Ok(true));
+        assert_eq!(battle.continue_battle(), Ok(()));
+
+        assert_new_logs_eq(
+            &mut battle,
+            &[
+                "switch|player-1|0|Squirtle F|100/100||Squirtle|100|F",
+                "switch|player-2|0|Squirtle F|100/100||Squirtle|100|F",
+                "switch|player-3|0|Bulbasaur F|100/100||Bulbasaur|100|F",
+                "switch|player-4|0|Bulbasaur M|100/100||Bulbasaur|100|M",
+                "residual",
+                "turn|3",
+            ],
+        );
+
+        // Turn 3: each player tries to switch to Mon 3.
+        assert_error_message(
+            battle.set_player_choice("player-1", "switch 3"),
+            "cannot switch: you do not have a Mon in slot 3 to switch to",
+        );
+        assert_error_message(
+            battle.set_player_choice("player-2", "switch 3"),
+            "cannot switch: you do not have a Mon in slot 3 to switch to",
+        );
+        assert_error_message(
+            battle.set_player_choice("player-3", "switch 3"),
+            "cannot switch: you do not have a Mon in slot 3 to switch to",
+        );
+        assert_error_message(
+            battle.set_player_choice("player-4", "switch 3"),
+            "cannot switch: you do not have a Mon in slot 3 to switch to",
+        );
+
+        // Verify other slots fail for good measure.
+        assert_error_message(
+            battle.set_player_choice("player-1", "switch 4"),
+            "cannot switch: you do not have a Mon in slot 4 to switch to",
+        );
+        assert_error_message(
+            battle.set_player_choice("player-1", "switch 5"),
+            "cannot switch: you do not have a Mon in slot 5 to switch to",
+        );
+        assert_error_message(
+            battle.set_player_choice("player-1", "switch 6"),
+            "cannot switch: you do not have a Mon in slot 6 to switch to",
+        );
+
+        // Switch back to Mon 0 (the lead that started the battle).
+        assert_eq!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "switch 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-3", "switch 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-4", "switch 0"), Ok(()));
+
+        assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
+        assert_eq!(battle.ready_to_continue(), Ok(true));
+        assert_eq!(battle.continue_battle(), Ok(()));
+
+        assert_new_logs_eq(
+            &mut battle,
+            &[
+                "switch|player-1|0|Bulbasaur F|100/100||Bulbasaur|100|F",
+                "switch|player-2|0|Bulbasaur F|100/100||Bulbasaur|100|F",
+                "switch|player-3|0|Squirtle F|100/100||Squirtle|100|F",
+                "switch|player-4|0|Squirtle M|100/100||Squirtle|100|M",
+                "residual",
+                "turn|4",
+            ],
+        );
     }
 }
