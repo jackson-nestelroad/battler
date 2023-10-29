@@ -54,7 +54,7 @@ pub struct HitEffect {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SecondaryEffect {
     /// Chance of the effect occurring.
-    pub chance: Option<Fraction>,
+    pub chance: Option<Fraction<u16>>,
     /// Secondary hit effect on the user of the move.
     pub user: HitEffect,
 }
