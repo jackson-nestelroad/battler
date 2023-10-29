@@ -19,7 +19,10 @@ use crate::{
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make storing
 /// references easy, so references must be grabbed dynamically as needed.
-pub struct Context<'b, 'd> {
+pub struct Context<'b, 'd>
+where
+    'd: 'b,
+{
     // We store the battle as a pointer so that we can freely dereference it. Its lifetime is 'b.
     //
     // Here are some implementation notes:
@@ -54,7 +57,7 @@ impl<'b, 'd> Context<'b, 'd> {
     }
 
     /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle {
+    pub fn battle(&self) -> &CoreBattle<'d> {
         unsafe { &*self.battle }
     }
 
@@ -88,7 +91,10 @@ impl<'b, 'd> Context<'b, 'd> {
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make
 /// storing references easy, so references must be grabbed dynamically as needed.
-pub struct PlayerContext<'b, 'd> {
+pub struct PlayerContext<'b, 'd>
+where
+    'd: 'b,
+{
     context: Context<'b, 'd>,
     side: *mut Side,
     foe_side: *mut Side,
@@ -120,7 +126,7 @@ impl<'b, 'd> PlayerContext<'b, 'd> {
     }
 
     /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle {
+    pub fn battle(&self) -> &CoreBattle<'d> {
         self.context.battle()
     }
 
@@ -164,25 +170,36 @@ impl<'b, 'd> PlayerContext<'b, 'd> {
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make
 /// storing references easy, so references must be grabbed dynamically as needed.
-pub struct MonContext<'b, 'd> {
+pub struct MonContext<'b, 'd>
+where
+    'd: 'b,
+{
     context: PlayerContext<'b, 'd>,
+    mon_handle: MonHandle,
     mon: *mut Mon,
 }
 
 impl<'b, 'd> MonContext<'b, 'd> {
     /// Creates a new [`MonContext`], which contains a reference to a [`CoreBattle`] and a
     /// [`Mon`].
-    pub(in crate::battle) fn new(context: Context<'b, 'd>, mon: MonHandle) -> Result<Self, Error> {
+    pub(in crate::battle) fn new(
+        context: Context<'b, 'd>,
+        mon_handle: MonHandle,
+    ) -> Result<Self, Error> {
         // See comments on [`Context::new`] for why this is safe.
         let mon: &mut Mon =
-            unsafe { mem::transmute(&mut *context.battle().registry.mon_mut(mon)?) };
+            unsafe { mem::transmute(&mut *context.battle().registry.mon_mut(mon_handle)?) };
         let player = mon.player;
         let context = PlayerContext::new(context, player)?;
-        Ok(Self { context, mon })
+        Ok(Self {
+            context,
+            mon_handle,
+            mon,
+        })
     }
 
     /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle {
+    pub fn battle(&self) -> &CoreBattle<'d> {
         self.context.battle()
     }
 
@@ -219,6 +236,11 @@ impl<'b, 'd> MonContext<'b, 'd> {
     /// Returns a mutable reference to the Mon's [`Player`].
     pub fn player_mut(&mut self) -> &mut Player {
         self.context.player_mut()
+    }
+
+    /// Returns the [`MonHandle`] for this [`Mon`].
+    pub fn mon_handle(&self) -> MonHandle {
+        self.mon_handle
     }
 
     /// Returns a reference to the [`Mon`].
