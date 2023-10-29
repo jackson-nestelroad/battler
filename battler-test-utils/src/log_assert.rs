@@ -8,6 +8,7 @@ fn log_is_random(log: &str) -> bool {
 }
 
 /// Asserts that new logs in the battle are equal to the given logs.
+#[track_caller]
 pub fn assert_new_logs_eq(battle: &mut CoreBattle, want: &[&str]) {
     let got = battle
         .new_logs()
