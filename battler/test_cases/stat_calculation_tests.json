@@ -1,0 +1,110 @@
+{
+  "garchomp_bulbapedia": {
+    "level": 78,
+    "nature": "Adamant",
+    "base_stats": {
+      "hp": 108,
+      "atk": 130,
+      "def": 95,
+      "spa": 80,
+      "spd": 85,
+      "spe": 102
+    },
+    "ivs": {
+      "hp": 24,
+      "atk": 12,
+      "def": 30,
+      "spa": 16,
+      "spd": 23,
+      "spe": 5
+    },
+    "evs": {
+      "hp": 74,
+      "atk": 190,
+      "def": 91,
+      "spa": 48,
+      "spd": 84,
+      "spe": 23
+    },
+    "expected": {
+      "hp": 289,
+      "atk": 278,
+      "def": 193,
+      "spa": 135,
+      "spd": 171,
+      "spe": 171
+    }
+  },
+  "blissey_max_hp": {
+    "level": 100,
+    "nature": "Bold",
+    "base_stats": {
+      "hp": 255,
+      "atk": 10,
+      "def": 10,
+      "spa": 75,
+      "spd": 135,
+      "spe": 55
+    },
+    "ivs": {
+      "hp": 31,
+      "atk": 31,
+      "def": 31,
+      "spa": 31,
+      "spd": 31,
+      "spe": 31
+    },
+    "evs": {
+      "hp": 252,
+      "atk": 0,
+      "def": 252,
+      "spa": 0,
+      "spd": 4,
+      "spe": 0
+    },
+    "expected": {
+      "hp": 714,
+      "atk": 50,
+      "def": 130,
+      "spa": 186,
+      "spd": 307,
+      "spe": 146
+    }
+  },
+  "blissey_low_ivs": {
+    "level": 100,
+    "nature": "Bold",
+    "base_stats": {
+      "hp": 255,
+      "atk": 10,
+      "def": 10,
+      "spa": 75,
+      "spd": 135,
+      "spe": 55
+    },
+    "ivs": {
+      "hp": 0,
+      "atk": 0,
+      "def": 0,
+      "spa": 0,
+      "spd": 0,
+      "spe": 0
+    },
+    "evs": {
+      "hp": 252,
+      "atk": 0,
+      "def": 252,
+      "spa": 0,
+      "spd": 4,
+      "spe": 0
+    },
+    "expected": {
+      "hp": 683,
+      "atk": 22,
+      "def": 96,
+      "spa": 155,
+      "spd": 276,
+      "spe": 115
+    }
+  }
+}

@@ -4,6 +4,7 @@ mod battle_builder;
 mod battle_options;
 mod battle_type;
 mod boosts;
+mod calculations;
 mod context;
 mod core_battle;
 mod core_battle_actions;
@@ -42,6 +43,10 @@ pub use boosts::{
     BoostMap,
     BoostTable,
     PartialBoostTable,
+};
+pub use calculations::{
+    apply_nature_to_stats,
+    calculate_mon_stats,
 };
 pub use context::{
     Context,
