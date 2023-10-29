@@ -108,7 +108,7 @@ mod switch_bad_input_test {
         let mut battle = make_battle(&data).unwrap();
         assert_eq!(battle.start(), Ok(()));
         assert_error_message(
-            battle.set_player_choice("player-1", "switch 2, switch 3, switch 4"),
+            battle.set_player_choice("player-1", "switch 2; switch 3; switch 4"),
             "cannot switch: you sent more choices than active Mons",
         );
     }
@@ -172,7 +172,7 @@ mod switch_bad_input_test {
             "cannot switch: you cannot switch to an active Mon",
         );
         assert_error_message(
-            battle.set_player_choice("player-1", "switch 2, switch 1"),
+            battle.set_player_choice("player-1", "switch 2; switch 1"),
             "cannot switch: you cannot switch to an active Mon",
         );
     }
@@ -183,7 +183,7 @@ mod switch_bad_input_test {
         let mut battle = make_battle(&data).unwrap();
         assert_eq!(battle.start(), Ok(()));
         assert_error_message(
-            battle.set_player_choice("player-1", "switch 2, switch 2"),
+            battle.set_player_choice("player-1", "switch 2; switch 2"),
             "cannot switch: the Mon in slot 2 can only switch in once",
         );
     }

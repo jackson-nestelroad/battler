@@ -397,7 +397,7 @@ impl Player {
 
         Player::clear_choice(context);
 
-        for choice in input.split(",").map(|str| str.trim()) {
+        for choice in input.split(";").map(|str| str.trim()) {
             let (choice, data) = split_once_optional(choice, " ");
             match choice {
                 "team" => match Player::choose_team(context, data) {
