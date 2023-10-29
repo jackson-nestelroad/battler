@@ -36,12 +36,12 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
         .wrap_error_with_format(format_args!(
             "expected {position} to be a valid index to active Mons"
         ))?;
-    match prev {
-        Some(mon) => todo!("Mon switching out is unimplemented"),
-        None => {
-            Mon::switch_in(context, position);
-        }
+    if let Some(mon) = prev {
+        let mon = context.battle().registry.mon_mut(mon)?;
+        mon.switch_out();
     }
+    Mon::switch_in(context, position);
+    context.player_mut().active[position] = Some(context.mon_handle());
 
     let event = battle_event!("switch", Mon::active_details(context));
     context.battle_mut().log(event);

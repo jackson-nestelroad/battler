@@ -1,14 +1,21 @@
 use crate::{
-    battle::MonContext,
+    battle::{
+        calculate_mon_stats,
+        MonContext,
+    },
     common::{
         Error,
+        Fraction,
         Id,
         Identifiable,
         MaybeOwnedString,
     },
     dex::Dex,
     log::BattleLoggable,
-    mons::Gender,
+    mons::{
+        Gender,
+        StatTable,
+    },
     moves::MoveTarget,
     teams::MonData,
 };
@@ -35,18 +42,22 @@ impl BattleLoggable for PublicMonDetails<'_> {
 
 /// Public details for an active [`Mon`], which are shared to both sides of a battle when the Mon
 /// appears in the battle.
-pub struct ActiveMonDetals<'d> {
+pub struct ActiveMonDetails<'d> {
     pub public_details: PublicMonDetails<'d>,
     pub name: &'d str,
     pub player_id: &'d str,
     pub position: usize,
+    pub health: String,
+    pub status: String,
 }
 
-impl BattleLoggable for ActiveMonDetals<'_> {
+impl BattleLoggable for ActiveMonDetails<'_> {
     fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>) {
         items.push(self.player_id.into());
         items.push(self.position.to_string().into());
         items.push(self.name.into());
+        items.push(self.health.as_str().into());
+        items.push(self.status.as_str().into());
         self.public_details.log(items);
     }
 }
@@ -69,13 +80,22 @@ pub struct Mon {
     pub data: MonData,
     pub player: usize,
 
+    hp: u16,
+    max_hp: u16,
+    speed: u16,
     active: bool,
     active_turns: u32,
     active_move_actions: u32,
-    position: usize,
+    pub position: usize,
+    base_stored_stats: StatTable,
+    stats: StatTable,
     base_move_slots: Vec<MoveSlot>,
     move_slots: Vec<MoveSlot>,
     ability_priority: u32,
+
+    pub fainted: bool,
+    pub needs_switch: bool,
+    pub trapped: bool,
 }
 
 // Block for getters.
@@ -113,14 +133,85 @@ impl Mon {
         Ok(Self {
             data,
             player: usize::MAX,
+            hp: 0,
+            max_hp: 0,
+            speed: 0,
             active: false,
             active_turns: 0,
             active_move_actions: 0,
             position: 0,
+            base_stored_stats: StatTable::default(),
+            stats: StatTable::default(),
             base_move_slots,
             move_slots,
             ability_priority: 0,
+            fainted: false,
+            needs_switch: false,
+            trapped: false,
         })
+    }
+
+    /// Initializes a Mon for battle.
+    ///
+    /// This *must* be called at the very beginning of a battle, as it sets up important fields on
+    /// the Mon, such as its stats.
+    pub fn initialize(context: &mut MonContext) -> Result<(), Error> {
+        Mon::clear_volatile(context)?;
+        let mon = context.mon_mut();
+        mon.hp = mon.max_hp;
+        Ok(())
+    }
+
+    fn clear_volatile(context: &mut MonContext) -> Result<(), Error> {
+        context.mon_mut().needs_switch = false;
+        let species = context.mon().data.species.clone();
+        Mon::set_species(context, species, false)?;
+        Ok(())
+    }
+
+    fn set_species(
+        context: &mut MonContext,
+        species: String,
+        transform: bool,
+    ) -> Result<(), Error> {
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get(species.as_str())
+            .into_result()?;
+        let mut stats = calculate_mon_stats(&species.data.base_stats, &context.mon().data);
+        // Forced max HP always overrides stat calculations.
+        if let Some(max_hp) = species.data.max_hp {
+            stats.hp = max_hp;
+        }
+
+        let mon = context.mon_mut();
+        // Max HP has not yet been set (beginning of the battle).
+        if mon.max_hp == 0 {
+            mon.max_hp = stats.hp;
+        }
+        // Transformations should keep the original "base" stats for the Mon.
+        if !transform {
+            mon.base_stored_stats = stats.clone();
+        }
+        mon.stats = mon
+            .stats
+            .entries()
+            .map(|(stat, _)| (stat, stats.get(stat)))
+            .collect();
+        mon.speed = mon.stats.spe;
+        Ok(())
+    }
+
+    fn health(&self) -> String {
+        if self.hp == 0 || self.max_hp == 0 {
+            return "0".to_owned();
+        }
+        let ratio = Fraction::new(self.hp, self.max_hp);
+        // Always round up to avoid returning 0 when the Mon is not fainted.
+        let percentage = (ratio * 100).ceil();
+        format!("{percentage}/100")
     }
 
     /// Returns the public details for the Mon.
@@ -134,13 +225,15 @@ impl Mon {
     }
 
     /// Returns the public details for the active Mon.
-    pub fn active_details<'b>(context: &'b MonContext) -> ActiveMonDetals<'b> {
-        // TODO: This should contain HP information.
-        ActiveMonDetals {
-            public_details: context.mon().public_details(),
-            name: &context.mon().data.name,
+    pub fn active_details<'b>(context: &'b MonContext) -> ActiveMonDetails<'b> {
+        let mon = context.mon();
+        ActiveMonDetails {
+            public_details: mon.public_details(),
+            name: &mon.data.name,
             player_id: context.player().id(),
-            position: context.mon().position,
+            position: mon.position,
+            health: mon.health(),
+            status: "".to_owned(),
         }
     }
 
@@ -157,5 +250,11 @@ impl Mon {
         let ability_priority = context.battle_mut().next_ability_priority();
         let mon = context.mon_mut();
         mon.ability_priority = ability_priority
+    }
+
+    /// Switches the Mon out of hte given position for the player.
+    pub fn switch_out(&mut self) {
+        self.active = false;
+        self.position = 0;
     }
 }

@@ -10,6 +10,14 @@ pub struct TeamAction {
     pub priority: i32,
 }
 
+/// A switch action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SwitchAction {
+    pub instant: bool,
+    pub mon: MonHandle,
+    pub position: usize,
+}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -22,6 +30,7 @@ pub enum Action {
     BeforeTurn,
     Residual,
     Team(TeamAction),
+    Switch(SwitchAction),
 }
 
 impl Action {
@@ -29,6 +38,13 @@ impl Action {
         match self {
             Self::Team(_) => 1,
             Self::Start => 2,
+            Self::Switch(action) => {
+                if action.instant {
+                    3
+                } else {
+                    200
+                }
+            }
             Self::BeforeTurn => 4,
             Self::Pass => 200,
             Self::Residual => 300,

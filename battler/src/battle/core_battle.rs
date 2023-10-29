@@ -24,6 +24,7 @@ use crate::{
         Field,
         Mon,
         MonContext,
+        MonHandle,
         Player,
         PlayerContext,
         PseudoRandomNumberGenerator,
@@ -212,6 +213,22 @@ impl<'d> CoreBattle<'d> {
             .map(|mon| self.registry.mon(*mon))
     }
 
+    pub(crate) fn all_mon_handles_on_side<'b>(
+        &'b self,
+        side: &Side,
+    ) -> impl Iterator<Item = MonHandle> + 'b {
+        self.players_on_side(side.index())
+            .map(|player| player.mons.iter())
+            .flatten()
+            .cloned()
+    }
+
+    pub(crate) fn all_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
+        self.sides()
+            .map(|side| self.all_mon_handles_on_side(side))
+            .flatten()
+    }
+
     pub(crate) fn all_mons(&self) -> impl Iterator<Item = Result<&Mon, Error>> {
         self.sides()
             .map(|side| self.all_mons_on_side(side))
@@ -387,6 +404,11 @@ impl<'d> CoreBattle<'d> {
             let mut context = PlayerContext::new(self.context(), player)?;
             Player::set_index(&mut context, player)?;
         }
+        let mon_handles = self.all_mon_handles().collect::<Vec<_>>();
+        for mon_handle in mon_handles {
+            let mut context = MonContext::new(self.context(), mon_handle)?;
+            Mon::initialize(&mut context)?;
+        }
         Ok(())
     }
 
@@ -443,10 +465,7 @@ impl<'d> CoreBattle<'d> {
 
     fn make_request(&mut self, request_type: RequestType) -> Result<(), Error> {
         self.request = Some(request_type);
-        for player in self.players_mut() {
-            player.clear_request();
-            player.clear_choice();
-        }
+        self.clear_requests()?;
 
         for player in 0..self.players.len() {
             let mut context = PlayerContext::new(self.context(), player)?;
@@ -466,12 +485,14 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
-    fn clear_requests(&mut self) {
+    fn clear_requests(&mut self) -> Result<(), Error> {
         self.request = None;
-        for player in self.players_mut() {
-            player.clear_request();
-            player.clear_choice();
+        for player in 0..self.players.len() {
+            let mut context = PlayerContext::new(self.context(), player)?;
+            context.player_mut().clear_request();
+            Player::clear_choice(&mut context);
         }
+        Ok(())
     }
 
     fn commit_choices(&mut self) -> Result<(), Error> {
@@ -484,7 +505,7 @@ impl<'d> CoreBattle<'d> {
         for choice in choices {
             BattleQueue::add_actions(&mut context, choice.actions.into_iter());
         }
-        self.clear_requests();
+        self.clear_requests()?;
 
         if self.engine_options.auto_continue {
             self.continue_battle_internal()?;
@@ -493,7 +514,6 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn continue_battle_internal(&mut self) -> Result<(), Error> {
-        self.log(battle_event!());
         self.log_current_time();
 
         self.request = None;
@@ -552,6 +572,10 @@ impl<'d> CoreBattle<'d> {
                 }
                 context.player_mut().mons.push(action.mon);
             }
+            Action::Switch(action) => {
+                let mut context = MonContext::new(self.context(), action.mon)?;
+                core_battle_actions::switch_in(&mut context, action.position)?;
+            }
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
@@ -596,7 +620,7 @@ impl<'d> CoreBattle<'d> {
         }
 
         self.ended = true;
-        self.clear_requests();
+        self.clear_requests()?;
         Ok(())
     }
 }

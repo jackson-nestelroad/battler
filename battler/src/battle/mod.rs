@@ -56,7 +56,7 @@ pub use context::{
 pub use core_battle::CoreBattle;
 pub use field::Field;
 pub use mon::{
-    ActiveMonDetals,
+    ActiveMonDetails,
     Mon,
     PublicMonDetails,
 };
