@@ -50,7 +50,7 @@ pub enum Stat {
 pub type StatMap<T> = FastHashMap<Stat, T>;
 
 /// A table of stat values.
-pub type PartialStatTable = StatMap<u8>;
+pub type PartialStatTable = StatMap<u16>;
 
 fn next_stat_for_iterator(stat: Stat) -> Option<Stat> {
     match stat {
@@ -140,6 +140,7 @@ impl StatTable {
         StatTableEntries::new(self)
     }
 
+    /// Creates an iterator over all stat values.
     pub fn values<'s>(&'s self) -> impl Iterator<Item = u16> + 's {
         self.entries().map(|(_, value)| value)
     }
@@ -152,6 +153,17 @@ impl StatTable {
             + self.spa as u32
             + self.spd as u32
             + self.spe as u32
+    }
+
+    /// Copies the stat tale without the HP stat.
+    pub fn without_hp(&self) -> PartialStatTable {
+        PartialStatTable::from_iter([
+            (Stat::Atk, self.atk),
+            (Stat::Def, self.def),
+            (Stat::SpAtk, self.spa),
+            (Stat::SpDef, self.spd),
+            (Stat::Spe, self.spe),
+        ])
     }
 }
 
