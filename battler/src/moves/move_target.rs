@@ -12,7 +12,7 @@ use serde_string_enum::{
 ///     - "Side" - The side of a battle, not any particular Mon on that side.
 ///     - "Team" - All unfainted Mons on a team.
 ///     - "User" - The user of a move.
-#[derive(Debug, Clone, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
 pub enum MoveTarget {
     /// An adjacent ally.
     #[string = "AdjacentAlly"]
