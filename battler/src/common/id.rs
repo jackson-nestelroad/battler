@@ -17,10 +17,7 @@ use serde::{
     Serialize,
 };
 
-use crate::common::{
-    Error,
-    MaybeOwnedString,
-};
+use crate::common::Error;
 
 /// An ID for a resource.
 ///
@@ -28,7 +25,7 @@ use crate::common::{
 ///
 /// A futher optimization would be to allocate strings in an arena for memory proximity.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Id(MaybeOwnedString<'static>);
+pub struct Id(Cow<'static, str>);
 
 /// A reference to an ID for a resource.
 ///
@@ -38,7 +35,7 @@ struct IdRef<'s>(&'s str);
 
 impl Id {
     pub(crate) fn from_known(value: &'static str) -> Self {
-        Self(MaybeOwnedString::Unowned(value))
+        Self(Cow::Borrowed(value))
     }
 
     #[allow(unused)]
@@ -103,6 +100,12 @@ impl FromStr for Id {
     }
 }
 
+impl PartialEq<str> for Id {
+    fn eq(&self, other: &str) -> bool {
+        self.as_ref().eq(other)
+    }
+}
+
 impl From<IdRef<'_>> for Id {
     fn from(value: IdRef) -> Self {
         Id::from(value.0.to_owned())
@@ -162,8 +165,8 @@ fn normalize_id(id: &str) -> Id {
         // There is an optimization to be done here. If this is a &'static str, we can save it
         // without owning it. However, this code is shared for all &str, so we cannot make the
         // distinction as is.
-        Cow::Borrowed(str) => Id(MaybeOwnedString::Owned(str.to_owned())),
-        Cow::Owned(str) => Id(MaybeOwnedString::Owned(str)),
+        Cow::Borrowed(str) => Id(Cow::Owned(str.to_owned())),
+        Cow::Owned(str) => Id(Cow::Owned(str)),
     }
 }
 

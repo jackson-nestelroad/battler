@@ -1,25 +1,24 @@
 use std::{
+    borrow::Cow,
     fmt::Display,
     mem,
 };
 
 use itertools::Itertools;
 
-use crate::common::MaybeOwnedString;
-
 /// Trait for objects that can be added directly to the battle log.
 ///
 /// Automatically implemented for types that implement [`Display`].
 pub trait BattleLoggable {
-    fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>);
+    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>);
 }
 
 impl<T> BattleLoggable for T
 where
     T: Display,
 {
-    fn log(&self, parts: &mut Vec<MaybeOwnedString>) {
-        parts.push(MaybeOwnedString::from(format!("{self}")))
+    fn log(&self, parts: &mut Vec<Cow<'_, str>>) {
+        parts.push(Cow::Owned(format!("{self}")))
     }
 }
 
@@ -96,16 +95,14 @@ impl EventLog {
 #[cfg(test)]
 mod event_log_tests {
     use std::{
+        borrow::Cow,
         fmt,
         fmt::Display,
     };
 
-    use crate::{
-        common::MaybeOwnedString,
-        log::{
-            BattleLoggable,
-            EventLog,
-        },
+    use crate::log::{
+        BattleLoggable,
+        EventLog,
     };
 
     fn last_log(log: &mut EventLog) -> &str {
@@ -156,7 +153,7 @@ mod event_log_tests {
     }
 
     impl BattleLoggable for CustomDataWithLogImplementation {
-        fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>) {
+        fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
             items.push(format!("{}", self.a).into());
             items.push("other".into());
             items.push(self.b.as_str().into());

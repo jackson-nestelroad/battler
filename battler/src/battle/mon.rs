@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::{
     battle::{
         calculate_mon_stats,
@@ -8,7 +9,6 @@ use crate::{
         Fraction,
         Id,
         Identifiable,
-        MaybeOwnedString,
     },
     dex::Dex,
     log::BattleLoggable,
@@ -30,7 +30,7 @@ pub struct PublicMonDetails<'d> {
 }
 
 impl BattleLoggable for PublicMonDetails<'_> {
-    fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>) {
+    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
         items.push(self.species_name.into());
         items.push(self.level.to_string().into());
         items.push(self.gender.to_string().into());
@@ -52,7 +52,7 @@ pub struct ActiveMonDetails<'d> {
 }
 
 impl BattleLoggable for ActiveMonDetails<'_> {
-    fn log<'s>(&'s self, items: &mut Vec<MaybeOwnedString<'s>>) {
+    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
         items.push(self.player_id.into());
         items.push(self.position.to_string().into());
         items.push(self.name.into());

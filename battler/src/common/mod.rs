@@ -4,11 +4,16 @@ mod fraction;
 mod hash;
 mod id;
 mod lookup_result;
-mod maybe_owned_string;
+mod maybe_owned;
 mod strings;
 mod test_util;
 
 pub use captures::Captures;
+#[cfg(test)]
+pub use error::{
+    assert_error_message,
+    assert_error_message_contains,
+};
 pub use error::{
     Error,
     WrapResultError,
@@ -26,7 +31,10 @@ pub use id::{
     Identifiable,
 };
 pub use lookup_result::LookupResult;
-pub use maybe_owned_string::MaybeOwnedString;
+pub use maybe_owned::{
+    MaybeOwned,
+    MaybeOwnedMut,
+};
 pub use strings::split_once_optional;
 #[cfg(test)]
 pub use test_util::{
