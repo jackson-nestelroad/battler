@@ -1,7 +1,9 @@
+mod battle_io_verifier;
 mod error_assert;
 mod log_assert;
 mod test_battle_builder;
 
+pub use battle_io_verifier::BattleIoVerifier;
 pub use error_assert::{
     assert_error_message,
     assert_error_message_contains,

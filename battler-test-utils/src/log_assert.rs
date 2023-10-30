@@ -1,6 +1,6 @@
 use battler::battle::{
     Battle,
-    CoreBattle,
+    BattleOptions,
 };
 
 fn log_is_random(log: &str) -> bool {
@@ -9,7 +9,11 @@ fn log_is_random(log: &str) -> bool {
 
 /// Asserts that new logs in the battle are equal to the given logs.
 #[track_caller]
-pub fn assert_new_logs_eq(battle: &mut CoreBattle, want: &[&str]) {
+pub fn assert_new_logs_eq<'d, B, O>(battle: &mut B, want: &[&str])
+where
+    O: BattleOptions,
+    B: Battle<'d, O>,
+{
     let got = battle
         .new_logs()
         .filter(|log| !log_is_random(log))
