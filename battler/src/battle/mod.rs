@@ -46,6 +46,7 @@ pub use boosts::{
 };
 pub use calculations::{
     apply_nature_to_stats,
+    calculate_hidden_power_type,
     calculate_mon_stats,
 };
 pub use context::{
@@ -58,11 +59,15 @@ pub use field::Field;
 pub use mon::{
     ActiveMonDetails,
     Mon,
+    MonMoveRequest,
+    MonMoveSlotData,
+    MonTeamRequestData,
     PublicMonDetails,
 };
 pub use player::{
     Player,
     PlayerData,
+    PlayerRequestData,
 };
 pub use prng::PseudoRandomNumberGenerator;
 pub use queue::BattleQueue;
@@ -75,6 +80,8 @@ pub use request::{
     Request,
     RequestType,
     SwitchRequest,
+    TeamPreviewRequest,
+    TurnRequest,
 };
 pub use side::{
     Side,

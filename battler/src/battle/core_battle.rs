@@ -31,6 +31,8 @@ use crate::{
         Request,
         RequestType,
         Side,
+        TeamPreviewRequest,
+        TurnRequest,
     },
     battle_event,
     battler_error,
@@ -150,6 +152,14 @@ impl<'d> CoreBattle<'d> {
 impl<'d> CoreBattle<'d> {
     fn context<'b>(&'b mut self) -> Context<'b, 'd> {
         Context::new(self)
+    }
+
+    fn player_context<'b>(&'b mut self, player: usize) -> Result<PlayerContext<'b, 'd>, Error> {
+        PlayerContext::new(self.context(), player)
+    }
+
+    fn mon_context<'b>(&'b mut self, mon: MonHandle) -> Result<MonContext<'b, 'd>, Error> {
+        MonContext::new(self.context(), mon)
     }
 
     pub(crate) fn sides(&self) -> impl Iterator<Item = &Side> {
@@ -380,7 +390,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
 
     fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
         let player = self.player_index_by_id(player_id)?;
-        let mut context = PlayerContext::new(self.context(), player)?;
+        let mut context = self.player_context(player)?;
         Player::make_choice(&mut context, input)?;
         context
             .battle_mut()
@@ -401,12 +411,12 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
 impl<'d> CoreBattle<'d> {
     fn initialize(&mut self) -> Result<(), Error> {
         for player in 0..self.players.len() {
-            let mut context = PlayerContext::new(self.context(), player)?;
+            let mut context = self.player_context(player)?;
             Player::set_index(&mut context, player)?;
         }
         let mon_handles = self.all_mon_handles().collect::<Vec<_>>();
         for mon_handle in mon_handles {
-            let mut context = MonContext::new(self.context(), mon_handle)?;
+            let mut context = self.mon_context(mon_handle)?;
             Mon::initialize(&mut context)?;
         }
         Ok(())
@@ -455,10 +465,41 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn get_request_for_player(_: &mut PlayerContext, request_type: RequestType) -> Request {
+    fn get_request_for_player(
+        &mut self,
+        player: usize,
+        request_type: RequestType,
+    ) -> Result<Request, Error> {
         match request_type {
-            RequestType::TeamPreview => Request::TeamPreview,
-            RequestType::Turn => Request::Turn,
+            RequestType::TeamPreview => {
+                let max_team_size = self
+                    .format
+                    .rules
+                    .numeric_rules
+                    .picked_team_size
+                    .map(|size| size as usize);
+                let context = self.player_context(player)?;
+                Ok(Request::TeamPreview(TeamPreviewRequest {
+                    max_team_size,
+                    player: Player::request_data(&context)?,
+                }))
+            }
+            RequestType::Turn => {
+                let context = self.player_context(player)?;
+                let active = Player::active_mon_handles(&context).collect::<Vec<_>>();
+                let active = active
+                    .into_iter()
+                    .map(|mon| {
+                        let context = self.mon_context(mon)?;
+                        Mon::move_request(&context)
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let context = self.player_context(player)?;
+                Ok(Request::Turn(TurnRequest {
+                    active,
+                    player: Player::request_data(&context)?,
+                }))
+            }
             RequestType::Switch => todo!("switch requests are not yet implemented"),
         }
     }
@@ -468,8 +509,8 @@ impl<'d> CoreBattle<'d> {
         self.clear_requests()?;
 
         for player in 0..self.players.len() {
-            let mut context = PlayerContext::new(self.context(), player)?;
-            let request = Self::get_request_for_player(&mut context, request_type);
+            let request = self.get_request_for_player(player, request_type)?;
+            let mut context = self.player_context(player)?;
             context.player_mut().make_request(request);
         }
         Ok(())
@@ -477,7 +518,7 @@ impl<'d> CoreBattle<'d> {
 
     fn all_player_choices_done(&mut self) -> Result<bool, Error> {
         for player in 0..self.players.len() {
-            let context = PlayerContext::new(self.context(), player)?;
+            let context = self.player_context(player)?;
             if !Player::choice_done(&context) {
                 return Ok(false);
             }
@@ -488,7 +529,7 @@ impl<'d> CoreBattle<'d> {
     fn clear_requests(&mut self) -> Result<(), Error> {
         self.request = None;
         for player in 0..self.players.len() {
-            let mut context = PlayerContext::new(self.context(), player)?;
+            let mut context = self.player_context(player)?;
             context.player_mut().clear_request();
             Player::clear_choice(&mut context);
         }
@@ -560,20 +601,20 @@ impl<'d> CoreBattle<'d> {
                         })
                         .collect::<Vec<_>>();
                 for (position, mon) in switch_ins {
-                    let mut context = MonContext::new(self.context(), mon)?;
+                    let mut context = self.mon_context(mon)?;
                     core_battle_actions::switch_in(&mut context, position)?;
                 }
                 self.mid_turn = true;
             }
             Action::Team(action) => {
-                let mut context = MonContext::new(self.context(), action.mon)?;
+                let mut context = self.mon_context(action.mon)?;
                 if action.index == 0 {
                     context.player_mut().mons.clear();
                 }
                 context.player_mut().mons.push(action.mon);
             }
             Action::Switch(action) => {
-                let mut context = MonContext::new(self.context(), action.mon)?;
+                let mut context = self.mon_context(action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position)?;
             }
             Action::Pass => (),

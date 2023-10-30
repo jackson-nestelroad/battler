@@ -14,7 +14,7 @@ use crate::{
 
 /// Switches a Mon into the given position.
 pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error> {
-    if context.mon_mut().active() {
+    if context.mon_mut().active {
         context
             .battle_mut()
             .hint("A switch failed because the Mon trying to switch in is already in.");

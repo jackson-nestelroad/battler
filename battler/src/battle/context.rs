@@ -198,6 +198,11 @@ impl<'b, 'd> MonContext<'b, 'd> {
         })
     }
 
+    /// Uses the [`MonContext`] as a [`PlayerContext`].
+    pub fn as_player_context(&self) -> &PlayerContext<'b, 'd> {
+        &self.context
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'d> {
         self.context.battle()

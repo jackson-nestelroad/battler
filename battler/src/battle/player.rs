@@ -19,6 +19,7 @@ use crate::{
         BattleType,
         Mon,
         MonHandle,
+        MonTeamRequestData,
         PlayerContext,
         Request,
         RequestType,
@@ -93,6 +94,61 @@ impl ChoiceState {
     }
 }
 
+/// A move choice for a single Mon on a single turn.
+#[derive(Debug, PartialEq, Eq)]
+struct MoveChoice<'s> {
+    pub name: &'s str,
+    pub target: Option<usize>,
+    pub mega: bool,
+}
+
+impl<'s> MoveChoice<'s> {
+    /// Parses a new [`MoveChoice`] from a string.
+    ///
+    /// For example, `move Tackle, 2, mega` says to use the move Tackle against the Mon in position
+    /// 2 while also Mega Evolving.
+    ///
+    /// The `move` prefix should already be trimmed off.
+    pub fn new(data: &'s str) -> Result<MoveChoice<'s>, Error> {
+        let args = data.split(',').map(|str| str.trim()).collect::<Vec<&str>>();
+        let mut index = 0;
+        let name = args
+            .get(index)
+            .wrap_error_with_message("missing move name")?;
+        if name.is_empty() {
+            return Err(battler_error!("missing move name"))?;
+        }
+        let mut choice = Self {
+            name,
+            target: None,
+            mega: false,
+        };
+        index += 1;
+
+        if let Some(target) = args.get(index).and_then(|target| target.parse().ok()) {
+            choice.target = Some(target);
+            index += 1;
+        }
+
+        match args.get(index).cloned() {
+            Some("mega") => {
+                choice.mega = true;
+            }
+            Some(str) => return Err(battler_error!("invalid option in move choice: {str}")),
+            None => (),
+        }
+
+        Ok(choice)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PlayerRequestData {
+    pub name: String,
+    pub id: String,
+    pub mons: Vec<MonTeamRequestData>,
+}
+
 /// A single player of a battle.
 ///
 /// See [`PlayerData`] for an explanation of what a player represents.
@@ -133,6 +189,7 @@ impl Player {
     }
 }
 
+// Construction and initialization logic.
 impl Player {
     /// Creates a new [`Player`]` instance from [`PlayerData`].
     pub fn new(
@@ -172,7 +229,10 @@ impl Player {
         }
         Ok(())
     }
+}
 
+// Basic getters.
+impl Player {
     /// Returns the active request for the player.
     pub fn active_request(&self) -> Option<Request> {
         if !self.choice.fulfilled {
@@ -185,39 +245,6 @@ impl Player {
     /// Returns the number of Mons left on the Player.
     pub fn mons_left(&self) -> usize {
         self.mons_left
-    }
-
-    /// Makes a new request on the player.
-    pub fn make_request(&mut self, request: Request) {
-        self.request = Some(request);
-    }
-
-    /// Clears any active request.
-    pub fn clear_request(&mut self) {
-        self.request = None;
-    }
-
-    /// Clears any active choice.
-    pub fn clear_choice(context: &mut PlayerContext) {
-        let mut choice = ChoiceState::new();
-        if let Some(RequestType::Switch) = context.player().request_type() {
-            let can_switch_out = Player::active_mons(context)
-                .filter_ok(|mon| mon.needs_switch)
-                .count();
-            let can_switch_in = Player::inactive_mons(context)
-                .filter_ok(|mon| !mon.fainted)
-                .count();
-            let switches = can_switch_out.min(can_switch_in);
-            let passes = can_switch_out - switches;
-            choice.forced_switches_left = switches;
-            choice.forced_passes_left = passes;
-        }
-        context.player_mut().choice = choice;
-    }
-
-    /// Takes the choice from the player, resetting it in the process.
-    pub fn take_choice(&mut self) -> ChoiceState {
-        mem::replace(&mut self.choice, ChoiceState::new())
     }
 
     pub fn request_type(&self) -> Option<RequestType> {
@@ -247,13 +274,16 @@ impl Player {
                 Some(mon_handle) => Some(context.battle().registry.mon(*mon_handle)),
                 None => None,
             })
-        // .filter_map(|active_slot| match active_slot {
-        //     Some(mon_handle) => Some(context.battle().registry.mon(*mon_handle)),
-        //     None => None,
-        // })
-        // .cloned()
-        // .filter_map(|active_slot| active_slot)
-        // .map(move |mon_handle| context.battle().registry.mon(mon_handle))
+    }
+
+    pub fn active_mon_handles<'b, 'd>(
+        context: &'b PlayerContext<'b, 'd>,
+    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + 'b {
+        context
+            .player()
+            .active
+            .iter()
+            .filter_map(|mon_handle| *mon_handle)
     }
 
     pub fn inactive_mons<'b, 'd>(
@@ -268,13 +298,41 @@ impl Player {
             .map(|mon_handle| context.battle().registry.mon(mon_handle))
     }
 
+    pub fn mons<'b, 'd>(
+        context: &'b PlayerContext<'b, 'd>,
+    ) -> impl Iterator<Item = Result<&'b Mon, Error>> + Captures<'d> + 'b {
+        context
+            .player()
+            .mons
+            .iter()
+            .cloned()
+            .map(|mon_handle| context.battle().registry.mon(mon_handle))
+    }
+
+    pub fn switchable_mons<'b, 'd>(
+        context: &'b PlayerContext<'b, 'd>,
+    ) -> impl Iterator<Item = Result<&'b Mon, Error>> + Captures<'d> + 'b {
+        Self::mons(context).filter_ok(|mon| !mon.fainted)
+    }
+
+    pub fn request_data(context: &PlayerContext) -> Result<PlayerRequestData, Error> {
+        let player = context.player();
+        Ok(PlayerRequestData {
+            name: player.name.clone(),
+            id: player.id.clone(),
+            mons: Self::mons(context)
+                .map_ok(|mon| mon.team_request_data())
+                .collect::<Result<_, _>>()?,
+        })
+    }
+
     /// Is the player's choice done?
     pub fn choice_done(context: &PlayerContext) -> bool {
         let player = context.player();
         match player.request_type() {
             None => true,
             Some(RequestType::TeamPreview) => {
-                player.choice.actions.len() >= Player::picked_team_size(context)
+                player.choice.actions.len() >= Self::picked_team_size(context)
             }
             _ => {
                 if player.choice.forced_switches_left > 0 {
@@ -283,6 +341,42 @@ impl Player {
                 player.choice.actions.len() >= player.active.len()
             }
         }
+    }
+}
+
+// Battle logic.
+impl Player {
+    /// Makes a new request on the player.
+    pub fn make_request(&mut self, request: Request) {
+        self.request = Some(request);
+    }
+
+    /// Clears any active request.
+    pub fn clear_request(&mut self) {
+        self.request = None;
+    }
+
+    /// Clears any active choice.
+    pub fn clear_choice(context: &mut PlayerContext) {
+        let mut choice = ChoiceState::new();
+        if let Some(RequestType::Switch) = context.player().request_type() {
+            let can_switch_out = Self::active_mons(context)
+                .filter_ok(|mon| mon.needs_switch)
+                .count();
+            let can_switch_in = Self::inactive_mons(context)
+                .filter_ok(|mon| !mon.fainted)
+                .count();
+            let switches = can_switch_out.min(can_switch_in);
+            let passes = can_switch_out - switches;
+            choice.forced_switches_left = switches;
+            choice.forced_passes_left = passes;
+        }
+        context.player_mut().choice = choice;
+    }
+
+    /// Takes the choice from the player, resetting it in the process.
+    pub fn take_choice(&mut self) -> ChoiceState {
+        mem::replace(&mut self.choice, ChoiceState::new())
     }
 
     fn emit_choice_error(_: &mut PlayerContext, error: Error) -> Result<(), Error> {
@@ -305,12 +399,12 @@ impl Player {
 
     fn choose_team(context: &mut PlayerContext, input: Option<&str>) -> Result<(), Error> {
         let player = context.player_mut();
-        match player.request {
-            Some(Request::TeamPreview) => (),
+        match player.request_type() {
+            Some(RequestType::TeamPreview) => (),
             _ => return Err(battler_error!("you are not in a team preview phase")),
         }
 
-        let picked_team_size = Player::picked_team_size(context);
+        let picked_team_size = Self::picked_team_size(context);
         let selected: Vec<usize> = match input {
             // No input, automatically choose Mons.
             None => (0..picked_team_size).collect(),
@@ -382,44 +476,50 @@ impl Player {
             } else {
                 "no action requested"
             };
-            return Player::emit_choice_error(
+            return Self::emit_choice_error(
                 context,
                 battler_error!("you cannot do anything: {reason}"),
             );
         }
 
         if !player.choice.undo_allowed {
-            return Player::emit_choice_error(
+            return Self::emit_choice_error(
                 context,
                 battler_error!("player choice cannot be undone"),
             );
         }
 
-        Player::clear_choice(context);
+        Self::clear_choice(context);
 
         for choice in input.split(";").map(|str| str.trim()) {
             let (choice, data) = split_once_optional(choice, " ");
             match choice {
-                "team" => match Player::choose_team(context, data) {
+                "team" => match Self::choose_team(context, data) {
                     Err(error) => {
-                        return Player::emit_choice_error(
+                        return Self::emit_choice_error(
                             context,
                             Error::wrap("team preview choice failed", error),
                         );
                     }
                     _ => (),
                 },
-                "switch" => match Player::choose_switch(context, data) {
+                "switch" => match Self::choose_switch(context, data) {
                     Err(error) => {
-                        return Player::emit_choice_error(
+                        return Self::emit_choice_error(
                             context,
                             Error::wrap("cannot switch", error),
                         );
                     }
                     _ => (),
                 },
+                "move" => match Self::choose_move(context, data) {
+                    Err(error) => {
+                        return Self::emit_choice_error(context, Error::wrap("cannot move", error))
+                    }
+                    _ => (),
+                },
                 _ => {
-                    return Player::emit_choice_error(
+                    return Self::emit_choice_error(
                         context,
                         battler_error!("unrecognized choice: {choice}"),
                     )
@@ -427,8 +527,8 @@ impl Player {
             }
         }
 
-        if !Player::choice_done(context) {
-            return Player::emit_choice_error(
+        if !Self::choice_done(context) {
+            return Self::emit_choice_error(
                 context,
                 battler_error!("incomplete choice: {input} - missing actions for Mons"),
             );
@@ -447,7 +547,7 @@ impl Player {
             Some(RequestType::Turn | RequestType::Switch) => (),
             _ => return Err(battler_error!("you cannot switch out of turn")),
         };
-        let active_slot = Player::get_active_slot_for_next_choice(context, false)?;
+        let active_slot = Self::get_active_slot_for_next_choice(context, false)?;
         if active_slot >= context.player().active.len() {
             return match context.player().request_type() {
                 Some(RequestType::Switch) => Err(battler_error!(
@@ -456,7 +556,7 @@ impl Player {
                 _ => Err(battler_error!("you sent more choices than active Mons")),
             };
         }
-        let active_mon = Player::active_mon(context, active_slot).wrap_error_with_format(
+        let active_mon = Self::active_mon(context, active_slot).wrap_error_with_format(
             format_args!("expected player to have active Mon in slot {active_slot}"),
         )?;
         let active_mon_position = active_mon.position;
@@ -531,7 +631,7 @@ impl Player {
                                 .is_ok_and(|mon| mon.fainted)
                         })
                     }) {
-                        Player::choose_pass(context)?;
+                        Self::choose_pass(context)?;
                         next_mon += 1;
                     }
                 }
@@ -545,7 +645,7 @@ impl Player {
                                 .is_ok_and(|mon| !mon.needs_switch)
                         })
                     }) {
-                        Player::choose_pass(context)?;
+                        Self::choose_pass(context)?;
                         next_mon += 1;
                     }
                 }
@@ -556,14 +656,14 @@ impl Player {
     }
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
-        let active_index = Player::get_active_slot_for_next_choice(context, true)?;
-        let mon = Player::active_mon(context, active_index)?;
+        let active_index = Self::get_active_slot_for_next_choice(context, true)?;
+        let mon = Self::active_mon(context, active_index)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
                 if context.player().choice.forced_passes_left == 0 {
                     return Err(battler_error!(
                         "cannot pass: you must select a Mon to replace {}",
-                        mon.data.name
+                        mon.name
                     ));
                 }
                 context.player_mut().choice.forced_passes_left -= 1;
@@ -572,7 +672,7 @@ impl Player {
                 if !mon.fainted {
                     return Err(battler_error!(
                         "cannot pass: your {} must make a move or switch",
-                        mon.data.name
+                        mon.name
                     ));
                 };
             }
@@ -584,5 +684,82 @@ impl Player {
         };
         context.player_mut().choice.actions.push(Action::Pass);
         Ok(())
+    }
+
+    fn choose_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+        match context.player().request_type() {
+            Some(RequestType::Turn) => return Err(battler_error!("you cannot move out of turn")),
+            _ => (),
+        }
+        let choice = MoveChoice::new(data.wrap_error_with_message("missing move data")?)?;
+        let active_slot = Self::get_active_slot_for_next_choice(context, false)?;
+        if active_slot >= context.player().active.len() {
+            return Err(battler_error!("you sent more choices than active Mons"));
+        }
+        let mon = Self::active_mon(context, active_slot).wrap_error_with_format(format_args!(
+            "expected player to have active Mon in slot {active_slot}"
+        ))?;
+        todo!()
+    }
+}
+
+#[cfg(test)]
+mod move_choice_tests {
+    use crate::{
+        battle::player::MoveChoice,
+        common::assert_error_message,
+    };
+
+    #[test]
+    fn parses_move_target() {
+        assert_eq!(
+            MoveChoice::new("Tackle, 0"),
+            Ok(MoveChoice {
+                name: "Tackle",
+                target: Some(0),
+                mega: false
+            })
+        );
+    }
+
+    #[test]
+    fn parses_move_target_mega() {
+        assert_eq!(
+            MoveChoice::new("Tackle, 0, mega"),
+            Ok(MoveChoice {
+                name: "Tackle",
+                target: Some(0),
+                mega: true,
+            })
+        );
+    }
+
+    #[test]
+    fn parses_move_no_target() {
+        assert_eq!(
+            MoveChoice::new("Surf"),
+            Ok(MoveChoice {
+                name: "Surf",
+                target: None,
+                mega: false,
+            })
+        );
+    }
+
+    #[test]
+    fn parses_move_mega() {
+        assert_eq!(
+            MoveChoice::new("Earthquake, mega"),
+            Ok(MoveChoice {
+                name: "Earthquake",
+                target: None,
+                mega: true,
+            })
+        );
+    }
+
+    #[test]
+    fn fails_missing_name() {
+        assert_error_message(MoveChoice::new(""), "missing move name");
     }
 }
