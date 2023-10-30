@@ -1,28 +1,34 @@
 use std::ops::Div;
 
-use crate::{
-    mons::{
-        Nature,
-        Stat,
-        StatTable,
-    },
-    teams::MonData,
+use lazy_static::lazy_static;
+
+use crate::mons::{
+    Nature,
+    Stat,
+    StatTable,
+    Type,
 };
 
 /// Calculates a Mon's actual stats from a base stat table and [`MonData`].
-pub fn calculate_mon_stats(base_stats: &StatTable, mon: &MonData) -> StatTable {
+pub fn calculate_mon_stats(
+    base_stats: &StatTable,
+    ivs: &StatTable,
+    evs: &StatTable,
+    level: u8,
+    nature: Nature,
+) -> StatTable {
     let mut stats = StatTable::default();
     for (stat, value) in base_stats {
-        let value = 2 * value + mon.ivs.get(stat) + mon.evs.get(stat) / 4;
-        let value = value * (mon.level as u16) / 100;
+        let value = 2 * value + ivs.get(stat) + evs.get(stat) / 4;
+        let value = value * (level as u16) / 100;
         let value = if stat == Stat::HP {
-            value + (mon.level as u16) + 10
+            value + (level as u16) + 10
         } else {
             value + 5
         };
         stats.set(stat, value);
     }
-    apply_nature_to_stats(stats, mon.nature)
+    apply_nature_to_stats(stats, nature)
 }
 
 /// Applies the given nature to the stat table, returning the new stat table.
@@ -42,6 +48,47 @@ pub fn apply_nature_to_stats(mut stats: StatTable, nature: Nature) -> StatTable 
     stats
 }
 
+/// Calculates the Hidden Power type based on IVs.
+pub fn calculate_hidden_power_type(ivs: &StatTable) -> Type {
+    lazy_static! {
+        static ref HIDDEN_POWER_STAT_ORDER: [Stat; 6] = [
+            Stat::HP,
+            Stat::Atk,
+            Stat::Def,
+            Stat::Spe,
+            Stat::SpAtk,
+            Stat::SpDef,
+        ];
+    }
+    let mut hp_type = 0;
+    let mut i = 1;
+    for stat in *HIDDEN_POWER_STAT_ORDER {
+        hp_type += i * (ivs.get(stat) & 1);
+        i *= 2;
+    }
+    let hp_type = hp_type * 15 / 63;
+    match hp_type {
+        0 => Type::Fighting,
+        1 => Type::Flying,
+        2 => Type::Poison,
+        3 => Type::Ground,
+        4 => Type::Rock,
+        5 => Type::Bug,
+        6 => Type::Ghost,
+        7 => Type::Steel,
+        8 => Type::Fire,
+        9 => Type::Water,
+        10 => Type::Grass,
+        11 => Type::Electric,
+        12 => Type::Psychic,
+        13 => Type::Ice,
+        14 => Type::Dragon,
+        15 => Type::Dark,
+        // This should never happen.
+        _ => Type::Normal,
+    }
+}
+
 #[cfg(test)]
 mod calclulations_tests {
     use serde::Deserialize;
@@ -49,14 +96,15 @@ mod calclulations_tests {
     use crate::{
         battle::{
             apply_nature_to_stats,
+            calculate_hidden_power_type,
             calculate_mon_stats,
         },
         common::read_test_cases,
         mons::{
             Nature,
             StatTable,
+            Type,
         },
-        teams::MonData,
     };
 
     #[test]
@@ -128,36 +176,37 @@ mod calclulations_tests {
         expected: StatTable,
     }
 
-    impl StatCalculationTestCase {
-        fn create_mon_data(&self) -> MonData {
-            let mut mon_data: MonData = serde_json::from_str(
-                r#"{
-                    "name": "Bulba Fett",
-                    "species": "Bulbasaur",
-                    "ability": "Overgrow",
-                    "moves": [],
-                    "nature": "Adamant",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                }"#,
-            )
-            .unwrap();
-            mon_data.level = self.level;
-            mon_data.nature = self.nature;
-            mon_data.ivs = self.ivs.clone();
-            mon_data.evs = self.evs.clone();
-            mon_data
-        }
-    }
-
     #[test]
     fn stat_calculation_test_cases() {
         let test_cases =
             read_test_cases::<StatCalculationTestCase>("stat_calculation_tests.json").unwrap();
         for (test_name, test_case) in test_cases {
-            let got = calculate_mon_stats(&test_case.base_stats, &test_case.create_mon_data());
+            let got = calculate_mon_stats(
+                &test_case.base_stats,
+                &test_case.ivs,
+                &test_case.evs,
+                test_case.level,
+                test_case.nature,
+            );
             pretty_assertions::assert_eq!(got, test_case.expected, "{test_name} failed");
+        }
+    }
+
+    #[derive(Deserialize)]
+    struct HiddenPowerTypeCalculationTestCase {
+        ivs: StatTable,
+        expected: Type,
+    }
+
+    #[test]
+    fn hidden_power_type_calculation_test_cases() {
+        let test_cases = read_test_cases::<HiddenPowerTypeCalculationTestCase>(
+            "hidden_power_type_calculation_tests.json",
+        )
+        .unwrap();
+        for (test_name, test_case) in test_cases {
+            let got = calculate_hidden_power_type(&test_case.ivs);
+            assert_eq!(got, test_case.expected, "{test_name} failed");
         }
     }
 }
