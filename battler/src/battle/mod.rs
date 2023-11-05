@@ -53,6 +53,7 @@ pub use context::{
     Context,
     MonContext,
     PlayerContext,
+    SideContext,
 };
 pub use core_battle::CoreBattle;
 pub use field::Field;

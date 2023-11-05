@@ -12,16 +12,30 @@ use crate::{
         Player,
         Side,
     },
-    common::Error,
+    common::{
+        Error,
+        MaybeOwnedMut,
+    },
 };
 
 /// The context of a [`CoreBattle`].
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make storing
 /// references easy, so references must be grabbed dynamically as needed.
-pub struct Context<'b, 'd>
+///
+/// Contexts are dynamic, in that one context can be used to create other contexts scoped to its
+/// lifetime. You can think of contexts as a linked list of references. Rust's borrow checker
+/// guarantees that a context cannot have two mutable child contexts active at the same time.
+///
+/// Contexts are hierarchical based on the strucutre of a battle:
+///
+/// - [`MonContext`] - Every Mon is owned by a player.
+/// - [`PlayerContext`] - Every player is on a side.
+/// - [`SideContext`] - Every side is in a battle.
+/// - [`Context`] - Scoped to a single battle.
+pub struct Context<'battle, 'data>
 where
-    'd: 'b,
+    'data: 'battle,
 {
     // We store the battle as a pointer so that we can freely dereference it. Its lifetime is 'b.
     //
@@ -43,26 +57,47 @@ where
     // Thus, most of our design takes in a mutable context and uses it to obtain mutable
     // references, rather than mutably borrowing self. This allows a method that "belongs" to a
     // child object to also reference its parent object through the context object.
-    battle: *mut CoreBattle<'d>,
-    _phantom: PhantomData<&'b mut CoreBattle<'d>>,
+    battle: *mut CoreBattle<'data>,
+    _phantom: PhantomData<&'battle mut CoreBattle<'data>>,
 }
 
-impl<'b, 'd> Context<'b, 'd> {
+impl<'battle, 'data> Context<'battle, 'data> {
     /// Creates a new [`Context`], which contains a reference to a [`CoreBattle`].
-    pub(in crate::battle) fn new(battle: &'b mut CoreBattle<'d>) -> Self {
+    pub(in crate::battle) fn new(battle: &'battle mut CoreBattle<'data>) -> Self {
         Self {
             battle: &mut *battle,
             _phantom: PhantomData,
         }
     }
 
+    /// Creates a new [`SideContext`], scoped to the lifetime of this context.
+    pub fn side_context(&mut self, side: usize) -> Result<SideContext<'_, 'battle, 'data>, Error> {
+        SideContext::new(self.into(), side)
+    }
+
+    /// Creates a new [`PlayerContext`], scoped to the lifetime of this context.
+    pub fn player_context(
+        &mut self,
+        player: usize,
+    ) -> Result<PlayerContext<'_, '_, 'battle, 'data>, Error> {
+        PlayerContext::new(self.into(), player)
+    }
+
+    /// Creates a new [`MonContext`], scoped to the lifetime of this context.
+    pub fn mon_context(
+        &mut self,
+        mon_handle: MonHandle,
+    ) -> Result<MonContext<'_, '_, '_, 'battle, 'data>, Error> {
+        MonContext::new(self.into(), mon_handle)
+    }
+
     /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle<'d> {
+    pub fn battle(&self) -> &CoreBattle<'data> {
         unsafe { &*self.battle }
     }
 
     /// Returns a mutable reference to the [`CoreBattle`].
-    pub fn battle_mut(&mut self) -> &mut CoreBattle<'d> {
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
         unsafe { &mut *self.battle }
     }
 
@@ -87,51 +122,63 @@ impl<'b, 'd> Context<'b, 'd> {
     }
 }
 
-/// The context of a [`Player`] in a battle.
+/// The context of a [`Side`] in a battle.
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make
 /// storing references easy, so references must be grabbed dynamically as needed.
-pub struct PlayerContext<'b, 'd>
+pub struct SideContext<'context, 'battle, 'data>
 where
-    'd: 'b,
+    'data: 'battle,
+    'battle: 'context,
 {
-    context: Context<'b, 'd>,
+    context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
     side: *mut Side,
     foe_side: *mut Side,
-    player: *mut Player,
 }
 
 // All transmute calls are safe because the battle object and all references obtained from it live
 // longer than the context.
-impl<'b, 'd> PlayerContext<'b, 'd> {
-    /// Creates a new [`PlayerContext`], which contains a reference to a [`CoreBattle`] and a
-    /// [`Player`].
+impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
+    /// Creates a new [`SideContext`], which contains a reference to a [`CoreBattle`] and a
+    /// [`Side`].
     pub(in crate::battle) fn new(
-        mut context: Context<'b, 'd>,
-        player: usize,
+        mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+        side: usize,
     ) -> Result<Self, Error> {
         // See comments on [`Context::new`] for why this is safe.
-        let player: &mut Player =
-            unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
-        let side = player.side();
         let foe_side = side ^ 1;
         let side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(side)?) };
         let foe_side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(foe_side)?) };
         Ok(Self {
-            context,
+            context: context.into(),
             side,
             foe_side,
-            player,
         })
     }
 
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'side>(&'side self) -> &'side Context<'battle, 'data> {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'side>(&'side mut self) -> &'side mut Context<'battle, 'data> {
+        &mut self.context
+    }
+
+    /// Creates a new [`SideContext`] for the opposite side, scoped to the lifetime of this context.
+    pub fn foe_side_context(&mut self) -> Result<SideContext<'_, 'battle, 'data>, Error> {
+        let foe_side = self.foe_side().index;
+        self.as_battle_context_mut().side_context(foe_side)
+    }
+
     /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle<'d> {
+    pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()
     }
 
     /// Returns a mutable reference to the [`CoreBattle`].
-    pub fn battle_mut(&mut self) -> &mut CoreBattle<'d> {
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
         self.context.battle_mut()
     }
 
@@ -154,6 +201,105 @@ impl<'b, 'd> PlayerContext<'b, 'd> {
     pub fn foe_side_mut(&mut self) -> &mut Side {
         unsafe { &mut *self.foe_side }
     }
+}
+
+/// The context of a [`Player`] in a battle.
+///
+/// A context is a proxy object for getting references to battle data. Rust does not make
+/// storing references easy, so references must be grabbed dynamically as needed.
+pub struct PlayerContext<'side, 'context, 'battle, 'data>
+where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'side,
+{
+    context: MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>,
+    player: *mut Player,
+}
+
+// All transmute calls are safe because the battle object and all references obtained from it live
+// longer than the context.
+impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'data> {
+    /// Creates a new [`PlayerContext`], which contains a reference to a [`CoreBattle`] and a
+    /// [`Player`].
+    pub(in crate::battle) fn new(
+        mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+        player: usize,
+    ) -> Result<Self, Error> {
+        // See comments on [`Context::new`] for why this is safe.
+        let player: &mut Player =
+            unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
+        let context = SideContext::new(context, player.side)?;
+        Ok(Self {
+            context: context.into(),
+            player,
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'player>(&'player self) -> &'player Context<'battle, 'data> {
+        self.context.as_battle_context()
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'mon>(&'mon mut self) -> &'mon mut Context<'battle, 'data> {
+        self.context.as_battle_context_mut()
+    }
+
+    /// Returns a reference to the inner [`SideContext`].
+    pub fn as_side_context<'player>(
+        &'player self,
+    ) -> &'player SideContext<'context, 'battle, 'data> {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`SideContext`].
+    pub fn as_side_context_mut<'player>(
+        &'player mut self,
+    ) -> &'player mut SideContext<'context, 'battle, 'data> {
+        &mut self.context
+    }
+
+    /// Creates a new [`MonContext`], scoped to the lifetime of this context.
+    ///
+    /// This method assumes that the Mon identified by `mon_handle` belongs to this player. If this
+    /// is not guaranteed, you should use [`Context::mon_context`].
+    pub fn mon_context<'player>(
+        &'player mut self,
+        mon_handle: MonHandle,
+    ) -> Result<MonContext<'player, 'side, 'context, 'battle, 'data>, Error> {
+        MonContext::new_from_player_context(self, mon_handle)
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns a reference to the player's [`Side`].
+    pub fn side(&self) -> &Side {
+        self.context.side()
+    }
+
+    /// Returns a mutable reference to the player's [`Side`].
+    pub fn side_mut(&mut self) -> &mut Side {
+        self.context.side_mut()
+    }
+
+    /// Returns a reference to the foe [`Side`].
+    pub fn foe_side(&self) -> &Side {
+        self.context.foe_side()
+    }
+
+    /// Returns a mutable reference to the foe [`Side`].
+    pub fn foe_side_mut(&mut self) -> &mut Side {
+        self.context.foe_side_mut()
+    }
 
     /// Returns a reference to the [`Player`].
     pub fn player(&self) -> &Player {
@@ -170,46 +316,95 @@ impl<'b, 'd> PlayerContext<'b, 'd> {
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make
 /// storing references easy, so references must be grabbed dynamically as needed.
-pub struct MonContext<'b, 'd>
+pub struct MonContext<'player, 'side, 'context, 'battle, 'data>
 where
-    'd: 'b,
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'side,
+    'side: 'player,
 {
-    context: PlayerContext<'b, 'd>,
+    context: MaybeOwnedMut<'player, PlayerContext<'side, 'context, 'battle, 'data>>,
     mon_handle: MonHandle,
     mon: *mut Mon,
 }
 
-impl<'b, 'd> MonContext<'b, 'd> {
+impl<'player, 'side, 'context, 'battle, 'data>
+    MonContext<'player, 'side, 'context, 'battle, 'data>
+{
     /// Creates a new [`MonContext`], which contains a reference to a [`CoreBattle`] and a
     /// [`Mon`].
     pub(in crate::battle) fn new(
-        context: Context<'b, 'd>,
+        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         mon_handle: MonHandle,
     ) -> Result<Self, Error> {
         // See comments on [`Context::new`] for why this is safe.
-        let mon: &mut Mon =
-            unsafe { mem::transmute(&mut *context.battle().registry.mon_mut(mon_handle)?) };
+        let mon: &mut Mon = unsafe { mem::transmute(&mut *context.battle().mon_mut(mon_handle)?) };
         let player = mon.player;
         let context = PlayerContext::new(context, player)?;
         Ok(Self {
-            context,
+            context: context.into(),
             mon_handle,
             mon,
         })
     }
 
-    /// Uses the [`MonContext`] as a [`PlayerContext`].
-    pub fn as_player_context(&self) -> &PlayerContext<'b, 'd> {
+    fn new_from_player_context(
+        player_context: &'player mut PlayerContext<'side, 'context, 'battle, 'data>,
+        mon_handle: MonHandle,
+    ) -> Result<Self, Error> {
+        // See comments on [`Context::new`] for why this is safe.
+        let mon: &mut Mon =
+            unsafe { mem::transmute(&mut *player_context.battle().mon_mut(mon_handle)?) };
+        Ok(Self {
+            context: player_context.into(),
+            mon_handle,
+            mon,
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'mon>(&'mon self) -> &'mon Context<'battle, 'data> {
+        self.context.as_battle_context()
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'mon>(&'mon mut self) -> &'mon mut Context<'battle, 'data> {
+        self.context.as_battle_context_mut()
+    }
+
+    /// Returns a reference to the inner [`SideContext`].
+    pub fn as_side_context<'mon>(&'mon self) -> &'mon SideContext<'side, 'battle, 'data> {
+        self.context.as_side_context()
+    }
+
+    /// Returns a mutable reference to the inner [`SideContext`].
+    pub fn as_side_context_mut<'mon>(
+        &'mon mut self,
+    ) -> &'mon mut SideContext<'context, 'battle, 'data> {
+        self.context.as_side_context_mut()
+    }
+
+    /// Returns a reference to the inner [`PlayerContext`].
+    pub fn as_player_context<'mon>(
+        &'mon self,
+    ) -> &'mon PlayerContext<'side, 'context, 'battle, 'data> {
         &self.context
     }
 
+    /// Returns a mutable reference to the inner [`PlayerContext`].
+    pub fn as_player_context_mut<'mon>(
+        &'mon mut self,
+    ) -> &'mon mut PlayerContext<'side, 'context, 'battle, 'data> {
+        &mut self.context
+    }
+
     /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle<'d> {
+    pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()
     }
 
     /// Returns a mutable reference to the [`CoreBattle`].
-    pub fn battle_mut(&mut self) -> &mut CoreBattle<'d> {
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
         self.context.battle_mut()
     }
 
