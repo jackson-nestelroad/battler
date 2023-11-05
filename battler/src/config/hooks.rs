@@ -7,14 +7,20 @@ use ahash::{
 use lazy_static::lazy_static;
 
 use crate::{
+    battle::CoreBattleOptions,
+    battler_error,
     common::{
+        Error,
         FastHashMap,
         FastHashSet,
         Id,
         Identifiable,
         WrapResultError,
     },
-    config::ClauseStaticHooks,
+    config::{
+        ClauseStaticHooks,
+        RuleSet,
+    },
     mons::Type,
     teams::{
         MonData,
@@ -205,6 +211,36 @@ lazy_static! {
                             }
                         }
                         result.into()
+                    }
+                )),
+                ..Default::default()
+            }
+        ),
+        (
+            Id::from_known("playersperside"),
+            ClauseStaticHooks {
+                on_validate_core_battle_options: Some(Box::new(
+                    |rules: &RuleSet, options: &mut CoreBattleOptions| -> Result<(), Error> {
+                        let players_per_side = rules
+                            .numeric_value(&Id::from_known("playersperside"))
+                            .wrap_error_with_message("expected Players Per Side to be an integer")?
+                            as usize;
+                        let suffix = if players_per_side == 1 { "" } else { "s" };
+                        if options.side_1.players.len() != players_per_side {
+                            return Err(battler_error!(
+                                "{} must have exactly {players_per_side} player{}.",
+                                options.side_1.name,
+                                suffix
+                            ));
+                        }
+                        if options.side_2.players.len() != players_per_side {
+                            return Err(battler_error!(
+                                "{} must have exactly {players_per_side} player{}.",
+                                options.side_2.name,
+                                suffix
+                            ));
+                        }
+                        Ok(())
                     }
                 )),
                 ..Default::default()
