@@ -25,7 +25,8 @@ use crate::{
 ///
 /// Contexts are dynamic, in that one context can be used to create other contexts scoped to its
 /// lifetime. You can think of contexts as a linked list of references. Rust's borrow checker
-/// guarantees that a context cannot have two mutable child contexts active at the same time.
+/// guarantees that child contexts do not outlive their parents, and a context cannot have two
+/// mutable child contexts active at the same time.
 ///
 /// Contexts are hierarchical based on the strucutre of a battle:
 ///
