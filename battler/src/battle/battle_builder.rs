@@ -145,9 +145,22 @@ impl<'d> BattleBuilder<'d> {
     }
 
     /// Builds a new battle instance using data from the builder.
-    pub fn build(self, engine_options: BattleEngineOptions) -> Result<CoreBattle<'d>, Error> {
+    pub fn build(mut self, engine_options: BattleEngineOptions) -> Result<CoreBattle<'d>, Error> {
+        self.validate_battle_options()?;
         self.options.validate_with_format(&self.format.data())?;
         CoreBattle::from_builder(self.options.core, self.dex, self.format, engine_options)
+    }
+
+    fn validate_battle_options(&mut self) -> Result<(), Error> {
+        self.validate_core_battle_options()?;
+        Ok(())
+    }
+
+    fn validate_core_battle_options(&mut self) -> Result<(), Error> {
+        for clause in self.format.rules.clauses(&self.dex) {
+            clause.on_validate_core_battle_options(&self.format.rules, &mut self.options.core)?;
+        }
+        Ok(())
     }
 
     /// Validates the given team against the battle format.
@@ -191,13 +204,20 @@ impl<'d> BattleBuilder<'d> {
 mod battle_builder_tests {
     use std::iter;
 
+    use serde::Deserialize;
+
     use crate::{
         battle::{
             BattleBuilder,
             BattleBuilderOptions,
             BattleEngineOptions,
         },
+        common::{
+            read_test_cases,
+            FastHashMap,
+        },
         dex::LocalDataStore,
+        teams::TeamData,
     };
 
     fn battle_builder_options() -> BattleBuilderOptions {
@@ -331,5 +351,47 @@ mod battle_builder_tests {
                 .iter()
                 .all(|player| player.team.members.len() == 4)));
         assert!(builder.build(BattleEngineOptions::default()).is_ok());
+    }
+
+    #[derive(Deserialize)]
+    struct BattleBuilderBuildTestCases {
+        options: BattleBuilderOptions,
+        teams: FastHashMap<String, TeamData>,
+        ok: bool,
+        expected_error_substr: Option<String>,
+    }
+
+    #[test]
+    fn battle_builder_build_test_cases() {
+        let test_cases =
+            read_test_cases::<BattleBuilderBuildTestCases>("battle_builder_build_tests.json")
+                .unwrap();
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        for (test_name, test_case) in test_cases {
+            let mut builder = BattleBuilder::new(test_case.options, &data).unwrap();
+            for (player_id, team) in test_case.teams {
+                assert!(builder.update_team(&player_id, team).is_ok());
+            }
+            let result = builder.build(BattleEngineOptions::default());
+            assert_eq!(
+                result.is_ok(),
+                test_case.ok,
+                "Invalid result for {test_name}: error is {:?}",
+                result.err()
+            );
+            if let Some(expected_error_susbtr) = test_case.expected_error_substr {
+                assert!(
+                    result
+                        .as_ref()
+                        .err()
+                        .clone()
+                        .unwrap()
+                        .to_string()
+                        .contains(&expected_error_susbtr),
+                    "Missing error substring for {test_name}: error is {:?}",
+                    result.err()
+                );
+            }
+        }
     }
 }
