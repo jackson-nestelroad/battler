@@ -10,6 +10,7 @@ use serde_string_enum::{
 };
 
 use crate::{
+    battle::CoreBattleOptions,
     battler_error,
     common::{
         Error,
@@ -69,6 +70,8 @@ type ValidateMonCallback =
     dyn Fn(&TeamValidator, &mut MonData) -> Result<(), TeamValidationError> + Send + Sync;
 type ValidateTeamCallback =
     dyn Fn(&TeamValidator, &mut [&mut MonData]) -> Result<(), TeamValidationError> + Send + Sync;
+type ValidateCoreBattleOptionsCallback =
+    dyn Fn(&RuleSet, &mut CoreBattleOptions) -> Result<(), Error> + Send + Sync;
 
 /// Static hooks for clauses.
 ///
@@ -82,6 +85,8 @@ pub(in crate::config) struct ClauseStaticHooks {
     pub on_validate_mon: Option<Box<ValidateMonCallback>>,
     /// Hook for team validation.
     pub on_validate_team: Option<Box<ValidateTeamCallback>>,
+    /// Hook for [`CoreBattleOptions`] validation.
+    pub on_validate_core_battle_options: Option<Box<ValidateCoreBattleOptionsCallback>>,
 }
 
 /// A rule that modifies the validation, start, or team preview stages of a battle.
@@ -164,6 +169,18 @@ impl Clause {
             .as_ref()
             .map_or(Ok(()), |f| f(validator, team))
     }
+
+    /// Runs the hook for [`CoreBattleOptions`] validation.
+    pub fn on_validate_core_battle_options(
+        &self,
+        rules: &RuleSet,
+        options: &mut CoreBattleOptions,
+    ) -> Result<(), Error> {
+        self.hooks
+            .on_validate_core_battle_options
+            .as_ref()
+            .map_or(Ok(()), |f| f(rules, options))
+    }
 }
 
 impl Identifiable for Clause {
@@ -202,11 +219,17 @@ mod clause_tests {
     use lazy_static::lazy_static;
 
     use crate::{
-        battle::BattleType,
+        battle::{
+            BattleType,
+            CoreBattleOptions,
+            PlayerData,
+            SideData,
+        },
         battler_error,
         common::{
             Error,
             Id,
+            WrapResultError,
         },
         config::{
             Clause,
@@ -223,6 +246,7 @@ mod clause_tests {
         },
         teams::{
             MonData,
+            TeamData,
             TeamValidationError,
             TeamValidator,
         },
@@ -462,6 +486,113 @@ mod clause_tests {
         let mut mon2 = mon.clone();
         assert!(clause
             .on_validate_team(&validator, &mut [&mut mon, &mut mon2])
+            .is_ok());
+    }
+
+    #[test]
+    fn validates_core_battle_options() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let dex = Dex::new(&data);
+        let ruleset = construct_ruleset(
+            r#"[
+                "Players Per Side = 2"
+            ]"#,
+            &BattleType::Singles,
+            &dex,
+        )
+        .unwrap();
+        lazy_static! {
+            static ref HOOKS: ClauseStaticHooks = ClauseStaticHooks {
+                on_validate_core_battle_options: Some(Box::new(|rules, options| {
+                    let players_per_side = rules
+                        .numeric_value(&Id::from_known("playersperside"))
+                        .wrap_error_with_format(format_args!(
+                            "Players Per Side must be an integer"
+                        ))? as usize;
+                    if options.side_1.players.len() != players_per_side {
+                        return Err(battler_error!(
+                            "Side 1 does not have {players_per_side} players"
+                        ));
+                    }
+                    if options.side_2.players.len() != players_per_side {
+                        return Err(battler_error!(
+                            "Side 2 does not have {players_per_side} players"
+                        ));
+                    }
+                    Ok(())
+                })),
+                ..Default::default()
+            };
+        }
+        let clause = Clause {
+            id: Id::from("playersperside"),
+            data: ClauseData::default(),
+            hooks: &HOOKS,
+        };
+
+        let mut bad_options = CoreBattleOptions {
+            seed: None,
+            format: None,
+            side_1: SideData {
+                name: "Side 1".to_owned(),
+                players: Vec::new(),
+            },
+            side_2: SideData {
+                name: "Side 2".to_owned(),
+                players: Vec::new(),
+            },
+        };
+        assert!(clause
+            .on_validate_core_battle_options(&ruleset, &mut bad_options)
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("does not have 2 players"));
+
+        let mut good_options = CoreBattleOptions {
+            seed: None,
+            format: None,
+            side_1: SideData {
+                name: "Side 1".to_owned(),
+                players: Vec::from_iter([
+                    PlayerData {
+                        id: "player-1".to_owned(),
+                        name: "Player 1".to_owned(),
+                        team: TeamData {
+                            members: Vec::new(),
+                        },
+                    },
+                    PlayerData {
+                        id: "player-2".to_owned(),
+                        name: "Player 2".to_owned(),
+                        team: TeamData {
+                            members: Vec::new(),
+                        },
+                    },
+                ]),
+            },
+            side_2: SideData {
+                name: "Side 2".to_owned(),
+                players: Vec::from_iter([
+                    PlayerData {
+                        id: "player-3".to_owned(),
+                        name: "Player 3".to_owned(),
+                        team: TeamData {
+                            members: Vec::new(),
+                        },
+                    },
+                    PlayerData {
+                        id: "player-4".to_owned(),
+                        name: "Player 4".to_owned(),
+                        team: TeamData {
+                            members: Vec::new(),
+                        },
+                    },
+                ]),
+            },
+        };
+        assert!(clause
+            .on_validate_core_battle_options(&ruleset, &mut good_options)
             .is_ok());
     }
 
