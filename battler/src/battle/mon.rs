@@ -10,7 +10,6 @@ use crate::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         MonContext,
-        MonHandle,
         Player,
     },
     battler_error,

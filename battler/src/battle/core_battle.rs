@@ -1,7 +1,6 @@
 use std::{
     marker::PhantomPinned,
     mem,
-    ops::Deref,
     time::{
         SystemTime,
         UNIX_EPOCH,
