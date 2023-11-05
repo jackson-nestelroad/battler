@@ -1,6 +1,7 @@
 use std::{
     marker::PhantomPinned,
     mem,
+    ops::Deref,
     time::{
         SystemTime,
         UNIX_EPOCH,
@@ -112,7 +113,7 @@ impl<'d> CoreBattle<'d> {
         let player_ids = players
             .iter()
             .enumerate()
-            .map(move |(player_index, player)| (player.id().to_owned(), player_index))
+            .map(move |(player_index, player)| (player.id.to_owned(), player_index))
             .collect();
         let input_log = FastHashMap::from_iter(
             players
@@ -154,56 +155,74 @@ impl<'d> CoreBattle<'d> {
         Context::new(self)
     }
 
-    fn player_context<'b>(&'b mut self, player: usize) -> Result<PlayerContext<'b, 'd>, Error> {
-        PlayerContext::new(self.context(), player)
+    fn player_context<'b>(
+        &'b mut self,
+        player: usize,
+    ) -> Result<PlayerContext<'_, '_, 'b, 'd>, Error> {
+        PlayerContext::new(self.context().into(), player)
     }
 
-    fn mon_context<'b>(&'b mut self, mon: MonHandle) -> Result<MonContext<'b, 'd>, Error> {
-        MonContext::new(self.context(), mon)
+    fn mon_context<'b>(
+        &'b mut self,
+        mon: MonHandle,
+    ) -> Result<MonContext<'_, '_, '_, 'b, 'd>, Error> {
+        MonContext::new(self.context().into(), mon)
     }
 
-    pub(crate) fn sides(&self) -> impl Iterator<Item = &Side> {
+    pub fn sides(&self) -> impl Iterator<Item = &Side> {
         self.sides.iter()
     }
 
-    pub(crate) fn sides_mut(&mut self) -> impl Iterator<Item = &mut Side> {
+    pub fn sides_mut(&mut self) -> impl Iterator<Item = &mut Side> {
         self.sides.iter_mut()
     }
 
-    pub(crate) fn side(&self, side: usize) -> Result<&Side, Error> {
+    pub fn side(&self, side: usize) -> Result<&Side, Error> {
         self.sides
             .get(side)
             .wrap_error_with_format(format_args!("side {side} does not exist"))
     }
 
-    pub(crate) fn side_mut(&mut self, side: usize) -> Result<&mut Side, Error> {
+    pub fn side_mut(&mut self, side: usize) -> Result<&mut Side, Error> {
         self.sides
             .get_mut(side)
             .wrap_error_with_format(format_args!("side {side} does not exist"))
     }
 
-    pub(crate) fn players(&self) -> impl Iterator<Item = &Player> {
+    pub fn players(&self) -> impl Iterator<Item = &Player> {
         self.players.iter()
     }
 
-    pub(crate) fn players_mut(&mut self) -> impl Iterator<Item = &mut Player> {
+    pub fn players_mut(&mut self) -> impl Iterator<Item = &mut Player> {
         self.players.iter_mut()
     }
 
-    pub(crate) fn player(&self, player: usize) -> Result<&Player, Error> {
+    pub fn player(&self, player: usize) -> Result<&Player, Error> {
         self.players
             .get(player)
             .wrap_error_with_format(format_args!("player {player} does not exist"))
     }
 
-    pub(crate) fn player_mut(&mut self, player: usize) -> Result<&mut Player, Error> {
+    pub fn player_mut(&mut self, player: usize) -> Result<&mut Player, Error> {
         self.players
             .get_mut(player)
             .wrap_error_with_format(format_args!("player {player} does not exist"))
     }
 
-    pub(crate) fn players_on_side(&self, side: usize) -> impl Iterator<Item = &Player> {
-        self.players().filter(move |player| player.side() == side)
+    pub fn mon(&self, mon: MonHandle) -> Result<&Mon, Error> {
+        self.registry
+            .mon(mon)
+            .wrap_error_with_format(format_args!("mon {mon} does not exist"))
+    }
+
+    pub fn mon_mut(&self, mon: MonHandle) -> Result<&mut Mon, Error> {
+        self.registry
+            .mon_mut(mon)
+            .wrap_error_with_format(format_args!("mon {mon} does not exist"))
+    }
+
+    pub fn players_on_side(&self, side: usize) -> impl Iterator<Item = &Player> {
+        self.players().filter(move |player| player.side == side)
     }
 
     fn player_index_by_id(&self, player_id: &str) -> Result<usize, Error> {
@@ -213,46 +232,68 @@ impl<'d> CoreBattle<'d> {
             .cloned()
     }
 
-    pub(crate) fn all_mons_on_side(
-        &self,
-        side: &Side,
-    ) -> impl Iterator<Item = Result<&Mon, Error>> {
-        self.players_on_side(side.index())
-            .map(|player| player.mons.iter())
+    pub fn all_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
+        self.sides()
+            .map(|side| self.all_mon_handles_on_side(side.index))
             .flatten()
-            .map(|mon| self.registry.mon(*mon))
     }
 
-    pub(crate) fn all_mon_handles_on_side<'b>(
+    pub fn all_mons(&self) -> impl Iterator<Item = Result<&Mon, Error>> {
+        self.sides()
+            .map(|side| self.all_mons_on_side(side.index))
+            .flatten()
+    }
+
+    pub fn all_mon_handles_on_side<'b>(
         &'b self,
-        side: &Side,
+        side: usize,
     ) -> impl Iterator<Item = MonHandle> + 'b {
-        self.players_on_side(side.index())
+        self.players_on_side(side)
             .map(|player| player.mons.iter())
             .flatten()
             .cloned()
     }
 
-    pub(crate) fn all_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
-        self.sides()
-            .map(|side| self.all_mon_handles_on_side(side))
+    pub fn all_mons_on_side(&self, side: usize) -> impl Iterator<Item = Result<&Mon, Error>> {
+        self.players_on_side(side)
+            .map(|player| player.mons.iter())
             .flatten()
+            .map(|mon| self.mon(*mon))
     }
 
-    pub(crate) fn all_mons(&self) -> impl Iterator<Item = Result<&Mon, Error>> {
-        self.sides()
-            .map(|side| self.all_mons_on_side(side))
+    pub fn active_positions_on_side<'b>(
+        &'b self,
+        side: usize,
+    ) -> impl Iterator<Item = Option<MonHandle>> + 'b {
+        self.players_on_side(side)
+            .map(|player| player.active.iter())
             .flatten()
+            .cloned()
     }
 
-    pub(crate) fn all_mons_checked(&self) -> Result<Vec<&Mon>, Error> {
-        self.all_mons().collect()
+    pub fn active_mons_on_side<'b>(
+        &'b self,
+        side: usize,
+    ) -> impl Iterator<Item = Result<&Mon, Error>> + 'b {
+        self.active_positions_on_side(side)
+            .filter_map(|mon| Some(self.mon(mon?)))
     }
 
-    pub(crate) fn next_ability_priority(&mut self) -> u32 {
+    pub fn next_ability_priority(&mut self) -> u32 {
         let next = self.next_ability_priority;
         self.next_ability_priority += 1;
         next
+    }
+
+    pub fn side_length(&self, side: &Side) -> usize {
+        self.players_on_side(side.index).count() * self.format.battle_type.active_per_player()
+    }
+
+    pub fn max_side_length(&self) -> usize {
+        self.sides()
+            .map(|side| self.side_length(side))
+            .max()
+            .unwrap_or(0)
     }
 }
 
@@ -349,7 +390,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
 
         let player_logs = self
             .players()
-            .map(|player| battle_event!("player", player.id(), player.side(), player.position()))
+            .map(|player| battle_event!("player", player.id, player.side, player.position))
             .collect::<Vec<_>>();
         self.log_many(player_logs);
 
@@ -384,7 +425,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         self.players().filter_map(|player| {
             player
                 .active_request()
-                .map(|request| (player.id().to_owned(), request))
+                .map(|request| (player.id.to_owned(), request))
         })
     }
 
@@ -435,7 +476,7 @@ impl<'d> CoreBattle<'d> {
     fn log_team_sizes(&mut self) {
         let team_size_events = self
             .players()
-            .map(|player| battle_event!("teamsize", player.id(), player.mons.len()))
+            .map(|player| battle_event!("teamsize", player.id, player.mons.len()))
             .collect::<Vec<_>>();
         self.log_many(team_size_events);
     }
@@ -450,7 +491,7 @@ impl<'d> CoreBattle<'d> {
             .all_mons()
             .map(|res| match res {
                 Err(err) => Err(err),
-                Ok(mon) => Ok((mon.public_details(), self.player(mon.player)?.id())),
+                Ok(mon) => Ok((mon.public_details(), self.player(mon.player)?.id.as_str())),
             })
             .map_ok(|(details, player_id)| battle_event!("mon", player_id, details))
             .collect::<Result<Vec<_>, _>>()?;
@@ -656,7 +697,7 @@ impl<'d> CoreBattle<'d> {
             None => self.log(battle_event!("tie")),
             Some(side) => {
                 let side = self.side(side)?;
-                self.log(battle_event!("win", side.name()));
+                self.log(battle_event!("win", side.name));
             }
         }
 

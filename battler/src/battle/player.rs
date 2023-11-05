@@ -96,30 +96,30 @@ impl ChoiceState {
 
 /// A move choice for a single Mon on a single turn.
 #[derive(Debug, PartialEq, Eq)]
-struct MoveChoice<'s> {
-    pub name: &'s str,
-    pub target: Option<usize>,
+struct MoveChoice {
+    pub move_slot: usize,
+    pub target: Option<isize>,
     pub mega: bool,
 }
 
-impl<'s> MoveChoice<'s> {
+impl MoveChoice {
     /// Parses a new [`MoveChoice`] from a string.
     ///
-    /// For example, `move Tackle, 2, mega` says to use the move Tackle against the Mon in position
+    /// For example, `move 0, 2, mega` says to use the move in slot 0 against the Mon in position
     /// 2 while also Mega Evolving.
     ///
     /// The `move` prefix should already be trimmed off.
-    pub fn new(data: &'s str) -> Result<MoveChoice<'s>, Error> {
+    pub fn new(data: &str) -> Result<MoveChoice, Error> {
         let args = data.split(',').map(|str| str.trim()).collect::<Vec<&str>>();
         let mut index = 0;
-        let name = args
+        let move_slot = args
             .get(index)
-            .wrap_error_with_message("missing move name")?;
-        if name.is_empty() {
-            return Err(battler_error!("missing move name"))?;
-        }
+            .wrap_error_with_message("missing move slot")?;
+        let move_slot = move_slot
+            .parse()
+            .wrap_error_with_message("invalid move slot")?;
         let mut choice = Self {
-            name,
+            move_slot,
             target: None,
             mega: false,
         };
@@ -153,40 +153,17 @@ pub struct PlayerRequestData {
 ///
 /// See [`PlayerData`] for an explanation of what a player represents.
 pub struct Player {
-    id: String,
-    name: String,
-    side: usize,
-    position: usize,
-    index: usize,
-    choice: ChoiceState,
-    request: Option<Request>,
-    mons_left: usize,
+    pub id: String,
+    pub name: String,
+    pub side: usize,
+    pub position: usize,
+    pub index: usize,
+    pub choice: ChoiceState,
+    pub request: Option<Request>,
+    pub mons_left: usize,
 
     pub mons: Vec<MonHandle>,
     pub active: Vec<Option<MonHandle>>,
-}
-
-// Block for getters.
-impl Player {
-    pub fn id(&self) -> &str {
-        self.id.as_str()
-    }
-
-    pub fn name(&self) -> &str {
-        self.name.as_str()
-    }
-
-    pub fn side(&self) -> usize {
-        self.side
-    }
-
-    pub fn position(&self) -> usize {
-        self.position
-    }
-
-    pub fn index(&self) -> usize {
-        self.index
-    }
 }
 
 // Construction and initialization logic.
@@ -206,7 +183,7 @@ impl Player {
             .into_iter()
             .map(|mon_data| Ok(registry.register_mon(Mon::new(mon_data, dex)?)))
             .collect::<Result<Vec<_>, _>>()?;
-        let active = vec![None; battle_type.active_per_side()];
+        let active = vec![None; battle_type.active_per_player()];
         Ok(Self {
             id: data.id,
             name: data.name,
@@ -224,8 +201,11 @@ impl Player {
     /// Sets the index of the player, so that the player can safely reference itself.
     pub(crate) fn set_index(context: &mut PlayerContext, index: usize) -> Result<(), Error> {
         context.player_mut().index = index;
+        let side_index = context.player().side;
         for mon in &context.player().mons {
-            context.battle().registry.mon_mut(*mon)?.player = index;
+            let mon = context.battle().mon_mut(*mon)?;
+            mon.player = index;
+            mon.side = side_index;
         }
         Ok(())
     }
@@ -251,34 +231,50 @@ impl Player {
         self.request.as_ref().map(|req| req.request_type()).clone()
     }
 
-    pub fn active_mon<'b>(context: &'b PlayerContext, slot: usize) -> Result<&'b Mon, Error> {
-        let handle = context
+    pub fn active_mon_handle<'b>(
+        context: &'b PlayerContext,
+        position: usize,
+    ) -> Result<Option<MonHandle>, Error> {
+        context
             .player()
             .active
-            .get(slot)
-            .wrap_error_with_format(format_args!("player does not have any active slot {slot}"))?
+            .get(position)
+            .cloned()
             .wrap_error_with_format(format_args!(
-                "player does not have an active Mon in slot {slot}"
-            ))?;
-        context.battle().registry.mon(handle)
+                "player does not have any active position {position}"
+            ))
     }
 
-    pub fn active_mons<'b, 'd>(
-        context: &'b PlayerContext<'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'b Mon, Error>> + Captures<'d> + 'b {
+    pub fn active_mon<'b>(context: &'b PlayerContext, position: usize) -> Result<&'b Mon, Error> {
+        context.battle().registry.mon(
+            Self::active_mon_handle(context, position)?.wrap_error_with_format(format_args!(
+                "player does not have an active Mon in position {position}"
+            ))?,
+        )
+    }
+
+    pub fn active_mons<'p, 's, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
+    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+           + Captures<'d>
+           + Captures<'b>
+           + Captures<'c>
+           + Captures<'s>
+           + 'p {
         context
             .player()
             .active
             .iter()
-            .filter_map(move |active_slot| match active_slot {
-                Some(mon_handle) => Some(context.battle().registry.mon(*mon_handle)),
+            .filter_map(move |active| match active {
+                Some(mon_handle) => Some(context.battle().mon(*mon_handle)),
                 None => None,
             })
     }
 
-    pub fn active_mon_handles<'b, 'd>(
-        context: &'b PlayerContext<'b, 'd>,
-    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + 'b {
+    pub fn active_mon_handles<'p, 's, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
+    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
+    {
         context
             .player()
             .active
@@ -286,32 +282,47 @@ impl Player {
             .filter_map(|mon_handle| *mon_handle)
     }
 
-    pub fn inactive_mons<'b, 'd>(
-        context: &'b PlayerContext<'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'b Mon, Error>> + Captures<'d> + 'b {
+    pub fn inactive_mons<'p, 's, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
+    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+           + Captures<'d>
+           + Captures<'b>
+           + Captures<'c>
+           + Captures<'s>
+           + 'p {
         context
             .player()
             .mons
             .iter()
             .cloned()
             .filter(|mon_handle| !context.player().active.contains(&Some(*mon_handle)))
-            .map(|mon_handle| context.battle().registry.mon(mon_handle))
+            .map(|mon_handle| context.battle().mon(mon_handle))
     }
 
-    pub fn mons<'b, 'd>(
-        context: &'b PlayerContext<'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'b Mon, Error>> + Captures<'d> + 'b {
+    pub fn mons<'p, 's, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
+    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+           + Captures<'d>
+           + Captures<'b>
+           + Captures<'c>
+           + Captures<'s>
+           + 'p {
         context
             .player()
             .mons
             .iter()
             .cloned()
-            .map(|mon_handle| context.battle().registry.mon(mon_handle))
+            .map(|mon_handle| context.battle().mon(mon_handle))
     }
 
-    pub fn switchable_mons<'b, 'd>(
-        context: &'b PlayerContext<'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'b Mon, Error>> + Captures<'d> + 'b {
+    pub fn switchable_mons<'p, 's, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
+    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+           + Captures<'d>
+           + Captures<'b>
+           + Captures<'c>
+           + Captures<'s>
+           + 'p {
         Self::mons(context).filter_ok(|mon| !mon.fainted)
     }
 
@@ -547,8 +558,8 @@ impl Player {
             Some(RequestType::Turn | RequestType::Switch) => (),
             _ => return Err(battler_error!("you cannot switch out of turn")),
         };
-        let active_slot = Self::get_active_slot_for_next_choice(context, false)?;
-        if active_slot >= context.player().active.len() {
+        let active_position = Self::get_active_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
             return match context.player().request_type() {
                 Some(RequestType::Switch) => Err(battler_error!(
                     "you sent more switches than Mons that need to switch"
@@ -556,8 +567,8 @@ impl Player {
                 _ => Err(battler_error!("you sent more choices than active Mons")),
             };
         }
-        let active_mon = Self::active_mon(context, active_slot).wrap_error_with_format(
-            format_args!("expected player to have active Mon in slot {active_slot}"),
+        let active_mon = Self::active_mon(context, active_position).wrap_error_with_format(
+            format_args!("expected player to have active Mon in position {active_position}"),
         )?;
         let active_mon_position = active_mon.position;
         let data = data.wrap_error_with_message("you must select a Mon to switch in")?;
@@ -582,7 +593,7 @@ impl Player {
             ));
         }
 
-        let target_mon = context.battle().registry.mon(target_mon_handle)?;
+        let target_mon = context.battle().mon(target_mon_handle)?;
         if target_mon.fainted {
             return Err(battler_error!("you cannot switch to a fainted Mon"));
         }
@@ -613,7 +624,7 @@ impl Player {
         Ok(())
     }
 
-    fn get_active_slot_for_next_choice(
+    fn get_active_position_for_next_choice(
         context: &mut PlayerContext,
         pass: bool,
     ) -> Result<usize, Error> {
@@ -656,7 +667,7 @@ impl Player {
     }
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
-        let active_index = Self::get_active_slot_for_next_choice(context, true)?;
+        let active_index = Self::get_active_position_for_next_choice(context, true)?;
         let mon = Self::active_mon(context, active_index)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
@@ -692,13 +703,71 @@ impl Player {
             _ => (),
         }
         let choice = MoveChoice::new(data.wrap_error_with_message("missing move data")?)?;
-        let active_slot = Self::get_active_slot_for_next_choice(context, false)?;
-        if active_slot >= context.player().active.len() {
+        let active_position = Self::get_active_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
         }
-        let mon = Self::active_mon(context, active_slot).wrap_error_with_format(format_args!(
-            "expected player to have active Mon in slot {active_slot}"
-        ))?;
+        let mon_handle = Self::active_mon_handle(context, active_position)
+            .wrap_error_with_format(format_args!(
+                "expected player to have active Mon in position {active_position}"
+            ))?
+            .wrap_error_with_format(format_args!(
+                "expected an active Mon in position {active_position}"
+            ))?;
+
+        // This becomes our new context for the rest of the choice.
+        let mut context = context
+            .mon_context(mon_handle)
+            .wrap_error_with_format(format_args!(
+                "expected Mon to exist for handle {mon_handle}"
+            ))?;
+
+        let moves = Mon::moves(&mut context)?;
+        let move_slot = moves
+            .get(choice.move_slot)
+            .wrap_error_with_format(format_args!(
+                "your Mon does not have a move in slot {}",
+                choice.move_slot
+            ))?;
+        let mov = context
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&move_slot.id)
+            .into_result()
+            .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
+        let target_required = context.battle().format.battle_type.active_per_player() > 1;
+        match (mov.data.target.choosable(), choice.target) {
+            (true, None) => {
+                if target_required {
+                    return Err(battler_error!("{} requires a target", mov.data.name));
+                }
+            }
+            (true, Some(target)) => {
+                if target == 0 && target_required {
+                    return Err(battler_error!("target cannot be 0"));
+                }
+                let target_side = if target > 0 {
+                    context.foe_side().index
+                } else {
+                    context.side().index
+                };
+                let target_position = target.abs() as usize;
+                let relative_location =
+                    Mon::relative_location_of_target(&mut context, target_side, target_position)?;
+                if !mov.data.target.valid_target(relative_location) {
+                    return Err(battler_error!("invalid target for {}", mov.data.name));
+                }
+            }
+            (false, Some(_)) => {
+                return Err(battler_error!(
+                    "you cannot choose a target for {}",
+                    mov.data.name
+                ))
+            }
+            _ => (),
+        }
+
         todo!()
     }
 }
@@ -707,15 +776,15 @@ impl Player {
 mod move_choice_tests {
     use crate::{
         battle::player::MoveChoice,
-        common::assert_error_message,
+        common::assert_error_message_contains,
     };
 
     #[test]
     fn parses_move_target() {
         assert_eq!(
-            MoveChoice::new("Tackle, 0"),
+            MoveChoice::new("0, 0"),
             Ok(MoveChoice {
-                name: "Tackle",
+                move_slot: 0,
                 target: Some(0),
                 mega: false
             })
@@ -725,9 +794,9 @@ mod move_choice_tests {
     #[test]
     fn parses_move_target_mega() {
         assert_eq!(
-            MoveChoice::new("Tackle, 0, mega"),
+            MoveChoice::new("1, 0, mega"),
             Ok(MoveChoice {
-                name: "Tackle",
+                move_slot: 1,
                 target: Some(0),
                 mega: true,
             })
@@ -737,9 +806,9 @@ mod move_choice_tests {
     #[test]
     fn parses_move_no_target() {
         assert_eq!(
-            MoveChoice::new("Surf"),
+            MoveChoice::new("2"),
             Ok(MoveChoice {
-                name: "Surf",
+                move_slot: 2,
                 target: None,
                 mega: false,
             })
@@ -749,9 +818,9 @@ mod move_choice_tests {
     #[test]
     fn parses_move_mega() {
         assert_eq!(
-            MoveChoice::new("Earthquake, mega"),
+            MoveChoice::new("3, mega"),
             Ok(MoveChoice {
-                name: "Earthquake",
+                move_slot: 3,
                 target: None,
                 mega: true,
             })
@@ -759,7 +828,7 @@ mod move_choice_tests {
     }
 
     #[test]
-    fn fails_missing_name() {
-        assert_error_message(MoveChoice::new(""), "missing move name");
+    fn fails_empty_string() {
+        assert_error_message_contains(MoveChoice::new(""), "invalid move slot");
     }
 }

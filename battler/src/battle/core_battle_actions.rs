@@ -37,13 +37,13 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
             "expected {position} to be a valid index to active Mons"
         ))?;
     if let Some(mon) = prev {
-        let mon = context.battle().registry.mon_mut(mon)?;
+        let mon = context.battle().mon_mut(mon)?;
         mon.switch_out();
     }
     Mon::switch_in(context, position);
     context.player_mut().active[position] = Some(context.mon_handle());
 
-    let event = battle_event!("switch", Mon::active_details(context));
+    let event = battle_event!("switch", Mon::active_details(context)?);
     context.battle_mut().log(event);
 
     Ok(())

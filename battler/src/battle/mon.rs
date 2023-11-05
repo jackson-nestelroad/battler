@@ -10,6 +10,7 @@ use crate::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         MonContext,
+        MonHandle,
         Player,
     },
     battler_error,
@@ -58,7 +59,7 @@ pub struct ActiveMonDetails<'d> {
     pub public_details: PublicMonDetails<'d>,
     pub name: &'d str,
     pub player_id: &'d str,
-    pub position: usize,
+    pub side_position: usize,
     pub health: String,
     pub status: String,
 }
@@ -66,7 +67,7 @@ pub struct ActiveMonDetails<'d> {
 impl BattleLoggable for ActiveMonDetails<'_> {
     fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
         items.push(self.player_id.into());
-        items.push(self.position.to_string().into());
+        items.push(self.side_position.to_string().into());
         items.push(self.name.into());
         items.push(self.health.as_str().into());
         items.push(self.status.as_str().into());
@@ -112,6 +113,7 @@ pub struct MonTeamRequestData {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonMoveSlotData {
     pub name: String,
+    pub id: Id,
     pub pp: u8,
     pub max_pp: u8,
     pub target: MoveTarget,
@@ -134,6 +136,7 @@ pub struct MonMoveRequest {
 /// A [`Mon`] in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
+    pub side: usize,
 
     pub name: String,
     pub species: String,
@@ -227,6 +230,7 @@ impl Mon {
 
         Ok(Self {
             player: usize::MAX,
+            side: usize::MAX,
 
             name,
             species: species_name,
@@ -310,16 +314,16 @@ impl Mon {
     }
 
     /// Returns the public details for the active Mon.
-    pub fn active_details<'b>(context: &'b MonContext) -> ActiveMonDetails<'b> {
+    pub fn active_details<'b>(context: &'b MonContext) -> Result<ActiveMonDetails<'b>, Error> {
         let mon = context.mon();
-        ActiveMonDetails {
+        Ok(ActiveMonDetails {
             public_details: mon.public_details(),
             name: &mon.name,
-            player_id: context.player().id(),
-            position: mon.position,
+            player_id: context.player().id.as_ref(),
+            side_position: Self::position_on_side(context)? + 1,
             health: mon.health(),
             status: mon.status.clone().unwrap_or(String::default()),
-        }
+        })
     }
 
     pub fn types(context: &MonContext) -> Result<Vec<Type>, Error> {
@@ -343,6 +347,70 @@ impl Mon {
     pub fn moves(context: &MonContext) -> Result<Vec<MonMoveSlotData>, Error> {
         let locked_move = Self::locked_move(context)?;
         Self::moves_with_locked_move(context, locked_move.as_deref())
+    }
+
+    /// The Mon's current position on its side.
+    ///
+    /// A side is shared by multiple players, who each can have multiple Mons active at a time. This
+    /// position is intended to be scoped to the side, so all active Mons on a side have a unique
+    /// position.
+    ///
+    /// Side position is a zero-based integer index in the range `[0, active_mons)`, where
+    /// `active_mons` is the number of active Mons on the side. This is calculated by
+    /// `players_on_side * active_per_player`.
+    pub fn position_on_side(context: &MonContext) -> Result<usize, Error> {
+        let mon = context.mon();
+        if !mon.active {
+            return Err(battler_error!("Mon is not active"));
+        }
+        let player = context.player();
+        let position = mon.position
+            + player.position * context.battle().format.battle_type.active_per_player();
+        Ok(position)
+    }
+
+    fn relative_location(
+        mon_position: usize,
+        target_position: usize,
+        same_side: bool,
+        mons_per_side: usize,
+    ) -> isize {
+        if same_side {
+            let diff = (target_position).abs_diff(mon_position);
+            let diff = diff as isize;
+            -diff
+        } else {
+            let flipped_position = mons_per_side - target_position - 1;
+            let diff = (flipped_position).abs_diff(mon_position);
+            let diff = diff + 1;
+            diff as isize
+        }
+    }
+
+    pub fn relative_location_of_target(
+        context: &mut MonContext,
+        target_side: usize,
+        target_position: usize,
+    ) -> Result<isize, Error> {
+        let mon = context.mon();
+        let mon_side = mon.side;
+        let mon_position = Self::position_on_side(context)?;
+        Ok(Mon::relative_location(
+            mon_position,
+            target_position,
+            mon_side == target_side,
+            // Note that this calculation assumes that both sides have the same amount of players,
+            // but battles are not required to validate this. Nonetheless, this calculation is
+            // still correct, since players are positioned from left to right.
+            //
+            // The "Players Per Side" clause can be used to validate that both sides have the same
+            // amount of players.
+            //
+            // There can still be weird behavior in a multi-battle or triple battle where remaining
+            // Mons are not adjacent to one another. Shifting logic should be implemented somewhere
+            // higher up so that `Self::position_on_side` returns the correct value after shifting.
+            context.battle().max_side_length(),
+        ))
     }
 }
 
@@ -373,14 +441,16 @@ impl Mon {
     pub fn move_request(context: &MonContext) -> Result<MonMoveRequest, Error> {
         let mut locked_move = Self::locked_move(context)?;
         let mut moves = Self::moves_with_locked_move(context, locked_move.as_deref())?;
-        if moves.is_empty() {
+        let has_usable_move = moves.iter().any(|mov| !mov.disabled);
+        if moves.is_empty() || !has_usable_move {
             // No moves, the Mon must use Struggle.
             locked_move = Some("struggle".to_owned());
             moves = Vec::from_iter([MonMoveSlotData {
                 name: "Struggle".to_owned(),
+                id: Id::from_known("struggle"),
                 target: MoveTarget::RandomNormal,
-                pp: 0,
-                max_pp: 0,
+                pp: 1,
+                max_pp: 1,
                 disabled: false,
             }]);
         }
@@ -466,6 +536,7 @@ impl Mon {
             if locked_move_id.eq("recharge") {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: "Recharge".to_owned(),
+                    id: Id::from_known("recharge"),
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
@@ -481,6 +552,7 @@ impl Mon {
             {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: locked_move.name.clone(),
+                    id: locked_move.id.clone(),
                     pp: locked_move.pp,
                     max_pp: locked_move.max_pp,
                     target: locked_move.target.clone(),
@@ -513,12 +585,17 @@ impl Mon {
                 } else {
                     move_slot.target
                 };
+                let mut disabled = move_slot.disabled;
+                if move_slot.pp == 0 {
+                    disabled = true;
+                }
                 Ok(MonMoveSlotData {
                     name: move_slot.name,
+                    id: move_slot.id,
                     pp: move_slot.pp,
                     max_pp: move_slot.max_pp,
                     target,
-                    disabled: false,
+                    disabled,
                 })
             })
             .collect()
@@ -543,5 +620,52 @@ impl Mon {
     pub fn switch_out(&mut self) {
         self.active = false;
         self.position = usize::MAX;
+    }
+}
+
+#[cfg(test)]
+mod mon_tests {
+    use crate::battle::Mon;
+
+    #[test]
+    fn relative_location_for_triples() {
+        assert_eq!(Mon::relative_location(0, 0, true, 3), 0);
+        assert_eq!(Mon::relative_location(0, 1, true, 3), -1);
+        assert_eq!(Mon::relative_location(0, 2, true, 3), -2);
+        assert_eq!(Mon::relative_location(1, 0, true, 3), -1);
+        assert_eq!(Mon::relative_location(1, 1, true, 3), 0);
+        assert_eq!(Mon::relative_location(1, 2, true, 3), -1);
+        assert_eq!(Mon::relative_location(2, 0, true, 3), -2);
+        assert_eq!(Mon::relative_location(2, 1, true, 3), -1);
+        assert_eq!(Mon::relative_location(2, 2, true, 3), 0);
+
+        assert_eq!(Mon::relative_location(0, 0, false, 3), 3);
+        assert_eq!(Mon::relative_location(0, 1, false, 3), 2);
+        assert_eq!(Mon::relative_location(0, 2, false, 3), 1);
+        assert_eq!(Mon::relative_location(1, 0, false, 3), 2);
+        assert_eq!(Mon::relative_location(1, 1, false, 3), 1);
+        assert_eq!(Mon::relative_location(1, 2, false, 3), 2);
+        assert_eq!(Mon::relative_location(2, 0, false, 3), 1);
+        assert_eq!(Mon::relative_location(2, 1, false, 3), 2);
+        assert_eq!(Mon::relative_location(2, 2, false, 3), 3);
+    }
+
+    #[test]
+    fn relative_location_for_doubles_and_multi() {
+        assert_eq!(Mon::relative_location(0, 0, true, 2), 0);
+        assert_eq!(Mon::relative_location(0, 1, true, 2), -1);
+        assert_eq!(Mon::relative_location(1, 0, true, 2), -1);
+        assert_eq!(Mon::relative_location(1, 1, true, 2), 0);
+
+        assert_eq!(Mon::relative_location(0, 0, false, 2), 2);
+        assert_eq!(Mon::relative_location(0, 1, false, 2), 1);
+        assert_eq!(Mon::relative_location(1, 0, false, 2), 1);
+        assert_eq!(Mon::relative_location(1, 1, false, 2), 2);
+    }
+
+    #[test]
+    fn relative_location_for_singles() {
+        assert_eq!(Mon::relative_location(0, 0, true, 1), 0);
+        assert_eq!(Mon::relative_location(0, 0, false, 1), 1);
     }
 }

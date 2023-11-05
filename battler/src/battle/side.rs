@@ -1,3 +1,4 @@
+use num::Integer;
 use serde::{
     Deserialize,
     Serialize,
@@ -7,10 +8,16 @@ use crate::{
     battle::{
         BattleRegistry,
         BattleType,
+        MonHandle,
         Player,
+        PlayerContext,
         PlayerData,
+        SideContext,
     },
-    common::Error,
+    common::{
+        Error,
+        WrapResultError,
+    },
     dex::Dex,
 };
 
@@ -34,21 +41,11 @@ pub struct SideData {
 ///
 /// See [`SideData`] for details.
 pub struct Side {
-    name: String,
-    index: usize,
+    pub name: String,
+    pub index: usize,
 }
 
-// Block for getters.
-impl Side {
-    pub fn name(&self) -> &str {
-        self.name.as_str()
-    }
-
-    pub fn index(&self) -> usize {
-        self.index
-    }
-}
-
+// Construction and initialization logic.
 impl Side {
     /// Creates a new [`Side`] from [`SideData`].
     pub fn new(
@@ -71,5 +68,37 @@ impl Side {
             },
             players,
         ))
+    }
+}
+
+// Basic getters.
+impl Side {
+    pub fn players<'c>(context: &'c SideContext) -> impl Iterator<Item = &'c Player> {
+        context.battle().players_on_side(context.side().index)
+    }
+
+    pub fn player_in_position<'c>(context: &'c SideContext, position: usize) -> Option<&'c Player> {
+        Self::players(context).find(|player| player.position == position)
+    }
+
+    pub fn player_context<'s, 'c, 'b, 'd>(
+        context: &'s mut SideContext<'c, 'b, 'd>,
+        position: usize,
+    ) -> Result<PlayerContext<'s, 's, 'b, 'd>, Error> {
+        let player = Self::player_in_position(context, position)
+            .wrap_error_with_format(format_args!("side has no player in position {position}"))?
+            .index;
+        context.as_battle_context_mut().player_context(player)
+    }
+
+    pub fn mon_in_position(
+        context: &mut SideContext,
+        position: usize,
+    ) -> Result<Option<MonHandle>, Error> {
+        let active_per_player = context.battle().format.battle_type.active_per_player();
+        let (player_position, position) = position.div_mod_floor(&active_per_player);
+        let player_context = Self::player_context(context, player_position)
+            .wrap_error_with_format(format_args!("position {position} is out of bounds"))?;
+        Player::active_mon_handle(&player_context, position)
     }
 }
