@@ -20,6 +20,7 @@ use crate::{
         Mon,
         MonHandle,
         MonTeamRequestData,
+        MoveAction,
         PlayerContext,
         Request,
         RequestType,
@@ -31,6 +32,7 @@ use crate::{
         Captures,
         Error,
         FastHashSet,
+        Id,
         WrapResultError,
     },
     dex::Dex,
@@ -709,7 +711,7 @@ impl Player {
         }
         let mon_handle = Self::active_mon_handle(context, active_position)
             .wrap_error_with_format(format_args!(
-                "expected player to have active Mon in position {active_position}"
+                "expected player to have an active Mon in position {active_position}"
             ))?
             .wrap_error_with_format(format_args!(
                 "expected an active Mon in position {active_position}"
@@ -729,11 +731,12 @@ impl Player {
                 "your Mon does not have a move in slot {}",
                 choice.move_slot
             ))?;
+        let mut move_id = move_slot.id.clone();
         let mov = context
             .battle()
             .dex
             .moves
-            .get_by_id(&move_slot.id)
+            .get_by_id(&move_id)
             .into_result()
             .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
         let target_required = context.battle().format.battle_type.active_per_player() > 1;
@@ -768,7 +771,65 @@ impl Player {
             _ => (),
         }
 
-        todo!()
+        let locked_move = Mon::locked_move(&context)?;
+        if let Some(locked_move) = locked_move {
+            let locked_move_target = context.mon().last_move_target;
+            context
+                .player_mut()
+                .choice
+                .actions
+                .push(Action::Move(MoveAction {
+                    id: Id::from(locked_move),
+                    mon: mon_handle,
+                    target: locked_move_target,
+                    mega: false,
+                }));
+            // Locked move, the Mon cannot do anything else.
+            return Ok(());
+        } else if moves.is_empty() {
+            // No moves, the Mon must use Struggle.
+            move_id = Id::from_known("struggle");
+        } else {
+            // Make sure the selected move is not disabled.
+            let move_slot = moves
+                .iter()
+                .find(|mov| mov.id == move_id)
+                .wrap_error_with_format(format_args!(
+                    "expected move {move_id} to be in Mon's moveset"
+                ))?;
+            if move_slot.disabled {
+                return Err(battler_error!(
+                    "{}'s {} is disabled",
+                    context.mon().name,
+                    mov.data.name
+                ));
+            }
+        }
+
+        // Mega evoution.
+        if choice.mega && !context.mon().can_mega_evo {
+            return Err(battler_error!("{} cannot mega evolve", context.mon().name));
+        }
+        if choice.mega && context.player().choice.mega {
+            return Err(battler_error!("you can only mega evolve once per battle"));
+        }
+
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::Move(MoveAction {
+                id: move_id,
+                mon: mon_handle,
+                target: choice.target,
+                mega: choice.mega,
+            }));
+
+        if choice.mega {
+            context.player_mut().choice.mega = true;
+        }
+
+        Ok(())
     }
 }
 

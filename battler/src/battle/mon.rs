@@ -174,6 +174,7 @@ pub struct Mon {
     pub needs_switch: bool,
     pub trapped: bool,
     pub can_mega_evo: bool,
+    pub last_move_target: Option<isize>,
 }
 
 // Construction and initialization logic.
@@ -268,6 +269,7 @@ impl Mon {
             needs_switch: false,
             trapped: false,
             can_mega_evo: false,
+            last_move_target: None,
         })
     }
 

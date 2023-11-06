@@ -20,6 +20,8 @@ mod timer;
 
 pub use action::{
     Action,
+    MoveAction,
+    SwitchAction,
     TeamAction,
 };
 pub use battle::{

@@ -1,6 +1,9 @@
 use std::cmp::Ordering;
 
-use crate::battle::MonHandle;
+use crate::{
+    battle::MonHandle,
+    common::Id,
+};
 
 /// A Team Preview action.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -18,6 +21,15 @@ pub struct SwitchAction {
     pub position: usize,
 }
 
+/// A move action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MoveAction {
+    pub id: Id,
+    pub mon: MonHandle,
+    pub target: Option<isize>,
+    pub mega: bool,
+}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -31,6 +43,7 @@ pub enum Action {
     Residual,
     Team(TeamAction),
     Switch(SwitchAction),
+    Move(MoveAction),
 }
 
 impl Action {
@@ -46,6 +59,7 @@ impl Action {
                 }
             }
             Self::BeforeTurn => 4,
+            Self::Move(_) => 200,
             Self::Pass => 200,
             Self::Residual => 300,
         }

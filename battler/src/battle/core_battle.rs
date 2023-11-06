@@ -657,6 +657,9 @@ impl<'d> CoreBattle<'d> {
                 let mut context = self.mon_context(action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position)?;
             }
+            Action::Move(action) => {
+                todo!()
+            }
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
