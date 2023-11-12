@@ -15,6 +15,9 @@ pub enum BattleType {
     /// One Mon from each player battles at a time.
     #[string = "Multi"]
     Multi,
+    /// Three Mons from one player battles at a time.
+    #[string = "Triples"]
+    Triples,
 }
 
 impl BattleType {
@@ -24,6 +27,7 @@ impl BattleType {
             Self::Singles => 1,
             Self::Doubles => 2,
             Self::Multi => 1,
+            Self::Triples => 3,
         }
     }
 
@@ -38,6 +42,7 @@ impl BattleType {
             Self::Singles => 3,
             Self::Doubles => 4,
             Self::Multi => 3,
+            Self::Triples => 6,
         }
     }
 }
@@ -57,6 +62,7 @@ mod battle_type_tests {
         test_string_serialization(BattleType::Singles, "Singles");
         test_string_serialization(BattleType::Doubles, "Doubles");
         test_string_serialization(BattleType::Multi, "Multi");
+        test_string_serialization(BattleType::Triples, "Triples");
     }
 
     #[test]
@@ -64,5 +70,6 @@ mod battle_type_tests {
         test_string_deserialization("singles", BattleType::Singles);
         test_string_deserialization("doubles", BattleType::Doubles);
         test_string_deserialization("multi", BattleType::Multi);
+        test_string_deserialization("triples", BattleType::Triples);
     }
 }

@@ -20,8 +20,6 @@ use crate::{
 pub enum Accuracy {
     /// The base chance for the move to hit.
     Chance(u8),
-    /// The move will always hit.
-    Always,
     /// The move is exempt from accuracy checks.
     Exempt,
 }
@@ -37,7 +35,6 @@ impl FromStr for Accuracy {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "always" => Ok(Self::Always),
             "exempt" => Ok(Self::Exempt),
             _ => Err(battler_error!("invalid accuracy \"{s}\"")),
         }
@@ -51,7 +48,6 @@ impl Serialize for Accuracy {
     {
         match self {
             Self::Chance(n) => serializer.serialize_u8(*n),
-            Self::Always => serializer.collect_str("always"),
             Self::Exempt => serializer.collect_str("exempt"),
         }
     }
@@ -63,7 +59,7 @@ impl<'de> Visitor<'de> for AccuracyVisitor {
     type Value = Accuracy;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "an integer, \"always\", or \"exempt\"")
+        write!(formatter, "an integer or \"exempt\"")
     }
 
     fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
@@ -109,7 +105,6 @@ mod accuracy_tests {
     fn serializes_numbers_and_strings() {
         test_serialization(Accuracy::Chance(100), 100);
         test_serialization(Accuracy::Chance(50), 50);
-        test_serialization(Accuracy::Always, "\"always\"");
         test_serialization(Accuracy::Exempt, "\"exempt\"");
     }
 }

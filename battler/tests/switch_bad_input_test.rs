@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod switch_bad_input_test {
+mod switch_bad_input_tests {
     use battler::{
         battle::{
             Battle,

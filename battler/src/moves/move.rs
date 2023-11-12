@@ -120,6 +120,9 @@ pub struct MoveData {
     /// Apply Struggle recoil?
     #[serde(default)]
     pub struggle_recoil: bool,
+    /// Ignore STAB?
+    #[serde(default)]
+    pub ignore_stab: bool,
 
     /// Secondary effects applied to the target.
     #[serde(default)]

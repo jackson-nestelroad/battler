@@ -701,10 +701,10 @@ impl Player {
 
     fn choose_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
         match context.player().request_type() {
-            Some(RequestType::Turn) => return Err(battler_error!("you cannot move out of turn")),
-            _ => (),
+            Some(RequestType::Turn) => (),
+            _ => return Err(battler_error!("you cannot move out of turn")),
         }
-        let choice = MoveChoice::new(data.wrap_error_with_message("missing move data")?)?;
+        let choice = MoveChoice::new(data.wrap_error_with_message("missing move choice")?)?;
         let active_position = Self::get_active_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
@@ -724,13 +724,16 @@ impl Player {
                 "expected Mon to exist for handle {mon_handle}"
             ))?;
 
-        let moves = Mon::moves(&mut context)?;
-        let move_slot = moves
-            .get(choice.move_slot)
-            .wrap_error_with_format(format_args!(
-                "your Mon does not have a move in slot {}",
-                choice.move_slot
-            ))?;
+        let request = Mon::move_request(&context)?;
+        let move_slot =
+            request
+                .moves
+                .get(choice.move_slot)
+                .wrap_error_with_format(format_args!(
+                    "{} does not have a move in slot {}",
+                    context.mon().name,
+                    choice.move_slot
+                ))?;
         let mut move_id = move_slot.id.clone();
         let mov = context
             .battle()
@@ -756,9 +759,12 @@ impl Player {
                     context.side().index
                 };
                 let target_position = target.abs() as usize;
-                let relative_location =
-                    Mon::relative_location_of_target(&mut context, target_side, target_position)?;
-                if !mov.data.target.valid_target(relative_location) {
+                let target_position = target_position - 1;
+                if !Mon::relative_location_of_target(&mut context, target_side, target_position)
+                    .map_or(false, |relative_location| {
+                        mov.data.target.valid_target(relative_location)
+                    })
+                {
                     return Err(battler_error!("invalid target for {}", mov.data.name));
                 }
             }
@@ -771,6 +777,7 @@ impl Player {
             _ => (),
         }
 
+        let moves = Mon::moves(&context)?;
         let locked_move = Mon::locked_move(&context)?;
         if let Some(locked_move) = locked_move {
             let locked_move_target = context.mon().last_move_target;

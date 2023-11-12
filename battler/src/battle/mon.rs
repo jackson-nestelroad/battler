@@ -396,21 +396,28 @@ impl Mon {
         let mon = context.mon();
         let mon_side = mon.side;
         let mon_position = Self::position_on_side(context)?;
+
+        // Note that this calculation assumes that both sides have the same amount of players,
+        // but battles are not required to validate this. Nonetheless, this calculation is still
+        // correct, since players are positioned from left to right.
+        //
+        // The "Players Per Side" clause can be used to validate that both sides have the same
+        // amount of players.
+        //
+        // There can still be weird behavior in a multi-battle or triple battle where remaining
+        // Mons are not adjacent to one another. Shifting logic should be implemented somewhere
+        // higher up so that `Self::position_on_side` returns the correct value after shifting.
+        let mons_per_side = context.battle().max_side_length();
+
+        if target_position >= mons_per_side {
+            return Err(battler_error!("{target_position} is out of bounds"));
+        }
+
         Ok(Mon::relative_location(
             mon_position,
             target_position,
             mon_side == target_side,
-            // Note that this calculation assumes that both sides have the same amount of players,
-            // but battles are not required to validate this. Nonetheless, this calculation is
-            // still correct, since players are positioned from left to right.
-            //
-            // The "Players Per Side" clause can be used to validate that both sides have the same
-            // amount of players.
-            //
-            // There can still be weird behavior in a multi-battle or triple battle where remaining
-            // Mons are not adjacent to one another. Shifting logic should be implemented somewhere
-            // higher up so that `Self::position_on_side` returns the correct value after shifting.
-            context.battle().max_side_length(),
+            mons_per_side,
         ))
     }
 }

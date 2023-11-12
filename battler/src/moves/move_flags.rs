@@ -49,7 +49,7 @@ pub enum MoveFlags {
     #[string = "FailMeFirst"]
     FailMeFirst,
     /// Cannot be copied by Mimic.
-    #[string = "Mimic"]
+    #[string = "FailMimic"]
     FailMimic,
     /// Damages a target in the future.
     #[string = "Future"]
