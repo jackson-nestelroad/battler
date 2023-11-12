@@ -924,16 +924,16 @@
     [
       "switch|player-1|1|Charmander F|100/100||Charmander|100|F",
       "switch|player-2|2|Charmander F|100/100||Charmander|100|F",
-      "switch|player-3|1|Squirtle M|100/100||Squirtle|100|M",
       "switch|player-4|2|Charmander M|100/100||Charmander|100|M",
+      "switch|player-3|1|Squirtle M|100/100||Squirtle|100|M",
       "residual",
       "turn|2"
     ],
     [
-      "switch|player-1|1|Squirtle F|100/100||Squirtle|100|F",
-      "switch|player-2|2|Squirtle F|100/100||Squirtle|100|F",
       "switch|player-3|1|Bulbasaur F|100/100||Bulbasaur|100|F",
       "switch|player-4|2|Bulbasaur M|100/100||Bulbasaur|100|M",
+      "switch|player-1|1|Squirtle F|100/100||Squirtle|100|F",
+      "switch|player-2|2|Squirtle F|100/100||Squirtle|100|F",
       "residual",
       "turn|3"
     ],

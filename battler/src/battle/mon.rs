@@ -1,5 +1,12 @@
-use std::borrow::Cow;
+use std::{
+    borrow::Cow,
+    ops::{
+        Div,
+        Mul,
+    },
+};
 
+use lazy_static::lazy_static;
 use serde::{
     Deserialize,
     Serialize,
@@ -25,6 +32,7 @@ use crate::{
         Gender,
         Nature,
         PartialStatTable,
+        Stat,
         StatTable,
         Type,
     },
@@ -388,6 +396,11 @@ impl Mon {
         }
     }
 
+    /// Calculates the relative location of the given target position.
+    ///
+    /// Relative location is essentially the Manhatten distance between this Mon and the target Mon.
+    /// It is negative if the Mon is on the same side and positive if the Mon is on the opposite
+    /// side.
     pub fn relative_location_of_target(
         context: &mut MonContext,
         target_side: usize,
@@ -419,6 +432,57 @@ impl Mon {
             mon_side == target_side,
             mons_per_side,
         ))
+    }
+
+    /// Gets the current value for the given [`Stat`] on a [`Mon`] after all boosts/drops and
+    /// modifications.
+    pub fn get_stat(
+        context: &mut MonContext,
+        stat: Stat,
+        unboosted: bool,
+        unmodified: bool,
+    ) -> Result<u16, Error> {
+        if stat == Stat::HP {
+            return Err(battler_error!(
+                "HP should be read directly, not by calling get_stat"
+            ));
+        }
+
+        let mut stat = context.mon().stats.get(stat);
+        if !unboosted {
+            // TODO: Run stat boosts events.
+            let boost = 0i8;
+            lazy_static! {
+                static ref BOOST_TABLE: [Fraction<u16>; 7] = [
+                    Fraction::new(1, 1),
+                    Fraction::new(3, 2),
+                    Fraction::new(2, 1),
+                    Fraction::new(5, 2),
+                    Fraction::new(3, 1),
+                    Fraction::new(7, 2),
+                    Fraction::new(4, 1)
+                ];
+            }
+            let boost = boost.max(6).min(-6);
+            let boost_fraction = &BOOST_TABLE[boost.abs() as usize];
+            if boost >= 0 {
+                stat = boost_fraction.mul(stat).floor();
+            } else {
+                stat = boost_fraction.inverse().mul(stat).floor();
+            }
+        }
+        if !unmodified {
+            // TODO: Run stat modification events.
+        }
+
+        Ok(stat)
+    }
+
+    /// Calculates the speed value to use for battle action ordering.
+    pub fn action_speed(context: &mut MonContext) -> Result<u16, Error> {
+        let speed = Self::get_stat(context, Stat::Spe, false, false)?;
+        // TODO: If Trick Room, return u16::MAX - speed.
+        Ok(speed)
     }
 }
 
@@ -624,10 +688,11 @@ impl Mon {
         mon.ability_priority = ability_priority
     }
 
-    /// Switches the Mon out of hte given position for the player.
+    /// Switches the Mon out of the given position for the player.
     pub fn switch_out(&mut self) {
         self.active = false;
         self.position = usize::MAX;
+        self.needs_switch = false;
     }
 }
 

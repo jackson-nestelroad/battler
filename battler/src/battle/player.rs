@@ -21,10 +21,13 @@ use crate::{
         MonHandle,
         MonTeamRequestData,
         MoveAction,
+        MoveActionInput,
         PlayerContext,
         Request,
         RequestType,
+        SwitchActionInput,
         TeamAction,
+        TeamActionInput,
     },
     battler_error,
     common::{
@@ -470,11 +473,11 @@ impl Player {
                 .player_mut()
                 .choice
                 .actions
-                .push(Action::Team(TeamAction {
+                .push(Action::Team(TeamAction::new(TeamActionInput {
                     mon: mon_handle,
                     index: i,
                     priority: -(i as i32),
-                }))
+                })))
         }
 
         Ok(())
@@ -618,11 +621,14 @@ impl Player {
 
         let player = context.player_mut();
         player.choice.switch_ins.insert(slot);
-        player.choice.actions.push(Action::Switch(SwitchAction {
-            instant: false,
-            mon: target_mon_handle,
-            position: active_mon_position,
-        }));
+        player
+            .choice
+            .actions
+            .push(Action::Switch(SwitchAction::new(SwitchActionInput {
+                instant: false,
+                mon: target_mon_handle,
+                position: active_mon_position,
+            })));
         Ok(())
     }
 
@@ -785,12 +791,12 @@ impl Player {
                 .player_mut()
                 .choice
                 .actions
-                .push(Action::Move(MoveAction {
+                .push(Action::Move(MoveAction::new(MoveActionInput {
                     id: Id::from(locked_move),
                     mon: mon_handle,
                     target: locked_move_target,
                     mega: false,
-                }));
+                })));
             // Locked move, the Mon cannot do anything else.
             return Ok(());
         } else if moves.is_empty() {
@@ -825,12 +831,12 @@ impl Player {
             .player_mut()
             .choice
             .actions
-            .push(Action::Move(MoveAction {
+            .push(Action::Move(MoveAction::new(MoveActionInput {
                 id: move_id,
                 mon: mon_handle,
                 target: choice.target,
                 mega: choice.mega,
-            }));
+            })));
 
         if choice.mega {
             context.player_mut().choice.mega = true;

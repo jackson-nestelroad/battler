@@ -399,7 +399,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         }
 
         let mut context = self.context();
-        BattleQueue::add_action(&mut context, Action::Start);
+        BattleQueue::add_action(&mut context, Action::Start)?;
         self.mid_turn = true;
 
         if self.request.is_none() && self.engine_options.auto_continue {
@@ -584,7 +584,7 @@ impl<'d> CoreBattle<'d> {
             .map(|player| player.take_choice())
             .collect::<Vec<_>>();
         for choice in choices {
-            BattleQueue::add_actions(&mut context, choice.actions.into_iter());
+            BattleQueue::add_actions(&mut context, choice.actions.into_iter())?;
         }
         self.clear_requests()?;
 
@@ -600,8 +600,8 @@ impl<'d> CoreBattle<'d> {
         self.request = None;
 
         if !self.mid_turn {
-            BattleQueue::add_action(&mut self.context(), Action::BeforeTurn);
-            BattleQueue::add_action(&mut self.context(), Action::Residual);
+            BattleQueue::add_action(&mut self.context(), Action::BeforeTurn)?;
+            BattleQueue::add_action(&mut self.context(), Action::Residual)?;
             self.mid_turn = true;
         }
 
@@ -647,19 +647,18 @@ impl<'d> CoreBattle<'d> {
                 self.mid_turn = true;
             }
             Action::Team(action) => {
-                let mut context = self.mon_context(action.mon)?;
+                let mut context = self.mon_context(action.mon_action.mon)?;
                 if action.index == 0 {
                     context.player_mut().mons.clear();
                 }
-                context.player_mut().mons.push(action.mon);
+                context.player_mut().mons.push(action.mon_action.mon);
             }
             Action::Switch(action) => {
-                let mut context = self.mon_context(action.mon)?;
+                let mut context = self.mon_context(action.mon_action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position)?;
             }
-            Action::Move(action) => {
-                todo!()
-            }
+            Action::MegaEvo(action) => todo!("mega evolution is not implemented"),
+            Action::Move(action) => todo!("moves are not implemented"),
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
@@ -705,6 +704,19 @@ impl<'d> CoreBattle<'d> {
 
         self.ended = true;
         self.clear_requests()?;
+        Ok(())
+    }
+
+    pub fn calculate_action_priority(&mut self, action: &mut Action) -> Result<(), Error> {
+        if let Action::Move(action) = action {
+            let mov = self.dex.moves.get_by_id(&action.id).into_result()?;
+            action.priority = mov.data.priority as i32;
+            // TODO: Run priority modification events for the move and Mon.
+        }
+        if let Some(mon_action) = action.mon_action_mut() {
+            let mut context = self.mon_context(mon_action.mon)?;
+            mon_action.speed = Mon::action_speed(&mut context)? as u32;
+        }
         Ok(())
     }
 }

@@ -107,6 +107,11 @@ where
         num::Integer::div_ceil(&self.numerator(), &self.denominator())
     }
 
+    /// Returns the inverse of this fraction.
+    pub fn inverse(&self) -> Self {
+        Self::new(self.denominator(), self.numerator())
+    }
+
     fn normalize(a: &Fraction<I>, b: &Fraction<I>) -> (Fraction<I>, Fraction<I>) {
         let a1 = a.numerator();
         let a2 = a.denominator();

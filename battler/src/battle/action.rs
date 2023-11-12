@@ -5,29 +5,105 @@ use crate::{
     common::Id,
 };
 
-/// A Team Preview action.
+/// A Mon action.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TeamAction {
+pub struct MonAction {
+    pub mon: MonHandle,
+    pub speed: u32,
+}
+
+impl MonAction {
+    pub fn new(mon: MonHandle) -> Self {
+        Self { mon, speed: 0 }
+    }
+}
+
+/// A Team Preview action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TeamActionInput {
     pub mon: MonHandle,
     pub index: usize,
     pub priority: i32,
+}
+
+/// A Team Preview action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TeamAction {
+    pub mon_action: MonAction,
+    pub index: usize,
+    pub priority: i32,
+}
+
+impl TeamAction {
+    /// Creates a new [`TeamAction`] from [`TeamActionInput`].
+    pub fn new(input: TeamActionInput) -> Self {
+        Self {
+            mon_action: MonAction::new(input.mon),
+            index: input.index,
+            priority: input.priority,
+        }
+    }
+}
+
+/// A switch action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SwitchActionInput {
+    pub instant: bool,
+    pub mon: MonHandle,
+    pub position: usize,
 }
 
 /// A switch action.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SwitchAction {
     pub instant: bool,
-    pub mon: MonHandle,
+    pub mon_action: MonAction,
     pub position: usize,
+}
+
+impl SwitchAction {
+    /// Creates a new [`SwitchAction`] from [`SwitchActionInput`].
+    pub fn new(input: SwitchActionInput) -> Self {
+        Self {
+            instant: input.instant,
+            mon_action: MonAction::new(input.mon),
+            position: input.position,
+        }
+    }
+}
+
+/// A move action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MoveActionInput {
+    pub id: Id,
+    pub mon: MonHandle,
+    pub target: Option<isize>,
+    pub mega: bool,
 }
 
 /// A move action.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MoveAction {
     pub id: Id,
-    pub mon: MonHandle,
+    pub mon_action: MonAction,
     pub target: Option<isize>,
     pub mega: bool,
+    pub priority: i32,
+    pub sub_priority: u32,
+}
+
+impl MoveAction {
+    /// Creates a new [`MoveAction`] from [`MoveActionInput`].
+    pub fn new(input: MoveActionInput) -> Self {
+        Self {
+            id: input.id,
+            mon_action: MonAction::new(input.mon),
+            target: input.target,
+            mega: input.mega,
+            priority: 0,
+            sub_priority: 0,
+        }
+    }
 }
 
 /// An action during a battle.
@@ -44,6 +120,7 @@ pub enum Action {
     Team(TeamAction),
     Switch(SwitchAction),
     Move(MoveAction),
+    MegaEvo(MonAction),
 }
 
 impl Action {
@@ -55,10 +132,11 @@ impl Action {
                 if action.instant {
                     3
                 } else {
-                    200
+                    100
                 }
             }
             Self::BeforeTurn => 4,
+            Self::MegaEvo(_) => 102,
             Self::Move(_) => 200,
             Self::Pass => 200,
             Self::Residual => 300,
@@ -68,19 +146,35 @@ impl Action {
     pub fn priority(&self) -> i32 {
         match self {
             Self::Team(action) => action.priority,
+            Self::Move(action) => action.priority,
             _ => 0,
         }
     }
 
     pub fn speed(&self) -> u32 {
         match self {
-            _ => 0,
+            Self::Team(action) => action.mon_action.speed,
+            Self::Switch(action) => action.mon_action.speed,
+            Self::Move(action) => action.mon_action.speed,
+            Self::MegaEvo(action) => action.speed,
+            _ => 1,
         }
     }
 
     pub fn sub_order(&self) -> u32 {
         match self {
+            Self::Move(action) => action.sub_priority,
             _ => 0,
+        }
+    }
+
+    pub fn mon_action_mut(&mut self) -> Option<&mut MonAction> {
+        match self {
+            Self::Team(action) => Some(&mut action.mon_action),
+            Self::Switch(action) => Some(&mut action.mon_action),
+            Self::Move(action) => Some(&mut action.mon_action),
+            Self::MegaEvo(action) => Some(action),
+            _ => None,
         }
     }
 }
@@ -101,6 +195,7 @@ impl Ord for Action {
                 other
                     .speed()
                     .cmp(&self.speed())
+                    // Lower sub order first.
                     .then_with(|| self.sub_order().cmp(&other.sub_order()))
             })
         })
