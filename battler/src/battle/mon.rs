@@ -1,9 +1,6 @@
 use std::{
     borrow::Cow,
-    ops::{
-        Div,
-        Mul,
-    },
+    ops::Mul,
 };
 
 use lazy_static::lazy_static;
