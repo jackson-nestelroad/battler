@@ -1,8 +1,8 @@
-use rand::Rng;
-use std::mem;
-
 #[cfg(test)]
 use std::collections::VecDeque;
+use std::mem;
+
+use rand::Rng;
 
 /// A pseudo-random number generator, created with the intention of using a random number generator
 /// that can be deterministically "replayed" for battle simulations.
@@ -52,7 +52,8 @@ impl PseudoRandomNumberGenerator {
             return next;
         }
         self.seed = Self::next_seed(self.seed);
-        self.seed
+        // Use the upper 32 bits. The lower ones are predictable in some situations.
+        self.seed >> 32
     }
 
     /// Returns whether a random event occurs.
@@ -63,6 +64,22 @@ impl PseudoRandomNumberGenerator {
     /// Returns a random integer in the range `[min, max)`.
     pub fn range(&mut self, min: u64, max: u64) -> u64 {
         self.next().rem_euclid(max - min) + min
+    }
+
+    /// Returns a random element from the given iterator.
+    pub fn sample_iter<'a, I, T>(&mut self, iter: I) -> &'a T
+    where
+        I: Iterator<Item = &'a T>,
+    {
+        let items = iter.collect::<Vec<_>>();
+        let index = self.range(0, items.len() as u64);
+        unsafe { items.get_unchecked(index as usize) }
+    }
+
+    /// Returns a random element from the given slice.
+    pub fn sample_slice<'a, T>(&mut self, slice: &'a [T]) -> &'a T {
+        let index = self.range(0, slice.len() as u64);
+        unsafe { slice.get_unchecked(index as usize) }
     }
 
     /// Shuffles the given slice using a Fisher-Yates shuffle.
@@ -114,9 +131,9 @@ mod prng_tests {
         let num = 3;
         let den = 7;
         let want = vec![
-            true, true, false, false, false, false, true, true, false, false, false, false, true,
-            false, true, false, true, false, true, false, true, false, false, false, false, true,
-            true, true, true, true, true, false, true, false, false,
+            true, true, false, false, false, false, false, true, true, true, false, true, true,
+            false, true, false, true, false, false, true, true, true, true, true, false, false,
+            true, false, false, false, true, false, false, false, false,
         ];
         let got = (0..35).map(|_| prng.chance(num, den)).collect::<Vec<_>>();
         assert_eq!(got, want);
@@ -127,13 +144,45 @@ mod prng_tests {
         let mut prng = PseudoRandomNumberGenerator::new_with_seed(123456789);
         let mut items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         prng.shuffle(&mut items);
-        let mut want = [6, 3, 8, 4, 0, 2, 5, 1, 7, 9];
+        let mut want = [3, 4, 9, 6, 0, 1, 2, 5, 7, 8];
         assert_eq!(items, want);
         prng.shuffle(&mut items);
-        want = [4, 7, 6, 2, 1, 0, 8, 5, 9, 3];
+        want = [6, 7, 3, 4, 8, 2, 1, 0, 9, 5];
         assert_eq!(items, want);
         prng.shuffle(&mut items);
-        want = [9, 7, 6, 1, 8, 4, 2, 3, 0, 5];
+        want = [6, 8, 7, 4, 5, 2, 3, 9, 1, 0];
         assert_eq!(items, want);
+    }
+
+    #[test]
+    fn samples_element_in_iterator() {
+        let mut prng = PseudoRandomNumberGenerator::new_with_seed(123456789);
+        let items = vec!["a", "b", "c", "d"];
+        assert_eq!(prng.sample_iter(items.iter()), &"d");
+        assert_eq!(prng.sample_iter(items.iter()), &"a");
+        assert_eq!(prng.sample_iter(items.iter()), &"d");
+        assert_eq!(prng.sample_iter(items.iter()), &"d");
+        assert_eq!(prng.sample_iter(items.iter()), &"c");
+        assert_eq!(prng.sample_iter(items.iter()), &"c");
+        assert_eq!(prng.sample_iter(items.iter()), &"d");
+        assert_eq!(prng.sample_iter(items.iter()), &"d");
+        assert_eq!(prng.sample_iter(items.iter()), &"b");
+        assert_eq!(prng.sample_iter(items.iter()), &"b");
+    }
+
+    #[test]
+    fn samples_element_in_slice() {
+        let mut prng = PseudoRandomNumberGenerator::new_with_seed(987654321);
+        let items = vec!["a", "b", "c", "d"];
+        assert_eq!(prng.sample_slice(&items), &"a");
+        assert_eq!(prng.sample_slice(&items), &"b");
+        assert_eq!(prng.sample_slice(&items), &"a");
+        assert_eq!(prng.sample_slice(&items), &"a");
+        assert_eq!(prng.sample_slice(&items), &"a");
+        assert_eq!(prng.sample_slice(&items), &"b");
+        assert_eq!(prng.sample_slice(&items), &"d");
+        assert_eq!(prng.sample_slice(&items), &"c");
+        assert_eq!(prng.sample_slice(&items), &"c");
+        assert_eq!(prng.sample_slice(&items), &"d");
     }
 }
