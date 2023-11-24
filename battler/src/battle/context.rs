@@ -3,6 +3,8 @@ use std::{
     mem,
 };
 
+use zone_alloc::ElementRefMut;
+
 use crate::{
     battle::{
         BattleQueue,
@@ -350,7 +352,7 @@ where
 {
     context: MaybeOwnedMut<'player, PlayerContext<'side, 'context, 'battle, 'data>>,
     mon_handle: MonHandle,
-    mon: *mut Mon,
+    mon: ElementRefMut<'context, Mon>,
 }
 
 impl<'player, 'side, 'context, 'battle, 'data>
@@ -363,7 +365,8 @@ impl<'player, 'side, 'context, 'battle, 'data>
         mon_handle: MonHandle,
     ) -> Result<Self, Error> {
         // See comments on [`Context::new`] for why this is safe.
-        let mon: &mut Mon = unsafe { mem::transmute(&mut *context.battle().mon_mut(mon_handle)?) };
+        let mon: ElementRefMut<'context, Mon> =
+            unsafe { mem::transmute(context.battle().mon_mut(mon_handle)?) };
         let player = mon.player;
         let context = PlayerContext::new(context, player)?;
         Ok(Self {
@@ -378,8 +381,8 @@ impl<'player, 'side, 'context, 'battle, 'data>
         mon_handle: MonHandle,
     ) -> Result<Self, Error> {
         // See comments on [`Context::new`] for why this is safe.
-        let mon: &mut Mon =
-            unsafe { mem::transmute(&mut *player_context.battle().mon_mut(mon_handle)?) };
+        let mon: ElementRefMut<'battle, Mon> =
+            unsafe { mem::transmute(player_context.battle().mon_mut(mon_handle)?) };
         Ok(Self {
             context: player_context.into(),
             mon_handle,
@@ -486,11 +489,11 @@ impl<'player, 'side, 'context, 'battle, 'data>
 
     /// Returns a reference to the [`Mon`].
     pub fn mon(&self) -> &Mon {
-        unsafe { &*self.mon }
+        &*self.mon
     }
 
     /// Returns a mutable reference to the [`Mon`].
     pub fn mon_mut(&mut self) -> &mut Mon {
-        unsafe { &mut *self.mon }
+        &mut *self.mon
     }
 }
