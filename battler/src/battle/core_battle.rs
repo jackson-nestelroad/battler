@@ -17,6 +17,7 @@ use crate::{
     battle::{
         core_battle_actions,
         Action,
+        ActiveMoveContext,
         Battle,
         BattleEngineOptions,
         BattleOptions,
@@ -83,6 +84,10 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_ability_priority: u32,
 
+    active_move: Option<Id>,
+    active_mon: Option<MonHandle>,
+    active_target: Option<MonHandle>,
+
     input_log: FastHashMap<usize, Vec<String>>,
 
     _pin: PhantomPinned,
@@ -143,6 +148,9 @@ impl<'d> CoreBattle<'d> {
             started: false,
             ended: false,
             next_ability_priority: 0,
+            active_move: None,
+            active_mon: None,
+            active_target: None,
             input_log,
             _pin: PhantomPinned,
         };
@@ -167,8 +175,26 @@ impl<'d> CoreBattle<'d> {
     fn mon_context<'b>(
         &'b mut self,
         mon: MonHandle,
-    ) -> Result<MonContext<'_, '_, '_, 'b, 'd>, Error> {
+    ) -> Result<MonContext<'_, '_, '_, '_, 'b, 'd>, Error> {
         MonContext::new(self.context().into(), mon)
+    }
+
+    fn active_move_context<'b>(
+        &'b mut self,
+    ) -> Result<ActiveMoveContext<'_, '_, '_, '_, '_, 'b, 'd>, Error> {
+        let active_mon = self.active_mon.wrap_error_with_message("no active mon")?;
+        // TODO: This clone is not needed, but the borrow checker currently requires it.
+        let active_move = self
+            .active_move
+            .clone()
+            .wrap_error_with_message("no active move")?;
+        let active_target = self.active_target;
+        ActiveMoveContext::new(
+            self.context().into(),
+            active_mon,
+            &active_move,
+            active_target,
+        )
     }
 
     pub fn sides(&self) -> impl Iterator<Item = &Side> {
@@ -843,5 +869,11 @@ impl<'d> CoreBattle<'d> {
         } else {
             self.random_target(mon, move_id)
         }
+    }
+
+    pub fn set_active_move(&mut self, active_move: Id, user: MonHandle, target: Option<MonHandle>) {
+        self.active_move = Some(active_move);
+        self.active_mon = Some(user);
+        self.active_target = target;
     }
 }

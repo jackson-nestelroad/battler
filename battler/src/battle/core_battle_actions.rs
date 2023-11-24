@@ -10,6 +10,7 @@ use crate::{
     common::{
         Error,
         Id,
+        Identifiable,
         WrapResultError,
     },
 };
@@ -63,6 +64,8 @@ pub fn do_move(
     let target = context
         .battle_mut()
         .get_target(mon_handle, move_id, target, original_target)?;
-    let mov = context.battle().dex.moves.get_by_id(move_id);
+
+    let move_context = context.active_move_context(move_id, target)?;
+
     todo!("moves are not implemented")
 }

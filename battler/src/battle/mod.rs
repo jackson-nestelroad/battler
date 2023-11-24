@@ -56,6 +56,7 @@ pub use calculations::{
     calculate_mon_stats,
 };
 pub use context::{
+    ActiveMoveContext,
     Context,
     MonContext,
     PlayerContext,

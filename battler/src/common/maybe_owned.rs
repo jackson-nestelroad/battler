@@ -105,6 +105,18 @@ macro_rules! common_maybe_owned_impls {
 common_maybe_owned_impls!(MaybeOwned);
 common_maybe_owned_impls!(MaybeOwnedMut);
 
+impl<'a, T> MaybeOwned<'a, T> {
+    pub fn unowned_ref<'b>(&'a self) -> MaybeOwned<'b, T>
+    where
+        'a: 'b,
+    {
+        match self {
+            Self::Owned(value) => Self::Unowned(&value),
+            Self::Unowned(value) => Self::Unowned(value),
+        }
+    }
+}
+
 impl<'a, T> From<&'a T> for MaybeOwned<'a, T> {
     fn from(value: &'a T) -> Self {
         Self::Unowned(value)
