@@ -725,9 +725,13 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
         let mon_ref = mon_ref
             .wrap_error_with_format(format_args!("failed to get target mon {target_mon_handle}"))?;
         // SAFETY: We separate the mutable reference to the target Mon so that we can also create a
-        // new PlayerContext. This is safe because there is an still underlying ElementRefMut
-        // (owned by this ActiveMoveContext) protecting this Mon from being mutably borrowed
-        // twice.
+        // new PlayerContext.
+        //
+        // This is safe because there is an still underlying ElementRefMut (owned by this
+        // ActiveMoveContext) protecting this Mon from being mutably borrowed twice.
+        //
+        // Furthermore, using this reference mutably requires a mutable borrow of the whole context,
+        // so multiple mutable references should not be useable across contexts in the same chain.
         let mon_ref: &mut Mon = unsafe { mem::transmute(mon_ref) };
         let player_context = self
             .as_battle_context_mut()
