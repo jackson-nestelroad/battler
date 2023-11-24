@@ -177,6 +177,12 @@ impl<T, E> FromResidual<Result<Infallible, E>> for LookupResult<T, E> {
     }
 }
 
+impl<T> FromResidual<LookupResult<Infallible, Error>> for Result<T, Error> {
+    fn from_residual(residual: LookupResult<Infallible, Error>) -> Self {
+        residual.map(|_| unreachable!()).into_result()
+    }
+}
+
 impl<T, E> From<Option<T>> for LookupResult<T, E> {
     fn from(value: Option<T>) -> Self {
         match value {
