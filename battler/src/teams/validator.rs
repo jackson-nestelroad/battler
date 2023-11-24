@@ -1,4 +1,7 @@
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    mem,
+};
 
 use ahash::{
     HashMapExt,
@@ -7,6 +10,7 @@ use ahash::{
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
+use zone_alloc::ElementRef;
 
 use crate::{
     abilities::Ability,
@@ -27,7 +31,6 @@ use crate::{
     },
     items::Item,
     mons::{
-        EventData,
         Gender,
         MoveSource,
         ShinyChance,
@@ -94,18 +97,22 @@ impl Display for TeamValidationError {
     }
 }
 
+struct PossibleEvent<'d> {
+    species: ElementRef<'d, Species>,
+}
+
 /// The state of Mon validation algorithms.
 ///
 /// Some state must be persisted across validating a single Mon. All such state should be stored
 /// here.
-struct MonValidationState<'b> {
+struct MonValidationState<'s> {
     /// Was this Mon obtained from a giveaway event?
     from_event: bool,
     /// Possible events the Mon may have been obtained from.
-    possible_events: FastHashMap<&'b str, &'b EventData>,
+    possible_events: FastHashMap<String, PossibleEvent<'s>>,
 }
 
-impl<'d> MonValidationState<'d> {
+impl<'s> MonValidationState<'s> {
     fn new() -> Self {
         Self {
             from_event: false,
@@ -113,7 +120,7 @@ impl<'d> MonValidationState<'d> {
         }
     }
 
-    fn add_possible_events(&mut self, events: FastHashMap<&'d str, &'d EventData>) {
+    fn add_possible_events(&mut self, events: FastHashMap<String, PossibleEvent<'s>>) {
         // If this Mon is not yet known to be from an event, then the first set of events is the
         // initial set. Otherwise, take the intersection to receive the new set of possible events
         // this Mon could have been from.
@@ -121,13 +128,13 @@ impl<'d> MonValidationState<'d> {
             self.from_event = true;
             self.possible_events = events;
         } else {
-            let mut intersection = FastHashMap::new();
-            for (id, event) in &self.possible_events {
-                if events.contains_key(id) {
-                    intersection.insert(*id, *event);
+            let mut current_events = FastHashMap::new();
+            mem::swap(&mut self.possible_events, &mut current_events);
+            for (id, event) in current_events.into_iter() {
+                if events.contains_key(&id) {
+                    self.possible_events.insert(id, event);
                 }
             }
-            self.possible_events = intersection;
         }
     }
 }
@@ -329,8 +336,8 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         }
 
         // Species validation.
-        result.merge(self.validate_species(species));
-        result.merge(self.validate_forme(mon, species, ability, item));
+        result.merge(self.validate_species(&species));
+        result.merge(self.validate_forme(mon, &species, &ability, item.as_ref()));
 
         // Forme may have changed, so look up the species again.
         let species = match self.dex.species.get(&mon.species) {
@@ -352,11 +359,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         };
 
         let mut state = MonValidationState::new();
-        if let Some(item) = item {
-            result.merge(self.validate_item(mon, item));
+        if let Some(item) = &item {
+            result.merge(self.validate_item(mon, &item));
         }
-        result.merge(self.validate_moveset(mon, species, &mut state));
-        result.merge(self.validate_ability(mon, species, ability, &mut state));
+        result.merge(self.validate_moveset(mon, &species, &mut state));
+        result.merge(self.validate_ability(mon, &species, &ability, &mut state));
         // At this point, the moves and ability have informed us of a set of possible events this
         // Mon could have been received from. We must validate the rest of the Mon's properties to
         // make sure this Mon really did come from that event.
@@ -383,7 +390,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         check
     }
 
-    fn validate_species(&self, species: &'d Species) -> Result<(), TeamValidationError> {
+    fn validate_species(
+        &self,
+        species: &ElementRef<'d, Species>,
+    ) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
         let tags = species
@@ -415,9 +425,9 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     fn validate_forme(
         &self,
         mon: &'b mut MonData,
-        species: &'d Species,
-        _: &'d Ability,
-        item: Option<&Item>,
+        species: &ElementRef<'d, Species>,
+        _: &ElementRef<'d, Ability>,
+        item: Option<&ElementRef<'d, Item>>,
     ) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
@@ -433,7 +443,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 || !species
                     .data
                     .required_items
-                    .contains(item.unwrap().id().as_ref()))
+                    .contains(item.as_ref().unwrap().id().as_ref()))
         {
             result.add_problem(format!(
                 "{} is only available when holding one of the following items: {}.",
@@ -443,7 +453,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         }
 
         // The item forces this base species into some forme, so modify the Mon's species.
-        if let Some(Some(force_forme)) = &item.map(|item| &item.data.force_forme) {
+        if let Some(Some(force_forme)) = &item.as_ref().map(|item| &item.data.force_forme) {
             if let DataLookupResult::Found(force_forme_species) = self.dex.species.get(&force_forme)
             {
                 if species.data.name == force_forme_species.data.base_species {
@@ -455,7 +465,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         result.into()
     }
 
-    fn validate_item(&self, _: &'b MonData, item: &'d Item) -> Result<(), TeamValidationError> {
+    fn validate_item(
+        &self,
+        _: &'b MonData,
+        item: &ElementRef<'d, Item>,
+    ) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
         // Check if item is allowed.
@@ -485,12 +499,15 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         result.into()
     }
 
-    fn validate_moveset(
+    fn validate_moveset<'state>(
         &self,
         mon: &'b MonData,
-        species: &'d Species,
-        state: &mut MonValidationState<'d>,
-    ) -> Result<(), TeamValidationError> {
+        species: &ElementRef<'d, Species>,
+        state: &mut MonValidationState<'state>,
+    ) -> Result<(), TeamValidationError>
+    where
+        'b: 'state,
+    {
         let mut result = TeamValidationError::new();
 
         let max_move_count = self.format.rules.numeric_rules.max_move_count as usize;
@@ -521,7 +538,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             result.merge(self.validate_move(
                 mon,
                 species,
-                mov,
+                &mov,
                 mon.pp_boosts.get(i).cloned().unwrap_or(0),
                 state,
             ));
@@ -529,14 +546,17 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         result.into()
     }
 
-    fn validate_move(
+    fn validate_move<'mov, 'state>(
         &self,
         mon: &'b MonData,
-        species: &'d Species,
-        mov: &'d Move,
+        species: &ElementRef<'d, Species>,
+        mov: &ElementRef<'mov, Move>,
         pp_boosts: u8,
-        state: &mut MonValidationState<'d>,
-    ) -> Result<(), TeamValidationError> {
+        state: &mut MonValidationState<'state>,
+    ) -> Result<(), TeamValidationError>
+    where
+        'b: 'state,
+    {
         let mut result = TeamValidationError::new();
 
         // Check if move is allowed.
@@ -597,21 +617,24 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         result.into()
     }
 
-    fn validate_can_learn(
+    fn validate_can_learn<'mov, 'state>(
         &self,
         mon: &'b MonData,
-        species: &'d Species,
-        mov: &'d Move,
-        state: &mut MonValidationState<'d>,
-    ) -> MoveLegality {
+        species: &ElementRef<'d, Species>,
+        mov: &ElementRef<'mov, Move>,
+        state: &mut MonValidationState<'state>,
+    ) -> MoveLegality
+    where
+        'b: 'state,
+    {
         let mut seen = FastHashSet::<Id>::new();
-        let mut current_species = DataLookupResult::Found(species);
+        let mut current_species = DataLookupResult::Found(species.clone());
         let mut possible_events = FastHashMap::new();
 
         loop {
-            let species = match current_species {
+            let species = match &current_species {
                 DataLookupResult::NotFound => break,
-                DataLookupResult::Found(species) => species,
+                DataLookupResult::Found(species) => species.clone(),
                 DataLookupResult::Error(error) => {
                     return MoveLegality::Illegal(format!("could not be looked up: {error}."));
                 }
@@ -633,7 +656,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                     .as_ref()
                     .or(species.data.base_forme.as_ref())
                 {
-                    current_species = self.dex.species.get(changes_from);
+                    current_species = self
+                        .dex
+                        .species
+                        .get(changes_from)
+                        .map(|species| species.into());
                 }
             }
 
@@ -696,7 +723,14 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 .events
                 .iter()
                 .filter(|(_, event)| event.moves.contains(mov.id().as_ref()))
-                .map(|(id, event)| (id.as_ref(), event))
+                .map(|(id, _)| {
+                    (
+                        id.clone(),
+                        PossibleEvent {
+                            species: species.clone(),
+                        },
+                    )
+                })
                 .collect::<FastHashMap<_, _>>();
             if possible_events.is_empty() {
                 possible_events = events_with_this_move;
@@ -719,13 +753,16 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 .as_ref()
                 .or(species.data.base_forme.as_ref())
             {
-                current_species = self.dex.species.get(changes_from);
+                current_species = self
+                    .dex
+                    .species
+                    .get(changes_from)
+                    .map(|species| species.into());
                 continue;
             } else if let Some(prevo) = &species.data.prevo {
-                current_species = self.dex.species.get(prevo);
+                current_species = self.dex.species.get(prevo).map(|species| species.into());
             }
         }
-
         // There is some giveaway event that allows this move.
         //
         // Notice that if the move was found to be obtainable any other way, these events do not
@@ -739,12 +776,12 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         return MoveLegality::Illegal(format!("is unobtainable on {}.", species.data.name));
     }
 
-    fn validate_ability(
+    fn validate_ability<'state>(
         &self,
         mon: &'b MonData,
-        species: &Species,
-        ability: &Ability,
-        _: &mut MonValidationState,
+        species: &ElementRef<'d, Species>,
+        ability: &ElementRef<'d, Ability>,
+        _: &mut MonValidationState<'state>,
     ) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
@@ -793,10 +830,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         result.into()
     }
 
-    fn validate_event(
+    fn validate_event<'state>(
         &self,
         mon: &'b MonData,
-        state: &mut MonValidationState,
+        state: &mut MonValidationState<'state>,
     ) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
@@ -826,25 +863,26 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let number_of_possible_events = state
             .possible_events
             .iter()
-            .filter(|(_, event)| mon.level >= event.level.unwrap_or(0))
-            .filter(|(_, event)| match event.shiny {
+            .filter_map(|(id, event)| event.species.data.events.get(id))
+            .filter(|event| mon.level >= event.level.unwrap_or(0))
+            .filter(|event| match event.shiny {
                 ShinyChance::Always => mon.shiny,
                 ShinyChance::Never => !mon.shiny,
                 _ => true,
             })
-            .filter(|(_, event)| match &event.gender {
+            .filter(|event| match &event.gender {
                 Some(gender) => mon.gender == *gender,
                 None => true,
             })
-            .filter(|(_, event)| match &event.nature {
+            .filter(|event| match &event.nature {
                 Some(nature) => mon.nature == *nature,
                 None => true,
             })
-            .filter(|(_, event)| match &event.ball {
+            .filter(|event| match &event.ball {
                 Some(ball) => mon.ball == *ball,
                 None => true,
             })
-            .filter(|(_, event)| {
+            .filter(|event| {
                 event
                     .ivs
                     .iter()

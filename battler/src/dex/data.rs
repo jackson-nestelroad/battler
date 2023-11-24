@@ -1,11 +1,16 @@
 use std::{
     env,
     fs::File,
+    ops::Deref,
     path::Path,
 };
 
 use ahash::HashMapExt;
 use serde::de::DeserializeOwned;
+use zone_alloc::{
+    BorrowError,
+    KeyedRegistry,
+};
 
 use crate::{
     abilities::AbilityData,
@@ -34,10 +39,20 @@ use crate::{
 pub type SerializedDataTable<T> = FastHashMap<String, T>;
 
 /// Table for all resource data of a particular type.
-pub type DataTable<T> = FastHashMap<Id, T>;
+pub type DataTable<T> = KeyedRegistry<Id, T>;
 
 /// The result of a data lookup request.
 pub type DataLookupResult<T> = LookupResult<T, Error>;
+
+impl<T> From<Result<T, BorrowError>> for DataLookupResult<T> {
+    fn from(value: Result<T, BorrowError>) -> Self {
+        match value {
+            Ok(value) => Self::Found(value),
+            Err(BorrowError::OutOfBounds) => Self::NotFound,
+            Err(error) => Self::Error(Error::new(error)),
+        }
+    }
+}
 
 /// Collection of tables for all resource data.
 ///
@@ -131,11 +146,14 @@ impl LocalDataStore {
             .wrap_error_with_message("failed to parse type chart")?,
         );
 
-        self.clauses = serde_json::from_reader(
+        let clauses: FastHashMap<Id, ClauseData> = serde_json::from_reader(
             File::open(Path::new(&self.root).join(Self::CLAUSES_FILE))
                 .wrap_error_with_message("failed to read clauses")?,
         )
         .wrap_error_with_message("failed to parse clauses")?;
+        for (id, clause) in clauses {
+            self.clauses.register(id, clause);
+        }
 
         self.species = self.read_all_files_in_directory::<SpeciesData>(Self::SPECIES_DIR)?;
         self.items = self.read_all_files_in_directory::<ItemData>(Self::ITEMS_DIR)?;
@@ -175,12 +193,15 @@ impl LocalDataStore {
                 }
             })
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(tables
-            .into_iter()
-            .map(|table| table.into_iter())
-            .flatten()
-            .map(|(key, value)| (Id::from(key), value))
-            .collect())
+        let registry = KeyedRegistry::new();
+        registry.register_extend(
+            tables
+                .into_iter()
+                .map(|table| table.into_iter())
+                .flatten()
+                .map(|(key, value)| (Id::from(key), value)),
+        );
+        Ok(registry)
     }
 }
 
@@ -198,11 +219,11 @@ impl DataStore for LocalDataStore {
     }
 
     fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
-        self.clauses.get(id).cloned().into()
+        self.clauses.get(id).map(|data| data.deref().clone()).into()
     }
 
     fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {
-        self.items.get(id).cloned().into()
+        self.items.get(id).map(|data| data.deref().clone()).into()
     }
 
     fn get_move(&self, id: &Id) -> DataLookupResult<MoveData> {
@@ -210,12 +231,14 @@ impl DataStore for LocalDataStore {
     }
 
     fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData> {
-        self.species.get(id).cloned().into()
+        self.species.get(id).map(|data| data.deref().clone()).into()
     }
 }
 
 #[cfg(test)]
 pub mod fake_data_store {
+    use std::ops::Deref;
+
     use ahash::HashMapExt;
 
     use crate::{
@@ -271,23 +294,26 @@ pub mod fake_data_store {
         }
 
         fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData> {
-            self.abilities.get(id).cloned().into()
+            self.abilities
+                .get(id)
+                .map(|data| data.deref().clone())
+                .into()
         }
 
         fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
-            self.clauses.get(id).cloned().into()
+            self.clauses.get(id).map(|data| data.deref().clone()).into()
         }
 
         fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {
-            self.items.get(id).cloned().into()
+            self.items.get(id).map(|data| data.deref().clone()).into()
         }
 
         fn get_move(&self, id: &Id) -> DataLookupResult<MoveData> {
-            self.moves.get(id).cloned().into()
+            self.moves.get(id).map(|data| data.deref().clone()).into()
         }
 
         fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData> {
-            self.species.get(id).cloned().into()
+            self.species.get(id).map(|data| data.deref().clone()).into()
         }
     }
 }

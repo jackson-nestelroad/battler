@@ -4,6 +4,8 @@ use std::{
 };
 
 use zone_alloc::{
+    ElementRef,
+    ElementRefMut,
     Handle,
     StrongRegistry,
 };
@@ -53,16 +55,16 @@ impl BattleRegistry {
     }
 
     /// Returns a reference to the [`Mon`] by [`MonHandle`].
-    pub fn mon(&self, mon: MonHandle) -> Result<&Mon, Error> {
+    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>, Error> {
         self.mons
             .get(mon)
-            .wrap_error_with_format(format_args!("mon {mon} does not exist"))
+            .wrap_error_with_format(format_args!("failed to access Mon {mon}"))
     }
 
     /// Returns a mutable reference to the [`Mon`] by [`MonHandle`].
-    pub fn mon_mut(&self, mon: MonHandle) -> Result<&mut Mon, Error> {
+    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>, Error> {
         self.mons
             .get_mut(mon)
-            .wrap_error_with_format(format_args!("mon {mon} does not exist"))
+            .wrap_error_with_format(format_args!("failed to access Mon {mon}"))
     }
 }

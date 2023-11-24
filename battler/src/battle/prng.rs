@@ -66,20 +66,27 @@ impl PseudoRandomNumberGenerator {
         self.next().rem_euclid(max - min) + min
     }
 
-    /// Returns a random element from the given iterator.
-    pub fn sample_iter<'a, I, T>(&mut self, iter: I) -> &'a T
+    /// Returns a random value from the given iterator.
+    pub fn sample_iter<'a, I, T>(&mut self, iter: I) -> Result<T, &'static str>
     where
-        I: Iterator<Item = &'a T>,
+        I: Iterator<Item = T>,
+        T: Clone,
     {
         let items = iter.collect::<Vec<_>>();
+        if items.is_empty() {
+            return Err("cannot sample an empty iterator");
+        }
         let index = self.range(0, items.len() as u64);
-        unsafe { items.get_unchecked(index as usize) }
+        unsafe { Ok(items.get_unchecked(index as usize).clone()) }
     }
 
     /// Returns a random element from the given slice.
-    pub fn sample_slice<'a, T>(&mut self, slice: &'a [T]) -> &'a T {
+    pub fn sample_slice<'a, T>(&mut self, slice: &'a [T]) -> Result<&'a T, &'static str> {
+        if slice.is_empty() {
+            return Err("cannot sample an empty slice");
+        }
         let index = self.range(0, slice.len() as u64);
-        unsafe { slice.get_unchecked(index as usize) }
+        unsafe { Ok(slice.get_unchecked(index as usize)) }
     }
 
     /// Shuffles the given slice using a Fisher-Yates shuffle.
@@ -155,34 +162,54 @@ mod prng_tests {
     }
 
     #[test]
+    fn sample_iter_fails_empty_iterator() {
+        let mut prng = PseudoRandomNumberGenerator::new_with_seed(123456789);
+        let items: Vec<&str> = Vec::new();
+        assert_eq!(
+            prng.sample_iter(items.iter()),
+            Err("cannot sample an empty iterator")
+        );
+    }
+
+    #[test]
     fn samples_element_in_iterator() {
         let mut prng = PseudoRandomNumberGenerator::new_with_seed(123456789);
         let items = vec!["a", "b", "c", "d"];
-        assert_eq!(prng.sample_iter(items.iter()), &"d");
-        assert_eq!(prng.sample_iter(items.iter()), &"a");
-        assert_eq!(prng.sample_iter(items.iter()), &"d");
-        assert_eq!(prng.sample_iter(items.iter()), &"d");
-        assert_eq!(prng.sample_iter(items.iter()), &"c");
-        assert_eq!(prng.sample_iter(items.iter()), &"c");
-        assert_eq!(prng.sample_iter(items.iter()), &"d");
-        assert_eq!(prng.sample_iter(items.iter()), &"d");
-        assert_eq!(prng.sample_iter(items.iter()), &"b");
-        assert_eq!(prng.sample_iter(items.iter()), &"b");
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"d"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"a"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"d"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"d"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"c"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"c"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"d"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"d"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"b"));
+        assert_eq!(prng.sample_iter(items.iter()), Ok(&"b"));
     }
 
     #[test]
     fn samples_element_in_slice() {
         let mut prng = PseudoRandomNumberGenerator::new_with_seed(987654321);
         let items = vec!["a", "b", "c", "d"];
-        assert_eq!(prng.sample_slice(&items), &"a");
-        assert_eq!(prng.sample_slice(&items), &"b");
-        assert_eq!(prng.sample_slice(&items), &"a");
-        assert_eq!(prng.sample_slice(&items), &"a");
-        assert_eq!(prng.sample_slice(&items), &"a");
-        assert_eq!(prng.sample_slice(&items), &"b");
-        assert_eq!(prng.sample_slice(&items), &"d");
-        assert_eq!(prng.sample_slice(&items), &"c");
-        assert_eq!(prng.sample_slice(&items), &"c");
-        assert_eq!(prng.sample_slice(&items), &"d");
+        assert_eq!(prng.sample_slice(&items), Ok(&"a"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"b"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"a"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"a"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"a"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"b"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"d"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"c"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"c"));
+        assert_eq!(prng.sample_slice(&items), Ok(&"d"));
+    }
+
+    #[test]
+    fn sample_iter_fails_empty_slice() {
+        let mut prng = PseudoRandomNumberGenerator::new_with_seed(987654321);
+        let items: Vec<&str> = Vec::new();
+        assert_eq!(
+            prng.sample_slice(&items),
+            Err("cannot sample an empty slice")
+        );
     }
 }

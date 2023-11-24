@@ -136,8 +136,10 @@ pub struct Error(ErrorNode);
 
 impl Error {
     /// Constructs a new error with the given message.
-    pub fn new<S: Into<String>>(message: S) -> Self {
-        Self(ErrorNode::Leaf(Box::new(SimpleError::new(message))))
+    pub fn new<S: Display>(message: S) -> Self {
+        Self(ErrorNode::Leaf(Box::new(SimpleError::new(format!(
+            "{message}"
+        )))))
     }
 
     /// Constructs a new error with the given formatted string.

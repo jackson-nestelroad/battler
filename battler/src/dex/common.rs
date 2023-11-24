@@ -1,12 +1,17 @@
-use std::{
-    cell::UnsafeCell,
-    marker::PhantomData,
+use std::marker::PhantomData;
+
+use zone_alloc::{
+    BorrowError,
+    ElementRef,
+    ElementRefMut,
 };
 
-use ahash::HashMapExt;
-
 use crate::{
-    common::Id,
+    battler_error,
+    common::{
+        Error,
+        Id,
+    },
     dex::{
         DataLookupResult,
         DataStore,
@@ -50,17 +55,6 @@ pub struct ResourceCache<T> {
     cache: DataTable<T>,
 }
 
-impl<T> Clone for ResourceCache<T>
-where
-    T: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            cache: self.cache.clone(),
-        }
-    }
-}
-
 impl<T> ResourceCache<T> {
     /// Creates a new resource cache.
     pub fn new() -> Self {
@@ -75,14 +69,18 @@ impl<T> ResourceCache<T> {
     }
 
     /// Gets the data for a cached ID.
-    pub fn get(&self, id: &Id) -> Option<&T> {
+    pub fn get(&self, id: &Id) -> Result<ElementRef<T>, BorrowError> {
         self.cache.get(id)
     }
 
+    /// Gets the mutable data for a cached ID.
+    pub fn get_mut(&self, id: &Id) -> Result<ElementRefMut<T>, BorrowError> {
+        self.cache.get_mut(id)
+    }
+
     /// Caches the given reference for future lookups.
-    pub fn save(&mut self, id: &Id, data: T) -> &T {
-        self.cache.insert(id.clone(), data);
-        self.get(id).unwrap()
+    pub fn save(&self, id: &Id, data: T) -> bool {
+        self.cache.register(id.clone(), data)
     }
 }
 
@@ -90,31 +88,10 @@ impl<T> ResourceCache<T> {
 pub struct ResourceDex<'d, D, T, L, W> {
     data: &'d dyn DataStore,
     /// Cache of resource instances, so each ID is only looked up once.
-    ///
-    /// We use [`UnsafeCell`] for interior mutability. This cache exists for the entirety of the
-    /// [`ResourceDex`]'s lifecycle, and it is always used in a single thread, so it is always safe
-    /// to dereference this cell.
-    cache: UnsafeCell<ResourceCache<T>>,
+    cache: ResourceCache<T>,
     lookup: L,
     phantom_data: PhantomData<D>,
     phantom_wrapper: PhantomData<W>,
-}
-
-impl<'d, D, T, L, W> Clone for ResourceDex<'d, D, T, L, W>
-where
-    T: Clone,
-    L: ResourceLookup<'d, D>,
-{
-    fn clone(&self) -> Self {
-        let cache = unsafe { self.cache.get().as_ref().unwrap() };
-        Self {
-            data: self.data,
-            cache: UnsafeCell::new(cache.clone()),
-            lookup: L::new(self.data),
-            phantom_data: PhantomData,
-            phantom_wrapper: PhantomData,
-        }
-    }
 }
 
 impl<'d, D, T, L, W> ResourceDex<'d, D, T, L, W>
@@ -126,29 +103,53 @@ where
     pub fn new(data: &'d dyn DataStore) -> Self {
         Self {
             data,
-            cache: UnsafeCell::new(ResourceCache::new()),
+            cache: ResourceCache::new().into(),
             lookup: L::new(data),
             phantom_data: PhantomData,
             phantom_wrapper: PhantomData,
         }
     }
 
+    fn cache_data(&self, id: &Id) -> DataLookupResult<()> {
+        let (id, data) = self.lookup_data_by_id(id.clone())?;
+        let resource = W::wrap(data);
+        if !self.cache.save(&id, resource) {
+            DataLookupResult::Error(battler_error!("failed to save data for {id} in cache"))
+        } else {
+            DataLookupResult::Found(())
+        }
+    }
+
     /// Retrieves a resource by name.
-    pub fn get(&self, name: &str) -> DataLookupResult<&'d T> {
+    pub fn get(&self, name: &str) -> DataLookupResult<ElementRef<T>> {
         self.get_by_id(&Id::from(name))
     }
 
     /// Retrieves a resource by ID.
-    pub fn get_by_id(&self, id: &Id) -> DataLookupResult<&'d T> {
-        let cache = unsafe { self.cache.get().as_mut().unwrap() };
+    pub fn get_by_id(&self, id: &Id) -> DataLookupResult<ElementRef<T>> {
         // The borrow checker struggles if we use pattern matching here, so we have to do two
         // lookups.
-        if cache.is_cached(&id) {
-            return cache.get(&id).into();
+        if self.cache.is_cached(&id) {
+            return self.cache.get(&id).into();
         }
-        let (id, data) = self.lookup_data_by_id(id.clone())?;
-        let resource = W::wrap(data);
-        Some(cache.save(&id, resource)).into()
+        self.cache_data(id)?;
+        self.cache.get(&id).into()
+    }
+
+    /// Retrieves a resource by name.
+    pub fn get_mut(&self, name: &str) -> DataLookupResult<ElementRefMut<T>> {
+        self.get_by_id_mut(&Id::from(name))
+    }
+
+    /// Retrieves a resource by ID.
+    pub fn get_by_id_mut(&self, id: &Id) -> DataLookupResult<ElementRefMut<T>> {
+        // The borrow checker struggles if we use pattern matching here, so we have to do two
+        // lookups.
+        if self.cache.is_cached(&id) {
+            return self.cache.get_mut(&id).into();
+        }
+        self.cache_data(id)?;
+        self.cache.get_mut(&id).into()
     }
 
     fn resolve_alias(&self, mut id: Id) -> DataLookupResult<Id> {
@@ -188,7 +189,7 @@ mod resource_cache_tests {
 
     #[test]
     fn caches_resources() {
-        let mut cache = ResourceCache::<Data>::new();
+        let cache = ResourceCache::<Data>::new();
         let id = Id::from("first");
         assert!(!cache.is_cached(&id));
         cache.save(&id, Data { number: 123 });
@@ -197,26 +198,22 @@ mod resource_cache_tests {
 
     #[test]
     fn gets_reference_to_cached_resource() {
-        let mut cache = ResourceCache::<Data>::new();
+        let cache = ResourceCache::<Data>::new();
         let id = Id::from("first");
         let data = Data { number: 123 };
-        let inserted = cache.save(&id, data.clone()) as *const _;
-        // Compare with original data.
-        unsafe {
-            assert_eq!(*inserted, data);
-        }
-        // Compare that reference returned by set is the same as get.
+        let inserted = cache.save(&id, data.clone());
+        assert!(inserted);
         let fetched = cache.get(&id);
-        unsafe {
-            assert_eq!(*inserted, *(fetched.unwrap() as *const _));
-        }
-        assert_eq!(inserted, fetched.unwrap() as *const _);
+        assert_eq!(fetched.unwrap().number, 123);
     }
 }
 
 #[cfg(test)]
 mod dex_tests {
-    use std::cell::RefCell;
+    use std::{
+        cell::RefCell,
+        ops::Deref,
+    };
 
     use ahash::HashMapExt;
     use rand::random;
@@ -286,10 +283,10 @@ mod dex_tests {
     async fn finds_and_caches_resource() {
         let data = FakeDataStore::new();
         let dex = TestDex::new(&data);
-        let first_resource = dex.get("first").cloned();
-        let second_resource = dex.get_by_id(&Id::from("first")).cloned();
+        let first_resource = dex.get("first").unwrap();
+        let second_resource = dex.get_by_id(&Id::from("first")).unwrap();
         // Random integers should be the same.
-        assert_eq!(first_resource, second_resource);
+        assert_eq!(first_resource.deref(), second_resource.deref());
         // Only a single lookup occurred.
         assert_eq!(
             *dex.lookup.lookup_calls.borrow(),
@@ -308,8 +305,8 @@ mod dex_tests {
         let b = dex.get("alias3");
         let c = dex.get("alias1");
         let d = dex.get("native");
-        assert_eq!(a, b);
-        assert_eq!(b.unwrap().data.id, c.clone().unwrap().data.id);
+        assert_eq!(a.unwrap().deref(), b.as_ref().unwrap().deref());
+        assert_eq!(b.unwrap().data.id, c.as_ref().unwrap().data.id);
         assert_eq!(c.unwrap().data.id, d.unwrap().data.id);
         // Only a single lookup occurred.
         assert_eq!(

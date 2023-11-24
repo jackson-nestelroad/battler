@@ -243,7 +243,9 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
     }
 
     /// Returns a mutable reference to the inner [`Context`].
-    pub fn as_battle_context_mut<'mon>(&'mon mut self) -> &'mon mut Context<'battle, 'data> {
+    pub fn as_battle_context_mut<'player>(
+        &'player mut self,
+    ) -> &'player mut Context<'battle, 'data> {
         self.context.as_battle_context_mut()
     }
 
@@ -259,6 +261,28 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
         &'player mut self,
     ) -> &'player mut SideContext<'context, 'battle, 'data> {
         &mut self.context
+    }
+
+    /// Returns a new [`SideContext`] for the opposing side.
+    pub fn foe_side_context<'player>(
+        &'player mut self,
+    ) -> Result<SideContext<'player, 'battle, 'data>, Error> {
+        let foe_side = self.foe_side().index;
+        self.as_battle_context_mut().side_context(foe_side)
+    }
+
+    /// Returns the [`SideContext`] for either the same side or the opposing side, depending on the
+    /// `same_side` parameter.
+    pub fn pick_side_context<'player>(
+        &'player mut self,
+        same_side: bool,
+    ) -> Result<SideContext<'player, 'battle, 'data>, Error> {
+        if same_side {
+            let side = self.side().index;
+            self.as_battle_context_mut().side_context(side)
+        } else {
+            Ok(self.foe_side_context()?.into())
+        }
     }
 
     /// Creates a new [`MonContext`], scoped to the lifetime of this context.
@@ -383,6 +407,22 @@ impl<'player, 'side, 'context, 'battle, 'data>
         &'mon mut self,
     ) -> &'mon mut SideContext<'context, 'battle, 'data> {
         self.context.as_side_context_mut()
+    }
+
+    /// Returns a new [`SideContext`] for the opposing side.
+    pub fn foe_side_context<'mon>(
+        &'mon mut self,
+    ) -> Result<SideContext<'mon, 'battle, 'data>, Error> {
+        self.context.foe_side_context()
+    }
+
+    /// Returns the [`SideContext`] for either the same side or the opposing side, depending on the
+    /// `same_side` parameter.
+    pub fn pick_side_context<'mon>(
+        &'mon mut self,
+        same_side: bool,
+    ) -> Result<SideContext<'mon, 'battle, 'data>, Error> {
+        self.context.pick_side_context(same_side)
     }
 
     /// Returns a reference to the inner [`PlayerContext`].

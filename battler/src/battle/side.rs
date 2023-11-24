@@ -97,8 +97,10 @@ impl Side {
     ) -> Result<Option<MonHandle>, Error> {
         let active_per_player = context.battle().format.battle_type.active_per_player();
         let (player_position, position) = position.div_mod_floor(&active_per_player);
-        let player_context = Self::player_context(context, player_position)
-            .wrap_error_with_format(format_args!("position {position} is out of bounds"))?;
-        Player::active_mon_handle(&player_context, position)
+        let player_context = match Self::player_context(context, player_position) {
+            Err(_) => return Ok(None),
+            Ok(player_context) => player_context,
+        };
+        Ok(Player::active_mon_handle(&player_context, position))
     }
 }

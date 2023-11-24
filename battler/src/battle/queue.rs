@@ -53,9 +53,7 @@ impl BattleQueue {
             }
         }
 
-        context
-            .battle_mut()
-            .calculate_action_priority(&mut action)?;
+        context.battle_mut().resolve_action(&mut action)?;
 
         context.battle_queue_mut().actions.push_back(action);
         Ok(())

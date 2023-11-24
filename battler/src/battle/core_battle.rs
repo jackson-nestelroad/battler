@@ -7,8 +7,11 @@ use std::{
     },
 };
 
-use itertools::Itertools;
 use uuid::Uuid;
+use zone_alloc::{
+    ElementRef,
+    ElementRefMut,
+};
 
 use crate::{
     battle::{
@@ -208,13 +211,13 @@ impl<'d> CoreBattle<'d> {
             .wrap_error_with_format(format_args!("player {player} does not exist"))
     }
 
-    pub fn mon(&self, mon: MonHandle) -> Result<&Mon, Error> {
+    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>, Error> {
         self.registry
             .mon(mon)
             .wrap_error_with_format(format_args!("mon {mon} does not exist"))
     }
 
-    pub fn mon_mut(&self, mon: MonHandle) -> Result<&mut Mon, Error> {
+    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>, Error> {
         self.registry
             .mon_mut(mon)
             .wrap_error_with_format(format_args!("mon {mon} does not exist"))
@@ -237,7 +240,7 @@ impl<'d> CoreBattle<'d> {
             .flatten()
     }
 
-    pub fn all_mons(&self) -> impl Iterator<Item = Result<&Mon, Error>> {
+    pub fn all_mons(&self) -> impl Iterator<Item = Result<ElementRef<Mon>, Error>> {
         self.sides()
             .map(|side| self.all_mons_on_side(side.index))
             .flatten()
@@ -253,7 +256,10 @@ impl<'d> CoreBattle<'d> {
             .cloned()
     }
 
-    pub fn all_mons_on_side(&self, side: usize) -> impl Iterator<Item = Result<&Mon, Error>> {
+    pub fn all_mons_on_side(
+        &self,
+        side: usize,
+    ) -> impl Iterator<Item = Result<ElementRef<Mon>, Error>> {
         self.players_on_side(side)
             .map(|player| player.mons.iter())
             .flatten()
@@ -270,12 +276,20 @@ impl<'d> CoreBattle<'d> {
             .cloned()
     }
 
+    pub fn active_mon_handles_on_side<'b>(
+        &'b self,
+        side: usize,
+    ) -> impl Iterator<Item = MonHandle> + 'b {
+        self.active_positions_on_side(side)
+            .filter_map(|position| position)
+    }
+
     pub fn active_mons_on_side<'b>(
         &'b self,
         side: usize,
-    ) -> impl Iterator<Item = Result<&Mon, Error>> + 'b {
-        self.active_positions_on_side(side)
-            .filter_map(|mon| Some(self.mon(mon?)))
+    ) -> impl Iterator<Item = Result<ElementRef<Mon>, Error>> + 'b {
+        self.active_mon_handles_on_side(side)
+            .map(|mon| self.mon(mon))
     }
 
     pub fn next_ability_priority(&mut self) -> u32 {
@@ -490,9 +504,12 @@ impl<'d> CoreBattle<'d> {
             .all_mons()
             .map(|res| match res {
                 Err(err) => Err(err),
-                Ok(mon) => Ok((mon.public_details(), self.player(mon.player)?.id.as_str())),
+                Ok(mon) => Ok(battle_event!(
+                    "mon",
+                    self.player(mon.player)?.id,
+                    mon.public_details()
+                )),
             })
-            .map_ok(|(details, player_id)| battle_event!("mon", player_id, details))
             .collect::<Result<Vec<_>, _>>()?;
         self.log_many(events);
         match self.format.rules.numeric_rules.picked_team_size {
@@ -657,8 +674,19 @@ impl<'d> CoreBattle<'d> {
                 let mut context = self.mon_context(action.mon_action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position)?;
             }
+            Action::Move(action) => {
+                let mut context = self.mon_context(action.mon_action.mon)?;
+                if !context.mon().active || context.mon().fainted {
+                    return Ok(());
+                }
+                core_battle_actions::do_move(
+                    &mut context,
+                    &action.id,
+                    action.target,
+                    action.original_target,
+                )?;
+            }
             Action::MegaEvo(action) => todo!("mega evolution is not implemented"),
-            Action::Move(action) => todo!("moves are not implemented"),
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
@@ -707,7 +735,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    pub fn calculate_action_priority(&mut self, action: &mut Action) -> Result<(), Error> {
+    fn calculate_action_priority(&mut self, action: &mut Action) -> Result<(), Error> {
         if let Action::Move(action) = action {
             let mov = self.dex.moves.get_by_id(&action.id).into_result()?;
             action.priority = mov.data.priority as i32;
@@ -718,5 +746,102 @@ impl<'d> CoreBattle<'d> {
             mon_action.speed = Mon::action_speed(&mut context)? as u32;
         }
         Ok(())
+    }
+
+    pub fn resolve_action(&mut self, action: &mut Action) -> Result<(), Error> {
+        if let Action::Move(action) = action {
+            let mut context = self.mon_context(action.mon_action.mon)?;
+            if let Some(target) = action.target {
+                action.original_target = Mon::get_target(&mut context, target)?;
+            }
+        }
+        self.calculate_action_priority(action)?;
+        Ok(())
+    }
+
+    fn random_target(&mut self, mon: MonHandle, move_id: &Id) -> Result<Option<MonHandle>, Error> {
+        let mov = self.dex.moves.get_by_id(move_id).into_result()?;
+        let target = mov.data.target.clone();
+
+        if target.can_target_user() {
+            // Target the user if possible.
+            return Ok(Some(mon));
+        }
+
+        let mut context = self.mon_context(mon)?;
+        let mons = if !target.can_target_foes() {
+            // Cannot target foes, so only consider allies.
+            Mon::adjacent_allies(&mut context)?
+                .filter_map(|ally| ally)
+                .collect::<Vec<_>>()
+        } else if target.is_adjacent_only() {
+            // Consider adjacent foes. Allies are excluded, so that a move will never randomly
+            // target an ally if it doesn't need to.
+            Mon::adjacent_foes(&mut context)?
+                .filter_map(|foe| foe)
+                .collect::<Vec<_>>()
+        } else {
+            // Consider all foes.
+            Mon::active_foes(&mut context).collect::<Vec<_>>()
+        };
+
+        Ok(self
+            .prng
+            .sample_slice(&mons)
+            .cloned()
+            .map(|mon| Some(mon))
+            .unwrap_or(None))
+    }
+
+    pub fn get_target(
+        &mut self,
+        mon: MonHandle,
+        move_id: &Id,
+        target: Option<isize>,
+        original_target: Option<MonHandle>,
+    ) -> Result<Option<MonHandle>, Error> {
+        let mov = self.dex.moves.get_by_id(move_id).into_result()?;
+        let tracks_target = mov.data.tracks_target;
+        let smart_target = mov.data.smart_target;
+        let move_target = mov.data.target.clone();
+
+        if tracks_target {
+            if let Some(original_target) = original_target {
+                let context = self.mon_context(original_target)?;
+                if context.mon().active {
+                    // Move's original target is on the field.
+                    return Ok(Some(original_target));
+                }
+            }
+        }
+
+        if smart_target {
+            let mut context = self.mon_context(mon)?;
+            if let Some(target) = target {
+                if let Some(target) = Mon::get_target(&mut context, target)? {
+                    return Ok(Some(target));
+                }
+            }
+        }
+
+        if let Some(target) = target {
+            if !move_target.is_random() && move_target.valid_target(target) {
+                let mut context = self.mon_context(mon)?;
+                if let Some(target_mon_handle) = Mon::get_target(&mut context, target)? {
+                    let target_mon = context.battle().mon(target_mon_handle)?;
+                    if !target_mon.fainted || target_mon.is_ally(context.mon()) {
+                        // Target is unfainted or an ally, so the chosen target is still valid.
+                        return Ok(Some(target_mon_handle));
+                    }
+                }
+            }
+        }
+
+        // The chosen target is not valid.
+        if move_target.choosable() {
+            Ok(None)
+        } else {
+            self.random_target(mon, move_id)
+        }
     }
 }

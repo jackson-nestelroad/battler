@@ -3,11 +3,13 @@ use crate::{
         Battle,
         Mon,
         MonContext,
+        MonHandle,
     },
     battle_event,
     battler_error,
     common::{
         Error,
+        Id,
         WrapResultError,
     },
 };
@@ -37,7 +39,7 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
             "expected {position} to be a valid index to active Mons"
         ))?;
     if let Some(mon) = prev {
-        let mon = context.battle().mon_mut(mon)?;
+        let mut mon = context.battle().mon_mut(mon)?;
         mon.switch_out();
     }
     Mon::switch_in(context, position);
@@ -47,4 +49,20 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
     context.battle_mut().log(event);
 
     Ok(())
+}
+
+/// Executes the given move by a Mon.
+pub fn do_move(
+    context: &mut MonContext,
+    move_id: &Id,
+    target: Option<isize>,
+    original_target: Option<MonHandle>,
+) -> Result<(), Error> {
+    context.mon_mut().active_move_actions += 1;
+    let mon_handle = context.mon_handle();
+    let target = context
+        .battle_mut()
+        .get_target(mon_handle, move_id, target, original_target)?;
+    let mov = context.battle().dex.moves.get_by_id(move_id);
+    todo!("moves are not implemented")
 }

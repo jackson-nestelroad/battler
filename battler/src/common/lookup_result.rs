@@ -66,6 +66,28 @@ impl<T, E> LookupResult<T, E> {
             Self::Error(_) => None,
         }
     }
+
+    /// Maps the inner value with the given operation, leaving an error untouched.
+    pub fn map<U, F>(self, op: F) -> LookupResult<U, E>
+    where
+        F: FnOnce(T) -> U,
+    {
+        match self {
+            Self::NotFound => LookupResult::NotFound,
+            Self::Error(error) => LookupResult::Error(error),
+            Self::Found(value) => LookupResult::Found(op(value)),
+        }
+    }
+
+    /// Returns an equivalent result, where the value and error are references to the original
+    /// object.
+    pub fn as_ref(&self) -> LookupResult<&T, &E> {
+        match self {
+            Self::NotFound => LookupResult::NotFound,
+            Self::Error(error) => LookupResult::Error(&error),
+            Self::Found(value) => LookupResult::Found(&value),
+        }
+    }
 }
 
 impl<T> LookupResult<T, Error> {
@@ -137,11 +159,20 @@ impl<T, E> FromResidual<LookupResult<Infallible, E>> for LookupResult<T, E> {
     }
 }
 
-impl<T, E> From<Result<T, E>> for LookupResult<T, E> {
-    fn from(value: Result<T, E>) -> Self {
-        match value {
-            Ok(value) => Self::Found(value),
-            Err(error) => Self::Error(error),
+impl<T, E> FromResidual<Option<T>> for LookupResult<T, E> {
+    fn from_residual(residual: Option<T>) -> Self {
+        match residual {
+            None => LookupResult::NotFound,
+            Some(_) => unreachable!(),
+        }
+    }
+}
+
+impl<T, E> FromResidual<Result<Infallible, E>> for LookupResult<T, E> {
+    fn from_residual(residual: Result<Infallible, E>) -> Self {
+        match residual {
+            Err(error) => LookupResult::Error(error),
+            Ok(_) => unreachable!(),
         }
     }
 }
@@ -155,8 +186,23 @@ impl<T, E> From<Option<T>> for LookupResult<T, E> {
     }
 }
 
+impl<T, E> From<Result<T, E>> for LookupResult<T, E> {
+    fn from(value: Result<T, E>) -> Self {
+        match value {
+            Err(error) => Self::Error(error),
+            Ok(value) => Self::Found(value),
+        }
+    }
+}
+
 impl<T, E> From<LookupResult<T, E>> for Option<T> {
     fn from(value: LookupResult<T, E>) -> Self {
         value.into_option()
+    }
+}
+
+impl<T> From<LookupResult<T, Error>> for Result<T, Error> {
+    fn from(value: LookupResult<T, Error>) -> Self {
+        value.into_result()
     }
 }

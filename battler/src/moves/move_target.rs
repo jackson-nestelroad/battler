@@ -78,6 +78,53 @@ impl MoveTarget {
         }
     }
 
+    /// Can the move target the user?
+    pub fn can_target_user(&self) -> bool {
+        match self {
+            Self::User
+            | Self::All
+            | Self::Allies
+            | Self::AllySide
+            | Self::AllyTeam
+            | Self::AdjacentAllyOrUser => true,
+            _ => false,
+        }
+    }
+
+    /// Can the move target foes?
+    pub fn can_target_foes(&self) -> bool {
+        match self {
+            Self::AdjacentAlly
+            | Self::AdjacentAllyOrUser
+            | Self::Allies
+            | Self::AllySide
+            | Self::AllyTeam => false,
+            _ => true,
+        }
+    }
+
+    /// Can the move only target adjacent Mons?
+    pub fn is_adjacent_only(&self) -> bool {
+        match self {
+            Self::AdjacentAlly
+            | Self::AdjacentAllyOrUser
+            | Self::AdjacentFoe
+            | Self::AllAdjacent
+            | Self::AllAdjacentFoes
+            | Self::Normal
+            | Self::RandomNormal => true,
+            _ => false,
+        }
+    }
+
+    /// Is the target randomly selected?
+    pub fn is_random(&self) -> bool {
+        match self {
+            Self::RandomNormal => true,
+            _ => false,
+        }
+    }
+
     pub fn valid_target(&self, relative_target: isize) -> bool {
         let is_self = relative_target == 0;
         let is_foe = relative_target > 0;
@@ -95,6 +142,7 @@ impl MoveTarget {
             Self::AdjacentAllyOrUser => is_adjacent && !is_foe || is_self,
             Self::AdjacentFoe => is_adjacent && is_foe,
             Self::Any => !is_self,
+            Self::User => is_self,
             _ => false,
         }
     }
@@ -195,5 +243,16 @@ mod move_target_tests {
         assert!(MoveTarget::Any.valid_target(-2));
 
         assert!(!MoveTarget::Any.valid_target(0));
+    }
+
+    #[test]
+    fn valid_target_user() {
+        assert!(MoveTarget::User.valid_target(0));
+
+        assert!(!MoveTarget::User.valid_target(1));
+        assert!(!MoveTarget::User.valid_target(2));
+        assert!(!MoveTarget::User.valid_target(3));
+        assert!(!MoveTarget::User.valid_target(-1));
+        assert!(!MoveTarget::User.valid_target(-2));
     }
 }

@@ -14,6 +14,7 @@ use serde_string_enum::{
     DeserializeStringEnum,
     SerializeStringEnum,
 };
+use zone_alloc::ElementRef;
 
 use crate::{
     battle::BattleType,
@@ -433,7 +434,10 @@ impl RuleSet {
     /// ruleset.
     ///
     /// A [`Clause`] wraps one or more rules to impact different parts of the battle.
-    pub fn clauses<'s, 'd>(&'s self, dex: &'d Dex<'d>) -> impl Iterator<Item = &'d Clause> + 's
+    pub fn clauses<'s, 'd>(
+        &'s self,
+        dex: &'d Dex<'d>,
+    ) -> impl Iterator<Item = ElementRef<'d, Clause>> + 's
     where
         'd: 's,
     {

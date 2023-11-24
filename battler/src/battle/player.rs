@@ -9,6 +9,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use zone_alloc::ElementRef;
 
 use crate::{
     battle::{
@@ -208,7 +209,7 @@ impl Player {
         context.player_mut().index = index;
         let side_index = context.player().side;
         for mon in &context.player().mons {
-            let mon = context.battle().mon_mut(*mon)?;
+            let mut mon = context.battle().mon_mut(*mon)?;
             mon.player = index;
             mon.side = side_index;
         }
@@ -236,23 +237,16 @@ impl Player {
         self.request.as_ref().map(|req| req.request_type()).clone()
     }
 
-    pub fn active_mon_handle<'b>(
-        context: &'b PlayerContext,
-        position: usize,
-    ) -> Result<Option<MonHandle>, Error> {
-        context
-            .player()
-            .active
-            .get(position)
-            .cloned()
-            .wrap_error_with_format(format_args!(
-                "player does not have any active position {position}"
-            ))
+    pub fn active_mon_handle<'b>(context: &'b PlayerContext, position: usize) -> Option<MonHandle> {
+        context.player().active.get(position).cloned().flatten()
     }
 
-    pub fn active_mon<'b>(context: &'b PlayerContext, position: usize) -> Result<&'b Mon, Error> {
+    pub fn active_mon<'b>(
+        context: &'b PlayerContext,
+        position: usize,
+    ) -> Result<ElementRef<'b, Mon>, Error> {
         context.battle().registry.mon(
-            Self::active_mon_handle(context, position)?.wrap_error_with_format(format_args!(
+            Self::active_mon_handle(context, position).wrap_error_with_format(format_args!(
                 "player does not have an active Mon in position {position}"
             ))?,
         )
@@ -260,7 +254,7 @@ impl Player {
 
     pub fn active_mons<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
            + Captures<'d>
            + Captures<'b>
            + Captures<'c>
@@ -289,7 +283,7 @@ impl Player {
 
     pub fn inactive_mons<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
            + Captures<'d>
            + Captures<'b>
            + Captures<'c>
@@ -306,7 +300,7 @@ impl Player {
 
     pub fn mons<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
            + Captures<'d>
            + Captures<'b>
            + Captures<'c>
@@ -322,7 +316,7 @@ impl Player {
 
     pub fn switchable_mons<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<&'p Mon, Error>>
+    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
            + Captures<'d>
            + Captures<'b>
            + Captures<'c>
@@ -715,13 +709,9 @@ impl Player {
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
         }
-        let mon_handle = Self::active_mon_handle(context, active_position)
-            .wrap_error_with_format(format_args!(
-                "expected player to have an active Mon in position {active_position}"
-            ))?
-            .wrap_error_with_format(format_args!(
-                "expected an active Mon in position {active_position}"
-            ))?;
+        let mon_handle = Self::active_mon_handle(context, active_position).wrap_error_with_format(
+            format_args!("expected an active Mon in position {active_position}"),
+        )?;
 
         // This becomes our new context for the rest of the choice.
         let mut context = context
@@ -766,7 +756,7 @@ impl Player {
                 };
                 let target_position = target.abs() as usize;
                 let target_position = target_position - 1;
-                if !Mon::relative_location_of_target(&mut context, target_side, target_position)
+                if !Mon::relative_location_of_target(&context, target_side, target_position)
                     .map_or(false, |relative_location| {
                         mov.data.target.valid_target(relative_location)
                     })

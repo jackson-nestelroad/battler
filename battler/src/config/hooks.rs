@@ -46,7 +46,7 @@ lazy_static! {
                             .numeric_value(&Id::from_known("abilityclause"))
                             .wrap_error_with_message("expected abilityclause to be defined")?
                             as usize;
-                        let mut abilities = FastHashMap::<&Id, usize>::new();
+                        let mut abilities = FastHashMap::<Id, usize>::new();
                         for mon in team {
                             let ability = validator
                                 .dex
@@ -54,7 +54,7 @@ lazy_static! {
                                 .get(&mon.ability)
                                 .into_result()
                                 .wrap_error_with_message("expected ability to exist")?;
-                            *abilities.entry(ability.id()).or_default() += 1;
+                            *abilities.entry(ability.id().clone()).or_default() += 1;
                         }
                         for (ability, _) in
                             abilities.into_iter().filter(|(_, count)| *count > limit)
@@ -127,7 +127,7 @@ lazy_static! {
                                         .get(&item)
                                         .into_result()
                                         .wrap_error_with_message("expected item to exist")?;
-                                    if !items_seen.insert(item.id()) {
+                                    if !items_seen.insert(item.id().clone()) {
                                         result.add_problem(format!("You are limited to one of each item by Item Clause (you have more than one {}).", item.data.name));
                                     }
                                 }

@@ -26,6 +26,19 @@ pub enum MaybeOwnedMut<'a, T> {
 
 macro_rules! common_maybe_owned_impls {
     ($name:ident) => {
+        impl<T> $name<'_, T>
+        where
+            T: Clone,
+        {
+            /// Clones the maybe-owned object into an owned [`T`] value.
+            pub fn clone_owned(&self) -> T {
+                match self {
+                    Self::Owned(value) => value.clone(),
+                    Self::Unowned(value) => value.deref().clone(),
+                }
+            }
+        }
+
         impl<T> From<T> for $name<'_, T> {
             fn from(value: T) -> Self {
                 Self::Owned(value)

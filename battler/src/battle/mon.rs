@@ -1,5 +1,6 @@
 use std::{
     borrow::Cow,
+    iter,
     ops::Mul,
 };
 
@@ -14,7 +15,9 @@ use crate::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         MonContext,
+        MonHandle,
         Player,
+        Side,
     },
     battler_error,
     common::{
@@ -82,15 +85,15 @@ impl BattleLoggable for ActiveMonDetails<'_> {
 /// A single move slot for a Mon.
 #[derive(Clone)]
 pub struct MoveSlot {
-    id: Id,
-    name: String,
-    pp: u8,
-    max_pp: u8,
-    target: MoveTarget,
-    disabled: bool,
-    disabled_source: Option<String>,
-    used: bool,
-    simulated: bool,
+    pub id: Id,
+    pub name: String,
+    pub pp: u8,
+    pub max_pp: u8,
+    pub target: MoveTarget,
+    pub disabled: bool,
+    pub disabled_source: Option<String>,
+    pub used: bool,
+    pub simulated: bool,
 }
 
 /// Data for a single [`Mon`] when a player is requested an action on their entire team.
@@ -399,7 +402,7 @@ impl Mon {
     /// It is negative if the Mon is on the same side and positive if the Mon is on the opposite
     /// side.
     pub fn relative_location_of_target(
-        context: &mut MonContext,
+        context: &MonContext,
         target_side: usize,
         target_position: usize,
     ) -> Result<isize, Error> {
@@ -420,7 +423,9 @@ impl Mon {
         let mons_per_side = context.battle().max_side_length();
 
         if target_position >= mons_per_side {
-            return Err(battler_error!("{target_position} is out of bounds"));
+            return Err(battler_error!(
+                "target position {target_position} is out of bounds"
+            ));
         }
 
         Ok(Mon::relative_location(
@@ -429,6 +434,69 @@ impl Mon {
             mon_side == target_side,
             mons_per_side,
         ))
+    }
+
+    pub fn get_target(context: &mut MonContext, target: isize) -> Result<Option<MonHandle>, Error> {
+        if target == 0 {
+            return Err(battler_error!("target cannot be 0"));
+        }
+        let mut side_context = context.pick_side_context(target > 0)?;
+        let position = (target.abs() - 1) as usize;
+        Side::mon_in_position(&mut side_context, position)
+    }
+
+    pub fn is_ally(&self, mon: &Mon) -> bool {
+        self.side == mon.side
+    }
+
+    pub fn active_allies<'m>(context: &'m mut MonContext) -> impl Iterator<Item = MonHandle> + 'm {
+        let side = context.side().index;
+        context.battle().active_mon_handles_on_side(side)
+    }
+
+    pub fn adjacent_allies(
+        context: &mut MonContext,
+    ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
+        let position = Mon::position_on_side(context)?;
+        let context = context.as_side_context_mut();
+        let left = if position > 0 {
+            Side::mon_in_position(context, position - 1)?
+        } else {
+            None
+        };
+        let right = Side::mon_in_position(context, position + 1)?;
+        Ok(iter::once(left).chain(iter::once(right)))
+    }
+
+    pub fn is_foe(&self, mon: &Mon) -> bool {
+        self.side != mon.side
+    }
+
+    pub fn active_foes<'m>(context: &'m mut MonContext) -> impl Iterator<Item = MonHandle> + 'm {
+        let foe_side = context.foe_side().index;
+        context.battle().active_mon_handles_on_side(foe_side)
+    }
+
+    pub fn adjacent_foes(
+        context: &mut MonContext,
+    ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
+        let position = Mon::position_on_side(context)?;
+        let mons_per_side = context.battle().max_side_length();
+        if position >= mons_per_side {
+            return Err(battler_error!("Mon position {position} is out of bounds"));
+        }
+        let flipped_position = mons_per_side - position - 1;
+        let mut context = context.foe_side_context()?;
+        let left = if flipped_position > 0 {
+            Side::mon_in_position(&mut context, flipped_position - 1)?
+        } else {
+            None
+        };
+        let center = Side::mon_in_position(&mut context, flipped_position)?;
+        let right = Side::mon_in_position(&mut context, flipped_position + 1)?;
+        Ok(iter::once(left)
+            .chain(iter::once(center))
+            .chain(iter::once(right)))
     }
 
     /// Gets the current value for the given [`Stat`] on a [`Mon`] after all boosts/drops and
@@ -564,7 +632,7 @@ impl Mon {
             .get(species.as_str())
             .into_result()?;
 
-        let mon = context.mon_mut();
+        let mon = context.mon();
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
             &mon.ivs,
@@ -576,6 +644,8 @@ impl Mon {
         if let Some(max_hp) = species.data.max_hp {
             stats.hp = max_hp;
         }
+
+        let mon = context.mon_mut();
 
         // Max HP has not yet been set (beginning of the battle).
         if mon.max_hp == 0 {
