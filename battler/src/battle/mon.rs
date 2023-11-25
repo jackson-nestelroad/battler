@@ -183,6 +183,7 @@ pub struct Mon {
     pub trapped: bool,
     pub can_mega_evo: bool,
     pub last_move_target: Option<isize>,
+    pub last_damage: u64,
 }
 
 // Construction and initialization logic.
@@ -278,6 +279,7 @@ impl Mon {
             trapped: false,
             can_mega_evo: false,
             last_move_target: None,
+            last_damage: 0,
         })
     }
 

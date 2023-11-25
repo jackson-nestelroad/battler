@@ -20,7 +20,6 @@ use crate::{
     },
     common::{
         Error,
-        Id,
         MaybeOwnedMut,
         WrapResultError,
     },
@@ -506,11 +505,9 @@ impl<'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
     pub fn active_move_context<'mon>(
         &'mon mut self,
-        active_move: &Id,
-        target_mon_handle: Option<MonHandle>,
     ) -> Result<ActiveMoveContext<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>, Error>
     {
-        ActiveMoveContext::new_from_mon_context(self.into(), active_move, target_mon_handle)
+        ActiveMoveContext::new_from_mon_context(self.into())
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -583,7 +580,6 @@ where
     'mon_ref: 'mon,
 {
     context: MaybeOwnedMut<'mon, MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data>>,
-    active_move: ElementRefMut<'context, Move>,
     target_mon_handle: Option<MonHandle>,
     target_mon: Option<ElementRefMut<'context, Mon>>,
 }
@@ -595,14 +591,14 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     /// [`Mon`], its active [`Move`] and its target [`Mon`].
     pub(in crate::battle) fn new(
         context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-        mon_handle: MonHandle,
-        active_move: &Id,
-        target_mon_handle: Option<MonHandle>,
     ) -> Result<Self, Error> {
+        let mon_handle = context
+            .battle()
+            .active_mon_handle()
+            .wrap_error_with_message("no active mon")?;
         // See comments on [`Context::new`] for why this is safe.
         let context = MonContext::new(context, mon_handle)?;
-        let active_move: ElementRefMut<'context, Move> =
-            unsafe { mem::transmute(context.battle().dex.moves.get_by_id(active_move)?) };
+        let target_mon_handle = context.battle().active_target_handle();
         let target_mon: Option<ElementRefMut<'context, Mon>> =
             target_mon_handle
                 .filter(|target_mon_handle| target_mon_handle != &mon_handle)
@@ -614,7 +610,6 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
                 .map_or(Ok(None), |v| v.map(Some))?;
         Ok(Self {
             context: context.into(),
-            active_move,
             target_mon_handle,
             target_mon,
         })
@@ -622,12 +617,9 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
 
     fn new_from_mon_context(
         mon_context: &'mon mut MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
-        active_move: &Id,
-        target_mon_handle: Option<MonHandle>,
     ) -> Result<Self, Error> {
+        let target_mon_handle = mon_context.battle().active_target_handle();
         // See comments on [`Context::new`] for why this is safe.
-        let active_move: ElementRefMut<'context, Move> =
-            unsafe { mem::transmute(mon_context.battle().dex.moves.get_by_id(active_move)?) };
         let target_mon: Option<ElementRefMut<'context, Mon>> = target_mon_handle
             .filter(|target_mon_handle| target_mon_handle != &mon_context.mon_handle())
             .map(|target_mon_handle| {
@@ -638,7 +630,6 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
             .map_or(Ok(None), |v| v.map(Some))?;
         Ok(Self {
             context: mon_context.into(),
-            active_move,
             target_mon_handle,
             target_mon,
         })
@@ -799,12 +790,16 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     }
 
     /// Returns a reference to the active [`Move`].
-    pub fn active_move(&self) -> &Move {
-        &self.active_move
+    pub fn active_move(&self) -> Result<&Move, Error> {
+        self.battle()
+            .active_move()
+            .wrap_error_with_message("no active move")
     }
 
     /// Returns a mutable reference to the active [`Move`].
-    pub fn active_move_mut(&mut self) -> &mut Move {
-        &mut self.active_move
+    pub fn active_move_mut(&mut self) -> Result<&mut Move, Error> {
+        self.battle_mut()
+            .active_move_mut()
+            .wrap_error_with_message("no active move")
     }
 }

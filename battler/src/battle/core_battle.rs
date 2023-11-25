@@ -56,6 +56,7 @@ use crate::{
         BattleEvent,
         EventLog,
     },
+    moves::Move,
 };
 
 /// The core implementation of a [`Battle`].
@@ -84,7 +85,7 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_ability_priority: u32,
 
-    active_move: Option<Id>,
+    active_move: Option<Move>,
     active_mon: Option<MonHandle>,
     active_target: Option<MonHandle>,
 
@@ -182,19 +183,7 @@ impl<'d> CoreBattle<'d> {
     fn active_move_context<'b>(
         &'b mut self,
     ) -> Result<ActiveMoveContext<'_, '_, '_, '_, '_, 'b, 'd>, Error> {
-        let active_mon = self.active_mon.wrap_error_with_message("no active mon")?;
-        // TODO: This clone is not needed, but the borrow checker currently requires it.
-        let active_move = self
-            .active_move
-            .clone()
-            .wrap_error_with_message("no active move")?;
-        let active_target = self.active_target;
-        ActiveMoveContext::new(
-            self.context().into(),
-            active_mon,
-            &active_move,
-            active_target,
-        )
+        ActiveMoveContext::new(self.context().into())
     }
 
     pub fn sides(&self) -> impl Iterator<Item = &Side> {
@@ -333,6 +322,22 @@ impl<'d> CoreBattle<'d> {
             .map(|side| self.side_length(side))
             .max()
             .unwrap_or(0)
+    }
+
+    pub fn active_move(&self) -> Option<&Move> {
+        self.active_move.as_ref()
+    }
+
+    pub fn active_move_mut(&mut self) -> Option<&mut Move> {
+        self.active_move.as_mut()
+    }
+
+    pub fn active_mon_handle(&self) -> Option<MonHandle> {
+        self.active_mon.clone()
+    }
+
+    pub fn active_target_handle(&self) -> Option<MonHandle> {
+        self.active_target.clone()
     }
 }
 
@@ -871,7 +876,12 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
-    pub fn set_active_move(&mut self, active_move: Id, user: MonHandle, target: Option<MonHandle>) {
+    pub fn set_active_move(
+        &mut self,
+        active_move: Move,
+        user: MonHandle,
+        target: Option<MonHandle>,
+    ) {
         self.active_move = Some(active_move);
         self.active_mon = Some(user);
         self.active_target = target;

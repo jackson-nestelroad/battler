@@ -136,22 +136,6 @@ where
         self.cache.get(&id).into()
     }
 
-    /// Retrieves a resource by name.
-    pub fn get_mut(&self, name: &str) -> DataLookupResult<ElementRefMut<T>> {
-        self.get_by_id_mut(&Id::from(name))
-    }
-
-    /// Retrieves a resource by ID.
-    pub fn get_by_id_mut(&self, id: &Id) -> DataLookupResult<ElementRefMut<T>> {
-        // The borrow checker struggles if we use pattern matching here, so we have to do two
-        // lookups.
-        if self.cache.is_cached(&id) {
-            return self.cache.get_mut(&id).into();
-        }
-        self.cache_data(id)?;
-        self.cache.get_mut(&id).into()
-    }
-
     fn resolve_alias(&self, mut id: Id) -> DataLookupResult<Id> {
         loop {
             match self.data.translate_alias(&id) {

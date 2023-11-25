@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{
     battle::{
         Battle,
@@ -65,7 +67,23 @@ pub fn do_move(
         .battle_mut()
         .get_target(mon_handle, move_id, target, original_target)?;
 
-    let move_context = context.active_move_context(move_id, target)?;
+    // Creating this context fetches the move, ensuring it exists.
+    let active_move = context.battle_mut().dex.moves.get_by_id(move_id)?;
+    // Make a copy of the move so we can work with it and modify it for the turn.
+    let active_move = active_move.deref().clone();
+
+    // Set the active move on the battle, so we can create an ActiveMoveContext.
+    let mon_handle = context.mon_handle();
+    context
+        .battle_mut()
+        .set_active_move(active_move, mon_handle, target);
+
+    let mut context = context.active_move_context()?;
+
+    // TODO: Run BeforeMove checks.
+    // TODO: Abort move if requested.
+
+    context.mon_mut().last_damage = 0;
 
     todo!("moves are not implemented")
 }
