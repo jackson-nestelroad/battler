@@ -934,7 +934,7 @@ mod team_validator_tests {
         let test_cases =
             read_test_cases::<TeamValidatorTestCase>("team_validator_tests.json").unwrap();
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data).unwrap();
         for (test_name, mut test_case) in test_cases {
             let format = Format::new(test_case.format, &dex).unwrap();
             let validator = TeamValidator::new(&format, &dex);

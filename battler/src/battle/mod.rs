@@ -8,8 +8,10 @@ mod calculations;
 mod context;
 mod core_battle;
 mod core_battle_actions;
+mod core_battle_logs;
 mod field;
 mod mon;
+mod move_damage;
 mod player;
 mod prng;
 mod queue;
@@ -54,9 +56,11 @@ pub use calculations::{
     apply_nature_to_stats,
     calculate_hidden_power_type,
     calculate_mon_stats,
+    modify,
 };
 pub use context::{
     ActiveMoveContext,
+    ActiveTargetContext,
     Context,
     MonContext,
     PlayerContext,
@@ -69,9 +73,12 @@ pub use mon::{
     Mon,
     MonMoveRequest,
     MonMoveSlotData,
+    MonPositionDetails,
     MonTeamRequestData,
+    MoveOutcome,
     PublicMonDetails,
 };
+pub use move_damage::MoveDamage;
 pub use player::{
     Player,
     PlayerData,
@@ -83,6 +90,8 @@ pub use registry::{
     BattleRegistry,
     MonHandle,
     MonRegistry,
+    MoveHandle,
+    MoveRegistry,
 };
 pub use request::{
     Request,

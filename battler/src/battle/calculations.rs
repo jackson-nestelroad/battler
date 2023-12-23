@@ -2,11 +2,14 @@ use std::ops::Div;
 
 use lazy_static::lazy_static;
 
-use crate::mons::{
-    Nature,
-    Stat,
-    StatTable,
-    Type,
+use crate::{
+    common::Fraction,
+    mons::{
+        Nature,
+        Stat,
+        StatTable,
+        Type,
+    },
 };
 
 /// Calculates a Mon's actual stats from a base stat table and [`MonData`].
@@ -87,6 +90,14 @@ pub fn calculate_hidden_power_type(ivs: &StatTable) -> Type {
         // This should never happen.
         _ => Type::Normal,
     }
+}
+
+/// Applies the given modifier to the value.
+///
+/// Mostly used for stat calculations. Split off into its own function to help guarantee
+/// consistency.
+pub fn modify(value: u16, modifier: Fraction<u16>) -> u16 {
+    (modifier * value).floor()
 }
 
 #[cfg(test)]

@@ -342,7 +342,7 @@ mod clause_tests {
     #[test]
     fn validates_rules() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data).unwrap();
         let ruleset = construct_ruleset(
             r#"[
                 "Other Rule = value"
@@ -396,7 +396,7 @@ mod clause_tests {
     #[test]
     fn validates_mon() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data).unwrap();
         let format = construct_format(&dex);
         let validator = TeamValidator::new(&format, &dex);
         lazy_static! {
@@ -442,7 +442,7 @@ mod clause_tests {
     #[test]
     fn validates_team() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data).unwrap();
         let format = construct_format(&dex);
         let validator = TeamValidator::new(&format, &dex);
         lazy_static! {
@@ -492,7 +492,7 @@ mod clause_tests {
     #[test]
     fn validates_core_battle_options() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data).unwrap();
         let ruleset = construct_ruleset(
             r#"[
                 "Players Per Side = 2"
@@ -599,7 +599,7 @@ mod clause_tests {
     #[test]
     fn hooks_do_nothing_by_default() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data).unwrap();
         let format = construct_format(&dex);
         let validator = TeamValidator::new(&format, &dex);
         lazy_static! {

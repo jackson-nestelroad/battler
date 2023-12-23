@@ -7,7 +7,10 @@ use std::{
     },
 };
 
-use zone_alloc::ElementRefMut;
+use zone_alloc::{
+    ElementRef,
+    ElementRefMut,
+};
 
 use crate::{
     battle::{
@@ -15,6 +18,7 @@ use crate::{
         CoreBattle,
         Mon,
         MonHandle,
+        MoveHandle,
         Player,
         Side,
     },
@@ -23,8 +27,15 @@ use crate::{
         MaybeOwnedMut,
         WrapResultError,
     },
-    moves::Move,
+    moves::{
+        MonOverride,
+        Move,
+    },
 };
+
+// TODO: Mon references should be tracked on the root context so that they can be borrowed multiple
+// times in the call stack. This will be OK because to access one, the whole context chain needs to
+// be borrowed mutably.
 
 /// The context of a [`CoreBattle`].
 ///
@@ -374,6 +385,12 @@ impl<T> DerefMut for MaybeElementRef<'_, T> {
     }
 }
 
+impl<T> AsMut<T> for MaybeElementRef<'_, T> {
+    fn as_mut(&mut self) -> &mut T {
+        self.deref_mut()
+    }
+}
+
 impl<'a, T> From<ElementRefMut<'a, T>> for MaybeElementRef<'a, T> {
     fn from(value: ElementRefMut<'a, T>) -> Self {
         Self::Owned(value)
@@ -441,12 +458,12 @@ impl<'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     fn new_from_mon_ref(
         player_context: PlayerContext<'side, 'context, 'battle, 'data>,
         mon_handle: MonHandle,
-        mon: &'mon_ref mut Mon,
+        mon: MaybeElementRef<'mon_ref, Mon>,
     ) -> Self {
         Self {
             context: player_context.into(),
             mon_handle,
-            mon: mon.into(),
+            mon: mon,
         }
     }
 
@@ -564,6 +581,16 @@ impl<'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     pub fn mon_mut(&mut self) -> &mut Mon {
         &mut *self.mon
     }
+
+    /// Returns a reference to the active [`Move`], if it exists.
+    pub fn active_move(&self) -> Result<ElementRef<Move>, Error> {
+        Mon::active_move(self)
+    }
+
+    /// Returns a mutable reference to the active [`Move`], if it exists.
+    pub fn active_move_mut(&mut self) -> Result<ElementRefMut<Move>, Error> {
+        Mon::active_move_mut(self)
+    }
 }
 
 /// The context of an active [`Move`] in a battle.
@@ -580,58 +607,35 @@ where
     'mon_ref: 'mon,
 {
     context: MaybeOwnedMut<'mon, MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data>>,
-    target_mon_handle: Option<MonHandle>,
-    target_mon: Option<ElementRefMut<'context, Mon>>,
+    active_move_handle: MoveHandle,
+    active_move: ElementRefMut<'context, Move>,
 }
 
 impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     ActiveMoveContext<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
 {
-    /// Creates a new [`ActiveMoveContext`], which contains a reference to a [`CoreBattle`], a
-    /// [`Mon`], its active [`Move`] and its target [`Mon`].
-    pub(in crate::battle) fn new(
-        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-    ) -> Result<Self, Error> {
-        let mon_handle = context
-            .battle()
-            .active_mon_handle()
-            .wrap_error_with_message("no active mon")?;
-        // See comments on [`Context::new`] for why this is safe.
-        let context = MonContext::new(context, mon_handle)?;
-        let target_mon_handle = context.battle().active_target_handle();
-        let target_mon: Option<ElementRefMut<'context, Mon>> =
-            target_mon_handle
-                .filter(|target_mon_handle| target_mon_handle != &mon_handle)
-                .map(|target_mon_handle| {
-                    Ok(unsafe {
-                        mem::transmute(context.battle().registry.mon_mut(target_mon_handle)?)
-                    })
-                })
-                .map_or(Ok(None), |v| v.map(Some))?;
-        Ok(Self {
-            context: context.into(),
-            target_mon_handle,
-            target_mon,
-        })
-    }
-
     fn new_from_mon_context(
-        mon_context: &'mon mut MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
+        context: MaybeOwnedMut<
+            'mon,
+            MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
+        >,
     ) -> Result<Self, Error> {
-        let target_mon_handle = mon_context.battle().active_target_handle();
-        // See comments on [`Context::new`] for why this is safe.
-        let target_mon: Option<ElementRefMut<'context, Mon>> = target_mon_handle
-            .filter(|target_mon_handle| target_mon_handle != &mon_context.mon_handle())
-            .map(|target_mon_handle| {
-                Ok(unsafe {
-                    mem::transmute(mon_context.battle().registry.mon_mut(target_mon_handle)?)
-                })
-            })
-            .map_or(Ok(None), |v| v.map(Some))?;
+        let active_move_handle = context
+            .mon()
+            .active_move
+            .wrap_error_with_format(format_args!(
+                "mon {} has no active move",
+                context.mon_handle()
+            ))?;
+        let active_move = context
+            .battle()
+            .registry
+            .this_turn_move_mut(active_move_handle)?;
+        let active_move = unsafe { mem::transmute(active_move) };
         Ok(Self {
-            context: mon_context.into(),
-            target_mon_handle,
-            target_mon,
+            context,
+            active_move_handle,
+            active_move,
         })
     }
 
@@ -702,28 +706,22 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
     /// context.
     pub fn target_mon_context(
         &mut self,
+        target_mon_handle: MonHandle,
     ) -> Result<MonContext<'_, '_, '_, '_, 'battle, 'data>, Error> {
-        let target_mon_handle = self
-            .target_mon_handle
-            .wrap_error_with_message("no target mon handle")?;
-        let mon_ref = if target_mon_handle != self.mon_handle() {
-            self.target_mon
-                .as_mut()
-                .map(|target_mon| target_mon.deref_mut())
+        let mon_ref: MaybeElementRef<'_, Mon> = if target_mon_handle != self.mon_handle() {
+            self.battle().registry.mon_mut(target_mon_handle)?.into()
         } else {
-            Some(self.context.mon.deref_mut())
+            self.mon_mut().into()
         };
-        let mon_ref = mon_ref
-            .wrap_error_with_format(format_args!("failed to get target mon {target_mon_handle}"))?;
         // SAFETY: We separate the mutable reference to the target Mon so that we can also create a
         // new PlayerContext.
         //
-        // This is safe because there is an still underlying ElementRefMut (owned by this
-        // ActiveMoveContext) protecting this Mon from being mutably borrowed twice.
+        // This is safe because there is still an underlying ElementRefMut (owned by this context)
+        // protecting this Mon from being mutably borrowed twice.
         //
         // Furthermore, using this reference mutably requires a mutable borrow of the whole context,
-        // so multiple mutable references should not be useable across contexts in the same chain.
-        let mon_ref: &mut Mon = unsafe { mem::transmute(mon_ref) };
+        // so multiple mutable references should not be usable across contexts  in the same chain.
+        let mon_ref: MaybeElementRef<'_, Mon> = unsafe { mem::transmute(mon_ref) };
         let player_context = self
             .as_battle_context_mut()
             .player_context(mon_ref.player)?;
@@ -732,6 +730,59 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
             target_mon_handle,
             mon_ref,
         ))
+    }
+
+    /// Creates a new [`MonContext`] for the active target [`Mon`], scoped to the lifetime of this
+    /// context.
+    pub fn active_target_mon_context(
+        &mut self,
+    ) -> Result<MonContext<'_, '_, '_, '_, 'battle, 'data>, Error> {
+        self.target_mon_context(
+            self.mon()
+                .active_target
+                .wrap_error_with_format(format_args!(
+                    "active mon {} has no active target",
+                    self.mon_handle()
+                ))?,
+        )
+    }
+
+    /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
+    /// context.
+    pub fn target_context(
+        &mut self,
+        target_mon_handle: MonHandle,
+    ) -> Result<
+        ActiveTargetContext<'_, '_, 'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
+        Error,
+    > {
+        ActiveTargetContext::new_from_active_move_context(self.into(), target_mon_handle)
+    }
+
+    pub fn active_target_context(
+        &mut self,
+    ) -> Result<
+        ActiveTargetContext<'_, '_, 'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
+        Error,
+    > {
+        self.target_context(
+            self.mon()
+                .active_target
+                .wrap_error_with_format(format_args!(
+                    "active mon {} has no active target",
+                    self.mon_handle()
+                ))?,
+        )
+    }
+
+    /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
+    ///
+    /// This method refetches the active move and target.
+    pub fn active_move_context(
+        self,
+    ) -> Result<ActiveMoveContext<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>, Error>
+    {
+        ActiveMoveContext::new_from_mon_context(self.context)
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -789,17 +840,363 @@ impl<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
         self.context.mon_mut()
     }
 
+    /// Returns the [`MoveHandle`] for the active [`Move`].
+    pub fn active_move_handle(&self) -> MoveHandle {
+        self.active_move_handle
+    }
+
     /// Returns a reference to the active [`Move`].
-    pub fn active_move(&self) -> Result<&Move, Error> {
-        self.battle()
-            .active_move()
-            .wrap_error_with_message("no active move")
+    pub fn active_move(&self) -> &Move {
+        &*self.active_move
     }
 
     /// Returns a mutable reference to the active [`Move`].
-    pub fn active_move_mut(&mut self) -> Result<&mut Move, Error> {
-        self.battle_mut()
-            .active_move_mut()
-            .wrap_error_with_message("no active move")
+    pub fn active_move_mut(&mut self) -> &mut Move {
+        &mut *self.active_move
+    }
+}
+
+/// The context of an active target [`Mon`] of a [`Move`] in a battle.
+///
+/// A context is a proxy object for getting references to battle data. Rust does not make
+/// storing references easy, so references must be grabbed dynamically as needed.
+pub struct ActiveTargetContext<
+    'active_target_ref,
+    'active_move,
+    'mon,
+    'mon_ref,
+    'player,
+    'side,
+    'context,
+    'battle,
+    'data,
+> where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'side,
+    'side: 'player,
+    'player: 'mon_ref,
+    'mon_ref: 'mon,
+    'mon: 'active_move,
+    'active_move: 'active_target_ref,
+{
+    context: MaybeOwnedMut<
+        'active_move,
+        ActiveMoveContext<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
+    >,
+    active_target_handle: MonHandle,
+    active_target: MaybeElementRef<'active_target_ref, Mon>,
+}
+
+impl<
+        'active_target_ref,
+        'active_move,
+        'mon,
+        'mon_ref,
+        'player,
+        'side,
+        'context,
+        'battle,
+        'data,
+    >
+    ActiveTargetContext<
+        'active_target_ref,
+        'active_move,
+        'mon,
+        'mon_ref,
+        'player,
+        'side,
+        'context,
+        'battle,
+        'data,
+    >
+{
+    fn new_from_active_move_context(
+        mut context: MaybeOwnedMut<
+            'active_move,
+            ActiveMoveContext<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>,
+        >,
+        active_target_handle: MonHandle,
+    ) -> Result<Self, Error> {
+        let active_target: MaybeElementRef<'_, Mon> =
+            if active_target_handle != context.mon_handle() {
+                context
+                    .battle()
+                    .registry
+                    .mon_mut(active_target_handle)?
+                    .into()
+            } else {
+                context.mon_mut().into()
+            };
+        // SAFETY: We separate the mutable reference to the target Mon.
+        //
+        // This is safe because there is still an underlying ElementRefMut (owned by this context)
+        // protecting this Mon from being mutably borrowed twice.
+        //
+        // Furthermore, using this reference mutably requires a mutable borrow of the whole context,
+        // so multiple mutable references should not be usable across contexts  in the same chain.
+        let active_target: MaybeElementRef<'_, Mon> = unsafe { mem::transmute(active_target) };
+        Ok(Self {
+            context,
+            active_target_handle,
+            active_target,
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'active_target>(
+        &'active_target self,
+    ) -> &'active_target Context<'battle, 'data> {
+        self.context.as_battle_context()
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'active_target>(
+        &'active_target mut self,
+    ) -> &'active_target mut Context<'battle, 'data> {
+        self.context.as_battle_context_mut()
+    }
+
+    /// Returns a reference to the inner [`SideContext`].
+    pub fn as_side_context<'active_target>(
+        &'active_target self,
+    ) -> &'active_target SideContext<'side, 'battle, 'data> {
+        self.context.as_side_context()
+    }
+
+    /// Returns a mutable reference to the inner [`SideContext`].
+    pub fn as_side_context_mut<'active_target>(
+        &'active_target mut self,
+    ) -> &'active_target mut SideContext<'context, 'battle, 'data> {
+        self.context.as_side_context_mut()
+    }
+
+    /// Returns a new [`SideContext`] for the opposing side.
+    pub fn foe_side_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<SideContext<'active_target, 'battle, 'data>, Error> {
+        self.context.foe_side_context()
+    }
+
+    /// Returns a reference to the inner [`PlayerContext`].
+    pub fn as_player_context<'active_target>(
+        &'active_target self,
+    ) -> &'active_target PlayerContext<'side, 'context, 'battle, 'data> {
+        self.context.as_player_context()
+    }
+
+    /// Returns a mutable reference to the inner [`PlayerContext`].
+    pub fn as_player_context_mut<'active_target>(
+        &'active_target mut self,
+    ) -> &'active_target mut PlayerContext<'side, 'context, 'battle, 'data> {
+        self.context.as_player_context_mut()
+    }
+
+    /// Returns a reference to the inner [`MonContext`].
+    pub fn as_mon_context<'active_target>(
+        &'active_target self,
+    ) -> &'active_target MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data> {
+        self.context.as_mon_context()
+    }
+
+    /// Returns a mutable reference to the inner [`MonContext`].
+    pub fn as_mon_context_mut<'active_target>(
+        &'active_target mut self,
+    ) -> &'active_target mut MonContext<'mon_ref, 'player, 'side, 'context, 'battle, 'data> {
+        self.context.as_mon_context_mut()
+    }
+
+    /// Returns a reference to the inner [`ActiveMoveContext`].
+    pub fn as_active_move_context<'active_target>(
+        &'active_target self,
+    ) -> &'active_target ActiveMoveContext<'mon, 'mon_ref, 'player, 'side, 'context, 'battle, 'data>
+    {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`ActiveMoveContext`].
+    pub fn as_active_move_context_mut<'active_target>(
+        &'active_target mut self,
+    ) -> &'active_target mut ActiveMoveContext<
+        'mon,
+        'mon_ref,
+        'player,
+        'side,
+        'context,
+        'battle,
+        'data,
+    > {
+        &mut self.context
+    }
+
+    /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
+    /// context.
+    pub fn target_mon_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<
+        MonContext<'active_target, 'active_target, 'active_target, 'active_target, 'battle, 'data>,
+        Error,
+    > {
+        let active_target_handle = self.active_target_handle;
+        let active_target: MaybeElementRef<'_, Mon> = self.active_target.as_mut().into();
+        // SAFETY: We separate the mutable reference to the target Mon so that we can also create a
+        // new PlayerContext.
+        //
+        // This is safe because there is still an underlying ElementRefMut (owned by this context)
+        // protecting this Mon from being mutably borrowed twice.
+        //
+        // Furthermore, using this reference mutably requires a mutable borrow of the whole context,
+        // so multiple mutable references should not be usable across contexts  in the same chain.
+        let active_target: MaybeElementRef<'_, Mon> = unsafe { mem::transmute(active_target) };
+        let player_context = self
+            .as_battle_context_mut()
+            .player_context(active_target.player)?;
+        Ok(MonContext::new_from_mon_ref(
+            player_context,
+            active_target_handle,
+            active_target,
+        ))
+    }
+
+    /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
+    /// context.
+    fn mon_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<
+        MonContext<'active_target, 'active_target, 'active_target, 'active_target, 'battle, 'data>,
+        Error,
+    > {
+        let handle = self.mon_handle();
+        let mon_ref: MaybeElementRef<'_, Mon> = self.mon_mut().into();
+        // SAFETY: We separate the mutable reference to the target Mon so that we can also create a
+        // new PlayerContext.
+        //
+        // This is safe because there is still an underlying ElementRefMut (owned by this context)
+        // protecting this Mon from being mutably borrowed twice.
+        //
+        // Furthermore, using this reference mutably requires a mutable borrow of the whole context,
+        // so multiple mutable references should not be usable across contexts  in the same chain.
+        let mon_ref: MaybeElementRef<'_, Mon> = unsafe { mem::transmute(mon_ref) };
+        let player_context = self
+            .as_battle_context_mut()
+            .player_context(mon_ref.player)?;
+        Ok(MonContext::new_from_mon_ref(
+            player_context,
+            handle,
+            mon_ref,
+        ))
+    }
+
+    /// Creates a new [`MonContext`] for the attacker [`Mon`] for stat calculations, scoped to the
+    /// lifetime of this context.
+    pub fn attacker_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<
+        MonContext<'active_target, 'active_target, 'active_target, 'active_target, 'battle, 'data>,
+        Error,
+    > {
+        match self.active_move().data.override_offensive_mon {
+            Some(MonOverride::Target) => self.target_mon_context(),
+            _ => self.mon_context(),
+        }
+    }
+
+    /// Creates a new [`MonContext`] for the defender [`Mon`] for stat calculations, scoped to the
+    /// lifetime of this context.
+    pub fn defender_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<
+        MonContext<'active_target, 'active_target, 'active_target, 'active_target, 'battle, 'data>,
+        Error,
+    > {
+        match self.active_move().data.override_defensive_mon {
+            Some(MonOverride::User) => self.mon_context(),
+            _ => self.target_mon_context(),
+        }
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns a reference to the Mon's [`Side`].
+    pub fn side(&self) -> &Side {
+        self.context.side()
+    }
+
+    /// Returns a mutable reference to the Mon's [`Side`].
+    pub fn side_mut(&mut self) -> &mut Side {
+        self.context.side_mut()
+    }
+
+    /// Returns a reference to the foe [`Side`].
+    pub fn foe_side(&self) -> &Side {
+        self.context.foe_side()
+    }
+
+    /// Returns a mutable reference to the foe [`Side`].
+    pub fn foe_side_mut(&mut self) -> &mut Side {
+        self.context.foe_side_mut()
+    }
+
+    /// Returns a reference to the Mon's [`Player`].
+    pub fn player(&self) -> &Player {
+        self.context.player()
+    }
+
+    /// Returns a mutable reference to the Mon's [`Player`].
+    pub fn player_mut(&mut self) -> &mut Player {
+        self.context.player_mut()
+    }
+
+    /// Returns the [`MonHandle`] for the active [`Mon`].
+    pub fn mon_handle(&self) -> MonHandle {
+        self.context.mon_handle()
+    }
+
+    /// Returns a reference to the active [`Mon`].
+    pub fn mon(&self) -> &Mon {
+        self.context.mon()
+    }
+
+    /// Returns a mutable reference to the active [`Mon`].
+    pub fn mon_mut(&mut self) -> &mut Mon {
+        self.context.mon_mut()
+    }
+
+    /// Returns the [`MoveHandle`] for the active [`Move`].
+    pub fn active_move_handle(&self) -> MoveHandle {
+        self.context.active_move_handle()
+    }
+
+    /// Returns a reference to the active [`Move`].
+    pub fn active_move(&self) -> &Move {
+        self.context.active_move()
+    }
+
+    /// Returns a mutable reference to the active [`Move`].
+    pub fn active_move_mut(&mut self) -> &mut Move {
+        self.context.active_move_mut()
+    }
+
+    /// Returns the [`MonHandle`] for the active target [`Mon`].
+    pub fn target_mon_handle(&self) -> MonHandle {
+        self.active_target_handle
+    }
+
+    /// Returns a reference to the active target [`Mon`].
+    pub fn target_mon(&self) -> &Mon {
+        &self.active_target
+    }
+
+    /// Returns a mutable reference to the active target [`Mon`].
+    pub fn target_mon_mut(&mut self) -> &mut Mon {
+        &mut self.active_target
     }
 }

@@ -159,6 +159,23 @@ where
     }
 }
 
+pub struct SingleValueDex<'d, T> {
+    data: &'d dyn DataStore,
+    value: T,
+}
+
+impl<'d, T> SingleValueDex<'d, T> {
+    /// Creates a new single value dex, wrapping the given value.
+    pub fn new(data: &'d dyn DataStore, value: T) -> Self {
+        Self { data, value }
+    }
+
+    /// Retrieves the inner resource.
+    pub fn get(&self) -> &T {
+        &self.value
+    }
+}
+
 #[cfg(test)]
 mod resource_cache_tests {
     use crate::{

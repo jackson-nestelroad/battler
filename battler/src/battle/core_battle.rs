@@ -29,6 +29,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        MoveHandle,
         Player,
         PlayerContext,
         PseudoRandomNumberGenerator,
@@ -56,7 +57,10 @@ use crate::{
         BattleEvent,
         EventLog,
     },
-    moves::Move,
+    mons::{
+        Type,
+        TypeEffectiveness,
+    },
 };
 
 /// The core implementation of a [`Battle`].
@@ -85,9 +89,7 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_ability_priority: u32,
 
-    active_move: Option<Move>,
     active_mon: Option<MonHandle>,
-    active_target: Option<MonHandle>,
 
     input_log: FastHashMap<usize, Vec<String>>,
 
@@ -149,9 +151,7 @@ impl<'d> CoreBattle<'d> {
             started: false,
             ended: false,
             next_ability_priority: 0,
-            active_move: None,
             active_mon: None,
-            active_target: None,
             input_log,
             _pin: PhantomPinned,
         };
@@ -178,12 +178,6 @@ impl<'d> CoreBattle<'d> {
         mon: MonHandle,
     ) -> Result<MonContext<'_, '_, '_, '_, 'b, 'd>, Error> {
         MonContext::new(self.context().into(), mon)
-    }
-
-    fn active_move_context<'b>(
-        &'b mut self,
-    ) -> Result<ActiveMoveContext<'_, '_, '_, '_, '_, 'b, 'd>, Error> {
-        ActiveMoveContext::new(self.context().into())
     }
 
     pub fn sides(&self) -> impl Iterator<Item = &Side> {
@@ -324,20 +318,22 @@ impl<'d> CoreBattle<'d> {
             .unwrap_or(0)
     }
 
-    pub fn active_move(&self) -> Option<&Move> {
-        self.active_move.as_ref()
-    }
-
-    pub fn active_move_mut(&mut self) -> Option<&mut Move> {
-        self.active_move.as_mut()
-    }
-
     pub fn active_mon_handle(&self) -> Option<MonHandle> {
         self.active_mon.clone()
     }
 
-    pub fn active_target_handle(&self) -> Option<MonHandle> {
-        self.active_target.clone()
+    pub fn active_mon(&self) -> Result<ElementRef<Mon>, Error> {
+        self.mon(
+            self.active_mon_handle()
+                .wrap_error_with_message("no active mon")?,
+        )
+    }
+
+    pub fn active_mon_mut(&self) -> Result<ElementRefMut<Mon>, Error> {
+        self.mon_mut(
+            self.active_mon_handle()
+                .wrap_error_with_message("no active mon")?,
+        )
     }
 }
 
@@ -351,7 +347,7 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         options
             .validate()
             .wrap_error_with_message("battle options are invalid")?;
-        let dex = Dex::new(data);
+        let dex = Dex::new(data)?;
         let format_data = mem::replace(&mut options.format, None);
         let format = Format::new(
             format_data.wrap_error_with_message("missing format field for new battle")?,
@@ -715,6 +711,7 @@ impl<'d> CoreBattle<'d> {
                     &action.id,
                     action.target,
                     action.original_target,
+                    false,
                 )?;
             }
             Action::MegaEvo(action) => todo!("mega evolution is not implemented"),
@@ -790,7 +787,11 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn random_target(&mut self, mon: MonHandle, move_id: &Id) -> Result<Option<MonHandle>, Error> {
+    pub fn random_target(
+        &mut self,
+        mon: MonHandle,
+        move_id: &Id,
+    ) -> Result<Option<MonHandle>, Error> {
         let mov = self.dex.moves.get_by_id(move_id).into_result()?;
         let target = mov.data.target.clone();
 
@@ -869,21 +870,51 @@ impl<'d> CoreBattle<'d> {
         }
 
         // The chosen target is not valid.
-        if move_target.choosable() {
+        if !move_target.requires_target() {
             Ok(None)
         } else {
             self.random_target(mon, move_id)
         }
     }
 
+    pub fn set_active_target(&mut self, target: Option<MonHandle>) -> Result<(), Error> {
+        self.mon_mut(
+            self.active_mon
+                .wrap_error_with_message("cannot set an active target when no active mon is set")?,
+        )?
+        .active_target = target;
+        Ok(())
+    }
+
     pub fn set_active_move(
         &mut self,
-        active_move: Move,
+        move_handle: MoveHandle,
         user: MonHandle,
         target: Option<MonHandle>,
-    ) {
-        self.active_move = Some(active_move);
+    ) -> Result<(), Error> {
         self.active_mon = Some(user);
-        self.active_target = target;
+        self.mon_mut(user)?.set_active_move(move_handle, target);
+        Ok(())
+    }
+
+    pub fn clear_active_move(&mut self) -> Result<(), Error> {
+        if let Some(active_mon) = self.active_mon {
+            self.mon_mut(active_mon)?.clear_active_move();
+            self.active_mon = None;
+        }
+        Ok(())
+    }
+
+    pub fn check_type_immunity(&self, offense: Type, defense: &[Type]) -> bool {
+        defense
+            .iter()
+            .map(|defense| {
+                self.dex
+                    .type_chart()
+                    .get(defense)
+                    .and_then(|row| row.get(&offense))
+                    .unwrap_or(&TypeEffectiveness::Normal)
+            })
+            .any(|effectiveness| effectiveness == &TypeEffectiveness::None)
     }
 }

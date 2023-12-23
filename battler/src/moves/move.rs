@@ -1,11 +1,16 @@
+use ahash::HashMapExt;
 use serde::{
     Deserialize,
     Serialize,
 };
 
 use crate::{
-    battle::PartialBoostTable,
+    battle::{
+        MonHandle,
+        PartialBoostTable,
+    },
     common::{
+        FastHashMap,
         FastHashSet,
         Fraction,
         Id,
@@ -57,6 +62,10 @@ pub struct SecondaryEffect {
     pub chance: Option<Fraction<u16>>,
     /// Secondary hit effect on the user of the move.
     pub user: HitEffect,
+}
+
+fn default_crit_ratio() -> Option<u8> {
+    Some(1)
 }
 
 /// Data about a particular move.
@@ -148,7 +157,8 @@ pub struct MoveData {
     pub override_defensive_stat: Option<Stat>,
 
     /// Critical hit ratio.
-    pub crit_ratio: Option<u32>,
+    #[serde(default = "default_crit_ratio")]
+    pub crit_ratio: Option<u8>,
     /// Ignore ability effects?
     #[serde(default)]
     pub ignore_ability: bool,
@@ -201,19 +211,53 @@ pub struct MoveData {
     pub stalling_move: bool,
 }
 
+impl MoveData {
+    pub fn ignore_immunity(&self) -> bool {
+        self.category == MoveCategory::Status || self.ignore_immunity
+    }
+}
+
+/// Dynamic data on how a move hit a target.
+#[derive(Clone)]
+pub struct MoveHitData {
+    /// Did the move critical hit?
+    pub crit: bool,
+}
+
 /// An inidividual move, which can be used by a Mon in battle.
 #[derive(Clone)]
 pub struct Move {
     /// Move data.
     pub data: MoveData,
     id: Id,
+
+    pub external: bool,
+    pub spread_hit: bool,
+    pub hit: u8,
+    pub total_damage: u64,
+
+    hit_data: FastHashMap<MonHandle, MoveHitData>,
 }
 
 impl Move {
     /// Creates a new [`Move`] instance from [`MoveData`].
     pub fn new(data: MoveData) -> Self {
         let id = Id::from(data.name.as_ref());
-        Self { data, id }
+        Self {
+            data,
+            id,
+            external: false,
+            spread_hit: false,
+            hit: 0,
+            total_damage: 0,
+            hit_data: FastHashMap::new(),
+        }
+    }
+
+    pub fn hit_data(&mut self, target: &MonHandle) -> &mut MoveHitData {
+        self.hit_data
+            .entry(*target)
+            .or_insert(MoveHitData { crit: false })
     }
 }
 

@@ -78,6 +78,29 @@ impl MoveTarget {
         }
     }
 
+    /// Does the move require a single target?
+    pub fn requires_target(&self) -> bool {
+        match self {
+            Self::All
+            | Self::AllAdjacent
+            | Self::AllAdjacentFoes
+            | Self::Allies
+            | Self::AllySide
+            | Self::AllyTeam
+            | Self::FoeSide
+            | Self::Scripted => false,
+            _ => true,
+        }
+    }
+
+    /// Does the move affect Mons directly?
+    pub fn affects_mons_directly(&self) -> bool {
+        match self {
+            Self::All | Self::FoeSide | Self::AllySide | Self::AllyTeam => false,
+            _ => true,
+        }
+    }
+
     /// Can the move target the user?
     pub fn can_target_user(&self) -> bool {
         match self {

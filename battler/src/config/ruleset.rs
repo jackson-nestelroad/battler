@@ -548,7 +548,7 @@ mod rule_set_tests {
 
     fn construct_ruleset(serialized: &str, battle_type: &BattleType) -> Result<RuleSet, Error> {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data);
+        let dex = Dex::new(&data)?;
         let ruleset = serde_json::from_str::<SerializedRuleSet>(serialized).unwrap();
         RuleSet::new(ruleset, battle_type, &dex)
     }

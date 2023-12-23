@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// The base accuracy of a move.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Accuracy {
     /// The base chance for the move to hit.
     Chance(u8),

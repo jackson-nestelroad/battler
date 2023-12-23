@@ -35,6 +35,12 @@ impl BattleEvent {
         }
         Self(log_parts.into_iter().join("|"))
     }
+
+    pub fn push(&mut self, part: &dyn BattleLoggable) {
+        self.0.push('|');
+        let second_event = Self::from_parts(&[part]);
+        self.0.push_str(&second_event.0);
+    }
 }
 
 /// Constructs a [`BattleEvent`] to be added to the [`EventLog`].

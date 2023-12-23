@@ -9,13 +9,20 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use zone_alloc::{
+    ElementRef,
+    ElementRefMut,
+};
 
 use crate::{
     battle::{
         calculate_hidden_power_type,
         calculate_mon_stats,
+        modify,
+        BoostTable,
         MonContext,
         MonHandle,
+        MoveHandle,
         Player,
         Side,
     },
@@ -25,6 +32,7 @@ use crate::{
         Fraction,
         Id,
         Identifiable,
+        WrapResultError,
     },
     dex::Dex,
     log::BattleLoggable,
@@ -36,7 +44,10 @@ use crate::{
         StatTable,
         Type,
     },
-    moves::MoveTarget,
+    moves::{
+        Move,
+        MoveTarget,
+    },
     teams::MonData,
 };
 
@@ -79,6 +90,19 @@ impl BattleLoggable for ActiveMonDetails<'_> {
         items.push(self.health.as_str().into());
         items.push(self.status.as_str().into());
         self.public_details.log(items);
+    }
+}
+
+/// Public details for an active [`Mon`]'s position.
+pub struct MonPositionDetails<'d> {
+    pub name: &'d str,
+    pub player_id: &'d str,
+    pub side_position: usize,
+}
+
+impl BattleLoggable for MonPositionDetails<'_> {
+    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
+        items.push(format!("{},{},{}", self.name, self.player_id, self.side_position).into());
     }
 }
 
@@ -140,6 +164,24 @@ pub struct MonMoveRequest {
     pub can_mega_evo: bool,
 }
 
+/// The outcome of a move used on a single turn of battle.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MoveOutcome {
+    Skipped,
+    Failed,
+    Success,
+}
+
+impl From<MoveOutcome> for bool {
+    fn from(value: MoveOutcome) -> Self {
+        match value {
+            MoveOutcome::Skipped => false,
+            MoveOutcome::Failed => false,
+            MoveOutcome::Success => true,
+        }
+    }
+}
+
 /// A [`Mon`] in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -155,6 +197,7 @@ pub struct Mon {
 
     pub base_stored_stats: StatTable,
     pub stats: StatTable,
+    pub boosts: BoostTable,
     pub ivs: StatTable,
     pub evs: StatTable,
     pub level: u8,
@@ -182,6 +225,17 @@ pub struct Mon {
     pub needs_switch: bool,
     pub trapped: bool,
     pub can_mega_evo: bool,
+
+    /// The move the Mon is actively performing.
+    pub active_move: Option<MoveHandle>,
+    /// The last move selected for the Mon.
+    pub last_move_selected: Option<MoveHandle>,
+    /// The last move used by the Mon, which can be different from `last_move` if that move
+    /// executed a different move (like Metronome).
+    pub last_move_used: Option<MoveHandle>,
+
+    pub active_target: Option<MonHandle>,
+    pub move_this_turn_outcome: Option<MoveOutcome>,
     pub last_move_target: Option<isize>,
     pub last_damage: u64,
 }
@@ -251,6 +305,7 @@ impl Mon {
 
             base_stored_stats: StatTable::default(),
             stats: StatTable::default(),
+            boosts: BoostTable::default(),
             ivs,
             evs,
             level,
@@ -278,6 +333,13 @@ impl Mon {
             needs_switch: false,
             trapped: false,
             can_mega_evo: false,
+
+            active_move: None,
+            last_move_selected: None,
+            last_move_used: None,
+
+            active_target: None,
+            move_this_turn_outcome: None,
             last_move_target: None,
             last_damage: 0,
         })
@@ -334,6 +396,15 @@ impl Mon {
             side_position: Self::position_on_side(context)? + 1,
             health: mon.health(),
             status: mon.status.clone().unwrap_or(String::default()),
+        })
+    }
+
+    /// Returns the public details for the Mon when an action is made.
+    pub fn position_details<'b>(context: &'b MonContext) -> Result<MonPositionDetails<'b>, Error> {
+        Ok(MonPositionDetails {
+            name: &context.mon().name,
+            player_id: context.player().id.as_ref(),
+            side_position: Self::position_on_side(context)? + 1,
         })
     }
 
@@ -470,6 +541,12 @@ impl Mon {
         Ok(iter::once(left).chain(iter::once(right)))
     }
 
+    pub fn adjacent_allies_and_self(
+        context: &mut MonContext,
+    ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
+        Ok(Self::adjacent_allies(context)?.chain(iter::once(Some(context.mon_handle()))))
+    }
+
     pub fn is_foe(&self, mon: &Mon) -> bool {
         self.side != mon.side
     }
@@ -501,13 +578,15 @@ impl Mon {
             .chain(iter::once(right)))
     }
 
-    /// Gets the current value for the given [`Stat`] on a [`Mon`] after all boosts/drops and
-    /// modifications.
-    pub fn get_stat(
+    fn calculate_stat_internal(
         context: &mut MonContext,
         stat: Stat,
         unboosted: bool,
+        boost: Option<i8>,
         unmodified: bool,
+        modifier: Option<Fraction<u16>>,
+        stat_user: MonHandle,
+        stat_target: Option<MonHandle>,
     ) -> Result<u16, Error> {
         if stat == Stat::HP {
             return Err(battler_error!(
@@ -515,10 +594,13 @@ impl Mon {
             ));
         }
 
-        let mut stat = context.mon().stats.get(stat);
+        let mut value = context.mon().stats.get(stat);
         if !unboosted {
-            // TODO: Run stat boosts events.
-            let boost = 0i8;
+            let boost = match boost {
+                Some(boost) => boost,
+                None => context.mon().boosts.get(stat.try_into()?),
+            };
+            // TODO: ModifyBoost event. Should apply to stat_user.
             lazy_static! {
                 static ref BOOST_TABLE: [Fraction<u16>; 7] = [
                     Fraction::new(1, 1),
@@ -533,16 +615,61 @@ impl Mon {
             let boost = boost.max(6).min(-6);
             let boost_fraction = &BOOST_TABLE[boost.abs() as usize];
             if boost >= 0 {
-                stat = boost_fraction.mul(stat).floor();
+                value = boost_fraction.mul(value).floor();
             } else {
-                stat = boost_fraction.inverse().mul(stat).floor();
+                value = boost_fraction.inverse().mul(value).floor();
             }
         }
         if !unmodified {
-            // TODO: Run stat modification events.
+            // TODO: ModifyStat event (individual per stat).
+            let modifier = modifier.unwrap_or(Fraction::from(1));
+            value = modify(value, modifier);
         }
 
-        Ok(stat)
+        Ok(value)
+    }
+
+    /// Calculates the current value for the given [`Stat`] on a [`Mon`].
+    ///
+    /// Similar to [`Self::get_stat`], but can take in custom boosts and modifiers.
+    pub fn calculate_stat(
+        context: &mut MonContext,
+        stat: Stat,
+        boost: i8,
+        modifier: Fraction<u16>,
+        stat_user: MonHandle,
+        stat_target: MonHandle,
+    ) -> Result<u16, Error> {
+        Self::calculate_stat_internal(
+            context,
+            stat,
+            false,
+            Some(boost),
+            false,
+            Some(modifier),
+            stat_user,
+            Some(stat_target),
+        )
+    }
+
+    /// Gets the current value for the given [`Stat`] on a [`Mon`] after all boosts/drops and
+    /// modifications.
+    pub fn get_stat(
+        context: &mut MonContext,
+        stat: Stat,
+        unboosted: bool,
+        unmodified: bool,
+    ) -> Result<u16, Error> {
+        Self::calculate_stat_internal(
+            context,
+            stat,
+            unboosted,
+            None,
+            unmodified,
+            None,
+            context.mon_handle(),
+            None,
+        )
     }
 
     /// Calculates the speed value to use for battle action ordering.
@@ -550,6 +677,56 @@ impl Mon {
         let speed = Self::get_stat(context, Stat::Spe, false, false)?;
         // TODO: If Trick Room, return u16::MAX - speed.
         Ok(speed)
+    }
+
+    /// Returns a reference to the active [`Move`], if it exists.
+    pub fn active_move<'m>(context: &'m MonContext) -> Result<ElementRef<'m, Move>, Error> {
+        context
+            .mon()
+            .active_move
+            .map(|move_handle| context.battle().registry.this_turn_move(move_handle))
+            .wrap_error_with_message("no active move")?
+    }
+
+    /// Returns a mutable reference to the active [`Move`], if it exists.
+    pub fn active_move_mut<'m>(
+        context: &'m mut MonContext,
+    ) -> Result<ElementRefMut<'m, Move>, Error> {
+        context
+            .mon_mut()
+            .active_move
+            .map(|move_handle| context.battle().registry.this_turn_move_mut(move_handle))
+            .wrap_error_with_message("no active move")?
+    }
+
+    /// Returns a reference to the last [`Move`] selected, if it exists.
+    pub fn last_move_selected<'m>(context: &'m MonContext) -> Result<ElementRef<'m, Move>, Error> {
+        context
+            .mon()
+            .last_move_selected
+            .map(|move_handle| context.battle().registry.last_turn_move(move_handle))
+            .wrap_error_with_message("no last move selected")?
+    }
+
+    /// Returns a reference to the last [`Move`] used, if it exists.
+    pub fn last_move_used<'m>(context: &'m MonContext) -> Result<ElementRef<'m, Move>, Error> {
+        context
+            .mon()
+            .last_move_used
+            .map(|move_handle| context.battle().registry.last_turn_move(move_handle))
+            .wrap_error_with_message("no last move used")?
+    }
+
+    fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
+        self.move_slots
+            .iter()
+            .find(|move_slot| &move_slot.id == move_id)
+    }
+
+    fn move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
+        self.move_slots
+            .iter_mut()
+            .find(|move_slot| &move_slot.id == move_id)
     }
 }
 
@@ -762,6 +939,50 @@ impl Mon {
         self.active = false;
         self.position = usize::MAX;
         self.needs_switch = false;
+    }
+
+    /// Sets the active move and target.
+    pub fn set_active_move(&mut self, active_move: MoveHandle, target: Option<MonHandle>) {
+        self.active_move = Some(active_move);
+        self.active_target = target;
+    }
+
+    /// Clears the active move.
+    pub fn clear_active_move(&mut self) {
+        self.active_move = None;
+        self.active_target = None;
+    }
+
+    /// Deducts PP from the given move.
+    ///
+    /// Returns if the move can be used with the PP deduction.
+    pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) -> bool {
+        if let Some(move_slot) = self.move_slot_mut(move_id) {
+            move_slot.used = true;
+            if amount > move_slot.pp {
+                move_slot.pp = 0;
+                return false;
+            } else {
+                move_slot.pp -= amount;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// Checks if the Mon is immune to the given type.
+    pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
+        if context.mon().fainted {
+            return Ok(false);
+        }
+
+        // TODO: NegateImmunity event.
+        // TODO: Handle immunity from being grounded.
+        let immune = context
+            .battle()
+            .check_type_immunity(typ, &context.mon().types);
+
+        Ok(false)
     }
 }
 

@@ -23,7 +23,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DamageType {
     /// A set amount of damage.
-    Set(u32),
+    Set(u16),
     /// Damage equal to the target's level.
     Level,
 }
@@ -37,8 +37,8 @@ impl Display for DamageType {
     }
 }
 
-impl From<u32> for DamageType {
-    fn from(value: u32) -> Self {
+impl From<u16> for DamageType {
+    fn from(value: u16) -> Self {
         Self::Set(value)
     }
 }
@@ -59,7 +59,7 @@ impl Serialize for DamageType {
         S: Serializer,
     {
         match self {
-            Self::Set(n) => serializer.serialize_u32(*n),
+            Self::Set(n) => serializer.serialize_u16(*n),
             Self::Level => serializer.collect_str("level"),
         }
     }
@@ -74,18 +74,25 @@ impl<'de> Visitor<'de> for DamageTypeVisitor {
         write!(formatter, "an integer or \"level\"")
     }
 
-    fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+    fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
         Ok(Self::Value::from(v))
     }
 
+    fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(Self::Value::from(v as u16))
+    }
+
     fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v as u32))
+        Ok(Self::Value::from(v as u16))
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>

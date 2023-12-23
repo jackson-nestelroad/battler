@@ -20,6 +20,7 @@ pub use common::{
     ResourceDex,
     ResourceLookup,
     ResourceWrapper,
+    SingleValueDex,
 };
 #[cfg(test)]
 pub use data::fake_data_store::FakeDataStore;

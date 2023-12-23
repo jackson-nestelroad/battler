@@ -111,7 +111,7 @@ pub struct BattleBuilder<'d> {
 impl<'d> BattleBuilder<'d> {
     /// Constructs a new battle builder object.
     pub fn new(options: BattleBuilderOptions, data: &'d dyn DataStore) -> Result<Self, Error> {
-        let dex = Dex::new(data);
+        let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
         let options = TimedBattleOptions {
             core: CoreBattleOptions {

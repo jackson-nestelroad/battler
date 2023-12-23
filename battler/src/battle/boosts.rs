@@ -7,7 +7,14 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
 };
 
-use crate::common::FastHashMap;
+use crate::{
+    battler_error,
+    common::{
+        Error,
+        FastHashMap,
+    },
+    mons::Stat,
+};
 
 /// A single stat value that can be boosted.
 #[derive(
@@ -39,36 +46,50 @@ pub enum Boost {
     Evasion,
 }
 
+impl TryFrom<Stat> for Boost {
+    type Error = Error;
+    fn try_from(value: Stat) -> Result<Self, Self::Error> {
+        match value {
+            Stat::HP => Err(battler_error!("HP cannot be boosted")),
+            Stat::Atk => Ok(Self::Atk),
+            Stat::Def => Ok(Self::Def),
+            Stat::SpAtk => Ok(Self::SpAtk),
+            Stat::SpDef => Ok(Self::SpDef),
+            Stat::Spe => Ok(Self::Spd),
+        }
+    }
+}
+
 /// A map of values for each boostable stat.
 pub type BoostMap<T> = FastHashMap<Boost, T>;
 
 /// A table of boost values.
-pub type PartialBoostTable = BoostMap<u8>;
+pub type PartialBoostTable = BoostMap<i8>;
 
 /// A full boost table.
 ///
 /// Similar to [`PartialBoostTable`], but all values must be defined.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct BoostTable {
     #[serde(default)]
-    pub atk: u16,
+    pub atk: i8,
     #[serde(default)]
-    pub def: u16,
+    pub def: i8,
     #[serde(default)]
-    pub spatk: u16,
+    pub spatk: i8,
     #[serde(default)]
-    pub spdef: u16,
+    pub spdef: i8,
     #[serde(default)]
-    pub spd: u16,
+    pub spd: i8,
     #[serde(default)]
-    pub acc: u16,
+    pub acc: i8,
     #[serde(default)]
-    pub eva: u16,
+    pub eva: i8,
 }
 
 impl BoostTable {
     /// Returns the value for the given boost.
-    pub fn get(&self, boost: Boost) -> u16 {
+    pub fn get(&self, boost: Boost) -> i8 {
         match boost {
             Boost::Atk => self.atk,
             Boost::Def => self.def,
@@ -84,13 +105,13 @@ impl BoostTable {
 impl From<&PartialBoostTable> for BoostTable {
     fn from(value: &PartialBoostTable) -> Self {
         Self {
-            atk: *value.get(&Boost::Atk).unwrap_or(&0) as u16,
-            def: *value.get(&Boost::Def).unwrap_or(&0) as u16,
-            spatk: *value.get(&Boost::SpAtk).unwrap_or(&0) as u16,
-            spdef: *value.get(&Boost::SpDef).unwrap_or(&0) as u16,
-            spd: *value.get(&Boost::Spd).unwrap_or(&0) as u16,
-            acc: *value.get(&Boost::Accuracy).unwrap_or(&0) as u16,
-            eva: *value.get(&Boost::Evasion).unwrap_or(&0) as u16,
+            atk: *value.get(&Boost::Atk).unwrap_or(&0),
+            def: *value.get(&Boost::Def).unwrap_or(&0),
+            spatk: *value.get(&Boost::SpAtk).unwrap_or(&0),
+            spdef: *value.get(&Boost::SpDef).unwrap_or(&0),
+            spd: *value.get(&Boost::Spd).unwrap_or(&0),
+            acc: *value.get(&Boost::Accuracy).unwrap_or(&0),
+            eva: *value.get(&Boost::Evasion).unwrap_or(&0),
         }
     }
 }

@@ -23,6 +23,7 @@ pub use ohko_type::OhkoType;
 pub use r#move::{
     Move,
     MoveData,
+    SecondaryEffect,
 };
 pub use self_destruct_type::SelfDestructType;
 pub use user_switch_type::UserSwitchType;
