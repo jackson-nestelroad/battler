@@ -36,7 +36,10 @@ pub use maybe_owned::{
     MaybeOwned,
     MaybeOwnedMut,
 };
-pub use reference::UnsafelyDetachBorrow;
+pub use reference::{
+    UnsafelyDetachBorrow,
+    UnsafelyDetachBorrowMut,
+};
 pub use strings::split_once_optional;
 #[cfg(test)]
 pub use test_util::{

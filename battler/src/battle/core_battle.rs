@@ -176,7 +176,7 @@ impl<'d> CoreBattle<'d> {
     fn mon_context<'b>(
         &'b mut self,
         mon: MonHandle,
-    ) -> Result<MonContext<'_, '_, '_, '_, 'b, 'd>, Error> {
+    ) -> Result<MonContext<'_, '_, '_, 'b, 'd>, Error> {
         MonContext::new(self.context().into(), mon)
     }
 
