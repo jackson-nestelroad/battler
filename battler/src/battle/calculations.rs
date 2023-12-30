@@ -3,7 +3,10 @@ use std::ops::Div;
 use lazy_static::lazy_static;
 
 use crate::{
-    common::Fraction,
+    common::{
+        Fraction,
+        FractionInteger,
+    },
     mons::{
         Nature,
         Stat,
@@ -96,7 +99,10 @@ pub fn calculate_hidden_power_type(ivs: &StatTable) -> Type {
 ///
 /// Mostly used for stat calculations. Split off into its own function to help guarantee
 /// consistency.
-pub fn modify(value: u16, modifier: Fraction<u16>) -> u16 {
+pub fn modify<I>(value: I, modifier: Fraction<I>) -> I
+where
+    I: FractionInteger,
+{
     (modifier * value).floor()
 }
 

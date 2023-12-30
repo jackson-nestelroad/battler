@@ -4,7 +4,7 @@ mod switch_bad_input_tests {
         battle::{
             Battle,
             BattleType,
-            CoreBattle,
+            PublicCoreBattle,
         },
         common::{
             Error,
@@ -92,7 +92,7 @@ mod switch_bad_input_tests {
         .wrap_error()
     }
 
-    fn make_battle(data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Doubles)
             .add_player_to_side_1("player-1", "Player 1")

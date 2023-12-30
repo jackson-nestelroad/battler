@@ -1,21 +1,11 @@
 use std::{
     marker::PhantomData,
     mem,
-    ops::{
-        Deref,
-        DerefMut,
-    },
-};
-
-use ahash::HashMapExt;
-use zone_alloc::{
-    ElementRef,
-    ElementRefMut,
 };
 
 use crate::{
     battle::{
-        BattleQueue,
+        ContextCache,
         CoreBattle,
         Mon,
         MonHandle,
@@ -25,7 +15,6 @@ use crate::{
     },
     common::{
         Error,
-        FastHashMap,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
         WrapResultError,
@@ -48,12 +37,12 @@ use crate::{
 ///
 /// Contexts are hierarchical based on the strucutre of a battle:
 ///
-/// - [`ActiveTargetContext`] - Every target Mon is associated with an active move.
-/// - [`ActiveMoveContext`] - Every active move is performed by a Mon.
-/// - [`MonContext`] - Every Mon is owned by a player.
-/// - [`PlayerContext`] - Every player is on a side.
-/// - [`SideContext`] - Every side is in a battle.
 /// - [`Context`] - Scoped to a single battle.
+/// - [`SideContext`] - Every side is in a battle.
+/// - [`PlayerContext`] - Every player is on a side.
+/// - [`MonContext`] - Every Mon is owned by a player.
+/// - [`ActiveMoveContext`] - Every active move is performed by a Mon.
+/// - [`ActiveTargetContext`] - Every target Mon is associated with an active move.
 pub struct Context<'battle, 'data>
 where
     'data: 'battle,
@@ -79,70 +68,22 @@ where
     // references, rather than mutably borrowing self. This allows a method that "belongs" to a
     // child object to also reference its parent object through the context object.
     battle: *mut CoreBattle<'data>,
-    // Collection of mons borrowed by the context chain.
-    //
-    // Mons are borrowed for the lifetime of the context chain. For instance, if a [`MonContext`]
-    // borrows a Mon, that Mon will stay borrowed as long as the parent context lives, even if the
-    // original [`MonContext`] is dropped.
-    //
-    // Borrowing Mons at the root of the chain allows multiple contexts to borrow the same Mon at
-    // different parts in the chain. For example, consider the following chain:
-    // - [`Context`]
-    // - [`SideContext`]
-    // - [`PlayerContext`]
-    // - [`MonContext`]
-    // - [`ActiveMoveContext`]
-    // - [`ActiveTargetContext`]
-    // - [`MonContext`] (attacker)
-    //
-    // In this chain, the two [`MonContext`] instances borrow the same Mon. However, the
-    // construction of the latter context might not know that the Mon is already borrowed in the
-    // chain. By holding the element reference at the root of the chain, the same borrow can be
-    // used for both.
+    // Cache of resources borrowed by the context chain.
     //
     // SAFETY: To create a new context, the entire parent context must be borrowed mutably, which
-    // means it cannot be used while the child context exists. In the above example, this means the
-    // mutable reference to the Mon in the latter [`MonContext`] can never be used at the same time
-    // as the mutable reference to the Mon in other parts of the chain.
-    //
-    // SAFETY: Never remove elements from this container. We could use a [`KeyedRegistry`] to help
-    // make this guarantee, but that is slightly overkill.
-    mons: FastHashMap<MonHandle, ElementRefMut<'battle, Mon>>,
+    // means it cannot be used while the child context exists.
+    cache: ContextCache<'battle>,
     _phantom: PhantomData<&'battle mut CoreBattle<'data>>,
 }
 
 impl<'battle, 'data> Context<'battle, 'data> {
     /// Creates a new [`Context`], which contains a reference to a [`CoreBattle`].
-    pub(in crate::battle) fn new(battle: &'battle mut CoreBattle<'data>) -> Self {
+    pub fn new(battle: &'battle mut CoreBattle<'data>) -> Self {
         Self {
             battle: &mut *battle,
-            mons: FastHashMap::new(),
+            cache: ContextCache::new(),
             _phantom: PhantomData,
         }
-    }
-
-    fn get_cached_mon<'context>(
-        &'context mut self,
-        mon_handle: MonHandle,
-    ) -> Result<&'context mut Mon, Error> {
-        // Multiple map look ups because the borrow checker cannot handle otherwise.
-        if self.mons.contains_key(&mon_handle) {
-            return self
-                .mons
-                .get_mut(&mon_handle)
-                .wrap_error_with_format(format_args!("expected Mon {mon_handle} to exist in cache"))
-                .map(|mon| mon.as_mut());
-        }
-        let mon = self.battle().mon_mut(mon_handle)?;
-        let mon = unsafe { mem::transmute(mon) };
-        self.mons.insert(mon_handle, mon);
-        let mon = self
-            .mons
-            .get_mut(&mon_handle)
-            .wrap_error_with_format(format_args!(
-                "expected Mon {mon_handle} to have been inserted"
-            ))?;
-        Ok(mon.as_mut())
     }
 
     /// Creates a new [`SideContext`], scoped to the lifetime of this context.
@@ -176,25 +117,21 @@ impl<'battle, 'data> Context<'battle, 'data> {
         unsafe { &mut *self.battle }
     }
 
-    /// Returns a reference to the [`BattleQueue`].
-    pub fn battle_queue(&self) -> &BattleQueue {
-        &self.battle().queue
+    /// Returns a reference to a [`Mon`].
+    pub fn mon(&self, mon_handle: MonHandle) -> Result<&Mon, Error> {
+        self.cache.mon(self.battle(), mon_handle).map(|mon| &*mon)
     }
 
-    /// Returns a mutable reference to the [`BattleQueue`].
-    pub fn battle_queue_mut(&mut self) -> &mut BattleQueue {
-        &mut self.battle_mut().queue
+    /// Returns a mutable reference to a [`Mon`].
+    pub fn mon_mut(&mut self, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
+        self.cache.mon(self.battle(), mon_handle)
     }
+}
 
-    /// Returns a mutable iterator over the [`Side`]s of the battle.
-    pub fn sides_mut(&mut self) -> impl Iterator<Item = &mut Side> {
-        self.battle_mut().sides_mut()
-    }
-
-    /// Returns a mutable iterator over the [`Player`]s of the battle.
-    pub fn players_mut(&mut self) -> impl Iterator<Item = &mut Player> {
-        self.battle_mut().players_mut()
-    }
+// Manual `Drop` implementation, so that the borrow checker does not allow `Context` references to
+// dangle.
+impl<'battle, 'data> Drop for Context<'battle, 'data> {
+    fn drop(&mut self) {}
 }
 
 /// The context of a [`Side`] in a battle.
@@ -275,6 +212,16 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
     /// Returns a mutable reference to the foe [`Side`].
     pub fn foe_side_mut(&mut self) -> &mut Side {
         unsafe { &mut *self.foe_side }
+    }
+
+    /// Returns a reference to a [`Mon`].
+    pub fn mon(&self, mon_handle: MonHandle) -> Result<&Mon, Error> {
+        self.context.mon(mon_handle)
+    }
+
+    /// Returns a mutable reference to a [`Mon`].
+    pub fn mon_mut(&mut self, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
+        self.context.mon_mut(mon_handle)
     }
 }
 
@@ -409,52 +356,15 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
     pub fn player_mut(&mut self) -> &mut Player {
         unsafe { &mut *self.player }
     }
-}
 
-/// Similar to [`MaybeOwned`][`crate::common::MaybeOwned`], but for an optional mutable reference
-/// backed by a [`ElementRefMut`].
-///
-/// If the reference is owned the [`ElementRefMut`] is stored directly. If the reference is unowned,
-/// it is stored directly with the assumption that it originates from an [`ElementRefMut`].
-enum MaybeElementRef<'a, T> {
-    Owned(ElementRefMut<'a, T>),
-    Unowned(&'a mut T),
-}
-
-impl<T> Deref for MaybeElementRef<'_, T> {
-    type Target = T;
-    fn deref(&self) -> &Self::Target {
-        match self {
-            Self::Owned(val) => val.deref(),
-            Self::Unowned(val) => val,
-        }
+    /// Returns a reference to a [`Mon`].
+    pub fn mon(&self, mon_handle: MonHandle) -> Result<&Mon, Error> {
+        self.context.mon(mon_handle)
     }
-}
 
-impl<T> DerefMut for MaybeElementRef<'_, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        match self {
-            Self::Owned(val) => val.deref_mut(),
-            Self::Unowned(val) => val,
-        }
-    }
-}
-
-impl<T> AsMut<T> for MaybeElementRef<'_, T> {
-    fn as_mut(&mut self) -> &mut T {
-        self.deref_mut()
-    }
-}
-
-impl<'a, T> From<ElementRefMut<'a, T>> for MaybeElementRef<'a, T> {
-    fn from(value: ElementRefMut<'a, T>) -> Self {
-        Self::Owned(value)
-    }
-}
-
-impl<'a, T> From<&'a mut T> for MaybeElementRef<'a, T> {
-    fn from(value: &'a mut T) -> Self {
-        Self::Unowned(value)
+    /// Returns a mutable reference to a [`Mon`].
+    pub fn mon_mut(&mut self, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
+        self.context.mon_mut(mon_handle)
     }
 }
 
@@ -480,12 +390,15 @@ impl<'player, 'side, 'context, 'battle, 'data>
     /// Creates a new [`MonContext`], which contains a reference to a [`CoreBattle`] and a
     /// [`Mon`].
     pub(in crate::battle) fn new(
-        mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         mon_handle: MonHandle,
     ) -> Result<Self, Error> {
-        let player = context.get_cached_mon(mon_handle)?.player;
-        let mut context = PlayerContext::new(context, player)?;
-        let mon = context.as_battle_context_mut().get_cached_mon(mon_handle)?;
+        let player = context.cache.mon(context.battle(), mon_handle)?.player;
+        let context = PlayerContext::new(context, player)?;
+        let mon = context
+            .as_battle_context()
+            .cache
+            .mon(context.battle(), mon_handle)?;
         // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
         // reference can be borrowed as long as the element reference exists in the root context. We
         // ensure that element references are borrowed for the lifetime of the root context.
@@ -502,8 +415,9 @@ impl<'player, 'side, 'context, 'battle, 'data>
         mon_handle: MonHandle,
     ) -> Result<Self, Error> {
         let mon = player_context
-            .as_battle_context_mut()
-            .get_cached_mon(mon_handle)?;
+            .as_battle_context()
+            .cache
+            .mon(player_context.battle(), mon_handle)?;
         // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
         // reference can be borrowed as long as the element reference exists in the root context. We
         // ensure that element references are borrowed for the lifetime of the root context.
@@ -642,13 +556,26 @@ impl<'player, 'side, 'context, 'battle, 'data>
     }
 
     /// Returns a reference to the active [`Move`], if it exists.
-    pub fn active_move(&self) -> Result<ElementRef<Move>, Error> {
-        Mon::active_move(self)
+    pub fn active_move(&self) -> Result<&Move, Error> {
+        let move_handle = self.mon().active_move.wrap_error_with_format(format_args!(
+            "mon {} does not have an active move",
+            self.mon_handle()
+        ))?;
+        let context = self.as_battle_context();
+        context
+            .cache
+            .active_move(context.battle(), move_handle)
+            .map(|mov| &*mov)
     }
 
     /// Returns a mutable reference to the active [`Move`], if it exists.
-    pub fn active_move_mut(&mut self) -> Result<ElementRefMut<Move>, Error> {
-        Mon::active_move_mut(self)
+    pub fn active_move_mut(&mut self) -> Result<&mut Move, Error> {
+        let move_handle = self.mon().active_move.wrap_error_with_format(format_args!(
+            "mon {} does not have an active move",
+            self.mon_handle()
+        ))?;
+        let context = self.as_battle_context();
+        context.cache.active_move(context.battle(), move_handle)
     }
 }
 
@@ -666,7 +593,7 @@ where
 {
     context: MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>,
     active_move_handle: MoveHandle,
-    active_move: ElementRefMut<'context, Move>,
+    active_move: &'context mut Move,
 }
 
 impl<'mon, 'player, 'side, 'context, 'battle, 'data>
@@ -683,10 +610,12 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
                 context.mon_handle()
             ))?;
         let active_move = context
-            .battle()
-            .registry
-            .this_turn_move_mut(active_move_handle)?;
-        let active_move = unsafe { mem::transmute(active_move) };
+            .as_battle_context()
+            .cache
+            .active_move(context.battle(), active_move_handle)?;
+        // SAFETY: Active moves live as long as the context itself, assuming that the context cannot
+        // exist when the battle moves to the next turn.
+        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
         Ok(Self {
             context,
             active_move_handle,
@@ -764,8 +693,9 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         target_mon_handle: MonHandle,
     ) -> Result<MonContext<'_, '_, '_, 'battle, 'data>, Error> {
         let mon = self
-            .as_battle_context_mut()
-            .get_cached_mon(target_mon_handle)?;
+            .as_battle_context()
+            .cache
+            .mon(self.battle(), target_mon_handle)?;
         // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
         // reference can be borrowed as long as the element reference exists in the root context. We
         // ensure that element references are borrowed for the lifetime of the root context.
@@ -921,15 +851,16 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     ActiveTargetContext<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
 {
     fn new_from_active_move_context(
-        mut context: MaybeOwnedMut<
+        context: MaybeOwnedMut<
             'active_move,
             ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>,
         >,
         active_target_handle: MonHandle,
     ) -> Result<Self, Error> {
         let active_target = context
-            .as_battle_context_mut()
-            .get_cached_mon(active_target_handle)?;
+            .as_battle_context()
+            .cache
+            .mon(context.battle(), active_target_handle)?;
         // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
         // reference can be borrowed as long as the element reference exists in the root context. We
         // ensure that element references are borrowed for the lifetime of the root context.
@@ -1024,38 +955,8 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
         &'active_target mut self,
     ) -> Result<MonContext<'active_target, 'active_target, 'active_target, 'battle, 'data>, Error>
     {
-        let active_target_handle = self.active_target_handle;
-        let active_target = self
-            .as_battle_context_mut()
-            .get_cached_mon(active_target_handle)?;
-        // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
-        // reference can be borrowed as long as the element reference exists in the root context. We
-        // ensure that element references are borrowed for the lifetime of the root context.
-        let active_target = unsafe { active_target.unsafely_detach_borrow_mut() };
-        let player_context = self
-            .as_battle_context_mut()
-            .player_context(active_target.player)?;
-        Ok(MonContext::new_from_mon_ref(
-            player_context,
-            active_target_handle,
-            active_target,
-        ))
-    }
-
-    /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
-    /// context.
-    fn mon_context<'active_target>(
-        &'active_target mut self,
-    ) -> Result<MonContext<'active_target, 'active_target, 'active_target, 'battle, 'data>, Error>
-    {
-        let handle = self.mon_handle();
-        let mon = self.mon_mut();
-        // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
-        // reference can be borrowed as long as the element reference exists in the root context. We
-        // ensure that element references are borrowed for the lifetime of the root context.
-        let mon = unsafe { mon.unsafely_detach_borrow_mut() };
-        let player_context = self.as_battle_context_mut().player_context(mon.player)?;
-        Ok(MonContext::new_from_mon_ref(player_context, handle, mon))
+        let target_handle = self.target_mon_handle();
+        self.as_battle_context_mut().mon_context(target_handle)
     }
 
     /// Creates a new [`MonContext`] for the attacker [`Mon`] for stat calculations, scoped to the
@@ -1066,7 +967,10 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     {
         match self.active_move().data.override_offensive_mon {
             Some(MonOverride::Target) => self.target_mon_context(),
-            _ => self.mon_context(),
+            _ => {
+                let mon_handle = self.mon_handle();
+                self.as_battle_context_mut().mon_context(mon_handle)
+            }
         }
     }
 
@@ -1077,7 +981,10 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     ) -> Result<MonContext<'active_target, 'active_target, 'active_target, 'battle, 'data>, Error>
     {
         match self.active_move().data.override_defensive_mon {
-            Some(MonOverride::User) => self.mon_context(),
+            Some(MonOverride::User) => {
+                let mon_handle = self.mon_handle();
+                self.as_battle_context_mut().mon_context(mon_handle)
+            }
             _ => self.target_mon_context(),
         }
     }

@@ -9,10 +9,6 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use zone_alloc::{
-    ElementRef,
-    ElementRefMut,
-};
 
 use crate::{
     battle::{
@@ -32,7 +28,6 @@ use crate::{
         Fraction,
         Id,
         Identifiable,
-        WrapResultError,
     },
     dex::Dex,
     log::BattleLoggable,
@@ -44,10 +39,7 @@ use crate::{
         StatTable,
         Type,
     },
-    moves::{
-        Move,
-        MoveTarget,
-    },
+    moves::MoveTarget,
     teams::MonData,
 };
 
@@ -679,44 +671,6 @@ impl Mon {
         Ok(speed)
     }
 
-    /// Returns a reference to the active [`Move`], if it exists.
-    pub fn active_move<'m>(context: &'m MonContext) -> Result<ElementRef<'m, Move>, Error> {
-        context
-            .mon()
-            .active_move
-            .map(|move_handle| context.battle().registry.this_turn_move(move_handle))
-            .wrap_error_with_message("no active move")?
-    }
-
-    /// Returns a mutable reference to the active [`Move`], if it exists.
-    pub fn active_move_mut<'m>(
-        context: &'m mut MonContext,
-    ) -> Result<ElementRefMut<'m, Move>, Error> {
-        context
-            .mon_mut()
-            .active_move
-            .map(|move_handle| context.battle().registry.this_turn_move_mut(move_handle))
-            .wrap_error_with_message("no active move")?
-    }
-
-    /// Returns a reference to the last [`Move`] selected, if it exists.
-    pub fn last_move_selected<'m>(context: &'m MonContext) -> Result<ElementRef<'m, Move>, Error> {
-        context
-            .mon()
-            .last_move_selected
-            .map(|move_handle| context.battle().registry.last_turn_move(move_handle))
-            .wrap_error_with_message("no last move selected")?
-    }
-
-    /// Returns a reference to the last [`Move`] used, if it exists.
-    pub fn last_move_used<'m>(context: &'m MonContext) -> Result<ElementRef<'m, Move>, Error> {
-        context
-            .mon()
-            .last_move_used
-            .map(|move_handle| context.battle().registry.last_turn_move(move_handle))
-            .wrap_error_with_message("no last move used")?
-    }
-
     fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
         self.move_slots
             .iter()
@@ -754,7 +708,7 @@ impl Mon {
         }
     }
 
-    pub fn move_request(context: &MonContext) -> Result<MonMoveRequest, Error> {
+    pub fn move_request(context: &mut MonContext) -> Result<MonMoveRequest, Error> {
         let mut locked_move = Self::locked_move(context)?;
         let mut moves = Self::moves_with_locked_move(context, locked_move.as_deref())?;
         let has_usable_move = moves.iter().any(|mov| !mov.disabled);
@@ -778,7 +732,8 @@ impl Mon {
             can_mega_evo: false,
         };
 
-        let can_switch = Player::switchable_mons(context.as_player_context()).count() > 0;
+        let can_switch =
+            Player::switchable_mon_handles(context.as_player_context_mut()).count() > 0;
         if can_switch && context.mon().trapped {
             request.trapped = true;
         }
@@ -976,13 +931,22 @@ impl Mon {
             return Ok(false);
         }
 
+        let types = Self::types(context)?;
         // TODO: NegateImmunity event.
-        // TODO: Handle immunity from being grounded.
-        let immune = context
-            .battle()
-            .check_type_immunity(typ, &context.mon().types);
+        // TODO: Handle immunity from being grounded and potentially other volatile conditions.
+        let immune = context.battle().check_type_immunity(typ, &types);
 
-        Ok(false)
+        Ok(immune)
+    }
+
+    pub fn type_effectiveness(context: &mut MonContext, typ: Type) -> Result<i8, Error> {
+        let mut total = 0;
+        for defense in Mon::types(context)? {
+            let modifier = context.battle().check_type_effectiveness(typ, defense);
+            // TODO: Effectiveness event.
+            total += modifier;
+        }
+        Ok(total)
     }
 }
 

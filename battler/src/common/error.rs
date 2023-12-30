@@ -186,7 +186,14 @@ impl Display for Error {
     }
 }
 
-impl StdError for Error {}
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        match &self.0 {
+            ErrorNode::Leaf(inner) => Some(inner.as_ref() as &dyn StdError),
+            ErrorNode::Wrapped { message: _, inner } => Some(inner.as_ref() as &dyn StdError),
+        }
+    }
+}
 impl WrappableError for Error {}
 
 /// A trait that wraps some object into an [`Error`].

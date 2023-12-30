@@ -6,6 +6,7 @@ mod battle_type;
 mod boosts;
 mod calculations;
 mod context;
+mod context_cache;
 mod core_battle;
 mod core_battle_actions;
 mod core_battle_logs;
@@ -66,7 +67,11 @@ pub use context::{
     PlayerContext,
     SideContext,
 };
-pub use core_battle::CoreBattle;
+pub use context_cache::ContextCache;
+pub use core_battle::{
+    CoreBattle,
+    PublicCoreBattle,
+};
 pub use field::Field;
 pub use mon::{
     ActiveMonDetails,

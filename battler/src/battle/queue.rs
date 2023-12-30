@@ -4,6 +4,7 @@ use crate::{
     battle::{
         Action,
         Context,
+        CoreBattle,
     },
     common::Error,
 };
@@ -47,15 +48,16 @@ impl BattleQueue {
         if let Action::Move(action) = &action {
             if action.mega {
                 context
-                    .battle_queue_mut()
+                    .battle_mut()
+                    .queue
                     .actions
                     .push_back(Action::MegaEvo(action.mon_action.clone()))
             }
         }
 
-        context.battle_mut().resolve_action(&mut action)?;
+        CoreBattle::resolve_action(context, &mut action)?;
 
-        context.battle_queue_mut().actions.push_back(action);
+        context.battle_mut().queue.actions.push_back(action);
         Ok(())
     }
 

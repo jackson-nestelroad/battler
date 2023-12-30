@@ -12,7 +12,7 @@ use battler::{
         BattleBuilderSideData,
         BattleEngineOptions,
         BattleType,
-        CoreBattle,
+        PublicCoreBattle,
         TimerOptions,
     },
     battler_error,
@@ -62,7 +62,7 @@ impl TestBattleBuilder {
     }
 
     /// Builds a new [`CoreBattle`] from the battle builder.
-    pub fn build(self, data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    pub fn build(self, data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         let mut builder = BattleBuilder::new(self.options, data)?;
         for (player_id, mut team) in self.teams {
             let validation = builder.validate_team(&mut team);

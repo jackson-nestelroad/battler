@@ -6,7 +6,7 @@ use crate::{
     battle::{
         core_battle_logs,
         ActiveMoveContext,
-        Battle,
+        CoreBattle,
         Mon,
         MonContext,
         MonHandle,
@@ -31,9 +31,10 @@ use crate::{
 /// Switches a Mon into the given position.
 pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error> {
     if context.mon_mut().active {
-        context
-            .battle_mut()
-            .hint("A switch failed because the Mon trying to switch in is already in.");
+        core_battle_logs::hint(
+            context.as_battle_context_mut(),
+            "A switch failed because the Mon trying to switch in is already in.",
+        )?;
         return Ok(());
     }
 
@@ -53,8 +54,8 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
             "expected {position} to be a valid index to active Mons"
         ))?;
     if let Some(mon) = prev {
-        let mut mon = context.battle().mon_mut(mon)?;
-        mon.switch_out();
+        let mut context = context.as_battle_context_mut().mon_context(mon)?;
+        context.mon_mut().switch_out();
     }
     Mon::switch_in(context, position);
     context.player_mut().active[position] = Some(context.mon_handle());
@@ -77,11 +78,14 @@ fn register_active_move(
         .get_by_id(move_id)?
         .deref()
         .clone();
-    let active_move_handle = context.battle().registry.register_move(active_move);
+    let active_move_handle = context.battle().register_move(active_move);
     let mon_handle = context.mon_handle();
-    context
-        .battle_mut()
-        .set_active_move(active_move_handle, mon_handle, target)?;
+    CoreBattle::set_active_move(
+        context.as_battle_context_mut(),
+        active_move_handle,
+        mon_handle,
+        target,
+    )?;
     Ok(active_move_handle)
 }
 
@@ -95,13 +99,16 @@ pub fn do_move(
 ) -> Result<(), Error> {
     context.mon_mut().active_move_actions += 1;
     let mon_handle = context.mon_handle();
-    let target =
-        context
-            .battle_mut()
-            .get_target(mon_handle, move_id, target_location, original_target)?;
+    let target = CoreBattle::get_target(
+        context.as_battle_context_mut(),
+        mon_handle,
+        move_id,
+        target_location,
+        original_target,
+    )?;
 
     // Make a copy of the move so we can work with it and modify it for the turn.
-    let active_mon_handle = register_active_move(context, move_id, target)?;
+    let active_move_handle = register_active_move(context, move_id, target)?;
     context.active_move_mut()?.external = external;
 
     // TODO: Run BeforeMove checks.
@@ -124,12 +131,12 @@ pub fn do_move(
                 context.active_move()?.data.name,
             );
             context.battle_mut().log(event);
-            context.battle_mut().clear_active_move()?;
+            CoreBattle::clear_active_move(context.as_battle_context_mut())?;
             return Ok(());
         }
 
         // At this point, the move will be attempted, so we should remember it.
-        context.mon_mut().last_move_selected = Some(active_mon_handle);
+        context.mon_mut().last_move_selected = Some(active_move_handle);
         context.mon_mut().last_move_target = target_location;
     }
 
@@ -169,7 +176,7 @@ fn use_move_internal(
     // TODO: ModifyTarget event.
     let mon_handle = context.mon_handle();
     if target.is_none() && context.active_move().data.target.requires_target() {
-        target = context.battle_mut().random_target(mon_handle, move_id)?;
+        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
     }
     // Target may have been modified, so update the battle and context.
     let active_move_handle = context.active_move_handle();
@@ -183,7 +190,7 @@ fn use_move_internal(
 
     // The target changed, so it must be adjusted here.
     if base_target != context.active_move().data.target {
-        target = context.battle_mut().random_target(mon_handle, move_id)?;
+        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
     }
 
     // Mon fainted before this move could be made.
@@ -301,12 +308,21 @@ pub fn get_move_targets(
         _ => {
             let mut target = target;
             if let Some(possible_target) = target {
-                let target_mon = context.battle().mon(possible_target)?;
-                if !target_mon.fainted || !target_mon.is_ally(context.mon()) {
+                let mon = context.mon_handle();
+                let target_context = context.target_mon_context(possible_target)?;
+                if !target_context.mon().fainted
+                    || !target_context
+                        .mon()
+                        .is_ally(target_context.as_battle_context().mon(mon)?)
+                {
                     // A targeted for has fainted, so the move should retarget.
                     let mon = context.mon_handle();
                     let active_move = context.active_move().id().clone();
-                    target = context.battle_mut().random_target(mon, &active_move)?;
+                    target = CoreBattle::random_target(
+                        context.as_battle_context_mut(),
+                        mon,
+                        &active_move,
+                    )?;
                 }
             }
 
@@ -352,24 +368,23 @@ mod direct_move_step {
     use crate::{
         battle::{
             core_battle_logs,
+            modify,
             ActiveMoveContext,
             ActiveTargetContext,
+            CoreBattle,
             Mon,
-            MonContext,
             MonHandle,
             MoveDamage,
         },
         common::{
             Error,
             Fraction,
-            MaybeOwnedMut,
             WrapResultError,
         },
         mons::Stat,
         moves::{
             Accuracy,
             DamageType,
-            MonOverride,
             MoveCategory,
             MoveTarget,
             MultihitType,
@@ -447,7 +462,7 @@ mod direct_move_step {
         for target in targets {
             let mut context = context.target_context(target.handle)?;
             if !accuracy_check(&mut context)? {
-                core_battle_logs::miss(context.as_active_move_context_mut(), target.handle)?;
+                core_battle_logs::miss(&mut context)?;
                 target.should_continue = false;
                 // TODO: AccuracyFailure event.
             }
@@ -567,6 +582,7 @@ mod direct_move_step {
     struct HitTarget {
         handle: MonHandle,
         damage: MoveDamage,
+        failed: bool,
     }
 
     fn hit_targets(
@@ -575,10 +591,6 @@ mod direct_move_step {
         is_secondary: bool,
         is_self: bool,
     ) -> Result<(), Error> {
-        for target in targets {
-            target.damage = MoveDamage::Damage(0);
-        }
-
         let move_target = context.active_move().data.target.clone();
         if move_target == MoveTarget::All {
             // TODO: TryHitField event.
@@ -603,9 +615,17 @@ mod direct_move_step {
         // TODO: If we hit a substitute, filter those targets out.
 
         // Calculate damage for each target.
-        // TODO: getSpreadDamage (calculate_spread_damage).
+        calculate_spread_damage(context, targets, is_secondary, is_self)?;
+        for target in targets.iter_mut() {
+            target.failed = target.damage.failed();
+            if let MoveDamage::Failure = target.damage {
+                if !is_secondary && !is_self {
+                    core_battle_logs::fail_target(&mut context.target_context(target.handle)?)?;
+                }
+            }
+        }
 
-        // TODO: spreadDamage (apply the damage).
+        // TODO: apply_spread_damage.
 
         // TODO: runMoveEffects.
 
@@ -625,10 +645,12 @@ mod direct_move_step {
         is_self: bool,
     ) -> Result<(), Error> {
         for target in targets {
-            context
-                .battle_mut()
-                .set_active_target(Some(target.handle))?;
-            // TODO: call calculate_damage.
+            if target.failed {
+                continue;
+            }
+            CoreBattle::set_active_target(context.as_battle_context_mut(), Some(target.handle))?;
+            let mut context = context.active_target_context()?;
+            target.damage = calculate_damage(&mut context)?;
         }
         Ok(())
     }
@@ -647,6 +669,8 @@ mod direct_move_step {
             return Ok(MoveDamage::Damage(context.target_mon().max_hp));
         }
 
+        // TODO: Damage event.
+
         // Static damage.
         match context.active_move().data.damage {
             Some(DamageType::Level) => return Ok(MoveDamage::Damage(context.mon().level as u16)),
@@ -659,7 +683,7 @@ mod direct_move_step {
         let crit_ratio = context.active_move().data.crit_ratio.unwrap_or(0);
         let crit_ratio = crit_ratio.min(0).max(4);
         let crit_mult = [0, 24, 8, 2, 1];
-        context.active_move_mut().hit_data(&target_mon_handle).crit =
+        context.active_move_mut().hit_data(target_mon_handle).crit =
             context.active_move().data.will_crit
                 || (crit_ratio > 0
                     && context
@@ -667,7 +691,7 @@ mod direct_move_step {
                         .prng
                         .chance(1, crit_mult[crit_ratio as usize]));
 
-        if context.active_move_mut().hit_data(&target_mon_handle).crit {
+        if context.active_move_mut().hit_data(target_mon_handle).crit {
             // TODO: CriticalHit event.
         }
 
@@ -707,8 +731,121 @@ mod direct_move_step {
             defense_boosts = 0;
         }
 
-        // TODO: Mon::calculate_stat.
+        let move_user = context.mon_handle();
+        let move_target = context.target_mon_handle();
+        let attack = Mon::calculate_stat(
+            &mut context.attacker_context()?,
+            attack_stat,
+            attack_boosts,
+            Fraction::from(1),
+            move_user,
+            move_target,
+        )?;
+        let defense = Mon::calculate_stat(
+            &mut context.defender_context()?,
+            defense_stat,
+            defense_boosts,
+            Fraction::from(1),
+            move_target,
+            move_user,
+        )?;
 
-        todo!()
+        let base_damage = 2 * (level as u32) / 5 + 2;
+        let base_damage = base_damage * base_power * (attack as u32);
+        let base_damage = base_damage / (defense as u32);
+        let base_damage = base_damage / 50;
+
+        // Damage modifiers.
+        modify_damage(context, base_damage)
+    }
+
+    fn modify_damage(
+        context: &mut ActiveTargetContext,
+        mut base_damage: u32,
+    ) -> Result<MoveDamage, Error> {
+        base_damage += 2;
+        if context.active_move().spread_hit {
+            let spread_modifier = Fraction::new(3, 4);
+            base_damage = modify(base_damage, spread_modifier);
+        }
+
+        // TODO: WeatherModifyDamage event.
+
+        // Critical hit.
+        let target_mon_handle = context.target_mon_handle();
+        let crit = context.active_move_mut().hit_data(target_mon_handle).crit;
+        if crit {
+            let crit_modifier = Fraction::new(3, 2);
+            base_damage = modify(base_damage, crit_modifier);
+        }
+
+        // Randomize damage.
+        base_damage = context.battle_mut().randomize_base_damage(base_damage);
+
+        // STAB.
+        let move_type = context.active_move().data.primary_type;
+        let stab = Mon::has_type(&context.as_mon_context(), move_type)?;
+        if stab {
+            let stab_modifier = context
+                .active_move()
+                .clone()
+                .stab_modifier
+                .unwrap_or(Fraction::new(3, 2));
+            base_damage = modify(base_damage, stab_modifier);
+        }
+
+        // Type effectiveness.
+        let type_modifier = Mon::type_effectiveness(&mut context.as_mon_context_mut(), move_type)?;
+        let type_modifier = type_modifier.min(-6).max(6);
+        context
+            .active_move_mut()
+            .hit_data(target_mon_handle)
+            .type_modifier = type_modifier;
+        if type_modifier > 0 {
+            core_battle_logs::super_effective(context)?;
+            for _ in 0..type_modifier {
+                base_damage *= 2;
+            }
+        } else if type_modifier < 0 {
+            core_battle_logs::resisted(context)?;
+            for _ in 0..-type_modifier {
+                base_damage /= 2;
+            }
+        }
+
+        if crit {
+            core_battle_logs::critical_hit(context)?;
+        }
+
+        // TODO: StatusModifyDamage event (Burn).
+
+        // TODO: ModifyDamage event.
+
+        let base_damage = base_damage as u16;
+        let base_damage = base_damage.min(1);
+        Ok(MoveDamage::Damage(base_damage))
+    }
+
+    // TODO: This should work for any effect, not just a move...
+    fn apply_spread_damage(
+        context: &mut ActiveMoveContext,
+        targets: &mut [HitTarget],
+    ) -> Result<(), Error> {
+        for target in targets {
+            let mut context = context.target_context(target.handle)?;
+            if let MoveDamage::Damage(0) = target.damage {
+                continue;
+            }
+            if target.failed || context.target_mon().hp == 0 {
+                target.damage = MoveDamage::Damage(0);
+                continue;
+            }
+            if !context.target_mon().active {
+                target.damage = MoveDamage::Failure;
+                continue;
+            }
+            // TODO: Struggle recoil should not be affected by effects.
+        }
+        todo!("apply_spread_damage")
     }
 }

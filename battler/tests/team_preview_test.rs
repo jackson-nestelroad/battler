@@ -4,7 +4,7 @@ mod team_preview_tests {
         battle::{
             Battle,
             BattleType,
-            CoreBattle,
+            PublicCoreBattle,
         },
         common::{
             Error,
@@ -93,7 +93,7 @@ mod team_preview_tests {
         .wrap_error()
     }
 
-    fn make_multi_battle(data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Multi)
             .with_rule("Standard")

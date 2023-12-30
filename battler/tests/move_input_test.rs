@@ -4,7 +4,7 @@ mod move_bad_input_tests {
         battle::{
             Battle,
             BattleType,
-            CoreBattle,
+            PublicCoreBattle,
             Request,
         },
         common::{
@@ -47,7 +47,7 @@ mod move_bad_input_tests {
         .wrap_error()
     }
 
-    fn make_singles_battle(data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .with_auto_continue(false)
@@ -78,7 +78,7 @@ mod move_bad_input_tests {
         .wrap_error()
     }
 
-    fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .with_auto_continue(false)
@@ -89,14 +89,14 @@ mod move_bad_input_tests {
             .build(data)
     }
 
-    fn player_request(battle: &CoreBattle, player_id: &str) -> Option<Request> {
+    fn player_request(battle: &PublicCoreBattle, player_id: &str) -> Option<Request> {
         battle
             .active_requests()
             .find(|(player, _)| player == player_id)
             .map(|(_, request)| request)
     }
 
-    fn player_has_active_request(battle: &CoreBattle, player_id: &str) -> bool {
+    fn player_has_active_request(battle: &PublicCoreBattle, player_id: &str) -> bool {
         player_request(battle, player_id).is_some()
     }
 
@@ -283,7 +283,7 @@ mod move_bad_input_tests {
         .wrap_error()
     }
 
-    fn make_triples_battle(data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         // Adjacency rules really only matter for Triples, so we use a Triples battle to verify our
         // adjacency rules.
         TestBattleBuilder::new()
@@ -438,7 +438,7 @@ mod move_bad_input_tests {
         // Acupressure is the only move that does this.
     }
 
-    fn make_multi_battle(data: &dyn DataStore) -> Result<CoreBattle, Error> {
+    fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Multi)
             .with_auto_continue(false)

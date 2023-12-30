@@ -4,18 +4,15 @@ use std::{
 };
 
 use ahash::HashSetExt;
-use itertools::Itertools;
 use serde::{
     Deserialize,
     Serialize,
 };
-use zone_alloc::ElementRef;
 
 use crate::{
     battle::{
         action::SwitchAction,
         Action,
-        Battle,
         BattleRegistry,
         BattleType,
         Mon,
@@ -208,8 +205,8 @@ impl Player {
     pub(crate) fn set_index(context: &mut PlayerContext, index: usize) -> Result<(), Error> {
         context.player_mut().index = index;
         let side_index = context.player().side;
-        for mon in &context.player().mons {
-            let mut mon = context.battle().mon_mut(*mon)?;
+        for mon_handle in context.player().mons.clone() {
+            let mon = context.mon_mut(mon_handle)?;
             mon.player = index;
             mon.side = side_index;
         }
@@ -244,30 +241,11 @@ impl Player {
     pub fn active_mon<'b>(
         context: &'b PlayerContext,
         position: usize,
-    ) -> Result<ElementRef<'b, Mon>, Error> {
-        context.battle().registry.mon(
-            Self::active_mon_handle(context, position).wrap_error_with_format(format_args!(
-                "player does not have an active Mon in position {position}"
-            ))?,
-        )
-    }
-
-    pub fn active_mons<'p, 's, 'c, 'b, 'd>(
-        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
-           + Captures<'d>
-           + Captures<'b>
-           + Captures<'c>
-           + Captures<'s>
-           + 'p {
-        context
-            .player()
-            .active
-            .iter()
-            .filter_map(move |active| match active {
-                Some(mon_handle) => Some(context.battle().mon(*mon_handle)),
-                None => None,
-            })
+    ) -> Result<Option<&'b Mon>, Error> {
+        match Self::active_mon_handle(context, position) {
+            None => Ok(None),
+            Some(mon_handle) => context.mon(mon_handle).map(|mon| Some(mon)),
+        }
     }
 
     pub fn active_mon_handles<'p, 's, 'c, 'b, 'd>(
@@ -281,57 +259,45 @@ impl Player {
             .filter_map(|mon_handle| *mon_handle)
     }
 
-    pub fn inactive_mons<'p, 's, 'c, 'b, 'd>(
+    pub fn inactive_mon_handles<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
-           + Captures<'d>
-           + Captures<'b>
-           + Captures<'c>
-           + Captures<'s>
-           + 'p {
+    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
+    {
         context
             .player()
             .mons
             .iter()
             .cloned()
             .filter(|mon_handle| !context.player().active.contains(&Some(*mon_handle)))
-            .map(|mon_handle| context.battle().mon(mon_handle))
     }
 
-    pub fn mons<'p, 's, 'c, 'b, 'd>(
+    pub fn mon_handles<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
-           + Captures<'d>
-           + Captures<'b>
-           + Captures<'c>
-           + Captures<'s>
-           + 'p {
-        context
-            .player()
-            .mons
-            .iter()
-            .cloned()
-            .map(|mon_handle| context.battle().mon(mon_handle))
+    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
+    {
+        context.player().mons.iter().cloned()
     }
 
-    pub fn switchable_mons<'p, 's, 'c, 'b, 'd>(
-        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = Result<ElementRef<'p, Mon>, Error>>
-           + Captures<'d>
-           + Captures<'b>
-           + Captures<'c>
-           + Captures<'s>
-           + 'p {
-        Self::mons(context).filter_ok(|mon| !mon.fainted)
+    pub fn switchable_mon_handles<'p, 's, 'c, 'b, 'd>(
+        context: &'p mut PlayerContext<'s, 'c, 'b, 'd>,
+    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
+    {
+        Self::mon_handles(context).filter(|mon_handle| {
+            context
+                .mon(*mon_handle)
+                .map(|mon| mon.fainted)
+                .is_ok_and(|fainted| !fainted)
+        })
     }
 
-    pub fn request_data(context: &PlayerContext) -> Result<PlayerRequestData, Error> {
-        let player = context.player();
+    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerRequestData, Error> {
+        let mon_handles = Self::mon_handles(context).collect::<Vec<_>>();
         Ok(PlayerRequestData {
-            name: player.name.clone(),
-            id: player.id.clone(),
-            mons: Self::mons(context)
-                .map_ok(|mon| mon.team_request_data())
+            name: context.player().name.clone(),
+            id: context.player().id.clone(),
+            mons: mon_handles
+                .into_iter()
+                .map(|mon_handle| Ok(context.mon(mon_handle)?.team_request_data()))
                 .collect::<Result<_, _>>()?,
         })
     }
@@ -370,11 +336,15 @@ impl Player {
     pub fn clear_choice(context: &mut PlayerContext) {
         let mut choice = ChoiceState::new();
         if let Some(RequestType::Switch) = context.player().request_type() {
-            let can_switch_out = Self::active_mons(context)
-                .filter_ok(|mon| mon.needs_switch)
+            let can_switch_out = Self::active_mon_handles(context)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .map(|mon_handle| context.mon(mon_handle).is_ok_and(|mon| mon.needs_switch))
                 .count();
-            let can_switch_in = Self::inactive_mons(context)
-                .filter_ok(|mon| !mon.fainted)
+            let can_switch_in = Self::inactive_mon_handles(context)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .map(|mon_handle| context.mon(mon_handle).is_ok_and(|mon| !mon.fainted))
                 .count();
             let switches = can_switch_out.min(can_switch_in);
             let passes = can_switch_out - switches;
@@ -566,9 +536,11 @@ impl Player {
                 _ => Err(battler_error!("you sent more choices than active Mons")),
             };
         }
-        let active_mon = Self::active_mon(context, active_position).wrap_error_with_format(
-            format_args!("expected player to have active Mon in position {active_position}"),
-        )?;
+        let active_mon_handle = Self::active_mon_handle(context, active_position)
+            .wrap_error_with_format(format_args!(
+                "expected player to have active Mon in position {active_position}"
+            ))?;
+        let active_mon = context.mon(active_mon_handle)?;
         let active_mon_position = active_mon.position;
         let data = data.wrap_error_with_message("you must select a Mon to switch in")?;
         let slot = data
@@ -592,11 +564,14 @@ impl Player {
             ));
         }
 
-        let target_mon = context.battle().mon(target_mon_handle)?;
-        if target_mon.fainted {
+        let target_context = context
+            .as_battle_context_mut()
+            .mon_context(target_mon_handle)?;
+        if target_context.mon().fainted {
             return Err(battler_error!("you cannot switch to a fainted Mon"));
         }
 
+        let active_mon = context.mon(active_mon_handle)?;
         match context.player().request_type() {
             Some(RequestType::Turn) => {
                 if active_mon.trapped {
@@ -636,13 +611,7 @@ impl Player {
             match context.player().request_type() {
                 Some(RequestType::Turn) => {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
-                        mon.is_some_and(|mon| {
-                            context
-                                .battle()
-                                .registry
-                                .mon(mon)
-                                .is_ok_and(|mon| mon.fainted)
-                        })
+                        mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| mon.fainted))
                     }) {
                         Self::choose_pass(context)?;
                         next_mon += 1;
@@ -650,13 +619,7 @@ impl Player {
                 }
                 Some(RequestType::Switch) => {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
-                        mon.is_some_and(|mon| {
-                            context
-                                .battle()
-                                .registry
-                                .mon(mon)
-                                .is_ok_and(|mon| !mon.needs_switch)
-                        })
+                        mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| !mon.needs_switch))
                     }) {
                         Self::choose_pass(context)?;
                         next_mon += 1;
@@ -670,7 +633,9 @@ impl Player {
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
         let active_index = Self::get_active_position_for_next_choice(context, true)?;
-        let mon = Self::active_mon(context, active_index)?;
+        let mon = Self::active_mon(context, active_index)?.wrap_error_with_format(format_args!(
+            "expected an active Mon in position {active_index}"
+        ))?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
                 if context.player().choice.forced_passes_left == 0 {
@@ -720,7 +685,7 @@ impl Player {
                 "expected Mon to exist for handle {mon_handle}"
             ))?;
 
-        let request = Mon::move_request(&context)?;
+        let request = Mon::move_request(&mut context)?;
         let move_slot =
             request
                 .moves

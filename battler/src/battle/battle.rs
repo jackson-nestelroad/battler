@@ -72,9 +72,6 @@ where
     where
         I: IntoIterator<Item = BattleEvent>;
 
-    /// Logs a new hint to the battle log.
-    fn hint(&mut self, message: &str);
-
     /// Starts the battle.
     fn start(&mut self) -> Result<(), Error>;
     /// Is the battle ready to continue?

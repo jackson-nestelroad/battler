@@ -222,18 +222,39 @@ impl MoveData {
 pub struct MoveHitData {
     /// Did the move critical hit?
     pub crit: bool,
+    /// Type modifier on the damage calculation.
+    pub type_modifier: i8,
+}
+
+impl MoveHitData {
+    pub fn new() -> Self {
+        Self {
+            crit: false,
+            type_modifier: 0,
+        }
+    }
 }
 
 /// An inidividual move, which can be used by a Mon in battle.
+///
+/// Unlike other move effects, [`Move`]s are mutable across multiple Mons and turns. A move used by
+/// one Mon can have different effects than the ame move used by another Mon.
 #[derive(Clone)]
 pub struct Move {
     /// Move data.
     pub data: MoveData,
     id: Id,
 
+    /// Custom STAB modifier, if any.
+    pub stab_modifier: Option<Fraction<u32>>,
+
+    /// The move was used externally, rather than directly by a Mon through its moveset.
     pub external: bool,
+    /// Whether or not this move hit multiple targets.
     pub spread_hit: bool,
+    /// Number of hits dealt by the move.
     pub hit: u8,
+    /// Total damage dealt by the move.
     pub total_damage: u64,
 
     hit_data: FastHashMap<MonHandle, MoveHitData>,
@@ -246,6 +267,7 @@ impl Move {
         Self {
             data,
             id,
+            stab_modifier: None,
             external: false,
             spread_hit: false,
             hit: 0,
@@ -254,10 +276,8 @@ impl Move {
         }
     }
 
-    pub fn hit_data(&mut self, target: &MonHandle) -> &mut MoveHitData {
-        self.hit_data
-            .entry(*target)
-            .or_insert(MoveHitData { crit: false })
+    pub fn hit_data(&mut self, target: MonHandle) -> &mut MoveHitData {
+        self.hit_data.entry(target).or_insert(MoveHitData::new())
     }
 }
 

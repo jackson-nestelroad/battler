@@ -7,9 +7,9 @@ use crate::{
     battle::{
         BattleEngineOptions,
         BattleOptions,
-        CoreBattle,
         CoreBattleOptions,
         PlayerData,
+        PublicCoreBattle,
         SideData,
         TimedBattleOptions,
         TimerOptions,
@@ -145,10 +145,13 @@ impl<'d> BattleBuilder<'d> {
     }
 
     /// Builds a new battle instance using data from the builder.
-    pub fn build(mut self, engine_options: BattleEngineOptions) -> Result<CoreBattle<'d>, Error> {
+    pub fn build(
+        mut self,
+        engine_options: BattleEngineOptions,
+    ) -> Result<PublicCoreBattle<'d>, Error> {
         self.validate_battle_options()?;
         self.options.validate_with_format(&self.format.data())?;
-        CoreBattle::from_builder(self.options.core, self.dex, self.format, engine_options)
+        PublicCoreBattle::from_builder(self.options.core, self.dex, self.format, engine_options)
     }
 
     fn validate_battle_options(&mut self) -> Result<(), Error> {

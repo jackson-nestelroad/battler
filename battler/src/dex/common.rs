@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 use zone_alloc::{
     BorrowError,
     ElementRef,
-    ElementRefMut,
 };
 
 use crate::{
@@ -71,11 +70,6 @@ impl<T> ResourceCache<T> {
     /// Gets the data for a cached ID.
     pub fn get(&self, id: &Id) -> Result<ElementRef<T>, BorrowError> {
         self.cache.get(id)
-    }
-
-    /// Gets the mutable data for a cached ID.
-    pub fn get_mut(&self, id: &Id) -> Result<ElementRefMut<T>, BorrowError> {
-        self.cache.get_mut(id)
     }
 
     /// Caches the given reference for future lookups.
@@ -160,6 +154,7 @@ where
 }
 
 pub struct SingleValueDex<'d, T> {
+    #[allow(unused)]
     data: &'d dyn DataStore,
     value: T,
 }

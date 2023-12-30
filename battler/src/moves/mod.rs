@@ -1,5 +1,4 @@
 mod accuracy;
-mod active_move;
 mod damage_type;
 mod mon_override;
 mod r#move;
@@ -12,7 +11,6 @@ mod self_destruct_type;
 mod user_switch_type;
 
 pub use accuracy::Accuracy;
-pub use active_move::ActiveMove;
 pub use damage_type::DamageType;
 pub use mon_override::MonOverride;
 pub use move_category::MoveCategory;

@@ -7,6 +7,7 @@ use std::{
     },
 };
 
+use ahash::HashMapExt;
 use uuid::Uuid;
 use zone_alloc::{
     ElementRef,
@@ -17,7 +18,6 @@ use crate::{
     battle::{
         core_battle_actions,
         Action,
-        ActiveMoveContext,
         Battle,
         BattleEngineOptions,
         BattleOptions,
@@ -27,11 +27,9 @@ use crate::{
         CoreBattleOptions,
         Field,
         Mon,
-        MonContext,
         MonHandle,
         MoveHandle,
         Player,
-        PlayerContext,
         PseudoRandomNumberGenerator,
         Request,
         RequestType,
@@ -61,7 +59,93 @@ use crate::{
         Type,
         TypeEffectiveness,
     },
+    moves::Move,
 };
+
+/// The public interface for a [`CoreBattle`].
+///
+/// Intended to separate public methods used by library users (a.k.a., battle operators) and public
+/// methods used by internal battle logic.
+pub struct PublicCoreBattle<'d> {
+    /// The internal [`CoreBattle`], which contains all battle objects and logic.
+    pub internal: CoreBattle<'d>,
+}
+
+impl<'d> PublicCoreBattle<'d> {
+    /// Constructs a new [`PublicCoreBattle`] from a
+    /// [`BattleBuilder`][`crate::battle::BattleBuilder`].
+    pub(crate) fn from_builder(
+        options: CoreBattleOptions,
+        dex: Dex<'d>,
+        format: Format,
+        engine_options: BattleEngineOptions,
+    ) -> Result<Self, Error> {
+        let internal = CoreBattle::from_builder(options, dex, format, engine_options)?;
+        Ok(Self { internal })
+    }
+}
+
+impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
+    fn new(
+        options: CoreBattleOptions,
+        data: &'d dyn DataStore,
+        engine_options: BattleEngineOptions,
+    ) -> Result<Self, Error> {
+        let internal = CoreBattle::new(options, data, engine_options)?;
+        Ok(Self { internal })
+    }
+
+    fn started(&self) -> bool {
+        self.internal.started
+    }
+
+    fn ended(&self) -> bool {
+        self.internal.ended
+    }
+
+    fn has_new_logs(&self) -> bool {
+        self.internal.has_new_logs()
+    }
+
+    fn all_logs(&self) -> impl Iterator<Item = &str> {
+        self.internal.all_logs()
+    }
+
+    fn new_logs(&mut self) -> impl Iterator<Item = &str> {
+        self.internal.new_logs()
+    }
+
+    fn log(&mut self, event: BattleEvent) {
+        self.internal.log(event)
+    }
+
+    fn log_many<I>(&mut self, events: I)
+    where
+        I: IntoIterator<Item = BattleEvent>,
+    {
+        self.internal.log_many(events)
+    }
+
+    fn start(&mut self) -> Result<(), Error> {
+        self.internal.start()
+    }
+
+    fn ready_to_continue(&mut self) -> Result<bool, Error> {
+        self.internal.ready_to_continue()
+    }
+
+    fn continue_battle(&mut self) -> Result<(), Error> {
+        self.internal.continue_battle()
+    }
+
+    fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
+        self.internal.active_requests()
+    }
+
+    fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
+        self.internal.set_player_choice(player_id, input)
+    }
+}
 
 /// The core implementation of a [`Battle`].
 ///
@@ -72,13 +156,13 @@ pub struct CoreBattle<'d> {
 
     pub prng: PseudoRandomNumberGenerator,
     pub dex: Dex<'d>,
-    pub registry: BattleRegistry,
     pub queue: BattleQueue,
     pub format: Format,
     pub field: Field,
     pub sides: [Side; 2],
     pub players: Vec<Player>,
 
+    registry: BattleRegistry,
     player_ids: FastHashMap<String, usize>,
 
     engine_options: BattleEngineOptions,
@@ -91,15 +175,31 @@ pub struct CoreBattle<'d> {
 
     active_mon: Option<MonHandle>,
 
-    input_log: FastHashMap<usize, Vec<String>>,
+    input_log: FastHashMap<usize, FastHashMap<u64, String>>,
 
     _pin: PhantomPinned,
 }
 
-// Additional constructors.
+// Block for constructors.
 impl<'d> CoreBattle<'d> {
-    /// Constructs a new [`CoreBattle`] from a [`BattleBuilder`][`crate::battle::BattleBuilder`].
-    pub(crate) fn from_builder(
+    fn new(
+        mut options: CoreBattleOptions,
+        data: &'d dyn DataStore,
+        engine_options: BattleEngineOptions,
+    ) -> Result<Self, Error> {
+        options
+            .validate()
+            .wrap_error_with_message("battle options are invalid")?;
+        let dex = Dex::new(data)?;
+        let format_data = mem::replace(&mut options.format, None);
+        let format = Format::new(
+            format_data.wrap_error_with_message("missing format field for new battle")?,
+            &dex,
+        )?;
+        Self::from_builder(options, dex, format, engine_options)
+    }
+
+    fn from_builder(
         options: CoreBattleOptions,
         dex: Dex<'d>,
         format: Format,
@@ -129,7 +229,7 @@ impl<'d> CoreBattle<'d> {
             players
                 .iter()
                 .enumerate()
-                .map(|(index, _)| (index, Vec::<String>::new())),
+                .map(|(index, _)| (index, FastHashMap::new())),
         );
 
         let mut battle = Self {
@@ -137,12 +237,12 @@ impl<'d> CoreBattle<'d> {
             log,
             prng,
             dex,
-            registry,
             queue,
             format,
             field,
             sides: [side_1, side_2],
             players,
+            registry,
             player_ids,
             engine_options,
             turn: 0,
@@ -155,29 +255,15 @@ impl<'d> CoreBattle<'d> {
             input_log,
             _pin: PhantomPinned,
         };
-        battle.initialize()?;
+        Self::initialize(&mut battle.context())?;
         Ok(battle)
     }
 }
 
 // Block for all basic getters.
 impl<'d> CoreBattle<'d> {
-    fn context<'b>(&'b mut self) -> Context<'b, 'd> {
+    pub fn context<'b>(&'b mut self) -> Context<'b, 'd> {
         Context::new(self)
-    }
-
-    fn player_context<'b>(
-        &'b mut self,
-        player: usize,
-    ) -> Result<PlayerContext<'_, '_, 'b, 'd>, Error> {
-        PlayerContext::new(self.context().into(), player)
-    }
-
-    fn mon_context<'b>(
-        &'b mut self,
-        mon: MonHandle,
-    ) -> Result<MonContext<'_, '_, '_, 'b, 'd>, Error> {
-        MonContext::new(self.context().into(), mon)
     }
 
     pub fn sides(&self) -> impl Iterator<Item = &Side> {
@@ -220,18 +306,6 @@ impl<'d> CoreBattle<'d> {
             .wrap_error_with_format(format_args!("player {player} does not exist"))
     }
 
-    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>, Error> {
-        self.registry
-            .mon(mon)
-            .wrap_error_with_format(format_args!("mon {mon} does not exist"))
-    }
-
-    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>, Error> {
-        self.registry
-            .mon_mut(mon)
-            .wrap_error_with_format(format_args!("mon {mon} does not exist"))
-    }
-
     pub fn players_on_side(&self, side: usize) -> impl Iterator<Item = &Player> {
         self.players().filter(move |player| player.side == side)
     }
@@ -243,15 +317,34 @@ impl<'d> CoreBattle<'d> {
             .cloned()
     }
 
+    pub unsafe fn mon<'b>(&'b self, mon_handle: MonHandle) -> Result<ElementRef<'b, Mon>, Error> {
+        self.registry.mon(mon_handle)
+    }
+
+    pub unsafe fn mon_mut<'b>(
+        &'b self,
+        mon_handle: MonHandle,
+    ) -> Result<ElementRefMut<'b, Mon>, Error> {
+        self.registry.mon_mut(mon_handle)
+    }
+
+    pub unsafe fn this_turn_move<'b>(
+        &'b self,
+        move_handle: MoveHandle,
+    ) -> Result<ElementRef<'b, Move>, Error> {
+        self.registry.this_turn_move(move_handle)
+    }
+
+    pub unsafe fn this_turn_move_mut<'b>(
+        &'b self,
+        move_handle: MoveHandle,
+    ) -> Result<ElementRefMut<'b, Move>, Error> {
+        self.registry.this_turn_move_mut(move_handle)
+    }
+
     pub fn all_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
         self.sides()
             .map(|side| self.all_mon_handles_on_side(side.index))
-            .flatten()
-    }
-
-    pub fn all_mons(&self) -> impl Iterator<Item = Result<ElementRef<Mon>, Error>> {
-        self.sides()
-            .map(|side| self.all_mons_on_side(side.index))
             .flatten()
     }
 
@@ -263,16 +356,6 @@ impl<'d> CoreBattle<'d> {
             .map(|player| player.mons.iter())
             .flatten()
             .cloned()
-    }
-
-    pub fn all_mons_on_side(
-        &self,
-        side: usize,
-    ) -> impl Iterator<Item = Result<ElementRef<Mon>, Error>> {
-        self.players_on_side(side)
-            .map(|player| player.mons.iter())
-            .flatten()
-            .map(|mon| self.mon(*mon))
     }
 
     pub fn active_positions_on_side<'b>(
@@ -291,14 +374,6 @@ impl<'d> CoreBattle<'d> {
     ) -> impl Iterator<Item = MonHandle> + 'b {
         self.active_positions_on_side(side)
             .filter_map(|position| position)
-    }
-
-    pub fn active_mons_on_side<'b>(
-        &'b self,
-        side: usize,
-    ) -> impl Iterator<Item = Result<ElementRef<Mon>, Error>> + 'b {
-        self.active_mon_handles_on_side(side)
-            .map(|mon| self.mon(mon))
     }
 
     pub fn next_ability_priority(&mut self) -> u32 {
@@ -321,49 +396,10 @@ impl<'d> CoreBattle<'d> {
     pub fn active_mon_handle(&self) -> Option<MonHandle> {
         self.active_mon.clone()
     }
-
-    pub fn active_mon(&self) -> Result<ElementRef<Mon>, Error> {
-        self.mon(
-            self.active_mon_handle()
-                .wrap_error_with_message("no active mon")?,
-        )
-    }
-
-    pub fn active_mon_mut(&self) -> Result<ElementRefMut<Mon>, Error> {
-        self.mon_mut(
-            self.active_mon_handle()
-                .wrap_error_with_message("no active mon")?,
-        )
-    }
 }
 
-// Block for all public methods.
-impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
-    fn new(
-        mut options: CoreBattleOptions,
-        data: &'d dyn DataStore,
-        engine_options: BattleEngineOptions,
-    ) -> Result<Self, Error> {
-        options
-            .validate()
-            .wrap_error_with_message("battle options are invalid")?;
-        let dex = Dex::new(data)?;
-        let format_data = mem::replace(&mut options.format, None);
-        let format = Format::new(
-            format_data.wrap_error_with_message("missing format field for new battle")?,
-            &dex,
-        )?;
-        Self::from_builder(options, dex, format, engine_options)
-    }
-
-    fn started(&self) -> bool {
-        self.started
-    }
-
-    fn ended(&self) -> bool {
-        self.ended
-    }
-
+// Block for methods that are only called from the public interface.
+impl<'d> CoreBattle<'d> {
     fn has_new_logs(&self) -> bool {
         self.log.has_new_messages()
     }
@@ -376,39 +412,88 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
         self.log.read_out()
     }
 
-    fn log(&mut self, event: BattleEvent) {
+    fn start(&mut self) -> Result<(), Error> {
+        Self::start_internal(&mut self.context())
+    }
+
+    fn ready_to_continue(&mut self) -> Result<bool, Error> {
+        Self::all_player_choices_done(&mut self.context())
+    }
+
+    fn continue_battle(&mut self) -> Result<(), Error> {
+        if !self.ready_to_continue()? {
+            return Err(battler_error!("battle is not ready to continue"));
+        }
+        Self::continue_battle_internal(&mut self.context())
+    }
+
+    fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
+        self.players().filter_map(|player| {
+            player
+                .active_request()
+                .map(|request| (player.id.to_owned(), request))
+        })
+    }
+
+    fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
+        Self::set_player_choice_internal(&mut self.context(), player_id, input)
+    }
+}
+
+impl<'d> CoreBattle<'d> {
+    pub fn log(&mut self, event: BattleEvent) {
         self.log.push(event)
     }
 
-    fn hint(&mut self, message: &str) {
-        self.log(battle_event!("-hint", message))
-    }
-
-    fn log_many<I>(&mut self, events: I)
+    pub fn log_many<I>(&mut self, events: I)
     where
         I: IntoIterator<Item = BattleEvent>,
     {
         self.log.push_extend(events)
     }
 
-    fn start(&mut self) -> Result<(), Error> {
-        if self.started {
+    pub fn started(&self) -> bool {
+        self.started
+    }
+
+    pub fn ended(&self) -> bool {
+        self.ended
+    }
+
+    fn initialize(context: &mut Context) -> Result<(), Error> {
+        for player in 0..context.battle().players.len() {
+            let mut context = context.player_context(player)?;
+            Player::set_index(&mut context, player)?;
+        }
+        let mon_handles = context.battle().all_mon_handles().collect::<Vec<_>>();
+        for mon_handle in mon_handles {
+            let mut context = context.mon_context(mon_handle)?;
+            Mon::initialize(&mut context)?;
+        }
+        Ok(())
+    }
+
+    fn start_internal(context: &mut Context) -> Result<(), Error> {
+        if context.battle().started {
             return Err(battler_error!("battle already started"));
         }
-        self.started = true;
+        context.battle_mut().started = true;
 
-        self.log(battle_event!("battletype", self.format.battle_type));
+        let battle_type_event = battle_event!("battletype", context.battle().format.battle_type);
+        context.battle_mut().log(battle_type_event);
 
         // Extract and sort all rule logs.
         //
         // We sort to keep the battle log stable.
-        let mut rule_logs = self
+        let mut rule_logs = context
+            .battle()
             .format
             .rules
-            .clauses(&self.dex)
+            .clauses(&context.battle().dex)
             .filter_map(|clause| {
                 clause.data.rule_log.as_ref().map(|rule_log| {
-                    let value = self
+                    let value = context
+                        .battle()
                         .format
                         .rules
                         .value(clause.id())
@@ -422,84 +507,31 @@ impl<'d> Battle<'d, CoreBattleOptions> for CoreBattle<'d> {
             })
             .collect::<Result<Vec<_>, _>>()?;
         rule_logs.sort();
-        self.log_many(
+        context.battle_mut().log_many(
             rule_logs
                 .into_iter()
                 .map(|rule_log| battle_event!("rule", rule_log)),
         );
 
-        let player_logs = self
+        let player_logs = context
+            .battle()
             .players()
             .map(|player| battle_event!("player", player.id, player.side, player.position))
             .collect::<Vec<_>>();
-        self.log_many(player_logs);
+        context.battle_mut().log_many(player_logs);
 
-        if self.has_team_preview() {
-            self.log_team_sizes();
-            self.start_team_preview()?;
+        if context.battle().has_team_preview() {
+            context.battle_mut().log_team_sizes();
+            Self::start_team_preview(context)?;
         }
 
-        let mut context = self.context();
-        BattleQueue::add_action(&mut context, Action::Start)?;
-        self.mid_turn = true;
+        BattleQueue::add_action(context, Action::Start)?;
+        context.battle_mut().mid_turn = true;
 
-        if self.request.is_none() && self.engine_options.auto_continue {
-            self.continue_battle_internal()?;
+        if context.battle().request.is_none() && context.battle().engine_options.auto_continue {
+            Self::continue_battle_internal(context)?;
         }
 
-        Ok(())
-    }
-
-    fn ready_to_continue(&mut self) -> Result<bool, Error> {
-        self.all_player_choices_done()
-    }
-
-    fn continue_battle(&mut self) -> Result<(), Error> {
-        if !self.ready_to_continue()? {
-            return Err(battler_error!("battle is not ready to continue"));
-        }
-        self.continue_battle_internal()
-    }
-
-    fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
-        self.players().filter_map(|player| {
-            player
-                .active_request()
-                .map(|request| (player.id.to_owned(), request))
-        })
-    }
-
-    fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
-        let player = self.player_index_by_id(player_id)?;
-        let mut context = self.player_context(player)?;
-        Player::make_choice(&mut context, input)?;
-        context
-            .battle_mut()
-            .input_log
-            .get_mut(&player)
-            .wrap_error_with_format(format_args!("input_log for player {player} does not exist"))?
-            .push(input.to_owned());
-
-        if self.all_player_choices_done()? {
-            self.commit_choices()?;
-        }
-
-        Ok(())
-    }
-}
-
-// Block for battle logic.
-impl<'d> CoreBattle<'d> {
-    fn initialize(&mut self) -> Result<(), Error> {
-        for player in 0..self.players.len() {
-            let mut context = self.player_context(player)?;
-            Player::set_index(&mut context, player)?;
-        }
-        let mon_handles = self.all_mon_handles().collect::<Vec<_>>();
-        for mon_handle in mon_handles {
-            let mut context = self.mon_context(mon_handle)?;
-            Mon::initialize(&mut context)?;
-        }
         Ok(())
     }
 
@@ -525,84 +557,110 @@ impl<'d> CoreBattle<'d> {
         self.format.rules.has_rule(&Id::from_known("teampreview"))
     }
 
-    fn start_team_preview(&mut self) -> Result<(), Error> {
-        self.log(battle_event!("teampreviewstart"));
-        let events = self
-            .all_mons()
-            .map(|res| match res {
-                Err(err) => Err(err),
-                Ok(mon) => Ok(battle_event!(
+    fn start_team_preview(context: &mut Context) -> Result<(), Error> {
+        context.battle_mut().log(battle_event!("teampreviewstart"));
+        let events = context
+            .battle()
+            .all_mon_handles()
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(|mon_handle| {
+                let context = context.mon_context(mon_handle)?;
+                Ok(battle_event!(
                     "mon",
-                    self.player(mon.player)?.id,
-                    mon.public_details()
-                )),
+                    context.player().id,
+                    context.mon().public_details(),
+                ))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        self.log_many(events);
-        match self.format.rules.numeric_rules.picked_team_size {
-            Some(picked_team_size) => self
+        context.battle_mut().log_many(events);
+        match context.battle().format.rules.numeric_rules.picked_team_size {
+            Some(picked_team_size) => context
+                .battle_mut()
                 .log
                 .push(battle_event!("teampreview", picked_team_size)),
-            None => self.log(battle_event!("teampreview")),
+            None => context.battle_mut().log(battle_event!("teampreview")),
         }
-        self.make_request(RequestType::TeamPreview)?;
+        Self::make_request(context, RequestType::TeamPreview)?;
         Ok(())
     }
 
     fn get_request_for_player(
-        &mut self,
+        context: &mut Context,
         player: usize,
         request_type: RequestType,
     ) -> Result<Request, Error> {
         match request_type {
             RequestType::TeamPreview => {
-                let max_team_size = self
+                let max_team_size = context
+                    .battle()
                     .format
                     .rules
                     .numeric_rules
                     .picked_team_size
                     .map(|size| size as usize);
-                let context = self.player_context(player)?;
+                let mut context = context.player_context(player)?;
                 Ok(Request::TeamPreview(TeamPreviewRequest {
                     max_team_size,
-                    player: Player::request_data(&context)?,
+                    player: Player::request_data(&mut context)?,
                 }))
             }
             RequestType::Turn => {
-                let context = self.player_context(player)?;
-                let active = Player::active_mon_handles(&context).collect::<Vec<_>>();
-                let active = active
+                let mut context = context.player_context(player)?;
+                let active = Player::active_mon_handles(&context)
+                    .collect::<Vec<_>>()
                     .into_iter()
                     .map(|mon| {
-                        let context = self.mon_context(mon)?;
-                        Mon::move_request(&context)
+                        let mut context = context.mon_context(mon)?;
+                        Mon::move_request(&mut context)
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let context = self.player_context(player)?;
                 Ok(Request::Turn(TurnRequest {
                     active,
-                    player: Player::request_data(&context)?,
+                    player: Player::request_data(&mut context)?,
                 }))
             }
             RequestType::Switch => todo!("switch requests are not yet implemented"),
         }
     }
 
-    fn make_request(&mut self, request_type: RequestType) -> Result<(), Error> {
-        self.request = Some(request_type);
-        self.clear_requests()?;
+    fn set_player_choice_internal(
+        context: &mut Context,
+        player_id: &str,
+        input: &str,
+    ) -> Result<(), Error> {
+        let player = context.battle().player_index_by_id(player_id)?;
+        Player::make_choice(&mut context.player_context(player)?, input)?;
+        let turn = context.battle().turn;
+        context
+            .battle_mut()
+            .input_log
+            .get_mut(&player)
+            .wrap_error_with_format(format_args!("input_log for player {player} does not exist"))?
+            .insert(turn, input.to_owned());
 
-        for player in 0..self.players.len() {
-            let request = self.get_request_for_player(player, request_type)?;
-            let mut context = self.player_context(player)?;
+        if Self::all_player_choices_done(context)? {
+            Self::commit_choices(context)?;
+        }
+
+        Ok(())
+    }
+
+    fn make_request(context: &mut Context, request_type: RequestType) -> Result<(), Error> {
+        context.battle_mut().request = Some(request_type);
+        Self::clear_requests(context)?;
+
+        for player in 0..context.battle().players.len() {
+            let request = Self::get_request_for_player(context, player, request_type)?;
+            let mut context = context.player_context(player)?;
             context.player_mut().make_request(request);
         }
         Ok(())
     }
 
-    fn all_player_choices_done(&mut self) -> Result<bool, Error> {
-        for player in 0..self.players.len() {
-            let context = self.player_context(player)?;
+    fn all_player_choices_done(context: &mut Context) -> Result<bool, Error> {
+        for player in 0..context.battle().players.len() {
+            let context = context.player_context(player)?;
             if !Player::choice_done(&context) {
                 return Ok(false);
             }
@@ -610,73 +668,75 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
-    fn clear_requests(&mut self) -> Result<(), Error> {
-        self.request = None;
-        for player in 0..self.players.len() {
-            let mut context = self.player_context(player)?;
+    fn clear_requests(context: &mut Context) -> Result<(), Error> {
+        context.battle_mut().request = None;
+        for player in 0..context.battle().players.len() {
+            let mut context = context.player_context(player)?;
             context.player_mut().clear_request();
             Player::clear_choice(&mut context);
         }
         Ok(())
     }
 
-    fn commit_choices(&mut self) -> Result<(), Error> {
-        let mut context = Context::new(self);
+    fn commit_choices(context: &mut Context) -> Result<(), Error> {
         // Take all player actions and insert them into the battle queue.
         let choices = context
+            .battle_mut()
             .players_mut()
             .map(|player| player.take_choice())
             .collect::<Vec<_>>();
         for choice in choices {
-            BattleQueue::add_actions(&mut context, choice.actions.into_iter())?;
+            BattleQueue::add_actions(context, choice.actions.into_iter())?;
         }
-        self.clear_requests()?;
+        Self::clear_requests(context)?;
 
-        if self.engine_options.auto_continue {
-            self.continue_battle_internal()?;
+        if context.battle().engine_options.auto_continue {
+            Self::continue_battle_internal(context)?;
         }
         Ok(())
     }
 
-    fn continue_battle_internal(&mut self) -> Result<(), Error> {
-        self.log_current_time();
+    fn continue_battle_internal(context: &mut Context) -> Result<(), Error> {
+        context.battle_mut().log_current_time();
 
-        self.request = None;
+        context.battle_mut().request = None;
 
-        if !self.mid_turn {
-            BattleQueue::add_action(&mut self.context(), Action::BeforeTurn)?;
-            BattleQueue::add_action(&mut self.context(), Action::Residual)?;
-            self.mid_turn = true;
+        if !context.battle().mid_turn {
+            BattleQueue::add_action(context, Action::BeforeTurn)?;
+            BattleQueue::add_action(context, Action::Residual)?;
+            context.battle_mut().mid_turn = true;
         }
 
         // Sort the new actions and continue the battle.
-        self.queue.sort();
+        context.battle_mut().queue.sort();
 
         // Run actions as long as possible.
-        while let Some(action) = self.queue.pop_front() {
-            self.run_action(action)?;
+        while let Some(action) = context.battle_mut().queue.pop_front() {
+            Self::run_action(context, action)?;
             // This action ended the game.
-            if self.request.is_some() || self.ended {
+            if context.battle().request.is_some() || context.battle().ended {
                 return Ok(());
             }
         }
 
-        self.next_turn()?;
-        self.mid_turn = false;
+        Self::next_turn(context)?;
+        context.battle_mut().mid_turn = false;
         Ok(())
     }
 
-    fn run_action(&mut self, action: Action) -> Result<(), Error> {
+    fn run_action(context: &mut Context, action: Action) -> Result<(), Error> {
         match action {
             Action::Start => {
-                self.log_team_sizes();
-                for player in self.players_mut() {
+                context.battle_mut().log_team_sizes();
+                for player in context.battle_mut().players_mut() {
                     player.start_battle();
                 }
-                self.log(battle_event!("start"));
+                context.battle_mut().log(battle_event!("start"));
 
                 let switch_ins =
-                    self.players()
+                    context
+                        .battle()
+                        .players()
                         .filter(|player| player.mons_left() > 0)
                         .flat_map(|player| {
                             player.active.iter().enumerate().filter_map(|(i, _)| {
@@ -685,24 +745,24 @@ impl<'d> CoreBattle<'d> {
                         })
                         .collect::<Vec<_>>();
                 for (position, mon) in switch_ins {
-                    let mut context = self.mon_context(mon)?;
+                    let mut context = context.mon_context(mon)?;
                     core_battle_actions::switch_in(&mut context, position)?;
                 }
-                self.mid_turn = true;
+                context.battle_mut().mid_turn = true;
             }
             Action::Team(action) => {
-                let mut context = self.mon_context(action.mon_action.mon)?;
+                let mut context = context.mon_context(action.mon_action.mon)?;
                 if action.index == 0 {
                     context.player_mut().mons.clear();
                 }
                 context.player_mut().mons.push(action.mon_action.mon);
             }
             Action::Switch(action) => {
-                let mut context = self.mon_context(action.mon_action.mon)?;
+                let mut context = context.mon_context(action.mon_action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position)?;
             }
             Action::Move(action) => {
-                let mut context = self.mon_context(action.mon_action.mon)?;
+                let mut context = context.mon_context(action.mon_action.mon)?;
                 if !context.mon().active || context.mon().fainted {
                     return Ok(());
                 }
@@ -714,85 +774,97 @@ impl<'d> CoreBattle<'d> {
                     false,
                 )?;
             }
-            Action::MegaEvo(action) => todo!("mega evolution is not implemented"),
+            Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
-                self.log(battle_event!("residual"));
+                context.battle_mut().log(battle_event!("residual"));
             }
         }
         Ok(())
     }
 
-    fn next_turn(&mut self) -> Result<(), Error> {
-        self.turn += 1;
-        self.log(battle_event!("turn", self.turn));
+    fn next_turn(context: &mut Context) -> Result<(), Error> {
+        context.battle_mut().turn += 1;
+        let turn_event = battle_event!("turn", context.battle().turn);
+        context.battle_mut().log(turn_event);
 
-        if self.turn >= 1000 {
-            self.log(battle_event!(
+        if context.battle().turn >= 1000 {
+            context.battle_mut().log(battle_event!(
                 "message",
                 "It is turn 1000. You have hit the turn limit!"
             ));
-            self.tie()?;
+            Self::tie(context)?;
         }
 
-        self.make_request(RequestType::Turn)?;
+        Self::make_request(context, RequestType::Turn)?;
         Ok(())
     }
 
-    fn tie(&mut self) -> Result<(), Error> {
-        self.win(None)
+    fn tie(context: &mut Context) -> Result<(), Error> {
+        Self::win(context, None)
     }
 
-    fn win(&mut self, side: Option<usize>) -> Result<(), Error> {
-        if self.ended {
+    fn win(context: &mut Context, side: Option<usize>) -> Result<(), Error> {
+        if context.battle().ended {
             return Ok(());
         }
 
-        self.log(battle_event!());
+        context.battle_mut().log(battle_event!());
         match side {
-            None => self.log(battle_event!("tie")),
+            None => context.battle_mut().log(battle_event!("tie")),
             Some(side) => {
-                let side = self.side(side)?;
-                self.log(battle_event!("win", side.name));
+                let side = context.battle().side(side)?;
+                let win_event = battle_event!("win", side.name);
+                context.battle_mut().log(win_event);
             }
         }
 
-        self.ended = true;
-        self.clear_requests()?;
+        context.battle_mut().ended = true;
+        Self::clear_requests(context)?;
         Ok(())
     }
 
-    fn calculate_action_priority(&mut self, action: &mut Action) -> Result<(), Error> {
+    fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<(), Error> {
         if let Action::Move(action) = action {
-            let mov = self.dex.moves.get_by_id(&action.id).into_result()?;
+            let mov = context
+                .battle()
+                .dex
+                .moves
+                .get_by_id(&action.id)
+                .into_result()?;
             action.priority = mov.data.priority as i32;
             // TODO: Run priority modification events for the move and Mon.
         }
         if let Some(mon_action) = action.mon_action_mut() {
-            let mut context = self.mon_context(mon_action.mon)?;
+            let mut context = context.mon_context(mon_action.mon)?;
             mon_action.speed = Mon::action_speed(&mut context)? as u32;
         }
         Ok(())
     }
 
-    pub fn resolve_action(&mut self, action: &mut Action) -> Result<(), Error> {
+    pub fn resolve_action(context: &mut Context, action: &mut Action) -> Result<(), Error> {
         if let Action::Move(action) = action {
-            let mut context = self.mon_context(action.mon_action.mon)?;
+            let mut context = context.mon_context(action.mon_action.mon)?;
             if let Some(target) = action.target {
                 action.original_target = Mon::get_target(&mut context, target)?;
             }
         }
-        self.calculate_action_priority(action)?;
+        Self::calculate_action_priority(context, action)?;
         Ok(())
     }
 
     pub fn random_target(
-        &mut self,
+        context: &mut Context,
         mon: MonHandle,
         move_id: &Id,
     ) -> Result<Option<MonHandle>, Error> {
-        let mov = self.dex.moves.get_by_id(move_id).into_result()?;
+        let mov = context
+            .battle()
+            .dex
+            .moves
+            .get_by_id(move_id)
+            .into_result()?;
         let target = mov.data.target.clone();
 
         if target.can_target_user() {
@@ -800,7 +872,7 @@ impl<'d> CoreBattle<'d> {
             return Ok(Some(mon));
         }
 
-        let mut context = self.mon_context(mon)?;
+        let mut context = context.mon_context(mon)?;
         let mons = if !target.can_target_foes() {
             // Cannot target foes, so only consider allies.
             Mon::adjacent_allies(&mut context)?
@@ -817,7 +889,8 @@ impl<'d> CoreBattle<'d> {
             Mon::active_foes(&mut context).collect::<Vec<_>>()
         };
 
-        Ok(self
+        Ok(context
+            .battle_mut()
             .prng
             .sample_slice(&mons)
             .cloned()
@@ -826,20 +899,25 @@ impl<'d> CoreBattle<'d> {
     }
 
     pub fn get_target(
-        &mut self,
+        context: &mut Context,
         mon: MonHandle,
         move_id: &Id,
         target: Option<isize>,
         original_target: Option<MonHandle>,
     ) -> Result<Option<MonHandle>, Error> {
-        let mov = self.dex.moves.get_by_id(move_id).into_result()?;
+        let mov = context
+            .battle()
+            .dex
+            .moves
+            .get_by_id(move_id)
+            .into_result()?;
         let tracks_target = mov.data.tracks_target;
         let smart_target = mov.data.smart_target;
         let move_target = mov.data.target.clone();
 
         if tracks_target {
             if let Some(original_target) = original_target {
-                let context = self.mon_context(original_target)?;
+                let context = context.mon_context(original_target)?;
                 if context.mon().active {
                     // Move's original target is on the field.
                     return Ok(Some(original_target));
@@ -848,7 +926,7 @@ impl<'d> CoreBattle<'d> {
         }
 
         if smart_target {
-            let mut context = self.mon_context(mon)?;
+            let mut context = context.mon_context(mon)?;
             if let Some(target) = target {
                 if let Some(target) = Mon::get_target(&mut context, target)? {
                     return Ok(Some(target));
@@ -858,10 +936,16 @@ impl<'d> CoreBattle<'d> {
 
         if let Some(target) = target {
             if !move_target.is_random() && move_target.valid_target(target) {
-                let mut context = self.mon_context(mon)?;
+                let mut context = context.mon_context(mon)?;
                 if let Some(target_mon_handle) = Mon::get_target(&mut context, target)? {
-                    let target_mon = context.battle().mon(target_mon_handle)?;
-                    if !target_mon.fainted || target_mon.is_ally(context.mon()) {
+                    let target_context = context
+                        .as_battle_context_mut()
+                        .mon_context(target_mon_handle)?;
+                    if !target_context.mon().fainted
+                        || target_context
+                            .mon()
+                            .is_ally(target_context.as_battle_context().mon(mon)?)
+                    {
                         // Target is unfainted or an ally, so the chosen target is still valid.
                         return Ok(Some(target_mon_handle));
                     }
@@ -873,34 +957,48 @@ impl<'d> CoreBattle<'d> {
         if !move_target.requires_target() {
             Ok(None)
         } else {
-            self.random_target(mon, move_id)
+            Self::random_target(context, mon, move_id)
         }
     }
 
-    pub fn set_active_target(&mut self, target: Option<MonHandle>) -> Result<(), Error> {
-        self.mon_mut(
-            self.active_mon
-                .wrap_error_with_message("cannot set an active target when no active mon is set")?,
-        )?
-        .active_target = target;
+    pub fn set_active_target(
+        context: &mut Context,
+        target: Option<MonHandle>,
+    ) -> Result<(), Error> {
+        context
+            .mon_context(context.battle().active_mon.wrap_error_with_message(
+                "cannot set an active target when no active mon is set",
+            )?)?
+            .mon_mut()
+            .active_target = target;
         Ok(())
     }
 
+    pub fn register_move(&self, mov: Move) -> MoveHandle {
+        self.registry.register_move(mov)
+    }
+
     pub fn set_active_move(
-        &mut self,
+        context: &mut Context,
         move_handle: MoveHandle,
         user: MonHandle,
         target: Option<MonHandle>,
     ) -> Result<(), Error> {
-        self.active_mon = Some(user);
-        self.mon_mut(user)?.set_active_move(move_handle, target);
+        context.battle_mut().active_mon = Some(user);
+        context
+            .mon_context(user)?
+            .mon_mut()
+            .set_active_move(move_handle, target);
         Ok(())
     }
 
-    pub fn clear_active_move(&mut self) -> Result<(), Error> {
-        if let Some(active_mon) = self.active_mon {
-            self.mon_mut(active_mon)?.clear_active_move();
-            self.active_mon = None;
+    pub fn clear_active_move(context: &mut Context) -> Result<(), Error> {
+        if let Some(active_mon) = context.battle().active_mon {
+            context
+                .mon_context(active_mon)?
+                .mon_mut()
+                .clear_active_move();
+            context.battle_mut().active_mon = None;
         }
         Ok(())
     }
@@ -916,5 +1014,23 @@ impl<'d> CoreBattle<'d> {
                     .unwrap_or(&TypeEffectiveness::Normal)
             })
             .any(|effectiveness| effectiveness == &TypeEffectiveness::None)
+    }
+
+    pub fn check_type_effectiveness(&self, offense: Type, defense: Type) -> i8 {
+        match self
+            .dex
+            .type_chart()
+            .get(&defense)
+            .and_then(|row| row.get(&offense))
+            .unwrap_or(&TypeEffectiveness::Normal)
+        {
+            TypeEffectiveness::Strong => 1,
+            TypeEffectiveness::Weak => -1,
+            _ => 0,
+        }
+    }
+
+    pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {
+        base_damage * (100 - (self.prng.range(0, 16) as u32)) / 100
     }
 }
