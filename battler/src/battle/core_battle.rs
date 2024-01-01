@@ -154,6 +154,10 @@ pub struct CoreBattle<'d> {
     id: Uuid,
     log: EventLog,
 
+    // SAFETY: None of the objects below should be overwritten or destroyed for the lifetime of the
+    // battle.
+    //
+    // We could PinBox these, but that would complicate our code quite a bit.
     pub prng: PseudoRandomNumberGenerator,
     pub dex: Dex<'d>,
     pub queue: BattleQueue,

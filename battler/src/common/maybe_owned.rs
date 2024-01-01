@@ -141,6 +141,15 @@ where
     }
 }
 
+impl<T> AsMut<T> for MaybeOwnedMut<'_, T> {
+    fn as_mut(&mut self) -> &mut T {
+        match self {
+            Self::Owned(value) => value,
+            Self::Unowned(value) => value,
+        }
+    }
+}
+
 impl<T> DerefMut for MaybeOwnedMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         match self {

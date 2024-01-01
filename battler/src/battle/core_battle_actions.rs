@@ -71,13 +71,14 @@ fn register_active_move(
     move_id: &Id,
     target: Option<MonHandle>,
 ) -> Result<MoveHandle, Error> {
-    let active_move = context
+    let mut active_move = context
         .battle_mut()
         .dex
         .moves
         .get_by_id(move_id)?
         .deref()
         .clone();
+    active_move.used_by = Some(context.mon_handle());
     let active_move_handle = context.battle().register_move(active_move);
     let mon_handle = context.mon_handle();
     CoreBattle::set_active_move(

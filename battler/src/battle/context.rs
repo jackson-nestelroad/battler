@@ -13,11 +13,16 @@ use crate::{
         Player,
         Side,
     },
+    battler_error,
     common::{
         Error,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
         WrapResultError,
+    },
+    fxlang::{
+        Effect,
+        EffectHandle,
     },
     moves::{
         MonOverride,
@@ -87,24 +92,40 @@ impl<'battle, 'data> Context<'battle, 'data> {
     }
 
     /// Creates a new [`SideContext`], scoped to the lifetime of this context.
-    pub fn side_context(&mut self, side: usize) -> Result<SideContext<'_, 'battle, 'data>, Error> {
+    pub fn side_context<'context>(
+        &'context mut self,
+        side: usize,
+    ) -> Result<SideContext<'context, 'battle, 'data>, Error> {
         SideContext::new(self.into(), side)
     }
 
     /// Creates a new [`PlayerContext`], scoped to the lifetime of this context.
-    pub fn player_context(
-        &mut self,
+    pub fn player_context<'context>(
+        &'context mut self,
         player: usize,
-    ) -> Result<PlayerContext<'_, '_, 'battle, 'data>, Error> {
+    ) -> Result<PlayerContext<'context, 'context, 'battle, 'data>, Error> {
         PlayerContext::new(self.into(), player)
     }
 
     /// Creates a new [`MonContext`], scoped to the lifetime of this context.
-    pub fn mon_context(
-        &mut self,
+    pub fn mon_context<'context>(
+        &'context mut self,
         mon_handle: MonHandle,
-    ) -> Result<MonContext<'_, '_, '_, 'battle, 'data>, Error> {
+    ) -> Result<MonContext<'context, 'context, 'context, 'battle, 'data>, Error> {
         MonContext::new(self.into(), mon_handle)
+    }
+
+    /// Creates a new [`EffectContext`], scoped to the lifetime of this context.
+    pub fn effect_context<'context>(
+        &'context mut self,
+        effect_handle: EffectHandle,
+    ) -> Result<EffectContext<'context, 'context, 'battle, 'data>, Error> {
+        match effect_handle {
+            EffectHandle::ActiveMove(active_move_handle) => {
+                EffectContext::for_active_move(self.into(), active_move_handle)
+            }
+            EffectHandle::Ability(_) => todo!("ability context not implemented"),
+        }
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -134,6 +155,79 @@ impl<'battle, 'data> Drop for Context<'battle, 'data> {
     fn drop(&mut self) {}
 }
 
+/// The context of some [`Effect`] in a battle.
+///
+/// A context is a proxy object for getting references to battle data. Rust does not make
+/// storing references easy, so references must be grabbed dynamically as needed.
+pub struct EffectContext<'effect_ref, 'context, 'battle, 'data>
+where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'effect_ref,
+{
+    context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+    effect: Effect<'effect_ref>,
+    active_move_handle: Option<MoveHandle>,
+}
+
+impl<'effect_ref, 'context, 'battle, 'data> EffectContext<'effect_ref, 'context, 'battle, 'data> {
+    fn for_active_move(
+        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+        active_move_handle: MoveHandle,
+    ) -> Result<Self, Error> {
+        let active_move = context
+            .cache
+            .active_move(context.battle(), active_move_handle)?;
+        // SAFETY: Active moves currently live for two turns, since they are stored in a registry
+        // that empties after two turns. The reference can be borrowed as long as the
+        // element reference exists in the root context. We ensure that element references
+        // are borrowed for the lifetime of the root context.
+        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
+        let effect = Effect::for_active_move(active_move);
+        Ok(Self {
+            context,
+            effect,
+            active_move_handle: Some(active_move_handle),
+        })
+    }
+
+    /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
+    ///
+    /// Fails if the effect is not an active move.
+    pub fn active_move_context<'effect>(
+        &'effect mut self,
+    ) -> Result<ActiveMoveContext<'effect, 'effect, 'effect, 'effect, 'battle, 'data>, Error> {
+        match self.active_move_handle {
+            None => Err(battler_error!(
+                "effect context does not contain an active move"
+            )),
+            Some(active_move_handle) => {
+                ActiveMoveContext::new_from_move_handle(self.context.as_mut(), active_move_handle)
+            }
+        }
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns a reference to the [`Effect`].
+    pub fn effect(&self) -> &Effect<'effect_ref> {
+        &self.effect
+    }
+
+    /// Returns a mutable reference to the [`Effect`].
+    pub fn effect_mut(&mut self) -> &mut Effect<'effect_ref> {
+        &mut self.effect
+    }
+}
+
 /// The context of a [`Side`] in a battle.
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make
@@ -153,7 +247,7 @@ where
 impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
     /// Creates a new [`SideContext`], which contains a reference to a [`CoreBattle`] and a
     /// [`Side`].
-    pub(in crate::battle) fn new(
+    fn new(
         mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         side: usize,
     ) -> Result<Self, Error> {
@@ -179,7 +273,9 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
     }
 
     /// Creates a new [`SideContext`] for the opposite side, scoped to the lifetime of this context.
-    pub fn foe_side_context(&mut self) -> Result<SideContext<'_, 'battle, 'data>, Error> {
+    pub fn foe_side_context<'side>(
+        &'side mut self,
+    ) -> Result<SideContext<'side, 'battle, 'data>, Error> {
         let foe_side = self.foe_side().index;
         self.as_battle_context_mut().side_context(foe_side)
     }
@@ -244,7 +340,7 @@ where
 impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'data> {
     /// Creates a new [`PlayerContext`], which contains a reference to a [`CoreBattle`] and a
     /// [`Player`].
-    pub(in crate::battle) fn new(
+    fn new(
         mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         player: usize,
     ) -> Result<Self, Error> {
@@ -389,7 +485,7 @@ impl<'player, 'side, 'context, 'battle, 'data>
 {
     /// Creates a new [`MonContext`], which contains a reference to a [`CoreBattle`] and a
     /// [`Mon`].
-    pub(in crate::battle) fn new(
+    fn new(
         context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         mon_handle: MonHandle,
     ) -> Result<Self, Error> {
@@ -623,6 +719,30 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         })
     }
 
+    fn new_from_move_handle(
+        context: &'context mut Context<'battle, 'data>,
+        active_move_handle: MoveHandle,
+    ) -> Result<Self, Error>
+    where
+        'side: 'context,
+    {
+        let active_move = context
+            .cache
+            .active_move(context.battle(), active_move_handle)?;
+        // SAFETY: Active moves live as long as the context itself, assuming that the context cannot
+        // exist when the battle moves to the next turn.
+        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
+        let mon_handle = active_move.used_by.wrap_error_with_format(format_args!(
+            "active move {active_move_handle} does not have an associated mon"
+        ))?;
+        let context = context.mon_context(mon_handle)?;
+        Ok(Self {
+            context: MaybeOwnedMut::Owned(context),
+            active_move_handle,
+            active_move,
+        })
+    }
+
     /// Returns a reference to the inner [`Context`].
     pub fn as_battle_context<'active_move>(
         &'active_move self,
@@ -688,10 +808,10 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
     /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
     /// context.
-    pub fn target_mon_context(
-        &mut self,
+    pub fn target_mon_context<'active_move>(
+        &'active_move mut self,
         target_mon_handle: MonHandle,
-    ) -> Result<MonContext<'_, '_, '_, 'battle, 'data>, Error> {
+    ) -> Result<MonContext<'active_move, 'active_move, 'active_move, 'battle, 'data>, Error> {
         let mon = self
             .as_battle_context()
             .cache
@@ -710,9 +830,9 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
     /// Creates a new [`MonContext`] for the active target [`Mon`], scoped to the lifetime of this
     /// context.
-    pub fn active_target_mon_context(
-        &mut self,
-    ) -> Result<MonContext<'_, '_, '_, 'battle, 'data>, Error> {
+    pub fn active_target_mon_context<'active_move>(
+        &'active_move mut self,
+    ) -> Result<MonContext<'active_move, 'active_move, 'active_move, 'battle, 'data>, Error> {
         self.target_mon_context(
             self.mon()
                 .active_target
@@ -725,18 +845,22 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
     /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
     /// context.
-    pub fn target_context(
-        &mut self,
+    pub fn target_context<'active_move>(
+        &'active_move mut self,
         target_mon_handle: MonHandle,
-    ) -> Result<ActiveTargetContext<'_, 'mon, 'player, 'side, 'context, 'battle, 'data>, Error>
-    {
+    ) -> Result<
+        ActiveTargetContext<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>,
+        Error,
+    > {
         ActiveTargetContext::new_from_active_move_context(self.into(), target_mon_handle)
     }
 
-    pub fn active_target_context(
-        &mut self,
-    ) -> Result<ActiveTargetContext<'_, 'mon, 'player, 'side, 'context, 'battle, 'data>, Error>
-    {
+    pub fn active_target_context<'active_move>(
+        &'active_move mut self,
+    ) -> Result<
+        ActiveTargetContext<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>,
+        Error,
+    > {
         self.target_context(
             self.mon()
                 .active_target
@@ -754,6 +878,15 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         self,
     ) -> Result<ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>, Error> {
         ActiveMoveContext::new_from_mon_context(self.context)
+    }
+
+    /// Creates a new [`EffectContext`], scoped to the lifetime of this context.
+    pub fn effect_context<'active_move>(
+        &'active_move mut self,
+    ) -> Result<EffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
+        let active_move_handle = self.active_move_handle;
+        self.as_battle_context_mut()
+            .effect_context(EffectHandle::ActiveMove(active_move_handle))
     }
 
     /// Returns a reference to the [`CoreBattle`].

@@ -7,6 +7,7 @@ use zone_alloc::ElementRefMut;
 
 use crate::{
     abilities::Ability,
+    battle::MoveHandle,
     common::{
         Id,
         Identifiable,
@@ -59,6 +60,11 @@ impl<'a, T> From<&'a mut T> for MaybeElementRef<'a, T> {
     fn from(value: &'a mut T) -> Self {
         Self::Unowned(value)
     }
+}
+
+pub enum EffectHandle {
+    ActiveMove(MoveHandle),
+    Ability(Id),
 }
 
 pub enum Effect<'borrow> {

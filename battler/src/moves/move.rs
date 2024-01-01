@@ -248,6 +248,8 @@ pub struct Move {
     /// Custom STAB modifier, if any.
     pub stab_modifier: Option<Fraction<u32>>,
 
+    /// The Mon that used the move.
+    pub used_by: Option<MonHandle>,
     /// The move was used externally, rather than directly by a Mon through its moveset.
     pub external: bool,
     /// Whether or not this move hit multiple targets.
@@ -267,6 +269,7 @@ impl Move {
         Self {
             data,
             id,
+            used_by: None,
             stab_modifier: None,
             external: false,
             spread_hit: false,
