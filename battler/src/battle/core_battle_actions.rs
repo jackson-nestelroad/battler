@@ -828,7 +828,6 @@ mod direct_move_step {
         Ok(MoveDamage::Damage(base_damage))
     }
 
-    // TODO: This should work for any effect, not just a move...
     fn apply_spread_damage(
         context: &mut EffectContext,
         source: Option<MonHandle>,

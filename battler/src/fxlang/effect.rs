@@ -62,11 +62,13 @@ impl<'a, T> From<&'a mut T> for MaybeElementRef<'a, T> {
     }
 }
 
+/// An [`Effect`] handle.
 pub enum EffectHandle {
     ActiveMove(MoveHandle),
     Ability(Id),
 }
 
+/// A battle effect.
 pub enum Effect<'borrow> {
     ActiveMove(&'borrow mut Move),
     Ability(&'borrow Ability),
