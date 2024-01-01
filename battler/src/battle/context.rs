@@ -1,7 +1,4 @@
-use std::{
-    marker::PhantomData,
-    mem,
-};
+use std::mem;
 
 use crate::{
     battle::{
@@ -32,15 +29,17 @@ use crate::{
 
 /// The context of a [`CoreBattle`].
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make storing
-/// references easy, so references must be grabbed dynamically as needed.
+/// A context is a proxy object for getting references to battle data. For safety, Rust does not
+/// allow an object to mutably borrowed multiple times. Rather than storing mutable references for
+/// as long as they are needed, references must be grabbed dynamically as they are needed. Context
+/// objects make this dynamic borrowing easy and safe to do.
 ///
 /// Contexts are dynamic, in that one context can be used to create other contexts scoped to its
 /// lifetime. You can think of contexts as a linked list of references. Rust's borrow checker
 /// guarantees that child contexts do not outlive their parents, and a context cannot have two
 /// mutable child contexts active at the same time.
 ///
-/// Contexts are hierarchical based on the strucutre of a battle:
+/// Contexts are hierarchical based on the structure of a battle:
 ///
 /// - [`Context`] - Scoped to a single battle.
 /// - [`SideContext`] - Every side is in a battle.
@@ -48,6 +47,8 @@ use crate::{
 /// - [`MonContext`] - Every Mon is owned by a player.
 /// - [`ActiveMoveContext`] - Every active move is performed by a Mon.
 /// - [`ActiveTargetContext`] - Every target Mon is associated with an active move.
+/// - [`EffectContext`] - Every effect occurs in a battle.
+/// - [`ApplyingEffectContext`] - Every applying effect has an associated effect.
 pub struct Context<'battle, 'data>
 where
     'data: 'battle,
@@ -72,22 +73,20 @@ where
     // Thus, most of our design takes in a mutable context and uses it to obtain mutable
     // references, rather than mutably borrowing self. This allows a method that "belongs" to a
     // child object to also reference its parent object through the context object.
-    battle: *mut CoreBattle<'data>,
+    battle: &'battle mut CoreBattle<'data>,
     // Cache of resources borrowed by the context chain.
     //
     // SAFETY: To create a new context, the entire parent context must be borrowed mutably, which
     // means it cannot be used while the child context exists.
     cache: ContextCache<'battle>,
-    _phantom: PhantomData<&'battle mut CoreBattle<'data>>,
 }
 
 impl<'battle, 'data> Context<'battle, 'data> {
     /// Creates a new [`Context`], which contains a reference to a [`CoreBattle`].
     pub fn new(battle: &'battle mut CoreBattle<'data>) -> Self {
         Self {
-            battle: &mut *battle,
+            battle,
             cache: ContextCache::new(),
-            _phantom: PhantomData,
         }
     }
 
@@ -119,7 +118,7 @@ impl<'battle, 'data> Context<'battle, 'data> {
     pub fn effect_context<'context>(
         &'context mut self,
         effect_handle: EffectHandle,
-    ) -> Result<EffectContext<'context, 'context, 'battle, 'data>, Error> {
+    ) -> Result<EffectContext<'context, 'battle, 'data>, Error> {
         match effect_handle {
             EffectHandle::ActiveMove(active_move_handle) => {
                 EffectContext::for_active_move(self.into(), active_move_handle)
@@ -130,12 +129,12 @@ impl<'battle, 'data> Context<'battle, 'data> {
 
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
-        unsafe { &*self.battle }
+        self.battle
     }
 
     /// Returns a mutable reference to the [`CoreBattle`].
     pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
-        unsafe { &mut *self.battle }
+        self.battle
     }
 
     /// Returns a reference to a [`Mon`].
@@ -157,15 +156,16 @@ impl<'battle, 'data> Drop for Context<'battle, 'data> {
 
 /// The context of a [`Side`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
+/// See [`Context`] for more information on how context objects work.
 pub struct SideContext<'context, 'battle, 'data>
 where
     'data: 'battle,
     'battle: 'context,
 {
     context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+    // SAFETY: [`CoreBattle::sides`] cannot be modified for the lifetime of the battle.
     side: *mut Side,
+    // SAFETY: [`CoreBattle::sides`] cannot be modified for the lifetime of the battle.
     foe_side: *mut Side,
 }
 
@@ -250,8 +250,7 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
 
 /// The context of a [`Player`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
+/// See [`Context`] for more information on how context objects work.
 pub struct PlayerContext<'side, 'context, 'battle, 'data>
 where
     'data: 'battle,
@@ -259,6 +258,7 @@ where
     'context: 'side,
 {
     context: MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>,
+    // SAFETY: [`CoreBattle::players`] cannot be modified for the lifetime of the battle.
     player: *mut Player,
 }
 
@@ -393,8 +393,7 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
 
 /// The context of a [`Mon`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
+/// See [`Context`] for more information on how context objects work.
 pub struct MonContext<'player, 'side, 'context, 'battle, 'data>
 where
     'data: 'battle,
@@ -604,8 +603,7 @@ impl<'player, 'side, 'context, 'battle, 'data>
 
 /// The context of an active [`Move`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
+/// See [`Context`] for more information on how context objects work.
 pub struct ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>
 where
     'data: 'battle,
@@ -810,7 +808,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Creates a new [`EffectContext`], scoped to the lifetime of this context.
     pub fn effect_context<'active_move>(
         &'active_move mut self,
-    ) -> Result<EffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
+    ) -> Result<EffectContext<'active_move, 'battle, 'data>, Error> {
         let active_move_handle = self.active_move_handle;
         self.as_battle_context_mut()
             .effect_context(EffectHandle::ActiveMove(active_move_handle))
@@ -889,8 +887,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
 /// The context of an active target [`Mon`] of a [`Move`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
+/// See [`Context`] for more information on how context objects work.
 pub struct ActiveTargetContext<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
 where
     'data: 'battle,
@@ -1137,20 +1134,18 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
 
 /// The context of some [`Effect`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
-pub struct EffectContext<'effect_ref, 'context, 'battle, 'data>
+/// See [`Context`] for more information on how context objects work.
+pub struct EffectContext<'context, 'battle, 'data>
 where
     'data: 'battle,
     'battle: 'context,
-    'context: 'effect_ref,
 {
     context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-    effect: Effect<'effect_ref>,
+    effect: Effect<'context>,
     active_move_handle: Option<MoveHandle>,
 }
 
-impl<'effect_ref, 'context, 'battle, 'data> EffectContext<'effect_ref, 'context, 'battle, 'data> {
+impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
     fn for_active_move(
         context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         active_move_handle: MoveHandle,
@@ -1188,7 +1183,7 @@ impl<'effect_ref, 'context, 'battle, 'data> EffectContext<'effect_ref, 'context,
         &'effect mut self,
         source_handle: Option<MonHandle>,
         target_handle: MonHandle,
-    ) -> Result<ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>, Error> {
+    ) -> Result<ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         ApplyingEffectContext::new(self.into(), source_handle, target_handle)
     }
 
@@ -1219,42 +1214,38 @@ impl<'effect_ref, 'context, 'battle, 'data> EffectContext<'effect_ref, 'context,
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect<'effect_ref> {
+    pub fn effect(&self) -> &Effect {
         &self.effect
     }
 
     /// Returns a mutable reference to the [`Effect`].
-    pub fn effect_mut(&mut self) -> &mut Effect<'effect_ref> {
+    pub fn effect_mut(&mut self) -> &mut Effect<'context> {
         &mut self.effect
     }
 }
 
 /// The context of an applying [`Effect`] in a battle.
 ///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
-pub struct ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>
+/// See [`Context`] for more information on how context objects work.
+pub struct ApplyingEffectContext<'effect, 'context, 'battle, 'data>
 where
     'data: 'battle,
     'battle: 'context,
-    'context: 'effect_ref,
-    'effect_ref: 'effect,
+    'context: 'effect,
 {
-    context: MaybeOwnedMut<'effect, EffectContext<'effect_ref, 'context, 'battle, 'data>>,
+    context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
     source_handle: Option<MonHandle>,
     source: Option<&'context mut Mon>,
     target_handle: MonHandle,
     target: &'context mut Mon,
 }
 
-impl<'effect, 'effect_ref, 'context, 'battle, 'data>
-    ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>
-{
+impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context, 'battle, 'data> {
     fn new(
-        context: MaybeOwnedMut<'effect, EffectContext<'effect_ref, 'context, 'battle, 'data>>,
+        context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
         source_handle: Option<MonHandle>,
         target_handle: MonHandle,
-    ) -> Result<ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>, Error> {
+    ) -> Result<ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         let target = context
             .as_battle_context()
             .cache
@@ -1304,14 +1295,14 @@ impl<'effect, 'effect_ref, 'context, 'battle, 'data>
     /// Returns a reference to the inner [`EffectContext`].
     pub fn as_effect_context<'applying_effect>(
         &'applying_effect self,
-    ) -> &'applying_effect EffectContext<'effect_ref, 'context, 'battle, 'data> {
+    ) -> &'applying_effect EffectContext<'context, 'battle, 'data> {
         &self.context
     }
 
     /// Returns a mutable reference to the inner [`EffectContext`].
     pub fn as_effect_context_mut<'applying_effect>(
         &'applying_effect mut self,
-    ) -> &'applying_effect mut EffectContext<'effect_ref, 'context, 'battle, 'data> {
+    ) -> &'applying_effect mut EffectContext<'context, 'battle, 'data> {
         &mut self.context
     }
 
@@ -1353,12 +1344,12 @@ impl<'effect, 'effect_ref, 'context, 'battle, 'data>
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect<'effect_ref> {
+    pub fn effect(&self) -> &Effect {
         self.context.effect()
     }
 
     /// Returns a mutable reference to the [`Effect`].
-    pub fn effect_mut(&mut self) -> &mut Effect<'effect_ref> {
+    pub fn effect_mut(&mut self) -> &mut Effect<'context> {
         self.context.effect_mut()
     }
 
