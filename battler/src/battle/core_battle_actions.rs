@@ -373,6 +373,7 @@ mod direct_move_step {
             ActiveMoveContext,
             ActiveTargetContext,
             CoreBattle,
+            EffectContext,
             Mon,
             MonHandle,
             MoveDamage,
@@ -829,19 +830,20 @@ mod direct_move_step {
 
     // TODO: This should work for any effect, not just a move...
     fn apply_spread_damage(
-        context: &mut ActiveMoveContext,
+        context: &mut EffectContext,
+        source: Option<MonHandle>,
         targets: &mut [HitTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            let mut context = context.target_context(target.handle)?;
+            let context = context.applying_effect_context(source, target.handle)?;
             if let MoveDamage::Damage(0) = target.damage {
                 continue;
             }
-            if target.failed || context.target_mon().hp == 0 {
+            if target.failed || context.target().hp == 0 {
                 target.damage = MoveDamage::Damage(0);
                 continue;
             }
-            if !context.target_mon().active {
+            if !context.target().active {
                 target.damage = MoveDamage::Failure;
                 continue;
             }

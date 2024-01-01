@@ -62,7 +62,9 @@ pub use calculations::{
 pub use context::{
     ActiveMoveContext,
     ActiveTargetContext,
+    ApplyingEffectContext,
     Context,
+    EffectContext,
     MonContext,
     PlayerContext,
     SideContext,

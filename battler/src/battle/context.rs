@@ -155,79 +155,6 @@ impl<'battle, 'data> Drop for Context<'battle, 'data> {
     fn drop(&mut self) {}
 }
 
-/// The context of some [`Effect`] in a battle.
-///
-/// A context is a proxy object for getting references to battle data. Rust does not make
-/// storing references easy, so references must be grabbed dynamically as needed.
-pub struct EffectContext<'effect_ref, 'context, 'battle, 'data>
-where
-    'data: 'battle,
-    'battle: 'context,
-    'context: 'effect_ref,
-{
-    context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-    effect: Effect<'effect_ref>,
-    active_move_handle: Option<MoveHandle>,
-}
-
-impl<'effect_ref, 'context, 'battle, 'data> EffectContext<'effect_ref, 'context, 'battle, 'data> {
-    fn for_active_move(
-        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-        active_move_handle: MoveHandle,
-    ) -> Result<Self, Error> {
-        let active_move = context
-            .cache
-            .active_move(context.battle(), active_move_handle)?;
-        // SAFETY: Active moves currently live for two turns, since they are stored in a registry
-        // that empties after two turns. The reference can be borrowed as long as the
-        // element reference exists in the root context. We ensure that element references
-        // are borrowed for the lifetime of the root context.
-        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
-        let effect = Effect::for_active_move(active_move);
-        Ok(Self {
-            context,
-            effect,
-            active_move_handle: Some(active_move_handle),
-        })
-    }
-
-    /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
-    ///
-    /// Fails if the effect is not an active move.
-    pub fn active_move_context<'effect>(
-        &'effect mut self,
-    ) -> Result<ActiveMoveContext<'effect, 'effect, 'effect, 'effect, 'battle, 'data>, Error> {
-        match self.active_move_handle {
-            None => Err(battler_error!(
-                "effect context does not contain an active move"
-            )),
-            Some(active_move_handle) => {
-                ActiveMoveContext::new_from_move_handle(self.context.as_mut(), active_move_handle)
-            }
-        }
-    }
-
-    /// Returns a reference to the [`CoreBattle`].
-    pub fn battle(&self) -> &CoreBattle<'data> {
-        self.context.battle()
-    }
-
-    /// Returns a mutable reference to the [`CoreBattle`].
-    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
-        self.context.battle_mut()
-    }
-
-    /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect<'effect_ref> {
-        &self.effect
-    }
-
-    /// Returns a mutable reference to the [`Effect`].
-    pub fn effect_mut(&mut self) -> &mut Effect<'effect_ref> {
-        &mut self.effect
-    }
-}
-
 /// The context of a [`Side`] in a battle.
 ///
 /// A context is a proxy object for getting references to battle data. Rust does not make
@@ -1205,5 +1132,263 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Returns a mutable reference to the active target [`Mon`].
     pub fn target_mon_mut(&mut self) -> &mut Mon {
         &mut self.active_target
+    }
+}
+
+/// The context of some [`Effect`] in a battle.
+///
+/// A context is a proxy object for getting references to battle data. Rust does not make
+/// storing references easy, so references must be grabbed dynamically as needed.
+pub struct EffectContext<'effect_ref, 'context, 'battle, 'data>
+where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'effect_ref,
+{
+    context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+    effect: Effect<'effect_ref>,
+    active_move_handle: Option<MoveHandle>,
+}
+
+impl<'effect_ref, 'context, 'battle, 'data> EffectContext<'effect_ref, 'context, 'battle, 'data> {
+    fn for_active_move(
+        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+        active_move_handle: MoveHandle,
+    ) -> Result<Self, Error> {
+        let active_move = context
+            .cache
+            .active_move(context.battle(), active_move_handle)?;
+        // SAFETY: Active moves currently live for two turns, since they are stored in a registry
+        // that empties after two turns. The reference can be borrowed as long as the
+        // element reference exists in the root context. We ensure that element references
+        // are borrowed for the lifetime of the root context.
+        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
+        let effect = Effect::for_active_move(active_move);
+        Ok(Self {
+            context,
+            effect,
+            active_move_handle: Some(active_move_handle),
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'effect>(&'effect self) -> &'effect Context<'battle, 'data> {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'effect>(
+        &'effect mut self,
+    ) -> &'effect mut Context<'battle, 'data> {
+        &mut self.context
+    }
+
+    /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
+    pub fn applying_effect_context<'effect>(
+        &'effect mut self,
+        source_handle: Option<MonHandle>,
+        target_handle: MonHandle,
+    ) -> Result<ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>, Error> {
+        ApplyingEffectContext::new(self.into(), source_handle, target_handle)
+    }
+
+    /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
+    ///
+    /// Fails if the effect is not an active move.
+    pub fn active_move_context<'effect>(
+        &'effect mut self,
+    ) -> Result<ActiveMoveContext<'effect, 'effect, 'effect, 'effect, 'battle, 'data>, Error> {
+        match self.active_move_handle {
+            None => Err(battler_error!(
+                "effect context does not contain an active move"
+            )),
+            Some(active_move_handle) => {
+                ActiveMoveContext::new_from_move_handle(self.context.as_mut(), active_move_handle)
+            }
+        }
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns a reference to the [`Effect`].
+    pub fn effect(&self) -> &Effect<'effect_ref> {
+        &self.effect
+    }
+
+    /// Returns a mutable reference to the [`Effect`].
+    pub fn effect_mut(&mut self) -> &mut Effect<'effect_ref> {
+        &mut self.effect
+    }
+}
+
+/// The context of an applying [`Effect`] in a battle.
+///
+/// A context is a proxy object for getting references to battle data. Rust does not make
+/// storing references easy, so references must be grabbed dynamically as needed.
+pub struct ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>
+where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'effect_ref,
+    'effect_ref: 'effect,
+{
+    context: MaybeOwnedMut<'effect, EffectContext<'effect_ref, 'context, 'battle, 'data>>,
+    source_handle: Option<MonHandle>,
+    source: Option<&'context mut Mon>,
+    target_handle: MonHandle,
+    target: &'context mut Mon,
+}
+
+impl<'effect, 'effect_ref, 'context, 'battle, 'data>
+    ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>
+{
+    fn new(
+        context: MaybeOwnedMut<'effect, EffectContext<'effect_ref, 'context, 'battle, 'data>>,
+        source_handle: Option<MonHandle>,
+        target_handle: MonHandle,
+    ) -> Result<ApplyingEffectContext<'effect, 'effect_ref, 'context, 'battle, 'data>, Error> {
+        let target = context
+            .as_battle_context()
+            .cache
+            .mon(context.battle(), target_handle)?;
+        // SAFETY: Mons live as long as the battle itself, since they are stored in a registry. The
+        // reference can be borrowed as long as the element reference exists in the root context. We
+        // ensure that element references are borrowed for the lifetime of the root context.
+        let target = unsafe { target.unsafely_detach_borrow_mut() };
+        let source = match source_handle {
+            None => None,
+            Some(source_handle) => {
+                let source = context
+                    .as_battle_context()
+                    .cache
+                    .mon(context.battle(), source_handle)?;
+                // SAFETY: Mons live as long as the battle itself, since they are stored in a
+                // registry. The reference can be borrowed as long as the element reference exists
+                // in the root context. We ensure that element references are borrowed for the
+                // lifetime of the root context.
+                let source = unsafe { source.unsafely_detach_borrow_mut() };
+                Some(source)
+            }
+        };
+        Ok(Self {
+            context,
+            source_handle,
+            source,
+            target_handle,
+            target,
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'applying_effect>(
+        &'applying_effect self,
+    ) -> &'applying_effect Context<'battle, 'data> {
+        self.context.as_battle_context()
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> &'applying_effect mut Context<'battle, 'data> {
+        self.context.as_battle_context_mut()
+    }
+
+    /// Returns a reference to the inner [`EffectContext`].
+    pub fn as_effect_context<'applying_effect>(
+        &'applying_effect self,
+    ) -> &'applying_effect EffectContext<'effect_ref, 'context, 'battle, 'data> {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`EffectContext`].
+    pub fn as_effect_context_mut<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> &'applying_effect mut EffectContext<'effect_ref, 'context, 'battle, 'data> {
+        &mut self.context
+    }
+
+    /// Creates a new [`MonContext`] for the effect source, scoped to the lifetime of this context.
+    pub fn source_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<
+        Option<MonContext<'applying_effect, 'applying_effect, 'applying_effect, 'battle, 'data>>,
+        Error,
+    > {
+        match self.source_handle {
+            None => Ok(None),
+            Some(source_handle) => self
+                .as_battle_context_mut()
+                .mon_context(source_handle)
+                .map(|mon_context| Some(mon_context)),
+        }
+    }
+
+    /// Creates a new [`MonContext`] for the effect target, scoped to the lifetime of this context.
+    pub fn target_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<
+        MonContext<'applying_effect, 'applying_effect, 'applying_effect, 'battle, 'data>,
+        Error,
+    > {
+        let target_handle = self.target_handle;
+        self.as_battle_context_mut().mon_context(target_handle)
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns a reference to the [`Effect`].
+    pub fn effect(&self) -> &Effect<'effect_ref> {
+        self.context.effect()
+    }
+
+    /// Returns a mutable reference to the [`Effect`].
+    pub fn effect_mut(&mut self) -> &mut Effect<'effect_ref> {
+        self.context.effect_mut()
+    }
+
+    /// Returns the [`MonHandle`] for the source [`Mon`], if one exists.
+    pub fn source_handle(&self) -> Option<MonHandle> {
+        self.source_handle
+    }
+
+    /// Returns a reference to the source [`Mon`], if one exists.
+    pub fn source(&self) -> Option<&Mon> {
+        self.source.as_deref()
+    }
+
+    /// Returns a mutable reference to the source [`Mon`], if one exists.
+    pub fn source_mut(&mut self) -> Option<&mut Mon> {
+        self.source.as_deref_mut()
+    }
+
+    /// Returns the [`MonHandle`] for the target [`Mon`].
+    pub fn target_handle(&self) -> MonHandle {
+        self.target_handle
+    }
+
+    /// Returns a reference to the target [`Mon`].
+    pub fn target(&self) -> &Mon {
+        &self.target
+    }
+
+    /// Returns a mutable reference to the target [`Mon`].
+    pub fn target_mut(&mut self) -> &mut Mon {
+        &mut self.target
     }
 }
