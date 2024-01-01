@@ -57,7 +57,14 @@ impl<'borrow> ContextCache<'borrow> {
                 .wrap_error_with_format(format_args!("expected Mon {mon_handle} to exist in cache"))
                 .map(|mon| mon.as_mut());
         }
+        // SAFETY: This should always succeed, assuming that a Mon was not incorrectly borrowed
+        // outside of this context.
         let mon = unsafe { battle.mon_mut(mon_handle)? };
+        // SAFETY: We extend the lifetime of the ElementRef (dynamic borrow checking) so that the
+        // borrow lives for the lifetime of the context chain.
+        //
+        // SAFETY: This is safe across multiple insertions because ElementRef does not own any data.
+        // The underlying reference is not invalidated.
         let mon = unsafe { mem::transmute(mon) };
         mons.insert(mon_handle, mon);
         let mon = mons
@@ -84,7 +91,14 @@ impl<'borrow> ContextCache<'borrow> {
                 ))
                 .map(|mov| mov.as_mut());
         }
+        // SAFETY: This should always succeed, assuming that a move was not incorrectly borrowed
+        // outside of this context.
         let mov = unsafe { battle.this_turn_move_mut(move_handle)? };
+        // SAFETY: We extend the lifetime of the ElementRef (dynamic borrow checking) so that the
+        // borrow lives for the lifetime of the context chain.
+        //
+        // SAFETY: This is safe across multiple insertions because ElementRef does not own any data.
+        // The underlying reference is not invalidated.
         let mov = unsafe { mem::transmute(mov) };
         moves.insert(move_handle, mov);
         let mov = moves
