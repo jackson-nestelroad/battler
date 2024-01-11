@@ -83,7 +83,9 @@ impl EventLoggable for ActiveMonDetails<'_> {
         event.set("side", self.side_position);
         event.set("name", self.name);
         event.set("health", &self.health);
-        event.set("status", &self.status);
+        if !self.status.is_empty() {
+            event.set("status", &self.status);
+        }
         self.public_details.log(event);
     }
 }
