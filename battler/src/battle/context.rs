@@ -1142,7 +1142,7 @@ where
 {
     context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
     effect: Effect<'context>,
-    active_move_handle: Option<MoveHandle>,
+    effect_handle: EffectHandle,
 }
 
 impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
@@ -1162,7 +1162,7 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         Ok(Self {
             context,
             effect,
-            active_move_handle: Some(active_move_handle),
+            effect_handle: EffectHandle::ActiveMove(active_move_handle),
         })
     }
 
@@ -1193,13 +1193,13 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
     pub fn active_move_context<'effect>(
         &'effect mut self,
     ) -> Result<ActiveMoveContext<'effect, 'effect, 'effect, 'effect, 'battle, 'data>, Error> {
-        match self.active_move_handle {
-            None => Err(battler_error!(
-                "effect context does not contain an active move"
-            )),
-            Some(active_move_handle) => {
+        match self.effect_handle {
+            EffectHandle::ActiveMove(active_move_handle) => {
                 ActiveMoveContext::new_from_move_handle(self.context.as_mut(), active_move_handle)
             }
+            _ => Err(battler_error!(
+                "effect context does not contain an active move"
+            )),
         }
     }
 
@@ -1211,6 +1211,11 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
     /// Returns a mutable reference to the [`CoreBattle`].
     pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
         self.context.battle_mut()
+    }
+
+    /// Returns the [`EffectHandle`] for the [`Effect`].
+    pub fn effect_handle(&self) -> EffectHandle {
+        self.effect_handle.clone()
     }
 
     /// Returns a reference to the [`Effect`].
@@ -1341,6 +1346,11 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     /// Returns a mutable reference to the [`CoreBattle`].
     pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
         self.context.battle_mut()
+    }
+
+    /// Returns the [`EffectHandle`] for the [`Effect`].
+    pub fn effect_handle(&self) -> EffectHandle {
+        self.context.effect_handle()
     }
 
     /// Returns a reference to the [`Effect`].
