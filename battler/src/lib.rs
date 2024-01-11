@@ -1,3 +1,4 @@
+#![feature(entry_insert)]
 #![feature(hasher_prefixfree_extras)]
 #![feature(pattern)]
 #![feature(return_position_impl_trait_in_trait)]
@@ -9,7 +10,6 @@ pub mod battle;
 pub mod common;
 pub mod config;
 pub mod dex;
-pub mod effect;
 pub mod fxlang;
 pub mod items;
 pub mod log;
