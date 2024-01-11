@@ -475,6 +475,14 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
+    pub fn add_attribute_value_to_last_move(&mut self, attribute: &str, value: String) {
+        if let Some(EventLogEntryMut::Uncommitted(event)) =
+            self.last_move_log.and_then(|index| self.log.get_mut(index))
+        {
+            event.set(attribute, value);
+        }
+    }
+
     pub fn started(&self) -> bool {
         self.started
     }

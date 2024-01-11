@@ -171,13 +171,18 @@ pub enum MoveOutcome {
     Success,
 }
 
+impl MoveOutcome {
+    pub fn success(&self) -> bool {
+        match self {
+            Self::Success => true,
+            _ => false,
+        }
+    }
+}
+
 impl From<MoveOutcome> for bool {
     fn from(value: MoveOutcome) -> Self {
-        match value {
-            MoveOutcome::Skipped => false,
-            MoveOutcome::Failed => false,
-            MoveOutcome::Success => true,
-        }
+        value.success()
     }
 }
 

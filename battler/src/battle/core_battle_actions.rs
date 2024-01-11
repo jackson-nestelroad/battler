@@ -7,13 +7,14 @@ use crate::{
         core_battle_logs,
         ActiveMoveContext,
         CoreBattle,
+        EffectContext,
         Mon,
         MonContext,
         MonHandle,
+        MoveDamage,
         MoveHandle,
         MoveOutcome,
     },
-    battle_event,
     battler_error,
     common::{
         Error,
@@ -27,6 +28,17 @@ use crate::{
         SelfDestructType,
     },
 };
+
+struct HitTargetState {
+    handle: MonHandle,
+    damage: MoveDamage,
+}
+
+impl HitTargetState {
+    pub fn new(handle: MonHandle, damage: MoveDamage) -> Self {
+        Self { handle, damage }
+    }
+}
 
 /// Switches a Mon into the given position.
 pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error> {
@@ -60,8 +72,7 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
     Mon::switch_in(context, position);
     context.player_mut().active[position] = Some(context.mon_handle());
 
-    let event = battle_event!("switch", Mon::active_details(context)?);
-    context.battle_mut().log(event);
+    core_battle_logs::switch(context)?;
 
     Ok(())
 }
@@ -115,23 +126,18 @@ pub fn do_move(
     // TODO: Run BeforeMove checks.
     // TODO: Abort move if requested.
 
-    context.mon_mut().last_damage = 0;
     // External moves do not have PP deducted.
     if !external {
         // TODO: Check for locked move, which will not deduct PP (think Uproar).
-        let active_move = context.active_move()?;
-        let move_id = active_move.id();
+        let move_id = context.active_move()?.id();
         // SAFETY: move_id is only used for lookup.
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
         if !context.mon_mut().deduct_pp(move_id, 1) && !move_id.eq("struggle") {
             // No PP, so this move action cannot be carried through.
-            let event = battle_event!(
-                "cant",
-                Mon::position_details(context)?,
-                "nopp",
-                context.active_move()?.data.name,
-            );
-            context.battle_mut().log(event);
+            let move_name = &context.active_move()?.data.name;
+            // SAFETY: Logging does not change the active move.
+            let move_name = unsafe { move_name.unsafely_detach_borrow() };
+            core_battle_logs::cant(context, "nopp", move_name)?;
             CoreBattle::clear_active_move(context.as_battle_context_mut())?;
             return Ok(());
         }
@@ -200,21 +206,15 @@ fn use_move_internal(
     }
 
     // Log that the move is being used.
-    let mut event = battle_event!(
-        "move",
-        Mon::position_details(context.as_mon_context())?,
-        context.active_move().data.name,
-    );
-    if let Some(target) = target {
-        event.push(&Mon::position_details(
-            &context.target_mon_context(target)?,
-        )?);
-    }
-    context.battle_mut().log(event);
+    let move_name = &context.active_move().data.name;
+    // SAFETY: Logging does not change the active move.
+    let move_name = unsafe { move_name.unsafely_detach_borrow() };
+    core_battle_logs::use_move(context.as_mon_context_mut(), move_name, target)?;
 
     if context.mon().active_target.is_none() && context.active_move().data.target.requires_target()
     {
-        core_battle_logs::fail(&mut context.as_mon_context_mut())?;
+        core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+        core_battle_logs::fail(context.as_mon_context_mut())?;
         return Ok(MoveOutcome::Failed);
     }
 
@@ -232,7 +232,8 @@ fn use_move_internal(
         todo!("moves that do not affect Mons directly are not implemented")
     } else {
         if targets.is_empty() {
-            core_battle_logs::fail(&mut context.as_mon_context_mut())?;
+            core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+            core_battle_logs::fail(context.as_mon_context_mut())?;
             return Ok(MoveOutcome::Failed);
         }
         outcome = try_direct_move(&mut context, &targets)?;
@@ -360,23 +361,70 @@ fn try_direct_move(
         ];
     }
 
-    todo!("try_direct_move is unfinished")
+    // TODO: Try event for the move.
+    // TODO: PrepareHit event.
+    // TODO: Fail the move early if needed.
+
+    let mut targets = targets
+        .iter()
+        .map(|target| direct_move_step::MoveStepTarget {
+            handle: *target,
+            outcome: MoveOutcome::Success,
+        })
+        .collect::<Vec<_>>();
+    // We can lose targets without explicit failures.
+    let mut at_least_one_failure = false;
+    for step in &*STEPS {
+        step(context, targets.as_mut_slice())?;
+        at_least_one_failure = at_least_one_failure
+            || targets
+                .iter()
+                .any(|target| target.outcome == MoveOutcome::Failed);
+        targets = targets
+            .into_iter()
+            .filter(|target| target.outcome.success())
+            .collect();
+        if targets.is_empty() {
+            break;
+        }
+    }
+
+    let outcome = if targets.is_empty() {
+        if at_least_one_failure {
+            MoveOutcome::Failed
+        } else {
+            MoveOutcome::Skipped
+        }
+    } else {
+        MoveOutcome::Success
+    };
+
+    if context.active_move().spread_hit {
+        core_battle_logs::last_move_spread_targets(
+            context.as_battle_context_mut(),
+            targets.into_iter().map(|target| target.handle),
+        )?;
+    }
+
+    Ok(outcome)
 }
 
 mod direct_move_step {
     use std::ops::Mul;
 
+    use super::HitTargetState;
     use crate::{
         battle::{
+            core_battle_actions,
             core_battle_logs,
             modify,
             ActiveMoveContext,
             ActiveTargetContext,
             CoreBattle,
-            EffectContext,
             Mon,
             MonHandle,
             MoveDamage,
+            MoveOutcome,
         },
         common::{
             Error,
@@ -394,9 +442,9 @@ mod direct_move_step {
     };
 
     pub struct MoveStepTarget {
-        handle: MonHandle,
+        pub handle: MonHandle,
         /// Move steps can assume by default that this will be `true`.
-        should_continue: bool,
+        pub outcome: MoveOutcome,
     }
 
     pub type DirectMoveStep =
@@ -421,8 +469,12 @@ mod direct_move_step {
             // TODO: TryHit event.
             // should_continue = false if failed.
         }
-        if targets.iter().all(|target| !target.should_continue) {
-            core_battle_logs::fail(&mut context.as_mon_context_mut())?;
+        if targets
+            .iter()
+            .all(|target| target.outcome == MoveOutcome::Failed)
+        {
+            core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+            core_battle_logs::fail(context.as_mon_context_mut())?;
         }
         Ok(())
     }
@@ -439,8 +491,9 @@ mod direct_move_step {
             let immune = immune || Mon::is_immune(&mut target_context, move_type)?;
             if immune {
                 core_battle_logs::immune(&mut target_context)?;
+            } else {
+                target.outcome = MoveOutcome::Failed;
             }
-            target.should_continue = !immune;
         }
         Ok(())
     }
@@ -464,8 +517,11 @@ mod direct_move_step {
         for target in targets {
             let mut context = context.target_context(target.handle)?;
             if !accuracy_check(&mut context)? {
+                if !context.active_move().spread_hit {
+                    core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+                }
                 core_battle_logs::miss(&mut context)?;
-                target.should_continue = false;
+                target.outcome = MoveOutcome::Failed;
                 // TODO: AccuracyFailure event.
             }
         }
@@ -524,7 +580,6 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         context.active_move_mut().total_damage = 0;
-        context.mon_mut().last_damage = 0;
 
         let hits = match context.active_move().data.multihit {
             None => 1,
@@ -545,26 +600,22 @@ mod direct_move_step {
 
         // TODO: Consider Loaded Dice item.
 
-        let mut targets = targets
-            .iter()
-            .map(|target| target.handle)
-            .collect::<Vec<_>>();
-        let mut total_damage = vec![0; targets.len()];
-        for hit in 1..=hits {
+        for hit in 0..hits {
             // No more targets.
-            if targets.is_empty() {
+            if targets.iter().all(|target| !target.outcome.success()) {
                 break;
             }
 
             // Record number of hits.
-            context.active_move_mut().hit = hit;
+            context.active_move_mut().hit = hit + 1;
 
             // Of all the eligible targets, determine which ones we will actually hit.
             let mut next_hit_targets = Vec::with_capacity(targets.len());
-            for target in targets {
-                let mut context = context.target_context(target)?;
+            for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+                let mut context = context.target_context(target.handle)?;
                 if context.active_move().data.multiaccuracy && hit > 1 {
                     if !accuracy_check(&mut context)? {
+                        target.outcome = MoveOutcome::Failed;
                         continue;
                     }
                 }
@@ -572,24 +623,57 @@ mod direct_move_step {
                 // If we made it this far, the target is eligible for another hit.
                 next_hit_targets.push(target);
             }
-            targets = next_hit_targets;
 
-            // TODO: spreadMoveHit (this is where damage is done to all targets!).
+            let mut hit_targets_state = targets
+                .iter()
+                .filter(|target| target.outcome.success())
+                .map(|target| HitTargetState::new(target.handle, MoveDamage::Damage(0)))
+                .collect::<Vec<_>>();
+            hit_targets(context, &mut hit_targets_state, false, false)?;
+
+            if hit_targets_state
+                .iter()
+                .all(|target| target.damage.failed())
+            {
+                break;
+            }
+
+            context.active_move_mut().total_damage += hit_targets_state
+                .iter()
+                .filter_map(|target| {
+                    if let MoveDamage::Damage(damage) = target.damage {
+                        Some(damage as u64)
+                    } else {
+                        None
+                    }
+                })
+                .sum::<u64>();
+
+            // TODO: Update event for everything on the field, like items.
         }
 
-        // At this point, everything hits.
-        Ok(())
-    }
+        // TODO: Faint messages, using a faint queue.
 
-    struct HitTarget {
-        handle: MonHandle,
-        damage: MoveDamage,
-        failed: bool,
+        let hits = context.active_move().hit;
+        if context.active_move().data.multihit.is_some() {
+            core_battle_logs::hit_count(context, hits)?;
+        }
+
+        // TODO: Recoil damage.
+
+        // TODO: Struggle recoil damage.
+
+        // TODO: Record which Mon attacked which, and how many times.
+
+        core_battle_logs::ohko(context.as_battle_context_mut())?;
+
+        // At this point, all hits have been applied.
+        Ok(())
     }
 
     fn hit_targets(
         context: &mut ActiveMoveContext,
-        targets: &mut [HitTarget],
+        targets: &mut [HitTargetState],
         is_secondary: bool,
         is_self: bool,
     ) -> Result<(), Error> {
@@ -619,17 +703,21 @@ mod direct_move_step {
         // Calculate damage for each target.
         calculate_spread_damage(context, targets, is_secondary, is_self)?;
         for target in targets.iter_mut() {
-            target.failed = target.damage.failed();
-            if let MoveDamage::Failure = target.damage {
+            if target.damage.failed() {
                 if !is_secondary && !is_self {
                     core_battle_logs::fail_target(&mut context.target_context(target.handle)?)?;
                 }
             }
         }
 
-        // TODO: apply_spread_damage.
+        let mon_handle = context.mon_handle();
+        core_battle_actions::apply_spread_damage(
+            &mut context.effect_context()?,
+            Some(mon_handle),
+            targets,
+        )?;
 
-        // TODO: runMoveEffects.
+        // TODO: Run move effects.
 
         // TODO: Self drops.
 
@@ -637,17 +725,19 @@ mod direct_move_step {
 
         // TODO: Force switch.
 
-        todo!("hit_targets is unimplemented")
+        // TODO: Post-damage events.
+
+        Ok(())
     }
 
     fn calculate_spread_damage(
         context: &mut ActiveMoveContext,
-        targets: &mut [HitTarget],
+        targets: &mut [HitTargetState],
         is_secondary: bool,
         is_self: bool,
     ) -> Result<(), Error> {
         for target in targets {
-            if target.failed {
+            if target.damage.failed() {
                 continue;
             }
             CoreBattle::set_active_target(context.as_battle_context_mut(), Some(target.handle))?;
@@ -827,27 +917,58 @@ mod direct_move_step {
         let base_damage = base_damage.min(1);
         Ok(MoveDamage::Damage(base_damage))
     }
+}
 
-    fn apply_spread_damage(
-        context: &mut EffectContext,
-        source: Option<MonHandle>,
-        targets: &mut [HitTarget],
-    ) -> Result<(), Error> {
-        for target in targets {
-            let context = context.applying_effect_context(source, target.handle)?;
-            if let MoveDamage::Damage(0) = target.damage {
-                continue;
-            }
-            if target.failed || context.target().hp == 0 {
-                target.damage = MoveDamage::Damage(0);
-                continue;
-            }
-            if !context.target().active {
-                target.damage = MoveDamage::Failure;
-                continue;
-            }
-            // TODO: Struggle recoil should not be affected by effects.
+fn apply_spread_damage(
+    context: &mut EffectContext,
+    source: Option<MonHandle>,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    for target in targets {
+        let mut context = context.applying_effect_context(source, target.handle)?;
+        if target.damage.failed() {
+            continue;
         }
-        todo!("apply_spread_damage")
+        if let MoveDamage::Damage(0) = target.damage {
+            continue;
+        }
+        if context.target().hp == 0 {
+            target.damage = MoveDamage::Damage(0);
+            continue;
+        }
+        if !context.target().active {
+            target.damage = MoveDamage::Failure;
+            continue;
+        }
+        // TODO: Struggle recoil should not be affected by effects.
+        // TODO: Check weather immunity.
+        // TODO: Run Damage event, which can cause damage to fail.
+
+        if let MoveDamage::Damage(damage) = &mut target.damage {
+            let source_handle = context.source_handle();
+            let effect_handle = context.effect_handle();
+            *damage = Mon::damage(
+                &mut context.target_context()?,
+                *damage,
+                source_handle,
+                Some(effect_handle),
+            )?;
+            context.target_mut().hurt_this_turn = *damage;
+        }
+
+        core_battle_logs::damage(&mut context)?;
+
+        if let MoveDamage::Damage(damage) = target.damage {
+            if let Some(drain_percent) = context
+                .effect()
+                .active_move()
+                .map(|active_move| active_move.data.drain_percent)
+            {
+                if let Some(mut context) = context.source_context()? {
+                    // TODO: heal
+                }
+            }
+        }
     }
+    Ok(())
 }

@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 use crate::{
     battle::{
         ActiveMoveContext,
@@ -61,6 +63,23 @@ pub fn last_move_had_no_target(context: &mut Context) {
 
 pub fn do_not_animate_last_move(context: &mut Context) {
     context.battle_mut().add_attribute_to_last_move("noanim");
+}
+
+pub fn last_move_spread_targets<I>(context: &mut Context, targets: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = MonHandle>,
+{
+    let mut target_positions = Vec::new();
+    for target in targets {
+        target_positions.push(format!(
+            "{}",
+            Mon::position_details(&mut context.mon_context(target)?)?
+        ));
+    }
+    context
+        .battle_mut()
+        .add_attribute_value_to_last_move("spread", target_positions.into_iter().join(";"));
+    Ok(())
 }
 
 pub fn fail(context: &mut MonContext) -> Result<(), Error> {
