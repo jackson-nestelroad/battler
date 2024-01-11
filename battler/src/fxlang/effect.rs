@@ -62,7 +62,15 @@ impl<'a, T> From<&'a mut T> for MaybeElementRef<'a, T> {
     }
 }
 
+/// The type of an [`Effect`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EffectType {
+    Move,
+    Ability,
+}
+
 /// An [`Effect`] handle.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EffectHandle {
     ActiveMove(MoveHandle),
     Ability(Id),
@@ -83,6 +91,13 @@ impl<'borrow> Effect<'borrow> {
         match self {
             Self::ActiveMove(active_move) => &active_move.data.name,
             Self::Ability(ability) => &ability.data.name,
+        }
+    }
+
+    pub fn effect_type(&self) -> EffectType {
+        match self {
+            Self::ActiveMove(_) => EffectType::Move,
+            Self::Ability(_) => EffectType::Ability,
         }
     }
 
