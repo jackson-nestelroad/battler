@@ -42,9 +42,9 @@ pub fn use_move(
 ) -> Result<(), Error> {
     let mut event = log_event!("move", Mon::position_details(context)?, ("name", move_name));
     if let Some(target) = target {
-        // event.push(&Mon::position_details(
-        //     &context.as_battle_context_mut().mon_context(target)?,
-        // )?);
+        event.extend(&Mon::position_details(
+            &context.as_battle_context_mut().mon_context(target)?,
+        )?);
     }
     context.battle_mut().log(event);
     Ok(())
