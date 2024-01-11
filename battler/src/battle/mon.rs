@@ -1,4 +1,6 @@
 use std::{
+    fmt,
+    fmt::Display,
     iter,
     ops::Mul,
 };
@@ -97,12 +99,9 @@ pub struct MonPositionDetails<'d> {
     pub side_position: usize,
 }
 
-impl EventLoggable for MonPositionDetails<'_> {
-    fn log<'s>(&'s self, event: &mut Event) {
-        event.set(
-            "mon",
-            format!("{},{},{}", self.name, self.player_id, self.side_position),
-        );
+impl Display for MonPositionDetails<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{},{},{}", self.name, self.player_id, self.side_position)
     }
 }
 

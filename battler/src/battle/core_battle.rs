@@ -53,6 +53,7 @@ use crate::{
     log::{
         Event,
         EventLog,
+        EventLogEntryMut,
     },
     log_event,
     mons::{
@@ -456,6 +457,22 @@ impl<'d> CoreBattle<'d> {
         I: IntoIterator<Item = Event>,
     {
         self.log.push_extend(events)
+    }
+
+    pub fn log_move(&mut self, event: Event) {
+        self.last_move_log = Some(self.log.len());
+        self.log(event)
+    }
+
+    pub fn add_attribute_to_last_move(&mut self, attribute: &str) {
+        if let Some(EventLogEntryMut::Uncommitted(event)) =
+            self.last_move_log.and_then(|index| self.log.get_mut(index))
+        {
+            event.add_flag(attribute);
+            if attribute == "noanim" {
+                event.remove("target");
+            }
+        }
     }
 
     pub fn started(&self) -> bool {

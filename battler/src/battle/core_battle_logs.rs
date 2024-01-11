@@ -21,7 +21,7 @@ pub fn switch(context: &mut MonContext) -> Result<(), Error> {
 pub fn cant(context: &mut MonContext, reason: &str, do_what: &str) -> Result<(), Error> {
     let event = log_event!(
         "cant",
-        Mon::position_details(context)?,
+        ("mon", Mon::position_details(context)?),
         ("reason", reason),
         ("what", do_what),
     );
@@ -40,34 +40,48 @@ pub fn use_move(
     move_name: &str,
     target: Option<MonHandle>,
 ) -> Result<(), Error> {
-    let mut event = log_event!("move", Mon::position_details(context)?, ("name", move_name));
+    let mut event = log_event!(
+        "move",
+        ("mon", Mon::position_details(context)?),
+        ("name", move_name)
+    );
     if let Some(target) = target {
-        event.extend(&Mon::position_details(
-            &context.as_battle_context_mut().mon_context(target)?,
-        )?);
+        event.extend(&(
+            "target",
+            Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?,
+        ));
     }
     context.battle_mut().log(event);
     Ok(())
 }
 
+pub fn last_move_had_no_target(context: &mut Context) {
+    context.battle_mut().add_attribute_to_last_move("notarget");
+}
+
+pub fn do_not_animate_last_move(context: &mut Context) {
+    context.battle_mut().add_attribute_to_last_move("noanim");
+}
+
 pub fn fail(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!("fail", Mon::position_details(context)?);
+    let event = log_event!("fail", ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);
     Ok(())
 }
 
 pub fn immune(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!("immune", Mon::position_details(context)?);
+    let event = log_event!("immune", ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);
     Ok(())
 }
 
 fn move_event_on_target(context: &mut ActiveTargetContext, event: &str) -> Result<(), Error> {
     let user_details = Mon::position_details(context.as_mon_context())?;
-    let mut event = log_event!(event, user_details);
-    let target_context = context.target_mon_context()?;
-    let target_details = Mon::position_details(&target_context)?;
-    event.extend(&target_details);
+    let mut event = log_event!(event, ("mon", user_details));
+    event.extend(&(
+        "target",
+        Mon::position_details(&context.target_mon_context()?)?,
+    ));
     context.battle_mut().log(event);
     Ok(())
 }
