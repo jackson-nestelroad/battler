@@ -37,7 +37,6 @@ use crate::{
         TeamPreviewRequest,
         TurnRequest,
     },
-    battle_event,
     battler_error,
     common::{
         Error,
@@ -52,9 +51,10 @@ use crate::{
         Dex,
     },
     log::{
-        BattleEvent,
+        Event,
         EventLog,
     },
+    log_event,
     mons::{
         Type,
         TypeEffectiveness,
@@ -115,13 +115,13 @@ impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
         self.internal.new_logs()
     }
 
-    fn log(&mut self, event: BattleEvent) {
+    fn log(&mut self, event: Event) {
         self.internal.log(event)
     }
 
     fn log_many<I>(&mut self, events: I)
     where
-        I: IntoIterator<Item = BattleEvent>,
+        I: IntoIterator<Item = Event>,
     {
         self.internal.log_many(events)
     }
@@ -176,6 +176,7 @@ pub struct CoreBattle<'d> {
     started: bool,
     ended: bool,
     next_ability_priority: u32,
+    last_move_log: Option<usize>,
 
     active_mon: Option<MonHandle>,
 
@@ -255,6 +256,7 @@ impl<'d> CoreBattle<'d> {
             started: false,
             ended: false,
             next_ability_priority: 0,
+            last_move_log: None,
             active_mon: None,
             input_log,
             _pin: PhantomPinned,
@@ -445,13 +447,13 @@ impl<'d> CoreBattle<'d> {
 }
 
 impl<'d> CoreBattle<'d> {
-    pub fn log(&mut self, event: BattleEvent) {
+    pub fn log(&mut self, event: Event) {
         self.log.push(event)
     }
 
     pub fn log_many<I>(&mut self, events: I)
     where
-        I: IntoIterator<Item = BattleEvent>,
+        I: IntoIterator<Item = Event>,
     {
         self.log.push_extend(events)
     }
@@ -483,7 +485,8 @@ impl<'d> CoreBattle<'d> {
         }
         context.battle_mut().started = true;
 
-        let battle_type_event = battle_event!("battletype", context.battle().format.battle_type);
+        let battle_type_event =
+            log_event!("info", ("battletype", &context.battle().format.battle_type));
         context.battle_mut().log(battle_type_event);
 
         // Extract and sort all rule logs.
@@ -514,13 +517,28 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().log_many(
             rule_logs
                 .into_iter()
-                .map(|rule_log| battle_event!("rule", rule_log)),
+                .map(|rule_log| log_event!("info", ("rule", rule_log))),
         );
+
+        let side_logs = context
+            .battle()
+            .sides()
+            .map(|side| log_event!("side", ("id", side.index), ("name", &side.name)))
+            .collect::<Vec<_>>();
+        context.battle_mut().log_many(side_logs);
 
         let player_logs = context
             .battle()
             .players()
-            .map(|player| battle_event!("player", player.id, player.side, player.position))
+            .map(|player| {
+                log_event!(
+                    "player",
+                    ("id", &player.id),
+                    ("name", &player.name),
+                    ("side", player.side),
+                    ("position", player.position),
+                )
+            })
             .collect::<Vec<_>>();
         context.battle_mut().log_many(player_logs);
 
@@ -540,19 +558,28 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn log_current_time(&mut self) {
-        self.log(battle_event!(
+        self.log(log_event!(
             "time",
-            SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis()
+            (
+                "value",
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis()
+            ),
         ));
     }
 
     fn log_team_sizes(&mut self) {
         let team_size_events = self
             .players()
-            .map(|player| battle_event!("teamsize", player.id, player.mons.len()))
+            .map(|player| {
+                log_event!(
+                    "teamsize",
+                    ("player", &player.id),
+                    ("size", player.mons.len()),
+                )
+            })
             .collect::<Vec<_>>();
         self.log_many(team_size_events);
     }
@@ -562,7 +589,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn start_team_preview(context: &mut Context) -> Result<(), Error> {
-        context.battle_mut().log(battle_event!("teampreviewstart"));
+        context.battle_mut().log(log_event!("teampreviewstart"));
         let events = context
             .battle()
             .all_mon_handles()
@@ -570,9 +597,9 @@ impl<'d> CoreBattle<'d> {
             .into_iter()
             .map(|mon_handle| {
                 let context = context.mon_context(mon_handle)?;
-                Ok(battle_event!(
+                Ok(log_event!(
                     "mon",
-                    context.player().id,
+                    ("player", &context.player().id),
                     context.mon().public_details(),
                 ))
             })
@@ -581,9 +608,8 @@ impl<'d> CoreBattle<'d> {
         match context.battle().format.rules.numeric_rules.picked_team_size {
             Some(picked_team_size) => context
                 .battle_mut()
-                .log
-                .push(battle_event!("teampreview", picked_team_size)),
-            None => context.battle_mut().log(battle_event!("teampreview")),
+                .log(log_event!("teampreview", ("pick", picked_team_size))),
+            None => context.battle_mut().log(log_event!("teampreview")),
         }
         Self::make_request(context, RequestType::TeamPreview)?;
         Ok(())
@@ -651,6 +677,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn make_request(context: &mut Context, request_type: RequestType) -> Result<(), Error> {
+        context.battle_mut().log.commit();
         context.battle_mut().request = Some(request_type);
         Self::clear_requests(context)?;
 
@@ -735,7 +762,7 @@ impl<'d> CoreBattle<'d> {
                 for player in context.battle_mut().players_mut() {
                     player.start_battle();
                 }
-                context.battle_mut().log(battle_event!("start"));
+                context.battle_mut().log(log_event!("start"));
 
                 let switch_ins =
                     context
@@ -782,7 +809,7 @@ impl<'d> CoreBattle<'d> {
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
-                context.battle_mut().log(battle_event!("residual"));
+                context.battle_mut().log(log_event!("residual"));
             }
         }
         Ok(())
@@ -790,13 +817,14 @@ impl<'d> CoreBattle<'d> {
 
     fn next_turn(context: &mut Context) -> Result<(), Error> {
         context.battle_mut().turn += 1;
-        let turn_event = battle_event!("turn", context.battle().turn);
+        context.battle_mut().log.commit();
+        let turn_event = log_event!("turn", ("turn", context.battle().turn));
         context.battle_mut().log(turn_event);
 
         if context.battle().turn >= 1000 {
-            context.battle_mut().log(battle_event!(
+            context.battle_mut().log(log_event!(
                 "message",
-                "It is turn 1000. You have hit the turn limit!"
+                ("message", "It is turn 1000. You have hit the turn limit!"),
             ));
             Self::tie(context)?;
         }
@@ -814,12 +842,11 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
-        context.battle_mut().log(battle_event!());
         match side {
-            None => context.battle_mut().log(battle_event!("tie")),
+            None => context.battle_mut().log(log_event!("tie")),
             Some(side) => {
                 let side = context.battle().side(side)?;
-                let win_event = battle_event!("win", side.name);
+                let win_event = log_event!("win", ("side", side.index));
                 context.battle_mut().log(win_event);
             }
         }

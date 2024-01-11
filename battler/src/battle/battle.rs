@@ -5,7 +5,7 @@ use crate::{
     },
     common::Error,
     dex::DataStore,
-    log::BattleEvent,
+    log::Event,
 };
 
 /// Options that change how the battle engine itself behaves, which is not necessarily specific to
@@ -66,11 +66,11 @@ where
     fn new_logs(&mut self) -> impl Iterator<Item = &str>;
 
     /// Logs a new battle event to the battle log.
-    fn log(&mut self, event: BattleEvent);
+    fn log(&mut self, event: Event);
     /// Logs many battle events to the battle log.
     fn log_many<I>(&mut self, events: I)
     where
-        I: IntoIterator<Item = BattleEvent>;
+        I: IntoIterator<Item = Event>;
 
     /// Starts the battle.
     fn start(&mut self) -> Result<(), Error>;
