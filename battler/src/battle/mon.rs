@@ -1,5 +1,4 @@
 use std::{
-    borrow::Cow,
     iter,
     ops::Mul,
 };
@@ -30,7 +29,11 @@ use crate::{
         Identifiable,
     },
     dex::Dex,
-    log::BattleLoggable,
+    fxlang::EffectHandle,
+    log::{
+        Event,
+        EventLoggable,
+    },
     mons::{
         Gender,
         Nature,
@@ -52,13 +55,13 @@ pub struct PublicMonDetails<'d> {
     pub shiny: bool,
 }
 
-impl BattleLoggable for PublicMonDetails<'_> {
-    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
-        items.push(self.species_name.into());
-        items.push(self.level.to_string().into());
-        items.push(self.gender.to_string().into());
+impl EventLoggable for PublicMonDetails<'_> {
+    fn log<'s>(&'s self, event: &mut Event) {
+        event.set("species", self.species_name);
+        event.set("level", self.level);
+        event.set("gender", &self.gender);
         if self.shiny {
-            items.push("shiny".into());
+            event.add_flag("shiny");
         }
     }
 }
@@ -74,14 +77,14 @@ pub struct ActiveMonDetails<'d> {
     pub status: String,
 }
 
-impl BattleLoggable for ActiveMonDetails<'_> {
-    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
-        items.push(self.player_id.into());
-        items.push(self.side_position.to_string().into());
-        items.push(self.name.into());
-        items.push(self.health.as_str().into());
-        items.push(self.status.as_str().into());
-        self.public_details.log(items);
+impl EventLoggable for ActiveMonDetails<'_> {
+    fn log<'s>(&'s self, event: &mut Event) {
+        event.set("player", self.player_id);
+        event.set("side", self.side_position);
+        event.set("name", self.name);
+        event.set("health", &self.health);
+        event.set("status", &self.status);
+        self.public_details.log(event);
     }
 }
 
@@ -92,9 +95,12 @@ pub struct MonPositionDetails<'d> {
     pub side_position: usize,
 }
 
-impl BattleLoggable for MonPositionDetails<'_> {
-    fn log<'s>(&'s self, items: &mut Vec<Cow<'s, str>>) {
-        items.push(format!("{},{},{}", self.name, self.player_id, self.side_position).into());
+impl EventLoggable for MonPositionDetails<'_> {
+    fn log<'s>(&'s self, event: &mut Event) {
+        event.set(
+            "mon",
+            format!("{},{},{}", self.name, self.player_id, self.side_position),
+        );
     }
 }
 
@@ -229,7 +235,7 @@ pub struct Mon {
     pub active_target: Option<MonHandle>,
     pub move_this_turn_outcome: Option<MoveOutcome>,
     pub last_move_target: Option<isize>,
-    pub last_damage: u64,
+    pub hurt_this_turn: u16,
 }
 
 // Construction and initialization logic.
@@ -333,7 +339,7 @@ impl Mon {
             active_target: None,
             move_this_turn_outcome: None,
             last_move_target: None,
-            last_damage: 0,
+            hurt_this_turn: 0,
         })
     }
 
@@ -947,6 +953,37 @@ impl Mon {
             total += modifier;
         }
         Ok(total)
+    }
+
+    pub fn damage(
+        context: &mut MonContext,
+        damage: u16,
+        source: Option<MonHandle>,
+        effect: Option<EffectHandle>,
+    ) -> Result<u16, Error> {
+        if context.mon().hp == 0 || damage == 0 {
+            return Ok(0);
+        }
+        let damage = context.mon().hp.min(damage);
+        context.mon_mut().hp -= damage;
+        if context.mon().hp == 0 {
+            Self::faint(context, source, effect)?;
+        }
+        Ok(damage)
+    }
+
+    pub fn faint(
+        context: &mut MonContext,
+        source: Option<MonHandle>,
+        effect: Option<EffectHandle>,
+    ) -> Result<(), Error> {
+        if context.mon().fainted {
+            return Ok(());
+        }
+        context.mon_mut().hp = 0;
+        context.mon_mut().needs_switch = false;
+        // TODO: Push to faint queue.
+        todo!("faint queue not implemented")
     }
 }
 
