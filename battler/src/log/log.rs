@@ -439,15 +439,19 @@ mod event_log_tests {
             event.add_flag("noanim");
             event.remove("bad");
             event.set("damage", 12);
+            event.extend(&CustomDataWithLogImplementation {
+                a: 1,
+                b: "2".to_owned(),
+            });
         }
-        assert!(log
-            .get(1)
-            .is_some_and(|event| event.to_string().eq("move|name:tackle|noanim|damage:12")));
+        assert!(log.get(1).is_some_and(|event| event
+            .to_string()
+            .eq("move|name:tackle|noanim|damage:12|a:1|b:2")));
 
         log.commit();
         assert_eq!(
             log.read_out().collect::<Vec<_>>(),
-            vec!["move|tackle", "move|name:tackle|noanim|damage:12"]
+            vec!["move|tackle", "move|name:tackle|noanim|damage:12|a:1|b:2"]
         );
     }
 }
