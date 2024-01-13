@@ -498,7 +498,7 @@ mod direct_move_step {
             .iter()
             .all(|target| target.outcome == MoveOutcome::Failed)
         {
-            core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             core_battle_logs::fail(context.as_mon_context_mut())?;
         }
         Ok(())
