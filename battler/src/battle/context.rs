@@ -869,6 +869,11 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         self.context.mon_mut()
     }
 
+    /// Returns the [`EffectHandle`] for the active [`Move`].
+    pub fn effect_handle(&self) -> EffectHandle {
+        EffectHandle::ActiveMove(self.active_move_handle)
+    }
+
     /// Returns the [`MoveHandle`] for the active [`Move`].
     pub fn active_move_handle(&self) -> MoveHandle {
         self.active_move_handle
