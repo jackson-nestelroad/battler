@@ -8,7 +8,6 @@ use std::{
 };
 
 use ahash::HashMapExt;
-use uuid::Uuid;
 use zone_alloc::{
     ElementRef,
     ElementRefMut,
@@ -50,6 +49,7 @@ use crate::{
         DataStore,
         Dex,
     },
+    fxlang::EffectHandle,
     log::{
         Event,
         EventLog,
@@ -148,11 +148,17 @@ impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
     }
 }
 
+/// An entry in the faint queue.
+pub struct FaintEntry {
+    target: MonHandle,
+    source: Option<MonHandle>,
+    effect: Option<EffectHandle>,
+}
+
 /// The core implementation of a [`Battle`].
 ///
 /// All battle logic lives here.
 pub struct CoreBattle<'d> {
-    id: Uuid,
     log: EventLog,
 
     // SAFETY: None of the objects below should be overwritten or destroyed for the lifetime of the
@@ -162,6 +168,7 @@ pub struct CoreBattle<'d> {
     pub prng: PseudoRandomNumberGenerator,
     pub dex: Dex<'d>,
     pub queue: BattleQueue,
+    pub faint_queue: Vec<FaintEntry>,
     pub format: Format,
     pub field: Field,
     pub sides: [Side; 2],
@@ -211,7 +218,6 @@ impl<'d> CoreBattle<'d> {
         format: Format,
         engine_options: BattleEngineOptions,
     ) -> Result<Self, Error> {
-        let id = Uuid::new_v4();
         let prng = match options.seed {
             Some(seed) => PseudoRandomNumberGenerator::new_with_seed(seed),
             None => PseudoRandomNumberGenerator::new(),
@@ -219,6 +225,7 @@ impl<'d> CoreBattle<'d> {
         let log = EventLog::new();
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
+        let faint_queue = Vec::new();
         let field = Field::new();
         let (side_1, mut players) =
             Side::new(options.side_1, 0, &format.battle_type, &dex, &registry)?;
@@ -239,11 +246,11 @@ impl<'d> CoreBattle<'d> {
         );
 
         let mut battle = Self {
-            id,
             log,
             prng,
             dex,
             queue,
+            faint_queue,
             format,
             field,
             sides: [side_1, side_2],
