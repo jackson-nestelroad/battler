@@ -23,7 +23,7 @@ use crate::{
         UnsafelyDetachBorrow,
         WrapResultError,
     },
-    fxlang::EffectHandle,
+    effect::EffectHandle,
     moves::{
         MoveTarget,
         SelfDestructType,

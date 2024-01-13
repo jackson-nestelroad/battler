@@ -49,7 +49,7 @@ use crate::{
         DataStore,
         Dex,
     },
-    fxlang::EffectHandle,
+    effect::EffectHandle,
     log::{
         Event,
         EventLog,

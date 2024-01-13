@@ -10,7 +10,7 @@ pub mod battle;
 pub mod common;
 pub mod config;
 pub mod dex;
-pub mod fxlang;
+pub mod effect;
 pub mod items;
 pub mod log;
 pub mod mons;

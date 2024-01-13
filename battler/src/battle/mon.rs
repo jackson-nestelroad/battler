@@ -31,7 +31,7 @@ use crate::{
         Identifiable,
     },
     dex::Dex,
-    fxlang::EffectHandle,
+    effect::EffectHandle,
     log::{
         Event,
         EventLoggable,
