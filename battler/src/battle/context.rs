@@ -17,7 +17,7 @@ use crate::{
         UnsafelyDetachBorrowMut,
         WrapResultError,
     },
-    fxlang::{
+    effect::{
         Effect,
         EffectHandle,
     },
