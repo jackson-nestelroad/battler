@@ -83,7 +83,7 @@ pub struct ActiveMonDetails<'d> {
 impl EventLoggable for ActiveMonDetails<'_> {
     fn log<'s>(&'s self, event: &mut Event) {
         event.set("player", self.player_id);
-        event.set("side", self.side_position);
+        event.set("position", self.side_position);
         event.set("name", self.name);
         event.set("health", &self.health);
         if !self.status.is_empty() {
@@ -131,7 +131,6 @@ pub struct MonTeamRequestData {
     pub health: String,
     pub status: String,
     pub active: bool,
-    pub position: Option<usize>,
     pub stats: PartialStatTable,
     pub moves: Vec<String>,
     pub ability: String,
@@ -199,7 +198,8 @@ pub struct Mon {
     pub active: bool,
     pub active_turns: u32,
     pub active_move_actions: u32,
-    pub position: usize,
+    pub active_position: usize,
+    pub team_position: usize,
 
     pub base_stored_stats: StatTable,
     pub stats: StatTable,
@@ -251,7 +251,7 @@ pub struct Mon {
 // Construction and initialization logic.
 impl Mon {
     /// Creates a new [`Mon`] instance from [`MonData`].
-    pub fn new(data: MonData, dex: &Dex) -> Result<Self, Error> {
+    pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self, Error> {
         let name = data.name;
         let species_name = data.species;
         let ivs = data.ivs;
@@ -309,7 +309,8 @@ impl Mon {
             active: false,
             active_turns: 0,
             active_move_actions: 0,
-            position: usize::MAX,
+            active_position: usize::MAX,
+            team_position,
 
             base_stored_stats: StatTable::default(),
             stats: StatTable::default(),
@@ -460,7 +461,7 @@ impl Mon {
             return Err(battler_error!("Mon is not active"));
         }
         let player = context.player();
-        let position = mon.position
+        let position = mon.active_position
             + player.position * context.battle().format.battle_type.active_per_player();
         Ok(position)
     }
@@ -722,11 +723,6 @@ impl Mon {
                 .map(|id| id.to_string())
                 .unwrap_or(String::default()),
             active: self.active,
-            position: if self.position != usize::MAX {
-                Some(self.position)
-            } else {
-                None
-            },
             stats: self.base_stored_stats.without_hp(),
             moves: self
                 .move_slots
@@ -757,7 +753,7 @@ impl Mon {
         }
 
         let mut request = MonMoveRequest {
-            team_position: context.mon().position,
+            team_position: context.mon().team_position,
             moves,
             trapped: false,
             can_mega_evo: false,
@@ -910,7 +906,7 @@ impl Mon {
         mon.active = true;
         mon.active_turns = 0;
         mon.active_move_actions = 0;
-        mon.position = position;
+        mon.active_position = position;
         for move_slot in &mut mon.move_slots {
             move_slot.used = false;
         }
@@ -922,7 +918,7 @@ impl Mon {
     /// Switches the Mon out of the given position for the player.
     pub fn switch_out(&mut self) {
         self.active = false;
-        self.position = usize::MAX;
+        self.active_position = usize::MAX;
         self.needs_switch = false;
     }
 

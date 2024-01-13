@@ -860,6 +860,7 @@ impl<'d> CoreBattle<'d> {
                 if action.index == 0 {
                     context.player_mut().mons.clear();
                 }
+                context.mon_mut().team_position = action.index;
                 context.player_mut().mons.push(action.mon_action.mon);
             }
             Action::Switch(action) => {
@@ -900,7 +901,7 @@ impl<'d> CoreBattle<'d> {
         for mon in mons {
             let mut context = context.mon_context(mon)?;
             if context.mon().force_switch && context.mon().hp > 0 {
-                let position = context.mon().position;
+                let position = context.mon().active_position;
                 core_battle_actions::drag_in(context.as_side_context_mut(), position)?;
             }
             context.mon_mut().force_switch = false;

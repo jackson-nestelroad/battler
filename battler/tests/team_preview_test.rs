@@ -169,6 +169,8 @@ mod team_preview_tests {
 
         battle_io.verify_new_logs(&mut battle);
 
+        battle_io.verify_next_request_set(&mut battle);
+
         // Turn 2: each player switches to Mon 2.
         assert_eq!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
@@ -180,6 +182,8 @@ mod team_preview_tests {
         assert_eq!(battle.continue_battle(), Ok(()));
 
         battle_io.verify_new_logs(&mut battle);
+
+        battle_io.verify_next_request_set(&mut battle);
 
         // Turn 3: each player tries to switch to Mon 3.
         assert_error_message(
@@ -224,5 +228,7 @@ mod team_preview_tests {
         assert_eq!(battle.continue_battle(), Ok(()));
 
         battle_io.verify_new_logs(&mut battle);
+
+        battle_io.verify_next_request_set(&mut battle);
     }
 }

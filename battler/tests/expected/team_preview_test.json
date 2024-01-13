@@ -555,7 +555,6 @@
               "health": "200/200",
               "status": "",
               "active": true,
-              "position": 0,
               "stats": {
                 "atk": 92,
                 "def": 103,
@@ -642,7 +641,6 @@
               "health": "200/200",
               "status": "",
               "active": true,
-              "position": 0,
               "stats": {
                 "atk": 92,
                 "def": 103,
@@ -729,7 +727,6 @@
               "health": "198/198",
               "status": "",
               "active": true,
-              "position": 0,
               "stats": {
                 "atk": 90,
                 "def": 135,
@@ -816,7 +813,6 @@
               "health": "198/198",
               "status": "",
               "active": true,
-              "position": 0,
               "stats": {
                 "atk": 90,
                 "def": 135,
@@ -877,7 +873,353 @@
         "type": "turn",
         "active": [
           {
-            "team_position": 0,
+            "team_position": 1,
+            "moves": [
+              {
+                "name": "Scratch",
+                "id": "scratch",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 1",
+          "id": "player-1",
+          "mons": [
+            {
+              "name": "Bulbasaur F",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            },
+            {
+              "name": "Charmander F",
+              "species_name": "Charmander",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "188/188",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 98,
+                "def": 91,
+                "spa": 137,
+                "spd": 105,
+                "spe": 135
+              },
+              "moves": ["Scratch"],
+              "ability": "Blaze",
+              "ball": "Normal"
+            },
+            {
+              "name": "Squirtle F",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            }
+          ]
+        }
+      },
+      "player-2": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 1,
+            "moves": [
+              {
+                "name": "Scratch",
+                "id": "scratch",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 2",
+          "id": "player-2",
+          "mons": [
+            {
+              "name": "Bulbasaur F",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            },
+            {
+              "name": "Charmander F",
+              "species_name": "Charmander",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "188/188",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 98,
+                "def": 91,
+                "spa": 137,
+                "spd": 105,
+                "spe": 135
+              },
+              "moves": ["Scratch"],
+              "ability": "Blaze",
+              "ball": "Normal"
+            },
+            {
+              "name": "Squirtle F",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            }
+          ]
+        }
+      },
+      "player-3": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 1,
+            "moves": [
+              {
+                "name": "Tackle",
+                "id": "tackle",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 3",
+          "id": "player-3",
+          "mons": [
+            {
+              "name": "Squirtle F",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            },
+            {
+              "name": "Squirtle M",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            },
+            {
+              "name": "Bulbasaur F",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            }
+          ]
+        }
+      },
+      "player-4": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 1,
+            "moves": [
+              {
+                "name": "Scratch",
+                "id": "scratch",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 4",
+          "id": "player-4",
+          "mons": [
+            {
+              "name": "Squirtle M",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            },
+            {
+              "name": "Charmander M",
+              "species_name": "Charmander",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "188/188",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 98,
+                "def": 91,
+                "spa": 137,
+                "spd": 105,
+                "spe": 135
+              },
+              "moves": ["Scratch"],
+              "ability": "Blaze",
+              "ball": "Normal"
+            },
+            {
+              "name": "Bulbasaur M",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "player-1": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 2,
             "moves": [
               {
                 "name": "Tackle",
@@ -924,8 +1266,7 @@
               "shiny": false,
               "health": "188/188",
               "status": "",
-              "active": true,
-              "position": 0,
+              "active": false,
               "stats": {
                 "atk": 98,
                 "def": 91,
@@ -945,7 +1286,7 @@
               "shiny": false,
               "health": "198/198",
               "status": "",
-              "active": false,
+              "active": true,
               "stats": {
                 "atk": 90,
                 "def": 135,
@@ -964,7 +1305,7 @@
         "type": "turn",
         "active": [
           {
-            "team_position": 0,
+            "team_position": 2,
             "moves": [
               {
                 "name": "Tackle",
@@ -1011,8 +1352,7 @@
               "shiny": false,
               "health": "188/188",
               "status": "",
-              "active": true,
-              "position": 0,
+              "active": false,
               "stats": {
                 "atk": 98,
                 "def": 91,
@@ -1032,7 +1372,7 @@
               "shiny": false,
               "health": "198/198",
               "status": "",
-              "active": false,
+              "active": true,
               "stats": {
                 "atk": 90,
                 "def": 135,
@@ -1051,7 +1391,7 @@
         "type": "turn",
         "active": [
           {
-            "team_position": 0,
+            "team_position": 2,
             "moves": [
               {
                 "name": "Tackle",
@@ -1119,7 +1459,6 @@
               "health": "200/200",
               "status": "",
               "active": true,
-              "position": 0,
               "stats": {
                 "atk": 92,
                 "def": 103,
@@ -1138,7 +1477,7 @@
         "type": "turn",
         "active": [
           {
-            "team_position": 0,
+            "team_position": 2,
             "moves": [
               {
                 "name": "Tackle",
@@ -1185,8 +1524,353 @@
               "shiny": false,
               "health": "188/188",
               "status": "",
+              "active": false,
+              "stats": {
+                "atk": 98,
+                "def": 91,
+                "spa": 137,
+                "spd": 105,
+                "spe": 135
+              },
+              "moves": ["Scratch"],
+              "ability": "Blaze",
+              "ball": "Normal"
+            },
+            {
+              "name": "Bulbasaur M",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
               "active": true,
-              "position": 0,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "player-1": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 0,
+            "moves": [
+              {
+                "name": "Tackle",
+                "id": "tackle",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 1",
+          "id": "player-1",
+          "mons": [
+            {
+              "name": "Bulbasaur F",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            },
+            {
+              "name": "Charmander F",
+              "species_name": "Charmander",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "188/188",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 98,
+                "def": 91,
+                "spa": 137,
+                "spd": 105,
+                "spe": 135
+              },
+              "moves": ["Scratch"],
+              "ability": "Blaze",
+              "ball": "Normal"
+            },
+            {
+              "name": "Squirtle F",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            }
+          ]
+        }
+      },
+      "player-2": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 0,
+            "moves": [
+              {
+                "name": "Tackle",
+                "id": "tackle",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 2",
+          "id": "player-2",
+          "mons": [
+            {
+              "name": "Bulbasaur F",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            },
+            {
+              "name": "Charmander F",
+              "species_name": "Charmander",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "188/188",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 98,
+                "def": 91,
+                "spa": 137,
+                "spd": 105,
+                "spe": 135
+              },
+              "moves": ["Scratch"],
+              "ability": "Blaze",
+              "ball": "Normal"
+            },
+            {
+              "name": "Squirtle F",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            }
+          ]
+        }
+      },
+      "player-3": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 0,
+            "moves": [
+              {
+                "name": "Tackle",
+                "id": "tackle",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 3",
+          "id": "player-3",
+          "mons": [
+            {
+              "name": "Squirtle F",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            },
+            {
+              "name": "Squirtle M",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            },
+            {
+              "name": "Bulbasaur F",
+              "species_name": "Bulbasaur",
+              "level": 100,
+              "gender": "F",
+              "shiny": false,
+              "health": "200/200",
+              "status": "",
+              "active": false,
+              "stats": {
+                "atk": 92,
+                "def": 103,
+                "spa": 148,
+                "spd": 135,
+                "spe": 95
+              },
+              "moves": ["Tackle"],
+              "ability": "Chlorophyll",
+              "ball": "Normal"
+            }
+          ]
+        }
+      },
+      "player-4": {
+        "type": "turn",
+        "active": [
+          {
+            "team_position": 0,
+            "moves": [
+              {
+                "name": "Tackle",
+                "id": "tackle",
+                "pp": 56,
+                "max_pp": 56,
+                "target": "Normal",
+                "disabled": false
+              }
+            ],
+            "trapped": false,
+            "can_mega_evo": false
+          }
+        ],
+        "player": {
+          "name": "Player 4",
+          "id": "player-4",
+          "mons": [
+            {
+              "name": "Squirtle M",
+              "species_name": "Squirtle",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "198/198",
+              "status": "",
+              "active": true,
+              "stats": {
+                "atk": 90,
+                "def": 135,
+                "spa": 115,
+                "spd": 133,
+                "spe": 91
+              },
+              "moves": ["Tackle"],
+              "ability": "Torrent",
+              "ball": "Normal"
+            },
+            {
+              "name": "Charmander M",
+              "species_name": "Charmander",
+              "level": 100,
+              "gender": "M",
+              "shiny": false,
+              "health": "188/188",
+              "status": "",
+              "active": false,
               "stats": {
                 "atk": 98,
                 "def": 91,
@@ -1271,33 +1955,33 @@
       "teamsize|player:player-3|size:3",
       "teamsize|player:player-4|size:3",
       "start",
-      "switch|player:player-1|side:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
-      "switch|player:player-2|side:2|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
-      "switch|player:player-3|side:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
-      "switch|player:player-4|side:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
+      "switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "switch|player:player-2|position:2|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "switch|player:player-3|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "switch|player:player-4|position:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
       "turn|turn:1"
     ],
     [
-      "switch|player:player-1|side:1|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
-      "switch|player:player-2|side:2|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
-      "switch|player:player-4|side:2|name:Charmander M|health:100/100|species:Charmander|level:100|gender:M",
-      "switch|player:player-3|side:1|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
+      "switch|player:player-1|position:1|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
+      "switch|player:player-2|position:2|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
+      "switch|player:player-4|position:2|name:Charmander M|health:100/100|species:Charmander|level:100|gender:M",
+      "switch|player:player-3|position:1|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
       "residual",
       "turn|turn:2"
     ],
     [
-      "switch|player:player-3|side:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
-      "switch|player:player-4|side:2|name:Bulbasaur M|health:100/100|species:Bulbasaur|level:100|gender:M",
-      "switch|player:player-1|side:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
-      "switch|player:player-2|side:2|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "switch|player:player-3|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "switch|player:player-4|position:2|name:Bulbasaur M|health:100/100|species:Bulbasaur|level:100|gender:M",
+      "switch|player:player-1|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "switch|player:player-2|position:2|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
       "residual",
       "turn|turn:3"
     ],
     [
-      "switch|player:player-1|side:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
-      "switch|player:player-2|side:2|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
-      "switch|player:player-3|side:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
-      "switch|player:player-4|side:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
+      "switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "switch|player:player-2|position:2|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "switch|player:player-3|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "switch|player:player-4|position:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
       "residual",
       "turn|turn:4"
     ]

@@ -184,7 +184,10 @@ impl Player {
             .team
             .members
             .into_iter()
-            .map(|mon_data| Ok(registry.register_mon(Mon::new(mon_data, dex)?)))
+            .enumerate()
+            .map(|(team_position, mon_data)| {
+                Ok(registry.register_mon(Mon::new(mon_data, team_position, dex)?))
+            })
             .collect::<Result<Vec<_>, _>>()?;
         let active = vec![None; battle_type.active_per_player()];
         Ok(Self {
@@ -543,7 +546,7 @@ impl Player {
                 "expected player to have active Mon in position {active_position}"
             ))?;
         let active_mon = context.mon(active_mon_handle)?;
-        let active_mon_position = active_mon.position;
+        let active_mon_position = active_mon.active_position;
         let data = data.wrap_error_with_message("you must select a Mon to switch in")?;
         let slot = data
             .parse::<usize>()
