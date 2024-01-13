@@ -10,14 +10,10 @@ use crate::{
         BattleType,
         MonHandle,
         Player,
-        PlayerContext,
         PlayerData,
         SideContext,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
+    common::Error,
     dex::Dex,
 };
 
@@ -73,22 +69,12 @@ impl Side {
 
 // Basic getters.
 impl Side {
-    pub fn players<'c>(context: &'c SideContext) -> impl Iterator<Item = &'c Player> {
-        context.battle().players_on_side(context.side().index)
-    }
-
-    pub fn player_in_position<'c>(context: &'c SideContext, position: usize) -> Option<&'c Player> {
-        Self::players(context).find(|player| player.position == position)
-    }
-
-    pub fn player_context<'s, 'c, 'b, 'd>(
-        context: &'s mut SideContext<'c, 'b, 'd>,
-        position: usize,
-    ) -> Result<PlayerContext<'s, 's, 'b, 'd>, Error> {
-        let player = Self::player_in_position(context, position)
-            .wrap_error_with_format(format_args!("side has no player in position {position}"))?
-            .index;
-        context.as_battle_context_mut().player_context(player)
+    pub fn player_position_to_index(context: &SideContext, position: usize) -> Option<usize> {
+        context
+            .battle()
+            .players_on_side(context.side().index)
+            .find(|player| player.position == position)
+            .map(|player| player.index)
     }
 
     pub fn mon_in_position(
@@ -97,10 +83,18 @@ impl Side {
     ) -> Result<Option<MonHandle>, Error> {
         let active_per_player = context.battle().format.battle_type.active_per_player();
         let (player_position, position) = position.div_mod_floor(&active_per_player);
-        let player_context = match Self::player_context(context, player_position) {
+        let player_context = match context.player_context(player_position) {
             Err(_) => return Ok(None),
             Ok(player_context) => player_context,
         };
         Ok(Player::active_mon_handle(&player_context, position))
+    }
+
+    pub fn mons_left(context: &SideContext) -> usize {
+        context
+            .battle()
+            .players_on_side(context.side().index)
+            .map(|player| player.mons_left)
+            .sum()
     }
 }

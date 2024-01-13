@@ -72,4 +72,14 @@ impl BattleQueue {
     pub fn pop_front(&mut self) -> Option<Action> {
         self.actions.pop_front()
     }
+
+    /// Peeks at the front [`Action`] on the queue, which is the next action to be executed.
+    pub fn peek(&self) -> Option<&Action> {
+        self.actions.front()
+    }
+
+    /// Checks if the queue is empty.
+    pub fn is_empty(&self) -> bool {
+        self.actions.is_empty()
+    }
 }

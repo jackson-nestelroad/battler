@@ -36,8 +36,8 @@ pub struct TurnRequest {
 /// A request for a Mon to be switched in.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SwitchRequest {
-    /// Team slots that are eligible for switch in.
-    pub options: Vec<usize>,
+    /// Team slots that need to be switched out.
+    pub needs_switch: Vec<usize>,
     pub player: PlayerRequestData,
 }
 

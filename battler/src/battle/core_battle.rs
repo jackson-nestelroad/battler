@@ -16,6 +16,7 @@ use zone_alloc::{
 use crate::{
     battle::{
         core_battle_actions,
+        core_battle_logs,
         Action,
         Battle,
         BattleEngineOptions,
@@ -33,6 +34,7 @@ use crate::{
         Request,
         RequestType,
         Side,
+        SwitchRequest,
         TeamPreviewRequest,
         TurnRequest,
     },
@@ -150,9 +152,9 @@ impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
 
 /// An entry in the faint queue.
 pub struct FaintEntry {
-    target: MonHandle,
-    source: Option<MonHandle>,
-    effect: Option<EffectHandle>,
+    pub target: MonHandle,
+    pub source: Option<MonHandle>,
+    pub effect: Option<EffectHandle>,
 }
 
 /// The core implementation of a [`Battle`].
@@ -280,6 +282,10 @@ impl<'d> CoreBattle<'d> {
         Context::new(self)
     }
 
+    pub fn side_indices(&self) -> impl Iterator<Item = usize> {
+        0..self.sides.len()
+    }
+
     pub fn sides(&self) -> impl Iterator<Item = &Side> {
         self.sides.iter()
     }
@@ -298,6 +304,10 @@ impl<'d> CoreBattle<'d> {
         self.sides
             .get_mut(side)
             .wrap_error_with_format(format_args!("side {side} does not exist"))
+    }
+
+    pub fn player_indices(&self) -> impl Iterator<Item = usize> {
+        0..self.players.len()
     }
 
     pub fn players(&self) -> impl Iterator<Item = &Player> {
@@ -388,6 +398,12 @@ impl<'d> CoreBattle<'d> {
     ) -> impl Iterator<Item = MonHandle> + 'b {
         self.active_positions_on_side(side)
             .filter_map(|position| position)
+    }
+
+    pub fn all_active_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
+        self.side_indices()
+            .map(|side| self.active_mon_handles_on_side(side))
+            .flatten()
     }
 
     pub fn next_ability_priority(&mut self) -> u32 {
@@ -651,7 +667,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut Context,
         player: usize,
         request_type: RequestType,
-    ) -> Result<Request, Error> {
+    ) -> Result<Option<Request>, Error> {
         match request_type {
             RequestType::TeamPreview => {
                 let max_team_size = context
@@ -662,14 +678,15 @@ impl<'d> CoreBattle<'d> {
                     .picked_team_size
                     .map(|size| size as usize);
                 let mut context = context.player_context(player)?;
-                Ok(Request::TeamPreview(TeamPreviewRequest {
+                Ok(Some(Request::TeamPreview(TeamPreviewRequest {
                     max_team_size,
                     player: Player::request_data(&mut context)?,
-                }))
+                })))
             }
             RequestType::Turn => {
                 let mut context = context.player_context(player)?;
                 let active = Player::active_mon_handles(&context)
+                    .cloned()
                     .collect::<Vec<_>>()
                     .into_iter()
                     .map(|mon| {
@@ -677,12 +694,32 @@ impl<'d> CoreBattle<'d> {
                         Mon::move_request(&mut context)
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                Ok(Request::Turn(TurnRequest {
+                Ok(Some(Request::Turn(TurnRequest {
                     active,
                     player: Player::request_data(&mut context)?,
-                }))
+                })))
             }
-            RequestType::Switch => todo!("switch requests are not yet implemented"),
+            RequestType::Switch => {
+                // We only make a request if there are Mons that need to switch out.
+                let mut context = context.player_context(player)?;
+                if context.player().mons_left == 0 {
+                    return Ok(None);
+                }
+                let mut needs_switch = Vec::new();
+                for (slot, mon) in Player::field_positions_with_active_mon(&context) {
+                    if context.mon(*mon)?.needs_switch {
+                        needs_switch.push(slot);
+                    }
+                }
+                if !needs_switch.is_empty() {
+                    Ok(Some(Request::Switch(SwitchRequest {
+                        needs_switch,
+                        player: Player::request_data(&mut context)?,
+                    })))
+                } else {
+                    Ok(None)
+                }
+            }
         }
     }
 
@@ -714,9 +751,10 @@ impl<'d> CoreBattle<'d> {
         Self::clear_requests(context)?;
 
         for player in 0..context.battle().players.len() {
-            let request = Self::get_request_for_player(context, player, request_type)?;
-            let mut context = context.player_context(player)?;
-            context.player_mut().make_request(request);
+            if let Some(request) = Self::get_request_for_player(context, player, request_type)? {
+                let mut context = context.player_context(player)?;
+                context.player_mut().make_request(request);
+            }
         }
         Ok(())
     }
@@ -788,19 +826,23 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn run_action(context: &mut Context, action: Action) -> Result<(), Error> {
-        match action {
+        match &action {
             Action::Start => {
                 context.battle_mut().log_team_sizes();
                 for player in context.battle_mut().players_mut() {
                     player.start_battle();
                 }
+
+                // TODO: Start event for species. Some forms changes happen at the very beginning of
+                // the battle.
+
                 context.battle_mut().log(log_event!("start"));
 
                 let switch_ins =
                     context
                         .battle()
                         .players()
-                        .filter(|player| player.mons_left() > 0)
+                        .filter(|player| player.mons_left > 0)
                         .flat_map(|player| {
                             player.active.iter().enumerate().filter_map(|(i, _)| {
                                 player.mons.get(i).cloned().map(|mon| (i, mon))
@@ -842,6 +884,108 @@ impl<'d> CoreBattle<'d> {
             Action::BeforeTurn => (),
             Action::Residual => {
                 context.battle_mut().log(log_event!("residual"));
+            }
+        }
+
+        Self::after_action(context)?;
+        Ok(())
+    }
+
+    fn after_action(context: &mut Context) -> Result<(), Error> {
+        // Drag out any Mons in the place of force switches.
+        let mons = context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>();
+        for mon in mons {
+            let mut context = context.mon_context(mon)?;
+            if context.mon().force_switch && context.mon().hp > 0 {
+                let position = context.mon().position;
+                core_battle_actions::drag_in(context.as_side_context_mut(), position)?;
+            }
+            context.mon_mut().force_switch = false;
+        }
+
+        Self::clear_active_move(context)?;
+        Self::faint_messages(context)?;
+        if context.battle().ended {
+            return Ok(());
+        }
+
+        if !context.battle().queue.is_empty() {
+            Self::check_for_fainted_mons(context)?;
+        } else if let Some(Action::Switch(switch)) = context.battle().queue.peek() {
+            // Instant switches should happen... instantly.
+            if switch.instant {
+                return Ok(());
+            }
+        }
+
+        // TODO: Update event for everything on the field.
+
+        let mut some_switch_needed = false;
+        for player in context.battle().player_indices() {
+            let mut context = context.player_context(player)?;
+            let needs_switch = Player::needs_switch(&context)?;
+            let can_switch = Player::can_switch(&context)?;
+            if needs_switch {
+                if !can_switch {
+                    // Switch can't happen, so unset the switch flag.
+                    for mon in Player::active_mon_handles(&context)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .into_iter()
+                    {
+                        context.mon_mut(mon)?.needs_switch = false;
+                    }
+                } else {
+                    // Switch out will occur mid turn.
+                    //
+                    // Run BeforeSwitchOut event now. This will make sure actions like Pursuit
+                    // trigger on the same turn, rather than the next turn.
+                    for mon in Player::active_mon_handles(&context)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .into_iter()
+                    {
+                        let mut context = context.mon_context(mon)?;
+                        if context.mon().needs_switch {
+                            // TODO: BeforeSwitchOut event.
+                            context.mon_mut().skip_before_switch_out = true;
+                            // Mon may have fainted here.
+                            Self::faint_messages(context.as_battle_context_mut())?;
+                            if context.battle().ended {
+                                return Ok(());
+                            }
+                        }
+                    }
+
+                    // At this point, maybe the Mon that was going to switch fainted, so we should
+                    // double check if the player still needs a switch.
+                    some_switch_needed |= Player::needs_switch(&context)?;
+                }
+            }
+        }
+
+        if some_switch_needed {
+            Self::make_request(context, RequestType::Switch)?;
+        }
+
+        // TODO: Update speed dynamically, if we wish to support it like gen 8 does.
+
+        Ok(())
+    }
+
+    fn check_for_fainted_mons(context: &mut Context) -> Result<(), Error> {
+        let mons = context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>();
+        for mon in mons {
+            let mut context = context.mon_context(mon)?;
+            if context.mon().fainted {
+                context.mon_mut().status = Some(Id::from_known("fnt"));
+                context.mon_mut().needs_switch = true;
             }
         }
         Ok(())
@@ -1095,5 +1239,44 @@ impl<'d> CoreBattle<'d> {
 
     pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {
         base_damage * (100 - (self.prng.range(0, 16) as u32)) / 100
+    }
+
+    pub fn faint_messages(context: &mut Context) -> Result<(), Error> {
+        if context.battle().ended {
+            return Ok(());
+        }
+
+        if context.battle().faint_queue.is_empty() {
+            return Ok(());
+        }
+
+        while let Some(entry) = context.battle_mut().faint_queue.pop() {
+            let mut context = context.mon_context(entry.target)?;
+            if context.mon().fainted {
+                continue;
+            }
+            // TODO: BeforeFaint event.
+            core_battle_logs::faint(&mut context)?;
+            context.player_mut().mons_left -= 1;
+            // TODO: Faint event.
+            Mon::clear_state_on_faint(&mut context)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn check_win(context: &mut Context) -> Result<(), Error> {
+        let mut winner = None;
+        for side in context.battle().side_indices() {
+            let context = context.side_context(side)?;
+            let mons_left = Side::mons_left(&context);
+            if mons_left > 0 {
+                if winner.is_some() {
+                    return Ok(());
+                }
+                winner = Some(side);
+            }
+        }
+        Self::win(context, winner)
     }
 }

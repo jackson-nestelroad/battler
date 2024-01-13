@@ -15,6 +15,7 @@ use crate::{
     battle::{
         calculate_hidden_power_type,
         calculate_mon_stats,
+        core_battle::FaintEntry,
         modify,
         BoostTable,
         MonContext,
@@ -130,6 +131,7 @@ pub struct MonTeamRequestData {
     pub health: String,
     pub status: String,
     pub active: bool,
+    pub position: Option<usize>,
     pub stats: PartialStatTable,
     pub moves: Vec<String>,
     pub ability: String,
@@ -223,10 +225,12 @@ pub struct Mon {
 
     pub hp: u16,
     pub max_hp: u16,
-    pub status: Option<String>,
+    pub status: Option<Id>,
     pub speed: u16,
     pub fainted: bool,
     pub needs_switch: bool,
+    pub force_switch: bool,
+    pub skip_before_switch_out: bool,
     pub trapped: bool,
     pub can_mega_evo: bool,
 
@@ -335,6 +339,8 @@ impl Mon {
             speed: 0,
             fainted: false,
             needs_switch: false,
+            force_switch: false,
+            skip_before_switch_out: false,
             trapped: false,
             can_mega_evo: false,
 
@@ -399,7 +405,11 @@ impl Mon {
             player_id: context.player().id.as_ref(),
             side_position: Self::position_on_side(context)? + 1,
             health: mon.health(),
-            status: mon.status.clone().unwrap_or(String::default()),
+            status: mon
+                .status
+                .as_ref()
+                .map(|id| id.to_string())
+                .unwrap_or(String::default()),
         })
     }
 
@@ -706,8 +716,17 @@ impl Mon {
             gender: self.gender.clone(),
             shiny: self.shiny,
             health: self.secret_health(),
-            status: self.status.clone().unwrap_or(String::default()),
+            status: self
+                .status
+                .as_ref()
+                .map(|id| id.to_string())
+                .unwrap_or(String::default()),
             active: self.active,
+            position: if self.position != usize::MAX {
+                Some(self.position)
+            } else {
+                None
+            },
             stats: self.base_stored_stats.without_hp(),
             moves: self
                 .move_slots
@@ -744,8 +763,7 @@ impl Mon {
             can_mega_evo: false,
         };
 
-        let can_switch =
-            Player::switchable_mon_handles(context.as_player_context_mut()).count() > 0;
+        let can_switch = Player::can_switch(context.as_player_context_mut())?;
         if can_switch && context.mon().trapped {
             request.trapped = true;
         }
@@ -988,8 +1006,21 @@ impl Mon {
         }
         context.mon_mut().hp = 0;
         context.mon_mut().needs_switch = false;
-        // TODO: Push to faint queue.
-        todo!("faint queue not implemented")
+        let mon_handle = context.mon_handle();
+        context.battle_mut().faint_queue.push(FaintEntry {
+            target: mon_handle,
+            source,
+            effect,
+        });
+        Ok(())
+    }
+
+    pub fn clear_state_on_faint(context: &mut MonContext) -> Result<(), Error> {
+        // TODO: End event for ability.
+        Mon::clear_volatile(context)?;
+        context.mon_mut().fainted = true;
+        context.mon_mut().active = false;
+        Ok(())
     }
 }
 

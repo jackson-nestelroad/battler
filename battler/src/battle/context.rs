@@ -178,7 +178,7 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
         mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         side: usize,
     ) -> Result<Self, Error> {
-        // See comments on [`Context::new`] for why this is safe.
+        // SAFETY: No side is added or removed for the duration of the battle.
         let foe_side = side ^ 1;
         let side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(side)?) };
         let foe_side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(foe_side)?) };
@@ -205,6 +205,16 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
     ) -> Result<SideContext<'side, 'battle, 'data>, Error> {
         let foe_side = self.foe_side().index;
         self.as_battle_context_mut().side_context(foe_side)
+    }
+
+    /// Creates a new [`PlayerContext`], scoped to the lifetime of this context.
+    pub fn player_context<'side>(
+        &'side mut self,
+        position: usize,
+    ) -> Result<PlayerContext<'side, 'context, 'battle, 'data>, Error> {
+        let player = Side::player_position_to_index(self, position)
+            .wrap_error_with_format(format_args!("side has no player in position {position}"))?;
+        PlayerContext::new_from_side_context(self.into(), player)
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -271,10 +281,23 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
         mut context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
         player: usize,
     ) -> Result<Self, Error> {
-        // See comments on [`Context::new`] for why this is safe.
+        // SAFETY: Players are not added or removed for the duration of the battle.
         let player: &mut Player =
             unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
         let context = SideContext::new(context, player.side)?;
+        Ok(Self {
+            context: context.into(),
+            player,
+        })
+    }
+
+    fn new_from_side_context(
+        mut context: MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>,
+        player: usize,
+    ) -> Result<Self, Error> {
+        // SAFETY: Players are not added or removed for the duration of the battle.
+        let player = &mut *context.battle_mut().player_mut(player)?;
+        let player = unsafe { player.unsafely_detach_borrow_mut() };
         Ok(Self {
             context: context.into(),
             player,
@@ -1371,6 +1394,11 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     /// Returns the [`MonHandle`] for the source [`Mon`], if one exists.
     pub fn source_handle(&self) -> Option<MonHandle> {
         self.source_handle
+    }
+
+    /// Checks if the effect has a source [`Mon`].
+    pub fn has_source(&self) -> bool {
+        self.source.is_some()
     }
 
     /// Returns a reference to the source [`Mon`], if one exists.

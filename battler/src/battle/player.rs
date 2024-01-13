@@ -225,50 +225,52 @@ impl Player {
         }
     }
 
-    /// Returns the number of Mons left on the Player.
-    pub fn mons_left(&self) -> usize {
-        self.mons_left
-    }
-
     pub fn request_type(&self) -> Option<RequestType> {
         self.request.as_ref().map(|req| req.request_type()).clone()
     }
 
-    pub fn active_mon_handle<'b>(context: &'b PlayerContext, position: usize) -> Option<MonHandle> {
+    pub fn active_mon_handle(context: &PlayerContext, position: usize) -> Option<MonHandle> {
         context.player().active.get(position).cloned().flatten()
     }
 
-    pub fn active_mon<'b>(
-        context: &'b PlayerContext,
-        position: usize,
-    ) -> Result<Option<&'b Mon>, Error> {
-        match Self::active_mon_handle(context, position) {
-            None => Ok(None),
-            Some(mon_handle) => context.mon(mon_handle).map(|mon| Some(mon)),
-        }
-    }
-
-    pub fn active_mon_handles<'p, 's, 'c, 'b, 'd>(
-        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
-    {
+    pub fn active_mon_handles<'p>(
+        context: &'p PlayerContext,
+    ) -> impl Iterator<Item = &'p MonHandle> {
         context
             .player()
             .active
             .iter()
-            .filter_map(|mon_handle| *mon_handle)
+            .filter_map(|mon_handle| mon_handle.as_ref())
+    }
+
+    pub fn field_positions<'p>(
+        context: &'p PlayerContext,
+    ) -> impl Iterator<Item = (usize, Option<&'p MonHandle>)> {
+        context
+            .player()
+            .active
+            .iter()
+            .enumerate()
+            .map(|(i, slot)| (i, slot.as_ref()))
+    }
+
+    pub fn field_positions_with_active_mon<'p>(
+        context: &'p PlayerContext,
+    ) -> impl Iterator<Item = (usize, &'p MonHandle)> {
+        Self::field_positions(context).filter_map(|(i, slot)| slot.map(|mon| (i, mon)))
     }
 
     pub fn inactive_mon_handles<'p, 's, 'c, 'b, 'd>(
         context: &'p PlayerContext<'s, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
+    ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s>
     {
-        context
-            .player()
-            .mons
-            .iter()
-            .cloned()
-            .filter(|mon_handle| !context.player().active.contains(&Some(*mon_handle)))
+        context.player().mons.iter().filter_map(|mon_handle| {
+            if !context.player().active.contains(&Some(*mon_handle)) {
+                Some(mon_handle)
+            } else {
+                None
+            }
+        })
     }
 
     pub fn mon_handles<'p, 's, 'c, 'b, 'd>(
@@ -279,7 +281,7 @@ impl Player {
     }
 
     pub fn switchable_mon_handles<'p, 's, 'c, 'b, 'd>(
-        context: &'p mut PlayerContext<'s, 'c, 'b, 'd>,
+        context: &'p PlayerContext<'s, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + Captures<'s> + 'p
     {
         Self::mon_handles(context).filter(|mon_handle| {
@@ -339,12 +341,12 @@ impl Player {
             let can_switch_out = Self::active_mon_handles(context)
                 .collect::<Vec<_>>()
                 .into_iter()
-                .map(|mon_handle| context.mon(mon_handle).is_ok_and(|mon| mon.needs_switch))
+                .map(|mon_handle| context.mon(*mon_handle).is_ok_and(|mon| mon.needs_switch))
                 .count();
             let can_switch_in = Self::inactive_mon_handles(context)
                 .collect::<Vec<_>>()
                 .into_iter()
-                .map(|mon_handle| context.mon(mon_handle).is_ok_and(|mon| !mon.fainted))
+                .map(|mon_handle| context.mon(*mon_handle).is_ok_and(|mon| !mon.fainted))
                 .count();
             let switches = can_switch_out.min(can_switch_in);
             let passes = can_switch_out - switches;
@@ -633,9 +635,11 @@ impl Player {
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
         let active_index = Self::get_active_position_for_next_choice(context, true)?;
-        let mon = Self::active_mon(context, active_index)?.wrap_error_with_format(format_args!(
-            "expected an active Mon in position {active_index}"
-        ))?;
+        let active_mon_handle = Self::active_mon_handle(context, active_index)
+            .wrap_error_with_format(format_args!(
+                "expected player to have active Mon in position {active_index}"
+            ))?;
+        let mon = context.mon(active_mon_handle)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
                 if context.player().choice.forced_passes_left == 0 {
@@ -798,6 +802,19 @@ impl Player {
         }
 
         Ok(())
+    }
+
+    pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
+        for mon in Self::active_mon_handles(&context) {
+            if context.mon(*mon)?.needs_switch {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    pub fn can_switch(context: &PlayerContext) -> Result<bool, Error> {
+        Ok(Self::switchable_mon_handles(context).count() > 0)
     }
 }
 

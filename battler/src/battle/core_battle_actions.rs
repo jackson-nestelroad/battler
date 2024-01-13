@@ -2,6 +2,7 @@ use std::ops::Deref;
 
 use lazy_static::lazy_static;
 
+use super::SideContext;
 use crate::{
     battle::{
         core_battle_logs,
@@ -154,7 +155,9 @@ pub fn do_move(
     use_move(context, &move_id, target)?;
 
     // TODO: AfterMove event.
-    // TODO: Run faint messages.
+
+    CoreBattle::faint_messages(context.as_battle_context_mut())?;
+    CoreBattle::check_win(context.as_battle_context_mut())?;
     // TODO: Check if battle has ended.
 
     Ok(())
@@ -260,8 +263,7 @@ fn use_move_internal(
 
     // TODO: MoveFail event if outcome is Failed.
 
-    todo!("use_move_internal is not implemented");
-    Ok(MoveOutcome::Success)
+    Ok(outcome)
 }
 
 pub fn faint(
@@ -675,7 +677,7 @@ mod direct_move_step {
             // TODO: Update event for everything on the field, like items.
         }
 
-        // TODO: Faint messages, using a faint queue.
+        CoreBattle::faint_messages(context.as_battle_context_mut())?;
 
         let hits = context.active_move().hit;
         if context.active_move().data.multihit.is_some() {
@@ -994,4 +996,8 @@ fn apply_spread_damage(
         }
     }
     Ok(())
+}
+
+pub fn drag_in(context: &mut SideContext, position: usize) -> Result<(), Error> {
+    todo!("drag_in is not implemented")
 }

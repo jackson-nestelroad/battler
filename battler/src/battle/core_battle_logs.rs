@@ -11,6 +11,7 @@ use crate::{
         MonHandle,
     },
     common::Error,
+    effect::EffectType,
     log_event,
 };
 
@@ -126,7 +127,24 @@ pub fn critical_hit(context: &mut ActiveTargetContext) -> Result<(), Error> {
 }
 
 pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
-    todo!("damage log unimplemented")
+    // TODO: Handle other special cases where the damage log should have more information.
+    let mut event = log_event!(
+        "damage",
+        ("mon", Mon::position_details(&context.target_context()?)?)
+    );
+    let effect_type = context.effect().effect_type();
+    if effect_type != EffectType::Move {
+        event.set("from", context.effect().full_name());
+        let target_handle = context.target_handle();
+        if let Some(source_context) = context.source_context()? {
+            if source_context.mon_handle() != target_handle || effect_type == EffectType::Ability {
+                event.set("source", Mon::position_details(&source_context)?);
+            }
+        }
+    }
+
+    context.battle_mut().log(event);
+    Ok(())
 }
 
 pub fn hit_count(context: &mut ActiveMoveContext, hits: u8) -> Result<(), Error> {
@@ -137,6 +155,12 @@ pub fn hit_count(context: &mut ActiveMoveContext, hits: u8) -> Result<(), Error>
 
 pub fn ohko(context: &mut Context) -> Result<(), Error> {
     let event = log_event!("ohko");
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn faint(context: &mut MonContext) -> Result<(), Error> {
+    let event = log_event!("faint", ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);
     Ok(())
 }
