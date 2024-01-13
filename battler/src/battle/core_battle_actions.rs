@@ -23,6 +23,7 @@ use crate::{
         UnsafelyDetachBorrow,
         WrapResultError,
     },
+    fxlang::EffectHandle,
     moves::{
         MoveTarget,
         SelfDestructType,
@@ -224,7 +225,13 @@ fn use_move_internal(
     // TODO: UseMoveMessage event.
 
     if context.active_move().data.self_destruct == Some(SelfDestructType::Always) {
-        // TODO: Faint the user.
+        let mon_handle = context.mon_handle();
+        let effect_handle = context.effect_handle();
+        faint(
+            context.as_mon_context_mut(),
+            Some(mon_handle),
+            Some(effect_handle),
+        )?;
     }
 
     let mut outcome = MoveOutcome::Success;
@@ -241,12 +248,28 @@ fn use_move_internal(
 
     // TODO: Move hit on self for boosts?
 
-    // TODO: Faint the user if needed.
+    if context.mon().hp == 0 {
+        let mon_handle = context.mon_handle();
+        let effect_handle = context.effect_handle();
+        faint(
+            context.as_mon_context_mut(),
+            Some(mon_handle),
+            Some(effect_handle),
+        )?;
+    }
 
-    // TODO: MoveFail event.
+    // TODO: MoveFail event if outcome is Failed.
 
     todo!("use_move_internal is not implemented");
     Ok(MoveOutcome::Success)
+}
+
+pub fn faint(
+    context: &mut MonContext,
+    source: Option<MonHandle>,
+    effect: Option<EffectHandle>,
+) -> Result<(), Error> {
+    Mon::faint(context, source, effect)
 }
 
 pub fn get_move_targets(
