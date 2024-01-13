@@ -149,6 +149,8 @@ impl MoveChoice {
 pub struct PlayerRequestData {
     pub name: String,
     pub id: String,
+    pub side: usize,
+    pub position: usize,
     pub mons: Vec<MonTeamRequestData>,
 }
 
@@ -300,6 +302,8 @@ impl Player {
         Ok(PlayerRequestData {
             name: context.player().name.clone(),
             id: context.player().id.clone(),
+            side: context.player().side,
+            position: context.player().position,
             mons: mon_handles
                 .into_iter()
                 .map(|mon_handle| Ok(context.mon(mon_handle)?.team_request_data()))

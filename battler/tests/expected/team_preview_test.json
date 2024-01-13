@@ -7,6 +7,8 @@
         "player": {
           "name": "Player 1",
           "id": "player-1",
+          "side": 0,
+          "position": 0,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -137,6 +139,8 @@
         "player": {
           "name": "Player 2",
           "id": "player-2",
+          "side": 0,
+          "position": 1,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -267,6 +271,8 @@
         "player": {
           "name": "Player 3",
           "id": "player-3",
+          "side": 1,
+          "position": 0,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -397,6 +403,8 @@
         "player": {
           "name": "Player 4",
           "id": "player-4",
+          "side": 1,
+          "position": 1,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -545,6 +553,8 @@
         "player": {
           "name": "Player 1",
           "id": "player-1",
+          "side": 0,
+          "position": 0,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -631,6 +641,8 @@
         "player": {
           "name": "Player 2",
           "id": "player-2",
+          "side": 0,
+          "position": 1,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -717,6 +729,8 @@
         "player": {
           "name": "Player 3",
           "id": "player-3",
+          "side": 1,
+          "position": 0,
           "mons": [
             {
               "name": "Squirtle F",
@@ -803,6 +817,8 @@
         "player": {
           "name": "Player 4",
           "id": "player-4",
+          "side": 1,
+          "position": 1,
           "mons": [
             {
               "name": "Squirtle M",
@@ -891,6 +907,8 @@
         "player": {
           "name": "Player 1",
           "id": "player-1",
+          "side": 0,
+          "position": 0,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -977,6 +995,8 @@
         "player": {
           "name": "Player 2",
           "id": "player-2",
+          "side": 0,
+          "position": 1,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -1063,6 +1083,8 @@
         "player": {
           "name": "Player 3",
           "id": "player-3",
+          "side": 1,
+          "position": 0,
           "mons": [
             {
               "name": "Squirtle F",
@@ -1149,6 +1171,8 @@
         "player": {
           "name": "Player 4",
           "id": "player-4",
+          "side": 1,
+          "position": 1,
           "mons": [
             {
               "name": "Squirtle M",
@@ -1237,6 +1261,8 @@
         "player": {
           "name": "Player 1",
           "id": "player-1",
+          "side": 0,
+          "position": 0,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -1323,6 +1349,8 @@
         "player": {
           "name": "Player 2",
           "id": "player-2",
+          "side": 0,
+          "position": 1,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -1409,6 +1437,8 @@
         "player": {
           "name": "Player 3",
           "id": "player-3",
+          "side": 1,
+          "position": 0,
           "mons": [
             {
               "name": "Squirtle F",
@@ -1495,6 +1525,8 @@
         "player": {
           "name": "Player 4",
           "id": "player-4",
+          "side": 1,
+          "position": 1,
           "mons": [
             {
               "name": "Squirtle M",
@@ -1583,6 +1615,8 @@
         "player": {
           "name": "Player 1",
           "id": "player-1",
+          "side": 0,
+          "position": 0,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -1669,6 +1703,8 @@
         "player": {
           "name": "Player 2",
           "id": "player-2",
+          "side": 0,
+          "position": 1,
           "mons": [
             {
               "name": "Bulbasaur F",
@@ -1755,6 +1791,8 @@
         "player": {
           "name": "Player 3",
           "id": "player-3",
+          "side": 1,
+          "position": 0,
           "mons": [
             {
               "name": "Squirtle F",
@@ -1841,6 +1879,8 @@
         "player": {
           "name": "Player 4",
           "id": "player-4",
+          "side": 1,
+          "position": 1,
           "mons": [
             {
               "name": "Squirtle M",
