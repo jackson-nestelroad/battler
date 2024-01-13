@@ -306,7 +306,7 @@ impl Player {
             position: context.player().position,
             mons: mon_handles
                 .into_iter()
-                .map(|mon_handle| Ok(context.mon(mon_handle)?.team_request_data()))
+                .map(|mon_handle| Mon::team_request_data(&context.mon_context(mon_handle)?))
                 .collect::<Result<_, _>>()?,
         })
     }

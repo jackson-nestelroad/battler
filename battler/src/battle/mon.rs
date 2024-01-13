@@ -131,6 +131,7 @@ pub struct MonTeamRequestData {
     pub health: String,
     pub status: String,
     pub active: bool,
+    pub side_position: Option<usize>,
     pub stats: PartialStatTable,
     pub moves: Vec<String>,
     pub ability: String,
@@ -709,30 +710,38 @@ impl Mon {
 
 // Request getters.
 impl Mon {
-    pub fn team_request_data(&self) -> MonTeamRequestData {
-        MonTeamRequestData {
-            name: self.name.clone(),
-            species_name: self.species.clone(),
-            level: self.level,
-            gender: self.gender.clone(),
-            shiny: self.shiny,
-            health: self.secret_health(),
-            status: self
+    pub fn team_request_data(context: &MonContext) -> Result<MonTeamRequestData, Error> {
+        let side_position = if context.mon().active {
+            Some(Self::position_on_side(context)?)
+        } else {
+            None
+        };
+        Ok(MonTeamRequestData {
+            name: context.mon().name.clone(),
+            species_name: context.mon().species.clone(),
+            level: context.mon().level,
+            gender: context.mon().gender.clone(),
+            shiny: context.mon().shiny,
+            health: context.mon().secret_health(),
+            status: context
+                .mon()
                 .status
                 .as_ref()
                 .map(|id| id.to_string())
                 .unwrap_or(String::default()),
-            active: self.active,
-            stats: self.base_stored_stats.without_hp(),
-            moves: self
+            active: context.mon().active,
+            side_position,
+            stats: context.mon().base_stored_stats.without_hp(),
+            moves: context
+                .mon()
                 .move_slots
                 .iter()
                 .map(|move_slot| move_slot.name.clone())
                 .collect(),
-            ability: self.ability.clone(),
-            item: self.item.clone(),
-            ball: self.ball.clone(),
-        }
+            ability: context.mon().ability.clone(),
+            item: context.mon().item.clone(),
+            ball: context.mon().ball.clone(),
+        })
     }
 
     pub fn move_request(context: &mut MonContext) -> Result<MonMoveRequest, Error> {
