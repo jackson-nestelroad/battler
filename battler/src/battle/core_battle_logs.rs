@@ -126,6 +126,10 @@ pub fn critical_hit(context: &mut ActiveTargetContext) -> Result<(), Error> {
     move_event_on_target(context, "crit")
 }
 
+pub fn ohko(context: &mut ActiveTargetContext) -> Result<(), Error> {
+    move_event_on_target(context, "ohko")
+}
+
 pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     // TODO: Handle other special cases where the damage log should have more information.
     let mut event = log_event!(
@@ -149,12 +153,6 @@ pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
 
 pub fn hit_count(context: &mut ActiveMoveContext, hits: u8) -> Result<(), Error> {
     let event = log_event!("hitcount", ("hits", hits));
-    context.battle_mut().log(event);
-    Ok(())
-}
-
-pub fn ohko(context: &mut Context) -> Result<(), Error> {
-    let event = log_event!("ohko");
     context.battle_mut().log(event);
     Ok(())
 }

@@ -237,8 +237,7 @@ fn use_move_internal(
         )?;
     }
 
-    let mut outcome = MoveOutcome::Success;
-    if !context.active_move().data.target.affects_mons_directly() {
+    let outcome = if !context.active_move().data.target.affects_mons_directly() {
         todo!("moves that do not affect Mons directly are not implemented")
     } else {
         if targets.is_empty() {
@@ -246,8 +245,8 @@ fn use_move_internal(
             core_battle_logs::fail(context.as_mon_context_mut())?;
             return Ok(MoveOutcome::Failed);
         }
-        outcome = try_direct_move(&mut context, &targets)?;
-    }
+        try_direct_move(&mut context, &targets)?
+    };
 
     // TODO: Move hit on self for boosts?
 
@@ -463,7 +462,9 @@ mod direct_move_step {
             MoveCategory,
             MoveTarget,
             MultihitType,
+            OhkoType,
         },
+        rng::rand_util,
     };
 
     pub struct MoveStepTarget {
@@ -556,7 +557,24 @@ mod direct_move_step {
     fn accuracy_check(context: &mut ActiveTargetContext) -> Result<bool, Error> {
         let mut accuracy = context.active_move().data.accuracy;
         // OHKO moves bypass accuracy modifiers.
-        if !context.active_move().data.ohko_type.is_some() {
+        if let Some(ohko) = context.active_move().data.ohko_type.clone() {
+            // TODO: Skip if target is semi-invulnerable.
+            let mut immune = context.mon().level >= context.target_mon().level;
+            if let OhkoType::Type(typ) = ohko {
+                if Mon::has_type(&context.target_mon_context()?, typ)? {
+                    immune = true;
+                }
+            }
+
+            if immune {
+                core_battle_logs::immune(&mut context.target_mon_context()?)?;
+                return Ok(false);
+            }
+
+            if let Accuracy::Chance(accuracy) = &mut accuracy {
+                *accuracy += context.mon().level - context.target_mon().level;
+            }
+        } else {
             // TODO: ModifyAccuracy event.
             if let Accuracy::Chance(accuracy) = &mut accuracy {
                 let mut boost = 0;
@@ -581,9 +599,11 @@ mod direct_move_step {
 
         // TODO: Accuracy event.
         match accuracy {
-            Accuracy::Chance(accuracy) => {
-                Ok(context.battle_mut().prng.chance(accuracy as u64, 100))
-            }
+            Accuracy::Chance(accuracy) => Ok(rand_util::chance(
+                context.battle_mut().prng.as_mut(),
+                accuracy as u64,
+                100,
+            )),
             _ => Ok(true),
         }
     }
@@ -612,13 +632,14 @@ mod direct_move_step {
             Some(MultihitType::Range(min, max)) => {
                 if min == 2 && max == 5 {
                     // 35-35-15-15 for 2-3-4-5 hits.
-                    *context
-                        .battle_mut()
-                        .prng
-                        .sample_slice(&[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5])
-                        .wrap_error()?
+                    *rand_util::sample_slice(
+                        context.battle_mut().prng.as_mut(),
+                        &[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5],
+                    )
+                    .wrap_error()?
                 } else {
-                    context.battle_mut().prng.range(min as u64, max as u64) as u8
+                    rand_util::range(context.battle_mut().prng.as_mut(), min as u64, max as u64)
+                        as u8
                 }
             }
         };
@@ -690,8 +711,6 @@ mod direct_move_step {
 
         // TODO: Record which Mon attacked which, and how many times.
 
-        core_battle_logs::ohko(context.as_battle_context_mut())?;
-
         // At this point, all hits have been applied.
         Ok(())
     }
@@ -741,6 +760,14 @@ mod direct_move_step {
             Some(mon_handle),
             targets,
         )?;
+
+        // Log OHKOs.
+        for target in targets {
+            let mut context = context.target_context(target.handle)?;
+            if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
+                core_battle_logs::ohko(&mut context)?;
+            }
+        }
 
         // TODO: Run move effects.
 
@@ -803,10 +830,11 @@ mod direct_move_step {
         context.active_move_mut().hit_data(target_mon_handle).crit =
             context.active_move().data.will_crit
                 || (crit_ratio > 0
-                    && context
-                        .battle_mut()
-                        .prng
-                        .chance(1, crit_mult[crit_ratio as usize]));
+                    && rand_util::chance(
+                        context.battle_mut().prng.as_mut(),
+                        1,
+                        crit_mult[crit_ratio as usize],
+                    ));
 
         if context.active_move_mut().hit_data(target_mon_handle).crit {
             // TODO: CriticalHit event.

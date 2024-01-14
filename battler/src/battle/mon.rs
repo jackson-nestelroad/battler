@@ -371,9 +371,12 @@ impl Mon {
 
 // Basic getters.
 impl Mon {
-    fn health(&self) -> String {
+    fn health(&self, actual_health: bool) -> String {
         if self.hp == 0 || self.max_hp == 0 {
             return "0".to_owned();
+        }
+        if actual_health {
+            return format!("{}/{}", self.hp, self.max_hp);
         }
         let ratio = Fraction::new(self.hp, self.max_hp);
         // Always round up to avoid returning 0 when the Mon is not fainted.
@@ -406,7 +409,7 @@ impl Mon {
             name: &mon.name,
             player_id: context.player().id.as_ref(),
             side_position: Self::position_on_side(context)? + 1,
-            health: mon.health(),
+            health: mon.health(context.battle().engine_options.reveal_actual_health),
             status: mon
                 .status
                 .as_ref()

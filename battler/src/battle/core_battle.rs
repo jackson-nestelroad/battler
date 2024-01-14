@@ -30,7 +30,6 @@ use crate::{
         MonHandle,
         MoveHandle,
         Player,
-        PseudoRandomNumberGenerator,
         Request,
         RequestType,
         Side,
@@ -63,6 +62,10 @@ use crate::{
         TypeEffectiveness,
     },
     moves::Move,
+    rng::{
+        rand_util,
+        PseudoRandomNumberGenerator,
+    },
 };
 
 /// The public interface for a [`CoreBattle`].
@@ -167,10 +170,11 @@ pub struct CoreBattle<'d> {
     // battle.
     //
     // We could PinBox these, but that would complicate our code quite a bit.
-    pub prng: PseudoRandomNumberGenerator,
+    pub prng: Box<dyn PseudoRandomNumberGenerator>,
     pub dex: Dex<'d>,
     pub queue: BattleQueue,
     pub faint_queue: Vec<FaintEntry>,
+    pub engine_options: BattleEngineOptions,
     pub format: Format,
     pub field: Field,
     pub sides: [Side; 2],
@@ -179,7 +183,6 @@ pub struct CoreBattle<'d> {
     registry: BattleRegistry,
     player_ids: FastHashMap<String, usize>,
 
-    engine_options: BattleEngineOptions,
     turn: u64,
     request: Option<RequestType>,
     mid_turn: bool,
@@ -220,10 +223,7 @@ impl<'d> CoreBattle<'d> {
         format: Format,
         engine_options: BattleEngineOptions,
     ) -> Result<Self, Error> {
-        let prng = match options.seed {
-            Some(seed) => PseudoRandomNumberGenerator::new_with_seed(seed),
-            None => PseudoRandomNumberGenerator::new(),
-        };
+        let prng = (engine_options.rng_factory)(options.seed);
         let log = EventLog::new();
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
@@ -253,13 +253,13 @@ impl<'d> CoreBattle<'d> {
             dex,
             queue,
             faint_queue,
+            engine_options,
             format,
             field,
             sides: [side_1, side_2],
             players,
             registry,
             player_ids,
-            engine_options,
             turn: 0,
             request: None,
             mid_turn: false,
@@ -814,7 +814,7 @@ impl<'d> CoreBattle<'d> {
         // Run actions as long as possible.
         while let Some(action) = context.battle_mut().queue.pop_front() {
             Self::run_action(context, action)?;
-            // This action ended the game.
+            // This action initiated some request or ended the battle.
             if context.battle().request.is_some() || context.battle().ended {
                 return Ok(());
             }
@@ -1097,13 +1097,12 @@ impl<'d> CoreBattle<'d> {
             Mon::active_foes(&mut context).collect::<Vec<_>>()
         };
 
-        Ok(context
-            .battle_mut()
-            .prng
-            .sample_slice(&mons)
-            .cloned()
-            .map(|mon| Some(mon))
-            .unwrap_or(None))
+        Ok(
+            rand_util::sample_slice(context.battle_mut().prng.as_mut(), &mons)
+                .cloned()
+                .map(|mon| Some(mon))
+                .unwrap_or(None),
+        )
     }
 
     pub fn get_target(
@@ -1239,7 +1238,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {
-        base_damage * (100 - (self.prng.range(0, 16) as u32)) / 100
+        base_damage * (100 - (rand_util::range(self.prng.as_mut(), 0, 16) as u32)) / 100
     }
 
     pub fn faint_messages(context: &mut Context) -> Result<(), Error> {

@@ -6,6 +6,10 @@ use crate::{
     common::Error,
     dex::DataStore,
     log::Event,
+    rng::{
+        PseudoRandomNumberGenerator,
+        RealPseudoRandomNumberGenerator,
+    },
 };
 
 /// Options that change how the battle engine itself behaves, which is not necessarily specific to
@@ -25,12 +29,29 @@ pub struct BattleEngineOptions {
     /// If set to `false`, [`Battle::continue_battle`] must be called to manually continue the
     /// battle (even at the start of the battle).
     pub auto_continue: bool,
+
+    /// Should the [`Battle`] reveal the actual health of all Mons in the public battle logs?
+    ///
+    /// By default, the public logs will show the health of all Mons as a percentage (fraction out
+    /// of 100). If this option is set to `true`, the battle will show the actual HP stat of each
+    /// Mon.
+    pub reveal_actual_health: bool,
+
+    /// Function for creating the battle's random number generator.
+    ///
+    /// Primarily useful for tests where we wish to have fine-grained control over battle RNG.
+    pub rng_factory: fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberGenerator>,
 }
 
 impl Default for BattleEngineOptions {
     fn default() -> Self {
         Self {
             auto_continue: true,
+            reveal_actual_health: false,
+            rng_factory: |seed: Option<u64>| match seed {
+                Some(seed) => Box::new(RealPseudoRandomNumberGenerator::new_with_seed(seed)),
+                None => Box::new(RealPseudoRandomNumberGenerator::new()),
+            },
         }
     }
 }

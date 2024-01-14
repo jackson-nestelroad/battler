@@ -104,6 +104,8 @@ pub struct MoveData {
     pub no_pp_boosts: bool,
 
     /// Type of OHKO, if any.
+    ///
+    /// If a target has this type, it is immune.
     pub ohko_type: Option<OhkoType>,
     /// Thaws the target?
     #[serde(default)]

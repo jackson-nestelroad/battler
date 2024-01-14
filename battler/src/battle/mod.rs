@@ -14,7 +14,6 @@ mod field;
 mod mon;
 mod move_damage;
 mod player;
-mod prng;
 mod queue;
 mod registry;
 mod request;
@@ -91,7 +90,6 @@ pub use player::{
     PlayerData,
     PlayerRequestData,
 };
-pub use prng::PseudoRandomNumberGenerator;
 pub use queue::BattleQueue;
 pub use registry::{
     BattleRegistry,

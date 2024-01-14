@@ -15,4 +15,5 @@ pub mod items;
 pub mod log;
 pub mod mons;
 pub mod moves;
+pub mod rng;
 pub mod teams;

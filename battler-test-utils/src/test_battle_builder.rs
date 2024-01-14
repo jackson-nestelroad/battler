@@ -85,6 +85,11 @@ impl TestBattleBuilder {
         self
     }
 
+    pub fn with_actual_health(mut self, actual_health: bool) -> Self {
+        self.engine_options.reveal_actual_health = actual_health;
+        self
+    }
+
     pub fn with_battle_type(mut self, battle_type: BattleType) -> Self {
         self.format().battle_type = battle_type;
         self
