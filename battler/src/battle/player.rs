@@ -507,6 +507,12 @@ impl Player {
                     }
                     _ => (),
                 },
+                "pass" => match Self::choose_pass(context) {
+                    Err(error) => {
+                        return Self::emit_choice_error(context, Error::wrap("cannot pass", error))
+                    }
+                    _ => (),
+                },
                 _ => {
                     return Self::emit_choice_error(
                         context,
@@ -658,7 +664,7 @@ impl Player {
                 context.player_mut().choice.forced_passes_left -= 1;
             }
             Some(RequestType::Turn) => {
-                if !mon.fainted {
+                if !mon.fainted && !context.battle().engine_options.allow_pass_for_unfainted_mon {
                     return Err(battler_error!(
                         "cannot pass: your {} must make a move or switch",
                         mon.name

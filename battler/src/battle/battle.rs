@@ -41,6 +41,21 @@ pub struct BattleEngineOptions {
     ///
     /// Primarily useful for tests where we wish to have fine-grained control over battle RNG.
     pub rng_factory: fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberGenerator>,
+
+    /// Are players allowed to pass for unfainted Mons?
+    ///
+    /// By default, "pass" actions are forced when the player does not have enough Mons to fulfill
+    /// all requirements. For example if a player has a team of 3 Mons for a doubles battle and 2
+    /// faint at the same time, the player will is allowed to send one "switch" action and the
+    /// other is forced to be a pass
+    ///
+    /// In all other cases, players cannot instruct their Mons to pass at the beginning of a turn.
+    /// This prevents battles from getting into a stalemate position forever.
+    ///
+    /// If this property is set to `true`, players will be allowed to send "pass" actions. This is
+    /// mostly useful for tests where we want to control one side while the other side sits
+    /// passively.
+    pub allow_pass_for_unfainted_mon: bool,
 }
 
 impl Default for BattleEngineOptions {
@@ -49,6 +64,7 @@ impl Default for BattleEngineOptions {
             auto_continue: true,
             reveal_actual_health: false,
             rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
+            allow_pass_for_unfainted_mon: false,
         }
     }
 }
