@@ -1,7 +1,6 @@
 use std::{
     any::Any,
     collections::hash_map::Entry,
-    mem,
 };
 
 use ahash::{

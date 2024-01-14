@@ -18,7 +18,6 @@ mod move_usage_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
-        write_battle_logs_to_file,
         TestBattleBuilder,
         TestDataStore,
     };
