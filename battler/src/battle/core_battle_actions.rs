@@ -514,10 +514,9 @@ mod direct_move_step {
             // TODO: IgnoreImmunity event for the move (Thousand Arrows has a special rule).
             let immune = !context.active_move().data.ignore_immunity();
             let mut target_context = context.target_mon_context(target.handle)?;
-            let immune = immune || Mon::is_immune(&mut target_context, move_type)?;
+            let immune = immune && Mon::is_immune(&mut target_context, move_type)?;
             if immune {
                 core_battle_logs::immune(&mut target_context)?;
-            } else {
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -580,13 +579,13 @@ mod direct_move_step {
                 let mut boost = 0;
                 if !context.active_move().data.ignore_accuracy {
                     // TODO: ModifyBoost event.
-                    boost = context.mon().boosts.acc.max(6).min(-6);
+                    boost = context.mon().boosts.acc.max(-6).min(6);
                 }
                 if !context.active_move().data.ignore_evasion {
                     // TODO: ModifyBoost event.
                     boost = (boost - context.target_mon_context()?.mon().boosts.eva)
-                        .max(6)
-                        .min(-6);
+                        .max(-6)
+                        .min(6);
                 }
                 let multiplier = if boost > 0 {
                     Fraction::new((3 + boost) as u8, 3)
@@ -595,6 +594,12 @@ mod direct_move_step {
                 };
                 *accuracy = multiplier.mul(*accuracy).floor();
             }
+        }
+
+        if context.active_move().data.target == MoveTarget::User
+            && context.active_move().data.category == MoveCategory::Status
+        {
+            // TODO: If also not semi-invulnerable, accuracy is always.
         }
 
         // TODO: Accuracy event.
@@ -792,6 +797,7 @@ mod direct_move_step {
             if target.damage.failed() {
                 continue;
             }
+            target.damage = MoveDamage::None;
             CoreBattle::set_active_target(context.as_battle_context_mut(), Some(target.handle))?;
             let mut context = context.active_target_context()?;
             target.damage = calculate_damage(&mut context)?;
@@ -813,7 +819,7 @@ mod direct_move_step {
             return Ok(MoveDamage::Damage(context.target_mon().max_hp));
         }
 
-        // TODO: Damage event.
+        // TODO: Damage callback for moves that have special rules for damage calculation.
 
         // Static damage.
         match context.active_move().data.damage {
@@ -822,10 +828,21 @@ mod direct_move_step {
             _ => (),
         }
 
+        let base_power = context.active_move().data.base_power;
+        // TODO: Base power callback for moves that have special rules for base power calculation.
+
+        // If base power is explicitly 0, no damage should be dealt.
+        //
+        // Status moves stop here.
+        if base_power == 0 {
+            return Ok(MoveDamage::None);
+        }
+        let base_power = context.active_move().data.base_power.max(1);
+
         // Critical hit.
         // TODO: ModifyCritRatio event.
         let crit_ratio = context.active_move().data.crit_ratio.unwrap_or(0);
-        let crit_ratio = crit_ratio.min(0).max(4);
+        let crit_ratio = crit_ratio.max(0).min(4);
         let crit_mult = [0, 24, 8, 2, 1];
         context.active_move_mut().hit_data(target_mon_handle).crit =
             context.active_move().data.will_crit
@@ -840,10 +857,8 @@ mod direct_move_step {
             // TODO: CriticalHit event.
         }
 
-        let base_power = context.active_move().data.base_power;
+        // TODO: BasePower event, which happens after crit calculation.
 
-        // TODO: BasePower event.
-        let base_power = base_power.min(1);
         let level = context.mon().level;
         let move_category = context.active_move().data.category.clone();
         let is_physical = move_category == MoveCategory::Physical;
@@ -941,7 +956,7 @@ mod direct_move_step {
 
         // Type effectiveness.
         let type_modifier = Mon::type_effectiveness(&mut context.as_mon_context_mut(), move_type)?;
-        let type_modifier = type_modifier.min(-6).max(6);
+        let type_modifier = type_modifier.max(-6).min(6);
         context
             .active_move_mut()
             .hit_data(target_mon_handle)
@@ -967,7 +982,7 @@ mod direct_move_step {
         // TODO: ModifyDamage event.
 
         let base_damage = base_damage as u16;
-        let base_damage = base_damage.min(1);
+        let base_damage = base_damage.max(1);
         Ok(MoveDamage::Damage(base_damage))
     }
 }

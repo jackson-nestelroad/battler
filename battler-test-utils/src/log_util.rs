@@ -1,7 +1,14 @@
+use std::{
+    fs,
+    io,
+};
+
 use battler::battle::{
     Battle,
     BattleOptions,
+    PublicCoreBattle,
 };
+use itertools::Itertools;
 
 fn log_is_random(log: &str) -> bool {
     log.starts_with("time")
@@ -24,4 +31,8 @@ where
         .map(|log| *log)
         .collect::<Vec<_>>();
     pretty_assertions::assert_eq!(got, want)
+}
+
+pub fn write_battle_logs_to_file(file: &str, battle: &PublicCoreBattle) -> Result<(), io::Error> {
+    fs::write(file, battle.all_logs().join("\n"))
 }

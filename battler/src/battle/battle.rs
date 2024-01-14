@@ -117,6 +117,8 @@ where
     fn continue_battle(&mut self) -> Result<(), Error>;
     /// Returns all active requests for the battle, indexed by player ID.
     fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b;
+    /// Returns the active request for the player ID.
+    fn request_for_player(&self, player: &str) -> Option<Request>;
     /// Sets the player choice.
     fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error>;
 }

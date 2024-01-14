@@ -88,6 +88,17 @@ impl<T, E> LookupResult<T, E> {
             Self::Found(value) => LookupResult::Found(&value),
         }
     }
+
+    /// Calls `op` if the result is an error. Returns the found result otherwise.
+    pub fn or_else<F, O>(self, op: O) -> LookupResult<T, F>
+    where
+        O: FnOnce() -> LookupResult<T, F>,
+    {
+        match self {
+            Self::Found(value) => LookupResult::<T, F>::Found(value),
+            _ => op(),
+        }
+    }
 }
 
 impl<T> LookupResult<T, Error> {

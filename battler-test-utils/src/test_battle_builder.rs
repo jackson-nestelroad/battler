@@ -34,6 +34,7 @@ pub struct TestBattleBuilder {
     options: BattleBuilderOptions,
     engine_options: BattleEngineOptions,
     teams: FastHashMap<String, TeamData>,
+    validate_team: bool,
 }
 
 impl TestBattleBuilder {
@@ -58,6 +59,7 @@ impl TestBattleBuilder {
             },
             engine_options: BattleEngineOptions::default(),
             teams: FastHashMap::new(),
+            validate_team: true,
         }
     }
 
@@ -65,11 +67,13 @@ impl TestBattleBuilder {
     pub fn build(self, data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         let mut builder = BattleBuilder::new(self.options, data)?;
         for (player_id, mut team) in self.teams {
-            let validation = builder.validate_team(&mut team);
-            if let Err(error) = validation {
-                return Err(battler_error!(
-                    "team for player {player_id} is invalid: {error}"
-                ));
+            if self.validate_team {
+                let validation = builder.validate_team(&mut team);
+                if let Err(error) = validation {
+                    return Err(battler_error!(
+                        "team for player {player_id} is invalid: {error}"
+                    ));
+                }
             }
             builder.update_team(&player_id, team)?;
         }
@@ -87,6 +91,16 @@ impl TestBattleBuilder {
 
     pub fn with_actual_health(mut self, actual_health: bool) -> Self {
         self.engine_options.reveal_actual_health = actual_health;
+        self
+    }
+
+    pub fn with_pass_allowed(mut self, pass_allowed: bool) -> Self {
+        self.engine_options.allow_pass_for_unfainted_mon = pass_allowed;
+        self
+    }
+
+    pub fn with_team_validation(mut self, team_validation: bool) -> Self {
+        self.validate_team = team_validation;
         self
     }
 

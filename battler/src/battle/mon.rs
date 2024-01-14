@@ -271,7 +271,7 @@ impl Mon {
             let max_pp = if mov.data.no_pp_boosts {
                 mov.data.pp
             } else {
-                let boosts = *data.pp_boosts.get(i).unwrap_or(&0).max(&3) as u32;
+                let boosts = *data.pp_boosts.get(i).unwrap_or(&0).min(&3) as u32;
                 ((mov.data.pp as u32) * (boosts + 5) / 5) as u8
             };
             base_move_slots.push(MoveSlot {
@@ -372,11 +372,11 @@ impl Mon {
 // Basic getters.
 impl Mon {
     fn health(&self, actual_health: bool) -> String {
+        if actual_health {
+            return self.secret_health();
+        }
         if self.hp == 0 || self.max_hp == 0 {
             return "0".to_owned();
-        }
-        if actual_health {
-            return format!("{}/{}", self.hp, self.max_hp);
         }
         let ratio = Fraction::new(self.hp, self.max_hp);
         // Always round up to avoid returning 0 when the Mon is not fainted.
@@ -409,7 +409,7 @@ impl Mon {
             name: &mon.name,
             player_id: context.player().id.as_ref(),
             side_position: Self::position_on_side(context)? + 1,
-            health: mon.health(context.battle().engine_options.reveal_actual_health),
+            health: Self::public_health(context),
             status: mon
                 .status
                 .as_ref()
@@ -425,6 +425,12 @@ impl Mon {
             player_id: context.player().id.as_ref(),
             side_position: Self::position_on_side(context)? + 1,
         })
+    }
+
+    pub fn public_health(context: &MonContext) -> String {
+        context
+            .mon()
+            .health(context.battle().engine_options.reveal_actual_health)
     }
 
     pub fn types(context: &MonContext) -> Result<Vec<Type>, Error> {
@@ -631,7 +637,7 @@ impl Mon {
                     Fraction::new(4, 1)
                 ];
             }
-            let boost = boost.max(6).min(-6);
+            let boost = boost.max(-6).min(6);
             let boost_fraction = &BOOST_TABLE[boost.abs() as usize];
             if boost >= 0 {
                 value = boost_fraction.mul(value).floor();

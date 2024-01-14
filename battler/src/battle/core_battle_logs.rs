@@ -134,7 +134,8 @@ pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     // TODO: Handle other special cases where the damage log should have more information.
     let mut event = log_event!(
         "damage",
-        ("mon", Mon::position_details(&context.target_context()?)?)
+        ("mon", Mon::position_details(&context.target_context()?)?),
+        ("health", Mon::public_health(&context.target_context()?))
     );
     let effect_type = context.effect().effect_type();
     if effect_type != EffectType::Move {

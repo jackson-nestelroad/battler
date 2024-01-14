@@ -26,6 +26,7 @@ zone-alloc = { version = "0.4.0", features = ["std", "may-dangle"] }
 zone-alloc-strong-handle-derive = "0.1"
 
 [dev-dependencies]
+assert_matches = "1.5.0"
 battler-test-utils = { path = "../battler-test-utils" }
 env_logger = "0.9.0"
 pretty_assertions = "1.4.0"

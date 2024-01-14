@@ -148,6 +148,10 @@ impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
         self.internal.active_requests()
     }
 
+    fn request_for_player(&self, player: &str) -> Option<Request> {
+        self.internal.request_for_player(player)
+    }
+
     fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
         self.internal.set_player_choice(player_id, input)
     }
@@ -463,6 +467,11 @@ impl<'d> CoreBattle<'d> {
                 .active_request()
                 .map(|request| (player.id.to_owned(), request))
         })
+    }
+
+    fn request_for_player(&self, player: &str) -> Option<Request> {
+        let player = self.player_index_by_id(player).ok()?;
+        self.player(player).ok()?.active_request()
     }
 
     fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
