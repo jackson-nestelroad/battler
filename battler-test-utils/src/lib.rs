@@ -1,6 +1,7 @@
 mod battle_io_verifier;
 mod error_assert;
 mod log_assert;
+mod rng;
 mod test_battle_builder;
 
 pub use battle_io_verifier::BattleIoVerifier;

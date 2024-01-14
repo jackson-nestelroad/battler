@@ -68,7 +68,7 @@ mod rand_util_tests {
 
     #[test]
     fn generates_number_in_range() {
-        let mut prng = RealPseudoRandomNumberGenerator::new();
+        let mut prng = RealPseudoRandomNumberGenerator::new(None);
         let min = 5;
         let max = 12;
         for _ in 0..50 {
@@ -80,7 +80,7 @@ mod rand_util_tests {
 
     #[test]
     fn generates_chance() {
-        let mut prng = RealPseudoRandomNumberGenerator::new_with_seed(100);
+        let mut prng = RealPseudoRandomNumberGenerator::new(Some(100));
         let num = 3;
         let den = 7;
         let want = vec![
@@ -96,7 +96,7 @@ mod rand_util_tests {
 
     #[test]
     fn shuffles_slice() {
-        let mut prng = RealPseudoRandomNumberGenerator::new_with_seed(123456789);
+        let mut prng = RealPseudoRandomNumberGenerator::new(Some(123456789));
         let mut items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         rand_util::shuffle(&mut prng, &mut items);
         let mut want = [3, 4, 9, 6, 0, 1, 2, 5, 7, 8];
@@ -111,7 +111,7 @@ mod rand_util_tests {
 
     #[test]
     fn sample_iter_fails_empty_iterator() {
-        let mut prng = RealPseudoRandomNumberGenerator::new_with_seed(123456789);
+        let mut prng = RealPseudoRandomNumberGenerator::new(Some(123456789));
         let items: Vec<&str> = Vec::new();
         assert_eq!(
             rand_util::sample_iter(&mut prng, items.iter()),
@@ -121,7 +121,7 @@ mod rand_util_tests {
 
     #[test]
     fn samples_element_in_iterator() {
-        let mut prng = RealPseudoRandomNumberGenerator::new_with_seed(123456789);
+        let mut prng = RealPseudoRandomNumberGenerator::new(Some(123456789));
         let items = vec!["a", "b", "c", "d"];
         assert_eq!(rand_util::sample_iter(&mut prng, items.iter()), Ok(&"d"));
         assert_eq!(rand_util::sample_iter(&mut prng, items.iter()), Ok(&"a"));
@@ -137,7 +137,7 @@ mod rand_util_tests {
 
     #[test]
     fn samples_element_in_slice() {
-        let mut prng = RealPseudoRandomNumberGenerator::new_with_seed(987654321);
+        let mut prng = RealPseudoRandomNumberGenerator::new(Some(987654321));
         let items = vec!["a", "b", "c", "d"];
         assert_eq!(rand_util::sample_slice(&mut prng, &items), Ok(&"a"));
         assert_eq!(rand_util::sample_slice(&mut prng, &items), Ok(&"b"));
@@ -153,7 +153,7 @@ mod rand_util_tests {
 
     #[test]
     fn sample_iter_fails_empty_slice() {
-        let mut prng = RealPseudoRandomNumberGenerator::new_with_seed(987654321);
+        let mut prng = RealPseudoRandomNumberGenerator::new(Some(987654321));
         let items: Vec<&str> = Vec::new();
         assert_eq!(
             rand_util::sample_slice(&mut prng, &items),

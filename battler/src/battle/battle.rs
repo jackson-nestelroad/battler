@@ -48,10 +48,7 @@ impl Default for BattleEngineOptions {
         Self {
             auto_continue: true,
             reveal_actual_health: false,
-            rng_factory: |seed: Option<u64>| match seed {
-                Some(seed) => Box::new(RealPseudoRandomNumberGenerator::new_with_seed(seed)),
-                None => Box::new(RealPseudoRandomNumberGenerator::new()),
-            },
+            rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
         }
     }
 }

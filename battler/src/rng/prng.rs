@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use rand::Rng;
 
 /// A pseudo-random number generator, created with the intention of using a random number generator
@@ -10,6 +12,9 @@ pub trait PseudoRandomNumberGenerator {
 
     /// Returns the next integer in the sequence.
     fn next(&mut self) -> u64;
+
+    /// Mutable cast to [`Any`]` for testing.
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
 pub struct RealPseudoRandomNumberGenerator {
@@ -19,15 +24,11 @@ pub struct RealPseudoRandomNumberGenerator {
 
 impl RealPseudoRandomNumberGenerator {
     /// Creates a new random number generator.
-    pub fn new() -> Self {
-        Self::new_with_seed(Self::generate_seed())
-    }
-
-    /// Creates a new random number generator with the given seed.
     ///
     /// If two random number generators are created with the same seed, their output should be
     /// exactly the same.
-    pub fn new_with_seed(seed: u64) -> Self {
+    pub fn new(seed: Option<u64>) -> Self {
+        let seed = seed.unwrap_or_else(|| Self::generate_seed());
         Self {
             initial_seed: seed,
             seed,
@@ -58,6 +59,10 @@ impl PseudoRandomNumberGenerator for RealPseudoRandomNumberGenerator {
         // Use the upper 32 bits. The lower ones are predictable in some situations.
         self.seed >> 32
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 #[cfg(test)]
@@ -70,11 +75,11 @@ mod prng_tests {
     #[test]
     fn stores_initial_seed() {
         assert_eq!(
-            RealPseudoRandomNumberGenerator::new_with_seed(12345).initial_seed(),
+            RealPseudoRandomNumberGenerator::new(Some(12345)).initial_seed(),
             12345
         );
         assert_eq!(
-            RealPseudoRandomNumberGenerator::new_with_seed(6789100000).initial_seed(),
+            RealPseudoRandomNumberGenerator::new(Some(6789100000)).initial_seed(),
             6789100000
         );
     }
