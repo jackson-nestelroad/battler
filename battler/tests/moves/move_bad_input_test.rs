@@ -204,11 +204,6 @@ mod move_bad_input_tests {
     }
 
     #[test]
-    fn out_of_pp() {
-        // TODO: Exhaust the PP for a move, check request, and check that move is not allowed.
-    }
-
-    #[test]
     fn struggle_when_no_available_moves() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_singles_battle_with_struggle(&data).unwrap();
