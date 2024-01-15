@@ -146,15 +146,15 @@ mod move_bad_input_tests {
         assert_eq!(battle.start(), Ok(()));
         assert_eq!(battle.continue_battle(), Ok(()));
         assert_error_message(
-            battle.set_player_choice("player-1", "move 0, 0"),
+            battle.set_player_choice("player-1", "move 0, 1"),
             "cannot move: you cannot choose a target for Blizzard",
         );
         assert_error_message(
-            battle.set_player_choice("player-1", "move 1, 0"),
+            battle.set_player_choice("player-1", "move 1, 1"),
             "cannot move: you cannot choose a target for Counter",
         );
         assert_error_message(
-            battle.set_player_choice("player-1", "move 2, 0"),
+            battle.set_player_choice("player-1", "move 2, 1"),
             "cannot move: you cannot choose a target for Hail",
         );
         assert!(player_has_active_request(&battle, "player-1"));

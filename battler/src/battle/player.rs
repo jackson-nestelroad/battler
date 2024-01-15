@@ -15,6 +15,7 @@ use crate::{
         Action,
         BattleRegistry,
         BattleType,
+        CoreBattle,
         Mon,
         MonHandle,
         MonTeamRequestData,
@@ -686,7 +687,7 @@ impl Player {
             Some(RequestType::Turn) => (),
             _ => return Err(battler_error!("you cannot move out of turn")),
         }
-        let choice = MoveChoice::new(data.wrap_error_with_message("missing move choice")?)?;
+        let mut choice = MoveChoice::new(data.wrap_error_with_message("missing move choice")?)?;
         let active_position = Self::get_active_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
@@ -720,36 +721,33 @@ impl Player {
             .get_by_id(&move_id)
             .into_result()
             .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
+        // Clone these to avoid borrow errors.
+        //
+        // We could find away around this if we're clever, but this keeps things simple for now.
+        let move_name = mov.data.name.clone();
+        let move_target = mov.data.target.clone();
+
+        // Choosing 0 is the same as no target at all.
+        if let Some(0) = choice.target {
+            choice.target = None;
+        }
+
         let target_required = context.battle().format.battle_type.active_per_player() > 1;
         match (mov.data.target.choosable(), choice.target) {
             (true, None) => {
                 if target_required {
-                    return Err(battler_error!("{} requires a target", mov.data.name));
+                    return Err(battler_error!("{} requires a target", move_name));
                 }
             }
             (true, Some(target)) => {
-                if target == 0 && target_required {
-                    return Err(battler_error!("target cannot be 0"));
-                }
-                let target_side = if target > 0 {
-                    context.foe_side().index
-                } else {
-                    context.side().index
-                };
-                let target_position = target.abs() as usize;
-                let target_position = target_position - 1;
-                if !Mon::relative_location_of_target(&context, target_side, target_position)
-                    .map_or(false, |relative_location| {
-                        mov.data.target.valid_target(relative_location)
-                    })
-                {
-                    return Err(battler_error!("invalid target for {}", mov.data.name));
+                if !CoreBattle::valid_target(&mut context, move_target, target)? {
+                    return Err(battler_error!("invalid target for {}", move_name));
                 }
             }
             (false, Some(_)) => {
                 return Err(battler_error!(
                     "you cannot choose a target for {}",
-                    mov.data.name
+                    move_name
                 ))
             }
             _ => (),
@@ -786,7 +784,7 @@ impl Player {
                 return Err(battler_error!(
                     "{}'s {} is disabled",
                     context.mon().name,
-                    mov.data.name
+                    move_name
                 ));
             }
         }

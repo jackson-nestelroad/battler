@@ -336,12 +336,12 @@ pub fn get_move_targets(
             if let Some(possible_target) = target {
                 let mon = context.mon_handle();
                 let target_context = context.target_mon_context(possible_target)?;
-                if !target_context.mon().fainted
-                    || !target_context
+                if target_context.mon().fainted
+                    && !target_context
                         .mon()
                         .is_ally(target_context.as_battle_context().mon(mon)?)
                 {
-                    // A targeted for has fainted, so the move should retarget.
+                    // A targeted Mon has fainted, so the move should retarget.
                     let mon = context.mon_handle();
                     let active_move = context.active_move().id().clone();
                     target = CoreBattle::random_target(

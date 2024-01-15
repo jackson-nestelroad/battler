@@ -50,19 +50,6 @@ mod move_pp_tests {
         Ok(team)
     }
 
-    fn make_battle(data: &dyn DataStore, pp_boosts: Vec<u8>) -> Result<PublicCoreBattle, Error> {
-        TestBattleBuilder::new()
-            .with_battle_type(BattleType::Singles)
-            .with_actual_health(true)
-            .with_pass_allowed(true)
-            .with_team_validation(false)
-            .add_player_to_side_1("test-player", "Test Player")
-            .add_player_to_side_2("foe", "Foe")
-            .with_team("test-player", team(pp_boosts.clone())?)
-            .with_team("foe", team(pp_boosts)?)
-            .build(data)
-    }
-
     fn test_move(name: &str, pp: u8) -> Result<MoveData, Error> {
         let mut move_data: MoveData = serde_json::from_str(
             r#"{
@@ -88,6 +75,19 @@ mod move_pp_tests {
         data.add_fake_move(Id::from("Test Move 3"), test_move("Test Move 3", 35)?);
         data.add_fake_move(Id::from("Test Move 4"), test_move("Test Move 4", 40)?);
         Ok(())
+    }
+
+    fn make_battle(data: &dyn DataStore, pp_boosts: Vec<u8>) -> Result<PublicCoreBattle, Error> {
+        TestBattleBuilder::new()
+            .with_battle_type(BattleType::Singles)
+            .with_actual_health(true)
+            .with_pass_allowed(true)
+            .with_team_validation(false)
+            .add_player_to_side_1("test-player", "Test Player")
+            .add_player_to_side_2("foe", "Foe")
+            .with_team("test-player", team(pp_boosts.clone())?)
+            .with_team("foe", team(pp_boosts)?)
+            .build(data)
     }
 
     #[test]

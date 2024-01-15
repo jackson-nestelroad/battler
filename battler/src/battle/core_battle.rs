@@ -27,6 +27,7 @@ use crate::{
         CoreBattleOptions,
         Field,
         Mon,
+        MonContext,
         MonHandle,
         MoveHandle,
         Player,
@@ -61,7 +62,10 @@ use crate::{
         Type,
         TypeEffectiveness,
     },
-    moves::Move,
+    moves::{
+        Move,
+        MoveTarget,
+    },
     rng::{
         rand_util,
         PseudoRandomNumberGenerator,
@@ -1156,8 +1160,10 @@ impl<'d> CoreBattle<'d> {
         }
 
         if let Some(target) = target {
-            if !move_target.is_random() && move_target.valid_target(target) {
-                let mut context = context.mon_context(mon)?;
+            let mut context = context.mon_context(mon)?;
+            if !move_target.is_random()
+                && Self::valid_target(&mut context, move_target.clone(), target)?
+            {
                 if let Some(target_mon_handle) = Mon::get_target(&mut context, target)? {
                     let target_context = context
                         .as_battle_context_mut()
@@ -1180,6 +1186,31 @@ impl<'d> CoreBattle<'d> {
         } else {
             Self::random_target(context, mon, move_id)
         }
+    }
+
+    pub fn valid_target(
+        context: &mut MonContext,
+        move_target: MoveTarget,
+        target_position: isize,
+    ) -> Result<bool, Error> {
+        if target_position == 0 {
+            return Err(battler_error!("target position cannot be 0"));
+        }
+        let target_side = if target_position > 0 {
+            context.foe_side().index
+        } else {
+            context.side().index
+        };
+        let target_position = target_position.abs() as usize;
+        let target_position = target_position - 1;
+        if !Mon::relative_location_of_target(&context, target_side, target_position)
+            .map_or(false, |relative_location| {
+                move_target.valid_target(relative_location)
+            })
+        {
+            return Ok(false);
+        }
+        Ok(true)
     }
 
     pub fn set_active_target(

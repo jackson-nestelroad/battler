@@ -380,7 +380,10 @@ impl Mon {
         }
         let ratio = Fraction::new(self.hp, self.max_hp);
         // Always round up to avoid returning 0 when the Mon is not fainted.
-        let percentage = (ratio * 100).ceil();
+        let mut percentage = (ratio * 100).ceil();
+        if percentage == 100 && ratio < Fraction::new(1, 1) {
+            percentage = 99;
+        }
         format!("{percentage}/100")
     }
 
@@ -542,7 +545,7 @@ impl Mon {
         if target == 0 {
             return Err(battler_error!("target cannot be 0"));
         }
-        let mut side_context = context.pick_side_context(target > 0)?;
+        let mut side_context = context.pick_side_context(target < 0)?;
         let position = (target.abs() - 1) as usize;
         Side::mon_in_position(&mut side_context, position)
     }

@@ -38,7 +38,7 @@ impl<I> FractionInteger for I where I: Integer + FromPrimitive + Copy {}
 /// - A floating point number (`1.5`), which is converted to a fraction out of 4096.
 /// - A percentage string (`"60%"`).
 /// - A two-length array (`[2,5]`).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Fraction<I> {
     num: I,
     den: I,
@@ -171,15 +171,6 @@ where
         }
     }
 }
-
-// impl<I> Into<I> for Fraction<I>
-// where
-//     I: Integer,
-// {
-//     fn into(self) -> I {
-//         self.floor()
-//     }
-// }
 
 impl<I> PartialEq for Fraction<I>
 where
