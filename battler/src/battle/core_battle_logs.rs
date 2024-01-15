@@ -134,8 +134,7 @@ pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     // TODO: Handle other special cases where the damage log should have more information.
     let mut event = log_event!(
         "damage",
-        ("mon", Mon::position_details(&context.target_context()?)?),
-        ("health", Mon::public_health(&context.target_context()?))
+        ("mon", Mon::position_details(&context.target_context()?)?)
     );
     let effect_type = context.effect().effect_type();
     if effect_type != EffectType::Move {
@@ -148,7 +147,15 @@ pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
         }
     }
 
-    context.battle_mut().log(event);
+    let mut private_event = event;
+    let mut public_event = private_event.clone();
+    private_event.set("health", Mon::secret_health(&context.target_context()?));
+    public_event.set("health", Mon::public_health(&context.target_context()?));
+
+    let side = context.target().side;
+    context
+        .battle_mut()
+        .log_private_public(side, private_event, public_event);
     Ok(())
 }
 

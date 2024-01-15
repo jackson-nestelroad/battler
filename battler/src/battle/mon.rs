@@ -373,7 +373,7 @@ impl Mon {
 impl Mon {
     fn health(&self, actual_health: bool) -> String {
         if actual_health {
-            return self.secret_health();
+            return self.actual_health();
         }
         if self.hp == 0 || self.max_hp == 0 {
             return "0".to_owned();
@@ -384,7 +384,7 @@ impl Mon {
         format!("{percentage}/100")
     }
 
-    fn secret_health(&self) -> String {
+    fn actual_health(&self) -> String {
         if self.hp == 0 || self.max_hp == 0 {
             return "0".to_owned();
         }
@@ -431,6 +431,10 @@ impl Mon {
         context
             .mon()
             .health(context.battle().engine_options.reveal_actual_health)
+    }
+
+    pub fn secret_health(context: &MonContext) -> String {
+        context.mon().actual_health()
     }
 
     pub fn types(context: &MonContext) -> Result<Vec<Type>, Error> {
@@ -731,7 +735,7 @@ impl Mon {
             level: context.mon().level,
             gender: context.mon().gender.clone(),
             shiny: context.mon().shiny,
-            health: context.mon().secret_health(),
+            health: context.mon().actual_health(),
             status: context
                 .mon()
                 .status

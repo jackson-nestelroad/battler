@@ -480,6 +480,11 @@ impl<'d> CoreBattle<'d> {
 }
 
 impl<'d> CoreBattle<'d> {
+    pub fn log_private_public(&mut self, side: usize, private: Event, public: Event) {
+        self.log
+            .push_extend([log_event!("split", ("side", side)), private, public])
+    }
+
     pub fn log(&mut self, event: Event) {
         self.log.push(event)
     }

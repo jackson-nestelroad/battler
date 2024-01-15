@@ -588,11 +588,11 @@ mod direct_move_step {
                         .min(6);
                 }
                 let multiplier = if boost > 0 {
-                    Fraction::new((3 + boost) as u8, 3)
+                    Fraction::new((3 + boost) as u16, 3)
                 } else {
-                    Fraction::new(3, (3 - boost) as u8)
+                    Fraction::new(3, (3 - boost) as u16)
                 };
-                *accuracy = multiplier.mul(*accuracy).floor();
+                *accuracy = multiplier.mul(*accuracy as u16).floor() as u8;
             }
         }
 

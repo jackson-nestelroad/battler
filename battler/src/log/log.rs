@@ -33,7 +33,7 @@ where
 /// An event that is added to the [`EventLog`].
 ///
 /// This object should not be constructed directly. Instead, use the [`log_event`] macro.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Event {
     title: String,
     values: FastHashMap<String, String>,

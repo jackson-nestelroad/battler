@@ -14,6 +14,7 @@ pub use error_assert::{
 pub use log_util::{
     assert_new_logs_eq,
     write_battle_logs_to_file,
+    LogMatch,
 };
 pub use rng::ControlledRandomNumberGenerator;
 pub use test_battle_builder::TestBattleBuilder;

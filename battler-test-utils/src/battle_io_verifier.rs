@@ -16,12 +16,12 @@ use battler::{
         WrapResultError,
     },
 };
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::Deserialize;
 
-use crate::assert_new_logs_eq;
+use crate::{
+    assert_new_logs_eq,
+    LogMatch,
+};
 
 fn integration_test_expected_io_dir<'s>() -> Result<String, Error> {
     env::var("INTEGRATION_TEST_EXPECTED_IO_DIR")
@@ -29,15 +29,15 @@ fn integration_test_expected_io_dir<'s>() -> Result<String, Error> {
 }
 
 type ExpectedBattleRequests = HashMap<String, Request>;
-type ExpectedBattleLogs = Vec<String>;
+type ExpectedBattleLogs = Vec<LogMatch>;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct ExpectedBattleIo {
     requests: Vec<ExpectedBattleRequests>,
     logs: Vec<ExpectedBattleLogs>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct BattleIoVerifier {
     expected: ExpectedBattleIo,
     requests_index: usize,
@@ -101,13 +101,7 @@ impl BattleIoVerifier {
     {
         match self.next_expected_logs() {
             None => assert!(false, "battle io verifier has no more expected logs"),
-            Some(logs) => assert_new_logs_eq(
-                battle,
-                logs.iter()
-                    .map(|s| s.as_ref())
-                    .collect::<Vec<_>>()
-                    .as_slice(),
-            ),
+            Some(logs) => assert_new_logs_eq(battle, logs.as_slice()),
         }
     }
 }
