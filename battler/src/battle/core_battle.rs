@@ -827,7 +827,7 @@ impl<'d> CoreBattle<'d> {
         }
 
         // Sort the new actions and continue the battle.
-        context.battle_mut().queue.sort();
+        BattleQueue::sort(context);
 
         // Run actions as long as possible.
         while let Some(action) = context.battle_mut().queue.pop_front() {
@@ -1062,7 +1062,11 @@ impl<'d> CoreBattle<'d> {
             action.priority = mov.data.priority as i32;
             // TODO: Run priority modification events for the move and Mon.
         }
-        if let Some(mon_action) = action.mon_action_mut() {
+        if let Action::Switch(action) = action {
+            // The priority of switch actions are determined by the speed of the Mon switching out.
+            let mut context = context.mon_context(action.switching_out)?;
+            action.mon_action.speed = Mon::action_speed(&mut context)? as u32;
+        } else if let Some(mon_action) = action.mon_action_mut() {
             let mut context = context.mon_context(mon_action.mon)?;
             mon_action.speed = Mon::action_speed(&mut context)? as u32;
         }

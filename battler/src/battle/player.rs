@@ -612,6 +612,7 @@ impl Player {
             .push(Action::Switch(SwitchAction::new(SwitchActionInput {
                 instant: false,
                 mon: target_mon_handle,
+                switching_out: active_mon_handle,
                 position: active_mon_position,
             })));
         Ok(())

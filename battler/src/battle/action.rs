@@ -50,6 +50,7 @@ impl TeamAction {
 pub struct SwitchActionInput {
     pub instant: bool,
     pub mon: MonHandle,
+    pub switching_out: MonHandle,
     pub position: usize,
 }
 
@@ -58,6 +59,7 @@ pub struct SwitchActionInput {
 pub struct SwitchAction {
     pub instant: bool,
     pub mon_action: MonAction,
+    pub switching_out: MonHandle,
     pub position: usize,
 }
 
@@ -67,6 +69,7 @@ impl SwitchAction {
         Self {
             instant: input.instant,
             mon_action: MonAction::new(input.mon),
+            switching_out: input.switching_out,
             position: input.position,
         }
     }

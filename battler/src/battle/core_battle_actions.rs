@@ -994,12 +994,10 @@ fn apply_spread_damage(
 ) -> Result<(), Error> {
     for target in targets {
         let mut context = context.applying_effect_context(source, target.handle)?;
-        if target.damage.failed() {
-            continue;
-        }
-        if let MoveDamage::Damage(0) = target.damage {
-            continue;
-        }
+        let damage = match &mut target.damage {
+            MoveDamage::Failure | MoveDamage::None | MoveDamage::Damage(0) => continue,
+            MoveDamage::Damage(damage) => damage,
+        };
         if context.target().hp == 0 {
             target.damage = MoveDamage::Damage(0);
             continue;
@@ -1012,29 +1010,25 @@ fn apply_spread_damage(
         // TODO: Check weather immunity.
         // TODO: Run Damage event, which can cause damage to fail.
 
-        if let MoveDamage::Damage(damage) = &mut target.damage {
-            let source_handle = context.source_handle();
-            let effect_handle = context.effect_handle();
-            *damage = Mon::damage(
-                &mut context.target_context()?,
-                *damage,
-                source_handle,
-                Some(effect_handle),
-            )?;
-            context.target_mut().hurt_this_turn = *damage;
-        }
+        let source_handle = context.source_handle();
+        let effect_handle = context.effect_handle();
+        *damage = Mon::damage(
+            &mut context.target_context()?,
+            *damage,
+            source_handle,
+            Some(effect_handle),
+        )?;
+        context.target_mut().hurt_this_turn = *damage;
 
         core_battle_logs::damage(&mut context)?;
 
-        if let MoveDamage::Damage(damage) = target.damage {
-            if let Some(drain_percent) = context
-                .effect()
-                .active_move()
-                .map(|active_move| active_move.data.drain_percent)
-            {
-                if let Some(mut context) = context.source_context()? {
-                    // TODO: heal
-                }
+        if let Some(drain_percent) = context
+            .effect()
+            .active_move()
+            .map(|active_move| active_move.data.drain_percent)
+        {
+            if let Some(mut context) = context.source_context()? {
+                // TODO: heal
             }
         }
     }

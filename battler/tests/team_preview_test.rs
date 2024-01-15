@@ -102,6 +102,7 @@ mod team_preview_tests {
             .with_rule("Min Team Size = 3")
             .with_rule("Picked Team Size = 3")
             .with_rule("Team Preview")
+            .with_seed(0)
             .with_auto_continue(false)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_1("player-2", "Player 2")
