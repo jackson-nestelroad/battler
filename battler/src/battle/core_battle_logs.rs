@@ -96,12 +96,13 @@ pub fn immune(context: &mut MonContext) -> Result<(), Error> {
 }
 
 fn move_event_on_target(context: &mut ActiveTargetContext, event: &str) -> Result<(), Error> {
-    let user_details = Mon::position_details(context.as_mon_context())?;
-    let mut event = log_event!(event, ("mon", user_details));
-    event.extend(&(
-        "target",
-        Mon::position_details(&context.target_mon_context()?)?,
-    ));
+    let event = log_event!(
+        event,
+        (
+            "mon",
+            Mon::position_details(&context.target_mon_context()?)?
+        )
+    );
     context.battle_mut().log(event);
     Ok(())
 }

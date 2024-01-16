@@ -16,5 +16,8 @@ pub use log_util::{
     write_battle_logs_to_file,
     LogMatch,
 };
-pub use rng::ControlledRandomNumberGenerator;
+pub use rng::{
+    get_controlled_rng_for_battle,
+    ControlledRandomNumberGenerator,
+};
 pub use test_battle_builder::TestBattleBuilder;

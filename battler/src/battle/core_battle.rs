@@ -20,6 +20,7 @@ use crate::{
         Action,
         Battle,
         BattleEngineOptions,
+        BattleEngineRandomizeBaseDamage,
         BattleOptions,
         BattleQueue,
         BattleRegistry,
@@ -1047,6 +1048,7 @@ impl<'d> CoreBattle<'d> {
         }
 
         context.battle_mut().ended = true;
+        context.battle_mut().log.commit();
         Self::clear_requests(context)?;
         Ok(())
     }
@@ -1265,8 +1267,8 @@ impl<'d> CoreBattle<'d> {
             .map(|defense| {
                 self.dex
                     .type_chart()
-                    .get(defense)
-                    .and_then(|row| row.get(&offense))
+                    .get(&offense)
+                    .and_then(|row| row.get(&defense))
                     .unwrap_or(&TypeEffectiveness::Normal)
             })
             .any(|effectiveness| effectiveness == &TypeEffectiveness::None)
@@ -1276,8 +1278,8 @@ impl<'d> CoreBattle<'d> {
         match self
             .dex
             .type_chart()
-            .get(&defense)
-            .and_then(|row| row.get(&offense))
+            .get(&offense)
+            .and_then(|row| row.get(&defense))
             .unwrap_or(&TypeEffectiveness::Normal)
         {
             TypeEffectiveness::Strong => 1,
@@ -1287,7 +1289,14 @@ impl<'d> CoreBattle<'d> {
     }
 
     pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {
-        base_damage * (100 - (rand_util::range(self.prng.as_mut(), 0, 16) as u32)) / 100
+        let random_factor = match self.engine_options.randomize_base_damage {
+            BattleEngineRandomizeBaseDamage::Randomize => {
+                rand_util::range(self.prng.as_mut(), 0, 16) as u32
+            }
+            BattleEngineRandomizeBaseDamage::Max => 0,
+            BattleEngineRandomizeBaseDamage::Min => 15,
+        };
+        base_damage * (100 - random_factor) / 100
     }
 
     pub fn faint_messages(context: &mut Context) -> Result<(), Error> {

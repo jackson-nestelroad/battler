@@ -11,6 +11,7 @@ use battler::{
         BattleBuilderPlayerData,
         BattleBuilderSideData,
         BattleEngineOptions,
+        BattleEngineRandomizeBaseDamage,
         BattleType,
         PublicCoreBattle,
         TimerOptions,
@@ -29,12 +30,15 @@ use battler::{
     teams::TeamData,
 };
 
+use crate::ControlledRandomNumberGenerator;
+
 /// [`BattleBuilder`] object for integration tests.
 pub struct TestBattleBuilder {
     options: BattleBuilderOptions,
     engine_options: BattleEngineOptions,
     teams: FastHashMap<String, TeamData>,
     validate_team: bool,
+    controlled_rng: bool,
 }
 
 impl TestBattleBuilder {
@@ -60,11 +64,16 @@ impl TestBattleBuilder {
             engine_options: BattleEngineOptions::default(),
             teams: FastHashMap::new(),
             validate_team: true,
+            controlled_rng: false,
         }
     }
 
     /// Builds a new [`CoreBattle`] from the battle builder.
-    pub fn build(self, data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+    pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+        if self.controlled_rng {
+            self.engine_options.rng_factory =
+                |seed: Option<u64>| Box::new(ControlledRandomNumberGenerator::new(seed));
+        }
         let mut builder = BattleBuilder::new(self.options, data)?;
         for (player_id, mut team) in self.teams {
             if self.validate_team {
@@ -96,6 +105,19 @@ impl TestBattleBuilder {
 
     pub fn with_pass_allowed(mut self, pass_allowed: bool) -> Self {
         self.engine_options.allow_pass_for_unfainted_mon = pass_allowed;
+        self
+    }
+
+    pub fn with_controlled_rng(mut self, controlled_rng: bool) -> Self {
+        self.controlled_rng = controlled_rng;
+        self
+    }
+
+    pub fn with_base_damage_randomization(
+        mut self,
+        randomize: BattleEngineRandomizeBaseDamage,
+    ) -> Self {
+        self.engine_options.randomize_base_damage = randomize;
         self
     }
 

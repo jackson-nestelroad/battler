@@ -955,7 +955,7 @@ mod direct_move_step {
         }
 
         // Type effectiveness.
-        let type_modifier = Mon::type_effectiveness(&mut context.as_mon_context_mut(), move_type)?;
+        let type_modifier = Mon::type_effectiveness(&mut context.target_mon_context()?, move_type)?;
         let type_modifier = type_modifier.max(-6).min(6);
         context
             .active_move_mut()

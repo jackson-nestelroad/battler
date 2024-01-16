@@ -33,6 +33,7 @@ pub use action::{
 pub use battle::{
     Battle,
     BattleEngineOptions,
+    BattleEngineRandomizeBaseDamage,
 };
 pub use battle_builder::{
     BattleBuilder,

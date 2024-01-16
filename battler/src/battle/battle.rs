@@ -12,6 +12,19 @@ use crate::{
     },
 };
 
+/// Battle engine option for how base damage should be randomized in the damage calculation.
+#[derive(Debug)]
+pub enum BattleEngineRandomizeBaseDamage {
+    /// Randomize the base damage.
+    ///
+    /// This is the default behavior.
+    Randomize,
+    /// Only use the maximum base damage value.
+    Max,
+    /// Only use the minimum base damage value.
+    Min,
+}
+
 /// Options that change how the battle engine itself behaves, which is not necessarily specific to
 /// any individual battle.
 ///
@@ -56,6 +69,13 @@ pub struct BattleEngineOptions {
     /// mostly useful for tests where we want to control one side while the other side sits
     /// passively.
     pub allow_pass_for_unfainted_mon: bool,
+
+    /// Describes how base damage should be randomized in the damage calculation.
+    ///
+    /// By default, base damage is randomized early in the damage calculation. This property can
+    /// control how the damage should be randomized. This is useful for tests against the damage
+    /// calculator to discover the minimum and maximum damage values.
+    pub randomize_base_damage: BattleEngineRandomizeBaseDamage,
 }
 
 impl Default for BattleEngineOptions {
@@ -65,6 +85,7 @@ impl Default for BattleEngineOptions {
             reveal_actual_health: false,
             rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
             allow_pass_for_unfainted_mon: false,
+            randomize_base_damage: BattleEngineRandomizeBaseDamage::Randomize,
         }
     }
 }
