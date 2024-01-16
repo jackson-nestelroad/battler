@@ -443,30 +443,30 @@ mod damage_calculation_tests {
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "info|battletype:Singles",
-            "side|id:0|name:Side 1",
-            "side|id:1|name:Side 2",
-            "player|id:player-1|name:Player 1|side:0|position:0",
-            "player|id:player-2|name:Player 2|side:1|position:0",
-            ["time"],
-            "teamsize|player:player-1|size:1",
-            "teamsize|player:player-2|size:1",
-            "start",
-            "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
-            "turn|turn:1",
-            ["time"],
-            "move|mon:Charizard,player-2,1|name:Fire Blast|target:Venusaur,player-1,1",
-            "supereffective|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:0",
-            "damage|mon:Venusaur,player-1,1|health:0",
-            "faint|mon:Venusaur,player-1,1",
-            "win|side:1"
-        ]"#,
-    )
-    .unwrap();
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Fire Blast|target:Venusaur,player-1,1",
+                "supereffective|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:0",
+                "damage|mon:Venusaur,player-1,1|health:0",
+                "faint|mon:Venusaur,player-1,1",
+                "win|side:1"
+            ]"#,
+        )
+        .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }
 
@@ -517,30 +517,30 @@ mod damage_calculation_tests {
         assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "info|battletype:Singles",
-            "side|id:0|name:Side 1",
-            "side|id:1|name:Side 2",
-            "player|id:player-1|name:Player 1|side:0|position:0",
-            "player|id:player-2|name:Player 2|side:1|position:0",
-            ["time"],
-            "teamsize|player:player-1|size:1",
-            "teamsize|player:player-2|size:1",
-            "start",
-            "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
-            "turn|turn:1",
-            ["time"],
-            "move|mon:Charizard,player-2,1|name:Flamethrower|target:Venusaur,player-1,1",
-            "supereffective|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:41/301",
-            "damage|mon:Venusaur,player-1,1|health:14/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Flamethrower|target:Venusaur,player-1,1",
+                "supereffective|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:41/301",
+                "damage|mon:Venusaur,player-1,1|health:14/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }
 
@@ -591,30 +591,30 @@ mod damage_calculation_tests {
         assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "info|battletype:Singles",
-            "side|id:0|name:Side 1",
-            "side|id:1|name:Side 2",
-            "player|id:player-1|name:Player 1|side:0|position:0",
-            "player|id:player-2|name:Player 2|side:1|position:0",
-            ["time"],
-            "teamsize|player:player-1|size:1",
-            "teamsize|player:player-2|size:1",
-            "start",
-            "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
-            "turn|turn:1",
-            ["time"],
-            "move|mon:Charizard,player-2,1|name:Air Slash|target:Venusaur,player-1,1",
-            "supereffective|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:83/301",
-            "damage|mon:Venusaur,player-1,1|health:28/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Air Slash|target:Venusaur,player-1,1",
+                "supereffective|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:83/301",
+                "damage|mon:Venusaur,player-1,1|health:28/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }
 
@@ -664,29 +664,29 @@ mod damage_calculation_tests {
         assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "info|battletype:Singles",
-            "side|id:0|name:Side 1",
-            "side|id:1|name:Side 2",
-            "player|id:player-1|name:Player 1|side:0|position:0",
-            "player|id:player-2|name:Player 2|side:1|position:0",
-            ["time"],
-            "teamsize|player:player-1|size:1",
-            "teamsize|player:player-2|size:1",
-            "start",
-            "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
-            "turn|turn:1",
-            ["time"],
-            "move|mon:Charizard,player-2,1|name:Dragon Claw|target:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:249/301",
-            "damage|mon:Venusaur,player-1,1|health:83/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Dragon Claw|target:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:249/301",
+                "damage|mon:Venusaur,player-1,1|health:83/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }
 
@@ -741,30 +741,30 @@ mod damage_calculation_tests {
         assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "info|battletype:Singles",
-            "side|id:0|name:Side 1",
-            "side|id:1|name:Side 2",
-            "player|id:player-1|name:Player 1|side:0|position:0",
-            "player|id:player-2|name:Player 2|side:1|position:0",
-            ["time"],
-            "teamsize|player:player-1|size:1",
-            "teamsize|player:player-2|size:1",
-            "start",
-            "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
-            "turn|turn:1",
-            ["time"],
-            "move|mon:Charizard,player-2,1|name:Dragon Claw|target:Venusaur,player-1,1",
-            "crit|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:222/301",
-            "damage|mon:Venusaur,player-1,1|health:74/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Dragon Claw|target:Venusaur,player-1,1",
+                "crit|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:222/301",
+                "damage|mon:Venusaur,player-1,1|health:74/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }
 
@@ -820,31 +820,31 @@ mod damage_calculation_tests {
         assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-         r#"[
-             "info|battletype:Singles",
-             "side|id:0|name:Side 1",
-             "side|id:1|name:Side 2",
-             "player|id:player-1|name:Player 1|side:0|position:0",
-             "player|id:player-2|name:Player 2|side:1|position:0",
-             ["time"],
-             "teamsize|player:player-1|size:1",
-             "teamsize|player:player-2|size:1",
-             "start",
-             "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-             "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
-             "turn|turn:1",
-             ["time"],
-             "move|mon:Charizard,player-2,1|name:Flamethrower|target:Venusaur,player-1,1",
-             "supereffective|mon:Venusaur,player-1,1",
-             "crit|mon:Venusaur,player-1,1",
-             "split|side:0",
-             "damage|mon:Venusaur,player-1,1|health:0",
-             "damage|mon:Venusaur,player-1,1|health:0",
-             "faint|mon:Venusaur,player-1,1",
-             "win|side:1"
-         ]"#,
-     )
-     .unwrap();
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Flamethrower|target:Venusaur,player-1,1",
+                "supereffective|mon:Venusaur,player-1,1",
+                "crit|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:0",
+                "damage|mon:Venusaur,player-1,1|health:0",
+                "faint|mon:Venusaur,player-1,1",
+                "win|side:1"
+            ]"#,
+        )
+        .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }
 }
