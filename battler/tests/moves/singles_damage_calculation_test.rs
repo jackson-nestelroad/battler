@@ -99,6 +99,44 @@ mod damage_calculation_tests {
         .wrap_error()
     }
 
+    fn level_60_charizard() -> Result<TeamData, Error> {
+        serde_json::from_str(
+            r#"{
+                "members": [
+                    {
+                        "name": "Charizard",
+                        "species": "Charizard",
+                        "ability": "Blaze",
+                        "moves": [
+                            "Fire Blast",
+                            "Flamethrower",
+                            "Air Slash",
+                            "Dragon Claw"
+                        ],
+                        "nature": "Timid",
+                        "gender": "F",
+                        "ball": "Normal",
+                        "level": 60,
+                        "ivs": {
+                            "hp": 31,
+                            "atk": 31,
+                            "def": 31,
+                            "spa": 31,
+                            "spd": 31,
+                            "spe": 31
+                        },
+                        "evs": {
+                            "spa": 252,
+                            "spd": 4,
+                            "spe": 252
+                        }
+                    }
+                ]
+            }"#,
+        )
+        .wrap_error()
+    }
+
     fn test_battle_builder(team_1: TeamData, team_2: TeamData) -> TestBattleBuilder {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
@@ -842,6 +880,82 @@ mod damage_calculation_tests {
                 "damage|mon:Venusaur,player-1,1|health:0",
                 "faint|mon:Venusaur,player-1,1",
                 "win|side:1"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    // Damage: 102-120.
+    #[test]
+    fn level_60_charizard_flamethrowers_venusaur() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+
+        let mut battle =
+            make_battle_with_max_damage(&data, venusaur().unwrap(), level_60_charizard().unwrap())
+                .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:60|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Flamethrower|target:Venusaur,player-1,1",
+                "supereffective|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:181/301",
+                "damage|mon:Venusaur,player-1,1|health:61/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+
+        let mut battle =
+            make_battle_with_min_damage(&data, venusaur().unwrap(), level_60_charizard().unwrap())
+                .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
+                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:60|gender:F",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-2,1|name:Flamethrower|target:Venusaur,player-1,1",
+                "supereffective|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:199/301",
+                "damage|mon:Venusaur,player-1,1|health:67/100",
+                "residual",
+                "turn|turn:2"
             ]"#,
         )
         .unwrap();
