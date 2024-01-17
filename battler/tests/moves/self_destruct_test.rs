@@ -92,7 +92,6 @@ mod self_destruct_tests {
                 "faint|mon:Venusaur,test-player,1",
                 "faint|mon:Venusaur,foe,1",
                 "win|side:1"
-
             ]"#,
         )
         .unwrap();
