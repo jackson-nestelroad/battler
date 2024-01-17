@@ -17,7 +17,7 @@ mod self_destruct_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_turn_logs_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -85,19 +85,6 @@ mod self_destruct_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:1",
-                "teamsize|player:foe|size:1",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Self-Destruct",
                 "split|side:1",
                 "damage|mon:Venusaur,foe,1|health:0",
@@ -109,6 +96,6 @@ mod self_destruct_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
     }
 }
