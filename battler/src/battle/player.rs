@@ -313,18 +313,19 @@ impl Player {
     }
 
     /// Is the player's choice done?
-    pub fn choice_done(context: &PlayerContext) -> bool {
-        let player = context.player();
-        match player.request_type() {
-            None => true,
+    pub fn choice_done(context: &mut PlayerContext) -> Result<bool, Error> {
+        match context.player().request_type() {
+            None => Ok(true),
             Some(RequestType::TeamPreview) => {
-                player.choice.actions.len() >= Self::picked_team_size(context)
+                Ok(context.player().choice.actions.len() >= Self::picked_team_size(context))
             }
             _ => {
-                if player.choice.forced_switches_left > 0 {
-                    return false;
+                if context.player().choice.forced_switches_left > 0 {
+                    return Ok(false);
                 }
-                player.choice.actions.len() >= player.active.len()
+                // Choose passes for as many Mons as we can.
+                Self::get_active_position_for_next_choice(context, false)?;
+                Ok(context.player().choice.actions.len() >= context.player().active.len())
             }
         }
     }
@@ -523,7 +524,7 @@ impl Player {
             }
         }
 
-        if !Self::choice_done(context) {
+        if !Self::choice_done(context)? {
             return Self::emit_choice_error(
                 context,
                 battler_error!("incomplete choice: {input} - missing actions for Mons"),
@@ -628,7 +629,8 @@ impl Player {
             match context.player().request_type() {
                 Some(RequestType::Turn) => {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
-                        mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| mon.fainted))
+                        mon.is_none()
+                            || mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| mon.fainted))
                     }) {
                         Self::choose_pass(context)?;
                         next_mon += 1;
@@ -636,7 +638,10 @@ impl Player {
                 }
                 Some(RequestType::Switch) => {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
-                        mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| !mon.needs_switch))
+                        mon.is_none()
+                            || mon.is_some_and(|mon| {
+                                context.mon(mon).is_ok_and(|mon| !mon.needs_switch)
+                            })
                     }) {
                         Self::choose_pass(context)?;
                         next_mon += 1;
@@ -650,35 +655,39 @@ impl Player {
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
         let active_index = Self::get_active_position_for_next_choice(context, true)?;
-        let active_mon_handle = Self::active_mon_handle(context, active_index)
-            .wrap_error_with_format(format_args!(
-                "expected player to have active Mon in position {active_index}"
-            ))?;
-        let mon = context.mon(active_mon_handle)?;
-        match context.player().request_type() {
-            Some(RequestType::Switch) => {
-                if context.player().choice.forced_passes_left == 0 {
-                    return Err(battler_error!(
-                        "cannot pass: you must select a Mon to replace {}",
-                        mon.name
-                    ));
+        match Self::active_mon_handle(context, active_index) {
+            None => (),
+            Some(active_mon_handle) => {
+                let mon = context.mon(active_mon_handle)?;
+                match context.player().request_type() {
+                    Some(RequestType::Switch) => {
+                        if context.player().choice.forced_passes_left == 0 {
+                            return Err(battler_error!(
+                                "cannot pass: you must select a Mon to replace {}",
+                                mon.name
+                            ));
+                        }
+                        context.player_mut().choice.forced_passes_left -= 1;
+                    }
+                    Some(RequestType::Turn) => {
+                        if !mon.fainted
+                            && !context.battle().engine_options.allow_pass_for_unfainted_mon
+                        {
+                            return Err(battler_error!(
+                                "cannot pass: your {} must make a move or switch",
+                                mon.name
+                            ));
+                        };
+                    }
+                    _ => {
+                        return Err(battler_error!(
+                            "cannot pass: only a move or switch can be passed"
+                        ));
+                    }
                 }
-                context.player_mut().choice.forced_passes_left -= 1;
             }
-            Some(RequestType::Turn) => {
-                if !mon.fainted && !context.battle().engine_options.allow_pass_for_unfainted_mon {
-                    return Err(battler_error!(
-                        "cannot pass: your {} must make a move or switch",
-                        mon.name
-                    ));
-                };
-            }
-            _ => {
-                return Err(battler_error!(
-                    "cannot pass: only a move or switch can be passed"
-                ));
-            }
-        };
+        }
+
         context.player_mut().choice.actions.push(Action::Pass);
         Ok(())
     }
@@ -827,6 +836,13 @@ impl Player {
 
     pub fn can_switch(context: &PlayerContext) -> Result<bool, Error> {
         Ok(Self::switchable_mon_handles(context).count() > 0)
+    }
+
+    pub fn clear_position(context: &mut PlayerContext, active_position: usize) {
+        context.player_mut().mons_left -= 1;
+        if let Some(position) = context.player_mut().active.get_mut(active_position) {
+            *position = None;
+        }
     }
 }
 

@@ -57,7 +57,7 @@ pub use calculations::{
     apply_nature_to_stats,
     calculate_hidden_power_type,
     calculate_mon_stats,
-    modify,
+    modify_32,
 };
 pub use context::{
     ActiveMoveContext,

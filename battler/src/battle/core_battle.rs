@@ -1,4 +1,5 @@
 use std::{
+    collections::VecDeque,
     marker::PhantomPinned,
     mem,
     time::{
@@ -182,7 +183,7 @@ pub struct CoreBattle<'d> {
     pub prng: Box<dyn PseudoRandomNumberGenerator>,
     pub dex: Dex<'d>,
     pub queue: BattleQueue,
-    pub faint_queue: Vec<FaintEntry>,
+    pub faint_queue: VecDeque<FaintEntry>,
     pub engine_options: BattleEngineOptions,
     pub format: Format,
     pub field: Field,
@@ -199,6 +200,7 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_ability_priority: u32,
     last_move_log: Option<usize>,
+    last_fainted: Option<FaintEntry>,
 
     active_mon: Option<MonHandle>,
 
@@ -236,7 +238,7 @@ impl<'d> CoreBattle<'d> {
         let log = EventLog::new();
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
-        let faint_queue = Vec::new();
+        let faint_queue = VecDeque::new();
         let field = Field::new();
         let (side_1, mut players) =
             Side::new(options.side_1, 0, &format.battle_type, &dex, &registry)?;
@@ -276,6 +278,7 @@ impl<'d> CoreBattle<'d> {
             ended: false,
             next_ability_priority: 0,
             last_move_log: None,
+            last_fainted: None,
             active_mon: None,
             input_log,
             _pin: PhantomPinned,
@@ -780,8 +783,8 @@ impl<'d> CoreBattle<'d> {
 
     fn all_player_choices_done(context: &mut Context) -> Result<bool, Error> {
         for player in 0..context.battle().players.len() {
-            let context = context.player_context(player)?;
-            if !Player::choice_done(&context) {
+            let mut context = context.player_context(player)?;
+            if !Player::choice_done(&mut context)? {
                 return Ok(false);
             }
         }
@@ -1013,7 +1016,6 @@ impl<'d> CoreBattle<'d> {
 
     fn next_turn(context: &mut Context) -> Result<(), Error> {
         context.battle_mut().turn += 1;
-        context.battle_mut().log.commit();
         let turn_event = log_event!("turn", ("turn", context.battle().turn));
         context.battle_mut().log(turn_event);
 
@@ -1039,10 +1041,17 @@ impl<'d> CoreBattle<'d> {
         }
 
         match side {
-            None => context.battle_mut().log(log_event!("tie")),
+            // Resolve ties, if possible, using the last Mon that fainted.
+            None => match &context.battle().last_fainted {
+                None => context.battle_mut().log(log_event!("tie")),
+                Some(last_fainted) => {
+                    let mon = context.mon(last_fainted.target)?;
+                    let side = mon.side;
+                    return Self::win(context, Some(side));
+                }
+            },
             Some(side) => {
-                let side = context.battle().side(side)?;
-                let win_event = log_event!("win", ("side", side.index));
+                let win_event = log_event!("win", ("side", side));
                 context.battle_mut().log(win_event);
             }
         }
@@ -1308,17 +1317,21 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
-        while let Some(entry) = context.battle_mut().faint_queue.pop() {
+        while let Some(entry) = context.battle_mut().faint_queue.pop_front() {
             let mut context = context.mon_context(entry.target)?;
             if context.mon().fainted {
                 continue;
             }
             // TODO: BeforeFaint event.
             core_battle_logs::faint(&mut context)?;
-            context.player_mut().mons_left -= 1;
+            let active_position = context.mon().active_position;
+            Player::clear_position(context.as_player_context_mut(), active_position);
             // TODO: Faint event.
             Mon::clear_state_on_faint(&mut context)?;
+            context.battle_mut().last_fainted = Some(entry);
         }
+
+        Self::check_win(context)?;
 
         Ok(())
     }

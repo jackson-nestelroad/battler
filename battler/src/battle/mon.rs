@@ -16,7 +16,7 @@ use crate::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         core_battle::FaintEntry,
-        modify,
+        modify_32,
         BoostTable,
         MonContext,
         MonHandle,
@@ -200,6 +200,7 @@ pub struct Mon {
     pub active_turns: u32,
     pub active_move_actions: u32,
     pub active_position: usize,
+    pub old_active_position: usize,
     pub team_position: usize,
 
     pub base_stored_stats: StatTable,
@@ -311,6 +312,7 @@ impl Mon {
             active_turns: 0,
             active_move_actions: 0,
             active_position: usize::MAX,
+            old_active_position: usize::MAX,
             team_position,
 
             base_stored_stats: StatTable::default(),
@@ -474,11 +476,17 @@ impl Mon {
     /// `players_on_side * active_per_player`.
     pub fn position_on_side(context: &MonContext) -> Result<usize, Error> {
         let mon = context.mon();
-        if !mon.active {
-            return Err(battler_error!("Mon is not active"));
-        }
+        let active_position = if mon.active_position == usize::MAX {
+            if mon.old_active_position == usize::MAX {
+                return Err(battler_error!("mon has no active position"));
+            } else {
+                mon.old_active_position
+            }
+        } else {
+            mon.active_position
+        };
         let player = context.player();
-        let position = mon.active_position
+        let position = active_position
             + player.position * context.battle().format.battle_type.active_per_player();
         Ok(position)
     }
@@ -655,7 +663,9 @@ impl Mon {
         if !unmodified {
             // TODO: ModifyStat event (individual per stat).
             let modifier = modifier.unwrap_or(Fraction::from(1));
-            value = modify(value, modifier);
+            let modifier =
+                Fraction::new(modifier.numerator() as u32, modifier.denominator() as u32);
+            value = modify_32(value as u32, modifier) as u16;
         }
 
         Ok(value)
@@ -943,6 +953,7 @@ impl Mon {
     /// Switches the Mon out of the given position for the player.
     pub fn switch_out(&mut self) {
         self.active = false;
+        self.old_active_position = self.active_position;
         self.active_position = usize::MAX;
         self.needs_switch = false;
     }
@@ -1028,7 +1039,7 @@ impl Mon {
         context.mon_mut().hp = 0;
         context.mon_mut().needs_switch = false;
         let mon_handle = context.mon_handle();
-        context.battle_mut().faint_queue.push(FaintEntry {
+        context.battle_mut().faint_queue.push_back(FaintEntry {
             target: mon_handle,
             source,
             effect,
@@ -1040,6 +1051,8 @@ impl Mon {
         // TODO: End event for ability.
         Mon::clear_volatile(context)?;
         context.mon_mut().fainted = true;
+        context.mon_mut().old_active_position = context.mon().active_position;
+        context.mon_mut().active_position = usize::MAX;
         context.mon_mut().active = false;
         Ok(())
     }

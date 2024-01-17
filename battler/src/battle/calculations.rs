@@ -3,10 +3,7 @@ use std::ops::Div;
 use lazy_static::lazy_static;
 
 use crate::{
-    common::{
-        Fraction,
-        FractionInteger,
-    },
+    common::Fraction,
     mons::{
         Nature,
         Stat,
@@ -99,11 +96,13 @@ pub fn calculate_hidden_power_type(ivs: &StatTable) -> Type {
 ///
 /// Mostly used for stat calculations. Split off into its own function to help guarantee
 /// consistency.
-pub fn modify<I>(value: I, modifier: Fraction<I>) -> I
-where
-    I: FractionInteger,
-{
-    (modifier * value).floor()
+pub fn modify_32(value: u32, modifier: Fraction<u32>) -> u32 {
+    // Pokemon Showdown uses this calculation, even though it produces some wrong values. For
+    // example, 37 * 0.75 = 27.75, but this formula produces 28.
+    //
+    // We use this formula for consistency with their damage calculator.
+    let modifier = modifier.numerator() * 4096 / modifier.denominator();
+    ((value * modifier) + 2048 - 1) / 4096
 }
 
 #[cfg(test)]

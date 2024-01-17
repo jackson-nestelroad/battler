@@ -158,7 +158,6 @@ pub fn do_move(
 
     CoreBattle::faint_messages(context.as_battle_context_mut())?;
     CoreBattle::check_win(context.as_battle_context_mut())?;
-    // TODO: Check if battle has ended.
 
     Ok(())
 }
@@ -441,7 +440,7 @@ mod direct_move_step {
         battle::{
             core_battle_actions,
             core_battle_logs,
-            modify,
+            modify_32,
             ActiveMoveContext,
             ActiveTargetContext,
             CoreBattle,
@@ -926,7 +925,7 @@ mod direct_move_step {
         base_damage += 2;
         if context.active_move().spread_hit {
             let spread_modifier = Fraction::new(3, 4);
-            base_damage = modify(base_damage, spread_modifier);
+            base_damage = modify_32(base_damage, spread_modifier);
         }
 
         // TODO: WeatherModifyDamage event.
@@ -936,7 +935,7 @@ mod direct_move_step {
         let crit = context.active_move_mut().hit_data(target_mon_handle).crit;
         if crit {
             let crit_modifier = Fraction::new(3, 2);
-            base_damage = modify(base_damage, crit_modifier);
+            base_damage = modify_32(base_damage, crit_modifier);
         }
 
         // Randomize damage.
@@ -951,7 +950,7 @@ mod direct_move_step {
                 .clone()
                 .stab_modifier
                 .unwrap_or(Fraction::new(3, 2));
-            base_damage = modify(base_damage, stab_modifier);
+            base_damage = modify_32(base_damage, stab_modifier);
         }
 
         // Type effectiveness.
