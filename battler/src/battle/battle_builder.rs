@@ -296,7 +296,6 @@ mod battle_builder_tests {
                         "moves": [],
                         "nature": "Adamant",
                         "gender": "M",
-                        "ball": "Normal",
                         "level": 100
                     }
                 ]
@@ -325,7 +324,6 @@ mod battle_builder_tests {
                         "moves": [],
                         "nature": "Adamant",
                         "gender": "M",
-                        "ball": "Normal",
                         "level": 100
                     }
                 ]

@@ -10,6 +10,10 @@ use crate::mons::{
     Type,
 };
 
+fn default_ball() -> String {
+    return "Normal".to_owned();
+}
+
 /// Data about a specific Mon on a team.
 ///
 /// Data here is consistent across many battles and should not be modified inside of a battle. For
@@ -33,8 +37,10 @@ pub struct MonData {
     // PP boosts.
     pub pp_boosts: Vec<u8>,
     /// Nature.
+    #[serde(default)]
     pub nature: Nature,
     /// Gender.
+    #[serde(default)]
     pub gender: Gender,
     /// Effort values, which boost stats.
     #[serde(default)]
@@ -52,6 +58,7 @@ pub struct MonData {
     #[serde(default)]
     pub happiness: u8,
     /// Type of ball the Mon is stored in.
+    #[serde(default = "default_ball")]
     pub ball: String,
     /// Hidden power type.
     pub hidden_power_type: Option<Type>,

@@ -423,7 +423,6 @@ mod clause_tests {
                 "moves": [],
                 "nature": "Adamant",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
               }"#,
         )
@@ -471,7 +470,6 @@ mod clause_tests {
                 "moves": [],
                 "nature": "Adamant",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
               }"#,
         )
@@ -618,7 +616,6 @@ mod clause_tests {
                 "moves": [],
                 "nature": "Adamant",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
               }"#,
         )
