@@ -1015,7 +1015,7 @@ mod direct_move_step {
                 &mut context.as_mon_context_mut(),
                 recoil_damage,
                 Some(mon_handle),
-                Some(effect_handle),
+                Some(&effect_handle),
             )?;
         }
 
@@ -1067,12 +1067,12 @@ fn damage(
     context: &mut MonContext,
     damage: u16,
     source: Option<MonHandle>,
-    effect: Option<EffectHandle>,
+    effect: Option<&EffectHandle>,
 ) -> Result<(), Error> {
     let target = context.mon_handle();
     let mut context = match effect {
         None => return Err(battler_error!("damage dealt must be tied to some effect")),
-        Some(effect) => context.as_battle_context_mut().effect_context(&effect)?,
+        Some(effect) => context.as_battle_context_mut().effect_context(effect)?,
     };
     let mut targets = [HitTargetState::new(target, MoveDamage::Damage(damage))];
     apply_spread_damage(&mut context, source, &mut targets)
