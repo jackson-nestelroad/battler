@@ -1015,7 +1015,7 @@ impl Mon {
         context: &mut MonContext,
         damage: u16,
         source: Option<MonHandle>,
-        effect: Option<EffectHandle>,
+        effect: Option<&EffectHandle>,
     ) -> Result<u16, Error> {
         if context.mon().hp == 0 || damage == 0 {
             return Ok(0);
@@ -1031,7 +1031,7 @@ impl Mon {
     pub fn faint(
         context: &mut MonContext,
         source: Option<MonHandle>,
-        effect: Option<EffectHandle>,
+        effect: Option<&EffectHandle>,
     ) -> Result<(), Error> {
         if context.mon().fainted {
             return Ok(());
@@ -1042,7 +1042,7 @@ impl Mon {
         context.battle_mut().faint_queue.push_back(FaintEntry {
             target: mon_handle,
             source,
-            effect,
+            effect: effect.cloned(),
         });
         Ok(())
     }

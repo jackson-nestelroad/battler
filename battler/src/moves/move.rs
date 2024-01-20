@@ -125,7 +125,7 @@ pub struct MoveData {
     #[serde(default)]
     pub breaks_protect: bool,
     /// The percentage of the target's HP to damage for recoil.
-    pub recoil_percent: Option<u8>,
+    pub recoil_percent: Option<Fraction<u16>>,
     /// The percentage of the target's HP to drain.
     pub drain_percent: Option<Fraction<u16>>,
     /// Apply Struggle recoil?

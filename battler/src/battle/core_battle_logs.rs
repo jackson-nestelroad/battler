@@ -4,7 +4,6 @@ use crate::{
     battle::{
         ActiveMoveContext,
         ActiveTargetContext,
-        ApplyingEffectContext,
         Context,
         Mon,
         MonContext,
@@ -80,7 +79,7 @@ where
     for target in targets {
         target_positions.push(format!(
             "{}",
-            Mon::position_details(&mut context.mon_context(target)?)?
+            Mon::position_details(&context.mon_context(target)?)?
         ));
     }
     context
@@ -137,29 +136,38 @@ pub fn ohko(context: &mut ActiveTargetContext) -> Result<(), Error> {
     move_event_on_target(context, "ohko")
 }
 
-pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn damage(
+    context: &mut MonContext,
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+) -> Result<(), Error> {
     // TODO: Handle other special cases where the damage log should have more information.
-    let mut event = log_event!(
-        "damage",
-        ("mon", Mon::position_details(&context.target_context()?)?)
-    );
-    let effect_type = context.effect().effect_type();
-    if effect_type != EffectType::Move {
-        event.set("from", context.effect().full_name());
-        let target_handle = context.target_handle();
-        if let Some(source_context) = context.source_context()? {
-            if source_context.mon_handle() != target_handle || effect_type == EffectType::Ability {
-                event.set("source", Mon::position_details(&source_context)?);
+    let mut event = log_event!("damage", ("mon", Mon::position_details(context)?));
+    if let Some(effect) = effect {
+        let effect_context = context.as_battle_context_mut().effect_context(effect)?;
+        let effect_type = effect_context.effect().effect_type();
+        if effect_type != EffectType::Move {
+            event.set("from", effect_context.effect().full_name());
+
+            if let Some(source) = source {
+                if source != context.mon_handle() || effect_type == EffectType::Ability {
+                    event.set(
+                        "source",
+                        Mon::position_details(
+                            &context.as_battle_context_mut().mon_context(source)?,
+                        )?,
+                    );
+                }
             }
         }
     }
 
     let mut private_event = event;
     let mut public_event = private_event.clone();
-    private_event.set("health", Mon::secret_health(&context.target_context()?));
-    public_event.set("health", Mon::public_health(&context.target_context()?));
+    private_event.set("health", Mon::secret_health(context));
+    public_event.set("health", Mon::public_health(context));
 
-    let side = context.target().side;
+    let side = context.mon().side;
     context
         .battle_mut()
         .log_private_public(side, private_event, public_event);
@@ -169,7 +177,7 @@ pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
 pub fn heal(
     context: &mut MonContext,
     source: Option<MonHandle>,
-    effect: Option<EffectHandle>,
+    effect: Option<&EffectHandle>,
 ) -> Result<(), Error> {
     let mut event = log_event!("heal", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {

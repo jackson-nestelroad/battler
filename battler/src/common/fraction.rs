@@ -108,11 +108,19 @@ where
         num::Integer::div_ceil(&self.numerator(), &self.denominator())
     }
 
+    /// Returns the rounded integer representation of the fraction.
     pub fn round(&self) -> I
     where
         I: PrimInt,
     {
         (self.numerator().add(self.denominator().shr(1))).div(self.denominator())
+    }
+
+    pub fn convert<T>(self) -> Fraction<T>
+    where
+        T: FractionInteger + From<I>,
+    {
+        Fraction::new(T::from(self.numerator()), T::from(self.denominator()))
     }
 
     /// Returns the inverse of this fraction.

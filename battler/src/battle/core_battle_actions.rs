@@ -240,7 +240,7 @@ fn use_move_internal(
         faint(
             context.as_mon_context_mut(),
             Some(mon_handle),
-            Some(effect_handle),
+            Some(&effect_handle),
         )?;
     }
 
@@ -263,7 +263,7 @@ fn use_move_internal(
         faint(
             context.as_mon_context_mut(),
             Some(mon_handle),
-            Some(effect_handle),
+            Some(&effect_handle),
         )?;
     }
 
@@ -275,7 +275,7 @@ fn use_move_internal(
 pub fn faint(
     context: &mut MonContext,
     source: Option<MonHandle>,
-    effect: Option<EffectHandle>,
+    effect: Option<&EffectHandle>,
 ) -> Result<(), Error> {
     Mon::faint(context, source, effect)
 }
@@ -721,10 +721,19 @@ fn modify_damage(
     Ok(MoveDamage::Damage(base_damage))
 }
 
+fn calculate_recoil_damage(context: &ActiveMoveContext) -> u64 {
+    let damage_dealt = context.active_move().total_damage;
+    match context.active_move().data.recoil_percent {
+        Some(recoil_percent) if damage_dealt > 0 => {
+            (recoil_percent.convert() * damage_dealt).round().max(1)
+        }
+        _ => 0,
+    }
+}
+
 mod direct_move_step {
     use std::ops::Mul;
 
-    use super::HitTargetState;
     use crate::{
         battle::{
             core_battle_actions,
@@ -740,12 +749,13 @@ mod direct_move_step {
         common::{
             Error,
             Fraction,
+            Id,
             WrapResultError,
         },
+        effect::EffectHandle,
         moves::{
             Accuracy,
             MoveCategory,
-            MoveHitEffectType,
             MoveTarget,
             MultihitType,
             OhkoType,
@@ -995,9 +1005,29 @@ mod direct_move_step {
             core_battle_logs::hit_count(context, hits)?;
         }
 
-        // TODO: Recoil damage.
+        let recoil_damage = core_battle_actions::calculate_recoil_damage(context);
+        if recoil_damage > 0 {
+            let recoil_damage = recoil_damage.min(u16::MAX as u64) as u16;
+            let mon_handle = context.mon_handle();
+            let effect_handle = context.effect_handle();
+            core_battle_actions::damage(
+                &mut context.as_mon_context_mut(),
+                recoil_damage,
+                Some(mon_handle),
+                Some(effect_handle),
+            )?;
+        }
 
-        // TODO: Struggle recoil damage.
+        if context.active_move().data.struggle_recoil {
+            let recoil_damage = Fraction::new(context.mon().max_hp, 4).round();
+            let mon_handle = context.mon_handle();
+            core_battle_actions::direct_damage(
+                &mut context.as_mon_context_mut(),
+                recoil_damage,
+                Some(mon_handle),
+                Some(&EffectHandle::Condition(Id::from_known("strugglerecoil"))),
+            )?;
+        }
 
         // TODO: Record which Mon attacked which, and how many times.
 
@@ -1012,6 +1042,36 @@ mod direct_move_step {
         // At this point, all hits have been applied.
         Ok(())
     }
+}
+
+fn direct_damage(
+    context: &mut MonContext,
+    damage: u16,
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+) -> Result<u16, Error> {
+    if context.mon().hp == 0 || damage == 0 {
+        return Ok(0);
+    }
+    let damage = damage.max(1);
+    let damage = Mon::damage(context, damage, source, effect)?;
+    core_battle_logs::damage(context, source, effect)?;
+    todo!()
+}
+
+fn damage(
+    context: &mut MonContext,
+    damage: u16,
+    source: Option<MonHandle>,
+    effect: Option<EffectHandle>,
+) -> Result<(), Error> {
+    let target = context.mon_handle();
+    let mut context = match effect {
+        None => return Err(battler_error!("damage dealt must be tied to some effect")),
+        Some(effect) => context.as_battle_context_mut().effect_context(&effect)?,
+    };
+    let mut targets = [HitTargetState::new(target, MoveDamage::Damage(damage))];
+    apply_spread_damage(&mut context, source, &mut targets)
 }
 
 fn apply_spread_damage(
@@ -1043,11 +1103,17 @@ fn apply_spread_damage(
             &mut context.target_context()?,
             *damage,
             source_handle,
-            Some(effect_handle),
+            Some(&effect_handle),
         )?;
         context.target_mut().hurt_this_turn = *damage;
 
-        core_battle_logs::damage(&mut context)?;
+        let source_handle = context.source_handle();
+        let effect_handle = context.effect_handle();
+        core_battle_logs::damage(
+            &mut context.target_context()?,
+            source_handle,
+            Some(&effect_handle),
+        )?;
 
         if let Some(Some(drain_percent)) = context
             .effect()
@@ -1062,7 +1128,7 @@ fn apply_spread_damage(
                     &mut context,
                     amount,
                     Some(target_handle),
-                    Some(EffectHandle::Condition(Id::from_known("drain"))),
+                    Some(&EffectHandle::Condition(Id::from_known("drain"))),
                 )?;
             }
         }
@@ -1074,7 +1140,7 @@ pub fn heal(
     context: &mut MonContext,
     damage: u16,
     source: Option<MonHandle>,
-    effect: Option<EffectHandle>,
+    effect: Option<&EffectHandle>,
 ) -> Result<u16, Error> {
     // TODO: TryHeal event.
     if damage == 0

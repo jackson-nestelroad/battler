@@ -120,11 +120,11 @@ impl<'battle, 'data> Context<'battle, 'data> {
     /// Creates a new [`EffectContext`], scoped to the lifetime of this context.
     pub fn effect_context<'context>(
         &'context mut self,
-        effect_handle: EffectHandle,
+        effect_handle: &EffectHandle,
     ) -> Result<EffectContext<'context, 'battle, 'data>, Error> {
         match effect_handle {
             EffectHandle::ActiveMove(active_move_handle) => {
-                EffectContext::for_active_move(self.into(), active_move_handle)
+                EffectContext::for_active_move(self.into(), *active_move_handle)
             }
             EffectHandle::Ability(_) => todo!("ability context not implemented"),
             EffectHandle::Condition(condition) => {
@@ -888,7 +888,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     ) -> Result<EffectContext<'active_move, 'battle, 'data>, Error> {
         let active_move_handle = self.active_move_handle;
         self.as_battle_context_mut()
-            .effect_context(EffectHandle::ActiveMove(active_move_handle))
+            .effect_context(&EffectHandle::ActiveMove(active_move_handle))
     }
 
     /// Creates a new [`ActiveMoveContext`] for a secondary [`HitEffect`], scoped to the lifetime of

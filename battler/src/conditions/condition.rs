@@ -15,6 +15,9 @@ use crate::common::{
 /// The type of a condition.
 #[derive(Debug, Clone, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
 pub enum ConditionType {
+    #[string = "Built-in"]
+    #[alias = "BuiltIn"]
+    BuiltIn,
     #[string = "Condition"]
     Condition,
     #[string = "Weather"]
