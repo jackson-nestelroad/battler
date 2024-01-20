@@ -474,15 +474,16 @@ fn hit_targets(
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
     let move_target = context.active_move().data.target.clone();
-    if move_target == MoveTarget::All {
-        // TODO: TryHitField event.
-    } else if move_target == MoveTarget::FoeSide
+    if move_target == MoveTarget::All && !context.is_self() {
+        // TODO: TryHitField event for the HitEffect.
+    } else if (move_target == MoveTarget::FoeSide
         || move_target == MoveTarget::AllySide
-        || move_target == MoveTarget::AllyTeam
+        || move_target == MoveTarget::AllyTeam)
+        && !context.is_self()
     {
-        // TODO: TryHitSide event.
+        // TODO: TryHitSide event for the HitEffect.
     } else {
-        // TODO: TryHit event for each target.
+        // TODO: TryHit event for the HitEffect.
     }
 
     // TODO: If any of the above events fail, the move should fail.
@@ -508,14 +509,6 @@ fn hit_targets(
 
     let mon_handle = context.mon_handle();
     apply_spread_damage(&mut context.effect_context()?, Some(mon_handle), targets)?;
-
-    // Log OHKOs.
-    for target in targets.iter() {
-        let mut context = context.target_context(target.handle)?;
-        if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
-            core_battle_logs::ohko(&mut context)?;
-        }
-    }
 
     // TODO: Run move effects.
 
@@ -1012,6 +1005,14 @@ mod direct_move_step {
         // TODO: Struggle recoil damage.
 
         // TODO: Record which Mon attacked which, and how many times.
+
+        // Log OHKOs.
+        for target in targets.iter() {
+            let mut context = context.target_context(target.handle)?;
+            if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
+                core_battle_logs::ohko(&mut context)?;
+            }
+        }
 
         // At this point, all hits have been applied.
         Ok(())
