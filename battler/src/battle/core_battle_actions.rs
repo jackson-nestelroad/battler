@@ -447,9 +447,9 @@ fn move_hit_loose_success(
 ) -> Result<MoveOutcome, Error> {
     let targets = move_hit(context, targets)?;
     if targets.into_iter().all(|target| target.damage.failed()) {
-        Ok(MoveOutcome::Success)
-    } else {
         Ok(MoveOutcome::Skipped)
+    } else {
+        Ok(MoveOutcome::Success)
     }
 }
 
