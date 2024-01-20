@@ -16,7 +16,8 @@ use crate::{
         MoveDamage,
         MoveHandle,
         MoveOutcome,
-        SideContext,
+        Player,
+        PlayerContext,
     },
     battler_error,
     common::{
@@ -62,7 +63,7 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
     let active_len = context.player().active.len();
     if position >= active_len {
         return Err(battler_error!(
-            "Invalid switch position {position} / {active_len}"
+            "invalid switch position {position} / {active_len}"
         ));
     }
 
@@ -1157,6 +1158,55 @@ pub fn heal(
     Ok(healed)
 }
 
-pub fn drag_in(context: &mut SideContext, position: usize) -> Result<(), Error> {
-    todo!("drag_in is not implemented")
+pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Error> {
+    let old = Player::active_mon_handle(context, position);
+
+    let old_context = match old {
+        None => return Err(battler_error!("nothing to drag out")),
+        Some(old) => context.mon_context(old)?,
+    };
+    if old_context.mon().hp == 0 {
+        return Ok(false);
+    }
+    // TODO: DragOut event.
+
+    let player = context.player().index;
+    let mon = CoreBattle::random_switchable(context.as_battle_context_mut(), player)?;
+    let mut context = match mon {
+        None => return Ok(false),
+        Some(mon) => context.mon_context(mon)?,
+    };
+    if context.mon().active {
+        return Ok(false);
+    }
+    switch_in(&mut context, position)?;
+    Ok(true)
+}
+
+fn apply_move_effects(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    Ok(())
+}
+
+fn apply_self_effect(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    Ok(())
+}
+
+fn apply_secondary_effects(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    Ok(())
+}
+
+fn force_switch(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    Ok(())
 }

@@ -924,7 +924,7 @@ impl<'d> CoreBattle<'d> {
             let mut context = context.mon_context(mon)?;
             if context.mon().force_switch && context.mon().hp > 0 {
                 let position = context.mon().active_position;
-                core_battle_actions::drag_in(context.as_side_context_mut(), position)?;
+                core_battle_actions::drag_in(context.as_player_context_mut(), position)?;
             }
             context.mon_mut().force_switch = false;
         }
@@ -1093,6 +1093,19 @@ impl<'d> CoreBattle<'d> {
         }
         Self::calculate_action_priority(context, action)?;
         Ok(())
+    }
+
+    pub fn random_switchable(
+        context: &mut Context,
+        player: usize,
+    ) -> Result<Option<MonHandle>, Error> {
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG is completely disjoint from the iterator created below.
+        let prng = unsafe { mem::transmute(prng) };
+        Ok(rand_util::sample_iter(
+            prng,
+            Player::switchable_mon_handles(&context.player_context(player)?),
+        ))
     }
 
     pub fn random_target(
