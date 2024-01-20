@@ -19,8 +19,10 @@ pub use move_target::MoveTarget;
 pub use multihit_type::MultihitType;
 pub use ohko_type::OhkoType;
 pub use r#move::{
+    HitEffect,
     Move,
     MoveData,
+    MoveHitEffectType,
     SecondaryEffect,
 };
 pub use self_destruct_type::SelfDestructType;

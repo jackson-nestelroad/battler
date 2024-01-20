@@ -35,7 +35,7 @@ use crate::{
 };
 
 /// The effect of being hit by a move.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct HitEffect {
     /// Stat boosts.
     pub boosts: Option<PartialBoostTable>,
@@ -60,6 +60,8 @@ pub struct HitEffect {
 pub struct SecondaryEffect {
     /// Chance of the effect occurring.
     pub chance: Option<Fraction<u16>>,
+    /// Secondary hit effect on the target.
+    pub target: HitEffect,
     /// Secondary hit effect on the user of the move.
     pub user: HitEffect,
 }
@@ -117,8 +119,6 @@ pub struct MoveData {
     pub force_switch: bool,
     /// Type of switch that occurs on the user.
     pub user_switch: Option<UserSwitchType>,
-    /// Type of stat boosts on the user.
-    pub user_boosts: Option<PartialBoostTable>,
     /// How the user self destructs.
     pub self_destruct: Option<SelfDestructType>,
     /// Does the move break protect?
@@ -135,11 +135,17 @@ pub struct MoveData {
     #[serde(default)]
     pub ignore_stab: bool,
 
+    /// Primary effect applied to the target.
+    ///
+    /// Applied when the moev hits.
+    pub hit_effect: Option<HitEffect>,
+    /// Primary effect on the user.
+    ///
+    /// Applied when the move hits.
+    pub user_effect: Option<HitEffect>,
     /// Secondary effects applied to the target.
     #[serde(default)]
     pub secondary_effects: Vec<SecondaryEffect>,
-    /// A secondary effect on the user.
-    pub user_secondary_effect: Option<SecondaryEffect>,
 
     /// Mon override for offensive stat calculations.
     ///
@@ -237,6 +243,13 @@ impl MoveHitData {
     }
 }
 
+/// The current type of [`HitEffect`] being applied on an active [`Move`].
+#[derive(Clone, Copy)]
+pub enum MoveHitEffectType {
+    PrimaryEffect,
+    SecondaryEffect(usize),
+}
+
 /// An inidividual move, which can be used by a Mon in battle.
 ///
 /// Unlike other move effects, [`Move`]s are mutable across multiple Mons and turns. A move used by
@@ -283,6 +296,56 @@ impl Move {
 
     pub fn hit_data(&mut self, target: MonHandle) -> &mut MoveHitData {
         self.hit_data.entry(target).or_insert(MoveHitData::new())
+    }
+
+    pub fn target_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => self.data.hit_effect.as_ref(),
+            MoveHitEffectType::SecondaryEffect(index) => self
+                .data
+                .secondary_effects
+                .get(index)
+                .map(|effect| &effect.target),
+        }
+    }
+
+    pub fn target_hit_effect_mut(
+        &mut self,
+        hit_effect_type: MoveHitEffectType,
+    ) -> Option<&mut HitEffect> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => self.data.hit_effect.as_mut(),
+            MoveHitEffectType::SecondaryEffect(index) => self
+                .data
+                .secondary_effects
+                .get_mut(index)
+                .map(|effect| &mut effect.target),
+        }
+    }
+
+    pub fn user_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => self.data.user_effect.as_ref(),
+            MoveHitEffectType::SecondaryEffect(index) => self
+                .data
+                .secondary_effects
+                .get(index)
+                .map(|effect| &effect.user),
+        }
+    }
+
+    pub fn user_hit_effect_mut(
+        &mut self,
+        hit_effect_type: MoveHitEffectType,
+    ) -> Option<&mut HitEffect> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => self.data.user_effect.as_mut(),
+            MoveHitEffectType::SecondaryEffect(index) => self
+                .data
+                .secondary_effects
+                .get_mut(index)
+                .map(|effect| &mut effect.user),
+        }
     }
 }
 

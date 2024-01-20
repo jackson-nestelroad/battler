@@ -22,8 +22,10 @@ use crate::{
         EffectHandle,
     },
     moves::{
+        HitEffect,
         MonOverride,
         Move,
+        MoveHitEffectType,
     },
 };
 
@@ -626,6 +628,16 @@ impl<'player, 'side, 'context, 'battle, 'data>
 
 /// The context of an active [`Move`] in a battle.
 ///
+/// An active move context also has the concept of an applying [`HitEffect`]. A move can "hit"
+/// (e.g., "affect") [`Mon`]s multiple times. For instance:
+/// - The primary hit deals damage.
+/// - The primary [`HitEffect`] lowers stats of the targets and user.
+/// - One or more secondary [`HitEffect`]s affect the targets and users.
+///
+/// The first [`ActiveMoveContext`] is always for the primary [`HitEffect`]. Child contexts can be
+/// created for secondary hit effects on the targets or user. This allows battle logic to
+/// distinguish between the primary hit of a move and secondary effects of a move.
+///
 /// See [`Context`] for more information on how context objects work.
 pub struct ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>
 where
@@ -638,6 +650,9 @@ where
     context: MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>,
     active_move_handle: MoveHandle,
     active_move: &'context mut Move,
+    hit_effect_type: MoveHitEffectType,
+    is_self: bool,
+    is_external: bool,
 }
 
 impl<'mon, 'player, 'side, 'context, 'battle, 'data>
@@ -664,7 +679,37 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
             context,
             active_move_handle,
             active_move,
+            hit_effect_type: MoveHitEffectType::PrimaryEffect,
+            is_self: false,
+            is_external: false,
         })
+    }
+
+    fn new_from_active_move_context(
+        context: &mut Self,
+        hit_effect_type: MoveHitEffectType,
+        is_self: bool,
+        is_external: bool,
+    ) -> Self {
+        let active_move_handle = context.active_move_handle.clone();
+        let active_move = &mut *context.active_move;
+        // SAFETY: Active moves live as long as the context itself, assuming that the context cannot
+        // exist when the battle moves to the next turn.
+        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
+        let context = context.as_mon_context_mut();
+        // SAFETY: We know that the MonContext has lifetime 'mon. We want it to have lifetime
+        // 'active_move (lifetime of &mut self). This is safe because we are changing the scope of
+        // this reference to a smaller lifetime.
+        let context = unsafe { context.unsafely_detach_borrow_mut() };
+        let context = context.into();
+        Self {
+            context,
+            active_move_handle,
+            active_move,
+            hit_effect_type,
+            is_self,
+            is_external,
+        }
     }
 
     fn new_from_move_handle(
@@ -688,6 +733,9 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
             context: MaybeOwnedMut::Owned(context),
             active_move_handle,
             active_move,
+            hit_effect_type: MoveHitEffectType::PrimaryEffect,
+            is_self: false,
+            is_external: false,
         })
     }
 
@@ -803,6 +851,8 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         ActiveTargetContext::new_from_active_move_context(self.into(), target_mon_handle)
     }
 
+    /// Creates a new [`ActiveTargetContext`] for the active target set on the curretn [`Mon`],
+    /// scoped to the lifetime of this context.
     pub fn active_target_context<'active_move>(
         &'active_move mut self,
     ) -> Result<
@@ -835,6 +885,28 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         let active_move_handle = self.active_move_handle;
         self.as_battle_context_mut()
             .effect_context(EffectHandle::ActiveMove(active_move_handle))
+    }
+
+    /// Creates a new [`ActiveMoveContext`] for a secondary [`HitEffect`], scoped to the lifetime of
+    /// this context.
+    pub fn secondary_active_move_context(&mut self, index: usize) -> Self {
+        ActiveMoveContext::new_from_active_move_context(
+            self,
+            MoveHitEffectType::SecondaryEffect(index),
+            self.is_self,
+            self.is_external,
+        )
+    }
+
+    /// Creates a new [`ActiveMoveContext`] for applying [`HitEffect`]s that affect the user of the
+    /// move, scoped to the lifetime of this context.
+    pub fn hit_self_active_move_context(&mut self) -> Self {
+        ActiveMoveContext::new_from_active_move_context(
+            self,
+            self.hit_effect_type,
+            true,
+            self.is_external,
+        )
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -910,6 +982,54 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Returns a mutable reference to the active [`Move`].
     pub fn active_move_mut(&mut self) -> &mut Move {
         &mut *self.active_move
+    }
+
+    /// Checks if the context is scoped to the primary effect of the active [`Move`].
+    pub fn is_primary(&self) -> bool {
+        match self.hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if the context is scoped to a secondary effect of the active [`Move`].
+    pub fn is_secondary(&self) -> bool {
+        match self.hit_effect_type {
+            MoveHitEffectType::SecondaryEffect(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if the [`HitEffect`] is applying to the user of the move, as opposed to its targets.
+    ///
+    /// Returns `false` when a target effect of a move is being applied to the user of the move
+    /// because the Mon targeted itself.
+    pub fn is_self(&self) -> bool {
+        self.is_self
+    }
+
+    /// Checks if the [`Move`] orginated from an external source (i.e., the [`Mon`] did not
+    /// explicitly select it).
+    pub fn is_external(&self) -> bool {
+        self.is_external
+    }
+
+    /// Returns a reference to the applying [`HitEffect`].
+    pub fn hit_effect(&self) -> Option<&HitEffect> {
+        if self.is_self {
+            self.active_move.user_hit_effect(self.hit_effect_type)
+        } else {
+            self.active_move.target_hit_effect(self.hit_effect_type)
+        }
+    }
+
+    /// Returns a mutable reference to the applying [`HitEffect`].
+    pub fn target_hit_effect_mut(&mut self) -> Option<&mut HitEffect> {
+        if self.is_self {
+            self.active_move.user_hit_effect_mut(self.hit_effect_type)
+        } else {
+            self.active_move.target_hit_effect_mut(self.hit_effect_type)
+        }
     }
 }
 

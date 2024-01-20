@@ -1,12 +1,16 @@
-use std::ops::Deref;
+use std::{
+    mem,
+    ops::Deref,
+};
 
 use lazy_static::lazy_static;
 
-use super::SideContext;
 use crate::{
     battle::{
         core_battle_logs,
+        modify_32,
         ActiveMoveContext,
+        ActiveTargetContext,
         CoreBattle,
         EffectContext,
         Mon,
@@ -15,20 +19,27 @@ use crate::{
         MoveDamage,
         MoveHandle,
         MoveOutcome,
+        SideContext,
     },
     battler_error,
     common::{
         Error,
+        Fraction,
         Id,
         Identifiable,
         UnsafelyDetachBorrow,
         WrapResultError,
     },
     effect::EffectHandle,
+    mons::Stat,
     moves::{
+        DamageType,
+        MoveCategory,
+        MoveHitEffectType,
         MoveTarget,
         SelfDestructType,
     },
+    rng::rand_util,
 };
 
 struct HitTargetState {
@@ -222,6 +233,7 @@ fn use_move_internal(
     }
 
     let targets = get_move_targets(&mut context, target)?;
+    // TODO: DeductPP event (for Pressure).
     // TODO: Targeted event.
     // TODO: TryMove event.
     // TODO: UseMoveMessage event.
@@ -248,6 +260,7 @@ fn use_move_internal(
     };
 
     // TODO: Move hit on self for boosts?
+    // TODO: jackson-nestelroad
 
     if context.mon().hp == 0 {
         let mon_handle = context.mon_handle();
@@ -432,6 +445,294 @@ fn try_direct_move(
     Ok(outcome)
 }
 
+fn move_hit_loose_success(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+) -> Result<MoveOutcome, Error> {
+    let targets = move_hit(context, targets)?;
+    if targets.into_iter().all(|target| target.damage.failed()) {
+        Ok(MoveOutcome::Success)
+    } else {
+        Ok(MoveOutcome::Skipped)
+    }
+}
+
+fn move_hit(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+) -> Result<Vec<HitTargetState>, Error> {
+    let mut hit_targets_state = targets
+        .iter()
+        .map(|target| HitTargetState::new(*target, MoveDamage::Damage(0)))
+        .collect::<Vec<_>>();
+    hit_targets(context, hit_targets_state.as_mut_slice())?;
+    Ok(hit_targets_state)
+}
+
+fn hit_targets(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    let move_target = context.active_move().data.target.clone();
+    if move_target == MoveTarget::All {
+        // TODO: TryHitField event.
+    } else if move_target == MoveTarget::FoeSide
+        || move_target == MoveTarget::AllySide
+        || move_target == MoveTarget::AllyTeam
+    {
+        // TODO: TryHitSide event.
+    } else {
+        // TODO: TryHit event for each target.
+    }
+
+    // TODO: If any of the above events fail, the move should fail.
+    // TODO: If we run multiple TryHit events for multiple targets, the targets hit should be
+    // filtered.
+
+    // First, check for substitute.
+    if !context.is_secondary() && !context.is_self() && move_target.affects_mons_directly() {
+        // TODO: TryPrimaryHit event, which should catch substitutes.
+    }
+
+    // TODO: If we hit a substitute, filter those targets out.
+
+    // Calculate damage for each target.
+    calculate_spread_damage(context, targets)?;
+    for target in targets.iter_mut() {
+        if target.damage.failed() {
+            if !context.is_secondary() && !context.is_self() {
+                core_battle_logs::fail_target(&mut context.target_context(target.handle)?)?;
+            }
+        }
+    }
+
+    let mon_handle = context.mon_handle();
+    apply_spread_damage(&mut context.effect_context()?, Some(mon_handle), targets)?;
+
+    // Log OHKOs.
+    for target in targets.iter() {
+        let mut context = context.target_context(target.handle)?;
+        if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
+            core_battle_logs::ohko(&mut context)?;
+        }
+    }
+
+    // TODO: Run move effects.
+
+    // TODO: Self drops.
+
+    // TODO: Secondary effects.
+
+    // TODO: Force switch.
+
+    // TODO: Post-damage events.
+
+    Ok(())
+}
+
+fn calculate_spread_damage(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<(), Error> {
+    for target in targets {
+        if target.damage.failed() {
+            continue;
+        }
+        target.damage = MoveDamage::None;
+        // Secondary or effects on the user cannot deal damage.
+        //
+        // Note that this is different from moves that target the user.
+        if context.is_secondary() || context.is_self() {
+            continue;
+        }
+        CoreBattle::set_active_target(context.as_battle_context_mut(), Some(target.handle))?;
+        let mut context = context.active_target_context()?;
+        target.damage = calculate_damage(&mut context)?;
+    }
+    Ok(())
+}
+
+fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveDamage, Error> {
+    let target_mon_handle = context.target_mon_handle();
+    // Type immunity.
+    let move_type = context.active_move().data.primary_type;
+    let ignore_immunity = context.active_move().data.ignore_immunity();
+    if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
+        return Ok(MoveDamage::Failure);
+    }
+
+    // OHKO.
+    if context.active_move().data.ohko_type.is_some() {
+        return Ok(MoveDamage::Damage(context.target_mon().max_hp));
+    }
+
+    // TODO: Damage callback for moves that have special rules for damage calculation.
+
+    // Static damage.
+    match context.active_move().data.damage {
+        Some(DamageType::Level) => return Ok(MoveDamage::Damage(context.mon().level as u16)),
+        Some(DamageType::Set(damage)) => return Ok(MoveDamage::Damage(damage)),
+        _ => (),
+    }
+
+    let base_power = context.active_move().data.base_power;
+    // TODO: Base power callback for moves that have special rules for base power calculation.
+
+    // If base power is explicitly 0, no damage should be dealt.
+    //
+    // Status moves stop here.
+    if base_power == 0 {
+        return Ok(MoveDamage::None);
+    }
+    let base_power = context.active_move().data.base_power.max(1);
+
+    // Critical hit.
+    // TODO: ModifyCritRatio event.
+    let crit_ratio = context.active_move().data.crit_ratio.unwrap_or(0);
+    let crit_ratio = crit_ratio.max(0).min(4);
+    let crit_mult = [0, 24, 8, 2, 1];
+    context.active_move_mut().hit_data(target_mon_handle).crit =
+        context.active_move().data.will_crit
+            || (crit_ratio > 0
+                && rand_util::chance(
+                    context.battle_mut().prng.as_mut(),
+                    1,
+                    crit_mult[crit_ratio as usize],
+                ));
+
+    if context.active_move_mut().hit_data(target_mon_handle).crit {
+        // TODO: CriticalHit event.
+    }
+
+    // TODO: BasePower event, which happens after crit calculation.
+
+    let level = context.mon().level;
+    let move_category = context.active_move().data.category.clone();
+    let is_physical = move_category == MoveCategory::Physical;
+    let attack_stat = context
+        .active_move()
+        .data
+        .override_offensive_stat
+        .unwrap_or(if is_physical { Stat::Atk } else { Stat::SpAtk });
+    let defense_stat = context
+        .active_move()
+        .data
+        .override_defensive_stat
+        .unwrap_or(if is_physical { Stat::Def } else { Stat::SpDef });
+
+    let mut attack_boosts = context
+        .attacker_context()?
+        .mon()
+        .boosts
+        .get(attack_stat.try_into()?);
+    let mut defense_boosts = context
+        .defender_context()?
+        .mon()
+        .boosts
+        .get(defense_stat.try_into()?);
+
+    if context.active_move().data.ignore_offensive {
+        attack_boosts = 0;
+    }
+    if context.active_move().data.ignore_defensive {
+        defense_boosts = 0;
+    }
+
+    let move_user = context.mon_handle();
+    let move_target = context.target_mon_handle();
+    let attack = Mon::calculate_stat(
+        &mut context.attacker_context()?,
+        attack_stat,
+        attack_boosts,
+        Fraction::from(1),
+        move_user,
+        move_target,
+    )?;
+    let defense = Mon::calculate_stat(
+        &mut context.defender_context()?,
+        defense_stat,
+        defense_boosts,
+        Fraction::from(1),
+        move_target,
+        move_user,
+    )?;
+
+    let base_damage = 2 * (level as u32) / 5 + 2;
+    let base_damage = base_damage * base_power * (attack as u32);
+    let base_damage = base_damage / (defense as u32);
+    let base_damage = base_damage / 50;
+
+    // Damage modifiers.
+    modify_damage(context, base_damage)
+}
+
+fn modify_damage(
+    context: &mut ActiveTargetContext,
+    mut base_damage: u32,
+) -> Result<MoveDamage, Error> {
+    base_damage += 2;
+    if context.active_move().spread_hit {
+        let spread_modifier = Fraction::new(3, 4);
+        base_damage = modify_32(base_damage, spread_modifier);
+    }
+
+    // TODO: WeatherModifyDamage event.
+
+    // Critical hit.
+    let target_mon_handle = context.target_mon_handle();
+    let crit = context.active_move_mut().hit_data(target_mon_handle).crit;
+    if crit {
+        let crit_modifier = Fraction::new(3, 2);
+        base_damage = modify_32(base_damage, crit_modifier);
+    }
+
+    // Randomize damage.
+    base_damage = context.battle_mut().randomize_base_damage(base_damage);
+
+    // STAB.
+    let move_type = context.active_move().data.primary_type;
+    let stab = Mon::has_type(&context.as_mon_context(), move_type)?;
+    if stab {
+        let stab_modifier = context
+            .active_move()
+            .clone()
+            .stab_modifier
+            .unwrap_or(Fraction::new(3, 2));
+        base_damage = modify_32(base_damage, stab_modifier);
+    }
+
+    // Type effectiveness.
+    let type_modifier = Mon::type_effectiveness(&mut context.target_mon_context()?, move_type)?;
+    let type_modifier = type_modifier.max(-6).min(6);
+    context
+        .active_move_mut()
+        .hit_data(target_mon_handle)
+        .type_modifier = type_modifier;
+    if type_modifier > 0 {
+        core_battle_logs::super_effective(context)?;
+        for _ in 0..type_modifier {
+            base_damage *= 2;
+        }
+    } else if type_modifier < 0 {
+        core_battle_logs::resisted(context)?;
+        for _ in 0..-type_modifier {
+            base_damage /= 2;
+        }
+    }
+
+    if crit {
+        core_battle_logs::critical_hit(context)?;
+    }
+
+    // TODO: StatusModifyDamage event (Burn).
+
+    // TODO: ModifyDamage event.
+
+    let base_damage = base_damage as u16;
+    let base_damage = base_damage.max(1);
+    Ok(MoveDamage::Damage(base_damage))
+}
+
 mod direct_move_step {
     use std::ops::Mul;
 
@@ -440,7 +741,6 @@ mod direct_move_step {
         battle::{
             core_battle_actions,
             core_battle_logs,
-            modify_32,
             ActiveMoveContext,
             ActiveTargetContext,
             CoreBattle,
@@ -454,11 +754,10 @@ mod direct_move_step {
             Fraction,
             WrapResultError,
         },
-        mons::Stat,
         moves::{
             Accuracy,
-            DamageType,
             MoveCategory,
+            MoveHitEffectType,
             MoveTarget,
             MultihitType,
             OhkoType,
@@ -468,7 +767,6 @@ mod direct_move_step {
 
     pub struct MoveStepTarget {
         pub handle: MonHandle,
-        /// Move steps can assume by default that this will be `true`.
         pub outcome: MoveOutcome,
     }
 
@@ -674,12 +972,12 @@ mod direct_move_step {
                 next_hit_targets.push(target);
             }
 
-            let mut hit_targets_state = targets
+            let mut hit_targets = targets
                 .iter()
-                .filter(|target| target.outcome.success())
-                .map(|target| HitTargetState::new(target.handle, MoveDamage::Damage(0)))
+                .filter_map(|target| target.outcome.success().then_some(target.handle))
                 .collect::<Vec<_>>();
-            hit_targets(context, &mut hit_targets_state, false, false)?;
+            let hit_targets_state =
+                core_battle_actions::move_hit(context, hit_targets.as_mut_slice())?;
 
             if hit_targets_state
                 .iter()
@@ -717,272 +1015,6 @@ mod direct_move_step {
 
         // At this point, all hits have been applied.
         Ok(())
-    }
-
-    fn hit_targets(
-        context: &mut ActiveMoveContext,
-        targets: &mut [HitTargetState],
-        is_secondary: bool,
-        is_self: bool,
-    ) -> Result<(), Error> {
-        let move_target = context.active_move().data.target.clone();
-        if move_target == MoveTarget::All {
-            // TODO: TryHitField event.
-        } else if move_target == MoveTarget::FoeSide
-            || move_target == MoveTarget::AllySide
-            || move_target == MoveTarget::AllyTeam
-        {
-            // TODO: TryHitSide event.
-        } else {
-            // TODO: TryHit event for each target.
-        }
-
-        // TODO: If any of the above events fail, the move should fail.
-        // TODO: If we run multiple TryHit events for multiple targets, the targets hit should be
-        // filtered.
-
-        // First, check for substitute.
-        if !is_secondary && !is_self && move_target.affects_mons_directly() {
-            // TODO: TryPrimaryHit event, which should catch substitutes.
-        }
-
-        // TODO: If we hit a substitute, filter those targets out.
-
-        // Calculate damage for each target.
-        calculate_spread_damage(context, targets, is_secondary, is_self)?;
-        for target in targets.iter_mut() {
-            if target.damage.failed() {
-                if !is_secondary && !is_self {
-                    core_battle_logs::fail_target(&mut context.target_context(target.handle)?)?;
-                }
-            }
-        }
-
-        let mon_handle = context.mon_handle();
-        core_battle_actions::apply_spread_damage(
-            &mut context.effect_context()?,
-            Some(mon_handle),
-            targets,
-        )?;
-
-        // Log OHKOs.
-        for target in targets {
-            let mut context = context.target_context(target.handle)?;
-            if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
-                core_battle_logs::ohko(&mut context)?;
-            }
-        }
-
-        // TODO: Run move effects.
-
-        // TODO: Self drops.
-
-        // TODO: Secondary effects.
-
-        // TODO: Force switch.
-
-        // TODO: Post-damage events.
-
-        Ok(())
-    }
-
-    fn calculate_spread_damage(
-        context: &mut ActiveMoveContext,
-        targets: &mut [HitTargetState],
-        is_secondary: bool,
-        is_self: bool,
-    ) -> Result<(), Error> {
-        for target in targets {
-            if target.damage.failed() {
-                continue;
-            }
-            target.damage = MoveDamage::None;
-            CoreBattle::set_active_target(context.as_battle_context_mut(), Some(target.handle))?;
-            let mut context = context.active_target_context()?;
-            target.damage = calculate_damage(&mut context)?;
-        }
-        Ok(())
-    }
-
-    fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveDamage, Error> {
-        let target_mon_handle = context.target_mon_handle();
-        // Type immunity.
-        let move_type = context.active_move().data.primary_type;
-        let ignore_immunity = context.active_move().data.ignore_immunity();
-        if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
-            return Ok(MoveDamage::Failure);
-        }
-
-        // OHKO.
-        if context.active_move().data.ohko_type.is_some() {
-            return Ok(MoveDamage::Damage(context.target_mon().max_hp));
-        }
-
-        // TODO: Damage callback for moves that have special rules for damage calculation.
-
-        // Static damage.
-        match context.active_move().data.damage {
-            Some(DamageType::Level) => return Ok(MoveDamage::Damage(context.mon().level as u16)),
-            Some(DamageType::Set(damage)) => return Ok(MoveDamage::Damage(damage)),
-            _ => (),
-        }
-
-        let base_power = context.active_move().data.base_power;
-        // TODO: Base power callback for moves that have special rules for base power calculation.
-
-        // If base power is explicitly 0, no damage should be dealt.
-        //
-        // Status moves stop here.
-        if base_power == 0 {
-            return Ok(MoveDamage::None);
-        }
-        let base_power = context.active_move().data.base_power.max(1);
-
-        // Critical hit.
-        // TODO: ModifyCritRatio event.
-        let crit_ratio = context.active_move().data.crit_ratio.unwrap_or(0);
-        let crit_ratio = crit_ratio.max(0).min(4);
-        let crit_mult = [0, 24, 8, 2, 1];
-        context.active_move_mut().hit_data(target_mon_handle).crit =
-            context.active_move().data.will_crit
-                || (crit_ratio > 0
-                    && rand_util::chance(
-                        context.battle_mut().prng.as_mut(),
-                        1,
-                        crit_mult[crit_ratio as usize],
-                    ));
-
-        if context.active_move_mut().hit_data(target_mon_handle).crit {
-            // TODO: CriticalHit event.
-        }
-
-        // TODO: BasePower event, which happens after crit calculation.
-
-        let level = context.mon().level;
-        let move_category = context.active_move().data.category.clone();
-        let is_physical = move_category == MoveCategory::Physical;
-        let attack_stat = context
-            .active_move()
-            .data
-            .override_offensive_stat
-            .unwrap_or(if is_physical { Stat::Atk } else { Stat::SpAtk });
-        let defense_stat = context
-            .active_move()
-            .data
-            .override_defensive_stat
-            .unwrap_or(if is_physical { Stat::Def } else { Stat::SpDef });
-
-        let mut attack_boosts = context
-            .attacker_context()?
-            .mon()
-            .boosts
-            .get(attack_stat.try_into()?);
-        let mut defense_boosts = context
-            .defender_context()?
-            .mon()
-            .boosts
-            .get(defense_stat.try_into()?);
-
-        if context.active_move().data.ignore_offensive {
-            attack_boosts = 0;
-        }
-        if context.active_move().data.ignore_defensive {
-            defense_boosts = 0;
-        }
-
-        let move_user = context.mon_handle();
-        let move_target = context.target_mon_handle();
-        let attack = Mon::calculate_stat(
-            &mut context.attacker_context()?,
-            attack_stat,
-            attack_boosts,
-            Fraction::from(1),
-            move_user,
-            move_target,
-        )?;
-        let defense = Mon::calculate_stat(
-            &mut context.defender_context()?,
-            defense_stat,
-            defense_boosts,
-            Fraction::from(1),
-            move_target,
-            move_user,
-        )?;
-
-        let base_damage = 2 * (level as u32) / 5 + 2;
-        let base_damage = base_damage * base_power * (attack as u32);
-        let base_damage = base_damage / (defense as u32);
-        let base_damage = base_damage / 50;
-
-        // Damage modifiers.
-        modify_damage(context, base_damage)
-    }
-
-    fn modify_damage(
-        context: &mut ActiveTargetContext,
-        mut base_damage: u32,
-    ) -> Result<MoveDamage, Error> {
-        base_damage += 2;
-        if context.active_move().spread_hit {
-            let spread_modifier = Fraction::new(3, 4);
-            base_damage = modify_32(base_damage, spread_modifier);
-        }
-
-        // TODO: WeatherModifyDamage event.
-
-        // Critical hit.
-        let target_mon_handle = context.target_mon_handle();
-        let crit = context.active_move_mut().hit_data(target_mon_handle).crit;
-        if crit {
-            let crit_modifier = Fraction::new(3, 2);
-            base_damage = modify_32(base_damage, crit_modifier);
-        }
-
-        // Randomize damage.
-        base_damage = context.battle_mut().randomize_base_damage(base_damage);
-
-        // STAB.
-        let move_type = context.active_move().data.primary_type;
-        let stab = Mon::has_type(&context.as_mon_context(), move_type)?;
-        if stab {
-            let stab_modifier = context
-                .active_move()
-                .clone()
-                .stab_modifier
-                .unwrap_or(Fraction::new(3, 2));
-            base_damage = modify_32(base_damage, stab_modifier);
-        }
-
-        // Type effectiveness.
-        let type_modifier = Mon::type_effectiveness(&mut context.target_mon_context()?, move_type)?;
-        let type_modifier = type_modifier.max(-6).min(6);
-        context
-            .active_move_mut()
-            .hit_data(target_mon_handle)
-            .type_modifier = type_modifier;
-        if type_modifier > 0 {
-            core_battle_logs::super_effective(context)?;
-            for _ in 0..type_modifier {
-                base_damage *= 2;
-            }
-        } else if type_modifier < 0 {
-            core_battle_logs::resisted(context)?;
-            for _ in 0..-type_modifier {
-                base_damage /= 2;
-            }
-        }
-
-        if crit {
-            core_battle_logs::critical_hit(context)?;
-        }
-
-        // TODO: StatusModifyDamage event (Burn).
-
-        // TODO: ModifyDamage event.
-
-        let base_damage = base_damage as u16;
-        let base_damage = base_damage.max(1);
-        Ok(MoveDamage::Damage(base_damage))
     }
 }
 

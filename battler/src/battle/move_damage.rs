@@ -21,6 +21,14 @@ impl MoveDamage {
             Self::Damage(_) => false,
         }
     }
+
+    pub fn damage_amount(&self) -> u16 {
+        match self {
+            Self::Failure => 0,
+            Self::None => 0,
+            Self::Damage(damage) => *damage,
+        }
+    }
 }
 
 impl Into<Option<u16>> for MoveDamage {
