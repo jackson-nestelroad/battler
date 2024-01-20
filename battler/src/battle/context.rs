@@ -1028,7 +1028,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     }
 
     /// Returns a mutable reference to the applying [`HitEffect`].
-    pub fn target_hit_effect_mut(&mut self) -> Option<&mut HitEffect> {
+    pub fn hit_effect_mut(&mut self) -> Option<&mut HitEffect> {
         if self.is_self {
             self.active_move.user_hit_effect_mut(self.hit_effect_type)
         } else {
