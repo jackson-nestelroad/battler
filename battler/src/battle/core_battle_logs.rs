@@ -10,8 +10,14 @@ use crate::{
         MonContext,
         MonHandle,
     },
-    common::Error,
-    effect::EffectType,
+    common::{
+        Error,
+        Identifiable,
+    },
+    effect::{
+        EffectHandle,
+        EffectType,
+    },
     log_event,
 };
 
@@ -154,6 +160,40 @@ pub fn damage(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     public_event.set("health", Mon::public_health(&context.target_context()?));
 
     let side = context.target().side;
+    context
+        .battle_mut()
+        .log_private_public(side, private_event, public_event);
+    Ok(())
+}
+
+pub fn heal(
+    context: &mut MonContext,
+    source: Option<MonHandle>,
+    effect: Option<EffectHandle>,
+) -> Result<(), Error> {
+    let mut event = log_event!("heal", ("mon", Mon::position_details(context)?));
+    if let Some(effect) = effect {
+        let effect_context = context.as_battle_context_mut().effect_context(effect)?;
+        event.set("from", effect_context.effect().id());
+        if let Some(source) = source {
+            if source != context.mon_handle() {
+                event.set(
+                    "of",
+                    Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
+                );
+            }
+        }
+    }
+
+    // TODO: Let conditions add their own context. For example, "Wish" would probably want to log
+    // who originally granted the Wish.
+
+    let mut private_event = event;
+    let mut public_event = private_event.clone();
+    private_event.set("health", Mon::secret_health(context));
+    public_event.set("health", Mon::public_health(context));
+
+    let side = context.mon().side;
     context
         .battle_mut()
         .log_private_public(side, private_event, public_event);

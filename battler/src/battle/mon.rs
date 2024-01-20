@@ -1047,6 +1047,18 @@ impl Mon {
         Ok(())
     }
 
+    pub fn heal(context: &mut MonContext, mut damage: u16) -> Result<u16, Error> {
+        if context.mon().hp == 0 || damage == 0 || context.mon().hp > context.mon().max_hp {
+            return Ok(0);
+        }
+        context.mon_mut().hp += damage;
+        if context.mon().hp > context.mon().max_hp {
+            damage -= context.mon().hp - context.mon().max_hp;
+            context.mon_mut().hp = context.mon().max_hp;
+        }
+        Ok(damage)
+    }
+
     pub fn clear_state_on_faint(context: &mut MonContext) -> Result<(), Error> {
         // TODO: End event for ability.
         Mon::clear_volatile(context)?;

@@ -2,6 +2,7 @@ mod ability_dex;
 mod aliases;
 mod clause_dex;
 mod common;
+mod condition_dex;
 mod data;
 mod dex;
 mod item_dex;
@@ -22,6 +23,7 @@ pub use common::{
     ResourceWrapper,
     SingleValueDex,
 };
+pub use condition_dex::ConditionDex;
 #[cfg(test)]
 pub use data::fake_data_store::FakeDataStore;
 pub use data::{

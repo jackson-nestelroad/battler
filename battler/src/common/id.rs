@@ -6,7 +6,6 @@ use std::{
         Display,
     },
     hash::Hash,
-    str::FromStr,
 };
 
 use lazy_static::lazy_static;
@@ -17,8 +16,6 @@ use serde::{
     Serialize,
 };
 
-use crate::common::Error;
-
 /// An ID for a resource.
 ///
 /// Resources of the same type should have a unique ID.
@@ -27,41 +24,67 @@ use crate::common::Error;
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Id(Cow<'static, str>);
 
-/// A reference to an ID for a resource.
-///
-/// This type is primarily for optimization purposes. Some code needs IDs but doesn't necessarily
-/// need to own them. Thus, this type provides ID comparisons for unowned strings.
-struct IdRef<'s>(&'s str);
-
 impl Id {
     pub(crate) fn from_known(value: &'static str) -> Self {
         Self(Cow::Borrowed(value))
     }
 
-    #[allow(unused)]
-    fn as_id_ref(&self) -> IdRef {
+    pub fn as_id_ref(&self) -> IdRef {
         IdRef(self.0.as_ref())
+    }
+
+    fn chars<'s>(&'s self) -> impl Iterator<Item = char> + 's {
+        self.0.chars()
     }
 }
 
+/// A reference to an ID for a resource.
+///
+/// This type is primarily for optimization purposes. Some code needs IDs but doesn't necessarily
+/// need to own them. Thus, this type provides ID comparisons for unowned strings.
+#[derive(Clone, Debug, Hash)]
+pub struct IdRef<'s>(&'s str);
+
 impl<'s> IdRef<'s> {
-    fn considered_chars(&'s self) -> impl Iterator<Item = char> + 's {
-        self.0.chars().filter_map(|c| match c {
+    fn considered_chars(s: &'s str) -> impl Iterator<Item = char> + 's {
+        s.chars().filter_map(|c| match c {
             '0'..='9' => Some(c),
             'a'..='z' => Some(c),
             'A'..='Z' => Some(c.to_ascii_lowercase()),
             _ => None,
         })
     }
+
+    fn chars(&'s self) -> impl Iterator<Item = char> + 's {
+        Self::considered_chars(self.0)
+    }
+}
+
+impl<'s> From<&'s str> for IdRef<'s> {
+    fn from(value: &'s str) -> Self {
+        Self(value)
+    }
+}
+
+impl AsRef<str> for IdRef<'_> {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
 }
 
 impl PartialEq for IdRef<'_> {
     fn eq(&self, other: &Self) -> bool {
-        self.considered_chars().eq(other.considered_chars())
+        self.chars().eq(other.chars())
     }
 }
 
 impl Eq for IdRef<'_> {}
+
+impl PartialEq<Id> for IdRef<'_> {
+    fn eq(&self, other: &Id) -> bool {
+        self.chars().eq(other.chars())
+    }
+}
 
 impl Display for Id {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -93,10 +116,9 @@ impl From<&str> for Id {
     }
 }
 
-impl FromStr for Id {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Id::from(s))
+impl From<IdRef<'_>> for Id {
+    fn from(value: IdRef) -> Self {
+        Id::from(value.0.to_owned())
     }
 }
 
@@ -106,9 +128,9 @@ impl PartialEq<str> for Id {
     }
 }
 
-impl From<IdRef<'_>> for Id {
-    fn from(value: IdRef) -> Self {
-        Id::from(value.0.to_owned())
+impl PartialEq<IdRef<'_>> for Id {
+    fn eq(&self, other: &IdRef<'_>) -> bool {
+        self.chars().eq(other.chars())
     }
 }
 

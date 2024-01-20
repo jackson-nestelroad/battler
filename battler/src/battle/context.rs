@@ -13,6 +13,7 @@ use crate::{
     battler_error,
     common::{
         Error,
+        Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
         WrapResultError,
@@ -126,6 +127,9 @@ impl<'battle, 'data> Context<'battle, 'data> {
                 EffectContext::for_active_move(self.into(), active_move_handle)
             }
             EffectHandle::Ability(_) => todo!("ability context not implemented"),
+            EffectHandle::Condition(condition) => {
+                EffectContext::for_condition(self.into(), &condition)
+            }
         }
     }
 
@@ -1311,6 +1315,22 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
             context,
             effect,
             effect_handle: EffectHandle::ActiveMove(active_move_handle),
+        })
+    }
+
+    fn for_condition(
+        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
+        id: &Id,
+    ) -> Result<Self, Error> {
+        let condition = context.battle.dex.conditions.get_by_id(id)?;
+        // SAFETY: Conditions live for the duration of the battle and are not moved for as long as
+        // they are allocated.
+        let condition = unsafe { mem::transmute(condition) };
+        let effect = Effect::for_condition(condition);
+        Ok(Self {
+            context,
+            effect,
+            effect_handle: EffectHandle::Condition(id.clone()),
         })
     }
 

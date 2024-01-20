@@ -3,6 +3,7 @@ use crate::{
     dex::{
         AbilityDex,
         ClauseDex,
+        ConditionDex,
         DataStore,
         ItemDex,
         MoveDex,
@@ -18,6 +19,8 @@ pub struct Dex<'d> {
     pub abilities: AbilityDex<'d>,
     /// Collection of clauses.
     pub clauses: ClauseDex<'d>,
+    /// Collection of conditions.
+    pub conditions: ConditionDex<'d>,
     /// Collection of items.
     pub items: ItemDex<'d>,
     /// Collection of moves.
@@ -35,6 +38,7 @@ impl<'d> Dex<'d> {
         Ok(Self {
             abilities: AbilityDex::new(data),
             clauses: ClauseDex::new(data),
+            conditions: ConditionDex::new(data),
             items: ItemDex::new(data),
             moves: MoveDex::new(data),
             species: SpeciesDex::new(data),

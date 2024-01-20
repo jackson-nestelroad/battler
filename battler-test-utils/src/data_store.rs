@@ -8,6 +8,7 @@ use battler::{
         Error,
         Id,
     },
+    conditions::ConditionData,
     config::ClauseData,
     dex::{
         DataLookupResult,
@@ -60,6 +61,10 @@ impl DataStore for TestDataStore {
 
     fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
         self.local.get_clause(id)
+    }
+
+    fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData> {
+        self.local.get_condition(id)
     }
 
     fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {

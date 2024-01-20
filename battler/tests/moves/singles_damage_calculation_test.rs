@@ -275,6 +275,9 @@ mod damage_calculation_tests {
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|health:263/297",
                 "damage|mon:Charizard,player-2,1|health:89/100",
+                "split|side:0",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:301/301",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:100/100",
                 "residual",
                 "turn|turn:2"
             ]"#,
@@ -309,6 +312,9 @@ mod damage_calculation_tests {
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|health:268/297",
                 "damage|mon:Charizard,player-2,1|health:91/100",
+                "split|side:0",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:301/301",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:100/100",
                 "residual",
                 "turn|turn:2"
             ]"#,
@@ -352,6 +358,9 @@ mod damage_calculation_tests {
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|health:245/297",
                 "damage|mon:Charizard,player-2,1|health:83/100",
+                "split|side:0",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:301/301",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:100/100",
                 "residual",
                 "turn|turn:2"
             ]"#,
@@ -389,6 +398,9 @@ mod damage_calculation_tests {
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|health:253/297",
                 "damage|mon:Charizard,player-2,1|health:86/100",
+                "split|side:0",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:301/301",
+                "heal|mon:Venusaur,player-1,1|from:drain|of:Charizard,player-2,1|health:100/100",
                 "residual",
                 "turn|turn:2"
             ]"#,

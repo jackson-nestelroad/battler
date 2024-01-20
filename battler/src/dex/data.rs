@@ -22,6 +22,7 @@ use crate::{
         LookupResult,
         WrapResultError,
     },
+    conditions::ConditionData,
     config::ClauseData,
     dex::{
         deserialize_aliases,
@@ -69,6 +70,8 @@ pub trait DataStore {
     fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData>;
     /// Gets a clause by ID.
     fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData>;
+    /// Gets a condition by ID.
+    fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData>;
     /// Gets an item by ID.
     fn get_item(&self, id: &Id) -> DataLookupResult<ItemData>;
     /// Gets a move by ID.
@@ -83,6 +86,7 @@ pub struct LocalDataStore {
     type_chart: TypeChart,
     aliases: Aliases,
     clauses: DataTable<ClauseData>,
+    conditions: DataTable<ConditionData>,
     items: DataTable<ItemData>,
     species: DataTable<SpeciesData>,
 }
@@ -94,6 +98,8 @@ impl LocalDataStore {
     pub const ALIASES_FILE: &str = "aliases.json";
     /// Clauses file name.
     pub const CLAUSES_FILE: &str = "clauses.json";
+    /// Conditions file name.
+    pub const CONDITIONS_FILE: &str = "conditions.json";
     /// Abilities directory name.
     pub const ABILITIES_DIR: &str = "abilities";
     /// Items directory name.
@@ -118,6 +124,7 @@ impl LocalDataStore {
             type_chart: TypeChart::new(),
             aliases: Aliases::new(),
             clauses: DataTable::new(),
+            conditions: DataTable::new(),
             items: DataTable::new(),
             species: DataTable::new(),
         };
@@ -153,6 +160,15 @@ impl LocalDataStore {
         .wrap_error_with_message("failed to parse clauses")?;
         for (id, clause) in clauses {
             self.clauses.register(id, clause);
+        }
+
+        let conditions: FastHashMap<Id, ConditionData> = serde_json::from_reader(
+            File::open(Path::new(&self.root).join(Self::CONDITIONS_FILE))
+                .wrap_error_with_message("failed to read conditions")?,
+        )
+        .wrap_error_with_message("failed to parse conditions")?;
+        for (id, condition) in conditions {
+            self.conditions.register(id, condition);
         }
 
         self.species = self.read_all_files_in_directory::<SpeciesData>(Self::SPECIES_DIR)?;
@@ -222,6 +238,13 @@ impl DataStore for LocalDataStore {
         self.clauses.get(id).map(|data| data.deref().clone()).into()
     }
 
+    fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData> {
+        self.conditions
+            .get(id)
+            .map(|data| data.deref().clone())
+            .into()
+    }
+
     fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {
         self.items.get(id).map(|data| data.deref().clone()).into()
     }
@@ -244,6 +267,7 @@ pub mod fake_data_store {
     use crate::{
         abilities::AbilityData,
         common::Id,
+        conditions::ConditionData,
         config::ClauseData,
         dex::{
             Aliases,
@@ -265,6 +289,7 @@ pub mod fake_data_store {
         pub aliases: Aliases,
         pub abilities: DataTable<AbilityData>,
         pub clauses: DataTable<ClauseData>,
+        pub conditions: DataTable<ConditionData>,
         pub items: DataTable<ItemData>,
         pub moves: DataTable<MoveData>,
         pub species: DataTable<SpeciesData>,
@@ -277,6 +302,7 @@ pub mod fake_data_store {
                 aliases: Aliases::new(),
                 abilities: DataTable::new(),
                 clauses: DataTable::new(),
+                conditions: DataTable::new(),
                 items: DataTable::new(),
                 moves: DataTable::new(),
                 species: DataTable::new(),
@@ -302,6 +328,13 @@ pub mod fake_data_store {
 
         fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
             self.clauses.get(id).map(|data| data.deref().clone()).into()
+        }
+
+        fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData> {
+            self.conditions
+                .get(id)
+                .map(|data| data.deref().clone())
+                .into()
         }
 
         fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {

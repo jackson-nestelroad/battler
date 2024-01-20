@@ -3,7 +3,10 @@ use std::ops::{
     DerefMut,
 };
 
-use zone_alloc::ElementRefMut;
+use zone_alloc::{
+    ElementRef,
+    ElementRefMut,
+};
 
 use crate::{
     abilities::Ability,
@@ -12,6 +15,7 @@ use crate::{
         Id,
         Identifiable,
     },
+    conditions::Condition,
     moves::Move,
 };
 
@@ -67,6 +71,7 @@ impl<'a, T> From<&'a mut T> for MaybeElementRef<'a, T> {
 pub enum EffectType {
     Move,
     Ability,
+    Condition,
 }
 
 /// An [`Effect`] handle.
@@ -74,12 +79,14 @@ pub enum EffectType {
 pub enum EffectHandle {
     ActiveMove(MoveHandle),
     Ability(Id),
+    Condition(Id),
 }
 
 /// A battle effect.
 pub enum Effect<'borrow> {
     ActiveMove(&'borrow mut Move),
-    Ability(&'borrow Ability),
+    Ability(ElementRef<'borrow, Ability>),
+    Condition(ElementRef<'borrow, Condition>),
 }
 
 impl<'borrow> Effect<'borrow> {
@@ -87,10 +94,15 @@ impl<'borrow> Effect<'borrow> {
         Self::ActiveMove(active_move)
     }
 
+    pub fn for_condition(condition: ElementRef<'borrow, Condition>) -> Self {
+        Self::Condition(condition)
+    }
+
     pub fn name(&self) -> &str {
         match self {
             Self::ActiveMove(active_move) => &active_move.data.name,
             Self::Ability(ability) => &ability.data.name,
+            Self::Condition(condition) => &condition.data.name,
         }
     }
 
@@ -98,6 +110,7 @@ impl<'borrow> Effect<'borrow> {
         match self {
             Self::ActiveMove(_) => EffectType::Move,
             Self::Ability(_) => EffectType::Ability,
+            Self::Condition(_) => EffectType::Condition,
         }
     }
 
@@ -105,6 +118,7 @@ impl<'borrow> Effect<'borrow> {
         match self {
             Self::ActiveMove(_) => "move",
             Self::Ability(_) => "ability",
+            Self::Condition(_) => "condition",
         }
     }
 
@@ -125,6 +139,13 @@ impl<'borrow> Effect<'borrow> {
             _ => None,
         }
     }
+
+    pub fn condition<'effect>(&'effect self) -> Option<&'effect Condition> {
+        match self {
+            Self::Condition(condition) => Some(condition.deref()),
+            _ => None,
+        }
+    }
 }
 
 impl Identifiable for Effect<'_> {
@@ -132,6 +153,7 @@ impl Identifiable for Effect<'_> {
         match self {
             Self::ActiveMove(active_move) => active_move.id(),
             Self::Ability(ability) => ability.id(),
+            Self::Condition(condition) => condition.id(),
         }
     }
 }

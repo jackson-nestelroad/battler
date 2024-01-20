@@ -1,7 +1,4 @@
-use std::{
-    mem,
-    ops::Deref,
-};
+use std::ops::Deref;
 
 use lazy_static::lazy_static;
 
@@ -35,7 +32,6 @@ use crate::{
     moves::{
         DamageType,
         MoveCategory,
-        MoveHitEffectType,
         MoveTarget,
         SelfDestructType,
     },
@@ -260,7 +256,6 @@ fn use_move_internal(
     };
 
     // TODO: Move hit on self for boosts?
-    // TODO: jackson-nestelroad
 
     if context.mon().hp == 0 {
         let mon_handle = context.mon_handle();
@@ -1054,17 +1049,46 @@ fn apply_spread_damage(
 
         core_battle_logs::damage(&mut context)?;
 
-        if let Some(drain_percent) = context
+        if let Some(Some(drain_percent)) = context
             .effect()
             .active_move()
             .map(|active_move| active_move.data.drain_percent)
         {
+            let target_handle = context.target_handle();
             if let Some(mut context) = context.source_context()? {
-                // TODO: heal
+                let amount = drain_percent * *damage;
+                let amount = amount.round();
+                heal(
+                    &mut context,
+                    amount,
+                    Some(target_handle),
+                    Some(EffectHandle::Condition(Id::from_known("drain"))),
+                )?;
             }
         }
     }
     Ok(())
+}
+
+pub fn heal(
+    context: &mut MonContext,
+    damage: u16,
+    source: Option<MonHandle>,
+    effect: Option<EffectHandle>,
+) -> Result<u16, Error> {
+    // TODO: TryHeal event.
+    if damage == 0
+        || context.mon().hp == 0
+        || !context.mon().active
+        || context.mon().hp > context.mon().max_hp
+    {
+        return Ok(0);
+    }
+
+    let healed = Mon::heal(context, damage)?;
+    core_battle_logs::heal(context, source, effect)?;
+    // TODO: Heal event.
+    Ok(healed)
 }
 
 pub fn drag_in(context: &mut SideContext, position: usize) -> Result<(), Error> {

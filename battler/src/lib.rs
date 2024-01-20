@@ -1,3 +1,4 @@
+#![feature(const_trait_impl)]
 #![feature(entry_insert)]
 #![feature(hasher_prefixfree_extras)]
 #![feature(pattern)]
@@ -8,6 +9,7 @@
 pub mod abilities;
 pub mod battle;
 pub mod common;
+pub mod conditions;
 pub mod config;
 pub mod dex;
 pub mod effect;

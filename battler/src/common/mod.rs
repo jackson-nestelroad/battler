@@ -29,6 +29,7 @@ pub use hash::{
 };
 pub use id::{
     Id,
+    IdRef,
     Identifiable,
 };
 pub use lookup_result::LookupResult;

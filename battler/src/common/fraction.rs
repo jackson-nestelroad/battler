@@ -10,6 +10,7 @@ use std::{
 use num::{
     FromPrimitive,
     Integer,
+    PrimInt,
 };
 use serde::{
     de::{
@@ -105,6 +106,13 @@ where
     /// Returns the ceiled integer representation of the fraction.
     pub fn ceil(&self) -> I {
         num::Integer::div_ceil(&self.numerator(), &self.denominator())
+    }
+
+    pub fn round(&self) -> I
+    where
+        I: PrimInt,
+    {
+        (self.numerator().add(self.denominator().shr(1))).div(self.denominator())
     }
 
     /// Returns the inverse of this fraction.
@@ -473,6 +481,29 @@ mod percentage_tests {
         assert_eq!(Fraction::new(33, 15).floor(), 2);
         assert_eq!(Fraction::new(1020, 25).floor(), 40);
         assert_eq!(Fraction::new(1, 2).floor(), 0);
+    }
+
+    #[test]
+    fn round_division() {
+        assert_eq!(Fraction::percentage(1).round(), 0);
+        assert_eq!(Fraction::new(77, 12).round(), 6);
+        assert_eq!(Fraction::percentage(2500).round(), 25);
+        assert_eq!(Fraction::new(33, 15).round(), 2);
+        assert_eq!(Fraction::new(1020, 25).round(), 41);
+
+        assert_eq!(Fraction::new(1, 2).round(), 1);
+        assert_eq!(Fraction::new(2, 2).round(), 1);
+        assert_eq!(Fraction::new(3, 2).round(), 2);
+        assert_eq!(Fraction::new(4, 2).round(), 2);
+
+        assert_eq!(Fraction::new(1, 7).round(), 0);
+        assert_eq!(Fraction::new(2, 7).round(), 0);
+        assert_eq!(Fraction::new(3, 7).round(), 0);
+        assert_eq!(Fraction::new(4, 7).round(), 1);
+        assert_eq!(Fraction::new(5, 7).round(), 1);
+        assert_eq!(Fraction::new(6, 7).round(), 1);
+        assert_eq!(Fraction::new(7, 7).round(), 1);
+        assert_eq!(Fraction::new(8, 7).round(), 1);
     }
 
     #[test]
