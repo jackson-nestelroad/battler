@@ -463,7 +463,7 @@ fn move_hit(
 ) -> Result<Vec<HitTargetState>, Error> {
     let mut hit_targets_state = targets
         .iter()
-        .map(|target| HitTargetState::new(*target, MoveDamage::Damage(0)))
+        .map(|target| HitTargetState::new(*target, MoveDamage::None))
         .collect::<Vec<_>>();
     hit_targets(context, hit_targets_state.as_mut_slice())?;
     Ok(hit_targets_state)
