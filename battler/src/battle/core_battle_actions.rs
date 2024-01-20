@@ -1057,7 +1057,10 @@ fn direct_damage(
     let damage = damage.max(1);
     let damage = Mon::damage(context, damage, source, effect)?;
     core_battle_logs::damage(context, source, effect)?;
-    todo!()
+    if context.mon().fainted {
+        faint(context, source, effect)?;
+    }
+    Ok(damage)
 }
 
 fn damage(
