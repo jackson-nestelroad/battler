@@ -663,9 +663,7 @@ impl Mon {
         if !unmodified {
             // TODO: ModifyStat event (individual per stat).
             let modifier = modifier.unwrap_or(Fraction::from(1));
-            let modifier =
-                Fraction::new(modifier.numerator() as u32, modifier.denominator() as u32);
-            value = modify_32(value as u32, modifier) as u16;
+            value = modify_32(value as u32, modifier.convert()) as u16;
         }
 
         Ok(value)

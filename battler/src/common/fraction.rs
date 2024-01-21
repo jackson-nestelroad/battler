@@ -116,6 +116,7 @@ where
         (self.numerator().add(self.denominator().shr(1))).div(self.denominator())
     }
 
+    /// Converts the [`Fraction<I>`] to a [`Fraction<T>`], given that `T: From<I>`.
     pub fn convert<T>(self) -> Fraction<T>
     where
         T: FractionInteger + From<I>,
