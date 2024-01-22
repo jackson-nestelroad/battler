@@ -518,7 +518,10 @@ fn hit_targets(
     // Apply the effects against the user of the move.
     apply_user_effect(context, targets)?;
 
-    // TODO: Secondary effects.
+    // Apply secondary effects, if we're in the primary hit.
+    if !context.is_secondary() && !context.is_self() {
+        apply_secondary_effects(context, targets)?;
+    }
 
     // TODO: Force switch.
 
@@ -1470,6 +1473,31 @@ fn apply_secondary_effects(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
+    if context.active_move().data.secondary_effects.is_empty() {
+        return Ok(());
+    }
+    for target in targets {
+        if target.outcome.failed() {
+            continue;
+        }
+        // TODO: ModifySecondaries event.
+        for i in 0..context.active_move().data.secondary_effects.len() {
+            let secondary_effect = match context.active_move().data.secondary_effects.get(i) {
+                None => break,
+                Some(secondary_effect) => secondary_effect,
+            };
+            let chance = secondary_effect.chance.unwrap_or(Fraction::from(1));
+            let secondary_roll = rand_util::chance(
+                context.battle_mut().prng.as_mut(),
+                chance.numerator() as u64,
+                chance.denominator() as u64,
+            );
+            if secondary_roll {
+                let mut context = context.secondary_active_move_context(i);
+                move_hit(&mut context, &[target.handle])?;
+            }
+        }
+    }
     Ok(())
 }
 
