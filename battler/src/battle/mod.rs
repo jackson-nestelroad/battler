@@ -12,7 +12,7 @@ mod core_battle_actions;
 mod core_battle_logs;
 mod field;
 mod mon;
-mod move_damage;
+mod move_outcome;
 mod player;
 mod queue;
 mod registry;
@@ -82,10 +82,12 @@ pub use mon::{
     MonMoveSlotData,
     MonPositionDetails,
     MonTeamRequestData,
-    MoveOutcome,
     PublicMonDetails,
 };
-pub use move_damage::MoveDamage;
+pub use move_outcome::{
+    MoveOutcome,
+    MoveOutcomeOnTarget,
+};
 pub use player::{
     Player,
     PlayerData,

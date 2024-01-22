@@ -17,10 +17,13 @@ use crate::{
         calculate_mon_stats,
         core_battle::FaintEntry,
         modify_32,
+        Boost,
         BoostTable,
         MonContext,
         MonHandle,
         MoveHandle,
+        MoveOutcome,
+        PartialBoostTable,
         Player,
         Side,
     },
@@ -165,29 +168,6 @@ pub struct MonMoveRequest {
     pub can_mega_evo: bool,
 }
 
-/// The outcome of a move used on a single turn of battle.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MoveOutcome {
-    Skipped,
-    Failed,
-    Success,
-}
-
-impl MoveOutcome {
-    pub fn success(&self) -> bool {
-        match self {
-            Self::Success => true,
-            _ => false,
-        }
-    }
-}
-
-impl From<MoveOutcome> for bool {
-    fn from(value: MoveOutcome) -> Self {
-        value.success()
-    }
-}
-
 /// A [`Mon`] in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -248,6 +228,8 @@ pub struct Mon {
     pub move_this_turn_outcome: Option<MoveOutcome>,
     pub last_move_target: Option<isize>,
     pub hurt_this_turn: u16,
+    pub stats_raised_this_turn: bool,
+    pub status_lowered_this_turn: bool,
 }
 
 // Construction and initialization logic.
@@ -356,6 +338,8 @@ impl Mon {
             move_this_turn_outcome: None,
             last_move_target: None,
             hurt_this_turn: 0,
+            stats_raised_this_turn: false,
+            status_lowered_this_turn: false,
         })
     }
 
@@ -1065,6 +1049,26 @@ impl Mon {
         context.mon_mut().active_position = usize::MAX;
         context.mon_mut().active = false;
         Ok(())
+    }
+
+    pub fn cap_boosts(context: &MonContext, boosts: PartialBoostTable) -> PartialBoostTable {
+        PartialBoostTable::from_iter(boosts.into_iter().filter(|(_, value)| value > &0).map(
+            |(boost, value)| {
+                let current_value = context.mon().boosts.get(boost);
+                (
+                    boost,
+                    (current_value + value).max(-6).min(6) - current_value,
+                )
+            },
+        ))
+    }
+
+    pub fn boost_stat(context: &mut MonContext, boost: Boost, value: i8) -> i8 {
+        let current_value = context.mon().boosts.get(boost);
+        let new_value = current_value + value;
+        let new_value = new_value.max(-6).min(6);
+        context.mon_mut().boosts.set(boost, new_value);
+        new_value - current_value
     }
 }
 

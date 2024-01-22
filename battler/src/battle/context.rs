@@ -1268,6 +1268,40 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
         self.context.active_move_mut()
     }
 
+    /// Checks if the context is scoped to the primary effect of the active [`Move`].
+    pub fn is_primary(&self) -> bool {
+        self.context.is_primary()
+    }
+
+    /// Checks if the context is scoped to a secondary effect of the active [`Move`].
+    pub fn is_secondary(&self) -> bool {
+        self.context.is_secondary()
+    }
+
+    /// Checks if the [`HitEffect`] is applying to the user of the move, as opposed to its targets.
+    ///
+    /// Returns `false` when a target effect of a move is being applied to the user of the move
+    /// because the Mon targeted itself.
+    pub fn is_self(&self) -> bool {
+        self.context.is_self()
+    }
+
+    /// Checks if the [`Move`] orginated from an external source (i.e., the [`Mon`] did not
+    /// explicitly select it).
+    pub fn is_external(&self) -> bool {
+        self.context.is_external()
+    }
+
+    /// Returns a reference to the applying [`HitEffect`].
+    pub fn hit_effect(&self) -> Option<&HitEffect> {
+        self.context.hit_effect()
+    }
+
+    /// Returns a mutable reference to the applying [`HitEffect`].
+    pub fn hit_effect_mut(&mut self) -> Option<&mut HitEffect> {
+        self.context.hit_effect_mut()
+    }
+
     /// Returns the [`MonHandle`] for the active target [`Mon`].
     pub fn target_mon_handle(&self) -> MonHandle {
         self.active_target_handle

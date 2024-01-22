@@ -39,6 +39,8 @@ use crate::{
 pub struct HitEffect {
     /// Stat boosts.
     pub boosts: Option<PartialBoostTable>,
+    /// Percentage of target's HP to heal.
+    pub heal_percent: Option<Fraction<u16>>,
     /// Status applied.
     pub status: Option<String>,
     /// Volatile status applied.
@@ -53,6 +55,9 @@ pub struct HitEffect {
     pub pseudo_weather: Option<String>,
     /// Terrain applied.
     pub terrain: Option<String>,
+    /// Force the target to switch out?
+    #[serde(default)]
+    pub force_switch: bool,
 }
 
 /// Secondary effect that occurs after a move is used.
@@ -112,11 +117,6 @@ pub struct MoveData {
     /// Thaws the target?
     #[serde(default)]
     pub thaws_target: bool,
-    /// Percentage of target's HP to heal.
-    pub heal_percent: Option<u8>,
-    /// Force the target to switch out?
-    #[serde(default)]
-    pub force_switch: bool,
     /// Type of switch that occurs on the user.
     pub user_switch: Option<UserSwitchType>,
     /// How the user self destructs.

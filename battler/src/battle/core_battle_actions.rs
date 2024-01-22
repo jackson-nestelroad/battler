@@ -13,11 +13,13 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
-        MoveDamage,
         MoveHandle,
         MoveOutcome,
+        MoveOutcomeOnTarget,
+        PartialBoostTable,
         Player,
         PlayerContext,
+        Side,
     },
     battler_error,
     common::{
@@ -28,7 +30,10 @@ use crate::{
         UnsafelyDetachBorrow,
         WrapResultError,
     },
-    effect::EffectHandle,
+    effect::{
+        EffectHandle,
+        EffectType,
+    },
     mons::Stat,
     moves::{
         DamageType,
@@ -41,12 +46,12 @@ use crate::{
 
 struct HitTargetState {
     handle: MonHandle,
-    damage: MoveDamage,
+    outcome: MoveOutcomeOnTarget,
 }
 
 impl HitTargetState {
-    pub fn new(handle: MonHandle, damage: MoveDamage) -> Self {
-        Self { handle, damage }
+    pub fn new(handle: MonHandle, outcome: MoveOutcomeOnTarget) -> Self {
+        Self { handle, outcome }
     }
 }
 
@@ -446,7 +451,7 @@ fn move_hit_loose_success(
     targets: &[MonHandle],
 ) -> Result<MoveOutcome, Error> {
     let targets = move_hit(context, targets)?;
-    if targets.into_iter().all(|target| target.damage.failed()) {
+    if targets.into_iter().all(|target| target.outcome.failed()) {
         Ok(MoveOutcome::Skipped)
     } else {
         Ok(MoveOutcome::Success)
@@ -459,7 +464,7 @@ fn move_hit(
 ) -> Result<Vec<HitTargetState>, Error> {
     let mut hit_targets_state = targets
         .iter()
-        .map(|target| HitTargetState::new(*target, MoveDamage::None))
+        .map(|target| HitTargetState::new(*target, MoveOutcomeOnTarget::Success))
         .collect::<Vec<_>>();
     hit_targets(context, hit_targets_state.as_mut_slice())?;
     Ok(hit_targets_state)
@@ -496,7 +501,7 @@ fn hit_targets(
     // Calculate damage for each target.
     calculate_spread_damage(context, targets)?;
     for target in targets.iter_mut() {
-        if target.damage.failed() {
+        if target.outcome.failed() {
             if !context.is_secondary() && !context.is_self() {
                 core_battle_logs::fail_target(&mut context.target_context(target.handle)?)?;
             }
@@ -507,6 +512,7 @@ fn hit_targets(
     apply_spread_damage(&mut context.effect_context()?, Some(mon_handle), targets)?;
 
     // TODO: Run move effects.
+    apply_move_effects(context, targets)?;
 
     // TODO: Self drops.
 
@@ -524,10 +530,10 @@ fn calculate_spread_damage(
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
     for target in targets {
-        if target.damage.failed() {
+        if target.outcome.failed() {
             continue;
         }
-        target.damage = MoveDamage::None;
+        target.outcome = MoveOutcomeOnTarget::Success;
         // Secondary or effects on the user cannot deal damage.
         //
         // Note that this is different from moves that target the user.
@@ -536,31 +542,33 @@ fn calculate_spread_damage(
         }
         CoreBattle::set_active_target(context.as_battle_context_mut(), Some(target.handle))?;
         let mut context = context.active_target_context()?;
-        target.damage = calculate_damage(&mut context)?;
+        target.outcome = calculate_damage(&mut context)?;
     }
     Ok(())
 }
 
-fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveDamage, Error> {
+fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTarget, Error> {
     let target_mon_handle = context.target_mon_handle();
     // Type immunity.
     let move_type = context.active_move().data.primary_type;
     let ignore_immunity = context.active_move().data.ignore_immunity();
     if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
-        return Ok(MoveDamage::Failure);
+        return Ok(MoveOutcomeOnTarget::Failure);
     }
 
     // OHKO.
     if context.active_move().data.ohko_type.is_some() {
-        return Ok(MoveDamage::Damage(context.target_mon().max_hp));
+        return Ok(MoveOutcomeOnTarget::Damage(context.target_mon().max_hp));
     }
 
     // TODO: Damage callback for moves that have special rules for damage calculation.
 
     // Static damage.
     match context.active_move().data.damage {
-        Some(DamageType::Level) => return Ok(MoveDamage::Damage(context.mon().level as u16)),
-        Some(DamageType::Set(damage)) => return Ok(MoveDamage::Damage(damage)),
+        Some(DamageType::Level) => {
+            return Ok(MoveOutcomeOnTarget::Damage(context.mon().level as u16))
+        }
+        Some(DamageType::Set(damage)) => return Ok(MoveOutcomeOnTarget::Damage(damage)),
         _ => (),
     }
 
@@ -571,7 +579,7 @@ fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveDamage, Err
     //
     // Status moves stop here.
     if base_power == 0 {
-        return Ok(MoveDamage::None);
+        return Ok(MoveOutcomeOnTarget::Success);
     }
     let base_power = context.active_move().data.base_power.max(1);
 
@@ -658,7 +666,7 @@ fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveDamage, Err
 fn modify_damage(
     context: &mut ActiveTargetContext,
     mut base_damage: u32,
-) -> Result<MoveDamage, Error> {
+) -> Result<MoveOutcomeOnTarget, Error> {
     base_damage += 2;
     if context.active_move().spread_hit {
         let spread_modifier = Fraction::new(3, 4);
@@ -719,7 +727,7 @@ fn modify_damage(
 
     let base_damage = base_damage as u16;
     let base_damage = base_damage.max(1);
-    Ok(MoveDamage::Damage(base_damage))
+    Ok(MoveOutcomeOnTarget::Damage(base_damage))
 }
 
 fn calculate_recoil_damage(context: &ActiveMoveContext) -> u64 {
@@ -744,8 +752,8 @@ mod direct_move_step {
             CoreBattle,
             Mon,
             MonHandle,
-            MoveDamage,
             MoveOutcome,
+            MoveOutcomeOnTarget,
         },
         common::{
             Error,
@@ -980,7 +988,7 @@ mod direct_move_step {
 
             if hit_targets_state
                 .iter()
-                .all(|target| target.damage.failed())
+                .all(|target| target.outcome.failed())
             {
                 break;
             }
@@ -988,7 +996,7 @@ mod direct_move_step {
             context.active_move_mut().total_damage += hit_targets_state
                 .iter()
                 .filter_map(|target| {
-                    if let MoveDamage::Damage(damage) = target.damage {
+                    if let MoveOutcomeOnTarget::Damage(damage) = target.outcome {
                         Some(damage as u64)
                     } else {
                         None
@@ -1074,7 +1082,10 @@ fn damage(
         None => return Err(battler_error!("damage dealt must be tied to some effect")),
         Some(effect) => context.as_battle_context_mut().effect_context(effect)?,
     };
-    let mut targets = [HitTargetState::new(target, MoveDamage::Damage(damage))];
+    let mut targets = [HitTargetState::new(
+        target,
+        MoveOutcomeOnTarget::Damage(damage),
+    )];
     apply_spread_damage(&mut context, source, &mut targets)
 }
 
@@ -1085,16 +1096,18 @@ fn apply_spread_damage(
 ) -> Result<(), Error> {
     for target in targets {
         let mut context = context.applying_effect_context(source, target.handle)?;
-        let damage = match &mut target.damage {
-            MoveDamage::Failure | MoveDamage::None | MoveDamage::Damage(0) => continue,
-            MoveDamage::Damage(damage) => damage,
+        let damage = match &mut target.outcome {
+            MoveOutcomeOnTarget::Failure
+            | MoveOutcomeOnTarget::Success
+            | MoveOutcomeOnTarget::Damage(0) => continue,
+            MoveOutcomeOnTarget::Damage(damage) => damage,
         };
         if context.target().hp == 0 {
-            target.damage = MoveDamage::Damage(0);
+            target.outcome = MoveOutcomeOnTarget::Damage(0);
             continue;
         }
         if !context.target().active {
-            target.damage = MoveDamage::Failure;
+            target.outcome = MoveOutcomeOnTarget::Failure;
             continue;
         }
         // TODO: Struggle recoil should not be affected by effects.
@@ -1190,7 +1203,215 @@ fn apply_move_effects(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
+    // We have two goals in this function:
+    //  1. Apply all properties on the context's HitEffect object.
+    //  2. Determine if the move did anything in this hit.
+
+    let is_secondary = context.is_secondary();
+    let is_self = context.is_self();
+
+    let mut did_anything_to_user = MoveOutcomeOnTarget::Failure;
+
+    for target in targets.iter_mut() {
+        if target.outcome.failed() {
+            continue;
+        }
+        let mut target_context = context.target_context(target.handle)?;
+        if target_context.target_mon().fainted {
+            continue;
+        }
+
+        // HitEffect is optional. If it is unspecified, we exit early.
+        //
+        // We clone to avoid holding onto the reference, which prevents us from creating new
+        // contexts.
+        let hit_effect = match target_context.hit_effect() {
+            None => return Ok(()),
+            Some(hit_effect) => hit_effect.clone(),
+        };
+
+        let source_handle = target_context.mon_handle();
+        let effect_handle = EffectHandle::ActiveMove(target_context.active_move_handle());
+        let mut target_context = target_context.target_mon_context()?;
+
+        let mut hit_effect_outcome: Option<MoveOutcomeOnTarget> = None;
+
+        if let Some(boosts) = hit_effect.boosts {
+            let outcome = boost(
+                &mut target_context,
+                boosts,
+                Some(source_handle),
+                Some(&effect_handle),
+                is_secondary,
+                is_self,
+            )?;
+            hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+        }
+
+        if let Some(heal_percent) = hit_effect.heal_percent {
+            let damage = heal_percent * target_context.mon().max_hp;
+            let damage = damage.round();
+            let damage = heal(
+                &mut target_context,
+                damage,
+                Some(source_handle),
+                Some(&effect_handle),
+            )?;
+            let outcome = if damage == 0 {
+                core_battle_logs::fail_heal(&mut target_context)?;
+                MoveOutcomeOnTarget::Failure
+            } else {
+                core_battle_logs::heal(&mut target_context, None, None)?;
+                MoveOutcomeOnTarget::Success
+            };
+            hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+        }
+
+        if let Some(status) = hit_effect.status {
+            // TODO: Set status.
+        }
+
+        if let Some(volatile_status) = hit_effect.volatile_status {
+            // TODO: Add volatile status.
+        }
+
+        if let Some(side_condition) = hit_effect.side_condition {
+            // TODO: Add side condition.
+        }
+
+        if let Some(slot_condition) = hit_effect.slot_condition {
+            // TODO: Add slot condition.
+        }
+
+        if let Some(weather) = hit_effect.weather {
+            // TODO: Set weather.
+        }
+
+        if let Some(terrain) = hit_effect.terrain {
+            // TODO: Set terrain.
+        }
+
+        if let Some(pseudo_weather) = hit_effect.pseudo_weather {
+            // TODO: Add pseudo weather.
+        }
+
+        if hit_effect.force_switch {
+            // TODO: Check that the force switch can occur. If not, the move can fail.
+        }
+
+        // TODO: Hit event for field, side, or target.
+
+        // Some move effects function like HitEffect properties, but don't make much sense to be
+        // generic.
+        //
+        // If we are checking the primary hit event on the targets, we should check these as well.
+        if !is_secondary && !is_self {
+            if let Some(self_destruct_type) = &context.active_move().data.self_destruct {
+                did_anything_to_user = MoveOutcomeOnTarget::Success;
+
+                // At this point, we know we have hit the target, so we self-destruct the user now.
+                if self_destruct_type == &SelfDestructType::IfHit {
+                    if target.outcome.hit() {
+                        faint(
+                            context.as_mon_context_mut(),
+                            Some(source_handle),
+                            Some(&effect_handle),
+                        )?;
+                    }
+                }
+            }
+            if context.active_move().data.user_switch.is_some() {
+                let outcome = if Player::can_switch(context.as_player_context())? {
+                    MoveOutcomeOnTarget::Success
+                } else {
+                    MoveOutcomeOnTarget::Failure
+                };
+                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+            }
+        }
+
+        // Move did not try to do anything, so it trivially succeeds.
+        let hit_effect_outcome = match hit_effect_outcome {
+            Some(hit_effect_outcome) => hit_effect_outcome,
+            None => MoveOutcomeOnTarget::Success,
+        };
+
+        // The target's outcome is affected by the outcome here.
+        target.outcome = target.outcome.combine(hit_effect_outcome);
+    }
+
+    // Did the move do anything to its targets?
+    let did_anything_to_targets = targets
+        .iter()
+        .map(|target| target.outcome)
+        .reduce(|acc, outcome| acc.combine(outcome))
+        .unwrap_or(MoveOutcomeOnTarget::Success);
+
+    // Did the move do anything at all, to the targets or the user?
+    let did_anything = did_anything_to_user.combine(did_anything_to_targets);
+
+    if did_anything.failed() {
+        // This is the primary hit of the move, and it failed to do anything, so the move failed as
+        // a whole.
+        if !is_self && !is_secondary {
+            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+        }
+    } else if context.active_move().data.user_switch.is_some() && context.mon().hp > 0 {
+        context.mon_mut().needs_switch = true;
+    }
+
     Ok(())
+}
+
+fn boost(
+    context: &mut MonContext,
+    boosts: PartialBoostTable,
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+    is_secondary: bool,
+    is_self: bool,
+) -> Result<MoveOutcomeOnTarget, Error> {
+    if context.mon().hp == 0
+        || !context.mon().active
+        || Side::mons_left(context.as_side_context()) == 0
+    {
+        return Ok(MoveOutcomeOnTarget::Failure);
+    }
+    // TODO: ChangeBoost event.
+    let boosts = Mon::cap_boosts(context, boosts);
+    // TODO: TryBoost event.
+
+    let mut success = false;
+    for (boost, value) in &boosts {
+        let delta = Mon::boost_stat(context, *boost, *value);
+        if delta != 0 {
+            success = true;
+            core_battle_logs::boost(context, *boost, delta)?;
+            // TODO: AfterEachBoost event.
+        } else if !is_secondary && !is_self {
+            core_battle_logs::boost(context, *boost, delta)?;
+        } else if let Some(effect) = effect {
+            let effect_context = context.as_battle_context_mut().effect_context(effect)?;
+            let effect_type = effect_context.effect().effect_type();
+            if effect_type == EffectType::Ability {
+                core_battle_logs::boost(context, *boost, delta)?;
+            }
+        }
+    }
+
+    // TODO: AfterBoost event.
+    if success {
+        if boosts.values().any(|val| val > &0) {
+            context.mon_mut().stats_raised_this_turn = true;
+        }
+        if boosts.values().any(|val| val < &0) {
+            context.mon_mut().status_lowered_this_turn = true;
+        }
+        Ok(MoveOutcomeOnTarget::Success)
+    } else {
+        Ok(MoveOutcomeOnTarget::Failure)
+    }
 }
 
 fn apply_self_effect(

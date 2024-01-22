@@ -18,7 +18,14 @@ use crate::{
 
 /// A single stat value that can be boosted.
 #[derive(
-    Debug, Clone, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 pub enum Boost {
     #[string = "atk"]
@@ -27,17 +34,19 @@ pub enum Boost {
     #[string = "def"]
     #[alias = "Defense"]
     Def,
-    #[string = "spatk"]
+    #[string = "spa"]
+    #[alias = "spatk"]
     #[alias = "Sp.Atk"]
     #[alias = "Special Attack"]
     SpAtk,
-    #[string = "spdef"]
+    #[string = "spd"]
+    #[alias = "spdef"]
     #[alias = "Sp.Def"]
     #[alias = "Special Defense"]
     SpDef,
-    #[string = "spd"]
+    #[string = "spe"]
     #[alias = "Speed"]
-    Spd,
+    Spe,
     #[string = "acc"]
     #[alias = "Accuracy"]
     Accuracy,
@@ -55,7 +64,7 @@ impl TryFrom<Stat> for Boost {
             Stat::Def => Ok(Self::Def),
             Stat::SpAtk => Ok(Self::SpAtk),
             Stat::SpDef => Ok(Self::SpDef),
-            Stat::Spe => Ok(Self::Spd),
+            Stat::Spe => Ok(Self::Spe),
         }
     }
 }
@@ -95,10 +104,28 @@ impl BoostTable {
             Boost::Def => self.def,
             Boost::SpAtk => self.spatk,
             Boost::SpDef => self.spdef,
-            Boost::Spd => self.spd,
+            Boost::Spe => self.spd,
             Boost::Accuracy => self.acc,
             Boost::Evasion => self.eva,
         }
+    }
+
+    /// Returns a mutable reference for the given boost.
+    fn get_mut(&mut self, boost: Boost) -> &mut i8 {
+        match boost {
+            Boost::Atk => &mut self.atk,
+            Boost::Def => &mut self.def,
+            Boost::SpAtk => &mut self.spatk,
+            Boost::SpDef => &mut self.spdef,
+            Boost::Spe => &mut self.spd,
+            Boost::Accuracy => &mut self.acc,
+            Boost::Evasion => &mut self.eva,
+        }
+    }
+
+    /// Sets the value for the given boost.
+    pub fn set(&mut self, boost: Boost, value: i8) {
+        *self.get_mut(boost) = value;
     }
 }
 
@@ -109,7 +136,7 @@ impl From<&PartialBoostTable> for BoostTable {
             def: *value.get(&Boost::Def).unwrap_or(&0),
             spatk: *value.get(&Boost::SpAtk).unwrap_or(&0),
             spdef: *value.get(&Boost::SpDef).unwrap_or(&0),
-            spd: *value.get(&Boost::Spd).unwrap_or(&0),
+            spd: *value.get(&Boost::Spe).unwrap_or(&0),
             acc: *value.get(&Boost::Accuracy).unwrap_or(&0),
             eva: *value.get(&Boost::Evasion).unwrap_or(&0),
         }
@@ -130,9 +157,9 @@ mod boost_tests {
     fn serializes_to_string() {
         test_string_serialization(Boost::Atk, "atk");
         test_string_serialization(Boost::Def, "def");
-        test_string_serialization(Boost::SpAtk, "spatk");
-        test_string_serialization(Boost::SpDef, "spdef");
-        test_string_serialization(Boost::Spd, "spd");
+        test_string_serialization(Boost::SpAtk, "spa");
+        test_string_serialization(Boost::SpDef, "spd");
+        test_string_serialization(Boost::Spe, "spe");
         test_string_serialization(Boost::Accuracy, "acc");
         test_string_serialization(Boost::Evasion, "eva");
     }
@@ -143,7 +170,7 @@ mod boost_tests {
         test_string_deserialization("Def", Boost::Def);
         test_string_deserialization("SpAtk", Boost::SpAtk);
         test_string_deserialization("SpDef", Boost::SpDef);
-        test_string_deserialization("Spd", Boost::Spd);
+        test_string_deserialization("Spe", Boost::Spe);
         test_string_deserialization("Acc", Boost::Accuracy);
         test_string_deserialization("Eva", Boost::Evasion);
     }
@@ -156,7 +183,7 @@ mod boost_tests {
         test_string_deserialization("Sp.Atk", Boost::SpAtk);
         test_string_deserialization("Special Defense", Boost::SpDef);
         test_string_deserialization("Sp.Def", Boost::SpDef);
-        test_string_deserialization("Speed", Boost::Spd);
+        test_string_deserialization("Speed", Boost::Spe);
         test_string_deserialization("Accuracy", Boost::Accuracy);
         test_string_deserialization("Evasion", Boost::Evasion);
     }
@@ -207,7 +234,7 @@ mod boost_table_tests {
         assert_eq!(bt.get(Boost::Def), 2);
         assert_eq!(bt.get(Boost::SpAtk), 3);
         assert_eq!(bt.get(Boost::SpDef), 4);
-        assert_eq!(bt.get(Boost::Spd), 5);
+        assert_eq!(bt.get(Boost::Spe), 5);
         assert_eq!(bt.get(Boost::Accuracy), 6);
         assert_eq!(bt.get(Boost::Evasion), 7);
     }

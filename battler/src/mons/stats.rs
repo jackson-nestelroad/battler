@@ -31,13 +31,13 @@ pub enum Stat {
     #[string = "def"]
     #[alias = "Defense"]
     Def,
-    #[string = "spatk"]
-    #[alias = "spa"]
+    #[string = "spa"]
+    #[alias = "spatk"]
     #[alias = "Sp.Atk"]
     #[alias = "Special Attack"]
     SpAtk,
-    #[string = "spdef"]
-    #[alias = "spd"]
+    #[string = "spd"]
+    #[alias = "spdef"]
     #[alias = "Sp.Def"]
     #[alias = "Special Defense"]
     SpDef,
@@ -213,8 +213,8 @@ mod stat_tests {
         test_string_serialization(Stat::HP, "hp");
         test_string_serialization(Stat::Atk, "atk");
         test_string_serialization(Stat::Def, "def");
-        test_string_serialization(Stat::SpAtk, "spatk");
-        test_string_serialization(Stat::SpDef, "spdef");
+        test_string_serialization(Stat::SpAtk, "spa");
+        test_string_serialization(Stat::SpDef, "spd");
         test_string_serialization(Stat::Spe, "spe");
     }
 

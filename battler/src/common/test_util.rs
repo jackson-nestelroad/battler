@@ -21,6 +21,7 @@ use crate::common::{
     WrapResultError,
 };
 
+#[track_caller]
 pub fn test_deserialization<'a, T>(s: &str, expected: T)
 where
     T: Debug + PartialEq + DeserializeOwned,
@@ -29,6 +30,7 @@ where
     assert_eq!(got, expected);
 }
 
+#[track_caller]
 pub fn test_serialization<'a, T, S>(v: T, expected: S)
 where
     T: Debug + PartialEq + Serialize + DeserializeOwned,
@@ -40,6 +42,7 @@ where
     test_deserialization(&got, v);
 }
 
+#[track_caller]
 pub fn test_string_deserialization<'a, T>(s: &str, expected: T)
 where
     T: Debug + PartialEq + DeserializeOwned,
@@ -47,6 +50,7 @@ where
     test_deserialization(&format!("\"{s}\""), expected)
 }
 
+#[track_caller]
 pub fn test_string_serialization<'a, T>(v: T, expected: &str)
 where
     T: Debug + PartialEq + Serialize + DeserializeOwned,

@@ -4,6 +4,7 @@ use crate::{
     battle::{
         ActiveMoveContext,
         ActiveTargetContext,
+        Boost,
         Context,
         Mon,
         MonContext,
@@ -90,6 +91,16 @@ where
 
 pub fn fail(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!("fail", ("mon", Mon::position_details(context)?));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
+    let event = log_event!(
+        "fail",
+        ("mon", Mon::position_details(context)?),
+        ("what", "heal")
+    );
     context.battle_mut().log(event);
     Ok(())
 }
@@ -216,6 +227,27 @@ pub fn hit_count(context: &mut ActiveMoveContext, hits: u8) -> Result<(), Error>
 
 pub fn faint(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!("faint", ("mon", Mon::position_details(context)?));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn boost(context: &mut MonContext, boost: Boost, delta: i8) -> Result<(), Error> {
+    let (delta, message) = if delta > 0 {
+        (delta as u8, "boost")
+    } else {
+        (-delta as u8, "unboost")
+    };
+
+    if delta == 0 {
+        return Ok(());
+    }
+
+    let event = log_event!(
+        message,
+        ("mon", Mon::position_details(context)?),
+        ("stat", boost),
+        ("by", delta)
+    );
     context.battle_mut().log(event);
     Ok(())
 }

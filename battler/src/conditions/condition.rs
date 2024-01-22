@@ -13,7 +13,7 @@ use crate::common::{
 };
 
 /// The type of a condition.
-#[derive(Debug, Clone, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
 pub enum ConditionType {
     /// A condition that is built into the battle engine.
     #[string = "Built-in"]
@@ -64,5 +64,33 @@ impl Condition {
 impl Identifiable for Condition {
     fn id(&self) -> &Id {
         &self.id
+    }
+}
+
+#[cfg(test)]
+mod condition_tests {
+    use crate::{
+        common::{
+            test_string_deserialization,
+            test_string_serialization,
+        },
+        conditions::ConditionType,
+    };
+
+    #[test]
+    fn serializes_to_string() {
+        test_string_serialization(ConditionType::BuiltIn, "Built-in");
+        test_string_serialization(ConditionType::Condition, "Condition");
+        test_string_serialization(ConditionType::Weather, "Weather");
+        test_string_serialization(ConditionType::Status, "Status");
+    }
+
+    #[test]
+    fn deserializes_lowercase() {
+        test_string_deserialization("built-in", ConditionType::BuiltIn);
+        test_string_deserialization("builtin", ConditionType::BuiltIn);
+        test_string_deserialization("condition", ConditionType::Condition);
+        test_string_deserialization("weather", ConditionType::Weather);
+        test_string_deserialization("status", ConditionType::Status);
     }
 }
