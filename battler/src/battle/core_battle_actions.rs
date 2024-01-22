@@ -1365,8 +1365,8 @@ fn apply_move_effects(
         // This is the primary hit of the move, and it failed to do anything, so the move failed as
         // a whole.
         if !is_self && !is_secondary {
-            core_battle_logs::fail(context.as_mon_context_mut())?;
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+            core_battle_logs::fail(context.as_mon_context_mut())?;
         }
     } else if context.active_move().data.user_switch.is_some() && context.mon().hp > 0 {
         context.mon_mut().needs_switch = true;
