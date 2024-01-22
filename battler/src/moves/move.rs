@@ -143,6 +143,8 @@ pub struct MoveData {
     ///
     /// Applied when the move hits.
     pub user_effect: Option<HitEffect>,
+    /// Chance of the user effect occurring.
+    pub user_effect_chance: Option<Fraction<u16>>,
     /// Secondary effects applied to the target.
     #[serde(default)]
     pub secondary_effects: Vec<SecondaryEffect>,
@@ -273,6 +275,8 @@ pub struct Move {
     pub hit: u8,
     /// Total damage dealt by the move.
     pub total_damage: u64,
+    /// Have the primary user effect been applied?
+    pub primary_user_effect_applied: bool,
 
     hit_data: FastHashMap<MonHandle, MoveHitData>,
 }
@@ -290,6 +294,7 @@ impl Move {
             spread_hit: false,
             hit: 0,
             total_damage: 0,
+            primary_user_effect_applied: false,
             hit_data: FastHashMap::new(),
         }
     }

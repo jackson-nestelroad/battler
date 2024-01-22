@@ -508,13 +508,15 @@ fn hit_targets(
         }
     }
 
+    // Apply damage for the move to all targets.
     let mon_handle = context.mon_handle();
     apply_spread_damage(&mut context.effect_context()?, Some(mon_handle), targets)?;
 
-    // TODO: Run move effects.
+    // Apply all other move effects that occur when a target is hit.
     apply_move_effects(context, targets)?;
 
-    // TODO: Self drops.
+    // Apply the effects against the user of the move.
+    apply_user_effect(context, targets)?;
 
     // TODO: Secondary effects.
 
@@ -1414,10 +1416,53 @@ fn boost(
     }
 }
 
-fn apply_self_effect(
+fn apply_user_effect(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
+    let mon_handle = context.mon_handle();
+    let mut context = context.hit_self_active_move_context();
+    if context.hit_effect().is_none() {
+        return Ok(());
+    }
+    for target in targets {
+        if target.outcome.failed() {
+            continue;
+        }
+
+        // A move hits its targets multiple times for multihit moves. However, it is undesirable for
+        // non-idempotent effects on the user (specifically stat drops) to run once for each hit.
+        //
+        // Thus, we keep track of whether the primary HitEffect against the user has been applied.
+        // Note that this only makes an impact on multihit moves (since single hit moves
+        // will trivially run through here once).
+        //
+        // This also only impacts the primary user effect. Secondary user effects can run multiple
+        // times (since there is a little bit more control over how secondary effects run,
+        // since there can be any number of them and they can be guaraded behind a chance).
+        if !context.is_secondary() && !context.active_move().primary_user_effect_applied {
+            if context.hit_effect().wrap_error()?.boosts.is_some() {
+                let chance = context
+                    .active_move()
+                    .data
+                    .user_effect_chance
+                    .unwrap_or(Fraction::from(1));
+                let user_effect_roll = rand_util::chance(
+                    context.battle_mut().prng.as_mut(),
+                    chance.numerator() as u64,
+                    chance.denominator() as u64,
+                );
+                if user_effect_roll {
+                    move_hit(&mut context, &[mon_handle])?;
+                }
+                if context.active_move().data.multihit.is_some() {
+                    context.active_move_mut().primary_user_effect_applied = true;
+                }
+            }
+        } else {
+            move_hit(&mut context, &[mon_handle])?;
+        }
+    }
     Ok(())
 }
 

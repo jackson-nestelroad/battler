@@ -284,13 +284,16 @@ where
     }
 }
 
-impl Serialize for Fraction<u16> {
+impl<I> Serialize for Fraction<I>
+where
+    I: FractionInteger + Into<u64> + Display,
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         if self.is_whole() {
-            serializer.serialize_u16(self.floor())
+            serializer.serialize_u64(self.floor().into())
         } else {
             serializer.serialize_str(&format!("{self}"))
         }
