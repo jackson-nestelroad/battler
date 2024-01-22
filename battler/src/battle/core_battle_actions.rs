@@ -518,12 +518,13 @@ fn hit_targets(
     // Apply the effects against the user of the move.
     apply_user_effect(context, targets)?;
 
-    // Apply secondary effects, if we're in the primary hit.
     if !context.is_secondary() && !context.is_self() {
+        // Apply secondary effects.
         apply_secondary_effects(context, targets)?;
     }
 
-    // TODO: Force switch.
+    // Force switch out targets that were hit, as necessary.
+    force_switch(context, targets)?;
 
     // TODO: Post-damage events.
 
@@ -1301,7 +1302,12 @@ fn apply_move_effects(
         }
 
         if hit_effect.force_switch {
-            // TODO: Check that the force switch can occur. If not, the move can fail.
+            let outcome = if Player::can_switch(target_context.as_player_context())? {
+                MoveOutcomeOnTarget::Success
+            } else {
+                MoveOutcomeOnTarget::Failure
+            };
+            hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
         }
 
         // TODO: Hit event for field, side, or target.
@@ -1428,6 +1434,7 @@ fn apply_user_effect(
     if context.hit_effect().is_none() {
         return Ok(());
     }
+
     for target in targets {
         if target.outcome.failed() {
             continue;
@@ -1466,6 +1473,7 @@ fn apply_user_effect(
             move_hit(&mut context, &[mon_handle])?;
         }
     }
+
     Ok(())
 }
 
@@ -1476,6 +1484,7 @@ fn apply_secondary_effects(
     if context.active_move().data.secondary_effects.is_empty() {
         return Ok(());
     }
+
     for target in targets {
         if target.outcome.failed() {
             continue;
@@ -1498,6 +1507,7 @@ fn apply_secondary_effects(
             }
         }
     }
+
     Ok(())
 }
 
@@ -1505,5 +1515,25 @@ fn force_switch(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
+    if !context
+        .hit_effect()
+        .is_some_and(|hit_effect| hit_effect.force_switch)
+    {
+        return Ok(());
+    }
+
+    for target in targets {
+        let mut context = context.target_context(target.handle)?;
+        if target.outcome.failed()
+            || context.target_mon().hp == 0
+            || context.mon().hp == 0
+            || !Player::can_switch(context.target_mon_context()?.as_player_context())?
+        {
+            continue;
+        }
+        // TODO: DragOut event.
+        context.target_mon_mut().force_switch = true;
+    }
+
     Ok(())
 }
