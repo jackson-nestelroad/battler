@@ -60,7 +60,7 @@ pub fn use_move(
             Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?,
         ));
     }
-    context.battle_mut().log(event);
+    context.battle_mut().log_move(event);
     Ok(())
 }
 

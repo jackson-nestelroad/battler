@@ -72,7 +72,7 @@ where
     B: Battle<'d, O>,
     O: BattleOptions,
 {
-    let got = battle.new_logs().collect::<Vec<&str>>();
+    let got = battle.all_logs().collect::<Vec<_>>();
     let turn_log = format!("turn|turn:{turn}");
     let next_turn_log = format!("turn|turn:{}", turn + 1);
     let turn_log_index = got.iter().position(|log| log == &&turn_log).unwrap();

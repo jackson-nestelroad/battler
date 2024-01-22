@@ -34,7 +34,7 @@ mod switch_bad_input_tests {
                         "nature": "Modest",
                         "gender": "F",
                         "ball": "Normal",
-                        "level": 1
+                        "level": 50
                     },
                     {
                         "name": "Bulbasaur",
