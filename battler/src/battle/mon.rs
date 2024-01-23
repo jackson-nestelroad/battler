@@ -176,6 +176,9 @@ pub struct Mon {
     pub name: String,
     pub species: String,
 
+    /// `true` if the Mon is in an active position.
+    ///
+    /// The Mon may or may not be fainted.
     pub active: bool,
     pub active_turns: u32,
     pub active_move_actions: u32,
@@ -348,7 +351,7 @@ impl Mon {
     /// This *must* be called at the very beginning of a battle, as it sets up important fields on
     /// the Mon, such as its stats.
     pub fn initialize(context: &mut MonContext) -> Result<(), Error> {
-        Self::clear_volatile(context)?;
+        Self::clear_volatile(context, true)?;
         let mon = context.mon_mut();
         mon.hp = mon.max_hp;
         Ok(())
@@ -776,7 +779,7 @@ impl Mon {
             can_mega_evo: false,
         };
 
-        let can_switch = Player::can_switch(context.as_player_context_mut())?;
+        let can_switch = Player::can_switch(context.as_player_context_mut());
         if can_switch && context.mon().trapped {
             request.trapped = true;
         }
@@ -790,8 +793,11 @@ impl Mon {
 }
 
 impl Mon {
-    fn clear_volatile(context: &mut MonContext) -> Result<(), Error> {
-        context.mon_mut().needs_switch = false;
+    fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<(), Error> {
+        if clear_switch_flags {
+            context.mon_mut().needs_switch = false;
+            context.mon_mut().force_switch = false;
+        }
         let species = context.mon().species.clone();
         Self::set_species(context, species, false)?;
         Ok(())
@@ -935,8 +941,6 @@ impl Mon {
     /// Switches the Mon out of the given position for the player.
     pub fn switch_out(&mut self) {
         self.active = false;
-        self.old_active_position = self.active_position;
-        self.active_position = usize::MAX;
         self.needs_switch = false;
     }
 
@@ -1043,11 +1047,8 @@ impl Mon {
 
     pub fn clear_state_on_faint(context: &mut MonContext) -> Result<(), Error> {
         // TODO: End event for ability.
-        Mon::clear_volatile(context)?;
+        Mon::clear_volatile(context, false)?;
         context.mon_mut().fainted = true;
-        context.mon_mut().old_active_position = context.mon().active_position;
-        context.mon_mut().active_position = usize::MAX;
-        context.mon_mut().active = false;
         Ok(())
     }
 

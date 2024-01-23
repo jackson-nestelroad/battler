@@ -708,6 +708,7 @@ impl<'d> CoreBattle<'d> {
             RequestType::Turn => {
                 let mut context = context.player_context(player)?;
                 let active = Player::active_mon_handles(&context)
+                    .filter(|mon| context.mon(**mon).is_ok_and(|mon| !mon.fainted))
                     .cloned()
                     .collect::<Vec<_>>()
                     .into_iter()
@@ -769,8 +770,8 @@ impl<'d> CoreBattle<'d> {
 
     fn make_request(context: &mut Context, request_type: RequestType) -> Result<(), Error> {
         context.battle_mut().log.commit();
-        context.battle_mut().request = Some(request_type);
         Self::clear_requests(context)?;
+        context.battle_mut().request = Some(request_type);
 
         for player in 0..context.battle().players.len() {
             if let Some(request) = Self::get_request_for_player(context, player, request_type)? {
@@ -935,7 +936,10 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
-        if !context.battle().queue.is_empty() {
+        if context.battle().queue.is_empty() {
+            // This sets that fainted Mons must be switched out.
+            //
+            // We only do this at the end of the turn.
             Self::check_for_fainted_mons(context)?;
         } else if let Some(Action::Switch(switch)) = context.battle().queue.peek() {
             // Instant switches should happen... instantly.
@@ -950,7 +954,7 @@ impl<'d> CoreBattle<'d> {
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
             let needs_switch = Player::needs_switch(&context)?;
-            let can_switch = Player::can_switch(&context)?;
+            let can_switch = Player::can_switch(&context);
             if needs_switch {
                 if !can_switch {
                     // Switch can't happen, so unset the switch flag.
@@ -1105,7 +1109,8 @@ impl<'d> CoreBattle<'d> {
         Ok(rand_util::sample_iter(
             prng,
             Player::switchable_mon_handles(&context.player_context(player)?),
-        ))
+        )
+        .cloned())
     }
 
     pub fn random_target(
@@ -1142,6 +1147,16 @@ impl<'d> CoreBattle<'d> {
             // Consider all foes.
             Mon::active_foes(&mut context).collect::<Vec<_>>()
         };
+
+        let mons = mons
+            .into_iter()
+            .filter(|mon| {
+                context
+                    .as_battle_context()
+                    .mon(*mon)
+                    .is_ok_and(|mon| mon.hp > 0)
+            })
+            .collect::<Vec<_>>();
 
         Ok(
             rand_util::sample_slice(context.battle_mut().prng.as_mut(), &mons)
@@ -1337,8 +1352,9 @@ impl<'d> CoreBattle<'d> {
             }
             // TODO: BeforeFaint event.
             core_battle_logs::faint(&mut context)?;
-            let active_position = context.mon().active_position;
-            Player::clear_position(context.as_player_context_mut(), active_position);
+            if context.player().mons_left > 0 {
+                context.player_mut().mons_left -= 1;
+            }
             // TODO: Faint event.
             Mon::clear_state_on_faint(&mut context)?;
             context.battle_mut().last_fainted = Some(entry);

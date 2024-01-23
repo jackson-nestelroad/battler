@@ -370,6 +370,15 @@ pub fn get_move_targets(
             }
         }
     }
+    let targets = targets
+        .into_iter()
+        .filter(|target| {
+            context
+                .as_battle_context()
+                .mon(*target)
+                .is_ok_and(|target| target.hp > 0)
+        })
+        .collect();
     Ok(targets)
 }
 
@@ -1302,7 +1311,7 @@ fn apply_move_effects(
         }
 
         if hit_effect.force_switch {
-            let outcome = if Player::can_switch(target_context.as_player_context())? {
+            let outcome = if Player::can_switch(target_context.as_player_context()) {
                 MoveOutcomeOnTarget::Success
             } else {
                 MoveOutcomeOnTarget::Failure
@@ -1332,7 +1341,7 @@ fn apply_move_effects(
                 }
             }
             if context.active_move().data.user_switch.is_some() {
-                let outcome = if Player::can_switch(context.as_player_context())? {
+                let outcome = if Player::can_switch(context.as_player_context()) {
                     MoveOutcomeOnTarget::Success
                 } else {
                     MoveOutcomeOnTarget::Failure
@@ -1527,7 +1536,7 @@ fn force_switch(
         if target.outcome.failed()
             || context.target_mon().hp == 0
             || context.mon().hp == 0
-            || !Player::can_switch(context.target_mon_context()?.as_player_context())?
+            || !Player::can_switch(context.target_mon_context()?.as_player_context())
         {
             continue;
         }
