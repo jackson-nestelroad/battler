@@ -531,7 +531,7 @@ impl Player {
         if !Self::choice_done(context)? {
             return Self::emit_choice_error(
                 context,
-                battler_error!("incomplete choice: {input} - missing actions for Mons"),
+                battler_error!("incomplete choice: missing actions for Mons"),
             );
         }
 

@@ -761,7 +761,8 @@ impl<'d> CoreBattle<'d> {
             .wrap_error_with_format(format_args!("input_log for player {player} does not exist"))?
             .insert(turn, input.to_owned());
 
-        if Self::all_player_choices_done(context)? {
+        if context.battle().engine_options.auto_continue && Self::all_player_choices_done(context)?
+        {
             Self::commit_choices(context)?;
         }
 
@@ -821,6 +822,15 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn continue_battle_internal(context: &mut Context) -> Result<(), Error> {
+        if !context.battle().engine_options.auto_continue {
+            if !Self::all_player_choices_done(context)? {
+                return Err(battler_error!(
+                    "cannot continue: all players have not made their choice"
+                ));
+            }
+            Self::commit_choices(context)?;
+        }
+
         context.battle_mut().log_current_time();
 
         context.battle_mut().request = None;
