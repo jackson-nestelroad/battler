@@ -1,4 +1,3 @@
-use num::Zero;
 use serde::{
     Deserialize,
     Serialize,
@@ -32,6 +31,9 @@ pub struct TeamPreviewRequest {
 pub struct TurnRequest {
     pub active: Vec<MonMoveRequest>,
     pub player: PlayerRequestData,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub allies: Vec<PlayerRequestData>,
 }
 
 /// A request for a Mon to be switched in.

@@ -342,6 +342,14 @@ impl<'d> CoreBattle<'d> {
             .wrap_error_with_format(format_args!("player {player} does not exist"))
     }
 
+    pub fn player_indices_on_side<'b>(&'b self, side: usize) -> impl Iterator<Item = usize> + 'b {
+        (0..self.players.len()).filter(move |player| {
+            self.players
+                .get(*player)
+                .is_some_and(|player| player.side == side)
+        })
+    }
+
     pub fn players_on_side(&self, side: usize) -> impl Iterator<Item = &Player> {
         self.players().filter(move |player| player.side == side)
     }
@@ -717,9 +725,21 @@ impl<'d> CoreBattle<'d> {
                         Mon::move_request(&mut context)
                     })
                     .collect::<Result<Vec<_>, _>>()?;
+                let player_request_data = Player::request_data(&mut context)?;
+                let ally_indices = context
+                    .battle()
+                    .player_indices_on_side(context.side().index)
+                    .filter(|player| *player != context.player().index)
+                    .collect::<Vec<_>>();
+                let mut allies = Vec::with_capacity(ally_indices.len());
+                for player in ally_indices {
+                    let mut context = context.as_battle_context_mut().player_context(player)?;
+                    allies.push(Player::request_data(&mut context)?);
+                }
                 Ok(Some(Request::Turn(TurnRequest {
                     active,
-                    player: Player::request_data(&mut context)?,
+                    player: player_request_data,
+                    allies,
                 })))
             }
             RequestType::Switch => {

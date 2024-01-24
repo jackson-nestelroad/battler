@@ -134,6 +134,7 @@ pub struct MonTeamRequestData {
     pub health: String,
     pub status: String,
     pub active: bool,
+    pub player_active_position: Option<usize>,
     pub side_position: Option<usize>,
     pub stats: PartialStatTable,
     pub moves: Vec<String>,
@@ -722,6 +723,11 @@ impl Mon {
 // Request getters.
 impl Mon {
     pub fn team_request_data(context: &MonContext) -> Result<MonTeamRequestData, Error> {
+        let player_active_position = if context.mon().active {
+            Some(context.mon().active_position)
+        } else {
+            None
+        };
         let side_position = if context.mon().active {
             Some(Self::position_on_side(context)?)
         } else {
@@ -741,6 +747,7 @@ impl Mon {
                 .map(|id| id.to_string())
                 .unwrap_or(String::default()),
             active: context.mon().active,
+            player_active_position,
             side_position,
             stats: context.mon().base_stored_stats.without_hp(),
             moves: context
