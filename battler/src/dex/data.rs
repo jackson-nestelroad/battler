@@ -84,10 +84,12 @@ pub trait DataStore {
 pub struct LocalDataStore {
     root: String,
     type_chart: TypeChart,
+    abilities: DataTable<AbilityData>,
     aliases: Aliases,
     clauses: DataTable<ClauseData>,
     conditions: DataTable<ConditionData>,
     items: DataTable<ItemData>,
+    moves: DataTable<MoveData>,
     species: DataTable<SpeciesData>,
 }
 
@@ -100,10 +102,10 @@ impl LocalDataStore {
     pub const CLAUSES_FILE: &str = "clauses.json";
     /// Conditions file name.
     pub const CONDITIONS_FILE: &str = "conditions.json";
+    /// Items file name.
+    pub const ITEMS_FILE: &str = "items.json";
     /// Abilities directory name.
     pub const ABILITIES_DIR: &str = "abilities";
-    /// Items directory name.
-    pub const ITEMS_DIR: &str = "items";
     /// Moves directory name.
     pub const MOVES_DIR: &str = "moves";
     /// Species directory name.
@@ -122,10 +124,12 @@ impl LocalDataStore {
         let mut store = Self {
             root,
             type_chart: TypeChart::new(),
+            abilities: DataTable::new(),
             aliases: Aliases::new(),
             clauses: DataTable::new(),
             conditions: DataTable::new(),
             items: DataTable::new(),
+            moves: DataTable::new(),
             species: DataTable::new(),
         };
         store.initialize()?;
@@ -158,32 +162,27 @@ impl LocalDataStore {
                 .wrap_error_with_message("failed to read clauses")?,
         )
         .wrap_error_with_message("failed to parse clauses")?;
-        for (id, clause) in clauses {
-            self.clauses.register(id, clause);
-        }
+        self.clauses.register_extend(clauses);
 
         let conditions: FastHashMap<Id, ConditionData> = serde_json::from_reader(
             File::open(Path::new(&self.root).join(Self::CONDITIONS_FILE))
                 .wrap_error_with_message("failed to read conditions")?,
         )
         .wrap_error_with_message("failed to parse conditions")?;
-        for (id, condition) in conditions {
-            self.conditions.register(id, condition);
-        }
+        self.conditions.register_extend(conditions);
 
+        let items: FastHashMap<Id, ItemData> = serde_json::from_reader(
+            File::open(Path::new(&self.root).join(Self::ITEMS_FILE))
+                .wrap_error_with_message("failed to read items")?,
+        )
+        .wrap_error_with_message("failed to parse items")?;
+        self.items.register_extend(items);
+
+        self.abilities = self.read_all_files_in_directory::<AbilityData>(Self::ABILITIES_DIR)?;
+        self.moves = self.read_all_files_in_directory::<MoveData>(Self::MOVES_DIR)?;
         self.species = self.read_all_files_in_directory::<SpeciesData>(Self::SPECIES_DIR)?;
-        self.items = self.read_all_files_in_directory::<ItemData>(Self::ITEMS_DIR)?;
 
         Ok(())
-    }
-
-    fn read_resource<T: DeserializeOwned>(&self, dir: &str, id: &Id) -> DataLookupResult<T> {
-        match File::open(Path::new(&self.root).join(dir).join(format!("{id}.json"))) {
-            Err(_) => DataLookupResult::NotFound,
-            Ok(reader) => serde_json::from_reader(reader)
-                .wrap_error_with_format(format_args!("found {id}, but data was invalid"))
-                .into(),
-        }
     }
 
     fn read_all_files_in_directory<T: DeserializeOwned>(
@@ -231,7 +230,10 @@ impl DataStore for LocalDataStore {
     }
 
     fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData> {
-        self.read_resource(Self::ABILITIES_DIR, id)
+        self.abilities
+            .get(id)
+            .map(|data| data.deref().clone())
+            .into()
     }
 
     fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
@@ -250,7 +252,7 @@ impl DataStore for LocalDataStore {
     }
 
     fn get_move(&self, id: &Id) -> DataLookupResult<MoveData> {
-        self.read_resource(Self::MOVES_DIR, id)
+        self.moves.get(id).map(|data| data.deref().clone()).into()
     }
 
     fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData> {

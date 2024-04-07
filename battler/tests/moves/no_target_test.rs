@@ -163,6 +163,7 @@ mod no_target_test {
                 "turn|turn:2",
                 ["time"],
                 "move|mon:Bulbasaur,player-1,1|name:Air Cutter|spread:Squirtle,player-2,1;Charmander,player-2,2",
+                "crit|mon:Charmander,player-2,2",
                 "split|side:1",
                 "damage|mon:Squirtle,player-2,1|health:0",
                 "damage|mon:Squirtle,player-2,1|health:0",

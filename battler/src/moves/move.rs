@@ -210,9 +210,6 @@ pub struct MoveData {
     /// Does the move have crash damage?
     #[serde(default)]
     pub has_crash_damage: bool,
-    /// Moves that should be excluded from Metronome.
-    #[serde(default)]
-    pub no_metronome: Vec<String>,
     /// The move cannot be sketched.
     #[serde(default)]
     pub no_sketch: bool,

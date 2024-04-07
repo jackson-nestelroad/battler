@@ -11,6 +11,7 @@ pub enum LevelingRate {
     #[string = "Fast"]
     Fast,
     #[string = "Medium Fast"]
+    #[alias = "Medium"]
     MediumFast,
     #[string = "Medium Slow"]
     MediumSlow,

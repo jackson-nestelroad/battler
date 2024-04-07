@@ -80,9 +80,9 @@ pub struct SpeciesData {
     /// One egg cycle is equal to 255 steps.
     pub hatch_time: u8,
     /// Height in meters (m).
-    pub height: f32,
+    pub height: u32,
     /// Weight in kilograms (kg).
-    pub weight: f32,
+    pub weight: u32,
     /// Base experience yield when defeating this species.
     pub base_exp_yield: u16,
     /// Leveling rate of this species, which determines how much experience is required for
@@ -123,9 +123,6 @@ pub struct SpeciesData {
     /// Cosmetic formes, which have no impact on species data.
     #[serde(default)]
     pub cosmetic_formes: FastHashSet<String>,
-    /// Alternate formes, which contain their own species data.
-    #[serde(default)]
-    pub formes: FastHashSet<String>,
     /// Is this forme available only in battles?
     #[serde(default)]
     pub battle_only_forme: bool,
@@ -187,7 +184,6 @@ impl SpeciesData {
         self.name = format!("{}-{forme}", self.base_species);
         self.forme = Some(forme);
         self.base_forme = None;
-        self.formes.clear();
         self.cosmetic_formes.clear();
         self
     }

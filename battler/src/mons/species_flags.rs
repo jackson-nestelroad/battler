@@ -9,10 +9,16 @@ use serde_string_enum::{
     Debug, Clone, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum SpeciesFlags {
-    #[string = "Legendary"]
-    Legendary,
+    #[string = "SubLegendary"]
+    #[alias = "Sub-Legendary"]
+    SubLegendary,
+    #[string = "RestrictedLegendary"]
+    #[alias = "Restricted Legendary"]
+    RestrictedLegendary,
     #[string = "Mythical"]
     Mythical,
+    #[string = "Paradox"]
+    Paradox,
 }
 
 #[cfg(test)]
@@ -27,13 +33,13 @@ mod species_flags_tests {
 
     #[test]
     fn serializes_to_string() {
-        test_string_serialization(SpeciesFlags::Legendary, "Legendary");
+        test_string_serialization(SpeciesFlags::RestrictedLegendary, "RestrictedLegendary");
         test_string_serialization(SpeciesFlags::Mythical, "Mythical");
     }
 
     #[test]
     fn deserializes_lowercase() {
-        test_string_deserialization("legendary", SpeciesFlags::Legendary);
+        test_string_deserialization("restricted legendary", SpeciesFlags::RestrictedLegendary);
         test_string_deserialization("mythical", SpeciesFlags::Mythical);
     }
 }

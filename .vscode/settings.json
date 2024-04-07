@@ -8,8 +8,16 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.tabSize": 2
     },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "rust-analyzer.linkedProjects": [
         "./Cargo.toml"
     ],
+    "rust-analyzer.runnables.extraEnv": {
+        "DATA_DIR": "${workspaceFolder}/battle-sim/data",
+        "TEST_CASE_DIR": "${workspaceFolder}/battler/test_cases",
+        "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected"
+    },
     "rust-analyzer.showUnlinkedFileNotification": false,
 }

@@ -592,7 +592,7 @@
   "banned_legendary": {
     "format": {
       "battle_type": "Singles",
-      "rules": ["- Legendary"]
+      "rules": ["- Restricted Legendary"]
     },
     "team": [
       {
@@ -1578,7 +1578,7 @@
       }
     ],
     "expected_problems": [
-      "Move Weather Ball (on Venusaur) does not exist.",
+      "Venusaur cannot learn Weather Ball, because Weather Ball is unobtainable on Venusaur.",
       "Charizard is not allowed.",
       "Blastoise has 756 EVs, which exceeds the limit of 510."
     ]
