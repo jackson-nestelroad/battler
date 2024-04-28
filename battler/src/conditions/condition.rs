@@ -59,6 +59,15 @@ impl Condition {
         let id = Id::from(data.name.as_ref());
         Self { data, id }
     }
+
+    pub fn condition_type_name(&self) -> &str {
+        match self.data.condition_type {
+            ConditionType::BuiltIn => "",
+            ConditionType::Condition => "condition",
+            ConditionType::Status => "status",
+            ConditionType::Weather => "weather",
+        }
+    }
 }
 
 impl Identifiable for Condition {

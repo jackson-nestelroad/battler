@@ -118,12 +118,15 @@ impl<'borrow> Effect<'borrow> {
         match self {
             Self::ActiveMove(_) => "move",
             Self::Ability(_) => "ability",
-            Self::Condition(_) => "condition",
+            Self::Condition(condition) => condition.condition_type_name(),
         }
     }
 
     pub fn full_name(&self) -> String {
-        format!("{}: {}", self.effect_type_name(), self.name())
+        match self.effect_type_name() {
+            "" => self.name().to_owned(),
+            prefix => format!("{prefix}:{}", self.name()),
+        }
     }
 
     pub fn active_move<'effect>(&'effect self) -> Option<&'effect Move> {

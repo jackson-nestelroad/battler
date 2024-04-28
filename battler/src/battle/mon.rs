@@ -1060,7 +1060,7 @@ impl Mon {
     }
 
     pub fn cap_boosts(context: &MonContext, boosts: PartialBoostTable) -> PartialBoostTable {
-        PartialBoostTable::from_iter(boosts.into_iter().filter(|(_, value)| value > &0).map(
+        PartialBoostTable::from_iter(boosts.into_iter().filter(|(_, value)| value != &0).map(
             |(boost, value)| {
                 let current_value = context.mon().boosts.get(boost);
                 (

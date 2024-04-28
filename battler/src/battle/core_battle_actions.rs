@@ -8,6 +8,7 @@ use crate::{
         modify_32,
         ActiveMoveContext,
         ActiveTargetContext,
+        BoostMapInOrderIterator,
         CoreBattle,
         EffectContext,
         Mon,
@@ -525,7 +526,9 @@ fn hit_targets(
     apply_move_effects(context, targets)?;
 
     // Apply the effects against the user of the move.
-    apply_user_effect(context, targets)?;
+    if !context.is_self() {
+        apply_user_effect(context, targets)?;
+    }
 
     if !context.is_secondary() && !context.is_self() {
         // Apply secondary effects.
@@ -749,7 +752,12 @@ fn calculate_recoil_damage(context: &ActiveMoveContext) -> u64 {
     let damage_dealt = context.active_move().total_damage;
     match context.active_move().data.recoil_percent {
         Some(recoil_percent) if damage_dealt > 0 => {
-            (recoil_percent.convert() * damage_dealt).round().max(1)
+            let recoil_base = if context.active_move().data.recoil_from_user_hp {
+                context.as_mon_context().mon().max_hp as u64
+            } else {
+                damage_dealt
+            };
+            (recoil_percent.convert() * recoil_base).round().max(1)
         }
         _ => 0,
     }
@@ -864,7 +872,6 @@ mod direct_move_step {
                 if !context.active_move().spread_hit {
                     core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
                 }
-                core_battle_logs::miss(&mut context)?;
                 target.outcome = MoveOutcome::Failed;
                 // TODO: AccuracyFailure event.
             }
@@ -877,7 +884,7 @@ mod direct_move_step {
         // OHKO moves bypass accuracy modifiers.
         if let Some(ohko) = context.active_move().data.ohko_type.clone() {
             // TODO: Skip if target is semi-invulnerable.
-            let mut immune = context.mon().level >= context.target_mon().level;
+            let mut immune = context.mon().level < context.target_mon().level;
             if let OhkoType::Type(typ) = ohko {
                 if Mon::has_type(&context.target_mon_context()?, typ)? {
                     immune = true;
@@ -890,7 +897,15 @@ mod direct_move_step {
             }
 
             if let Accuracy::Chance(accuracy) = &mut accuracy {
-                *accuracy += context.mon().level - context.target_mon().level;
+                if context.mon().level >= context.target_mon().level {
+                    let user_has_ohko_type = match ohko {
+                        OhkoType::Always => true,
+                        OhkoType::Type(typ) => Mon::has_type(context.as_mon_context(), typ)?,
+                    };
+                    if user_has_ohko_type {
+                        *accuracy += context.mon().level - context.target_mon().level;
+                    }
+                }
             }
         } else {
             // TODO: ModifyAccuracy event.
@@ -922,14 +937,16 @@ mod direct_move_step {
         }
 
         // TODO: Accuracy event.
-        match accuracy {
-            Accuracy::Chance(accuracy) => Ok(rand_util::chance(
-                context.battle_mut().prng.as_mut(),
-                accuracy as u64,
-                100,
-            )),
-            _ => Ok(true),
+        let hit = match accuracy {
+            Accuracy::Chance(accuracy) => {
+                rand_util::chance(context.battle_mut().prng.as_mut(), accuracy as u64, 100)
+            }
+            _ => true,
+        };
+        if !hit {
+            core_battle_logs::miss(context)?;
         }
+        Ok(hit)
     }
 
     pub fn break_protect(
@@ -975,23 +992,25 @@ mod direct_move_step {
             if targets.iter().all(|target| !target.outcome.success()) {
                 break;
             }
-
-            // Record number of hits.
-            context.active_move_mut().hit = hit + 1;
+            if targets.iter().all(|target| {
+                context
+                    .target_context(target.handle)
+                    .map(|context| context.target_mon().hp)
+                    .unwrap_or(0)
+                    == 0
+            }) {
+                break;
+            }
 
             // Of all the eligible targets, determine which ones we will actually hit.
-            let mut next_hit_targets = Vec::with_capacity(targets.len());
             for target in targets.iter_mut().filter(|target| target.outcome.success()) {
                 let mut context = context.target_context(target.handle)?;
-                if context.active_move().data.multiaccuracy && hit > 1 {
+                if context.active_move().data.multiaccuracy && hit > 0 {
                     if !accuracy_check(&mut context)? {
                         target.outcome = MoveOutcome::Failed;
                         continue;
                     }
                 }
-
-                // If we made it this far, the target is eligible for another hit.
-                next_hit_targets.push(target);
             }
 
             let mut hit_targets = targets
@@ -1008,6 +1027,8 @@ mod direct_move_step {
                 break;
             }
 
+            // Record number of hits.
+            context.active_move_mut().hit = hit + 1;
             context.active_move_mut().total_damage += hit_targets_state
                 .iter()
                 .filter_map(|target| {
@@ -1020,6 +1041,14 @@ mod direct_move_step {
                 .sum::<u64>();
 
             // TODO: Update event for everything on the field, like items.
+        }
+
+        // Log OHKOs.
+        for target in targets.iter() {
+            let mut context = context.target_context(target.handle)?;
+            if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
+                core_battle_logs::ohko(&mut context)?;
+            }
         }
 
         CoreBattle::faint_messages(context.as_battle_context_mut())?;
@@ -1038,7 +1067,7 @@ mod direct_move_step {
                 &mut context.as_mon_context_mut(),
                 recoil_damage,
                 Some(mon_handle),
-                Some(&effect_handle),
+                Some(&EffectHandle::Condition(Id::from_known("recoil"))),
             )?;
         }
 
@@ -1054,14 +1083,6 @@ mod direct_move_step {
         }
 
         // TODO: Record which Mon attacked which, and how many times.
-
-        // Log OHKOs.
-        for target in targets.iter() {
-            let mut context = context.target_context(target.handle)?;
-            if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
-                core_battle_logs::ohko(&mut context)?;
-            }
-        }
 
         // At this point, all hits have been applied.
         Ok(())
@@ -1161,6 +1182,7 @@ fn apply_spread_damage(
                     amount,
                     Some(target_handle),
                     Some(&EffectHandle::Condition(Id::from_known("drain"))),
+                    false,
                 )?;
             }
         }
@@ -1173,6 +1195,7 @@ pub fn heal(
     damage: u16,
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
+    log_failure: bool,
 ) -> Result<u16, Error> {
     // TODO: TryHeal event.
     if damage == 0
@@ -1184,7 +1207,11 @@ pub fn heal(
     }
 
     let healed = Mon::heal(context, damage)?;
-    core_battle_logs::heal(context, source, effect)?;
+    if healed > 0 {
+        core_battle_logs::heal(context, source, effect)?;
+    } else if log_failure {
+        core_battle_logs::fail_heal(context)?;
+    }
     // TODO: Heal event.
     Ok(healed)
 }
@@ -1241,7 +1268,7 @@ fn apply_move_effects(
         // We clone to avoid holding onto the reference, which prevents us from creating new
         // contexts.
         let hit_effect = match target_context.hit_effect() {
-            None => return Ok(()),
+            None => break,
             Some(hit_effect) => hit_effect.clone(),
         };
 
@@ -1271,12 +1298,11 @@ fn apply_move_effects(
                 damage,
                 Some(source_handle),
                 Some(&effect_handle),
+                true,
             )?;
             let outcome = if damage == 0 {
-                core_battle_logs::fail_heal(&mut target_context)?;
                 MoveOutcomeOnTarget::Failure
             } else {
-                core_battle_logs::heal(&mut target_context, None, None)?;
                 MoveOutcomeOnTarget::Success
             };
             hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
@@ -1399,23 +1425,21 @@ fn boost(
         return Ok(MoveOutcomeOnTarget::Failure);
     }
     // TODO: ChangeBoost event.
-    let boosts = Mon::cap_boosts(context, boosts);
+    let capped_boosts = Mon::cap_boosts(context, boosts.clone());
     // TODO: TryBoost event.
 
     let mut success = false;
-    for (boost, value) in &boosts {
+    for (boost, value) in BoostMapInOrderIterator::new(&capped_boosts) {
+        let original_delta = *boosts.get(boost).unwrap_or(&0);
         let delta = Mon::boost_stat(context, *boost, *value);
-        if delta != 0 {
-            success = true;
-            core_battle_logs::boost(context, *boost, delta)?;
-            // TODO: AfterEachBoost event.
-        } else if !is_secondary && !is_self {
-            core_battle_logs::boost(context, *boost, delta)?;
+        success = success && delta != 0;
+        if delta != 0 || (!is_secondary && !is_self) {
+            core_battle_logs::boost(context, *boost, delta, original_delta)?;
         } else if let Some(effect) = effect {
             let effect_context = context.as_battle_context_mut().effect_context(effect)?;
             let effect_type = effect_context.effect().effect_type();
             if effect_type == EffectType::Ability {
-                core_battle_logs::boost(context, *boost, delta)?;
+                core_battle_logs::boost(context, *boost, delta, original_delta)?;
             }
         }
     }
@@ -1458,7 +1482,7 @@ fn apply_user_effect(
         //
         // This also only impacts the primary user effect. Secondary user effects can run multiple
         // times (since there is a little bit more control over how secondary effects run,
-        // since there can be any number of them and they can be guaraded behind a chance).
+        // since there can be any number of them and they can be guarded behind a chance).
         if !context.is_secondary() && !context.active_move().primary_user_effect_applied {
             if context.hit_effect().wrap_error()?.boosts.is_some() {
                 let chance = context

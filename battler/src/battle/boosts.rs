@@ -85,11 +85,11 @@ pub struct BoostTable {
     #[serde(default)]
     pub def: i8,
     #[serde(default)]
-    pub spatk: i8,
-    #[serde(default)]
-    pub spdef: i8,
+    pub spa: i8,
     #[serde(default)]
     pub spd: i8,
+    #[serde(default)]
+    pub spe: i8,
     #[serde(default)]
     pub acc: i8,
     #[serde(default)]
@@ -102,9 +102,9 @@ impl BoostTable {
         match boost {
             Boost::Atk => self.atk,
             Boost::Def => self.def,
-            Boost::SpAtk => self.spatk,
-            Boost::SpDef => self.spdef,
-            Boost::Spe => self.spd,
+            Boost::SpAtk => self.spa,
+            Boost::SpDef => self.spd,
+            Boost::Spe => self.spe,
             Boost::Accuracy => self.acc,
             Boost::Evasion => self.eva,
         }
@@ -115,9 +115,9 @@ impl BoostTable {
         match boost {
             Boost::Atk => &mut self.atk,
             Boost::Def => &mut self.def,
-            Boost::SpAtk => &mut self.spatk,
-            Boost::SpDef => &mut self.spdef,
-            Boost::Spe => &mut self.spd,
+            Boost::SpAtk => &mut self.spa,
+            Boost::SpDef => &mut self.spd,
+            Boost::Spe => &mut self.spe,
             Boost::Accuracy => &mut self.acc,
             Boost::Evasion => &mut self.eva,
         }
@@ -134,12 +134,63 @@ impl From<&PartialBoostTable> for BoostTable {
         Self {
             atk: *value.get(&Boost::Atk).unwrap_or(&0),
             def: *value.get(&Boost::Def).unwrap_or(&0),
-            spatk: *value.get(&Boost::SpAtk).unwrap_or(&0),
-            spdef: *value.get(&Boost::SpDef).unwrap_or(&0),
-            spd: *value.get(&Boost::Spe).unwrap_or(&0),
+            spa: *value.get(&Boost::SpAtk).unwrap_or(&0),
+            spd: *value.get(&Boost::SpDef).unwrap_or(&0),
+            spe: *value.get(&Boost::Spe).unwrap_or(&0),
             acc: *value.get(&Boost::Accuracy).unwrap_or(&0),
             eva: *value.get(&Boost::Evasion).unwrap_or(&0),
         }
+    }
+}
+
+/// Iterator type for iterating over boosts in a [`BoostMap`] in a stable order.
+pub struct BoostMapInOrderIterator<'m, T> {
+    table: &'m BoostMap<T>,
+    next: Option<Boost>,
+}
+
+impl<'m, T> BoostMapInOrderIterator<'m, T> {
+    pub fn new(table: &'m BoostMap<T>) -> Self {
+        Self {
+            table,
+            next: Some(Boost::Atk),
+        }
+    }
+
+    fn next_entry(&self, current: &Option<Boost>) -> (Option<(&'m Boost, &'m T)>, Option<Boost>) {
+        let next = match current {
+            Some(Boost::Atk) => Some(Boost::Def),
+            Some(Boost::Def) => Some(Boost::SpAtk),
+            Some(Boost::SpAtk) => Some(Boost::SpDef),
+            Some(Boost::SpDef) => Some(Boost::Spe),
+            Some(Boost::Spe) => Some(Boost::Accuracy),
+            Some(Boost::Accuracy) => Some(Boost::Evasion),
+            None | Some(Boost::Evasion) => None,
+        };
+        (
+            current
+                .map(|boost| self.table.get_key_value(&boost))
+                .flatten(),
+            next,
+        )
+    }
+
+    fn next_non_zero_entry(&mut self) -> Option<(&'m Boost, &'m T)> {
+        while self.next.is_some() {
+            let (entry, next) = self.next_entry(&self.next);
+            self.next = next;
+            if entry.is_some() {
+                return entry;
+            }
+        }
+        None
+    }
+}
+
+impl<'m, T> Iterator for BoostMapInOrderIterator<'m, T> {
+    type Item = (&'m Boost, &'m T);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_non_zero_entry()
     }
 }
 
@@ -195,6 +246,7 @@ mod boost_table_tests {
 
     use crate::battle::{
         Boost,
+        BoostMapInOrderIterator,
         BoostTable,
         PartialBoostTable,
     };
@@ -210,9 +262,9 @@ mod boost_table_tests {
             BoostTable {
                 atk: 2,
                 def: 0,
-                spatk: 0,
-                spdef: 0,
+                spa: 0,
                 spd: 0,
+                spe: 0,
                 acc: 1,
                 eva: 0,
             }
@@ -224,9 +276,9 @@ mod boost_table_tests {
         let bt = BoostTable {
             atk: 1,
             def: 2,
-            spatk: 3,
-            spdef: 4,
-            spd: 5,
+            spa: 3,
+            spd: 4,
+            spe: 5,
             acc: 6,
             eva: 7,
         };
@@ -237,5 +289,64 @@ mod boost_table_tests {
         assert_eq!(bt.get(Boost::Spe), 5);
         assert_eq!(bt.get(Boost::Accuracy), 6);
         assert_eq!(bt.get(Boost::Evasion), 7);
+    }
+
+    #[test]
+    fn iterates_entries_in_order() {
+        let mut table = PartialBoostTable::new();
+        assert_eq!(
+            BoostMapInOrderIterator::new(&table)
+                .map(|(boost, val)| (*boost, *val))
+                .collect::<Vec<(Boost, i8)>>(),
+            Vec::<(Boost, i8)>::new(),
+        );
+
+        table.insert(Boost::SpAtk, 1);
+        assert_eq!(
+            BoostMapInOrderIterator::new(&table)
+                .map(|(boost, val)| (*boost, *val))
+                .collect::<Vec<(Boost, i8)>>(),
+            vec![(Boost::SpAtk, 1)],
+        );
+
+        table.insert(Boost::Atk, 2);
+        assert_eq!(
+            BoostMapInOrderIterator::new(&table)
+                .map(|(boost, val)| (*boost, *val))
+                .collect::<Vec<(Boost, i8)>>(),
+            vec![(Boost::Atk, 2), (Boost::SpAtk, 1)],
+        );
+
+        table.insert(Boost::Accuracy, -1);
+        assert_eq!(
+            BoostMapInOrderIterator::new(&table)
+                .map(|(boost, val)| (*boost, *val))
+                .collect::<Vec<(Boost, i8)>>(),
+            vec![(Boost::Atk, 2), (Boost::SpAtk, 1), (Boost::Accuracy, -1)],
+        );
+
+        let table = PartialBoostTable::from_iter([
+            (Boost::Atk, 1),
+            (Boost::Def, 1),
+            (Boost::SpAtk, 1),
+            (Boost::SpDef, 1),
+            (Boost::Spe, 1),
+            (Boost::Accuracy, 1),
+            (Boost::Evasion, 1),
+        ]);
+        assert_eq!(
+            BoostMapInOrderIterator::new(&table)
+                .map(|(boost, val)| (*boost, *val))
+                .collect::<Vec<(Boost, i8)>>(),
+            vec![
+                (Boost::Atk, 1),
+                (Boost::Def, 1),
+                (Boost::SpAtk, 1),
+                (Boost::SpDef, 1),
+                (Boost::Spe, 1),
+                (Boost::Accuracy, 1),
+                (Boost::Evasion, 1),
+            ],
+        );
     }
 }

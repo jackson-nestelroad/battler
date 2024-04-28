@@ -10,10 +10,7 @@ use crate::{
         MonContext,
         MonHandle,
     },
-    common::{
-        Error,
-        Identifiable,
-    },
+    common::Error,
     effect::{
         EffectHandle,
         EffectType,
@@ -193,13 +190,17 @@ pub fn heal(
     let mut event = log_event!("heal", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
         let effect_context = context.as_battle_context_mut().effect_context(effect)?;
-        event.set("from", effect_context.effect().id());
-        if let Some(source) = source {
-            if source != context.mon_handle() {
-                event.set(
-                    "of",
-                    Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
-                );
+        if effect_context.effect().effect_type() != EffectType::Move {
+            event.set("from", effect_context.effect().full_name());
+            if let Some(source) = source {
+                if source != context.mon_handle() {
+                    event.set(
+                        "of",
+                        Mon::position_details(
+                            &context.as_battle_context_mut().mon_context(source)?,
+                        )?,
+                    );
+                }
             }
         }
     }
@@ -231,16 +232,17 @@ pub fn faint(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn boost(context: &mut MonContext, boost: Boost, delta: i8) -> Result<(), Error> {
-    let (delta, message) = if delta > 0 {
+pub fn boost(
+    context: &mut MonContext,
+    boost: Boost,
+    delta: i8,
+    original_delta: i8,
+) -> Result<(), Error> {
+    let (delta, message) = if original_delta >= 0 {
         (delta as u8, "boost")
     } else {
         (-delta as u8, "unboost")
     };
-
-    if delta == 0 {
-        return Ok(());
-    }
 
     let event = log_event!(
         message,

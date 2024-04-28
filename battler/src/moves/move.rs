@@ -66,9 +66,9 @@ pub struct SecondaryEffect {
     /// Chance of the effect occurring.
     pub chance: Option<Fraction<u16>>,
     /// Secondary hit effect on the target.
-    pub target: HitEffect,
+    pub target: Option<HitEffect>,
     /// Secondary hit effect on the user of the move.
-    pub user: HitEffect,
+    pub user: Option<HitEffect>,
 }
 
 fn default_crit_ratio() -> Option<u8> {
@@ -124,8 +124,11 @@ pub struct MoveData {
     /// Does the move break protect?
     #[serde(default)]
     pub breaks_protect: bool,
-    /// The percentage of the target's HP to damage for recoil.
+    /// The percentage of damage dealt for recoil.
     pub recoil_percent: Option<Fraction<u16>>,
+    /// Calculate recoil damage from user HP?
+    #[serde(default)]
+    pub recoil_from_user_hp: bool,
     /// The percentage of the target's HP to drain.
     pub drain_percent: Option<Fraction<u16>>,
     /// Apply Struggle recoil?
@@ -137,7 +140,7 @@ pub struct MoveData {
 
     /// Primary effect applied to the target.
     ///
-    /// Applied when the moev hits.
+    /// Applied when the move hits.
     pub hit_effect: Option<HitEffect>,
     /// Primary effect on the user.
     ///
@@ -183,7 +186,7 @@ pub struct MoveData {
     pub ignore_evasion: bool,
     /// Ignore immunity?
     #[serde(default)]
-    pub ignore_immunity: bool,
+    pub ignore_immunity: Option<bool>,
     /// Ignore offensive modifiers?
     #[serde(default)]
     pub ignore_offensive: bool,
@@ -220,7 +223,8 @@ pub struct MoveData {
 
 impl MoveData {
     pub fn ignore_immunity(&self) -> bool {
-        self.category == MoveCategory::Status || self.ignore_immunity
+        self.ignore_immunity
+            .unwrap_or(self.category == MoveCategory::Status)
     }
 }
 
@@ -307,7 +311,8 @@ impl Move {
                 .data
                 .secondary_effects
                 .get(index)
-                .map(|effect| &effect.target),
+                .map(|effect| effect.target.as_ref())
+                .flatten(),
         }
     }
 
@@ -321,7 +326,8 @@ impl Move {
                 .data
                 .secondary_effects
                 .get_mut(index)
-                .map(|effect| &mut effect.target),
+                .map(|effect| effect.target.as_mut())
+                .flatten(),
         }
     }
 
@@ -332,7 +338,8 @@ impl Move {
                 .data
                 .secondary_effects
                 .get(index)
-                .map(|effect| &effect.user),
+                .map(|effect| effect.user.as_ref())
+                .flatten(),
         }
     }
 
@@ -346,7 +353,8 @@ impl Move {
                 .data
                 .secondary_effects
                 .get_mut(index)
-                .map(|effect| &mut effect.user),
+                .map(|effect| effect.user.as_mut())
+                .flatten(),
         }
     }
 }

@@ -50,6 +50,7 @@ pub use battle_type::BattleType;
 pub use boosts::{
     Boost,
     BoostMap,
+    BoostMapInOrderIterator,
     BoostTable,
     PartialBoostTable,
 };
