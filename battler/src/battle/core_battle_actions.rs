@@ -646,10 +646,15 @@ fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTa
         .boosts
         .get(defense_stat.try_into()?);
 
-    if context.active_move().data.ignore_offensive {
+    let ignore_offensive = context.active_move().data.ignore_offensive
+        || context.active_move_mut().hit_data(target_mon_handle).crit;
+    let ignore_defensive = context.active_move().data.ignore_defensive
+        || context.active_move_mut().hit_data(target_mon_handle).crit;
+
+    if ignore_offensive {
         attack_boosts = 0;
     }
-    if context.active_move().data.ignore_defensive {
+    if ignore_defensive {
         defense_boosts = 0;
     }
 

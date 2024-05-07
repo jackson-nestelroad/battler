@@ -29,6 +29,7 @@ mod crit_ratio_test {
             .with_battle_type(BattleType::Singles)
             .with_seed(seed)
             .with_team_validation(false)
+            .with_pass_allowed(true)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -150,6 +151,105 @@ mod crit_ratio_test {
                 "damage|mon:Bulbasaur,player-1,1|health:26/100",
                 "residual",
                 "turn|turn:2"
+            ]"#).unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
+    fn crit_ignores_stat_modifiers() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let team: TeamData = serde_json::from_str(
+            r#"{
+                "members": [
+                    {
+                        "name": "Bulbasaur",
+                        "species": "Bulbasaur",
+                        "ability": "Overgrow",
+                        "moves": [
+                            "Frost Breath",
+                            "Calm Mind",
+                            "Recover"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
+        )
+        .unwrap();
+        let mut battle = make_battle(&data, team.clone(), team, 1).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Bulbasaur,player-1,1|name:Frost Breath|target:Bulbasaur,player-2,1",
+                "supereffective|mon:Bulbasaur,player-2,1",
+                "crit|mon:Bulbasaur,player-2,1",
+                "split|side:1",
+                "damage|mon:Bulbasaur,player-2,1|health:31/105",
+                "damage|mon:Bulbasaur,player-2,1|health:30/100",
+                "residual",
+                "turn|turn:2",
+                ["time"],
+                "move|mon:Bulbasaur,player-2,1|name:Recover|target:Bulbasaur,player-2,1",
+                "split|side:1",
+                "heal|mon:Bulbasaur,player-2,1|health:84/105",
+                "heal|mon:Bulbasaur,player-2,1|health:80/100",
+                "residual",
+                "turn|turn:3",
+                ["time"],
+                "move|mon:Bulbasaur,player-2,1|name:Calm Mind|target:Bulbasaur,player-2,1",
+                "boost|mon:Bulbasaur,player-2,1|stat:spa|by:1",
+                "boost|mon:Bulbasaur,player-2,1|stat:spd|by:1",
+                "residual",
+                "turn|turn:4",
+                ["time"],
+                "move|mon:Bulbasaur,player-2,1|name:Calm Mind|target:Bulbasaur,player-2,1",
+                "boost|mon:Bulbasaur,player-2,1|stat:spa|by:1",
+                "boost|mon:Bulbasaur,player-2,1|stat:spd|by:1",
+                "residual",
+                "turn|turn:5",
+                ["time"],
+                "move|mon:Bulbasaur,player-2,1|name:Calm Mind|target:Bulbasaur,player-2,1",
+                "boost|mon:Bulbasaur,player-2,1|stat:spa|by:1",
+                "boost|mon:Bulbasaur,player-2,1|stat:spd|by:1",
+                "residual",
+                "turn|turn:6",
+                ["time"],
+                "move|mon:Bulbasaur,player-1,1|name:Frost Breath|target:Bulbasaur,player-2,1",
+                "supereffective|mon:Bulbasaur,player-2,1",
+                "crit|mon:Bulbasaur,player-2,1",
+                "split|side:1",
+                "damage|mon:Bulbasaur,player-2,1|health:4/105",
+                "damage|mon:Bulbasaur,player-2,1|health:4/100",
+                "residual",
+                "turn|turn:7"
             ]"#).unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }

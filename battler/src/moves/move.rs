@@ -137,6 +137,9 @@ pub struct MoveData {
     /// Ignore STAB?
     #[serde(default)]
     pub ignore_stab: bool,
+    /// Typeless?
+    #[serde(default)]
+    pub typeless: bool,
 
     /// Primary effect applied to the target.
     ///
