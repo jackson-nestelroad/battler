@@ -26,14 +26,29 @@ use crate::{
 /// The type of an fxlang value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ValueType {
+    Undefined,
     Boolean,
-    Number,
+    U16,
+    U32,
+    U64,
+    Fraction,
+    UFraction,
     String,
     Mon,
     Effect,
     ActiveMove,
     List,
     Object,
+}
+
+impl ValueType {
+    /// Checks if the value type is a number.
+    pub fn is_number(&self) -> bool {
+        match self {
+            Self::U16 | Self::U32 | Self::U64 | Self::Fraction | Self::UFraction => true,
+            _ => false,
+        }
+    }
 }
 
 impl Display for ValueType {
@@ -45,6 +60,7 @@ impl Display for ValueType {
 /// An fxlang value.
 #[derive(Clone)]
 pub enum Value {
+    Undefined,
     Boolean(bool),
     U16(u16),
     U32(u32),
@@ -64,12 +80,13 @@ impl Value {
     /// The type of the value.
     pub fn value_type(&self) -> ValueType {
         match self {
+            Self::Undefined => ValueType::Undefined,
             Self::Boolean(_) => ValueType::Boolean,
-            Self::U16(_) => ValueType::Number,
-            Self::U32(_) => ValueType::Number,
-            Self::U64(_) => ValueType::Number,
-            Self::Fraction(_) => ValueType::Number,
-            Self::UFraction(_) => ValueType::Number,
+            Self::U16(_) => ValueType::U16,
+            Self::U32(_) => ValueType::U32,
+            Self::U64(_) => ValueType::U64,
+            Self::Fraction(_) => ValueType::Fraction,
+            Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
@@ -100,9 +117,10 @@ impl Value {
         match self {
             Self::U16(val) => Ok(val as u64),
             Self::U32(val) => Ok(val as u64),
+            Self::U64(val) => Ok(val),
             Self::Fraction(val) => Ok(val.floor() as u64),
             Self::UFraction(val) => Ok(val.floor() as u64),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Number)),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::U64)),
         }
     }
 }
@@ -114,6 +132,7 @@ impl Value {
 /// numeric literals can be expressed in multiple ways across the battle engine).
 #[derive(Clone)]
 pub enum MaybeReferenceValue<'eval> {
+    Undefined,
     Boolean(bool),
     U16(u16),
     U32(u32),
@@ -134,12 +153,13 @@ impl<'eval> MaybeReferenceValue<'eval> {
     /// The type of the value.
     pub fn value_type(&self) -> ValueType {
         match self {
+            Self::Undefined => ValueType::Undefined,
             Self::Boolean(_) => ValueType::Boolean,
-            Self::U16(_) => ValueType::Number,
-            Self::U32(_) => ValueType::Number,
-            Self::U64(_) => ValueType::Number,
-            Self::Fraction(_) => ValueType::Number,
-            Self::UFraction(_) => ValueType::Number,
+            Self::U16(_) => ValueType::U16,
+            Self::U32(_) => ValueType::U32,
+            Self::U64(_) => ValueType::U64,
+            Self::Fraction(_) => ValueType::Fraction,
+            Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
@@ -154,6 +174,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
     /// Converts the value to a [`Value`], which is guaranteed to contain no references.
     pub fn to_owned(&self) -> Value {
         match self {
+            Self::Undefined => Value::Undefined,
             Self::Boolean(val) => Value::Boolean(*val),
             Self::U16(val) => Value::U16(*val),
             Self::U32(val) => Value::U32(*val),
@@ -173,32 +194,6 @@ impl<'eval> MaybeReferenceValue<'eval> {
             ),
             Self::Reference(val) => val.to_owned(),
         }
-    }
-
-    /// Converts the value to a string for a formatted string.
-    pub fn for_formatted_string(&self) -> Result<String, Error> {
-        let string = match self {
-            Self::Boolean(val) => {
-                if *val {
-                    "true".to_owned()
-                } else {
-                    "false".to_owned()
-                }
-            }
-            Self::U16(val) => val.to_string(),
-            Self::U32(val) => val.to_string(),
-            Self::Fraction(val) => val.to_string(),
-            Self::UFraction(val) => val.to_string(),
-            Self::OptionalString(val) => val.clone().unwrap_or("".to_owned()),
-            Self::String(val) => val.clone(),
-            _ => {
-                return Err(battler_error!(
-                    "{} value is not string formattable",
-                    self.value_type()
-                ))
-            }
-        };
-        Ok(string)
     }
 
     /// Checks if the value supports list iteration.
@@ -246,6 +241,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
 impl From<Value> for MaybeReferenceValue<'_> {
     fn from(value: Value) -> Self {
         match value {
+            Value::Undefined => Self::Undefined,
             Value::Boolean(val) => Self::Boolean(val),
             Value::U16(val) => Self::U16(val),
             Value::U32(val) => Self::U32(val),
@@ -280,6 +276,7 @@ impl<'eval> From<ValueRefToStoredValue<'eval>> for MaybeReferenceValue<'eval> {
 /// A [`Value`], but containing a reference to the underlying value.
 #[derive(Clone)]
 pub enum ValueRef<'eval> {
+    Undefined,
     Boolean(&'eval bool),
     U16(&'eval u16),
     U32(&'eval u32),
@@ -299,12 +296,13 @@ impl ValueRef<'_> {
     /// The type of the value.
     pub fn value_type(&self) -> ValueType {
         match self {
+            Self::Undefined => ValueType::Undefined,
             Self::Boolean(_) => ValueType::Boolean,
-            Self::U16(_) => ValueType::Number,
-            Self::U32(_) => ValueType::Number,
-            Self::U64(_) => ValueType::Number,
-            Self::Fraction(_) => ValueType::Number,
-            Self::UFraction(_) => ValueType::Number,
+            Self::U16(_) => ValueType::U16,
+            Self::U32(_) => ValueType::U32,
+            Self::U64(_) => ValueType::U64,
+            Self::Fraction(_) => ValueType::Fraction,
+            Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
@@ -318,6 +316,7 @@ impl ValueRef<'_> {
     /// Converts the reference to a [`Value`], which is guaranteed to contain no references.
     pub fn to_owned(&self) -> Value {
         match self {
+            Self::Undefined => Value::Undefined,
             Self::Boolean(val) => Value::Boolean(**val),
             Self::U16(val) => Value::U16(**val),
             Self::U32(val) => Value::U32(**val),
@@ -371,6 +370,7 @@ impl<'element, 'value> From<&'element ElementRef<'value, Value>> for ValueRef<'e
 impl<'eval> From<&'eval Value> for ValueRef<'eval> {
     fn from(value: &'eval Value) -> Self {
         match value {
+            Value::Undefined => Self::Undefined,
             Value::Boolean(val) => Self::Boolean(val),
             Value::U16(val) => Self::U16(val),
             Value::U32(val) => Self::U32(val),
@@ -424,6 +424,8 @@ impl<'eval> ValueRefToStoredValue<'eval> {
 
 /// A [`Value`], but containing a mutable reference to the underlying value.
 pub enum ValueRefMut<'eval> {
+    Undefined,
+    Any(&'eval mut Value),
     Boolean(&'eval mut bool),
     U16(&'eval mut u16),
     U32(&'eval mut u32),
@@ -443,12 +445,14 @@ impl<'eval> ValueRefMut<'eval> {
     /// The type of the value.
     pub fn value_type(&self) -> ValueType {
         match self {
+            Self::Undefined => ValueType::Undefined,
+            Self::Any(val) => val.value_type(),
             Self::Boolean(_) => ValueType::Boolean,
-            Self::U16(_) => ValueType::Number,
-            Self::U32(_) => ValueType::Number,
-            Self::U64(_) => ValueType::Number,
-            Self::Fraction(_) => ValueType::Number,
-            Self::UFraction(_) => ValueType::Number,
+            Self::U16(_) => ValueType::U16,
+            Self::U32(_) => ValueType::U32,
+            Self::U64(_) => ValueType::U64,
+            Self::Fraction(_) => ValueType::Fraction,
+            Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
@@ -463,6 +467,7 @@ impl<'eval> ValueRefMut<'eval> {
 impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
     fn from(value: &'eval mut Value) -> Self {
         match value {
+            Value::Undefined => Self::Undefined,
             Value::Boolean(val) => Self::Boolean(val),
             Value::U16(val) => Self::U16(val),
             Value::U32(val) => Self::U32(val),
@@ -492,6 +497,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
 /// Primitive types are always passed by value. More complex types, like lists and objects, are
 /// passed by reference.
 pub enum MaybeReferenceValueForOperation<'eval> {
+    Undefined,
     Boolean(bool),
     U16(u16),
     U32(u32),
@@ -513,12 +519,13 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     /// The type of the value.
     pub fn value_type(&self) -> ValueType {
         match self {
+            Self::Undefined => ValueType::Undefined,
             Self::Boolean(_) => ValueType::Boolean,
-            Self::U16(_) => ValueType::Number,
-            Self::U32(_) => ValueType::Number,
-            Self::U64(_) => ValueType::Number,
-            Self::Fraction(_) => ValueType::Number,
-            Self::UFraction(_) => ValueType::Number,
+            Self::U16(_) => ValueType::U16,
+            Self::U32(_) => ValueType::U32,
+            Self::U64(_) => ValueType::U64,
+            Self::Fraction(_) => ValueType::Fraction,
+            Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
@@ -534,6 +541,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     /// Converts the value to a [`Value`], which is guaranteed to contain no references.
     pub fn to_owned(&self) -> Value {
         match self {
+            Self::Undefined => Value::Undefined,
             Self::Boolean(val) => Value::Boolean(*val),
             Self::U16(val) => Value::U16(*val),
             Self::U32(val) => Value::U32(*val),
@@ -558,7 +566,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
     fn internal_type_index(&self) -> usize {
         match self {
-            Self::Boolean(_) => 0,
+            Self::Undefined => 0,
+            Self::Boolean(_) => 1,
             Self::U16(_) => 8,
             Self::U32(_) => 9,
             Self::U64(_) => 10,
@@ -907,6 +916,23 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 }
             }
             (Self::U32(lhs), Self::UFraction(rhs)) => Fraction::from(*lhs).partial_cmp(rhs),
+            (Self::U64(lhs), Self::U16(rhs)) => lhs.partial_cmp(&(*rhs as u64)),
+            (Self::U64(lhs), Self::U32(rhs)) => lhs.partial_cmp(&(*rhs as u64)),
+            (Self::U64(lhs), Self::U64(rhs)) => lhs.partial_cmp(rhs),
+            (Self::U64(lhs), Self::Fraction(rhs)) => {
+                if *lhs > i32::MAX as u64 {
+                    Some(Ordering::Greater)
+                } else {
+                    Fraction::from(*lhs as i32).partial_cmp(rhs)
+                }
+            }
+            (Self::U64(lhs), Self::UFraction(rhs)) => {
+                if *lhs > u32::MAX as u64 {
+                    Some(Ordering::Greater)
+                } else {
+                    Fraction::from(*lhs as u32).partial_cmp(rhs)
+                }
+            }
             (Self::Fraction(lhs), Self::U16(rhs)) => lhs.partial_cmp(&(*rhs as i32)),
             (Self::Fraction(lhs), Self::U32(rhs)) => {
                 if *rhs > i32::MAX as u32 {
@@ -1147,11 +1173,39 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         };
         Ok(MaybeReferenceValue::Boolean(result))
     }
+
+    /// Converts the value to a string for a formatted string.
+    pub fn for_formatted_string(&self) -> Result<String, Error> {
+        let string = match self {
+            Self::Boolean(val) => {
+                if *val {
+                    "true".to_owned()
+                } else {
+                    "false".to_owned()
+                }
+            }
+            Self::U16(val) => val.to_string(),
+            Self::U32(val) => val.to_string(),
+            Self::U64(val) => val.to_string(),
+            Self::Fraction(val) => val.to_string(),
+            Self::UFraction(val) => val.to_string(),
+            Self::OptionalString(val) => (*val).clone().unwrap_or("".to_owned()),
+            Self::String(val) => (*val).clone(),
+            _ => {
+                return Err(battler_error!(
+                    "{} value is not string formattable",
+                    self.value_type()
+                ))
+            }
+        };
+        Ok(string)
+    }
 }
 
 impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
     fn from(value: &'eval Value) -> Self {
         match value {
+            Value::Undefined => Self::Undefined,
             Value::Boolean(val) => Self::Boolean(*val),
             Value::U16(val) => Self::U16(*val),
             Value::U32(val) => Self::U32(*val),
@@ -1172,6 +1226,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
 impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOperation<'eval> {
     fn from(value: &'eval MaybeReferenceValue<'eval>) -> Self {
         match value {
+            MaybeReferenceValue::Undefined => Self::Undefined,
             MaybeReferenceValue::Boolean(val) => Self::Boolean(*val),
             MaybeReferenceValue::U16(val) => Self::U16(*val),
             MaybeReferenceValue::U32(val) => Self::U32(*val),
@@ -1193,6 +1248,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
 impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueForOperation<'eval> {
     fn from(value: &'eval ValueRefToStoredValue<'eval>) -> Self {
         match value.value {
+            ValueRef::Undefined => Self::Undefined,
             ValueRef::Boolean(val) => Self::Boolean(*val),
             ValueRef::U16(val) => Self::U16(*val),
             ValueRef::U32(val) => Self::U32(*val),

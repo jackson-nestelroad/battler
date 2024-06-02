@@ -225,8 +225,10 @@ pub struct MoveData {
     pub stalling_move: bool,
 
     /// Dynamic battle effects.
+    #[serde(default)]
     pub effect: fxlang::Effect,
     /// Dynamic battle effects of the condition created by this move.
+    #[serde(default)]
     pub condition: fxlang::Condition,
 }
 

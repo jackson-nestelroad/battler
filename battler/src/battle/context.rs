@@ -996,6 +996,11 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         self.context.mon_mut()
     }
 
+    /// Checks if the [`Mon`] has a single active target.
+    pub fn has_active_target(&self) -> bool {
+        self.mon().active_target.is_some()
+    }
+
     /// Returns the [`EffectHandle`] for the active [`Move`].
     pub fn effect_handle(&self) -> EffectHandle {
         EffectHandle::ActiveMove(self.active_move_handle)

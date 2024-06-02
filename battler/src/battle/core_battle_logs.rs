@@ -12,6 +12,7 @@ use crate::{
     },
     common::Error,
     effect::{
+        fxlang,
         EffectHandle,
         EffectType,
     },
@@ -252,4 +253,19 @@ pub fn boost(
     );
     context.battle_mut().log(event);
     Ok(())
+}
+
+pub fn debug_event_failure(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    effect_name: &str,
+    error: &str,
+) {
+    let log_event = log_event!(
+        "debug",
+        ("event", event),
+        ("effect", effect_name),
+        ("error", error)
+    );
+    context.battle_mut().log(log_event);
 }

@@ -415,6 +415,12 @@ where
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
+                ValueRef::Object(object) => {
+                    value = match object.get(*member) {
+                        Some(value) => ValueRef::from(value),
+                        _ => ValueRef::Undefined,
+                    };
+                }
                 _ => return Err(Self::bad_member_access(member, value.value_type())),
             }
         }
@@ -506,6 +512,21 @@ where
                         }
                     }
                 }
+                ValueRefMut::Object(ref mut object) => {
+                    // SAFETY: Mutably borrowing the object requires mutably borrowing this entire
+                    // variable, so this can only happen once. If an object contains other objects,
+                    // we are grabbing a different mutable borrow at each layer.
+                    //
+                    // When assigning to this mutable borrow, we take ownership of the assigning
+                    // value first, so no operation will alter the object between grabbing this
+                    // borrow and consuming it with an assignment.
+                    let object = unsafe { object.unsafely_detach_borrow_mut() };
+                    value = ValueRefMut::Any(
+                        object
+                            .entry((*member).to_owned())
+                            .or_insert(Value::Undefined),
+                    )
+                }
                 _ => {
                     return Err(Self::bad_member_or_mutable_access(
                         member,
@@ -522,6 +543,10 @@ where
         context: &'eval mut EvaluationContext,
     ) -> Result<ValueRefMut<'var>, Error> {
         self.get_ref_mut(context)
+    }
+
+    fn stored_mut(&mut self) -> &mut Value {
+        &mut self.stored
     }
 }
 
@@ -564,7 +589,7 @@ impl ProgramBlockEvalState<'_> {
 /// The result of evaluating a [`ParsedProgramBlock`].
 enum ProgramStatementEvalResult<'program> {
     None,
-    FunctionCall(Option<Value>),
+    Skipped,
     IfStatement(bool),
     ElseIfStatement(bool),
     ForEachStatement(&'program str, &'program tree::Value),
@@ -628,10 +653,14 @@ impl Evaluator {
         }
         if event.has_flag(CallbackFlag::TakesTargetMon) {
             match context {
-                EvaluationContext::ActiveMove(context) => self.vars.set(
-                    "target",
-                    Value::Mon(context.active_target_context()?.mon_handle()),
-                )?,
+                EvaluationContext::ActiveMove(context) => {
+                    if context.has_active_target() {
+                        self.vars.set(
+                            "target",
+                            Value::Mon(context.active_target_context()?.mon_handle()),
+                        )?
+                    }
+                }
                 EvaluationContext::ApplyingEffect(context) => self
                     .vars
                     .set("target", Value::Mon(context.target_handle()))?,
@@ -773,10 +802,13 @@ impl Evaluator {
         'program: 'eval,
     {
         match block {
-            ParsedProgramBlock::Leaf(statement) => self.evaluate_statement(context, statement),
+            ParsedProgramBlock::Leaf(statement) => {
+                self.evaluate_statement(context, statement, parent_state)
+            }
             ParsedProgramBlock::Branch(blocks) => {
                 if parent_state.skip_next_block {
-                    return Ok(ProgramStatementEvalResult::None);
+                    self.line += blocks.len() as u16;
+                    return Ok(ProgramStatementEvalResult::Skipped);
                 }
 
                 if let Some(for_each_context) = &parent_state.for_each_context {
@@ -834,12 +866,13 @@ impl Evaluator {
                     // Early return.
                     return Ok(result);
                 }
-                ProgramStatementEvalResult::None | ProgramStatementEvalResult::FunctionCall(_) => {
+                ProgramStatementEvalResult::None => {
                     // Reset the state.
                     state.last_if_statement_result = None;
                     state.skip_next_block = false;
                     state.for_each_context = None;
                 }
+                ProgramStatementEvalResult::Skipped => (),
                 ProgramStatementEvalResult::IfStatement(condition_met) => {
                     // Remember this result in case we find an associated else statement.
                     state.last_if_statement_result = Some(condition_met);
@@ -847,10 +880,17 @@ impl Evaluator {
                     state.skip_next_block = !condition_met;
                 }
                 ProgramStatementEvalResult::ElseIfStatement(condition_met) => {
-                    state.last_if_statement_result = Some(condition_met);
-                    // Skip the next block unless the last if statement was not met.
-                    state.skip_next_block =
-                        condition_met && state.last_if_statement_result.unwrap_or(true);
+                    // Only remember this result if we have evaluated an if statement before.
+                    //
+                    // This prevents else blocks from being run on their own, without a leading if
+                    // statement.
+                    if state.last_if_statement_result.is_some() {
+                        state.last_if_statement_result = Some(condition_met);
+                    }
+                    // Skip the next block if the condition was not met.
+                    //
+                    // This will always be false if last_if_statement_result is true.
+                    state.skip_next_block = !condition_met;
                 }
                 ProgramStatementEvalResult::ForEachStatement(item, list) => {
                     // Prepare the context for the next block.
@@ -866,6 +906,7 @@ impl Evaluator {
         &'eval mut self,
         context: &'eval mut EvaluationContext,
         statement: &'program tree::Statement,
+        parent_state: &'eval ProgramBlockEvalState,
     ) -> Result<ProgramStatementEvalResult<'program>, Error>
     where
         'program: 'eval,
@@ -890,13 +931,21 @@ impl Evaluator {
             tree::Statement::IfStatement(statement) => Ok(ProgramStatementEvalResult::IfStatement(
                 self.evaluate_if_statement(context, statement)?,
             )),
-            tree::Statement::ElseIfStatement(statement) => Ok(
-                ProgramStatementEvalResult::IfStatement(if let Some(statement) = &statement.0 {
-                    self.evaluate_if_statement(context, statement)?
+            tree::Statement::ElseIfStatement(statement) => {
+                let condition_met = if let Some(false) = parent_state.last_if_statement_result {
+                    // The last if statement was false, so this else block might apply.
+                    if let Some(statement) = &statement.0 {
+                        self.evaluate_if_statement(context, statement)?
+                    } else {
+                        true
+                    }
                 } else {
-                    true
-                }),
-            ),
+                    // The last if statement was true (or doesn't exist), so this else block does
+                    // not apply and is not evaluated, even if there is a condition.
+                    false
+                };
+                Ok(ProgramStatementEvalResult::ElseIfStatement(condition_met))
+            }
             tree::Statement::ForEachStatement(statement) => {
                 if !statement.var.member_access.is_empty() {
                     return Err(battler_error!(
@@ -1074,7 +1123,8 @@ impl Evaluator {
                             .get(next_arg_index)
                             .wrap_error_with_format(format_args!("formatted string is missing positional argument for index {next_arg_index}"))?;
                         next_arg_index += 1;
-                        group = next_arg.for_formatted_string()?;
+                        group = MaybeReferenceValueForOperation::from(next_arg)
+                            .for_formatted_string()?;
                     } else {
                         return Err(battler_error!("invalid format group: {group}"));
                     }
@@ -1155,101 +1205,112 @@ impl Evaluator {
         var: &'program tree::Var,
         value: MaybeReferenceValue<'eval>,
     ) -> Result<(), Error> {
+        let value = value.to_owned();
         let mut runtime_var = self.create_var_mut(var)?;
         let runtime_var_ref = runtime_var.get_mut(context)?;
 
         let value_type = value.value_type();
         let var_type = runtime_var_ref.value_type();
 
-        match (runtime_var_ref, value.to_owned()) {
-            (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::U16(var), Value::U16(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::U16(var), Value::Fraction(val)) => {
-                *var = val
-                    .round()
-                    .try_into()
-                    .wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::U16(var), Value::UFraction(val)) => {
-                *var = val
-                    .round()
-                    .try_into()
-                    .wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::U32(var), Value::U16(val)) => {
-                *var = val as u32;
-            }
-            (ValueRefMut::U32(var), Value::Fraction(val)) => {
-                *var = val.round() as u32;
-            }
-            (ValueRefMut::U32(var), Value::UFraction(val)) => {
-                *var = val.round();
-            }
-            (ValueRefMut::Fraction(var), Value::U16(val)) => {
-                *var = Fraction::from(val as i32);
-            }
-            (ValueRefMut::Fraction(var), Value::U32(val)) => {
-                *var = Fraction::from(
-                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
-                );
-            }
-            (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Fraction(var), Value::UFraction(val)) => {
-                *var = val
-                    .try_convert()
-                    .wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::UFraction(var), Value::U16(val)) => {
-                *var = Fraction::from(val as u32);
-            }
-            (ValueRefMut::UFraction(var), Value::U32(val)) => {
-                *var = Fraction::from(val);
-            }
-            (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
-                *var = val
-                    .try_convert()
-                    .wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalString(var), Value::OptionalString(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalString(var), Value::String(val)) => {
-                *var = if val.is_empty() { None } else { Some(val) };
-            }
-            (ValueRefMut::String(var), Value::OptionalString(val)) => {
-                *var = val.unwrap_or("".to_owned());
-            }
-            (ValueRefMut::String(var), Value::String(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Mon(var), Value::Mon(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Effect(var), Value::Effect(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::ActiveMove(var), Value::ActiveMove(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::List(var), Value::List(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Object(var), Value::Object(val)) => {
-                *var = val;
-            }
-            _ => {
-                return Err(battler_error!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name()));
+        if let ValueRefMut::Undefined = runtime_var_ref {
+            // The variable can be initialized to any value.
+            *runtime_var.stored_mut() = value;
+        } else {
+            match (runtime_var_ref, value) {
+                (ValueRefMut::Any(var), val @ _) => {
+                    *var = val;
+                }
+                (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::U16(var), Value::U16(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::U16(var), Value::Fraction(val)) => {
+                    *var = val
+                        .round()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?;
+                }
+                (ValueRefMut::U16(var), Value::UFraction(val)) => {
+                    *var = val
+                        .round()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?;
+                }
+                (ValueRefMut::U32(var), Value::U16(val)) => {
+                    *var = val as u32;
+                }
+                (ValueRefMut::U32(var), Value::Fraction(val)) => {
+                    *var = val.round() as u32;
+                }
+                (ValueRefMut::U32(var), Value::UFraction(val)) => {
+                    *var = val.round();
+                }
+                (ValueRefMut::Fraction(var), Value::U16(val)) => {
+                    *var = Fraction::from(val as i32);
+                }
+                (ValueRefMut::Fraction(var), Value::U32(val)) => {
+                    *var = Fraction::from(
+                        TryInto::<i32>::try_into(val)
+                            .wrap_error_with_message("integer overflow")?,
+                    );
+                }
+                (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::Fraction(var), Value::UFraction(val)) => {
+                    *var = val
+                        .try_convert()
+                        .wrap_error_with_message("integer overflow")?;
+                }
+                (ValueRefMut::UFraction(var), Value::U16(val)) => {
+                    *var = Fraction::from(val as u32);
+                }
+                (ValueRefMut::UFraction(var), Value::U32(val)) => {
+                    *var = Fraction::from(val);
+                }
+                (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
+                    *var = val
+                        .try_convert()
+                        .wrap_error_with_message("integer overflow")?;
+                }
+                (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::OptionalString(var), Value::OptionalString(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::OptionalString(var), Value::String(val)) => {
+                    *var = if val.is_empty() { None } else { Some(val) };
+                }
+                (ValueRefMut::String(var), Value::OptionalString(val)) => {
+                    *var = val.unwrap_or("".to_owned());
+                }
+                (ValueRefMut::String(var), Value::String(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::Mon(var), Value::Mon(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::Effect(var), Value::Effect(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::ActiveMove(var), Value::ActiveMove(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::List(var), Value::List(val)) => {
+                    *var = val;
+                }
+                (ValueRefMut::Object(var), Value::Object(val)) => {
+                    *var = val;
+                }
+                _ => {
+                    return Err(battler_error!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name()));
+                }
             }
         }
+
         Ok(())
     }
 
@@ -1279,10 +1340,18 @@ impl Evaluator {
     where
         'program: 'eval,
     {
-        let value = self
-            .vars
-            .get_mut(&var.name.0)?
-            .wrap_error_with_format(format_args!("variable ${} is undefined", var.name.0))?;
+        let value = match self.vars.get_mut(&var.name.0)? {
+            None => {
+                self.vars.set(&var.name.0, Value::Undefined)?;
+                self.vars
+                    .get_mut(&var.name.0)?
+                    .wrap_error_with_format(format_args!(
+                        "variable ${} is undefined even after initialization",
+                        var.name.0
+                    ))?
+            }
+            Some(value) => value,
+        };
         let member_access = var
             .member_access
             .iter()

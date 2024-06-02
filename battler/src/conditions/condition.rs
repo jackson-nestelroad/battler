@@ -49,6 +49,7 @@ pub struct ConditionData {
     pub no_copy: bool,
 
     /// Dynamic battle effects.
+    #[serde(default)]
     pub condition: fxlang::Condition,
 }
 

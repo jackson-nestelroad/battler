@@ -39,11 +39,16 @@ pub fn calculate_mon_stats(
 /// This calculation prevents overflow.
 pub fn apply_nature_to_stats(mut stats: StatTable, nature: Nature) -> StatTable {
     let boosts = nature.boosts();
+    let drops = nature.drops();
+
+    if boosts == drops {
+        return stats;
+    }
+
     let boosted_stat = stats.get(boosts);
     let boosted_stat = boosted_stat + (boosted_stat * 10).div(100);
     stats.set(boosts, boosted_stat);
 
-    let drops = nature.drops();
     let dropped_stat = stats.get(drops);
     let dropped_stat = dropped_stat - num::Integer::div_ceil(&(dropped_stat * 10), &100);
     stats.set(drops, dropped_stat);
@@ -159,6 +164,25 @@ mod calclulations_tests {
         assert_eq!(stats.spa, 45);
         assert_eq!(stats.spd, 49);
         assert_eq!(stats.spe, 40);
+    }
+
+    #[test]
+    fn neutral_nature_does_not_modify_stats() {
+        let stats = StatTable {
+            hp: 100,
+            atk: 100,
+            def: 100,
+            spa: 100,
+            spd: 100,
+            spe: 100,
+        };
+        let stats = apply_nature_to_stats(stats, Nature::Hardy);
+        assert_eq!(stats.hp, 100);
+        assert_eq!(stats.atk, 100);
+        assert_eq!(stats.def, 100);
+        assert_eq!(stats.spa, 100);
+        assert_eq!(stats.spd, 100);
+        assert_eq!(stats.spe, 100);
     }
 
     #[test]

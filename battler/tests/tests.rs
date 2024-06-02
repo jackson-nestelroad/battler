@@ -5,6 +5,7 @@ mod moves {
     mod drain_test;
     mod heal_test;
     mod immunity_test;
+    mod magnitude_test;
     mod move_bad_input_test;
     mod move_pp_test;
     mod move_target_test;

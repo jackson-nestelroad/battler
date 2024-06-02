@@ -1974,10 +1974,12 @@ mod statement_parser_tests {
     }
 
     #[test]
-    fn fails_return_missing_value() {
-        assert_error_message(
+    fn parses_return_missing_value() {
+        assert_eq!(
             StatementParser::new("return").parse(),
-            "unexpected end of line (expected value)",
+            Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
+                None
+            ))),
         )
     }
 

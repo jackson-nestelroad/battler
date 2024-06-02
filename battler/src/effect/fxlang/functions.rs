@@ -1,7 +1,10 @@
 use std::collections::VecDeque;
 
 use crate::{
-    battle::Context,
+    battle::{
+        ActiveMoveContext,
+        Context,
+    },
     battler_error,
     common::{
         Error,
@@ -25,18 +28,19 @@ pub fn run_function(
 ) -> Result<Option<Value>, Error> {
     match function_name {
         "log" => log(context.battle_context_mut(), args).map(|()| None),
+        "activate" => match context {
+            EvaluationContext::ActiveMove(context) => activate_move(context, args).map(|()| None),
+            _ => Err(battler_error!(
+                "activate can only be called on an active move context"
+            )),
+        },
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
 
-fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let title = args
-        .pop_front()
-        .wrap_error_with_message("missing log title")?
-        .string()
-        .wrap_error_with_message("invalid title")?;
+fn log_internal(context: &mut Context, title: String, args: VecDeque<Value>) -> Result<(), Error> {
     let mut event = Event::new(title);
     for arg in args {
         let entry = arg.string().wrap_error_with_message("invalid log entry")?;
@@ -49,6 +53,23 @@ fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
     Ok(())
 }
 
+fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let title = args
+        .pop_front()
+        .wrap_error_with_message("missing log title")?
+        .string()
+        .wrap_error_with_message("invalid title")?;
+    log_internal(context, title, args)
+}
+
+fn activate_move(context: &mut ActiveMoveContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    args.push_front(Value::String(format!(
+        "move:{}",
+        context.active_move().data.name
+    )));
+    log_internal(context.as_battle_context_mut(), "activate".to_owned(), args)
+}
+
 fn random(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let a = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let b = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
@@ -56,7 +77,7 @@ fn random(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
         (None, None) => context.battle_mut().prng.next(),
         (Some(max), None) => rand_util::range(context.battle_mut().prng.as_mut(), 0, max),
         (Some(min), Some(max)) => rand_util::range(context.battle_mut().prng.as_mut(), min, max),
-        _ => return Err(battler_error!("impossible arguments")),
+        _ => return Err(battler_error!("invalid random arguments")),
     };
     Ok(Value::U64(val))
 }
@@ -68,7 +89,7 @@ fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
         (None, None) => return Err(battler_error!("chance requires at least one argument")),
         (Some(den), None) => rand_util::chance(context.battle_mut().prng.as_mut(), 1, den),
         (Some(num), Some(den)) => rand_util::chance(context.battle_mut().prng.as_mut(), num, den),
-        _ => return Err(battler_error!("impossible arguments")),
+        _ => return Err(battler_error!("invalid chance arguments")),
     };
     Ok(Value::Boolean(val))
 }

@@ -24,6 +24,7 @@ pub struct AbilityData {
     pub flags: FastHashSet<AbilityFlags>,
 
     /// Dynamic battle effects.
+    #[serde(default)]
     pub effect: fxlang::Effect,
 }
 

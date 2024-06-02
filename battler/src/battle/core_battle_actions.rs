@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 
 use crate::{
     battle::{
+        core_battle_effects,
         core_battle_logs,
         modify_32,
         ActiveMoveContext,
@@ -32,6 +33,7 @@ use crate::{
         WrapResultError,
     },
     effect::{
+        fxlang,
         EffectHandle,
         EffectType,
     },
@@ -209,13 +211,19 @@ fn use_move_internal(
         .set_active_move(active_move_handle, target);
 
     let mut context = context.active_move_context()?;
-    // TODO: ModifyType.
-    // TODO: ModifyMove.
+
+    // TODO: ModifyType on the move.
+    core_battle_effects::run_active_move_event_expecting_void(
+        &mut context,
+        fxlang::BattleEvent::UseMove,
+    );
 
     // The target changed, so it must be adjusted here.
     if base_target != context.active_move().data.target {
         target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
     }
+
+    // TODO: ModifyType and ModifyMove/UseMove events on the Mon.
 
     // Mon fainted before this move could be made.
     if context.mon().fainted {
@@ -236,10 +244,14 @@ fn use_move_internal(
     }
 
     let targets = get_move_targets(&mut context, target)?;
+
     // TODO: DeductPP event (for Pressure).
     // TODO: Targeted event.
     // TODO: TryMove event.
-    // TODO: UseMoveMessage event.
+    core_battle_effects::run_active_move_event_expecting_void(
+        &mut context,
+        fxlang::BattleEvent::UseMoveMessage,
+    );
 
     if context.active_move().data.self_destruct == Some(SelfDestructType::Always) {
         let mon_handle = context.mon_handle();
