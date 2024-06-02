@@ -4,6 +4,7 @@ mod fraction;
 mod hash;
 mod id;
 mod lookup_result;
+mod lru;
 mod maybe_owned;
 mod reference;
 mod strings;
@@ -33,6 +34,11 @@ pub use id::{
     Identifiable,
 };
 pub use lookup_result::LookupResult;
+pub use lru::{
+    Iter,
+    IterMut,
+    LruCache,
+};
 pub use maybe_owned::{
     MaybeOwned,
     MaybeOwnedMut,

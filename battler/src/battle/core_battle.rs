@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     collections::VecDeque,
     marker::PhantomPinned,
     mem,
@@ -53,7 +54,10 @@ use crate::{
         DataStore,
         Dex,
     },
-    effect::EffectHandle,
+    effect::{
+        EffectHandle,
+        EffectManager,
+    },
     log::{
         Event,
         EventLog,
@@ -189,6 +193,7 @@ pub struct CoreBattle<'d> {
     pub field: Field,
     pub sides: [Side; 2],
     pub players: Vec<Player>,
+    pub effect_manager: RefCell<EffectManager>,
 
     registry: BattleRegistry,
     player_ids: FastHashMap<String, usize>,
@@ -258,6 +263,8 @@ impl<'d> CoreBattle<'d> {
                 .map(|(index, _)| (index, FastHashMap::new())),
         );
 
+        let effect_manager = RefCell::new(EffectManager::new());
+
         let mut battle = Self {
             log,
             prng,
@@ -269,6 +276,7 @@ impl<'d> CoreBattle<'d> {
             field,
             sides: [side_1, side_2],
             players,
+            effect_manager,
             registry,
             player_ids,
             turn: 0,

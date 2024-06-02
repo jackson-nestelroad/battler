@@ -16,6 +16,7 @@ use crate::{
         Id,
         Identifiable,
     },
+    effect::fxlang,
     mons::{
         Stat,
         Type,
@@ -222,6 +223,11 @@ pub struct MoveData {
     /// The move stalls the battle.
     #[serde(default)]
     pub stalling_move: bool,
+
+    /// Dynamic battle effects.
+    pub effect: fxlang::Effect,
+    /// Dynamic battle effects of the condition created by this move.
+    pub condition: fxlang::Condition,
 }
 
 impl MoveData {
@@ -282,6 +288,9 @@ pub struct Move {
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
 
+    /// Fxlang effect state.
+    pub effect_state: fxlang::EffectState,
+
     hit_data: FastHashMap<MonHandle, MoveHitData>,
 }
 
@@ -299,6 +308,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
+            effect_state: fxlang::EffectState::new(),
             hit_data: FastHashMap::new(),
         }
     }

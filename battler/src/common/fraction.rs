@@ -1,9 +1,16 @@
 use std::{
     cmp,
-    fmt,
-    fmt::Display,
+    fmt::{
+        self,
+        Display,
+    },
     marker::PhantomData,
-    ops::Mul,
+    ops::{
+        Add,
+        Div,
+        Mul,
+        Sub,
+    },
     str::FromStr,
 };
 
@@ -51,7 +58,7 @@ where
 {
     /// Creates a new fraction.
     pub fn new(n: I, d: I) -> Self {
-        Fraction { num: n, den: d }
+        Self { num: n, den: d }
     }
 
     /// Creates a new percentage as a fraction.
@@ -124,6 +131,17 @@ where
         Fraction::new(T::from(self.numerator()), T::from(self.denominator()))
     }
 
+    /// Attempts converting the [`Fraction<I>`] to a [`Fraction<T>`], given that `T: TryFrom<I>`.
+    pub fn try_convert<T>(self) -> Result<Fraction<T>, T::Error>
+    where
+        T: FractionInteger + TryFrom<I>,
+    {
+        Ok(Fraction::new(
+            T::try_from(self.numerator())?,
+            T::try_from(self.denominator())?,
+        ))
+    }
+
     /// Returns the inverse of this fraction.
     pub fn inverse(&self) -> Self {
         Self::new(self.denominator(), self.numerator())
@@ -134,9 +152,11 @@ where
         let a2 = a.denominator();
         let b1 = b.numerator();
         let b2 = b.denominator();
+        // Note: This calculation could overflow if the denominators are large enough.
         let lcm = a2.lcm(&b2);
         let a_mul = lcm.div(a2);
         let b_mul = lcm.div(b2);
+        // Note: This calculation could overflow if the numerators are large enough.
         (
             Fraction::new(a1.mul(a_mul), lcm),
             Fraction::new(b1.mul(b_mul), lcm),
@@ -146,10 +166,14 @@ where
 
 impl<I> Display for Fraction<I>
 where
-    I: Display,
+    I: FractionInteger + Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}/{}", self.num, self.den)
+        if self.den == I::one() {
+            write!(f, "{}", self.num)
+        } else {
+            write!(f, "{}/{}", self.num, self.den)
+        }
     }
 }
 
@@ -201,6 +225,15 @@ where
 
 impl<I> Eq for Fraction<I> where I: FractionInteger {}
 
+impl<I> PartialEq<I> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    fn eq(&self, other: &I) -> bool {
+        self.eq(&Fraction::from(*other))
+    }
+}
+
 impl<I> Ord for Fraction<I>
 where
     I: FractionInteger,
@@ -220,7 +253,66 @@ where
     }
 }
 
-impl<I> Mul<I> for &Fraction<I>
+impl<I> PartialOrd<I> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    fn partial_cmp(&self, other: &I) -> Option<cmp::Ordering> {
+        self.partial_cmp(&Fraction::from(*other))
+    }
+}
+
+impl<I> Add<I> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn add(self, rhs: I) -> Self::Output {
+        Self::Output::new(
+            self.numerator().add(rhs.mul(self.denominator())),
+            self.denominator(),
+        )
+        .simplify()
+    }
+}
+
+impl<I> Add<Fraction<I>> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn add(self, rhs: Fraction<I>) -> Self::Output {
+        let (lhs, rhs) = Self::normalize(&self, &rhs);
+        Self::Output::new(lhs.numerator().add(rhs.numerator()), lhs.denominator())
+    }
+}
+
+impl<I> Sub<I> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn sub(self, rhs: I) -> Self::Output {
+        Self::Output::new(
+            self.numerator().sub(rhs.mul(self.denominator())),
+            self.denominator(),
+        )
+        .simplify()
+    }
+}
+
+impl<I> Sub<Fraction<I>> for Fraction<I>
+where
+    I: FractionInteger,
+{
+    type Output = Fraction<I>;
+    fn sub(self, rhs: Fraction<I>) -> Self::Output {
+        let (lhs, rhs) = Self::normalize(&self, &rhs);
+        Self::Output::new(lhs.numerator().sub(rhs.numerator()), lhs.denominator())
+    }
+}
+
+impl<I> Mul<I> for Fraction<I>
 where
     I: FractionInteger,
 {
@@ -230,22 +322,12 @@ where
     }
 }
 
-impl<I> Mul<I> for Fraction<I>
-where
-    I: FractionInteger,
-{
-    type Output = Self;
-    fn mul(self, rhs: I) -> Self::Output {
-        Mul::mul(&self, rhs)
-    }
-}
-
-impl<I> Mul<&Fraction<I>> for &Fraction<I>
+impl<I> Mul<Fraction<I>> for Fraction<I>
 where
     I: FractionInteger,
 {
     type Output = Fraction<I>;
-    fn mul(self, rhs: &Fraction<I>) -> Self::Output {
+    fn mul(self, rhs: Fraction<I>) -> Self::Output {
         Self::Output::new(
             self.numerator().mul(rhs.numerator()),
             self.denominator().mul(rhs.denominator()),
@@ -254,33 +336,23 @@ where
     }
 }
 
-impl<I> Mul<Fraction<I>> for &Fraction<I>
+impl<I> Div<I> for Fraction<I>
 where
     I: FractionInteger,
 {
     type Output = Fraction<I>;
-    fn mul(self, rhs: Fraction<I>) -> Self::Output {
-        Mul::mul(self, &rhs)
+    fn div(self, rhs: I) -> Self::Output {
+        self.mul(Fraction::new(I::one(), rhs))
     }
 }
 
-impl<I> Mul<&Fraction<I>> for Fraction<I>
+impl<I> Div<Fraction<I>> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Self;
-    fn mul(self, rhs: &Fraction<I>) -> Self::Output {
-        Mul::mul(&self, rhs)
-    }
-}
-
-impl<I> Mul<Fraction<I>> for Fraction<I>
-where
-    I: FractionInteger,
-{
-    type Output = Self;
-    fn mul(self, rhs: Fraction<I>) -> Self::Output {
-        Mul::mul(&self, &rhs)
+    type Output = Fraction<I>;
+    fn div(self, rhs: Fraction<I>) -> Self::Output {
+        self.mul(rhs.inverse())
     }
 }
 
@@ -526,10 +598,56 @@ mod percentage_tests {
     }
 
     #[test]
+    fn integer_addition() {
+        assert_eq!(Fraction::percentage(1) + 10000, Fraction::new(1000001, 100));
+        assert_eq!(Fraction::new(12, 77) + 2, Fraction::new(166, 77));
+        assert_eq!(Fraction::percentage(25) + 0, Fraction::new(1, 4));
+    }
+
+    #[test]
+    fn fraction_addition() {
+        assert_eq!(
+            Fraction::new(12, 77) + Fraction::new(5, 6),
+            Fraction::new(457, 462)
+        );
+        assert_eq!(
+            Fraction::new(12, 12) + Fraction::new(53, 53),
+            Fraction::from(2)
+        );
+        assert_eq!(
+            Fraction::new(1, 4) + Fraction::new(2, 4),
+            Fraction::new(3, 4)
+        );
+    }
+
+    #[test]
+    fn integer_subtraction() {
+        assert_eq!(Fraction::percentage(1) - 10000, Fraction::new(-999999, 100));
+        assert_eq!(Fraction::new(2000, 77) - 2, Fraction::new(1846, 77));
+        assert_eq!(Fraction::percentage(25) - 0, Fraction::new(1, 4));
+    }
+
+    #[test]
+    fn fraction_subtraction() {
+        assert_eq!(
+            Fraction::new(12, 77) - Fraction::new(5, 6),
+            Fraction::new(-313, 462)
+        );
+        assert_eq!(
+            Fraction::new(12, 12) - Fraction::new(53, 53),
+            Fraction::from(0)
+        );
+        assert_eq!(
+            Fraction::new(2, 4) - Fraction::new(1, 4),
+            Fraction::new(1, 4)
+        );
+    }
+
+    #[test]
     fn integer_multiplication() {
-        assert_eq!(Fraction::percentage(1) * 10000, 100.into());
+        assert_eq!(Fraction::percentage(1) * 10000, Fraction::from(100));
         assert_eq!(Fraction::new(12, 77) * 85, Fraction::new(1020, 77));
-        assert_eq!(Fraction::percentage(25) * 100, 25.into());
+        assert_eq!(Fraction::percentage(25) * 100, Fraction::from(25));
         assert_eq!(Fraction::percentage(25) * 1, Fraction::new(1, 4));
         assert_eq!(Fraction::new(10, 50) * 2, Fraction::new(2, 5));
     }
@@ -540,10 +658,38 @@ mod percentage_tests {
             Fraction::new(12, 77) * Fraction::new(5, 6),
             Fraction::new(10, 77)
         );
-        assert_eq!(Fraction::new(12, 12) * Fraction::new(53, 53), 1.into());
+        assert_eq!(
+            Fraction::new(12, 12) * Fraction::new(53, 53),
+            Fraction::from(1)
+        );
         assert_eq!(
             Fraction::new(1, 4) * Fraction::new(2, 4),
             Fraction::new(1, 8)
+        );
+    }
+
+    #[test]
+    fn integer_division() {
+        assert_eq!(Fraction::percentage(1) / 10000, Fraction::new(1, 1000000));
+        assert_eq!(Fraction::new(12, 77) / 85, Fraction::new(12, 6545));
+        assert_eq!(Fraction::percentage(25) / 100, Fraction::new(1, 400));
+        assert_eq!(Fraction::percentage(25) / 1, Fraction::new(1, 4));
+        assert_eq!(Fraction::new(10, 50) / 2, Fraction::new(1, 10));
+    }
+
+    #[test]
+    fn fraction_division() {
+        assert_eq!(
+            Fraction::new(12, 77) / Fraction::new(5, 6),
+            Fraction::new(72, 385)
+        );
+        assert_eq!(
+            Fraction::new(12, 12) / Fraction::new(53, 53),
+            Fraction::from(1)
+        );
+        assert_eq!(
+            Fraction::new(1, 4) / Fraction::new(2, 4),
+            Fraction::new(1, 2)
         );
     }
 }

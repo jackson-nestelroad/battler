@@ -130,6 +130,7 @@ impl<'battle, 'data> Context<'battle, 'data> {
             EffectHandle::Condition(condition) => {
                 EffectContext::for_condition(self.into(), &condition)
             }
+            EffectHandle::MoveCondition(_) => todo!("move condition context not implemented"),
         }
     }
 
@@ -151,6 +152,18 @@ impl<'battle, 'data> Context<'battle, 'data> {
     /// Returns a mutable reference to a [`Mon`].
     pub fn mon_mut(&mut self, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
         self.cache.mon(self.battle(), mon_handle)
+    }
+
+    /// Returns a reference to an active [`Move`].
+    pub fn active_move(&self, active_move_handle: MoveHandle) -> Result<&Move, Error> {
+        self.cache
+            .active_move(self.battle(), active_move_handle)
+            .map(|mov| &*mov)
+    }
+
+    /// Returns a mutable reference to an active [`Move`].
+    pub fn active_move_mut(&self, active_move_handle: MoveHandle) -> Result<&mut Move, Error> {
+        self.cache.active_move(self.battle(), active_move_handle)
     }
 }
 
@@ -889,6 +902,21 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         let active_move_handle = self.active_move_handle;
         self.as_battle_context_mut()
             .effect_context(&EffectHandle::ActiveMove(active_move_handle))
+    }
+
+    /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
+    ///
+    /// The Mon's active target is used as the target of the move.
+    pub fn applying_effect_context<'active_move>(
+        &'active_move mut self,
+    ) -> Result<ApplyingEffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
+        let source_handle = self.mon_handle();
+        let target_handle = self.active_target_mon_context()?.mon_handle();
+        ApplyingEffectContext::new(
+            self.effect_context()?.into(),
+            Some(source_handle),
+            target_handle,
+        )
     }
 
     /// Creates a new [`ActiveMoveContext`] for a secondary [`HitEffect`], scoped to the lifetime of

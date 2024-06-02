@@ -10,6 +10,7 @@ use crate::{
         Id,
         Identifiable,
     },
+    effect::fxlang,
 };
 
 /// Data about a particular ability.
@@ -21,6 +22,9 @@ pub struct AbilityData {
     pub name: String,
     /// Ability flags.
     pub flags: FastHashSet<AbilityFlags>,
+
+    /// Dynamic battle effects.
+    pub effect: fxlang::Effect,
 }
 
 /// An individual ability on a Mon that affects the battle in a wide variety of ways.

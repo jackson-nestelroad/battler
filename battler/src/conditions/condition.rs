@@ -7,9 +7,12 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
 };
 
-use crate::common::{
-    Id,
-    Identifiable,
+use crate::{
+    common::{
+        Id,
+        Identifiable,
+    },
+    effect::fxlang,
 };
 
 /// The type of a condition.
@@ -39,13 +42,14 @@ pub struct ConditionData {
     pub name: String,
     /// Condition type.
     pub condition_type: ConditionType,
-    /// Static duration for the condition.
-    pub duration: Option<u8>,
     /// Can this condition be copied from one Mon to another?
     ///
     /// This relates to how "Baton Pass" affects this condition.
     #[serde(default)]
     pub no_copy: bool,
+
+    /// Dynamic battle effects.
+    pub condition: fxlang::Condition,
 }
 
 /// An individual condition, which can affect a Mon in a variety of ways.
