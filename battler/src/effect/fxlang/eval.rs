@@ -521,11 +521,10 @@ where
                     // value first, so no operation will alter the object between grabbing this
                     // borrow and consuming it with an assignment.
                     let object = unsafe { object.unsafely_detach_borrow_mut() };
-                    value = ValueRefMut::Any(
-                        object
-                            .entry((*member).to_owned())
-                            .or_insert(Value::Undefined),
-                    )
+                    let entry = object
+                        .entry((*member).to_owned())
+                        .or_insert(Value::Undefined);
+                    value = ValueRefMut::from(entry);
                 }
                 _ => {
                     return Err(Self::bad_member_or_mutable_access(
@@ -543,10 +542,6 @@ where
         context: &'eval mut EvaluationContext,
     ) -> Result<ValueRefMut<'var>, Error> {
         self.get_ref_mut(context)
-    }
-
-    fn stored_mut(&mut self) -> &mut Value {
-        &mut self.stored
     }
 }
 
@@ -1212,14 +1207,11 @@ impl Evaluator {
         let value_type = value.value_type();
         let var_type = runtime_var_ref.value_type();
 
-        if let ValueRefMut::Undefined = runtime_var_ref {
+        if let ValueRefMut::Undefined(var) = runtime_var_ref {
             // The variable can be initialized to any value.
-            *runtime_var.stored_mut() = value;
+            *var = value;
         } else {
             match (runtime_var_ref, value) {
-                (ValueRefMut::Any(var), val @ _) => {
-                    *var = val;
-                }
                 (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
                     *var = val;
                 }

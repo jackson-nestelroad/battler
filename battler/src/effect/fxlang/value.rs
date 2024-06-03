@@ -424,8 +424,7 @@ impl<'eval> ValueRefToStoredValue<'eval> {
 
 /// A [`Value`], but containing a mutable reference to the underlying value.
 pub enum ValueRefMut<'eval> {
-    Undefined,
-    Any(&'eval mut Value),
+    Undefined(&'eval mut Value),
     Boolean(&'eval mut bool),
     U16(&'eval mut u16),
     U32(&'eval mut u32),
@@ -445,8 +444,7 @@ impl<'eval> ValueRefMut<'eval> {
     /// The type of the value.
     pub fn value_type(&self) -> ValueType {
         match self {
-            Self::Undefined => ValueType::Undefined,
-            Self::Any(val) => val.value_type(),
+            Self::Undefined(_) => ValueType::Undefined,
             Self::Boolean(_) => ValueType::Boolean,
             Self::U16(_) => ValueType::U16,
             Self::U32(_) => ValueType::U32,
@@ -467,7 +465,7 @@ impl<'eval> ValueRefMut<'eval> {
 impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
     fn from(value: &'eval mut Value) -> Self {
         match value {
-            Value::Undefined => Self::Undefined,
+            Value::Undefined => Self::Undefined(value),
             Value::Boolean(val) => Self::Boolean(val),
             Value::U16(val) => Self::U16(val),
             Value::U32(val) => Self::U32(val),
