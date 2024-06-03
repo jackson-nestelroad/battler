@@ -82,14 +82,14 @@ mod crit_ratio_test {
                 "resisted|mon:Bulbasaur,player-1,1",
                 "crit|mon:Bulbasaur,player-1,1",
                 "split|side:0",
-                "damage|mon:Bulbasaur,player-1,1|health:94/105",
-                "damage|mon:Bulbasaur,player-1,1|health:90/100",
+                "damage|mon:Bulbasaur,player-1,1|health:93/105",
+                "damage|mon:Bulbasaur,player-1,1|health:89/100",
                 "move|mon:Bulbasaur,player-1,1|name:Razor Leaf",
                 "resisted|mon:Bulbasaur,player-2,1",
                 "crit|mon:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:92/105",
-                "damage|mon:Bulbasaur,player-2,1|health:88/100",
+                "damage|mon:Bulbasaur,player-2,1|health:91/105",
+                "damage|mon:Bulbasaur,player-2,1|health:87/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();

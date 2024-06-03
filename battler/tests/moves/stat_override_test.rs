@@ -160,7 +160,7 @@ mod stat_override_test {
                 ["time"],
                 "move|mon:Slaking,player-1,1|name:Foul Play|target:Slaking,player-2,1",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|health:147/210",
+                "damage|mon:Slaking,player-2,1|health:146/210",
                 "damage|mon:Slaking,player-2,1|health:70/100",
                 "residual",
                 "turn|turn:2",
@@ -172,8 +172,8 @@ mod stat_override_test {
                 ["time"],
                 "move|mon:Slaking,player-1,1|name:Foul Play|target:Slaking,player-2,1",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|health:54/210",
-                "damage|mon:Slaking,player-2,1|health:26/100",
+                "damage|mon:Slaking,player-2,1|health:51/210",
+                "damage|mon:Slaking,player-2,1|health:25/100",
                 "residual",
                 "turn|turn:4"
             ]"#).unwrap();
