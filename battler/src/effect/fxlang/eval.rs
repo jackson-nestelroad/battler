@@ -1207,99 +1207,95 @@ impl Evaluator {
         let value_type = value.value_type();
         let var_type = runtime_var_ref.value_type();
 
-        if let ValueRefMut::Undefined(var) = runtime_var_ref {
+        match (runtime_var_ref, value) {
             // The variable can be initialized to any value.
-            *var = value;
-        } else {
-            match (runtime_var_ref, value) {
-                (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::U16(var), Value::U16(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::U16(var), Value::Fraction(val)) => {
-                    *var = val
-                        .round()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?;
-                }
-                (ValueRefMut::U16(var), Value::UFraction(val)) => {
-                    *var = val
-                        .round()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?;
-                }
-                (ValueRefMut::U32(var), Value::U16(val)) => {
-                    *var = val as u32;
-                }
-                (ValueRefMut::U32(var), Value::Fraction(val)) => {
-                    *var = val.round() as u32;
-                }
-                (ValueRefMut::U32(var), Value::UFraction(val)) => {
-                    *var = val.round();
-                }
-                (ValueRefMut::Fraction(var), Value::U16(val)) => {
-                    *var = Fraction::from(val as i32);
-                }
-                (ValueRefMut::Fraction(var), Value::U32(val)) => {
-                    *var = Fraction::from(
-                        TryInto::<i32>::try_into(val)
-                            .wrap_error_with_message("integer overflow")?,
-                    );
-                }
-                (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::Fraction(var), Value::UFraction(val)) => {
-                    *var = val
-                        .try_convert()
-                        .wrap_error_with_message("integer overflow")?;
-                }
-                (ValueRefMut::UFraction(var), Value::U16(val)) => {
-                    *var = Fraction::from(val as u32);
-                }
-                (ValueRefMut::UFraction(var), Value::U32(val)) => {
-                    *var = Fraction::from(val);
-                }
-                (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
-                    *var = val
-                        .try_convert()
-                        .wrap_error_with_message("integer overflow")?;
-                }
-                (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::OptionalString(var), Value::OptionalString(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::OptionalString(var), Value::String(val)) => {
-                    *var = if val.is_empty() { None } else { Some(val) };
-                }
-                (ValueRefMut::String(var), Value::OptionalString(val)) => {
-                    *var = val.unwrap_or("".to_owned());
-                }
-                (ValueRefMut::String(var), Value::String(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::Mon(var), Value::Mon(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::Effect(var), Value::Effect(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::ActiveMove(var), Value::ActiveMove(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::List(var), Value::List(val)) => {
-                    *var = val;
-                }
-                (ValueRefMut::Object(var), Value::Object(val)) => {
-                    *var = val;
-                }
-                _ => {
-                    return Err(battler_error!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name()));
-                }
+            (ValueRefMut::Undefined(var), val @ _) => *var = val,
+            (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::U16(var), Value::U16(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::U16(var), Value::Fraction(val)) => {
+                *var = val
+                    .round()
+                    .try_into()
+                    .wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::U16(var), Value::UFraction(val)) => {
+                *var = val
+                    .round()
+                    .try_into()
+                    .wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::U32(var), Value::U16(val)) => {
+                *var = val as u32;
+            }
+            (ValueRefMut::U32(var), Value::Fraction(val)) => {
+                *var = val.round() as u32;
+            }
+            (ValueRefMut::U32(var), Value::UFraction(val)) => {
+                *var = val.round();
+            }
+            (ValueRefMut::Fraction(var), Value::U16(val)) => {
+                *var = Fraction::from(val as i32);
+            }
+            (ValueRefMut::Fraction(var), Value::U32(val)) => {
+                *var = Fraction::from(
+                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Fraction(var), Value::UFraction(val)) => {
+                *var = val
+                    .try_convert()
+                    .wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::UFraction(var), Value::U16(val)) => {
+                *var = Fraction::from(val as u32);
+            }
+            (ValueRefMut::UFraction(var), Value::U32(val)) => {
+                *var = Fraction::from(val);
+            }
+            (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
+                *var = val
+                    .try_convert()
+                    .wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::OptionalString(var), Value::OptionalString(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::OptionalString(var), Value::String(val)) => {
+                *var = if val.is_empty() { None } else { Some(val) };
+            }
+            (ValueRefMut::String(var), Value::OptionalString(val)) => {
+                *var = val.unwrap_or("".to_owned());
+            }
+            (ValueRefMut::String(var), Value::String(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Mon(var), Value::Mon(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Effect(var), Value::Effect(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::ActiveMove(var), Value::ActiveMove(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::List(var), Value::List(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Object(var), Value::Object(val)) => {
+                *var = val;
+            }
+            _ => {
+                return Err(battler_error!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name()));
             }
         }
 
