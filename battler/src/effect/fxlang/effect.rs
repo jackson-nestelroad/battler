@@ -117,8 +117,64 @@ pub enum Program {
     Branch(Vec<Program>),
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ProgramWithPriority {
+    pub program: Program,
+    pub order: Option<u32>,
+    pub priority: Option<i32>,
+    pub sub_order: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+enum CallbackInput {
+    Regular(Program),
+    WithPriority(ProgramWithPriority),
+}
+
 /// A single callback, to be called when applying an effect on some triggered event.
-pub type Callback = Option<Program>;
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Callback(Option<CallbackInput>);
+
+impl Callback {
+    /// Checks if the callback has an associated [`Program`].
+    pub fn has_program(&self) -> bool {
+        self.0.is_some()
+    }
+
+    /// Returns a reference to the callback's [`Program`].
+    pub fn program(&self) -> Option<&Program> {
+        match self.0.as_ref()? {
+            CallbackInput::Regular(program) => Some(&program),
+            CallbackInput::WithPriority(program) => Some(&program.program),
+        }
+    }
+
+    /// The order of the callback.
+    pub fn order(&self) -> u32 {
+        match &self.0 {
+            Some(CallbackInput::WithPriority(program)) => program.order.unwrap_or(0),
+            _ => 0,
+        }
+    }
+
+    /// The priority of the callback, which is evaluated after [`order`].
+    pub fn priority(&self) -> i32 {
+        match &self.0 {
+            Some(CallbackInput::WithPriority(program)) => program.priority.unwrap_or(0),
+            _ => 0,
+        }
+    }
+
+    /// The sub-order of the callback, which is evaluated after [`order`] and [`priority`].
+    pub fn sub_order(&self) -> u32 {
+        match &self.0 {
+            Some(CallbackInput::WithPriority(program)) => program.sub_order.unwrap_or(0),
+            _ => 0,
+        }
+    }
+}
 
 /// A collection of callbacks for an effect.
 ///

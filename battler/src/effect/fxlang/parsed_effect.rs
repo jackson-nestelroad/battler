@@ -7,9 +7,9 @@ use crate::{
     },
     effect::fxlang::{
         BattleEvent,
+        Callback,
         Callbacks,
         ParsedProgram,
-        Program,
     },
 };
 
@@ -19,12 +19,8 @@ pub struct ParsedCallbacks {
 }
 
 impl ParsedCallbacks {
-    fn parse_and_save(
-        &mut self,
-        event: BattleEvent,
-        program: &Option<Program>,
-    ) -> Result<(), Error> {
-        if let Some(program) = program {
+    fn parse_and_save(&mut self, event: BattleEvent, callback: &Callback) -> Result<(), Error> {
+        if let Some(program) = callback.program() {
             self.callbacks.insert(event, ParsedProgram::from(program)?);
         }
         Ok(())
