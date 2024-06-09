@@ -12,6 +12,7 @@ use crate::{
     battler_error,
     common::{
         Error,
+        Id,
         WrapResultError,
     },
     effect::{
@@ -35,6 +36,7 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
+        "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
         "activate" => match context {
             EvaluationContext::ActiveMove(context) => activate_move(context, args).map(|()| None),
@@ -54,10 +56,23 @@ pub fn run_function(
                 effect_handle,
                 args,
             )
+            .map(|()| None)
         }
-        .map(|()| None),
+        "has_ability" => has_ability(context.battle_context_mut(), args).map(|val| Some(val)),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
+}
+
+fn debug_log(context: &mut Context, args: VecDeque<Value>) -> Result<(), Error> {
+    let mut event = log_event!("fxlang_debug");
+    for (i, arg) in args.into_iter().enumerate() {
+        event.set(
+            format!("arg{i}"),
+            arg.string().unwrap_or("not a string".to_owned()),
+        );
+    }
+    context.battle_mut().log(event);
+    Ok(())
 }
 
 fn log_internal(context: &mut Context, title: String, args: VecDeque<Value>) -> Result<(), Error> {
@@ -136,8 +151,24 @@ fn damage(
 ) -> Result<(), Error> {
     let amount = args
         .pop_front()
-        .map(|val| val.integer_u16().ok())
-        .flatten()
-        .wrap_error_with_message("missing damage amount")?;
+        .wrap_error_with_message("missing damage amount")?
+        .integer_u16()
+        .wrap_error_with_message("invalid damage amount")?;
     core_battle_actions::damage(context, amount, source_handle, effect_handle.as_ref())
+}
+
+fn has_ability(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let ability = args
+        .pop_front()
+        .wrap_error_with_message("missing ability id")?
+        .string()
+        .map(|ability| Id::from(ability))
+        .wrap_error_with_message("invalid ability id")?;
+    let mut context = context.mon_context(mon_handle)?;
+    Mon::has_ability(&mut context, &ability).map(|val| Value::Boolean(val))
 }

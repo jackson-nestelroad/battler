@@ -79,12 +79,14 @@ pub use core_battle::{
 };
 pub use field::Field;
 pub use mon::{
+    AbilitySlot,
     ActiveMonDetails,
     Mon,
     MonMoveRequest,
     MonMoveSlotData,
     MonPositionDetails,
     MonTeamRequestData,
+    MoveSlot,
     PublicMonDetails,
 };
 pub use move_outcome::{

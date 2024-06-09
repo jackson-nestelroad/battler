@@ -100,6 +100,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::BasePower => &[("power", ValueType::U32)],
+            Self::ModifyDamage => &[("damage", ValueType::U32)],
             Self::SetStatus | Self::AllySetStatus => &[("status", ValueType::Effect)],
             _ => &[],
         }

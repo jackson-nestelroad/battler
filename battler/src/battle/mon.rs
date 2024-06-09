@@ -128,6 +128,14 @@ pub struct MoveSlot {
     pub simulated: bool,
 }
 
+/// A single ability slot for a Mon.
+#[derive(Clone)]
+pub struct AbilitySlot {
+    pub id: Id,
+    pub name: String,
+    pub priority: u32,
+}
+
 /// Data for a single [`Mon`] when a player is requested an action on their entire team.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonTeamRequestData {
@@ -206,8 +214,7 @@ pub struct Mon {
     pub base_move_slots: Vec<MoveSlot>,
     pub move_slots: Vec<MoveSlot>,
 
-    pub ability: String,
-    pub ability_priority: u32,
+    pub ability: AbilitySlot,
 
     pub types: Vec<Type>,
     pub hidden_power_type: Type,
@@ -258,7 +265,6 @@ impl Mon {
         let gender = data.gender;
         let shiny = data.shiny;
         let ball = data.ball;
-        let ability = data.ability;
         let item = data.item;
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
@@ -284,6 +290,13 @@ impl Mon {
         }
 
         let move_slots = base_move_slots.clone();
+
+        let ability = dex.abilities.get(&data.ability).into_result()?;
+        let ability = AbilitySlot {
+            id: ability.id().clone(),
+            name: ability.data.name.clone(),
+            priority: 0,
+        };
 
         let species = dex.species.get(&species_name).into_result()?;
         let mut types = Vec::with_capacity(4);
@@ -325,7 +338,6 @@ impl Mon {
             move_slots,
 
             ability,
-            ability_priority: 0,
 
             types,
             hidden_power_type,
@@ -777,7 +789,7 @@ impl Mon {
                 .iter()
                 .map(|move_slot| move_slot.name.clone())
                 .collect(),
-            ability: context.mon().ability.clone(),
+            ability: context.mon().ability.name.clone(),
             item: context.mon().item.clone(),
             ball: context.mon().ball.clone(),
         })
@@ -966,7 +978,7 @@ impl Mon {
         }
         let ability_priority = context.battle_mut().next_ability_priority();
         let mon = context.mon_mut();
-        mon.ability_priority = ability_priority
+        mon.ability.priority = ability_priority
     }
 
     /// Switches the Mon out of the given position for the player.
@@ -1101,6 +1113,11 @@ impl Mon {
         let new_value = new_value.max(-6).min(6);
         context.mon_mut().boosts.set(boost, new_value);
         new_value - current_value
+    }
+
+    pub fn has_ability(context: &mut MonContext, id: &Id) -> Result<bool, Error> {
+        // TODO: Consider ability suppression.
+        Ok(&context.mon().ability.id == id)
     }
 }
 

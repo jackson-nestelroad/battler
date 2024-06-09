@@ -909,6 +909,23 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         )
     }
 
+    /// Creates a new [`ApplyingEffectContext`] with the user set as the target, scoped to the
+    /// lifetime of this context.
+    ///
+    /// The Mon's active target is used as the source of the move.
+    ///
+    /// The inverse of [`applying_effect_context`].
+    pub fn user_applying_effect_context<'active_move>(
+        &'active_move mut self,
+    ) -> Result<ApplyingEffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
+        let source_handle = self
+            .active_target_mon_context()
+            .map(|context| context.mon_handle())
+            .ok();
+        let target_handle = self.mon_handle();
+        ApplyingEffectContext::new(self.effect_context()?.into(), source_handle, target_handle)
+    }
+
     /// Creates a new [`ActiveMoveContext`] for a secondary [`HitEffect`], scoped to the lifetime of
     /// this context.
     pub fn secondary_active_move_context(&mut self, index: usize) -> Self {

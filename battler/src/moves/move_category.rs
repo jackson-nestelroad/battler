@@ -4,7 +4,9 @@ use serde_string_enum::{
 };
 
 /// The category of a move.
-#[derive(Debug, Clone, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+)]
 pub enum MoveCategory {
     #[string = "Physical"]
     Physical,

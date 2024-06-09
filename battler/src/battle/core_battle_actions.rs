@@ -757,9 +757,15 @@ fn modify_damage(
         core_battle_logs::critical_hit(context)?;
     }
 
-    // TODO: StatusModifyDamage event (Burn).
-
-    // TODO: ModifyDamage event.
+    if let Some(modified_damage) = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+        &mut context
+            .as_active_move_context_mut()
+            .user_applying_effect_context()?,
+        fxlang::BattleEvent::ModifyDamage,
+        base_damage,
+    ) {
+        base_damage = modified_damage;
+    }
 
     let base_damage = base_damage as u16;
     let base_damage = base_damage.max(1);
@@ -1618,14 +1624,6 @@ pub fn try_set_status(
         return Ok(false);
     }
 
-    if check_status_immunity(context)? {
-        if is_primary_move_effect {
-            if let Some(mut source_context) = context.source_context()? {
-                core_battle_logs::fail(&mut source_context)?;
-            }
-        }
-    }
-
     // Cure the current status and return early.
     let status = match status {
         Some(status) => status,
@@ -1635,6 +1633,15 @@ pub fn try_set_status(
             return Ok(true);
         }
     };
+
+    if check_status_immunity(&mut context.target_context()?, &status)? {
+        if is_primary_move_effect {
+            if let Some(mut source_context) = context.source_context()? {
+                core_battle_logs::fail(&mut source_context)?;
+            }
+        }
+        return Ok(false);
+    }
 
     // Save the previous status in case an effect callback cancels the status.
     let previous_status = context.target().status.clone();
@@ -1687,14 +1694,15 @@ pub fn try_set_status(
     Ok(true)
 }
 
-fn check_status_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
-    if context.target().hp == 0 {
+fn check_status_immunity(context: &mut MonContext, status: &Id) -> Result<bool, Error> {
+    if context.mon().hp == 0 {
         return Ok(true);
     }
 
-    if let Some(condition) = context.effect().condition() {
+    let effect = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), status)?;
+    if let Some(condition) = effect.condition() {
         for typ in condition.data.immune_types.clone() {
-            if Mon::has_type(&mut context.target_context()?, typ)? {
+            if Mon::has_type(context, typ)? {
                 return Ok(true);
             }
         }

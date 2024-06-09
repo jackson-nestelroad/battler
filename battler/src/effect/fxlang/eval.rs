@@ -25,6 +25,7 @@ use crate::{
     common::{
         Error,
         Fraction,
+        Identifiable,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
         UnsafelyDetachBorrowMut,
@@ -470,6 +471,12 @@ where
                         "base_power" => {
                             ValueRef::U32(context.active_move(*active_move_handle)?.data.base_power)
                         }
+                        "category" => ValueRef::MoveCategory(
+                            context.active_move(*active_move_handle)?.data.category,
+                        ),
+                        "id" => {
+                            ValueRef::Str(context.active_move(*active_move_handle)?.id().as_ref())
+                        }
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
@@ -764,6 +771,17 @@ impl Evaluator {
                 EvaluationContext::ActiveMove(context) => self
                     .vars
                     .set("move", Value::ActiveMove(context.active_move_handle()))?,
+                EvaluationContext::ApplyingEffect(context) => match context.effect_handle() {
+                    EffectHandle::ActiveMove(active_move_handle) => self
+                        .vars
+                        .set("move", Value::ActiveMove(active_move_handle))?,
+                    _ => {
+                        return Err(Self::failed_var_initialization(
+                            "move",
+                            "ApplyingEffectContext with an active move",
+                        ))
+                    }
+                },
                 _ => return Err(Self::failed_var_initialization("move", "ActiveMoveContext")),
             }
         }

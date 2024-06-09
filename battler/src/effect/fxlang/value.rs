@@ -4,6 +4,7 @@ use std::{
         self,
         Display,
     },
+    str::FromStr,
 };
 
 use zone_alloc::ElementRef;
@@ -21,6 +22,7 @@ use crate::{
         WrapResultError,
     },
     effect::EffectHandle,
+    moves::MoveCategory,
 };
 
 /// The type of an fxlang value.
@@ -37,6 +39,7 @@ pub enum ValueType {
     Mon,
     Effect,
     ActiveMove,
+    MoveCategory,
     List,
     Object,
 }
@@ -72,6 +75,7 @@ pub enum Value {
     Mon(MonHandle),
     Effect(EffectHandle),
     ActiveMove(MoveHandle),
+    MoveCategory(MoveCategory),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
 }
@@ -92,6 +96,7 @@ impl Value {
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -138,11 +143,26 @@ impl Value {
             .wrap_error_with_message("integer overflow")
     }
 
+    /// Consumes the value into a [`u32`].
+    pub fn integer_u32(self) -> Result<u32, Error> {
+        self.integer_u64()?
+            .try_into()
+            .wrap_error_with_message("integer overflow")
+    }
+
     /// Consumes the value into a [`bool`].
     pub fn boolean(self) -> Result<bool, Error> {
         match self {
             Self::Boolean(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boolean)),
+        }
+    }
+
+    /// Consumes the value into a [`MonHandle`].
+    pub fn mon_handle(self) -> Result<MonHandle, Error> {
+        match self {
+            Self::Mon(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Mon)),
         }
     }
 }
@@ -166,6 +186,7 @@ pub enum MaybeReferenceValue<'eval> {
     Mon(MonHandle),
     Effect(EffectHandle),
     ActiveMove(MoveHandle),
+    MoveCategory(MoveCategory),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
@@ -187,6 +208,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -208,6 +230,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Mon(val) => Value::Mon(*val),
             Self::Effect(val) => Value::Effect(val.clone()),
             Self::ActiveMove(val) => Value::ActiveMove(*val),
+            Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
@@ -284,6 +307,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::Mon(val) => Self::Mon(val),
             Value::Effect(val) => Self::Effect(val),
             Value::ActiveMove(val) => Self::ActiveMove(val),
+            Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -321,6 +345,7 @@ pub enum ValueRef<'eval> {
     Mon(&'eval MonHandle),
     Effect(&'eval EffectHandle),
     ActiveMove(&'eval MoveHandle),
+    MoveCategory(MoveCategory),
     List(&'eval Vec<Value>),
     Object(&'eval FastHashMap<String, Value>),
 }
@@ -343,6 +368,7 @@ impl ValueRef<'_> {
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -365,6 +391,7 @@ impl ValueRef<'_> {
             Self::Mon(val) => Value::Mon(**val),
             Self::Effect(val) => Value::Effect((*val).clone()),
             Self::ActiveMove(val) => Value::ActiveMove(**val),
+            Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::List(val) => Value::List((*val).clone()),
             Self::Object(val) => Value::Object((*val).clone()),
         }
@@ -428,6 +455,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::Mon(val) => Self::Mon(val),
             Value::Effect(val) => Self::Effect(val),
             Value::ActiveMove(val) => Self::ActiveMove(val),
+            Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -482,6 +510,7 @@ pub enum ValueRefMut<'eval> {
     Mon(&'eval mut MonHandle),
     Effect(&'eval mut EffectHandle),
     ActiveMove(&'eval mut MoveHandle),
+    MoveCategory(&'eval mut MoveCategory),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -502,6 +531,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -523,6 +553,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Mon(val) => Self::Mon(val),
             Value::Effect(val) => Self::Effect(val),
             Value::ActiveMove(val) => Self::ActiveMove(val),
+            Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -555,6 +586,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     Mon(MonHandle),
     Effect(&'eval EffectHandle),
     ActiveMove(MoveHandle),
+    MoveCategory(MoveCategory),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     Object(&'eval FastHashMap<String, MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
@@ -579,6 +611,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::StoredList(_) => ValueType::List,
@@ -603,6 +636,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Mon(val) => Value::Mon(*val),
             Self::Effect(val) => Value::Effect((*val).clone()),
             Self::ActiveMove(val) => Value::ActiveMove(*val),
+            Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.iter()
@@ -630,6 +664,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Mon(_) => 100,
             Self::Effect(_) => 101,
             Self::ActiveMove(_) => 102,
+            Self::MoveCategory(_) => 103,
             Self::List(_) => 200,
             Self::Object(_) => 201,
             Self::StoredList(_) => 300,
@@ -1128,14 +1163,28 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::OptionalString(lhs), Self::TempString(rhs)) => {
                 lhs.as_ref().is_some_and(|lhs| lhs.eq(rhs))
             }
+            (Self::OptionalString(lhs), Self::MoveCategory(rhs)) => lhs
+                .as_ref()
+                .is_some_and(|lhs| MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))),
             (Self::String(lhs), Self::String(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
+            (Self::String(lhs), Self::MoveCategory(rhs)) => {
+                MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
+            (Self::Str(lhs), Self::MoveCategory(rhs)) => {
+                MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
+            (Self::TempString(lhs), Self::MoveCategory(rhs)) => {
+                MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Mon(lhs), Self::Mon(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
             (Self::ActiveMove(lhs), Self::ActiveMove(rhs)) => lhs.eq(rhs),
+            (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::StoredList(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -1281,6 +1330,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::Mon(val) => Self::Mon(*val),
             Value::Effect(val) => Self::Effect(val),
             Value::ActiveMove(val) => Self::ActiveMove(*val),
+            Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -1302,6 +1352,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::Mon(val) => Self::Mon(*val),
             MaybeReferenceValue::Effect(val) => Self::Effect(val),
             MaybeReferenceValue::ActiveMove(val) => Self::ActiveMove(*val),
+            MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
             MaybeReferenceValue::Reference(val) => Self::from(val),
@@ -1326,6 +1377,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::Mon(val) => Self::Mon(**val),
             ValueRef::Effect(val) => Self::Effect(val),
             ValueRef::ActiveMove(val) => Self::ActiveMove(**val),
+            ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::Object(val) => Self::StoredObject(val),
         }

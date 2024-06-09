@@ -610,7 +610,7 @@ pub fn run_active_move_event_expecting_void(
 
 /// Runs an event on the target [`Mon`]'s current status.
 ///
-/// Expects an integer that can fit ina [`u8`].
+/// Expects an integer that can fit in a [`u8`].
 pub fn run_mon_status_event_expecting_u8(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -644,6 +644,19 @@ pub fn run_event_for_applying_effect(
         .map(|value| value.boolean().ok())
         .flatten()
         .unwrap_or(true)
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
+/// Expects an integer that can fit in a [`u32`].
+pub fn run_event_for_applying_effect_expecting_u32(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: u32,
+) -> Option<u32> {
+    run_event_for_applying_effect_internal(context, event, vec![fxlang::Value::U32(input)])?
+        .integer_u32()
+        .ok()
 }
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for the residual effect, which occurs
