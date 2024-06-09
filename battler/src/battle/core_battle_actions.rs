@@ -1656,7 +1656,7 @@ pub fn try_set_status(
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetStatus,
-        vec![fxlang::Value::Effect(status_effect_handle.clone())],
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle.clone())]),
     ) {
         return Ok(false);
     }
@@ -1688,7 +1688,7 @@ pub fn try_set_status(
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::AfterSetStatus,
-        vec![fxlang::Value::Effect(status_effect_handle)],
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle)]),
     ) {
         return Ok(false);
     }

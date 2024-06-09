@@ -626,7 +626,30 @@ where
 /// Input variables to an fxlang program.
 ///
 /// Values are assigned to a named variable based on the [`BattleEvent`] configuration.
-pub type VariableInput = Vec<Value>;
+#[derive(Clone, Default)]
+pub struct VariableInput {
+    values: Vec<Value>,
+    this_effect_handle: Option<EffectHandle>,
+}
+
+impl VariableInput {
+    pub fn get(&self, index: usize) -> Option<&Value> {
+        self.values.get(index)
+    }
+
+    pub fn set_this_effect(&mut self, effect_handle: EffectHandle) {
+        self.this_effect_handle = Some(effect_handle);
+    }
+}
+
+impl FromIterator<Value> for VariableInput {
+    fn from_iter<T: IntoIterator<Item = Value>>(iter: T) -> Self {
+        Self {
+            values: iter.into_iter().collect(),
+            this_effect_handle: None,
+        }
+    }
+}
 
 /// Context for executing a [`ParsedProgramBlock`] over a list.
 ///
@@ -717,6 +740,10 @@ impl Evaluator {
             self.vars.set("effect_state", Value::from(effect_state))?;
         }
 
+        if let Some(this_effect_handle) = input.this_effect_handle {
+            self.vars.set("this", Value::Effect(this_effect_handle));
+        }
+
         if event.has_flag(CallbackFlag::TakesGeneralMon) {
             match context {
                 EvaluationContext::Mon(context) => {
@@ -800,9 +827,9 @@ impl Evaluator {
         }
 
         // Reverse the input so we can efficiently pop elements out of it.
-        input.reverse();
+        input.values.reverse();
         for (i, (name, value_type)) in event.input_vars().iter().enumerate() {
-            match input.pop() {
+            match input.values.pop() {
                 None => {
                     return Err(battler_error!(
                         "missing {value_type} input at position {} for variable {name}",
@@ -819,10 +846,10 @@ impl Evaluator {
             }
         }
 
-        if !input.is_empty() {
+        if !input.values.is_empty() {
             return Err(battler_error!(
                 "too many input values: found {} extra values",
-                input.len()
+                input.values.len()
             ));
         }
 

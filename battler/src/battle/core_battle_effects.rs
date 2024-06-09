@@ -95,9 +95,10 @@ fn run_effect_event_by_handle(
     context: &mut fxlang::EvaluationContext,
     effect: &EffectHandle,
     event: fxlang::BattleEvent,
-    input: fxlang::VariableInput,
+    mut input: fxlang::VariableInput,
     effect_state: Option<fxlang::EffectState>,
 ) -> fxlang::ProgramEvalResult {
+    input.set_this_effect(effect.clone());
     let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect) {
         Ok(effect) => effect,
         Err(_) => return fxlang::ProgramEvalResult::default(),
@@ -437,7 +438,7 @@ fn run_callbacks_with_errors(
             // Early exit.
             value @ Some(fxlang::Value::Boolean(false)) => return Ok(value),
             // Pass the output to the next effect.
-            Some(value) => input = Vec::from([value]),
+            Some(value) => input = fxlang::VariableInput::from_iter([value]),
             // Do nothing (the input will be passed to the next callback).
             _ => (),
         }
@@ -479,7 +480,7 @@ fn run_residual_callbacks_with_errors(
                 } else {
                     run_callback_with_errors(
                         &mut fxlang::EvaluationContext::ApplyingEffect(&mut context),
-                        fxlang::VariableInput::new(),
+                        fxlang::VariableInput::default(),
                         callback_handle,
                     )?;
                 }
@@ -588,7 +589,7 @@ fn run_event_for_no_target_internal(context: &mut Context, event: fxlang::Battle
         None,
         AllEffectsTarget::Residual,
         None,
-        fxlang::VariableInput::new(),
+        fxlang::VariableInput::default(),
     ) {
         Ok(_) => (),
         Err(error) => {
@@ -604,7 +605,7 @@ pub fn run_active_move_event_expecting_void(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
 ) {
-    run_active_move_event(context, event, fxlang::VariableInput::new());
+    run_active_move_event(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the target [`Mon`]'s current status.
@@ -614,7 +615,7 @@ pub fn run_mon_status_event_expecting_u8(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<u8> {
-    run_mon_status_event(context, event, fxlang::VariableInput::new())?
+    run_mon_status_event(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
 }
@@ -626,7 +627,7 @@ pub fn run_mon_status_event_expecting_bool(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_mon_status_event(context, event, fxlang::VariableInput::new())?
+    run_mon_status_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
@@ -653,13 +654,17 @@ pub fn run_event_for_applying_effect_expecting_u32(
     event: fxlang::BattleEvent,
     input: u32,
 ) -> Option<u32> {
-    run_event_for_applying_effect_internal(context, event, vec![fxlang::Value::U32(input)])?
-        .integer_u32()
-        .ok()
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::U32(input)]),
+    )?
+    .integer_u32()
+    .ok()
 }
 
 pub fn run_event_for_mon(context: &mut MonContext, event: fxlang::BattleEvent) {
-    run_event_for_mon_internal(context, event, fxlang::VariableInput::new());
+    run_event_for_mon_internal(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for the residual effect, which occurs
