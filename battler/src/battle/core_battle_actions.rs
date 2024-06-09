@@ -1640,7 +1640,6 @@ pub fn try_set_status(
     let previous_status = context.target().status.clone();
     let previous_status_state = context.target().status_state.clone();
 
-    let source = context.source_handle();
     let status_effect_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&status)?

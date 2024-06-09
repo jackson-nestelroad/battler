@@ -103,12 +103,6 @@ pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn fail_status(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!("fail", ("mon", Mon::position_details(context)?));
-    context.battle_mut().log(event);
-    Ok(())
-}
-
 pub fn immune(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!("immune", ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);

@@ -610,16 +610,6 @@ pub fn run_active_move_event_expecting_void(
 
 /// Runs an event on the target [`Mon`]'s current status.
 ///
-/// Expects no input or output. Any output is ignored.
-pub fn run_mon_status_event_expecting_void(
-    context: &mut ApplyingEffectContext,
-    event: fxlang::BattleEvent,
-) {
-    run_mon_status_event(context, event, fxlang::VariableInput::new());
-}
-
-/// Runs an event on the target [`Mon`]'s current status.
-///
 /// Expects an integer that can fit ina [`u8`].
 pub fn run_mon_status_event_expecting_u8(
     context: &mut ApplyingEffectContext,

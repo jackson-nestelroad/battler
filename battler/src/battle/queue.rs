@@ -158,7 +158,7 @@ mod queue_tests {
 
     fn sort(queue: &mut BattleQueue, seed: Option<u64>) {
         let mut prng = RealPseudoRandomNumberGenerator::new(seed);
-        let items = queue.actions.make_contiguous();
+        queue.actions.make_contiguous();
         queue.sort_internal(&mut prng);
     }
 
