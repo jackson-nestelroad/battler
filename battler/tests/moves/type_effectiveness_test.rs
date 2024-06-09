@@ -102,6 +102,7 @@ mod type_effectiveness_test {
                 "split|side:1",
                 "damage|mon:Gyarados,player-2,1|health:31/155",
                 "damage|mon:Gyarados,player-2,1|health:20/100",
+                "status|mon:Gyarados,player-2,1|status:Paralysis",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();
