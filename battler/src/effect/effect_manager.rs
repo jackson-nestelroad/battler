@@ -7,7 +7,6 @@ use crate::{
     battle::{
         ActiveMoveContext,
         ApplyingEffectContext,
-        Context,
         MonContext,
     },
     common::{
@@ -43,52 +42,14 @@ impl EffectManager {
         }
     }
 
-    pub fn evaluate_under_mon(
-        context: &mut MonContext,
+    pub fn evaluate(
+        context: EvaluationContext,
         effect: &Effect,
         event: BattleEvent,
         input: VariableInput,
         effect_state: Option<EffectState>,
     ) -> Result<ProgramEvalResult, Error> {
-        Self::evaluate(
-            EvaluationContext::Mon(context),
-            effect,
-            event,
-            input,
-            effect_state,
-        )
-    }
-
-    pub fn evaluate_under_active_move(
-        context: &mut ActiveMoveContext,
-        effect: &Effect,
-        event: BattleEvent,
-        input: VariableInput,
-        effect_state: Option<EffectState>,
-    ) -> Result<ProgramEvalResult, Error> {
-        Self::evaluate(
-            EvaluationContext::ActiveMove(context),
-            effect,
-            event,
-            input,
-            effect_state,
-        )
-    }
-
-    pub fn evaluate_under_applying_effect(
-        context: &mut ApplyingEffectContext,
-        effect: &Effect,
-        event: BattleEvent,
-        input: VariableInput,
-        effect_state: Option<EffectState>,
-    ) -> Result<ProgramEvalResult, Error> {
-        Self::evaluate(
-            EvaluationContext::ApplyingEffect(context),
-            effect,
-            event,
-            input,
-            effect_state,
-        )
+        Self::evaluate_internal(context, effect, event, input, effect_state)
     }
 
     fn get_parsed_effect(&mut self, effect: &Effect) -> Result<&ParsedCallbacks, Error> {
@@ -108,7 +69,7 @@ impl EffectManager {
             .wrap_error_with_message("pushing to effect cache failed, so parsed program was lost")
     }
 
-    fn evaluate(
+    fn evaluate_internal(
         mut context: EvaluationContext,
         effect: &Effect,
         event: BattleEvent,

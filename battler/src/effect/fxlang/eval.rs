@@ -55,6 +55,7 @@ use crate::{
 
 /// The [`Context`][`crate::battle::Context`] for which an fxlang program is evaluated.
 pub enum EvaluationContext<
+    'mon_context,
     'applying_effect,
     'effect,
     'active_move,
@@ -76,11 +77,23 @@ pub enum EvaluationContext<
 {
     ActiveMove(&'active_move mut ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>),
     ApplyingEffect(&'applying_effect mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>),
-    Mon(&'mon mut MonContext<'player, 'side, 'context, 'battle, 'data>),
+    Mon(&'mon_context mut MonContext<'player, 'side, 'context, 'battle, 'data>),
 }
 
-impl<'applying_effect, 'effect, 'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
+impl<
+        'mon_context,
+        'applying_effect,
+        'effect,
+        'active_move,
+        'mon,
+        'player,
+        'side,
+        'context,
+        'battle,
+        'data,
+    >
     EvaluationContext<
+        'mon_context,
         'applying_effect,
         'effect,
         'active_move,

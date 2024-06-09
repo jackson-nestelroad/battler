@@ -7,7 +7,6 @@ use crate::{
     },
     effect::fxlang::{
         BattleEvent,
-        Callback,
         Callbacks,
         ParsedProgram,
     },
@@ -36,12 +35,18 @@ impl ParsedCallbacks {
             callbacks: FastHashMap::new(),
         };
         if let Some(callbacks) = callbacks {
+            parsed.parse_and_save(BattleEvent::AfterMoveSecondary, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
+            parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::DamagingHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
         }

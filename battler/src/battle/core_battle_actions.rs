@@ -93,6 +93,8 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
 
     core_battle_logs::switch(context)?;
 
+    core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::SwitchIn);
+
     Ok(())
 }
 

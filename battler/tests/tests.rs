@@ -28,4 +28,6 @@ mod moves {
 
 mod status {
     mod burn_test;
+    mod poison_test;
+    mod toxic_test;
 }

@@ -39,6 +39,7 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber,
+    MonModifier = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsNumber,
     EffectResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
@@ -57,19 +58,26 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsVoid,
+    MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
 }
 
 /// A battle event that can trigger a [`Callback`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BattleEvent {
+    AfterMoveSecondary,
     AfterSetStatus,
     AllySetStatus,
+    BeforeMove,
     BasePower,
+    DamagingHit,
     Duration,
     ModifyDamage,
+    ModifyMove,
+    ModifySpe,
     Residual,
     SetStatus,
     Start,
+    SwitchIn,
     UseMove,
     UseMoveMessage,
 }
@@ -78,14 +86,20 @@ impl BattleEvent {
     /// Maps the event to the [`CallbackType`] flags.
     pub fn callback_type_flags(&self) -> u32 {
         match self {
+            Self::AfterMoveSecondary => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::EffectVoid as u32,
             Self::AllySetStatus => CommonCallbackType::EffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
+            Self::BeforeMove => CommonCallbackType::MoveResult as u32,
+            Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::Duration => CommonCallbackType::EffectModifier as u32,
             Self::ModifyDamage => CommonCallbackType::MoveModifier as u32,
+            Self::ModifyMove => CommonCallbackType::MoveVoid as u32,
+            Self::ModifySpe => CommonCallbackType::MonModifier as u32,
             Self::Residual => CommonCallbackType::EffectVoid as u32,
             Self::SetStatus => CommonCallbackType::EffectResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
+            Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::MoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::MoveVoid as u32,
         }
@@ -100,6 +114,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::BasePower => &[("power", ValueType::U32)],
+            Self::DamagingHit => &[("damage", ValueType::U16)],
             Self::ModifyDamage => &[("damage", ValueType::U32)],
             Self::SetStatus | Self::AllySetStatus => &[("status", ValueType::Effect)],
             _ => &[],
@@ -236,14 +251,20 @@ impl SpeedOrderable for Callback {
 /// All possible callbacks for an effect should be defined here.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
+    pub on_after_move_secondary: Callback,
     pub on_after_set_status: Callback,
     pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
+    pub on_before_move: Callback,
+    pub on_damaging_hit: Callback,
     pub on_duration: Callback,
     pub on_modify_damage: Callback,
+    pub on_modify_move: Callback,
+    pub on_modify_spe: Callback,
     pub on_residual: Callback,
     pub on_set_status: Callback,
     pub on_start: Callback,
+    pub on_switch_in: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
 }
@@ -251,14 +272,20 @@ pub struct Callbacks {
 impl Callbacks {
     pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
         match event {
+            BattleEvent::AfterMoveSecondary => Some(&self.on_after_move_secondary),
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::BasePower => Some(&self.on_base_power),
+            BattleEvent::BeforeMove => Some(&self.on_before_move),
+            BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
+            BattleEvent::ModifyMove => Some(&self.on_modify_damage),
+            BattleEvent::ModifySpe => Some(&self.on_modify_damage),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::SetStatus => Some(&self.on_set_status),
             BattleEvent::Start => Some(&self.on_start),
+            BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
         }

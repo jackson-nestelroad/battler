@@ -12,6 +12,7 @@ use serde::{
     Serialize,
 };
 
+use super::CoreBattle;
 use crate::{
     battle::{
         calculate_hidden_power_type,
@@ -420,7 +421,14 @@ impl Mon {
     }
 
     /// Returns the public details for the active Mon.
-    pub fn active_details<'b>(context: &'b MonContext) -> Result<ActiveMonDetails<'b>, Error> {
+    pub fn active_details<'b>(context: &'b mut MonContext) -> Result<ActiveMonDetails<'b>, Error> {
+        let status = context.mon().status.clone();
+        let status = match status {
+            Some(status) => CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
+                .name()
+                .to_owned(),
+            None => String::new(),
+        };
         let mon = context.mon();
         Ok(ActiveMonDetails {
             public_details: mon.public_details(),
@@ -428,11 +436,7 @@ impl Mon {
             player_id: context.player().id.as_ref(),
             side_position: Self::position_on_side(context)? + 1,
             health: Self::public_health(context),
-            status: mon
-                .status
-                .as_ref()
-                .map(|id| id.to_string())
-                .unwrap_or(String::default()),
+            status,
         })
     }
 
