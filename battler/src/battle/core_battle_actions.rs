@@ -9,6 +9,7 @@ use crate::{
         modify_32,
         ActiveMoveContext,
         ActiveTargetContext,
+        ApplyingEffectContext,
         BoostMapInOrderIterator,
         CoreBattle,
         EffectContext,
@@ -1079,7 +1080,6 @@ mod direct_move_step {
         if recoil_damage > 0 {
             let recoil_damage = recoil_damage.min(u16::MAX as u64) as u16;
             let mon_handle = context.mon_handle();
-            let effect_handle = context.effect_handle();
             core_battle_actions::damage(
                 &mut context.as_mon_context_mut(),
                 recoil_damage,
@@ -1124,7 +1124,7 @@ fn direct_damage(
     Ok(damage)
 }
 
-fn damage(
+pub fn damage(
     context: &mut MonContext,
     damage: u16,
     source: Option<MonHandle>,
@@ -1291,13 +1291,12 @@ fn apply_move_effects(
 
         let source_handle = target_context.mon_handle();
         let effect_handle = EffectHandle::ActiveMove(target_context.active_move_handle());
-        let mut target_context = target_context.target_mon_context()?;
 
         let mut hit_effect_outcome: Option<MoveOutcomeOnTarget> = None;
 
         if let Some(boosts) = hit_effect.boosts {
             let outcome = boost(
-                &mut target_context,
+                &mut target_context.target_mon_context()?,
                 boosts,
                 Some(source_handle),
                 Some(&effect_handle),
@@ -1311,7 +1310,7 @@ fn apply_move_effects(
             let damage = heal_percent * target_context.mon().max_hp;
             let damage = damage.round();
             let damage = heal(
-                &mut target_context,
+                &mut target_context.target_mon_context()?,
                 damage,
                 Some(source_handle),
                 Some(&effect_handle),
@@ -1326,7 +1325,19 @@ fn apply_move_effects(
         }
 
         if let Some(status) = hit_effect.status {
-            // TODO: Set status.
+            let set_status = try_set_status(
+                &mut target_context
+                    .as_active_move_context_mut()
+                    .applying_effect_context()?,
+                Some(Id::from(status)),
+                !is_secondary && !is_self,
+            )?;
+            let outcome = if set_status {
+                MoveOutcomeOnTarget::Success
+            } else {
+                MoveOutcomeOnTarget::Failure
+            };
+            hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
         }
 
         if let Some(volatile_status) = hit_effect.volatile_status {
@@ -1467,7 +1478,7 @@ fn boost(
             context.mon_mut().stats_raised_this_turn = true;
         }
         if boosts.values().any(|val| val < &0) {
-            context.mon_mut().status_lowered_this_turn = true;
+            context.mon_mut().stats_lowered_this_turn = true;
         }
         Ok(MoveOutcomeOnTarget::Success)
     } else {
@@ -1586,4 +1597,121 @@ fn force_switch(
     }
 
     Ok(())
+}
+
+pub fn try_set_status(
+    context: &mut ApplyingEffectContext,
+    status: Option<Id>,
+    is_primary_move_effect: bool,
+) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    // A Mon may only have one status set at a time.
+    if context.target().status.is_some() {
+        if is_primary_move_effect {
+            if let Some(mut source_context) = context.source_context()? {
+                core_battle_logs::fail(&mut source_context)?;
+            }
+        }
+        return Ok(false);
+    }
+
+    if check_status_immunity(context)? {
+        if is_primary_move_effect {
+            if let Some(mut source_context) = context.source_context()? {
+                core_battle_logs::fail(&mut source_context)?;
+            }
+        }
+    }
+
+    // Cure the current status and return early.
+    let status = match status {
+        Some(status) => status,
+        None => {
+            context.target_mut().status = status;
+            context.target_mut().status_state = fxlang::EffectState::new();
+            return Ok(true);
+        }
+    };
+
+    // Save the previous status in case an effect callback cancels the status.
+    let previous_status = context.target().status.clone();
+    let previous_status_state = context.target().status_state.clone();
+
+    let source = context.source_handle();
+    let status_effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&status)?
+        .clone();
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::SetStatus,
+        vec![fxlang::Value::Effect(status_effect_handle.clone())],
+    ) {
+        return Ok(false);
+    }
+
+    // Set the status so that the following effects can use it.
+    context.target_mut().status = Some(status);
+    context.target_mut().status_state = fxlang::EffectState::new();
+
+    if let Some(condition) = context.effect().fxlang_condition() {
+        if let Some(duration) = condition.duration {
+            context.target_mut().status_state.set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_mon_status_event_expecting_u8(
+            context,
+            fxlang::BattleEvent::Duration,
+        ) {
+            context.target_mut().status_state.set_duration(duration);
+        }
+    }
+
+    if core_battle_effects::run_mon_status_event_expecting_bool(context, fxlang::BattleEvent::Start)
+        .is_some_and(|result| !result)
+    {
+        context.target_mut().status = previous_status;
+        context.target_mut().status_state = previous_status_state;
+    }
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterSetStatus,
+        vec![fxlang::Value::Effect(status_effect_handle)],
+    ) {
+        return Ok(false);
+    }
+
+    Ok(true)
+}
+
+fn check_status_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(true);
+    }
+
+    if let Some(condition) = context.effect().condition() {
+        for typ in condition.data.immune_types.clone() {
+            if Mon::has_type(&mut context.target_context()?, typ)? {
+                return Ok(true);
+            }
+        }
+    }
+
+    // TODO: Immunity event.
+
+    Ok(false)
+}
+
+pub fn clear_status(
+    context: &mut ApplyingEffectContext,
+    is_primary_move_effect: bool,
+) -> Result<bool, Error> {
+    if context.target().hp == 0 || context.target().status.is_none() {
+        return Ok(false);
+    }
+    try_set_status(context, None, is_primary_move_effect)
 }

@@ -8,7 +8,7 @@ mod calculations;
 mod context;
 mod context_cache;
 mod core_battle;
-mod core_battle_actions;
+pub mod core_battle_actions;
 mod core_battle_effects;
 mod core_battle_logs;
 mod field;
@@ -19,6 +19,7 @@ mod queue;
 mod registry;
 mod request;
 mod side;
+mod speed_order;
 mod timer;
 
 pub use action::{
@@ -113,5 +114,10 @@ pub use request::{
 pub use side::{
     Side,
     SideData,
+};
+pub use speed_order::{
+    compare_priority,
+    speed_sort,
+    SpeedOrderable,
 };
 pub use timer::TimerOptions;

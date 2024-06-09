@@ -18,6 +18,7 @@ use zone_alloc::{
 use crate::{
     battle::{
         core_battle_actions,
+        core_battle_effects,
         core_battle_logs,
         Action,
         Battle,
@@ -55,6 +56,8 @@ use crate::{
         Dex,
     },
     effect::{
+        fxlang,
+        Effect,
         EffectHandle,
         EffectManager,
     },
@@ -197,6 +200,7 @@ pub struct CoreBattle<'d> {
 
     registry: BattleRegistry,
     player_ids: FastHashMap<String, usize>,
+    effect_handle_cache: FastHashMap<Id, EffectHandle>,
 
     turn: u64,
     request: Option<RequestType>,
@@ -279,6 +283,7 @@ impl<'d> CoreBattle<'d> {
             effect_manager,
             registry,
             player_ids,
+            effect_handle_cache: FastHashMap::new(),
             turn: 0,
             request: None,
             mid_turn: false,
@@ -945,6 +950,12 @@ impl<'d> CoreBattle<'d> {
             Action::Pass => (),
             Action::BeforeTurn => (),
             Action::Residual => {
+                Self::clear_active_move(context)?;
+                Self::update_speed(context)?;
+                core_battle_effects::run_event_for_no_target(
+                    context,
+                    fxlang::BattleEvent::Residual,
+                );
                 context.battle_mut().log(log_event!("residual"));
             }
         }
@@ -1336,6 +1347,17 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    pub fn update_speed(context: &mut Context) -> Result<(), Error> {
+        for mon_handle in context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>()
+        {
+            Mon::update_speed(&mut context.mon_context(mon_handle)?)?;
+        }
+        Ok(())
+    }
+
     pub fn check_type_immunity(&self, offense: Type, defense: &[Type]) -> bool {
         defense
             .iter()
@@ -1416,5 +1438,76 @@ impl<'d> CoreBattle<'d> {
             }
         }
         Self::win(context, winner)
+    }
+
+    pub fn get_effect_handle(&mut self, name: &str) -> Result<&EffectHandle, Error> {
+        self.get_effect_handle_by_id(&Id::from(name))
+    }
+
+    pub fn get_effect_handle_by_id(&mut self, id: &Id) -> Result<&EffectHandle, Error> {
+        if self.effect_handle_cache.contains_key(id) {
+            return self.effect_handle_cache.get(id).wrap_error_with_message(
+                "effect handle not found in cache after its key was found",
+            );
+        }
+
+        let effect_handle = Self::lookup_effect_in_dex(self, id.clone());
+        self.effect_handle_cache.insert(id.clone(), effect_handle);
+        self.effect_handle_cache
+            .get(id)
+            .wrap_error_with_message("effect handle not found in cache after insertion")
+    }
+
+    fn lookup_effect_in_dex(&self, id: Id) -> EffectHandle {
+        if self.dex.conditions.get_by_id(&id).into_option().is_some() {
+            return EffectHandle::Condition(id);
+        }
+        if self.dex.moves.get_by_id(&id).into_option().is_some() {
+            return EffectHandle::MoveCondition(id);
+        }
+        if self.dex.abilities.get_by_id(&id).into_option().is_some() {
+            return EffectHandle::Ability(id);
+        }
+        if self.dex.items.get_by_id(&id).into_option().is_some() {
+            return EffectHandle::Item(id);
+        }
+        EffectHandle::NonExistent(id)
+    }
+
+    pub fn get_effect_by_handle<'context>(
+        context: &'context Context,
+        effect_handle: &EffectHandle,
+    ) -> Result<Effect<'context>, Error> {
+        match effect_handle {
+            EffectHandle::ActiveMove(active_move_handle) => Ok(Effect::for_active_move(
+                context.active_move_mut(*active_move_handle)?,
+            )),
+            EffectHandle::Ability(id) => Ok(Effect::for_ability(
+                context.battle().dex.abilities.get_by_id(id).into_result()?,
+            )),
+            EffectHandle::Condition(id) => Ok(Effect::for_condition(
+                context
+                    .battle()
+                    .dex
+                    .conditions
+                    .get_by_id(id)
+                    .into_result()?,
+            )),
+            EffectHandle::MoveCondition(id) => Ok(Effect::for_move_condition(
+                context.battle().dex.moves.get_by_id(id).into_result()?,
+            )),
+            EffectHandle::Item(id) => Ok(Effect::for_item(
+                context.battle().dex.items.get_by_id(id).into_result()?,
+            )),
+            EffectHandle::NonExistent(id) => Ok(Effect::for_non_existent(id.clone())),
+        }
+    }
+
+    pub fn get_effect_by_id<'context>(
+        context: &'context mut Context,
+        id: &Id,
+    ) -> Result<Effect<'context>, Error> {
+        let effect_handle = context.battle_mut().get_effect_handle_by_id(id)?.clone();
+        Self::get_effect_by_handle(context, &effect_handle)
     }
 }

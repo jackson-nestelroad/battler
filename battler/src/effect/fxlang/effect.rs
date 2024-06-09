@@ -8,7 +8,10 @@ use serde::{
     Serialize,
 };
 
-use crate::effect::fxlang::ValueType;
+use crate::{
+    battle::SpeedOrderable,
+    effect::fxlang::ValueType,
+};
 
 /// Flags used to indicate the input and output of a [`Callback`].
 #[allow(non_snake_case)]
@@ -36,10 +39,16 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber,
+    EffectResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
     MoveResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsBoolean,
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
     EffectVoid = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
@@ -53,8 +62,14 @@ enum CommonCallbackType {
 /// A battle event that can trigger a [`Callback`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BattleEvent {
+    AfterSetStatus,
+    AllySetStatus,
     BasePower,
     Duration,
+    ModifyDamage,
+    Residual,
+    SetStatus,
+    Start,
     UseMove,
     UseMoveMessage,
 }
@@ -63,8 +78,14 @@ impl BattleEvent {
     /// Maps the event to the [`CallbackType`] flags.
     pub fn callback_type_flags(&self) -> u32 {
         match self {
+            Self::AfterSetStatus => CommonCallbackType::EffectVoid as u32,
+            Self::AllySetStatus => CommonCallbackType::EffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::Duration => CommonCallbackType::EffectModifier as u32,
+            Self::ModifyDamage => CommonCallbackType::MoveModifier as u32,
+            Self::Residual => CommonCallbackType::EffectVoid as u32,
+            Self::SetStatus => CommonCallbackType::EffectResult as u32,
+            Self::Start => CommonCallbackType::EffectResult as u32,
             Self::UseMove => CommonCallbackType::MoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::MoveVoid as u32,
         }
@@ -79,6 +100,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::BasePower => &[("power", ValueType::U32)],
+            Self::SetStatus | Self::AllySetStatus => &[("status", ValueType::Effect)],
             _ => &[],
         }
     }
@@ -92,6 +114,35 @@ impl BattleEvent {
             Some(ValueType::Boolean) => self.has_flag(CallbackFlag::ReturnsBoolean),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
+        }
+    }
+
+    /// Returns the associated ally event.
+    pub fn ally_event(&self) -> Option<BattleEvent> {
+        match self {
+            Self::SetStatus => Some(Self::AllySetStatus),
+            _ => None,
+        }
+    }
+
+    /// Returns the associated foe event.
+    pub fn foe_event(&self) -> Option<BattleEvent> {
+        match self {
+            _ => None,
+        }
+    }
+
+    /// Returns the associated source event.
+    pub fn source_event(&self) -> Option<BattleEvent> {
+        match self {
+            _ => None,
+        }
+    }
+
+    /// Returns the associated any event.
+    pub fn any_event(&self) -> Option<BattleEvent> {
+        match self {
+            _ => None,
         }
     }
 }
@@ -150,25 +201,28 @@ impl Callback {
             CallbackInput::WithPriority(program) => Some(&program.program),
         }
     }
+}
 
-    /// The order of the callback.
-    pub fn order(&self) -> u32 {
+impl SpeedOrderable for Callback {
+    fn order(&self) -> u32 {
         match &self.0 {
-            Some(CallbackInput::WithPriority(program)) => program.order.unwrap_or(0),
-            _ => 0,
+            Some(CallbackInput::WithPriority(program)) => program.order.unwrap_or(u32::MAX),
+            _ => u32::MAX,
         }
     }
 
-    /// The priority of the callback, which is evaluated after [`order`].
-    pub fn priority(&self) -> i32 {
+    fn priority(&self) -> i32 {
         match &self.0 {
             Some(CallbackInput::WithPriority(program)) => program.priority.unwrap_or(0),
             _ => 0,
         }
     }
 
-    /// The sub-order of the callback, which is evaluated after [`order`] and [`priority`].
-    pub fn sub_order(&self) -> u32 {
+    fn speed(&self) -> u32 {
+        0
+    }
+
+    fn sub_order(&self) -> u32 {
         match &self.0 {
             Some(CallbackInput::WithPriority(program)) => program.sub_order.unwrap_or(0),
             _ => 0,
@@ -181,10 +235,33 @@ impl Callback {
 /// All possible callbacks for an effect should be defined here.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
+    pub on_after_set_status: Callback,
+    pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
     pub on_duration: Callback,
+    pub on_modify_damage: Callback,
+    pub on_residual: Callback,
+    pub on_set_status: Callback,
+    pub on_start: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
+}
+
+impl Callbacks {
+    pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
+        match event {
+            BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
+            BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
+            BattleEvent::BasePower => Some(&self.on_base_power),
+            BattleEvent::Duration => Some(&self.on_duration),
+            BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
+            BattleEvent::Residual => Some(&self.on_residual),
+            BattleEvent::SetStatus => Some(&self.on_set_status),
+            BattleEvent::Start => Some(&self.on_start),
+            BattleEvent::UseMove => Some(&self.on_use_move),
+            BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
+        }
+    }
 }
 
 /// A condition enabled by an effect.
@@ -198,7 +275,7 @@ pub struct Condition {
     /// The static duration of the condition.
     ///
     /// Can be overwritten by the [`on_duration`][`Callbacks::on_duration`] callback.
-    pub duration: u8,
+    pub duration: Option<u8>,
     /// Callbacks associated with the condition.
     pub callbacks: Callbacks,
 }

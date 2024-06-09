@@ -1,7 +1,10 @@
 use std::cmp::Ordering;
 
 use crate::{
-    battle::MonHandle,
+    battle::{
+        MonHandle,
+        SpeedOrderable,
+    },
     common::Id,
 };
 
@@ -129,7 +132,19 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn order(&self) -> u32 {
+    pub fn mon_action_mut(&mut self) -> Option<&mut MonAction> {
+        match self {
+            Self::Team(action) => Some(&mut action.mon_action),
+            Self::Switch(action) => Some(&mut action.mon_action),
+            Self::Move(action) => Some(&mut action.mon_action),
+            Self::MegaEvo(action) => Some(action),
+            _ => None,
+        }
+    }
+}
+
+impl SpeedOrderable for Action {
+    fn order(&self) -> u32 {
         match self {
             Self::Team(_) => 1,
             Self::Start => 2,
@@ -148,7 +163,7 @@ impl Action {
         }
     }
 
-    pub fn priority(&self) -> i32 {
+    fn priority(&self) -> i32 {
         match self {
             Self::Team(action) => action.priority,
             Self::Move(action) => action.priority,
@@ -156,7 +171,7 @@ impl Action {
         }
     }
 
-    pub fn speed(&self) -> u32 {
+    fn speed(&self) -> u32 {
         match self {
             Self::Team(action) => action.mon_action.speed,
             Self::Switch(action) => action.mon_action.speed,
@@ -166,20 +181,10 @@ impl Action {
         }
     }
 
-    pub fn sub_order(&self) -> u32 {
+    fn sub_order(&self) -> u32 {
         match self {
             Self::Move(action) => action.sub_priority,
             _ => 0,
-        }
-    }
-
-    pub fn mon_action_mut(&mut self) -> Option<&mut MonAction> {
-        match self {
-            Self::Team(action) => Some(&mut action.mon_action),
-            Self::Switch(action) => Some(&mut action.mon_action),
-            Self::Move(action) => Some(&mut action.mon_action),
-            Self::MegaEvo(action) => Some(action),
-            _ => None,
         }
     }
 }

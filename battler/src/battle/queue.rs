@@ -1,20 +1,17 @@
 use std::{
-    cmp::Ordering,
     collections::VecDeque,
     mem,
 };
 
 use crate::{
     battle::{
+        speed_sort,
         Action,
         Context,
         CoreBattle,
     },
     common::Error,
-    rng::{
-        rand_util,
-        PseudoRandomNumberGenerator,
-    },
+    rng::PseudoRandomNumberGenerator,
 };
 
 /// A queue of [`Action`]s to be run in a [`Battle`][`crate::battle::Battle`].
@@ -90,50 +87,17 @@ impl BattleQueue {
         self.actions.is_empty()
     }
 
-    // Selection sort implementation that shuffles tied elements.
-    fn sort_with_random_ties<T, C>(
-        items: &mut [T],
-        comp: C,
-        prng: &mut dyn PseudoRandomNumberGenerator,
-    ) where
-        T: Ord,
-        C: Fn(&T, &T) -> Ordering,
-    {
-        let mut shuffler = |items: &mut [T]| rand_util::shuffle(prng, items);
-        let mut sorted = 0;
-        while sorted + 1 < items.len() {
-            // Find all indices that are tied for the smallest elements.
-            let mut smallest_indices = Vec::from([sorted]);
-            for i in (sorted + 1)..items.len() {
-                match comp(&items[smallest_indices[0]], &items[i]) {
-                    Ordering::Greater => continue,
-                    Ordering::Less => smallest_indices = Vec::from([i]),
-                    Ordering::Equal => smallest_indices.push(i),
-                }
-            }
-            // Move smallest elements to the beginning of the list.
-            let ties = smallest_indices.len();
-            for (i, item_index) in smallest_indices.into_iter().enumerate() {
-                if item_index != sorted + i {
-                    items.swap(sorted + i, item_index);
-                }
-            }
-            // Shuffle ties.
-            if ties > 1 {
-                shuffler(&mut items[sorted..(sorted + ties)]);
-            }
-            sorted += ties;
-            //items[0..sorted] is now sorted.
-        }
-    }
-
     /// Sorts all [`Action`]s in the queue.
     pub fn sort(context: &mut Context) {
         let prng = context.battle_mut().prng.as_mut();
-        // SAFETY: PRNG and battle queue are completly disjoint.
+        // SAFETY: PRNG and battle queue are completely disjoint.
         let prng = unsafe { mem::transmute(prng) };
-        let actions = context.battle_mut().queue.actions.make_contiguous();
-        Self::sort_with_random_ties(actions, |a, b| b.cmp(a), prng);
+        context.battle_mut().queue.sort_internal(prng)
+    }
+
+    fn sort_internal(&mut self, prng: &mut dyn PseudoRandomNumberGenerator) {
+        let actions = self.actions.make_contiguous();
+        speed_sort(actions, prng);
     }
 }
 
@@ -195,7 +159,7 @@ mod queue_tests {
     fn sort(queue: &mut BattleQueue, seed: Option<u64>) {
         let mut prng = RealPseudoRandomNumberGenerator::new(seed);
         let items = queue.actions.make_contiguous();
-        BattleQueue::sort_with_random_ties(items, |a, b| b.cmp(a), &mut prng);
+        queue.sort_internal(&mut prng);
     }
 
     fn battle_queue_actions_to_string_for_test(queue: &BattleQueue) -> Vec<String> {

@@ -13,7 +13,6 @@ use crate::{
     battler_error,
     common::{
         Error,
-        Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
         WrapResultError,
@@ -122,16 +121,7 @@ impl<'battle, 'data> Context<'battle, 'data> {
         &'context mut self,
         effect_handle: &EffectHandle,
     ) -> Result<EffectContext<'context, 'battle, 'data>, Error> {
-        match effect_handle {
-            EffectHandle::ActiveMove(active_move_handle) => {
-                EffectContext::for_active_move(self.into(), *active_move_handle)
-            }
-            EffectHandle::Ability(_) => todo!("ability context not implemented"),
-            EffectHandle::Condition(condition) => {
-                EffectContext::for_condition(self.into(), &condition)
-            }
-            EffectHandle::MoveCondition(_) => todo!("move condition context not implemented"),
-        }
+        EffectContext::new(self.into(), effect_handle.clone())
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -1365,39 +1355,23 @@ where
 }
 
 impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
-    fn for_active_move(
+    fn new(
         context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-        active_move_handle: MoveHandle,
+        effect_handle: EffectHandle,
     ) -> Result<Self, Error> {
-        let active_move = context
-            .cache
-            .active_move(context.battle(), active_move_handle)?;
-        // SAFETY: Active moves currently live for two turns, since they are stored in a registry
-        // that empties after two turns. The reference can be borrowed as long as the
-        // element reference exists in the root context. We ensure that element references
-        // are borrowed for the lifetime of the root context.
-        let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
-        let effect = Effect::for_active_move(active_move);
+        let effect = CoreBattle::get_effect_by_handle(context.as_ref(), &effect_handle)?;
+        // SAFETY: Effect contains an internal reference that live as long as the battle itself. The
+        // context will always live less time than the battle itself.
+        //
+        // For active moves, they currently live for two turns, since they are stored in a registry
+        // that empties after two turns. The reference can be borrowed as long as the element
+        // reference exists in the root context. We ensure that element references are
+        // borrowed for the lifetime of the root context.
+        let effect: Effect = unsafe { mem::transmute(effect) };
         Ok(Self {
             context,
             effect,
-            effect_handle: EffectHandle::ActiveMove(active_move_handle),
-        })
-    }
-
-    fn for_condition(
-        context: MaybeOwnedMut<'context, Context<'battle, 'data>>,
-        id: &Id,
-    ) -> Result<Self, Error> {
-        let condition = context.battle.dex.conditions.get_by_id(id)?;
-        // SAFETY: Conditions live for the duration of the battle and are not moved for as long as
-        // they are allocated.
-        let condition = unsafe { mem::transmute(condition) };
-        let effect = Effect::for_condition(condition);
-        Ok(Self {
-            context,
-            effect,
-            effect_handle: EffectHandle::Condition(id.clone()),
+            effect_handle,
         })
     }
 

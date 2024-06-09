@@ -25,3 +25,7 @@ mod moves {
     mod switch_before_move_test;
     mod type_effectiveness_test;
 }
+
+mod status {
+    mod burn_test;
+}

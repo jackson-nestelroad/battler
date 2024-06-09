@@ -7,6 +7,7 @@ use crate::{
     battle::{
         ActiveMoveContext,
         ApplyingEffectContext,
+        Context,
         MonContext,
     },
     common::{
@@ -42,7 +43,7 @@ impl EffectManager {
         }
     }
 
-    pub fn evaluate_under_mon_context(
+    pub fn evaluate_under_mon(
         context: &mut MonContext,
         effect: &Effect,
         event: BattleEvent,
@@ -58,7 +59,7 @@ impl EffectManager {
         )
     }
 
-    pub fn evaluate_under_active_move_context(
+    pub fn evaluate_under_active_move(
         context: &mut ActiveMoveContext,
         effect: &Effect,
         event: BattleEvent,

@@ -103,6 +103,12 @@ pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
+pub fn fail_status(context: &mut MonContext) -> Result<(), Error> {
+    let event = log_event!("fail", ("mon", Mon::position_details(context)?));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 pub fn immune(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!("immune", ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);
@@ -267,5 +273,10 @@ pub fn debug_event_failure(
         ("effect", effect_name),
         ("error", error)
     );
+    context.battle_mut().log(log_event);
+}
+
+pub fn debug_full_event_failure(context: &mut Context, event: fxlang::BattleEvent, error: &str) {
+    let log_event = log_event!("debug", ("event", event), ("error", error));
     context.battle_mut().log(log_event);
 }

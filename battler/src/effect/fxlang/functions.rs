@@ -2,19 +2,27 @@ use std::collections::VecDeque;
 
 use crate::{
     battle::{
+        core_battle_actions,
         ActiveMoveContext,
         Context,
+        Mon,
+        MonContext,
+        MonHandle,
     },
     battler_error,
     common::{
         Error,
         WrapResultError,
     },
-    effect::fxlang::{
-        EvaluationContext,
-        Value,
+    effect::{
+        fxlang::{
+            EvaluationContext,
+            Value,
+        },
+        EffectHandle,
     },
     log::Event,
+    log_event,
     rng::rand_util,
 };
 
@@ -34,8 +42,20 @@ pub fn run_function(
                 "activate can only be called on an active move context"
             )),
         },
+        "log_status" => log_status(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
+        "damage" => {
+            let source_handle = context.source_handle();
+            let effect_handle = context.effect_handle();
+            damage(
+                context.target_context_mut()?.as_mut(),
+                source_handle,
+                effect_handle,
+                args,
+            )
+        }
+        .map(|()| None),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -70,6 +90,20 @@ fn activate_move(context: &mut ActiveMoveContext, mut args: VecDeque<Value>) -> 
     log_internal(context.as_battle_context_mut(), "activate".to_owned(), args)
 }
 
+fn log_status(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let status = args
+        .pop_front()
+        .wrap_error_with_message("missing status id")?
+        .string()?;
+    let event = log_event!(
+        "status",
+        ("mon", Mon::position_details(context)?),
+        ("status", status)
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 fn random(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let a = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let b = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
@@ -92,4 +126,18 @@ fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
         _ => return Err(battler_error!("invalid chance arguments")),
     };
     Ok(Value::Boolean(val))
+}
+
+fn damage(
+    context: &mut MonContext,
+    source_handle: Option<MonHandle>,
+    effect_handle: Option<EffectHandle>,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let amount = args
+        .pop_front()
+        .map(|val| val.integer_u16().ok())
+        .flatten()
+        .wrap_error_with_message("missing damage amount")?;
+    core_battle_actions::damage(context, amount, source_handle, effect_handle.as_ref())
 }

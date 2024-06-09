@@ -19,22 +19,32 @@ pub struct ParsedCallbacks {
 }
 
 impl ParsedCallbacks {
-    fn parse_and_save(&mut self, event: BattleEvent, callback: &Callback) -> Result<(), Error> {
-        if let Some(program) = callback.program() {
+    fn parse_and_save(&mut self, event: BattleEvent, callbacks: &Callbacks) -> Result<(), Error> {
+        if let Some(program) = callbacks
+            .event(event)
+            .map(|callback| callback.program())
+            .flatten()
+        {
             self.callbacks.insert(event, ParsedProgram::from(program)?);
         }
         Ok(())
     }
 
     /// Parses a set of input [`Callbacks`] to [`ParsedCallbacks`].
-    pub fn from(callbacks: &Callbacks) -> Result<Self, Error> {
+    pub fn from(callbacks: Option<&Callbacks>) -> Result<Self, Error> {
         let mut parsed = Self {
             callbacks: FastHashMap::new(),
         };
-        parsed.parse_and_save(BattleEvent::BasePower, &callbacks.on_base_power)?;
-        parsed.parse_and_save(BattleEvent::Duration, &callbacks.on_duration)?;
-        parsed.parse_and_save(BattleEvent::UseMove, &callbacks.on_use_move)?;
-        parsed.parse_and_save(BattleEvent::UseMoveMessage, &callbacks.on_use_move_message)?;
+        if let Some(callbacks) = callbacks {
+            parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
+            parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Start, callbacks)?;
+            parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
+        }
         Ok(parsed)
     }
 

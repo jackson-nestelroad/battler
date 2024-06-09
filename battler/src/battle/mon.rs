@@ -5,6 +5,7 @@ use std::{
     ops::Mul,
 };
 
+use ahash::HashMapExt;
 use lazy_static::lazy_static;
 use serde::{
     Deserialize,
@@ -30,12 +31,16 @@ use crate::{
     battler_error,
     common::{
         Error,
+        FastHashMap,
         Fraction,
         Id,
         Identifiable,
     },
     dex::Dex,
-    effect::EffectHandle,
+    effect::{
+        fxlang,
+        EffectHandle,
+    },
     log::{
         Event,
         EventLoggable,
@@ -210,8 +215,8 @@ pub struct Mon {
     pub item: Option<String>,
 
     pub hp: u16,
+    pub base_max_hp: u16,
     pub max_hp: u16,
-    pub status: Option<Id>,
     pub speed: u16,
     pub fainted: bool,
     pub needs_switch: bool,
@@ -233,7 +238,11 @@ pub struct Mon {
     pub last_move_target: Option<isize>,
     pub hurt_this_turn: u16,
     pub stats_raised_this_turn: bool,
-    pub status_lowered_this_turn: bool,
+    pub stats_lowered_this_turn: bool,
+
+    pub status: Option<Id>,
+    pub status_state: fxlang::EffectState,
+    pub volatile_statuses: FastHashMap<Id, fxlang::EffectState>,
 }
 
 // Construction and initialization logic.
@@ -324,8 +333,8 @@ impl Mon {
             item,
 
             hp: 0,
+            base_max_hp: 0,
             max_hp: 0,
-            status: None,
             speed: 0,
             fainted: false,
             needs_switch: false,
@@ -343,7 +352,11 @@ impl Mon {
             last_move_target: None,
             hurt_this_turn: 0,
             stats_raised_this_turn: false,
-            status_lowered_this_turn: false,
+            stats_lowered_this_turn: false,
+
+            status: None,
+            status_state: fxlang::EffectState::new(),
+            volatile_statuses: FastHashMap::new(),
         })
     }
 
@@ -550,7 +563,9 @@ impl Mon {
         self.side == mon.side
     }
 
-    pub fn active_allies<'m>(context: &'m mut MonContext) -> impl Iterator<Item = MonHandle> + 'm {
+    pub fn active_allies_and_self<'m>(
+        context: &'m mut MonContext,
+    ) -> impl Iterator<Item = MonHandle> + 'm {
         let side = context.side().index;
         context.battle().active_mon_handles_on_side(side)
     }
@@ -707,6 +722,12 @@ impl Mon {
         Ok(speed)
     }
 
+    /// Updates the speed of the Mon, called at the end of each turn.
+    pub fn update_speed(context: &mut MonContext) -> Result<(), Error> {
+        context.mon_mut().speed = Self::action_speed(context)?;
+        Ok(())
+    }
+
     fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
         self.move_slots
             .iter()
@@ -840,6 +861,9 @@ impl Mon {
         // Max HP has not yet been set (beginning of the battle).
         if mon.max_hp == 0 {
             mon.max_hp = stats.hp;
+        }
+        if mon.base_max_hp == 0 {
+            mon.base_max_hp = stats.hp;
         }
         // Transformations should keep the original "base" stats for the Mon.
         if !transform {

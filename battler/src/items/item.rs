@@ -9,6 +9,7 @@ use crate::{
         Id,
         Identifiable,
     },
+    effect::fxlang,
     items::ItemFlags,
     mons::Type,
 };
@@ -62,6 +63,10 @@ pub struct ItemData {
     pub force_forme: Option<String>,
     /// Item flags.
     pub flags: FastHashSet<ItemFlags>,
+
+    /// Dynamic battle effects.
+    #[serde(default)]
+    pub effect: fxlang::Effect,
 }
 
 /// An individual item, which can be held by a Mon in battle.

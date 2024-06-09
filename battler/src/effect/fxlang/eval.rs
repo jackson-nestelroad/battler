@@ -15,6 +15,7 @@ use crate::{
         ActiveMoveContext,
         ApplyingEffectContext,
         Context,
+        CoreBattle,
         Mon,
         MonContext,
         MonHandle,
@@ -90,6 +91,14 @@ impl<'applying_effect, 'effect, 'active_move, 'mon, 'player, 'side, 'context, 'b
         'data,
     >
 {
+    pub fn battle_context<'eval>(&'eval self) -> &'eval Context<'battle, 'data> {
+        match self {
+            Self::ActiveMove(context) => context.as_battle_context(),
+            Self::ApplyingEffect(context) => context.as_battle_context(),
+            Self::Mon(context) => context.as_battle_context(),
+        }
+    }
+
     pub fn battle_context_mut<'eval>(&'eval mut self) -> &'eval mut Context<'battle, 'data> {
         match self {
             Self::ActiveMove(context) => context.as_battle_context_mut(),
@@ -123,7 +132,25 @@ impl<'applying_effect, 'effect, 'active_move, 'mon, 'player, 'side, 'context, 'b
         }
     }
 
-    fn mon_context_mut<'eval>(
+    pub fn target_context_mut<'eval>(
+        &'eval mut self,
+    ) -> Result<MaybeOwnedMut<'eval, MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::ActiveMove(context) => Ok(context.active_target_mon_context()?.into()),
+            Self::ApplyingEffect(context) => Ok(context.target_context()?.into()),
+            Self::Mon(context) => {
+                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
+                // return a mutable reference to this context, scoped to the lifetime of self. Since
+                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
+                // Rust's borrow checker (around code that calls this method) protects us.
+                let context: &'eval mut &'eval mut MonContext<'eval, 'eval, 'eval, 'battle, 'data> =
+                    unsafe { mem::transmute(context) };
+                Ok((*context).into())
+            }
+        }
+    }
+
+    pub fn mon_context_mut<'eval>(
         &'eval mut self,
         mon_handle: MonHandle,
     ) -> Result<MaybeOwnedMut<'eval, MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
@@ -312,6 +339,22 @@ impl<'applying_effect, 'effect, 'active_move, 'mon, 'player, 'side, 'context, 'b
                 .active_move_mut(active_move_handle),
         }
     }
+
+    pub fn source_handle(&self) -> Option<MonHandle> {
+        match self {
+            Self::ActiveMove(context) => Some(context.mon_handle()),
+            Self::ApplyingEffect(context) => context.source_handle(),
+            Self::Mon(context) => None,
+        }
+    }
+
+    pub fn effect_handle(&self) -> Option<EffectHandle> {
+        match self {
+            Self::ActiveMove(context) => Some(context.effect_handle()),
+            Self::ApplyingEffect(context) => Some(context.effect_handle()),
+            Self::Mon(context) => None,
+        }
+    }
 }
 
 /// A registry of variables for an fxlang program evaluation.
@@ -399,19 +442,34 @@ where
                 ValueRef::Mon(mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
-                        "hp" => ValueRef::U16(&context.mon(*mon_handle)?.hp),
-                        "max_hp" => ValueRef::U16(&context.mon(*mon_handle)?.max_hp),
+                        "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
+                        "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
+                        "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
                         "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
+                        _ => return Err(Self::bad_member_access(member, value.value_type())),
+                    }
+                }
+                ValueRef::Effect(effect_handle) => {
+                    let context = unsafe { context.unsafely_detach_borrow() };
+                    value = match *member {
+                        "name" => ValueRef::TempString(
+                            CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                effect_handle,
+                            )?
+                            .name()
+                            .to_owned(),
+                        ),
+                        "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
                 ValueRef::ActiveMove(active_move_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
-                        "base_power" => ValueRef::U32(
-                            &context.active_move(*active_move_handle)?.data.base_power,
-                        ),
-
+                        "base_power" => {
+                            ValueRef::U32(context.active_move(*active_move_handle)?.data.base_power)
+                        }
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
@@ -592,6 +650,7 @@ enum ProgramStatementEvalResult<'program> {
 }
 
 /// The result of evaluating a [`ParsedProgram`].
+#[derive(Default)]
 pub struct ProgramEvalResult {
     pub value: Option<Value>,
     pub effect_state: Option<EffectState>,
@@ -672,14 +731,10 @@ impl Evaluator {
                 EvaluationContext::ActiveMove(context) => {
                     self.vars.set("source", Value::Mon(context.mon_handle()))?
                 }
-                EvaluationContext::ApplyingEffect(context) => self.vars.set(
-                    "source",
-                    Value::Mon(
-                        context
-                            .source_handle()
-                            .wrap_error_with_message("no source mon")?,
-                    ),
-                )?,
+                EvaluationContext::ApplyingEffect(context) => match context.source_handle() {
+                    Some(source_handle) => self.vars.set("source", Value::Mon(source_handle))?,
+                    None => (),
+                },
                 _ => {
                     return Err(Self::failed_var_initialization(
                         "source",
@@ -971,8 +1026,8 @@ impl Evaluator {
         statement: &'program tree::IfStatement,
     ) -> Result<bool, Error> {
         let condition = self.evaluate_expr(context, &statement.0)?;
-        let condition = match condition {
-            MaybeReferenceValue::Boolean(value) => value,
+        let condition = match condition.boolean() {
+            Some(value) => value,
             _ => {
                 return Err(battler_error!(
                     "if statement condition must return a boolean, got {}",
