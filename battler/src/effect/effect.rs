@@ -96,6 +96,13 @@ impl EffectHandle {
             _ => false,
         }
     }
+
+    pub fn is_move(&self) -> bool {
+        match self {
+            Self::ActiveMove(_) => true,
+            _ => false,
+        }
+    }
 }
 
 /// A battle effect.

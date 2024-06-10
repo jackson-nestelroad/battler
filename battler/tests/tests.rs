@@ -13,6 +13,7 @@ mod moves {
     mod multihit_test;
     mod no_target_test;
     mod ohko_test;
+    mod powder_test;
     mod recoil_test;
     mod self_destruct_test;
     mod singles_damage_calculation_test;
@@ -28,6 +29,7 @@ mod moves {
 
 mod status {
     mod burn_test;
+    mod paralysis_test;
     mod poison_test;
     mod toxic_test;
 }

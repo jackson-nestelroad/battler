@@ -12,15 +12,16 @@ use serde::{
     Serialize,
 };
 
-use super::CoreBattle;
 use crate::{
     battle::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         core_battle::FaintEntry,
+        core_battle_effects,
         modify_32,
         Boost,
         BoostTable,
+        CoreBattle,
         MonContext,
         MonHandle,
         MoveHandle,
@@ -680,6 +681,13 @@ impl Mon {
             }
         }
         if !unmodified {
+            if let Some(modify_event) = stat.modify_event() {
+                value = core_battle_effects::run_event_for_mon_expecting_u16(
+                    context,
+                    modify_event,
+                    value,
+                );
+            }
             // TODO: ModifyStat event (individual per stat).
             let modifier = modifier.unwrap_or(Fraction::from(1));
             value = modify_32(value as u32, modifier.convert()) as u16;

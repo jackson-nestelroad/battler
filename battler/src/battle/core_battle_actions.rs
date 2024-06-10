@@ -144,8 +144,19 @@ pub fn do_move(
     let active_move_handle = register_active_move(context, move_id, target)?;
     context.active_move_mut()?.external = external;
 
-    // TODO: Run BeforeMove checks.
-    // TODO: Abort move if requested.
+    // BeforeMove event handlers can prevent the move from being used.
+    if !core_battle_effects::run_event_for_applying_effect(
+        &mut context
+            .active_move_context()?
+            .user_applying_effect_context()?,
+        fxlang::BattleEvent::BeforeMove,
+        fxlang::VariableInput::default(),
+    ) {
+        // TODO: MoveAborted event.
+        CoreBattle::clear_active_move(context.as_battle_context_mut())?;
+        context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
+        return Ok(());
+    }
 
     // External moves do not have PP deducted.
     if !external {
@@ -158,7 +169,7 @@ pub fn do_move(
             let move_name = &context.active_move()?.data.name;
             // SAFETY: Logging does not change the active move.
             let move_name = unsafe { move_name.unsafely_detach_borrow() };
-            core_battle_logs::cant(context, "nopp", move_name)?;
+            core_battle_logs::cant(context, "nopp", Some(move_name))?;
             CoreBattle::clear_active_move(context.as_battle_context_mut())?;
             return Ok(());
         }
@@ -759,15 +770,13 @@ fn modify_damage(
         core_battle_logs::critical_hit(context)?;
     }
 
-    if let Some(modified_damage) = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+    base_damage = core_battle_effects::run_event_for_applying_effect_expecting_u32(
         &mut context
             .as_active_move_context_mut()
             .user_applying_effect_context()?,
         fxlang::BattleEvent::ModifyDamage,
         base_damage,
-    ) {
-        base_damage = modified_damage;
-    }
+    );
 
     let base_damage = base_damage as u16;
     let base_damage = base_damage.max(1);
@@ -814,6 +823,7 @@ mod direct_move_step {
         moves::{
             Accuracy,
             MoveCategory,
+            MoveFlags,
             MoveTarget,
             MultihitType,
             OhkoType,
@@ -881,9 +891,25 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            // TODO: Check for powder immunity.
+            let is_powder = context
+                .active_move()
+                .data
+                .flags
+                .contains(&MoveFlags::Powder);
+
+            let mut context = context.target_mon_context(target.handle)?;
+            let types = Mon::types(&mut context)?;
+            let immune = is_powder
+                && context
+                    .battle()
+                    .check_multiple_type_immunity_against_effect(&types, &Id::from_known("powder"));
             // TODO: TryImmunity event.
             // TODO: Prankster immunity.
+
+            if immune {
+                core_battle_logs::immune(&mut context)?;
+                target.outcome = MoveOutcome::Failed;
+            }
         }
         Ok(())
     }
@@ -1701,13 +1727,12 @@ fn check_status_immunity(context: &mut MonContext, status: &Id) -> Result<bool, 
         return Ok(true);
     }
 
-    let effect = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), status)?;
-    if let Some(condition) = effect.condition() {
-        for typ in condition.data.immune_types.clone() {
-            if Mon::has_type(context, typ)? {
-                return Ok(true);
-            }
-        }
+    let types = Mon::types(context)?;
+    if context
+        .battle_mut()
+        .check_multiple_type_immunity_against_effect(&types, status)
+    {
+        return Ok(true);
     }
 
     // TODO: Immunity event.

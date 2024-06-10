@@ -22,13 +22,13 @@ mod poison_test {
         TestBattleBuilder,
     };
 
-    fn venusaur() -> Result<TeamData, Error> {
+    fn venomoth() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
             "members": [
                 {
-                    "name": "Venusaur",
-                    "species": "Venusaur",
+                    "name": "Venomoth",
+                    "species": "Venomoth",
                     "ability": "No Ability",
                     "moves": [
                         "Poison Powder"
@@ -106,7 +106,7 @@ mod poison_test {
     #[test]
     fn poison_applies_residual_damage() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        let mut battle = make_battle(&data, venomoth().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -127,11 +127,11 @@ mod poison_test {
                 "teamsize|player:player-1|size:1",
                 "teamsize|player:player-2|size:1",
                 "start",
-                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
+                "switch|player:player-1|position:1|name:Venomoth|health:100/100|species:Venomoth|level:50|gender:M",
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Venusaur,player-1,1|name:Poison Powder|target:Charizard,player-2,1",
+                "move|mon:Venomoth,player-1,1|name:Poison Powder|target:Charizard,player-2,1",
                 "status|mon:Charizard,player-2,1|status:Poison",
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|from:status:Poison|health:121/138",
@@ -139,8 +139,8 @@ mod poison_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Venusaur,player-1,1|name:Poison Powder|target:Charizard,player-2,1",
-                "fail|mon:Venusaur,player-1,1",
+                "move|mon:Venomoth,player-1,1|name:Poison Powder|target:Charizard,player-2,1",
+                "fail|mon:Venomoth,player-1,1",
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|from:status:Poison|health:104/138",
                 "damage|mon:Charizard,player-2,1|from:status:Poison|health:76/100",
@@ -161,7 +161,7 @@ mod poison_test {
     #[test]
     fn poison_types_resist_poison() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        let mut battle = make_battle(&data, venomoth().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -178,11 +178,11 @@ mod poison_test {
                 "teamsize|player:player-1|size:1",
                 "teamsize|player:player-2|size:1",
                 "start",
-                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
+                "switch|player:player-1|position:1|name:Venomoth|health:100/100|species:Venomoth|level:50|gender:M",
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Charizard,player-2,1|name:Poison Powder|target:Venusaur,player-1,1",
+                "move|mon:Charizard,player-2,1|name:Poison Powder|target:Venomoth,player-1,1",
                 "fail|mon:Charizard,player-2,1",
                 "residual",
                 "turn|turn:2"

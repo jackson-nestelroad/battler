@@ -25,13 +25,15 @@ pub fn switch(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn cant(context: &mut MonContext, reason: &str, do_what: &str) -> Result<(), Error> {
-    let event = log_event!(
+pub fn cant(context: &mut MonContext, reason: &str, do_what: Option<&str>) -> Result<(), Error> {
+    let mut event = log_event!(
         "cant",
         ("mon", Mon::position_details(context)?),
         ("reason", reason),
-        ("what", do_what),
     );
+    if let Some(do_what) = do_what {
+        event.set("what", do_what);
+    }
     context.battle_mut().log(event);
     Ok(())
 }

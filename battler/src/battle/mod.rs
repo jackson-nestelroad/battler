@@ -10,7 +10,7 @@ mod context_cache;
 mod core_battle;
 pub mod core_battle_actions;
 mod core_battle_effects;
-mod core_battle_logs;
+pub mod core_battle_logs;
 mod field;
 mod mon;
 mod move_outcome;

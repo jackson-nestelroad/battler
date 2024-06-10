@@ -358,7 +358,7 @@ impl<
         match self {
             Self::ActiveMove(context) => Some(context.mon_handle()),
             Self::ApplyingEffect(context) => context.source_handle(),
-            Self::Mon(context) => None,
+            Self::Mon(_) => None,
         }
     }
 
@@ -366,7 +366,7 @@ impl<
         match self {
             Self::ActiveMove(context) => Some(context.effect_handle()),
             Self::ApplyingEffect(context) => Some(context.effect_handle()),
-            Self::Mon(context) => None,
+            Self::Mon(_) => None,
         }
     }
 }
@@ -466,6 +466,8 @@ where
                 ValueRef::Effect(effect_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
+                        "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
+                        "is_move" => ValueRef::Boolean(effect_handle.is_move()),
                         "name" => ValueRef::TempString(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -474,7 +476,6 @@ where
                             .name()
                             .to_owned(),
                         ),
-                        "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
@@ -741,7 +742,7 @@ impl Evaluator {
         }
 
         if let Some(this_effect_handle) = input.this_effect_handle {
-            self.vars.set("this", Value::Effect(this_effect_handle));
+            self.vars.set("this", Value::Effect(this_effect_handle))?;
         }
 
         if event.has_flag(CallbackFlag::TakesGeneralMon) {
@@ -785,6 +786,52 @@ impl Evaluator {
                 _ => {
                     return Err(Self::failed_var_initialization(
                         "source",
+                        "ActiveMoveContext or ApplyingEffectContext",
+                    ))
+                }
+            }
+        }
+        if event.has_flag(CallbackFlag::TakesUserMon) {
+            match context {
+                EvaluationContext::ActiveMove(context) => {
+                    self.vars.set("user", Value::Mon(context.mon_handle()))?
+                }
+                EvaluationContext::ApplyingEffect(context) => {
+                    // The user is the target of the effect.
+                    self.vars.set("user", Value::Mon(context.target_handle()))?
+                }
+                _ => {
+                    return Err(Self::failed_var_initialization(
+                        "target",
+                        "ActiveMoveContext or ApplyingEffectContext",
+                    ))
+                }
+            }
+        }
+        if event.has_flag(CallbackFlag::TakesSourceTargetMon) {
+            match context {
+                EvaluationContext::ActiveMove(context) => {
+                    if context.has_active_target() {
+                        self.vars.set(
+                            "target",
+                            Value::Mon(context.active_target_context()?.mon_handle()),
+                        )?
+                    }
+                }
+                EvaluationContext::ApplyingEffect(context) => {
+                    // We expect that the source and target are flipped if this flag is set.
+                    self.vars.set(
+                        "target",
+                        Value::Mon(
+                            context
+                                .source_handle()
+                                .wrap_error_with_message("applying effect is missing a user mon")?,
+                        ),
+                    )?
+                }
+                _ => {
+                    return Err(Self::failed_var_initialization(
+                        "target",
                         "ActiveMoveContext or ApplyingEffectContext",
                     ))
                 }

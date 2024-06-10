@@ -1,5 +1,6 @@
 use std::fmt;
 
+use ahash::HashMapExt;
 use serde::{
     de::Visitor,
     Deserialize,
@@ -10,7 +11,10 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
 };
 
-use crate::common::FastHashMap;
+use crate::common::{
+    FastHashMap,
+    Id,
+};
 
 /// The type of a species, which determines its weaknesses and resistances.
 #[derive(
@@ -161,15 +165,33 @@ impl<'de> Deserialize<'de> for TypeEffectiveness {
     }
 }
 
-/// A single row of a type chart.
-///
-/// The key here is the defending type.
-pub type TypeChartRow = FastHashMap<Type, TypeEffectiveness>;
-
-/// A type chart, which contains all type effectiveness information.
+/// A type table, which contains type effectiveness information for types against some other value.
 ///
 /// The key here is the attacking type.
-pub type TypeChart = FastHashMap<Type, TypeChartRow>;
+pub type TypeTable<T> = FastHashMap<Type, FastHashMap<T, TypeEffectiveness>>;
+
+/// A type chart, which contains all type effectiveness information for types against other types
+/// and effects.
+///
+/// The key here is the attacking type.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TypeChart {
+    pub types: TypeTable<Type>,
+    pub effects: TypeTable<Id>,
+}
+
+impl TypeChart {
+    pub fn new() -> Self {
+        Self {
+            types: TypeTable::new(),
+            effects: TypeTable::new(),
+        }
+    }
+
+    pub fn from_filled(types: TypeTable<Type>, effects: TypeTable<Id>) -> Self {
+        Self { types, effects }
+    }
+}
 
 #[cfg(test)]
 mod type_tests {
@@ -199,12 +221,16 @@ mod type_tests {
 #[cfg(test)]
 mod type_effectiveness_tests {
     use crate::{
-        common::test_deserialization,
+        common::{
+            test_deserialization,
+            FastHashMap,
+            Id,
+        },
         mons::{
             Type,
             TypeChart,
-            TypeChartRow,
             TypeEffectiveness,
+            TypeTable,
         },
     };
 
@@ -217,7 +243,7 @@ mod type_effectiveness_tests {
     }
 
     #[test]
-    fn deserializes_type_chart() {
+    fn deserializes_type_table() {
         let str = r#"{
             "Fire": {
                 "Fire": 0.5,
@@ -230,10 +256,10 @@ mod type_effectiveness_tests {
                 "Steel": 2
             }
         }"#;
-        let tc = serde_json::from_str::<TypeChart>(str).unwrap();
-        let expected = TypeChart::from_iter([(
+        let tc = serde_json::from_str::<TypeTable<Type>>(str).unwrap();
+        let expected = TypeTable::from_iter([(
             Type::Fire,
-            TypeChartRow::from_iter([
+            FastHashMap::from_iter([
                 (Type::Fire, TypeEffectiveness::Weak),
                 (Type::Water, TypeEffectiveness::Weak),
                 (Type::Grass, TypeEffectiveness::Strong),
@@ -244,6 +270,50 @@ mod type_effectiveness_tests {
                 (Type::Steel, TypeEffectiveness::Strong),
             ]),
         )]);
+        assert_eq!(tc, expected)
+    }
+
+    #[test]
+    fn deserializes_type_chart() {
+        let str = r#"{
+           "types": {
+                "Fire": {
+                    "Fire": 0.5,
+                    "Water": 0.5,
+                    "Grass": 2,
+                    "Ice": 2,
+                    "Bug": 2,
+                    "Rock": 0.5,
+                    "Dragon": 0.5,
+                    "Steel": 2
+                }
+            },
+            "effects": {
+                "Fire": {
+                    "brn": 0
+                }
+            }
+        }"#;
+        let tc = serde_json::from_str::<TypeChart>(str).unwrap();
+        let expected = TypeChart::from_filled(
+            TypeTable::from_iter([(
+                Type::Fire,
+                FastHashMap::from_iter([
+                    (Type::Fire, TypeEffectiveness::Weak),
+                    (Type::Water, TypeEffectiveness::Weak),
+                    (Type::Grass, TypeEffectiveness::Strong),
+                    (Type::Ice, TypeEffectiveness::Strong),
+                    (Type::Bug, TypeEffectiveness::Strong),
+                    (Type::Rock, TypeEffectiveness::Weak),
+                    (Type::Dragon, TypeEffectiveness::Weak),
+                    (Type::Steel, TypeEffectiveness::Strong),
+                ]),
+            )]),
+            TypeTable::from_iter([(
+                Type::Fire,
+                FastHashMap::from_iter([(Id::from("brn"), TypeEffectiveness::None)]),
+            )]),
+        );
         assert_eq!(tc, expected)
     }
 }

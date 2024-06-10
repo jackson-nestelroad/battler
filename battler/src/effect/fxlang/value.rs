@@ -33,6 +33,7 @@ pub enum ValueType {
     U16,
     U32,
     U64,
+    I64,
     Fraction,
     UFraction,
     String,
@@ -68,6 +69,7 @@ pub enum Value {
     U16(u16),
     U32(u32),
     U64(u64),
+    I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
     OptionalString(Option<String>),
@@ -89,6 +91,7 @@ impl Value {
             Self::U16(_) => ValueType::U16,
             Self::U32(_) => ValueType::U32,
             Self::U64(_) => ValueType::U64,
+            Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
@@ -123,6 +126,7 @@ impl Value {
             Self::U16(val) => Ok(val as u64),
             Self::U32(val) => Ok(val as u64),
             Self::U64(val) => Ok(val),
+            Self::I64(val) => Ok(val as u64),
             Self::Fraction(val) => Ok(val.floor() as u64),
             Self::UFraction(val) => Ok(val.floor() as u64),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::U64)),
@@ -179,6 +183,7 @@ pub enum MaybeReferenceValue<'eval> {
     U16(u16),
     U32(u32),
     U64(u64),
+    I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
     OptionalString(Option<String>),
@@ -201,6 +206,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::U16(_) => ValueType::U16,
             Self::U32(_) => ValueType::U32,
             Self::U64(_) => ValueType::U64,
+            Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
@@ -223,6 +229,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::U16(val) => Value::U16(*val),
             Self::U32(val) => Value::U32(*val),
             Self::U64(val) => Value::U64(*val),
+            Self::I64(val) => Value::I64(*val),
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
             Self::OptionalString(val) => Value::OptionalString(val.clone()),
@@ -300,6 +307,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::U16(val) => Self::U16(val),
             Value::U32(val) => Self::U32(val),
             Value::U64(val) => Self::U64(val),
+            Value::I64(val) => Self::I64(val),
             Value::Fraction(val) => Self::Fraction(val),
             Value::UFraction(val) => Self::UFraction(val),
             Value::OptionalString(val) => Self::OptionalString(val),
@@ -336,6 +344,7 @@ pub enum ValueRef<'eval> {
     U16(u16),
     U32(u32),
     U64(u64),
+    I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
     OptionalString(&'eval Option<String>),
@@ -359,6 +368,7 @@ impl ValueRef<'_> {
             Self::U16(_) => ValueType::U16,
             Self::U32(_) => ValueType::U32,
             Self::U64(_) => ValueType::U64,
+            Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
@@ -382,6 +392,7 @@ impl ValueRef<'_> {
             Self::U16(val) => Value::U16(*val),
             Self::U32(val) => Value::U32(*val),
             Self::U64(val) => Value::U64(*val),
+            Self::I64(val) => Value::I64(*val),
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
             Self::OptionalString(val) => Value::String((*val).clone().unwrap_or("".to_string())),
@@ -448,6 +459,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::U16(val) => Self::U16(*val),
             Value::U32(val) => Self::U32(*val),
             Value::U64(val) => Self::U64(*val),
+            Value::I64(val) => Self::I64(*val),
             Value::Fraction(val) => Self::Fraction(*val),
             Value::UFraction(val) => Self::UFraction(*val),
             Value::OptionalString(val) => Self::OptionalString(val),
@@ -503,6 +515,7 @@ pub enum ValueRefMut<'eval> {
     U16(&'eval mut u16),
     U32(&'eval mut u32),
     U64(&'eval mut u64),
+    I64(&'eval mut i64),
     Fraction(&'eval mut Fraction<i32>),
     UFraction(&'eval mut Fraction<u32>),
     OptionalString(&'eval mut Option<String>),
@@ -524,6 +537,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::U16(_) => ValueType::U16,
             Self::U32(_) => ValueType::U32,
             Self::U64(_) => ValueType::U64,
+            Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
@@ -546,6 +560,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::U16(val) => Self::U16(val),
             Value::U32(val) => Self::U32(val),
             Value::U64(val) => Self::U64(val),
+            Value::I64(val) => Self::I64(val),
             Value::Fraction(val) => Self::Fraction(val),
             Value::UFraction(val) => Self::UFraction(val),
             Value::OptionalString(val) => Self::OptionalString(val),
@@ -577,6 +592,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     U16(u16),
     U32(u32),
     U64(u64),
+    I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
     OptionalString(&'eval Option<String>),
@@ -602,6 +618,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::U16(_) => ValueType::U16,
             Self::U32(_) => ValueType::U32,
             Self::U64(_) => ValueType::U64,
+            Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
@@ -627,6 +644,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::U16(val) => Value::U16(*val),
             Self::U32(val) => Value::U32(*val),
             Self::U64(val) => Value::U64(*val),
+            Self::I64(val) => Value::I64(*val),
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
             Self::OptionalString(val) => Value::OptionalString((*val).clone()),
@@ -655,6 +673,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::U16(_) => 8,
             Self::U32(_) => 9,
             Self::U64(_) => 10,
+            Self::I64(_) => 11,
             Self::Fraction(_) => 32,
             Self::UFraction(_) => 33,
             Self::OptionalString(_) => 64,
@@ -712,6 +731,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U16(lhs), Self::U16(rhs)) => MaybeReferenceValue::U16(lhs * rhs),
             (Self::U16(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32((lhs as u32) * rhs),
             (Self::U16(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) * rhs),
+            (Self::U16(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) * rhs),
             (Self::U16(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(lhs as i32) * rhs)
             }
@@ -720,6 +740,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::U32(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32(lhs * rhs),
             (Self::U32(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) * rhs),
+            (Self::U32(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) * rhs),
             (Self::U32(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
@@ -729,12 +750,25 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 MaybeReferenceValue::UFraction(Fraction::from(lhs) * rhs)
             }
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs * rhs),
+            (Self::U64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(
+                TryInto::<i64>::try_into(lhs).wrap_error_with_message("integer overflow")? * rhs,
+            ),
             (Self::U64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) * rhs,
             ),
             (Self::U64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
+                Fraction::from(
+                    TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) * rhs,
+            ),
+            (Self::I64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
+                Fraction::from(
+                    TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) * rhs,
+            ),
+            (Self::I64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
                 Fraction::from(
                     TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) * rhs,
@@ -762,6 +796,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U16(lhs), Self::U16(rhs)) => MaybeReferenceValue::U16(lhs / rhs),
             (Self::U16(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32((lhs as u32) / rhs),
             (Self::U16(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) / rhs),
+            (Self::U16(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) / rhs),
             (Self::U16(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(lhs as i32) / rhs)
             }
@@ -771,6 +806,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U32(lhs), Self::U16(rhs)) => MaybeReferenceValue::U32(lhs / (rhs as u32)),
             (Self::U32(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32(lhs / rhs),
             (Self::U32(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) / rhs),
+            (Self::U32(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) / rhs),
             (Self::U32(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
@@ -782,12 +818,33 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U64(lhs), Self::U16(rhs)) => MaybeReferenceValue::U64(lhs / (rhs as u64)),
             (Self::U64(lhs), Self::U32(rhs)) => MaybeReferenceValue::U64(lhs / (rhs as u64)),
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs / rhs),
+            (Self::U64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(
+                TryInto::<i64>::try_into(lhs).wrap_error_with_message("integer overflow")? / rhs,
+            ),
             (Self::U64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) / rhs,
             ),
             (Self::U64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
+                Fraction::from(
+                    TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) / rhs,
+            ),
+            (Self::I64(lhs), Self::U16(rhs)) => MaybeReferenceValue::I64(lhs / (rhs as i64)),
+            (Self::I64(lhs), Self::U32(rhs)) => MaybeReferenceValue::I64(lhs / (rhs as i64)),
+            (Self::I64(lhs), Self::U64(rhs)) => MaybeReferenceValue::I64(
+                lhs / TryInto::<i64>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+            ),
+            (Self::I64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(
+                TryInto::<i64>::try_into(lhs).wrap_error_with_message("integer overflow")? / rhs,
+            ),
+            (Self::I64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
+                Fraction::from(
+                    TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) / rhs,
+            ),
+            (Self::I64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
                 Fraction::from(
                     TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) / rhs,
@@ -801,6 +858,11 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 ),
             ),
             (Self::Fraction(lhs), Self::U64(rhs)) => MaybeReferenceValue::Fraction(
+                lhs / Fraction::from(
+                    TryInto::<i32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
+            (Self::Fraction(lhs), Self::I64(rhs)) => MaybeReferenceValue::Fraction(
                 lhs / Fraction::from(
                     TryInto::<i32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
                 ),
@@ -819,6 +881,11 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 MaybeReferenceValue::UFraction(lhs / Fraction::from(rhs))
             }
             (Self::UFraction(lhs), Self::U64(rhs)) => MaybeReferenceValue::UFraction(
+                lhs / Fraction::from(
+                    TryInto::<u32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
+            (Self::UFraction(lhs), Self::I64(rhs)) => MaybeReferenceValue::UFraction(
                 lhs / Fraction::from(
                     TryInto::<u32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
                 ),
@@ -847,12 +914,23 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U16(lhs), Self::U16(rhs)) => MaybeReferenceValue::U16(lhs % rhs),
             (Self::U16(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32((lhs as u32) % rhs),
             (Self::U16(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) % rhs),
+            (Self::U16(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) % rhs),
             (Self::U32(lhs), Self::U16(rhs)) => MaybeReferenceValue::U32(lhs % (rhs as u32)),
             (Self::U32(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32(lhs % rhs),
             (Self::U32(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) % rhs),
+            (Self::U32(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) % rhs),
             (Self::U64(lhs), Self::U16(rhs)) => MaybeReferenceValue::U64(lhs % (rhs as u64)),
             (Self::U64(lhs), Self::U32(rhs)) => MaybeReferenceValue::U64(lhs % (rhs as u64)),
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs % rhs),
+            (Self::U64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(
+                TryInto::<i64>::try_into(lhs).wrap_error_with_message("integer overflow")? % rhs,
+            ),
+            (Self::I64(lhs), Self::U16(rhs)) => MaybeReferenceValue::I64(lhs % (rhs as i64)),
+            (Self::I64(lhs), Self::U32(rhs)) => MaybeReferenceValue::I64(lhs % (rhs as i64)),
+            (Self::I64(lhs), Self::U64(rhs)) => MaybeReferenceValue::I64(
+                lhs % TryInto::<i64>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+            ),
+            (Self::I64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(lhs % rhs),
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(
                     "modulo",
@@ -869,6 +947,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U16(lhs), Self::U16(rhs)) => MaybeReferenceValue::U16(lhs + rhs),
             (Self::U16(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32((lhs as u32) + rhs),
             (Self::U16(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) + rhs),
+            (Self::U16(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) + rhs),
             (Self::U16(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(lhs as i32) + rhs)
             }
@@ -877,6 +956,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::U32(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32(lhs + rhs),
             (Self::U32(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) + rhs),
+            (Self::U32(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) + rhs),
             (Self::U32(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
@@ -886,12 +966,24 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 MaybeReferenceValue::UFraction(Fraction::from(lhs) + rhs)
             }
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs + rhs),
+            (Self::U64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) + rhs),
             (Self::U64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) + rhs,
             ),
             (Self::U64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
+                Fraction::from(
+                    TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) + rhs,
+            ),
+            (Self::I64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(lhs + rhs),
+            (Self::I64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
+                Fraction::from(
+                    TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) + rhs,
+            ),
+            (Self::I64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
                 Fraction::from(
                     TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) + rhs,
@@ -921,6 +1013,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U16(lhs), Self::U16(rhs)) => MaybeReferenceValue::U16(lhs - rhs),
             (Self::U16(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32((lhs as u32) - rhs),
             (Self::U16(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) - rhs),
+            (Self::U16(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) - rhs),
             (Self::U16(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(lhs as i32) - rhs)
             }
@@ -930,6 +1023,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U32(lhs), Self::U16(rhs)) => MaybeReferenceValue::U32(lhs - (rhs as u32)),
             (Self::U32(lhs), Self::U32(rhs)) => MaybeReferenceValue::U32(lhs - rhs),
             (Self::U32(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64((lhs as u64) - rhs),
+            (Self::U32(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64((lhs as i64) - rhs),
             (Self::U32(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
@@ -941,6 +1035,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U64(lhs), Self::U16(rhs)) => MaybeReferenceValue::U64(lhs - (rhs as u64)),
             (Self::U64(lhs), Self::U32(rhs)) => MaybeReferenceValue::U64(lhs - (rhs as u64)),
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs - rhs),
+            (Self::U64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(
+                TryInto::<i64>::try_into(lhs).wrap_error_with_message("integer overflow")? - rhs,
+            ),
             (Self::U64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 Fraction::from(
                     TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
@@ -951,9 +1048,40 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
                 ) - rhs,
             ),
+            (Self::I64(lhs), Self::U16(rhs)) => MaybeReferenceValue::I64(lhs - (rhs as i64)),
+            (Self::I64(lhs), Self::U32(rhs)) => MaybeReferenceValue::I64(lhs - (rhs as i64)),
+            (Self::I64(lhs), Self::U64(rhs)) => MaybeReferenceValue::I64(lhs - (rhs as i64)),
+            (Self::I64(lhs), Self::I64(rhs)) => MaybeReferenceValue::I64(
+                lhs - TryInto::<i64>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+            ),
+            (Self::I64(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
+                Fraction::from(
+                    TryInto::<i32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) - rhs,
+            ),
+            (Self::I64(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
+                Fraction::from(
+                    TryInto::<u32>::try_into(lhs).wrap_error_with_message("integer overflow")?,
+                ) - rhs,
+            ),
             (Self::Fraction(lhs), Self::U16(rhs)) => {
                 MaybeReferenceValue::Fraction(lhs - Fraction::from(rhs as i32))
             }
+            (Self::Fraction(lhs), Self::U32(rhs)) => MaybeReferenceValue::Fraction(
+                lhs - Fraction::from(
+                    TryInto::<i32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
+            (Self::Fraction(lhs), Self::U64(rhs)) => MaybeReferenceValue::Fraction(
+                lhs - Fraction::from(
+                    TryInto::<i32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
+            (Self::Fraction(lhs), Self::I64(rhs)) => MaybeReferenceValue::Fraction(
+                lhs - Fraction::from(
+                    TryInto::<i32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
             (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(lhs - rhs),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
                 lhs - rhs
@@ -966,6 +1094,16 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::UFraction(lhs), Self::U32(rhs)) => {
                 MaybeReferenceValue::UFraction(lhs - Fraction::from(rhs))
             }
+            (Self::UFraction(lhs), Self::U64(rhs)) => MaybeReferenceValue::UFraction(
+                lhs - Fraction::from(
+                    TryInto::<u32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
+            (Self::UFraction(lhs), Self::I64(rhs)) => MaybeReferenceValue::UFraction(
+                lhs - Fraction::from(
+                    TryInto::<u32>::try_into(rhs).wrap_error_with_message("integer overflow")?,
+                ),
+            ),
             (Self::UFraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 lhs.try_convert()
                     .wrap_error_with_message("integer overflow")?
@@ -990,11 +1128,13 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U16(lhs), Self::U16(rhs)) => lhs.partial_cmp(rhs),
             (Self::U16(lhs), Self::U32(rhs)) => (&(*lhs as u32)).partial_cmp(rhs),
             (Self::U16(lhs), Self::U64(rhs)) => (&(*lhs as u64)).partial_cmp(rhs),
+            (Self::U16(lhs), Self::I64(rhs)) => (&(*lhs as i64)).partial_cmp(rhs),
             (Self::U16(lhs), Self::Fraction(rhs)) => Fraction::from(*lhs as i32).partial_cmp(rhs),
             (Self::U16(lhs), Self::UFraction(rhs)) => Fraction::from(*lhs as u32).partial_cmp(rhs),
             (Self::U32(lhs), Self::U16(rhs)) => lhs.partial_cmp(&(*rhs as u32)),
             (Self::U32(lhs), Self::U32(rhs)) => lhs.partial_cmp(rhs),
             (Self::U32(lhs), Self::U64(rhs)) => (&(*lhs as u64)).partial_cmp(rhs),
+            (Self::U32(lhs), Self::I64(rhs)) => (&(*lhs as i64)).partial_cmp(rhs),
             (Self::U32(lhs), Self::Fraction(rhs)) => {
                 if *lhs > i32::MAX as u32 {
                     Some(Ordering::Greater)
@@ -1006,6 +1146,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::U64(lhs), Self::U16(rhs)) => lhs.partial_cmp(&(*rhs as u64)),
             (Self::U64(lhs), Self::U32(rhs)) => lhs.partial_cmp(&(*rhs as u64)),
             (Self::U64(lhs), Self::U64(rhs)) => lhs.partial_cmp(rhs),
+            (Self::U64(lhs), Self::I64(rhs)) => lhs.partial_cmp(&(*rhs as u64)),
             (Self::U64(lhs), Self::Fraction(rhs)) => {
                 if *lhs > i32::MAX as u64 {
                     Some(Ordering::Greater)
@@ -1015,6 +1156,24 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::U64(lhs), Self::UFraction(rhs)) => {
                 if *lhs > u32::MAX as u64 {
+                    Some(Ordering::Greater)
+                } else {
+                    Fraction::from(*lhs as u32).partial_cmp(rhs)
+                }
+            }
+            (Self::I64(lhs), Self::U16(rhs)) => lhs.partial_cmp(&(*rhs as i64)),
+            (Self::I64(lhs), Self::U32(rhs)) => lhs.partial_cmp(&(*rhs as i64)),
+            (Self::I64(lhs), Self::U64(rhs)) => (&(*lhs as u64)).partial_cmp(rhs),
+            (Self::I64(lhs), Self::I64(rhs)) => lhs.partial_cmp(&(*rhs as i64)),
+            (Self::I64(lhs), Self::Fraction(rhs)) => {
+                if *lhs > i32::MAX as i64 {
+                    Some(Ordering::Greater)
+                } else {
+                    Fraction::from(*lhs as i32).partial_cmp(rhs)
+                }
+            }
+            (Self::I64(lhs), Self::UFraction(rhs)) => {
+                if *lhs > u32::MAX as i64 {
                     Some(Ordering::Greater)
                 } else {
                     Fraction::from(*lhs as u32).partial_cmp(rhs)
@@ -1035,6 +1194,13 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     lhs.partial_cmp(&(*rhs as i32))
                 }
             }
+            (Self::Fraction(lhs), Self::I64(rhs)) => {
+                if *rhs > i32::MAX as i64 {
+                    Some(Ordering::Less)
+                } else {
+                    lhs.partial_cmp(&(*rhs as i32))
+                }
+            }
             (Self::Fraction(lhs), Self::Fraction(rhs)) => lhs.partial_cmp(rhs),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => {
                 if lhs < &0 {
@@ -1048,6 +1214,13 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::UFraction(lhs), Self::U32(rhs)) => lhs.partial_cmp(rhs),
             (Self::UFraction(lhs), Self::U64(rhs)) => {
                 if *rhs > u32::MAX as u64 {
+                    Some(Ordering::Less)
+                } else {
+                    lhs.partial_cmp(&(*rhs as u32))
+                }
+            }
+            (Self::UFraction(lhs), Self::I64(rhs)) => {
+                if *rhs > u32::MAX as i64 {
                     Some(Ordering::Less)
                 } else {
                     lhs.partial_cmp(&(*rhs as u32))
@@ -1141,15 +1314,21 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (lhs @ Self::U16(_), rhs @ Self::U16(_))
             | (lhs @ Self::U16(_), rhs @ Self::U32(_))
             | (lhs @ Self::U16(_), rhs @ Self::U64(_))
+            | (lhs @ Self::U16(_), rhs @ Self::I64(_))
             | (lhs @ Self::U16(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::U16(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::U32(_), rhs @ Self::U32(_))
             | (lhs @ Self::U32(_), rhs @ Self::U64(_))
+            | (lhs @ Self::U32(_), rhs @ Self::I64(_))
             | (lhs @ Self::U32(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::U32(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::U64(_), rhs @ Self::U64(_))
+            | (lhs @ Self::U64(_), rhs @ Self::I64(_))
             | (lhs @ Self::U64(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::U64(_), rhs @ Self::UFraction(_))
+            | (lhs @ Self::I64(_), rhs @ Self::I64(_))
+            | (lhs @ Self::I64(_), rhs @ Self::Fraction(_))
+            | (lhs @ Self::I64(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::Fraction(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::Fraction(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::UFraction(_), rhs @ Self::UFraction(_)) => lhs.compare_ref(rhs)?.is_eq(),
@@ -1298,6 +1477,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::U16(val) => val.to_string(),
             Self::U32(val) => val.to_string(),
             Self::U64(val) => val.to_string(),
+            Self::I64(val) => val.to_string(),
             Self::Fraction(val) => val.to_string(),
             Self::UFraction(val) => val.to_string(),
             Self::OptionalString(val) => (*val).clone().unwrap_or("".to_owned()),
@@ -1323,6 +1503,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::U16(val) => Self::U16(*val),
             Value::U32(val) => Self::U32(*val),
             Value::U64(val) => Self::U64(*val),
+            Value::I64(val) => Self::I64(*val),
             Value::Fraction(val) => Self::Fraction(*val),
             Value::UFraction(val) => Self::UFraction(*val),
             Value::OptionalString(val) => Self::OptionalString(val),
@@ -1345,6 +1526,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::U16(val) => Self::U16(*val),
             MaybeReferenceValue::U32(val) => Self::U32(*val),
             MaybeReferenceValue::U64(val) => Self::U64(*val),
+            MaybeReferenceValue::I64(val) => Self::I64(*val),
             MaybeReferenceValue::Fraction(val) => Self::Fraction(*val),
             MaybeReferenceValue::UFraction(val) => Self::UFraction(*val),
             MaybeReferenceValue::OptionalString(val) => Self::OptionalString(val),
@@ -1368,6 +1550,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::U16(val) => Self::U16(*val),
             ValueRef::U32(val) => Self::U32(*val),
             ValueRef::U64(val) => Self::U64(*val),
+            ValueRef::I64(val) => Self::I64(*val),
             ValueRef::Fraction(val) => Self::Fraction(*val),
             ValueRef::UFraction(val) => Self::UFraction(*val),
             ValueRef::OptionalString(val) => Self::OptionalString(val),

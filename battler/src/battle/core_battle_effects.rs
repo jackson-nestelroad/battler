@@ -653,18 +653,40 @@ pub fn run_event_for_applying_effect_expecting_u32(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: u32,
-) -> Option<u32> {
-    run_event_for_applying_effect_internal(
+) -> u32 {
+    match run_event_for_applying_effect_internal(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::U32(input)]),
-    )?
-    .integer_u32()
-    .ok()
+    ) {
+        Some(value) => value.integer_u32().unwrap_or(input),
+        None => input,
+    }
 }
 
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects no input or output.
 pub fn run_event_for_mon(context: &mut MonContext, event: fxlang::BattleEvent) {
     run_event_for_mon_internal(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects an integer that can fit in a [`u16`].
+pub fn run_event_for_mon_expecting_u16(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    input: u16,
+) -> u16 {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::U16(input)]),
+    ) {
+        Some(value) => value.integer_u16().unwrap_or(input),
+        None => input,
+    }
 }
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for the residual effect, which occurs

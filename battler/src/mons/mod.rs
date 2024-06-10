@@ -38,6 +38,6 @@ pub use stats::{
 pub use types::{
     Type,
     TypeChart,
-    TypeChartRow,
     TypeEffectiveness,
+    TypeTable,
 };

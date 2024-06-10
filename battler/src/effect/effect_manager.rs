@@ -4,11 +4,6 @@ use std::{
 };
 
 use crate::{
-    battle::{
-        ActiveMoveContext,
-        ApplyingEffectContext,
-        MonContext,
-    },
     common::{
         Error,
         LruCache,

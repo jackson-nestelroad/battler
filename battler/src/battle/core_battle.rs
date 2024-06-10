@@ -1364,6 +1364,7 @@ impl<'d> CoreBattle<'d> {
             .map(|defense| {
                 self.dex
                     .type_chart()
+                    .types
                     .get(&offense)
                     .and_then(|row| row.get(&defense))
                     .unwrap_or(&TypeEffectiveness::Normal)
@@ -1375,6 +1376,7 @@ impl<'d> CoreBattle<'d> {
         match self
             .dex
             .type_chart()
+            .types
             .get(&offense)
             .and_then(|row| row.get(&defense))
             .unwrap_or(&TypeEffectiveness::Normal)
@@ -1383,6 +1385,26 @@ impl<'d> CoreBattle<'d> {
             TypeEffectiveness::Weak => -1,
             _ => 0,
         }
+    }
+
+    pub fn check_type_immunity_against_effect(&self, offense: Type, effect: &Id) -> bool {
+        self.dex
+            .type_chart()
+            .effects
+            .get(&offense)
+            .and_then(|row| row.get(effect))
+            .unwrap_or(&TypeEffectiveness::Normal)
+            == &TypeEffectiveness::None
+    }
+
+    pub fn check_multiple_type_immunity_against_effect(
+        &self,
+        offense: &[Type],
+        effect: &Id,
+    ) -> bool {
+        offense
+            .into_iter()
+            .any(|typ| self.check_type_immunity_against_effect(*typ, effect))
     }
 
     pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {

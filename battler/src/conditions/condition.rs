@@ -48,9 +48,6 @@ pub struct ConditionData {
     /// This relates to how "Baton Pass" affects this condition.
     #[serde(default)]
     pub no_copy: bool,
-    /// Types that are immune to this condition.
-    #[serde(default)]
-    pub immune_types: Vec<Type>,
 
     /// Dynamic battle effects.
     #[serde(default)]

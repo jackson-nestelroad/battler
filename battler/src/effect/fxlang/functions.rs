@@ -3,7 +3,9 @@ use std::collections::VecDeque;
 use crate::{
     battle::{
         core_battle_actions,
+        core_battle_logs,
         ActiveMoveContext,
+        ApplyingEffectContext,
         Context,
         Mon,
         MonContext,
@@ -44,7 +46,13 @@ pub fn run_function(
                 "activate can only be called on an active move context"
             )),
         },
-        "log_status" => log_status(context.target_context_mut()?.as_mut(), args).map(|()| None),
+        "cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
+        "log_status" => {
+            log_status(context.applying_effect_context_mut()?.as_mut(), args, false).map(|()| None)
+        }
+        "log_status_with_effect" => {
+            log_status(context.applying_effect_context_mut()?.as_mut(), args, true).map(|()| None)
+        }
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
         "damage" => {
@@ -105,16 +113,36 @@ fn activate_move(context: &mut ActiveMoveContext, mut args: VecDeque<Value>) -> 
     log_internal(context.as_battle_context_mut(), "activate".to_owned(), args)
 }
 
-fn log_status(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_cant(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let reason = args
+        .pop_front()
+        .wrap_error_with_message("missing reason")?
+        .string()?;
+    core_battle_logs::cant(context, &reason, None)
+}
+
+fn log_status(
+    context: &mut ApplyingEffectContext,
+    mut args: VecDeque<Value>,
+    log_effect: bool,
+) -> Result<(), Error> {
     let status = args
         .pop_front()
         .wrap_error_with_message("missing status id")?
         .string()?;
-    let event = log_event!(
+    let mut event = log_event!(
         "status",
-        ("mon", Mon::position_details(context)?),
+        ("mon", Mon::position_details(&context.target_context()?)?),
         ("status", status)
     );
+    if log_effect {
+        event.set("from", context.effect().full_name());
+        if context.effect_handle().is_ability() {
+            if let Some(source_context) = context.source_context()? {
+                event.set("of", Mon::position_details(&source_context)?);
+            }
+        }
+    }
     context.battle_mut().log(event);
     Ok(())
 }

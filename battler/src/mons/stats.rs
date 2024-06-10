@@ -9,7 +9,10 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
 };
 
-use crate::common::FastHashMap;
+use crate::{
+    common::FastHashMap,
+    effect::fxlang,
+};
 
 /// A single stat value.
 #[derive(
@@ -22,6 +25,7 @@ use crate::common::FastHashMap;
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+
 pub enum Stat {
     #[string = "hp"]
     HP,
@@ -44,6 +48,19 @@ pub enum Stat {
     #[string = "spe"]
     #[alias = "Speed"]
     Spe,
+}
+
+impl Stat {
+    pub fn modify_event(&self) -> Option<fxlang::BattleEvent> {
+        match self {
+            Self::HP => None,
+            Self::Atk => Some(fxlang::BattleEvent::ModifyAtk),
+            Self::Def => Some(fxlang::BattleEvent::ModifyDef),
+            Self::SpAtk => Some(fxlang::BattleEvent::ModifySpA),
+            Self::SpDef => Some(fxlang::BattleEvent::ModifySpD),
+            Self::Spe => Some(fxlang::BattleEvent::ModifySpe),
+        }
+    }
 }
 
 /// A map of values for each stat.
