@@ -13,7 +13,6 @@ use crate::{
         Identifiable,
     },
     effect::fxlang,
-    mons::Type,
 };
 
 /// The type of a condition.
