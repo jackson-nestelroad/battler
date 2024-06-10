@@ -1658,7 +1658,7 @@ pub fn try_set_status(
 
     // A Mon may only have one status set at a time.
     match (&status, &context.target().status) {
-        (Some(new_status), Some(status)) if new_status != status => {
+        (Some(_), Some(_)) => {
             if is_primary_move_effect {
                 if let Some(mut source_context) = context.source_context()? {
                     core_battle_logs::fail(&mut source_context)?;
