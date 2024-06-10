@@ -456,10 +456,18 @@ where
                 ValueRef::Mon(mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
-                        "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
-                        "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
+                        "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
                         "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
+                        "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
+                        "status" => ValueRef::TempString(
+                            context
+                                .mon(*mon_handle)?
+                                .status
+                                .as_ref()
+                                .map(|id| id.as_ref().to_owned())
+                                .unwrap_or(String::new()),
+                        ),
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
@@ -491,6 +499,9 @@ where
                         "id" => {
                             ValueRef::Str(context.active_move(*active_move_handle)?.id().as_ref())
                         }
+                        "sleep_usable" => ValueRef::Boolean(
+                            context.active_move(*active_move_handle)?.data.sleep_usable,
+                        ),
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
@@ -714,14 +725,14 @@ impl ProgramEvalResult {
 /// Holds the global state of an fxlang [`ParsedProgram`] during evaluation. Individual blocks
 /// ([`ParsedProgramBlock`]) are evaluated recursively and get their own local state.
 pub struct Evaluator {
-    line: u16,
+    statement: u16,
     vars: VariableRegistry,
 }
 
 impl Evaluator {
     pub fn new() -> Self {
         Self {
-            line: 0,
+            statement: 0,
             vars: VariableRegistry::new(),
         }
     }
@@ -916,7 +927,7 @@ impl Evaluator {
         let root_state = ProgramBlockEvalState::new();
         let value = match self
             .evaluate_program_block(&mut context, &program.block, &root_state)
-            .wrap_error_with_format(format_args!("error on line {}", self.line))?
+            .wrap_error_with_format(format_args!("error on statement {}", self.statement))?
         {
             ProgramStatementEvalResult::ReturnStatement(value) => value,
             _ => None,
@@ -962,7 +973,7 @@ impl Evaluator {
             }
             ParsedProgramBlock::Branch(blocks) => {
                 if parent_state.skip_next_block {
-                    self.line += blocks.len() as u16;
+                    self.statement += blocks.len() as u16;
                     return Ok(ProgramStatementEvalResult::Skipped);
                 }
 
@@ -1066,7 +1077,7 @@ impl Evaluator {
     where
         'program: 'eval,
     {
-        self.line += 1;
+        self.statement += 1;
         match statement {
             tree::Statement::Empty => Ok(ProgramStatementEvalResult::None),
             tree::Statement::Assignment(assignment) => {
@@ -1074,7 +1085,7 @@ impl Evaluator {
                 // SAFETY: The value produced by the expression should be some newly generated
                 // value. If it is a reference to the variable that is being assigned to, the
                 // program evaluation will error out because the variable registry has runtime
-                // borrow checking. Thus, we allow context to be borrowed again.
+                // borrow checking. Thus, we allow the context to be borrowed again.
                 let value = unsafe { mem::transmute(value) };
                 self.assign_var(context, &assignment.lhs, value)?;
                 Ok(ProgramStatementEvalResult::None)
@@ -1360,14 +1371,16 @@ impl Evaluator {
         var: &'program tree::Var,
         value: MaybeReferenceValue<'eval>,
     ) -> Result<(), Error> {
-        let value = value.to_owned();
+        let owned_value = value.to_owned();
+        drop(value);
+
         let mut runtime_var = self.create_var_mut(var)?;
         let runtime_var_ref = runtime_var.get_mut(context)?;
 
-        let value_type = value.value_type();
+        let value_type = owned_value.value_type();
         let var_type = runtime_var_ref.value_type();
 
-        match (runtime_var_ref, value) {
+        match (runtime_var_ref, owned_value) {
             // The variable can be initialized to any value.
             (ValueRefMut::Undefined(var), val @ _) => *var = val,
             (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
@@ -1375,6 +1388,15 @@ impl Evaluator {
             }
             (ValueRefMut::U16(var), Value::U16(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::U16(var), Value::U32(val)) => {
+                *var = val.try_into().wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::U16(var), Value::U64(val)) => {
+                *var = val.try_into().wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::U16(var), Value::I64(val)) => {
+                *var = val.try_into().wrap_error_with_message("integer overflow")?;
             }
             (ValueRefMut::U16(var), Value::Fraction(val)) => {
                 *var = val
@@ -1391,16 +1413,71 @@ impl Evaluator {
             (ValueRefMut::U32(var), Value::U16(val)) => {
                 *var = val as u32;
             }
+            (ValueRefMut::U32(var), Value::U32(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::U32(var), Value::U64(val)) => {
+                *var = val.try_into().wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::U32(var), Value::I64(val)) => {
+                *var = val.try_into().wrap_error_with_message("integer overflow")?;
+            }
             (ValueRefMut::U32(var), Value::Fraction(val)) => {
                 *var = val.round() as u32;
             }
             (ValueRefMut::U32(var), Value::UFraction(val)) => {
                 *var = val.round();
             }
+            (ValueRefMut::U64(var), Value::U16(val)) => {
+                *var = val as u64;
+            }
+            (ValueRefMut::U64(var), Value::U32(val)) => {
+                *var = val as u64;
+            }
+            (ValueRefMut::U64(var), Value::U64(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::U64(var), Value::I64(val)) => {
+                *var = val as u64;
+            }
+            (ValueRefMut::U64(var), Value::Fraction(val)) => {
+                *var = val.round() as u64;
+            }
+            (ValueRefMut::U64(var), Value::UFraction(val)) => {
+                *var = val.round() as u64;
+            }
+            (ValueRefMut::I64(var), Value::U16(val)) => {
+                *var = val as i64;
+            }
+            (ValueRefMut::I64(var), Value::U32(val)) => {
+                *var = val as i64;
+            }
+            (ValueRefMut::I64(var), Value::U64(val)) => {
+                *var = val.try_into().wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::I64(var), Value::I64(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::I64(var), Value::Fraction(val)) => {
+                *var = val.round() as i64;
+            }
+            (ValueRefMut::I64(var), Value::UFraction(val)) => {
+                *var = val.round() as i64;
+            }
             (ValueRefMut::Fraction(var), Value::U16(val)) => {
                 *var = Fraction::from(val as i32);
             }
             (ValueRefMut::Fraction(var), Value::U32(val)) => {
+                *var = Fraction::from(
+                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::Fraction(var), Value::U64(val)) => {
+                *var = Fraction::from(
+                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::Fraction(var), Value::I64(val)) => {
                 *var = Fraction::from(
                     TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
                 );
@@ -1418,6 +1495,16 @@ impl Evaluator {
             }
             (ValueRefMut::UFraction(var), Value::U32(val)) => {
                 *var = Fraction::from(val);
+            }
+            (ValueRefMut::UFraction(var), Value::U64(val)) => {
+                *var = Fraction::from(
+                    TryInto::<u32>::try_into(val).wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::UFraction(var), Value::I64(val)) => {
+                *var = Fraction::from(
+                    TryInto::<u32>::try_into(val).wrap_error_with_message("integer overflow")?,
+                );
             }
             (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
                 *var = val

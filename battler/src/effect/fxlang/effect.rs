@@ -25,6 +25,7 @@ pub mod CallbackFlag {
     pub const TakesUserMon: u32 = 1 << 6;
     pub const TakesSourceTargetMon: u32 = 1 << 7;
 
+    pub const ReturnsMoveResult: u32 = 1 << 28;
     pub const ReturnsNumber: u32 = 1 << 29;
     pub const ReturnsBoolean: u32 = 1 << 30;
     pub const ReturnsVoid: u32 = 1 << 31;
@@ -70,6 +71,16 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
+    MoveControllingResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsBoolean,
+    SourceMoveControllingResult = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsBoolean,
 }
 
 /// A battle event that can trigger a [`Callback`].
@@ -93,6 +104,7 @@ pub enum BattleEvent {
     SetStatus,
     Start,
     SwitchIn,
+    TryUseMove,
     UseMove,
     UseMoveMessage,
 }
@@ -119,6 +131,7 @@ impl BattleEvent {
             Self::SetStatus => CommonCallbackType::EffectResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
+            Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::UseMove => CommonCallbackType::MoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::MoveVoid as u32,
         }
@@ -148,6 +161,7 @@ impl BattleEvent {
                 self.has_flag(CallbackFlag::ReturnsNumber)
             }
             Some(ValueType::Boolean) => self.has_flag(CallbackFlag::ReturnsBoolean),
+            Some(ValueType::MoveResult) => self.has_flag(CallbackFlag::ReturnsMoveResult),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -289,6 +303,7 @@ pub struct Callbacks {
     pub on_set_status: Callback,
     pub on_start: Callback,
     pub on_switch_in: Callback,
+    pub on_try_use_move: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
 }
@@ -314,6 +329,7 @@ impl Callbacks {
             BattleEvent::SetStatus => Some(&self.on_set_status),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
+            BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
         }

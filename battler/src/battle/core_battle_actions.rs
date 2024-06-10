@@ -434,7 +434,21 @@ fn try_direct_move(
         ];
     }
 
-    // TODO: Try event for the move.
+    let move_event_result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+        context,
+        fxlang::BattleEvent::TryUseMove,
+    );
+    if !move_event_result.advance() {
+        if move_event_result.failed() {
+            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+        }
+        if move_event_result.failed() {
+            return Ok(MoveOutcome::Failed);
+        }
+        return Ok(MoveOutcome::Success);
+    }
+
     // TODO: PrepareHit event.
     // TODO: Fail the move early if needed.
 
@@ -1643,13 +1657,16 @@ pub fn try_set_status(
     }
 
     // A Mon may only have one status set at a time.
-    if context.target().status.is_some() {
-        if is_primary_move_effect {
-            if let Some(mut source_context) = context.source_context()? {
-                core_battle_logs::fail(&mut source_context)?;
+    match (&status, &context.target().status) {
+        (Some(new_status), Some(status)) if new_status != status => {
+            if is_primary_move_effect {
+                if let Some(mut source_context) = context.source_context()? {
+                    core_battle_logs::fail(&mut source_context)?;
+                }
             }
+            return Ok(false);
         }
-        return Ok(false);
+        _ => (),
     }
 
     // Cure the current status and return early.
@@ -1748,4 +1765,21 @@ pub fn clear_status(
         return Ok(false);
     }
     try_set_status(context, None, is_primary_move_effect)
+}
+
+pub fn cure_status(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(false);
+    }
+    match context.target().status.clone() {
+        None => return Ok(false),
+        Some(status) => {
+            let status_name =
+                CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
+                    .name()
+                    .to_owned();
+            core_battle_logs::cure_status(&mut context.target_context()?, &status_name)?;
+        }
+    }
+    try_set_status(context, None, false)
 }

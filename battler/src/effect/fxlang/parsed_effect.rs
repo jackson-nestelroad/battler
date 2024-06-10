@@ -50,6 +50,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
         }

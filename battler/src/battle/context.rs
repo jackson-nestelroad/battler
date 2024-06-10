@@ -1564,6 +1564,17 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         self.as_battle_context_mut().mon_context(target_handle)
     }
 
+    /// Creates a new [`ApplyingEffectContext`] for the same effect but different target, scopes to
+    /// the lifetime of this context.
+    pub fn change_target_context<'applying_effect>(
+        &'applying_effect mut self,
+        target_handle: MonHandle,
+    ) -> Result<ApplyingEffectContext<'applying_effect, 'context, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle.clone();
+        self.as_effect_context_mut()
+            .applying_effect_context(source_handle, target_handle)
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()

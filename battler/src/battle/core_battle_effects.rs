@@ -12,6 +12,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        MoveEventResult,
         SpeedOrderable,
     },
     common::{
@@ -606,6 +607,19 @@ pub fn run_active_move_event_expecting_void(
     event: fxlang::BattleEvent,
 ) {
     run_active_move_event(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
+/// Expects a [`MoveEventResult`].
+pub fn run_active_move_event_expecting_move_event_result(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+) -> MoveEventResult {
+    match run_active_move_event(context, event, fxlang::VariableInput::default()) {
+        Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
+        None => MoveEventResult::Advance,
+    }
 }
 
 /// Runs an event on the target [`Mon`]'s current status.

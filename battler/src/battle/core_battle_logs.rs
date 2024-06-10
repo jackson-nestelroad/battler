@@ -276,3 +276,13 @@ pub fn debug_full_event_failure(context: &mut Context, event: fxlang::BattleEven
     let log_event = log_event!("debug", ("event", event), ("error", error));
     context.battle_mut().log(log_event);
 }
+
+pub fn cure_status(context: &mut MonContext, status: &str) -> Result<(), Error> {
+    let event = log_event!(
+        "curestatus",
+        ("mon", Mon::position_details(context)?),
+        ("status", status)
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}

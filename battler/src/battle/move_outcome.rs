@@ -1,3 +1,8 @@
+use serde_string_enum::{
+    DeserializeLabeledStringEnum,
+    SerializeLabeledStringEnum,
+};
+
 /// The outcome of a move used on a single turn of battle.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum MoveOutcome {
@@ -62,6 +67,46 @@ impl MoveOutcomeOnTarget {
             (Self::Success, right @ _) => right,
             (left @ Self::Damage(_), Self::Failure | Self::Success) => left,
             (Self::Damage(left), Self::Damage(right)) => Self::Damage(left + right),
+        }
+    }
+}
+
+/// The result of a move event, which indicates how the rest of the move should be handled.
+#[derive(Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+pub enum MoveEventResult {
+    /// Fail the move immediately.
+    #[string = "fail"]
+    Fail,
+    /// Stop the move, but the move did not necessarily fail.
+    #[string = "stop"]
+    Stop,
+    /// Continue the move.
+    #[string = "continue"]
+    Advance,
+}
+
+impl MoveEventResult {
+    pub fn advance(&self) -> bool {
+        match self {
+            Self::Advance => true,
+            _ => false,
+        }
+    }
+
+    pub fn failed(&self) -> bool {
+        match self {
+            Self::Fail => true,
+            _ => false,
+        }
+    }
+}
+
+impl From<bool> for MoveEventResult {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Advance
+        } else {
+            Self::Fail
         }
     }
 }

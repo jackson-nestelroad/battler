@@ -90,6 +90,7 @@ pub use mon::{
     PublicMonDetails,
 };
 pub use move_outcome::{
+    MoveEventResult,
     MoveOutcome,
     MoveOutcomeOnTarget,
 };

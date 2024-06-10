@@ -38,8 +38,6 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
-        "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
-        "log" => log(context.battle_context_mut(), args).map(|()| None),
         "activate" => match context {
             EvaluationContext::ActiveMove(context) => activate_move(context, args).map(|()| None),
             _ => Err(battler_error!(
@@ -47,14 +45,10 @@ pub fn run_function(
             )),
         },
         "cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
-        "log_status" => {
-            log_status(context.applying_effect_context_mut()?.as_mut(), args, false).map(|()| None)
-        }
-        "log_status_with_effect" => {
-            log_status(context.applying_effect_context_mut()?.as_mut(), args, true).map(|()| None)
-        }
-        "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
+        "cure_status" => {
+            cure_status(context.applying_effect_context_mut()?.as_mut(), args).map(|()| None)
+        }
         "damage" => {
             let source_handle = context.source_handle();
             let effect_handle = context.effect_handle();
@@ -66,7 +60,16 @@ pub fn run_function(
             )
             .map(|()| None)
         }
+        "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
         "has_ability" => has_ability(context.battle_context_mut(), args).map(|val| Some(val)),
+        "log" => log(context.battle_context_mut(), args).map(|()| None),
+        "log_status" => {
+            log_status(context.applying_effect_context_mut()?.as_mut(), args, false).map(|()| None)
+        }
+        "log_status_with_effect" => {
+            log_status(context.applying_effect_context_mut()?.as_mut(), args, true).map(|()| None)
+        }
+        "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -199,4 +202,18 @@ fn has_ability(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value
         .wrap_error_with_message("invalid ability id")?;
     let mut context = context.mon_context(mon_handle)?;
     Mon::has_ability(&mut context, &ability).map(|val| Value::Boolean(val))
+}
+
+fn cure_status(
+    context: &mut ApplyingEffectContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let mut context = context.change_target_context(mon_handle)?;
+    core_battle_actions::cure_status(&mut context)?;
+    Ok(())
 }

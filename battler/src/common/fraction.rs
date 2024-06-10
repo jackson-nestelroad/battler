@@ -15,6 +15,11 @@ use std::{
 };
 
 use num::{
+    traits::{
+        WrappingAdd,
+        WrappingMul,
+        WrappingSub,
+    },
     FromPrimitive,
     Integer,
     PrimInt,
@@ -161,6 +166,48 @@ where
             Fraction::new(a1.mul(a_mul), lcm),
             Fraction::new(b1.mul(b_mul), lcm),
         )
+    }
+}
+
+impl<I> Fraction<I>
+where
+    I: FractionInteger + WrappingAdd,
+{
+    /// Wrapping addition.
+    pub fn wrapping_add(&self, rhs: &Self) -> Self {
+        let (lhs, rhs) = Self::normalize(&self, &rhs);
+        Self::new(
+            lhs.numerator().wrapping_add(&rhs.numerator()),
+            lhs.denominator(),
+        )
+    }
+}
+
+impl<I> Fraction<I>
+where
+    I: FractionInteger + WrappingSub,
+{
+    /// Wrapping subtraction.
+    pub fn wrapping_sub(&self, rhs: &Self) -> Self {
+        let (lhs, rhs) = Self::normalize(&self, &rhs);
+        Self::new(
+            lhs.numerator().wrapping_sub(&rhs.numerator()),
+            lhs.denominator(),
+        )
+    }
+}
+
+impl<I> Fraction<I>
+where
+    I: FractionInteger + WrappingMul,
+{
+    /// Wrapping multiplication.
+    pub fn wrapping_mul(&self, rhs: &Self) -> Self {
+        Self::new(
+            self.numerator().wrapping_mul(&rhs.numerator()),
+            self.denominator().wrapping_mul(&rhs.denominator()),
+        )
+        .simplify()
     }
 }
 
