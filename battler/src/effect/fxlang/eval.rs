@@ -1371,6 +1371,11 @@ impl Evaluator {
         var: &'program tree::Var,
         value: MaybeReferenceValue<'eval>,
     ) -> Result<(), Error> {
+        // Drop the reference as soon as possible, because holding it might block a mutable
+        // reference to what we want to assign to.
+        //
+        // For instance, assigning one property of an object to another property on the same object
+        // results in a borrow error without this drop.
         let owned_value = value.to_owned();
         drop(value);
 
