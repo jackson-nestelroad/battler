@@ -909,6 +909,20 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         )
     }
 
+    /// Creates a new [`ApplyingEffectContext`] for the target, scoped to the lifetime of this
+    /// context.
+    pub fn applying_effect_context_for_target<'active_move>(
+        &'active_move mut self,
+        target_handle: MonHandle,
+    ) -> Result<ApplyingEffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
+        let source_handle = self.mon_handle();
+        ApplyingEffectContext::new(
+            self.effect_context()?.into(),
+            Some(source_handle),
+            target_handle,
+        )
+    }
+
     /// Creates a new [`ApplyingEffectContext`] with the user set as the target, scoped to the
     /// lifetime of this context.
     ///

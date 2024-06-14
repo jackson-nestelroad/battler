@@ -25,6 +25,7 @@ use crate::{
     common::{
         Error,
         Fraction,
+        Id,
         Identifiable,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
@@ -290,7 +291,7 @@ impl<
         }
     }
 
-    fn active_move<'eval>(
+    pub fn active_move<'eval>(
         &'eval self,
         active_move_handle: MoveHandle,
     ) -> Result<&'eval Move, Error> {
@@ -501,6 +502,12 @@ where
                         }
                         "sleep_usable" => ValueRef::Boolean(
                             context.active_move(*active_move_handle)?.data.sleep_usable,
+                        ),
+                        "thaws_target" => ValueRef::Boolean(
+                            context.active_move(*active_move_handle)?.data.thaws_target,
+                        ),
+                        "type" => ValueRef::Type(
+                            context.active_move(*active_move_handle)?.data.primary_type,
                         ),
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }

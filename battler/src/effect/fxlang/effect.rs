@@ -70,6 +70,10 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsVoid,
+    SourceMoveVoid = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MoveControllingResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -96,7 +100,6 @@ pub enum BattleEvent {
     ModifyAtk,
     ModifyDamage,
     ModifyDef,
-    ModifyMove,
     ModifySpA,
     ModifySpD,
     ModifySpe,
@@ -123,7 +126,6 @@ impl BattleEvent {
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MonModifier as u32,
-            Self::ModifyMove => CommonCallbackType::MoveVoid as u32,
             Self::ModifySpA => CommonCallbackType::MonModifier as u32,
             Self::ModifySpD => CommonCallbackType::MonModifier as u32,
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
@@ -132,7 +134,7 @@ impl BattleEvent {
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
-            Self::UseMove => CommonCallbackType::MoveVoid as u32,
+            Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::MoveVoid as u32,
         }
     }
@@ -295,7 +297,6 @@ pub struct Callbacks {
     pub on_modify_atk: Callback,
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
-    pub on_modify_move: Callback,
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
@@ -321,7 +322,6 @@ impl Callbacks {
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
-            BattleEvent::ModifyMove => Some(&self.on_modify_damage),
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),

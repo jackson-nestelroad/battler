@@ -4,6 +4,7 @@ use crate::{
     battle::{
         ActiveMoveContext,
         ActiveTargetContext,
+        ApplyingEffectContext,
         Boost,
         Context,
         Mon,
@@ -277,12 +278,22 @@ pub fn debug_full_event_failure(context: &mut Context, event: fxlang::BattleEven
     context.battle_mut().log(log_event);
 }
 
-pub fn cure_status(context: &mut MonContext, status: &str) -> Result<(), Error> {
-    let event = log_event!(
+pub fn cure_status(
+    context: &mut ApplyingEffectContext,
+    status: &str,
+    include_effect: bool,
+) -> Result<(), Error> {
+    let mut event = log_event!(
         "curestatus",
-        ("mon", Mon::position_details(context)?),
+        (
+            "mon",
+            Mon::position_details(&mut context.target_context()?)?
+        ),
         ("status", status)
     );
+    if include_effect {
+        event.set("from", context.effect().name());
+    }
     context.battle_mut().log(event);
     Ok(())
 }

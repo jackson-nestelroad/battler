@@ -20,9 +20,15 @@ use crate::{
         Error,
         FastHashMap,
         Fraction,
+        Id,
+        Identifiable,
         WrapResultError,
     },
-    effect::EffectHandle,
+    effect::{
+        fxlang::EvaluationContext,
+        EffectHandle,
+    },
+    mons::Type,
     moves::MoveCategory,
 };
 
@@ -43,6 +49,7 @@ pub enum ValueType {
     ActiveMove,
     MoveCategory,
     MoveResult,
+    Type,
     List,
     Object,
 }
@@ -81,6 +88,7 @@ pub enum Value {
     ActiveMove(MoveHandle),
     MoveCategory(MoveCategory),
     MoveResult(MoveEventResult),
+    Type(Type),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
 }
@@ -104,6 +112,7 @@ impl Value {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveResult(_) => ValueType::MoveResult,
+            Self::Type(_) => ValueType::Type,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -182,6 +191,18 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveResult)),
         }
     }
+
+    /// Consumes the value into a move ID.
+    pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id, Error> {
+        match self {
+            Self::ActiveMove(val) => Ok(context.active_move(val)?.id().clone()),
+            Self::String(val) => Ok(Id::from(val)),
+            val @ _ => Err(battler_error!(
+                "value of type {} cannot be converted to a move id",
+                val.value_type()
+            )),
+        }
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.
@@ -206,6 +227,7 @@ pub enum MaybeReferenceValue<'eval> {
     ActiveMove(MoveHandle),
     MoveCategory(MoveCategory),
     MoveResult(MoveEventResult),
+    Type(Type),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
@@ -230,6 +252,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveResult(_) => ValueType::MoveResult,
+            Self::Type(_) => ValueType::Type,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -254,6 +277,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::ActiveMove(val) => Value::ActiveMove(*val),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveResult(val) => Value::MoveResult(*val),
+            Self::Type(val) => Value::Type(*val),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
@@ -333,6 +357,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveResult(val) => Self::MoveResult(val),
+            Value::Type(val) => Self::Type(val),
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -373,6 +398,7 @@ pub enum ValueRef<'eval> {
     ActiveMove(&'eval MoveHandle),
     MoveCategory(MoveCategory),
     MoveResult(MoveEventResult),
+    Type(Type),
     List(&'eval Vec<Value>),
     Object(&'eval FastHashMap<String, Value>),
 }
@@ -398,6 +424,7 @@ impl ValueRef<'_> {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveResult(_) => ValueType::MoveResult,
+            Self::Type(_) => ValueType::Type,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -423,6 +450,7 @@ impl ValueRef<'_> {
             Self::ActiveMove(val) => Value::ActiveMove(**val),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveResult(val) => Value::MoveResult(*val),
+            Self::Type(val) => Value::Type(*val),
             Self::List(val) => Value::List((*val).clone()),
             Self::Object(val) => Value::Object((*val).clone()),
         }
@@ -489,6 +517,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveResult(val) => Self::MoveResult(*val),
+            Value::Type(val) => Self::Type(*val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -546,6 +575,7 @@ pub enum ValueRefMut<'eval> {
     ActiveMove(&'eval mut MoveHandle),
     MoveCategory(&'eval mut MoveCategory),
     MoveResult(&'eval mut MoveEventResult),
+    Type(&'eval mut Type),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -569,6 +599,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveResult(_) => ValueType::MoveResult,
+            Self::Type(_) => ValueType::Type,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -593,6 +624,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveResult(val) => Self::MoveResult(val),
+            Value::Type(val) => Self::Type(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -628,6 +660,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     ActiveMove(MoveHandle),
     MoveCategory(MoveCategory),
     MoveResult(MoveEventResult),
+    Type(Type),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     Object(&'eval FastHashMap<String, MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
@@ -655,6 +688,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveResult(_) => ValueType::MoveResult,
+            Self::Type(_) => ValueType::Type,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::StoredList(_) => ValueType::List,
@@ -682,6 +716,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::ActiveMove(val) => Value::ActiveMove(*val),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveResult(val) => Value::MoveResult(*val),
+            Self::Type(val) => Value::Type(*val),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.iter()
@@ -712,6 +747,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::ActiveMove(_) => 102,
             Self::MoveCategory(_) => 103,
             Self::MoveResult(_) => 104,
+            Self::Type(_) => 105,
             Self::List(_) => 200,
             Self::Object(_) => 201,
             Self::StoredList(_) => 300,
@@ -1449,6 +1485,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::OptionalString(lhs), Self::MoveResult(rhs)) => lhs
                 .as_ref()
                 .is_some_and(|lhs| MoveEventResult::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))),
+            (Self::OptionalString(lhs), Self::Type(rhs)) => lhs
+                .as_ref()
+                .is_some_and(|lhs| Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))),
             (Self::String(lhs), Self::String(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
@@ -1458,6 +1497,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::MoveResult(rhs)) => {
                 MoveEventResult::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::Type(rhs)) => {
+                Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
             (Self::Str(lhs), Self::MoveCategory(rhs)) => {
@@ -1466,6 +1508,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Str(lhs), Self::MoveResult(rhs)) => {
                 MoveEventResult::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
             (Self::TempString(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
@@ -1473,11 +1516,15 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempString(lhs), Self::MoveResult(rhs)) => {
                 MoveEventResult::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::TempString(lhs), Self::Type(rhs)) => {
+                Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Mon(lhs), Self::Mon(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
             (Self::ActiveMove(lhs), Self::ActiveMove(rhs)) => lhs.eq(rhs),
             (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
             (Self::MoveResult(lhs), Self::MoveResult(rhs)) => lhs.eq(rhs),
+            (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::StoredList(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -1627,6 +1674,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::ActiveMove(val) => Self::ActiveMove(*val),
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveResult(val) => Self::MoveResult(*val),
+            Value::Type(val) => Self::Type(*val),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -1651,6 +1699,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::ActiveMove(val) => Self::ActiveMove(*val),
             MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
             MaybeReferenceValue::MoveResult(val) => Self::MoveResult(*val),
+            MaybeReferenceValue::Type(val) => Self::Type(*val),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
             MaybeReferenceValue::Reference(val) => Self::from(val),
@@ -1678,6 +1727,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::ActiveMove(val) => Self::ActiveMove(**val),
             ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::MoveResult(val) => Self::MoveResult(*val),
+            ValueRef::Type(val) => Self::Type(*val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::Object(val) => Self::StoredObject(val),
         }

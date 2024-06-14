@@ -1,4 +1,7 @@
-use std::collections::VecDeque;
+use std::{
+    collections::VecDeque,
+    str::FromStr,
+};
 
 use crate::{
     battle::{
@@ -26,6 +29,7 @@ use crate::{
     },
     log::Event,
     log_event,
+    moves::MoveFlags,
     rng::rand_util,
 };
 
@@ -69,6 +73,7 @@ pub fn run_function(
         "log_status_with_effect" => {
             log_status(context.applying_effect_context_mut()?.as_mut(), args, true).map(|()| None)
         }
+        "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
@@ -213,7 +218,40 @@ fn cure_status(
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
+    let log_effect = args
+        .pop_front()
+        .unwrap_or(Value::Boolean(false))
+        .boolean()
+        .wrap_error_with_message("second parameter must be a boolean")?;
     let mut context = context.change_target_context(mon_handle)?;
-    core_battle_actions::cure_status(&mut context)?;
+    core_battle_actions::cure_status(&mut context, log_effect)?;
     Ok(())
+}
+
+fn move_has_flag(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .move_id(context)
+        .wrap_error_with_message("invalid move")?;
+    let move_flag = args
+        .pop_front()
+        .wrap_error_with_message("missing move flag")?
+        .string()
+        .wrap_error_with_message("invalid move flag")?;
+    let move_flag = MoveFlags::from_str(&move_flag).wrap_error_with_message("invalid move flag")?;
+    Ok(Value::Boolean(
+        context
+            .battle_context()
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&move_id)?
+            .data
+            .flags
+            .contains(&move_flag),
+    ))
 }

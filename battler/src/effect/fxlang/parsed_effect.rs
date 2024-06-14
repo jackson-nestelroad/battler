@@ -4,6 +4,7 @@ use crate::{
     common::{
         Error,
         FastHashMap,
+        WrapResultError,
     },
     effect::fxlang::{
         BattleEvent,
@@ -24,7 +25,11 @@ impl ParsedCallbacks {
             .map(|callback| callback.program())
             .flatten()
         {
-            self.callbacks.insert(event, ParsedProgram::from(program)?);
+            self.callbacks.insert(
+                event,
+                ParsedProgram::from(program)
+                    .wrap_error_with_format(format_args!("error parsing {event} callback"))?,
+            );
         }
         Ok(())
     }
@@ -43,7 +48,6 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
-            parsed.parse_and_save(BattleEvent::ModifyMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;

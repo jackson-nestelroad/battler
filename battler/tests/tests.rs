@@ -29,6 +29,7 @@ mod moves {
 
 mod status {
     mod burn_test;
+    mod freeze_test;
     mod paralysis_test;
     mod poison_test;
     mod sleep_test;

@@ -237,7 +237,12 @@ fn use_move_internal(
         target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
     }
 
-    // TODO: ModifyType and ModifyMove/UseMove events on the Mon.
+    // TODO: ModifyType events on the Mon.
+    core_battle_effects::run_event_for_applying_effect(
+        &mut context.user_applying_effect_context()?,
+        fxlang::BattleEvent::UseMove,
+        fxlang::VariableInput::default(),
+    );
 
     // Mon fainted before this move could be made.
     if context.mon().fainted {
@@ -578,6 +583,14 @@ fn hit_targets(
     // Force switch out targets that were hit, as necessary.
     force_switch(context, targets)?;
 
+    for target in targets.iter().filter(|target| target.outcome.damage() > 0) {
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context.applying_effect_context_for_target(target.handle)?,
+            fxlang::BattleEvent::DamagingHit,
+            fxlang::VariableInput::from_iter([fxlang::Value::U16(target.outcome.damage())]),
+        );
+    }
+
     // TODO: Post-damage events.
 
     Ok(())
@@ -818,6 +831,7 @@ mod direct_move_step {
     use crate::{
         battle::{
             core_battle_actions,
+            core_battle_effects,
             core_battle_logs,
             ActiveMoveContext,
             ActiveTargetContext,
@@ -833,7 +847,10 @@ mod direct_move_step {
             Id,
             WrapResultError,
         },
-        effect::EffectHandle,
+        effect::{
+            fxlang,
+            EffectHandle,
+        },
         moves::{
             Accuracy,
             MoveCategory,
@@ -1145,6 +1162,18 @@ mod direct_move_step {
                 Some(mon_handle),
                 Some(&EffectHandle::Condition(Id::from_known("strugglerecoil"))),
             )?;
+        }
+
+        for target in targets.iter().filter(|target| target.outcome.success()) {
+            core_battle_effects::run_active_move_event_expecting_void(
+                context,
+                fxlang::BattleEvent::AfterMoveSecondary,
+            );
+            core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::AfterMoveSecondary,
+                fxlang::VariableInput::default(),
+            );
         }
 
         // TODO: Record which Mon attacked which, and how many times.
@@ -1767,7 +1796,7 @@ pub fn clear_status(
     try_set_status(context, None, is_primary_move_effect)
 }
 
-pub fn cure_status(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Result<bool, Error> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -1778,7 +1807,7 @@ pub fn cure_status(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
                 CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
                     .name()
                     .to_owned();
-            core_battle_logs::cure_status(&mut context.target_context()?, &status_name)?;
+            core_battle_logs::cure_status(context, &status_name, log_effect)?;
         }
     }
     try_set_status(context, None, false)
