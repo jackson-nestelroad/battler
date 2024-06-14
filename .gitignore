@@ -1,7 +1,6 @@
 Cargo.lock
 
 target/
-battle-sim/data
 /.ignore
 /dev
 

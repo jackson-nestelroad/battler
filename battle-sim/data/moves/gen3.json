@@ -1,0 +1,1138 @@
+{
+  "fakeout": {
+    "name": "Fake Out",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 40,
+    "priority": 3,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "uproar": {
+    "name": "Uproar",
+    "category": "Special",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "RandomNormal",
+    "flags": [
+      "BypassSubstitute",
+      "FailInstruct",
+      "Metronome",
+      "Mirror",
+      "NoSleepTalk",
+      "Protect",
+      "Sound"
+    ]
+  },
+  "stockpile": {
+    "name": "Stockpile",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "spitup": {
+    "name": "Spit Up",
+    "category": "Special",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Protect"]
+  },
+  "swallow": {
+    "name": "Swallow",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Heal", "Metronome", "Snatch"]
+  },
+  "heatwave": {
+    "name": "Heat Wave",
+    "category": "Special",
+    "primary_type": "Fire",
+    "pp": 10,
+    "accuracy": 90,
+    "base_power": 95,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+  },
+  "hail": {
+    "name": "Hail",
+    "category": "Status",
+    "primary_type": "Ice",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "torment": {
+    "name": "Torment",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 15,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable"
+    ]
+  },
+  "flatter": {
+    "name": "Flatter",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 15,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "willowisp": {
+    "name": "Will-O-Wisp",
+    "category": "Status",
+    "primary_type": "Fire",
+    "pp": 15,
+    "accuracy": 85,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "status": "brn"
+    }
+  },
+  "memento": {
+    "name": "Memento",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 10,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "self_destruct": "ifhit",
+    "hit_effect": {
+      "boosts": {
+        "atk": -2,
+        "spa": -2
+      }
+    }
+  },
+  "facade": {
+    "name": "Facade",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 70,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "focuspunch": {
+    "name": "Focus Punch",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 150,
+    "priority": -3,
+    "target": "Normal",
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailInstruct",
+      "FailMeFirst",
+      "NoAssist",
+      "NoSleepTalk",
+      "Protect",
+      "Punch"
+    ]
+  },
+  "smellingsalts": {
+    "name": "Smelling Salts",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 70,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "followme": {
+    "name": "Follow Me",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "priority": 2,
+    "target": "User",
+    "flags": ["FailCopycat", "NoAssist"]
+  },
+  "naturepower": {
+    "name": "Nature Power",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": [
+      "FailCopycat",
+      "FailEncore",
+      "FailInstruct",
+      "FailMimic",
+      "NoAssist",
+      "NoSleepTalk"
+    ]
+  },
+  "charge": {
+    "name": "Charge",
+    "category": "Status",
+    "primary_type": "Electric",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "taunt": {
+    "name": "Taunt",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable"
+    ]
+  },
+  "helpinghand": {
+    "name": "Helping Hand",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "priority": 5,
+    "target": "AdjacentAlly",
+    "flags": ["BypassSubstitute", "FailCopycat", "NoAssist"]
+  },
+  "trick": {
+    "name": "Trick",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 10,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["FailCopycat", "Mirror", "NoAssist", "Protect"]
+  },
+  "roleplay": {
+    "name": "Role Play",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["BypassSubstitute", "Metronome"]
+  },
+  "wish": {
+    "name": "Wish",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Heal", "Metronome", "Snatch"]
+  },
+  "assist": {
+    "name": "Assist",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": [
+      "FailCopycat",
+      "FailEncore",
+      "FailInstruct",
+      "FailMimic",
+      "NoAssist",
+      "NoSleepTalk"
+    ]
+  },
+  "ingrain": {
+    "name": "Ingrain",
+    "category": "Status",
+    "primary_type": "Grass",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "superpower": {
+    "name": "Superpower",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 120,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "magiccoat": {
+    "name": "Magic Coat",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 15,
+    "accuracy": "exempt",
+    "priority": 4,
+    "target": "User",
+    "flags": ["Metronome"]
+  },
+  "recycle": {
+    "name": "Recycle",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "revenge": {
+    "name": "Revenge",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 60,
+    "priority": -4,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "brickbreak": {
+    "name": "Brick Break",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 75,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "yawn": {
+    "name": "Yawn",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable", "SleepInducing"]
+  },
+  "knockoff": {
+    "name": "Knock Off",
+    "category": "Physical",
+    "primary_type": "Dark",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 65,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "endeavor": {
+    "name": "Endeavor",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "NoParentalBond", "Protect"]
+  },
+  "eruption": {
+    "name": "Eruption",
+    "category": "Special",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 150,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "skillswap": {
+    "name": "Skill Swap",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect"]
+  },
+  "imprison": {
+    "name": "Imprison",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["BypassSubstitute", "Metronome", "MustPressure", "Snatch"]
+  },
+  "refresh": {
+    "name": "Refresh",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "grudge": {
+    "name": "Grudge",
+    "category": "Status",
+    "primary_type": "Ghost",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["BypassSubstitute", "Metronome"]
+  },
+  "snatch": {
+    "name": "Snatch",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 10,
+    "accuracy": "exempt",
+    "priority": 4,
+    "target": "User",
+    "flags": ["BypassSubstitute", "FailCopycat", "MustPressure", "NoAssist"]
+  },
+  "secretpower": {
+    "name": "Secret Power",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 70,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "dive": {
+    "name": "Dive",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 80,
+    "target": "Normal",
+    "flags": [
+      "Charge",
+      "Contact",
+      "FailInstruct",
+      "Metronome",
+      "Mirror",
+      "NoAssist",
+      "NoSleepTalk",
+      "Protect"
+    ]
+  },
+  "armthrust": {
+    "name": "Arm Thrust",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 15,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "multihit": [2, 5]
+  },
+  "camouflage": {
+    "name": "Camouflage",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "tailglow": {
+    "name": "Tail Glow",
+    "category": "Status",
+    "primary_type": "Bug",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "lusterpurge": {
+    "name": "Luster Purge",
+    "category": "Special",
+    "primary_type": "Psychic",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 95,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "mistball": {
+    "name": "Mist Ball",
+    "category": "Special",
+    "primary_type": "Psychic",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 95,
+    "target": "Normal",
+    "flags": ["Bullet", "Metronome", "Mirror", "Protect"]
+  },
+  "featherdance": {
+    "name": "Feather Dance",
+    "category": "Status",
+    "primary_type": "Flying",
+    "pp": 15,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Dance", "Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "teeterdance": {
+    "name": "Teeter Dance",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "AllAdjacent",
+    "flags": ["Dance", "Metronome", "Mirror", "Protect"]
+  },
+  "blazekick": {
+    "name": "Blaze Kick",
+    "category": "Physical",
+    "primary_type": "Fire",
+    "pp": 10,
+    "accuracy": 90,
+    "base_power": 85,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "crit_ratio": 2
+  },
+  "mudsport": {
+    "name": "Mud Sport",
+    "category": "Status",
+    "primary_type": "Ground",
+    "pp": 15,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "iceball": {
+    "name": "Ice Ball",
+    "category": "Physical",
+    "primary_type": "Ice",
+    "pp": 20,
+    "accuracy": 90,
+    "base_power": 30,
+    "target": "Normal",
+    "flags": [
+      "Bullet",
+      "Contact",
+      "FailInstruct",
+      "Metronome",
+      "Mirror",
+      "NoParentalBond",
+      "Protect"
+    ]
+  },
+  "needlearm": {
+    "name": "Needle Arm",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 60,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "slackoff": {
+    "name": "Slack Off",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Heal", "Metronome", "Snatch"]
+  },
+  "hypervoice": {
+    "name": "Hyper Voice",
+    "category": "Special",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "AllAdjacentFoes",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect", "Sound"]
+  },
+  "poisonfang": {
+    "name": "Poison Fang",
+    "category": "Physical",
+    "primary_type": "Poison",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 50,
+    "target": "Normal",
+    "flags": ["Bite", "Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "crushclaw": {
+    "name": "Crush Claw",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 95,
+    "base_power": 75,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "blastburn": {
+    "name": "Blast Burn",
+    "category": "Special",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": 90,
+    "base_power": 150,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Recharge"]
+  },
+  "hydrocannon": {
+    "name": "Hydro Cannon",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": 90,
+    "base_power": 150,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Recharge"]
+  },
+  "meteormash": {
+    "name": "Meteor Mash",
+    "category": "Physical",
+    "primary_type": "Steel",
+    "pp": 10,
+    "accuracy": 90,
+    "base_power": 90,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+  },
+  "astonish": {
+    "name": "Astonish",
+    "category": "Physical",
+    "primary_type": "Ghost",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 30,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "weatherball": {
+    "name": "Weather Ball",
+    "category": "Special",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 50,
+    "target": "Normal",
+    "flags": ["Bullet", "Metronome", "Mirror", "Protect"]
+  },
+  "aromatherapy": {
+    "name": "Aromatherapy",
+    "category": "Status",
+    "primary_type": "Grass",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AllyTeam",
+    "flags": ["Distance", "Metronome", "Snatch"]
+  },
+  "faketears": {
+    "name": "Fake Tears",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "spd": -2
+      }
+    }
+  },
+  "aircutter": {
+    "name": "Air Cutter",
+    "category": "Special",
+    "primary_type": "Flying",
+    "pp": 25,
+    "accuracy": 95,
+    "base_power": 60,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect", "Slicing", "Wind"],
+    "crit_ratio": 2
+  },
+  "overheat": {
+    "name": "Overheat",
+    "category": "Special",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": 90,
+    "base_power": 130,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "odorsleuth": {
+    "name": "Odor Sleuth",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 40,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable"
+    ]
+  },
+  "rocktomb": {
+    "name": "Rock Tomb",
+    "category": "Physical",
+    "primary_type": "Rock",
+    "pp": 15,
+    "accuracy": 95,
+    "base_power": 60,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "silverwind": {
+    "name": "Silver Wind",
+    "category": "Special",
+    "primary_type": "Bug",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 60,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "metalsound": {
+    "name": "Metal Sound",
+    "category": "Status",
+    "primary_type": "Steel",
+    "pp": 40,
+    "accuracy": 85,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable",
+      "Sound"
+    ]
+  },
+  "grasswhistle": {
+    "name": "Grass Whistle",
+    "category": "Status",
+    "primary_type": "Grass",
+    "pp": 15,
+    "accuracy": 55,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable",
+      "SleepInducing",
+      "Sound"
+    ]
+  },
+  "tickle": {
+    "name": "Tickle",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "cosmicpower": {
+    "name": "Cosmic Power",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "waterspout": {
+    "name": "Water Spout",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 150,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "signalbeam": {
+    "name": "Signal Beam",
+    "category": "Special",
+    "primary_type": "Bug",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 75,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "shadowpunch": {
+    "name": "Shadow Punch",
+    "category": "Physical",
+    "primary_type": "Ghost",
+    "pp": 20,
+    "accuracy": "exempt",
+    "base_power": 60,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+  },
+  "extrasensory": {
+    "name": "Extrasensory",
+    "category": "Special",
+    "primary_type": "Psychic",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 80,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "skyuppercut": {
+    "name": "Sky Uppercut",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 15,
+    "accuracy": 90,
+    "base_power": 85,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+  },
+  "sandtomb": {
+    "name": "Sand Tomb",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "pp": 15,
+    "accuracy": 85,
+    "base_power": 35,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "sheercold": {
+    "name": "Sheer Cold",
+    "category": "Special",
+    "primary_type": "Ice",
+    "pp": 5,
+    "accuracy": 30,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "OHKO", "Protect"],
+    "ohko_type": "Ice"
+  },
+  "muddywater": {
+    "name": "Muddy Water",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 10,
+    "accuracy": 85,
+    "base_power": 90,
+    "target": "AllAdjacentFoes",
+    "flags": ["AccuracyLowering", "Metronome", "Mirror", "Protect"]
+  },
+  "bulletseed": {
+    "name": "Bullet Seed",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 30,
+    "accuracy": 100,
+    "base_power": 25,
+    "target": "Normal",
+    "flags": ["Bullet", "Metronome", "Mirror", "Protect"],
+    "multihit": [2, 5]
+  },
+  "aerialace": {
+    "name": "Aerial Ace",
+    "category": "Physical",
+    "primary_type": "Flying",
+    "pp": 20,
+    "accuracy": "exempt",
+    "base_power": 60,
+    "target": "Any",
+    "flags": [
+      "Contact",
+      "Distance",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Slicing"
+    ]
+  },
+  "iciclespear": {
+    "name": "Icicle Spear",
+    "category": "Physical",
+    "primary_type": "Ice",
+    "pp": 30,
+    "accuracy": 100,
+    "base_power": 25,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "multihit": [2, 5]
+  },
+  "irondefense": {
+    "name": "Iron Defense",
+    "category": "Status",
+    "primary_type": "Steel",
+    "pp": 15,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "def": 2
+      }
+    }
+  },
+  "block": {
+    "name": "Block",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Reflectable"]
+  },
+  "howl": {
+    "name": "Howl",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 40,
+    "accuracy": "exempt",
+    "target": "Allies",
+    "flags": ["Metronome", "Snatch", "Sound"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1
+      }
+    }
+  },
+  "dragonclaw": {
+    "name": "Dragon Claw",
+    "category": "Physical",
+    "primary_type": "Dragon",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 80,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "frenzyplant": {
+    "name": "Frenzy Plant",
+    "category": "Special",
+    "primary_type": "Grass",
+    "pp": 5,
+    "accuracy": 90,
+    "base_power": 150,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Recharge"]
+  },
+  "bulkup": {
+    "name": "Bulk Up",
+    "category": "Status",
+    "primary_type": "Fighting",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"]
+  },
+  "bounce": {
+    "name": "Bounce",
+    "category": "Physical",
+    "primary_type": "Flying",
+    "pp": 5,
+    "accuracy": 85,
+    "base_power": 85,
+    "target": "Any",
+    "flags": [
+      "Charge",
+      "Contact",
+      "Distance",
+      "FailInstruct",
+      "Gravity",
+      "Metronome",
+      "Mirror",
+      "NoAssist",
+      "NoSleepTalk",
+      "Protect"
+    ]
+  },
+  "mudshot": {
+    "name": "Mud Shot",
+    "category": "Special",
+    "primary_type": "Ground",
+    "pp": 15,
+    "accuracy": 95,
+    "base_power": 55,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "poisontail": {
+    "name": "Poison Tail",
+    "category": "Physical",
+    "primary_type": "Poison",
+    "pp": 25,
+    "accuracy": 100,
+    "base_power": 50,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "crit_ratio": 2
+  },
+  "covet": {
+    "name": "Covet",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 25,
+    "accuracy": 100,
+    "base_power": 60,
+    "target": "Normal",
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "Mirror",
+      "NoAssist",
+      "Protect"
+    ]
+  },
+  "volttackle": {
+    "name": "Volt Tackle",
+    "category": "Physical",
+    "primary_type": "Electric",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 120,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "recoil_percent": "33/100"
+  },
+  "magicalleaf": {
+    "name": "Magical Leaf",
+    "category": "Special",
+    "primary_type": "Grass",
+    "pp": 20,
+    "accuracy": "exempt",
+    "base_power": 60,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "watersport": {
+    "name": "Water Sport",
+    "category": "Status",
+    "primary_type": "Water",
+    "pp": 15,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "calmmind": {
+    "name": "Calm Mind",
+    "category": "Status",
+    "primary_type": "Psychic",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Metronome", "Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "spa": 1,
+        "spd": 1
+      }
+    }
+  },
+  "leafblade": {
+    "name": "Leaf Blade",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Slicing"],
+    "crit_ratio": 2
+  },
+  "dragondance": {
+    "name": "Dragon Dance",
+    "category": "Status",
+    "primary_type": "Dragon",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Dance", "Metronome", "Snatch"]
+  },
+  "rockblast": {
+    "name": "Rock Blast",
+    "category": "Physical",
+    "primary_type": "Rock",
+    "pp": 10,
+    "accuracy": 90,
+    "base_power": 25,
+    "target": "Normal",
+    "flags": ["Bullet", "Metronome", "Mirror", "Protect"],
+    "multihit": [2, 5]
+  },
+  "shockwave": {
+    "name": "Shock Wave",
+    "category": "Special",
+    "primary_type": "Electric",
+    "pp": 20,
+    "accuracy": "exempt",
+    "base_power": 60,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "waterpulse": {
+    "name": "Water Pulse",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 60,
+    "target": "Any",
+    "flags": ["Distance", "Metronome", "Mirror", "Protect", "Pulse"]
+  },
+  "doomdesire": {
+    "name": "Doom Desire",
+    "category": "Special",
+    "primary_type": "Steel",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 140,
+    "target": "Normal",
+    "flags": ["Future", "Metronome"]
+  },
+  "psychoboost": {
+    "name": "Psycho Boost",
+    "category": "Special",
+    "primary_type": "Psychic",
+    "pp": 5,
+    "accuracy": 90,
+    "base_power": 140,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  }
+}

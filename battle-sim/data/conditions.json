@@ -1,0 +1,174 @@
+{
+  "drain": {
+    "name": "Drain",
+    "condition_type": "Built-in"
+  },
+  "recoil": {
+    "name": "Recoil",
+    "condition_type": "Built-in"
+  },
+  "strugglerecoil": {
+    "name": "Struggle Recoil",
+    "condition_type": "Built-in"
+  },
+  "brn": {
+    "name": "Burn",
+    "condition_type": "Status",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $effect.is_ability:",
+          ["log_status_with_effect: $this.name"],
+          "else:",
+          ["log_status: $this.name"]
+        ],
+        "on_residual": {
+          "order": 10,
+          "program": ["damage: expr($target.base_max_hp / 16)"]
+        },
+        "on_modify_damage": {
+          "order": 1,
+          "program": [
+            "if $move.category == physical and !func_call(has_ability: $target guts) and $move.id != facade:",
+            ["return expr($damage / 2)"]
+          ]
+        }
+      }
+    }
+  },
+  "par": {
+    "name": "Paralysis",
+    "condition_type": "Status",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $effect.is_ability:",
+          ["log_status_with_effect: $this.name"],
+          "else:",
+          ["log_status: $this.name"]
+        ],
+        "on_before_move": {
+          "priority": 1,
+          "program": [
+            "if func_call(chance: 1 4):",
+            ["cant: $this.name", "return false"]
+          ]
+        },
+        "on_modify_spe": [
+          "if !func_call(has_ability: $mon quickfeet):",
+          ["return expr($spe / 2)"]
+        ]
+      }
+    }
+  },
+  "slp": {
+    "name": "Sleep",
+    "condition_type": "Status",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $effect.is_ability or $effect.is_move:",
+          ["log_status_with_effect: $this.name"],
+          "else:",
+          ["log_status: $this.name"],
+          "# 1-3 turns.",
+          "$effect_state.total_time = func_call(random: 2 5)",
+          "$effect_state.time = $effect_state.total_time"
+        ],
+        "on_before_move": {
+          "priority": 10,
+          "program": [
+            "if func_call(has_ability: $user earlybird):",
+            ["$effect_state.time = $effect_state.time - 1"],
+            "$effect_state.time = $effect_state.time - 1",
+            "if $effect_state.time <= 0:",
+            ["cure_status: $user", "return"],
+            "cant: $this.name",
+            "if $move.sleep_usable:",
+            ["return"],
+            "return false"
+          ]
+        }
+      }
+    }
+  },
+  "frz": {
+    "name": "Freeze",
+    "condition_type": "Status",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $effect.is_ability:",
+          ["log_status_with_effect: $this.name"],
+          "else:",
+          ["log_status: $this.name"]
+        ],
+        "on_before_move": {
+          "priority": 10,
+          "program": [
+            "if func_call(move_has_flag: $move thawing):",
+            ["return"],
+            "if func_call(chance: 1 5):",
+            ["cure_status: $user", "return"],
+            "cant: $this.name",
+            ["return false"]
+          ]
+        },
+        "on_use_move": [
+          "if func_call(move_has_flag: $move thawing):",
+          ["cure_status: $user true"]
+        ],
+        "on_after_move_secondary_effects": [
+          "if $move.thaws_target:",
+          ["cure_status: $target"]
+        ],
+        "on_damaging_hit": [
+          "if $move.type == fire and $move.category != status:",
+          ["cure_status: $target"]
+        ]
+      }
+    }
+  },
+  "psn": {
+    "name": "Poison",
+    "condition_type": "Status",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $effect.is_ability:",
+          ["log_status_with_effect: $this.name"],
+          "else:",
+          ["log_status: $this.name"]
+        ],
+        "on_residual": {
+          "order": 9,
+          "program": ["damage: expr($target.base_max_hp / 8)"]
+        }
+      }
+    }
+  },
+  "tox": {
+    "name": "Bad Poison",
+    "condition_type": "Status",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "$effect_state.stage = 0",
+          "if $effect.is_ability:",
+          ["log_status_with_effect: $this.name"],
+          "else:",
+          ["log_status: $this.name"]
+        ],
+        "on_switch_in": ["$effect_state.stage = 0"],
+        "on_residual": {
+          "order": 9,
+          "program": [
+            "if $effect_state.stage < 15:",
+            ["$effect_state.stage = $effect_state.stage + 1"],
+            "damage: expr($target.base_max_hp / 16 * $effect_state.stage)"
+          ]
+        }
+      }
+    }
+  }
+}

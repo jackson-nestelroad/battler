@@ -1,0 +1,672 @@
+{
+  "flyingpress": {
+    "name": "Flying Press",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 10,
+    "accuracy": 95,
+    "base_power": 100,
+    "target": "Any",
+    "flags": [
+      "Contact",
+      "Distance",
+      "Gravity",
+      "Metronome",
+      "Mirror",
+      "Protect"
+    ]
+  },
+  "matblock": {
+    "name": "Mat Block",
+    "category": "Status",
+    "primary_type": "Fighting",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "AllySide",
+    "flags": ["FailCopycat", "NoAssist", "Snatch"],
+
+    "stalling_move": true
+  },
+  "belch": {
+    "name": "Belch",
+    "category": "Special",
+    "primary_type": "Poison",
+    "pp": 10,
+    "accuracy": 90,
+    "base_power": 120,
+    "target": "Normal",
+    "flags": [
+      "FailCopycat",
+      "FailInstruct",
+      "FailMeFirst",
+      "FailMimic",
+      "NoAssist",
+      "NoSleepTalk",
+      "Protect"
+    ]
+  },
+  "rototiller": {
+    "name": "Rototiller",
+    "category": "Status",
+    "primary_type": "Ground",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Distance", "Metronome"]
+  },
+  "stickyweb": {
+    "name": "Sticky Web",
+    "category": "Status",
+    "primary_type": "Bug",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "FoeSide",
+    "flags": ["Metronome", "Reflectable"]
+  },
+  "fellstinger": {
+    "name": "Fell Stinger",
+    "category": "Physical",
+    "primary_type": "Bug",
+    "pp": 25,
+    "accuracy": 100,
+    "base_power": 50,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "phantomforce": {
+    "name": "Phantom Force",
+    "category": "Physical",
+    "primary_type": "Ghost",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "Normal",
+    "flags": [
+      "Charge",
+      "Contact",
+      "FailInstruct",
+      "Metronome",
+      "Mirror",
+      "NoAssist",
+      "NoSleepTalk"
+    ],
+    "breaks_protect": true
+  },
+  "trickortreat": {
+    "name": "Trick-or-Treat",
+    "category": "Status",
+    "primary_type": "Ghost",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "nobleroar": {
+    "name": "Noble Roar",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 30,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable",
+      "Sound"
+    ]
+  },
+  "iondeluge": {
+    "name": "Ion Deluge",
+    "category": "Status",
+    "primary_type": "Electric",
+    "pp": 25,
+    "accuracy": "exempt",
+    "priority": 1,
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "paraboliccharge": {
+    "name": "Parabolic Charge",
+    "category": "Special",
+    "primary_type": "Electric",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 65,
+    "target": "AllAdjacent",
+    "flags": ["Heal", "Metronome", "Mirror", "Protect"],
+    "drain_percent": "1/2"
+  },
+  "forestscurse": {
+    "name": "Forest's Curse",
+    "category": "Status",
+    "primary_type": "Grass",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "petalblizzard": {
+    "name": "Petal Blizzard",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "AllAdjacent",
+    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+  },
+  "freezedry": {
+    "name": "Freeze-Dry",
+    "category": "Special",
+    "primary_type": "Ice",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 70,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "disarmingvoice": {
+    "name": "Disarming Voice",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "pp": 15,
+    "accuracy": "exempt",
+    "base_power": 40,
+    "target": "AllAdjacentFoes",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect", "Sound"]
+  },
+  "partingshot": {
+    "name": "Parting Shot",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Protect",
+      "Reflectable",
+      "Sound"
+    ]
+  },
+  "topsyturvy": {
+    "name": "Topsy-Turvy",
+    "category": "Status",
+    "primary_type": "Dark",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "drainingkiss": {
+    "name": "Draining Kiss",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 50,
+    "target": "Normal",
+    "flags": ["Contact", "Heal", "Metronome", "Mirror", "Protect"],
+    "drain_percent": "3/4"
+  },
+  "craftyshield": {
+    "name": "Crafty Shield",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": "exempt",
+    "priority": 3,
+    "target": "AllySide",
+    "flags": []
+  },
+  "flowershield": {
+    "name": "Flower Shield",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Distance", "Metronome"]
+  },
+  "grassyterrain": {
+    "name": "Grassy Terrain",
+    "category": "Status",
+    "primary_type": "Grass",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "mistyterrain": {
+    "name": "Misty Terrain",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "electrify": {
+    "name": "Electrify",
+    "category": "Status",
+    "primary_type": "Electric",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "playrough": {
+    "name": "Play Rough",
+    "category": "Physical",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": 90,
+    "base_power": 90,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "fairywind": {
+    "name": "Fairy Wind",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "pp": 30,
+    "accuracy": 100,
+    "base_power": 40,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+  },
+  "moonblast": {
+    "name": "Moonblast",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "pp": 15,
+    "accuracy": 100,
+    "base_power": 95,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "boomburst": {
+    "name": "Boomburst",
+    "category": "Special",
+    "primary_type": "Normal",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 140,
+    "target": "AllAdjacent",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect", "Sound"]
+  },
+  "fairylock": {
+    "name": "Fairy Lock",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror"]
+  },
+  "kingsshield": {
+    "name": "King's Shield",
+    "category": "Status",
+    "primary_type": "Steel",
+    "pp": 10,
+    "accuracy": "exempt",
+    "priority": 4,
+    "target": "User",
+    "flags": ["FailCopycat", "FailInstruct", "NoAssist"],
+
+    "stalling_move": true
+  },
+  "playnice": {
+    "name": "Play Nice",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Reflectable"]
+  },
+  "confide": {
+    "name": "Confide",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "Normal",
+    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Reflectable", "Sound"]
+  },
+  "diamondstorm": {
+    "name": "Diamond Storm",
+    "category": "Physical",
+    "primary_type": "Rock",
+    "pp": 5,
+    "accuracy": 95,
+    "base_power": 100,
+    "target": "AllAdjacentFoes",
+    "flags": ["Mirror", "Protect"]
+  },
+  "steameruption": {
+    "name": "Steam Eruption",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": 95,
+    "base_power": 110,
+    "target": "Normal",
+    "flags": ["Mirror", "Protect", "Thawing"],
+    "thaws_target": true
+  },
+  "hyperspacehole": {
+    "name": "Hyperspace Hole",
+    "category": "Special",
+    "primary_type": "Psychic",
+    "pp": 5,
+    "accuracy": "exempt",
+    "base_power": 80,
+    "target": "Normal",
+    "flags": ["BypassSubstitute", "Mirror"],
+    "breaks_protect": true
+  },
+  "watershuriken": {
+    "name": "Water Shuriken",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 15,
+    "priority": 1,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "multihit": [2, 5]
+  },
+  "mysticalfire": {
+    "name": "Mystical Fire",
+    "category": "Special",
+    "primary_type": "Fire",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 75,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "spikyshield": {
+    "name": "Spiky Shield",
+    "category": "Status",
+    "primary_type": "Grass",
+    "pp": 10,
+    "accuracy": "exempt",
+    "priority": 4,
+    "target": "User",
+    "flags": ["FailCopycat", "NoAssist"],
+
+    "stalling_move": true
+  },
+  "aromaticmist": {
+    "name": "Aromatic Mist",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "AdjacentAlly",
+    "flags": ["BypassSubstitute", "Metronome"]
+  },
+  "eerieimpulse": {
+    "name": "Eerie Impulse",
+    "category": "Status",
+    "primary_type": "Electric",
+    "pp": 15,
+    "accuracy": 100,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "venomdrench": {
+    "name": "Venom Drench",
+    "category": "Status",
+    "primary_type": "Poison",
+    "pp": 20,
+    "accuracy": 100,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "powder": {
+    "name": "Powder",
+    "category": "Status",
+    "primary_type": "Bug",
+    "pp": 20,
+    "accuracy": 100,
+    "priority": 1,
+    "target": "Normal",
+    "flags": [
+      "BypassSubstitute",
+      "Metronome",
+      "Mirror",
+      "Powder",
+      "Protect",
+      "Reflectable"
+    ]
+  },
+  "geomancy": {
+    "name": "Geomancy",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": ["Charge", "FailInstruct", "Metronome", "NoSleepTalk"]
+  },
+  "magneticflux": {
+    "name": "Magnetic Flux",
+    "category": "Status",
+    "primary_type": "Electric",
+    "pp": 20,
+    "accuracy": "exempt",
+    "target": "AllySide",
+    "flags": ["BypassSubstitute", "Distance", "Metronome", "Snatch"]
+  },
+  "happyhour": {
+    "name": "Happy Hour",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 30,
+    "accuracy": "exempt",
+    "target": "AllySide",
+    "flags": ["Metronome"]
+  },
+  "electricterrain": {
+    "name": "Electric Terrain",
+    "category": "Status",
+    "primary_type": "Electric",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "All",
+    "flags": ["Metronome"]
+  },
+  "dazzlinggleam": {
+    "name": "Dazzling Gleam",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 80,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "celebrate": {
+    "name": "Celebrate",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 40,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": [
+      "FailCopycat",
+      "FailInstruct",
+      "FailMimic",
+      "NoAssist",
+      "NoSleepTalk"
+    ]
+  },
+  "holdhands": {
+    "name": "Hold Hands",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 40,
+    "accuracy": "exempt",
+    "target": "AdjacentAlly",
+    "flags": [
+      "BypassSubstitute",
+      "FailCopycat",
+      "FailInstruct",
+      "FailMimic",
+      "NoAssist",
+      "NoSleepTalk"
+    ]
+  },
+  "babydolleyes": {
+    "name": "Baby-Doll Eyes",
+    "category": "Status",
+    "primary_type": "Fairy",
+    "pp": 30,
+    "accuracy": 100,
+    "priority": 1,
+    "target": "Normal",
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+  },
+  "nuzzle": {
+    "name": "Nuzzle",
+    "category": "Physical",
+    "primary_type": "Electric",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 20,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "holdback": {
+    "name": "Hold Back",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 40,
+    "accuracy": 100,
+    "base_power": 40,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "infestation": {
+    "name": "Infestation",
+    "category": "Special",
+    "primary_type": "Bug",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 20,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+  },
+  "poweruppunch": {
+    "name": "Power-Up Punch",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 20,
+    "accuracy": 100,
+    "base_power": 40,
+    "target": "Normal",
+    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+  },
+  "oblivionwing": {
+    "name": "Oblivion Wing",
+    "category": "Special",
+    "primary_type": "Flying",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 80,
+    "target": "Any",
+    "flags": ["Distance", "Heal", "Metronome", "Mirror", "Protect"],
+    "drain_percent": "3/4"
+  },
+  "thousandarrows": {
+    "name": "Thousand Arrows",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "AllAdjacentFoes",
+    "flags": ["Mirror", "Protect"]
+  },
+  "thousandwaves": {
+    "name": "Thousand Waves",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "AllAdjacentFoes",
+    "flags": ["Mirror", "Protect"]
+  },
+  "landswrath": {
+    "name": "Land's Wrath",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "pp": 10,
+    "accuracy": 100,
+    "base_power": 90,
+    "target": "AllAdjacentFoes",
+    "flags": ["Metronome", "Mirror", "Protect"]
+  },
+  "lightofruin": {
+    "name": "Light of Ruin",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "pp": 5,
+    "accuracy": 90,
+    "base_power": 140,
+    "target": "Normal",
+    "flags": ["Mirror", "Protect"],
+    "recoil_percent": "1/2"
+  },
+  "originpulse": {
+    "name": "Origin Pulse",
+    "category": "Special",
+    "primary_type": "Water",
+    "pp": 10,
+    "accuracy": 85,
+    "base_power": 110,
+    "target": "AllAdjacentFoes",
+    "flags": ["Mirror", "Protect", "Pulse"]
+  },
+  "precipiceblades": {
+    "name": "Precipice Blades",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "pp": 10,
+    "accuracy": 85,
+    "base_power": 120,
+    "target": "AllAdjacentFoes",
+    "flags": ["Mirror", "Protect"]
+  },
+  "dragonascent": {
+    "name": "Dragon Ascent",
+    "category": "Physical",
+    "primary_type": "Flying",
+    "pp": 5,
+    "accuracy": 100,
+    "base_power": 120,
+    "target": "Any",
+    "flags": ["Contact", "Distance", "Mirror", "Protect"]
+  },
+  "hyperspacefury": {
+    "name": "Hyperspace Fury",
+    "category": "Physical",
+    "primary_type": "Dark",
+    "pp": 5,
+    "accuracy": "exempt",
+    "base_power": 100,
+    "target": "Normal",
+    "flags": ["BypassSubstitute", "Mirror"],
+    "breaks_protect": true,
+    "no_sketch": true
+  }
+}

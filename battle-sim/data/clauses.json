@@ -1,0 +1,203 @@
+{
+  "standard": {
+    "name": "Standard",
+    "description": "The standard ruleset for all official singles battles.",
+    "rules": [
+      "Team Preview",
+      "Sleep Clause",
+      "Species Clause",
+      "Nickname Clause",
+      "OHKO Clause",
+      "Evasion Items Clause",
+      "Evasion Moves Clause",
+      "Endless Battle Clause"
+    ]
+  },
+  "standarddoubles": {
+    "name": "Standard Doubles",
+    "description": "The standard ruleset for all official doubles battles.",
+    "rules": [
+      "Team Preview",
+      "Species Clause",
+      "Nickname Clause",
+      "OHKO Clause",
+      "Evasion Moves Clause",
+      "Gravity Sleep Clause",
+      "Endless Battle Clause"
+    ]
+  },
+  "flatrules": {
+    "name": "Flat Rules",
+    "description": "In-game Flat Rules.",
+    "rules": [
+      "Team Preview",
+      "Species Clause",
+      "Nickname Clause",
+      "Item Clause",
+      "Adjust Level Down = 50",
+      "Picked Team Size = Auto",
+      "- Restricted Legendary",
+      "- Mythical"
+    ]
+  },
+  "abilityclause": {
+    "name": "Ability Clause",
+    "description": "Prevents teams from having more than a given number of Mons with the same ability.",
+    "rule_log": "{} Ability Clause: Limit {} of each ability",
+    "value_type": "PositiveInteger"
+  },
+  "accuracymovesclause": {
+    "name": "Accuracy Moves Clause",
+    "description": "Bans moves that have a chance to lower the target's accuracy.",
+    "rule_log": "Accuracy Moves Clause: Accuracy-lowering moves are banned",
+    "rules": ["- Move Tag: Accuracy Lowering"]
+  },
+  "endlessbattleclause": {
+    "name": "Endless Battle Clause",
+    "description": "Prevents players from forcing a battle which their opponent cannot end except by forfeit.",
+    "rule_log": "Endless Battle Clause: Forcing endless battles is banned"
+  },
+  "evasionclause": {
+    "name": "Evasion Clause",
+    "description": "Bans abilities, items, and moves that boost evasion.",
+    "rule_log": "Evasion Clause: Evasion abilities, items, and moves are banned",
+    "rules": [
+      "Evasion Abilities Clause",
+      "Evasion Items Clause",
+      "Evasion Moves Clause"
+    ]
+  },
+  "evasionabilitiesclause": {
+    "name": "Evasion Abilities Clause",
+    "description": "Bans abilities, items, and moves that boost evasion.",
+    "rule_log": "Evasion Abilities Clause: Evasion abilities are banned",
+    "rules": ["- Ability Tag: Evasion Raising"]
+  },
+  "evasionitemsclause": {
+    "name": "Evasion Items Clause",
+    "description": "Bans abilities, items, and moves that boost evasion.",
+    "rule_log": "Evasion Items Clause: Evasion items are banned",
+    "rules": ["- Item Tag: Evasion Raising"]
+  },
+  "evasionmovesclause": {
+    "name": "Evasion Moves Clause",
+    "description": "Bans abilities, items, and moves that boost evasion.",
+    "rule_log": "Evasion Moves Clause: Evasion moves are banned",
+    "rules": ["- Move Tag: Evasion Raising"]
+  },
+  "forcemonotype": {
+    "name": "Force Mono Type",
+    "description": "Forces all teams to have the same type.",
+    "requires_value": true,
+    "value_type": "Type"
+  },
+  "itemclause": {
+    "name": "Item Clause",
+    "description": "Prevents teams from having more than one Mon with the same item.",
+    "rule_log": "Item Clause: Limit one of each item"
+  },
+  "nicknameclause": {
+    "name": "Nickname Clause",
+    "description": "Prevents teams from having more than one Mon with the same nickname."
+  },
+  "ohkoclause": {
+    "name": "OHKO Clause",
+    "description": "Bans all OHKO moves.",
+    "rule_log": "OHKO Clause: OHKO moves are banned",
+    "rules": ["- Move Tag: OHKO"]
+  },
+  "onevsone": {
+    "name": "One vs One",
+    "description": "Only allows one Mon per player.",
+    "rules": ["Picked Team Size = 1"]
+  },
+  "sametypeclause": {
+    "name": "Same Type Clause",
+    "description": "Forces all Mons on a team to share a type with each other.",
+    "rule_log": "Same Type Clause: Mons in a team must share a type"
+  },
+  "sleepclause": {
+    "name": "Sleep Clause",
+    "description": "Prevents players from putting more than one of their opponent's Mons to sleep at a time.",
+    "rule_log": "Sleep Clause: Limit one foe put to sleep"
+  },
+  "sleepmovesclause": {
+    "name": "Sleep Moves Clause",
+    "description": "Bans all moves that induce sleep.",
+    "rule_log": "Sleep Moves Clause: Sleep-inducing moves are banned",
+    "rules": ["- Move Tag: Sleep Inducing"]
+  },
+  "teampreview": {
+    "name": "Team Preview",
+    "description": "Allows each player to see all Mons before they choose their lead Mon."
+  },
+  "twovstwo": {
+    "name": "Two vs Two",
+    "description": "Only allows two Mons per player.",
+    "rules": ["Picked Team Size = 2"]
+  },
+  "speciesclause": {
+    "name": "Species Clause",
+    "description": "Prevents teams from having more than one Mon from the same species.",
+    "rule_log": "Item Clause: Limit one of each Mon"
+  },
+  "playersperside": {
+    "name": "Players Per Side",
+    "description": "The number of players per side.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "adjustleveldown": {
+    "name": "Adjust Level Down",
+    "description": "Sets Mons above this level down to this level.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "defaultlevel": {
+    "name": "Default Level",
+    "description": "Default level for each Mon.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "evlimit": {
+    "name": "EV Limit",
+    "description": "Maximum total EVs on each Mon.",
+    "requires_value": true,
+    "value_type": "NonNegativeInteger"
+  },
+  "maxlevel": {
+    "name": "Max Level",
+    "description": "Maximum level for each Mon.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "maxmovecount": {
+    "name": "Max Move Count",
+    "description": "Maximum number of moves allowed on a single Mon.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "maxteamsize": {
+    "name": "Max Team Size",
+    "description": "Maximum team size that can be brought into Team Preview (or into the battle if Team Preview is not used).",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "minlevel": {
+    "name": "Min Level",
+    "description": "Minimum level for each Mon.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "minteamsize": {
+    "name": "Min Team Size",
+    "description": "Minimum team size that can be brought into Team Preview (or into the battle if Team Preview is not used).",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "pickedteamsize": {
+    "name": "Picked Team Size",
+    "description": "Team size that can be brought out of Team Preview.",
+    "requires_value": true
+  }
+}
