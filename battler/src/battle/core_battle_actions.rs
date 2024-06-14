@@ -1167,11 +1167,11 @@ mod direct_move_step {
         for target in targets.iter().filter(|target| target.outcome.success()) {
             core_battle_effects::run_active_move_event_expecting_void(
                 context,
-                fxlang::BattleEvent::AfterMoveSecondary,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
             );
             core_battle_effects::run_event_for_applying_effect(
                 &mut context.applying_effect_context_for_target(target.handle)?,
-                fxlang::BattleEvent::AfterMoveSecondary,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
                 fxlang::VariableInput::default(),
             );
         }

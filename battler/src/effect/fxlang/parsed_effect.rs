@@ -40,7 +40,7 @@ impl ParsedCallbacks {
             callbacks: FastHashMap::new(),
         };
         if let Some(callbacks) = callbacks {
-            parsed.parse_and_save(BattleEvent::AfterMoveSecondary, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AfterMoveSecondaryEffects, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;

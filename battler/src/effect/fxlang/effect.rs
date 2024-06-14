@@ -90,7 +90,7 @@ enum CommonCallbackType {
 /// A battle event that can trigger a [`Callback`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BattleEvent {
-    AfterMoveSecondary,
+    AfterMoveSecondaryEffects,
     AfterSetStatus,
     AllySetStatus,
     BeforeMove,
@@ -116,7 +116,7 @@ impl BattleEvent {
     /// Maps the event to the [`CallbackType`] flags.
     pub fn callback_type_flags(&self) -> u32 {
         match self {
-            Self::AfterMoveSecondary => CommonCallbackType::MoveVoid as u32,
+            Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::EffectVoid as u32,
             Self::AllySetStatus => CommonCallbackType::EffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
@@ -287,7 +287,7 @@ impl SpeedOrderable for Callback {
 /// All possible callbacks for an effect should be defined here.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
-    pub on_after_move_secondary: Callback,
+    pub on_after_move_secondary_effects: Callback,
     pub on_after_set_status: Callback,
     pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
@@ -312,7 +312,7 @@ pub struct Callbacks {
 impl Callbacks {
     pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
         match event {
-            BattleEvent::AfterMoveSecondary => Some(&self.on_after_move_secondary),
+            BattleEvent::AfterMoveSecondaryEffects => Some(&self.on_after_move_secondary_effects),
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::BasePower => Some(&self.on_base_power),
