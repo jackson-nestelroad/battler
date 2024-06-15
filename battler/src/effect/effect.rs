@@ -103,6 +103,17 @@ impl EffectHandle {
             _ => false,
         }
     }
+
+    pub fn try_id(&self) -> Option<&Id> {
+        match self {
+            Self::ActiveMove(_) => None,
+            Self::Ability(id) => Some(&id),
+            Self::Condition(id) => Some(&id),
+            Self::MoveCondition(id) => Some(&id),
+            Self::Item(id) => Some(&id),
+            Self::NonExistent(id) => Some(&id),
+        }
+    }
 }
 
 /// A battle effect.
@@ -221,6 +232,13 @@ impl<'borrow> Effect<'borrow> {
     pub fn condition<'effect>(&'effect self) -> Option<&'effect Condition> {
         match self {
             Self::Condition(condition) => Some(condition.deref()),
+            _ => None,
+        }
+    }
+
+    pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
+        match self {
+            Self::ActiveMove(active_move) => active_move.source_effect.as_ref(),
             _ => None,
         }
     }

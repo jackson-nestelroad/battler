@@ -128,6 +128,7 @@ pub fn do_move(
     move_id: &Id,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
+    source_effect: Option<EffectHandle>,
     external: bool,
 ) -> Result<(), Error> {
     context.mon_mut().active_move_actions += 1;
@@ -152,7 +153,13 @@ pub fn do_move(
         fxlang::BattleEvent::BeforeMove,
         fxlang::VariableInput::default(),
     ) {
-        // TODO: MoveAborted event.
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context
+                .active_move_context()?
+                .user_applying_effect_context()?,
+            fxlang::BattleEvent::MoveAborted,
+            fxlang::VariableInput::default(),
+        );
         CoreBattle::clear_active_move(context.as_battle_context_mut())?;
         context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(());
@@ -160,11 +167,14 @@ pub fn do_move(
 
     // External moves do not have PP deducted.
     if !external {
-        // TODO: Check for locked move, which will not deduct PP (think Uproar).
+        let locked_move = Mon::locked_move(context)?;
         let move_id = context.active_move()?.id();
         // SAFETY: move_id is only used for lookup.
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
-        if !context.mon_mut().deduct_pp(move_id, 1) && !move_id.eq("struggle") {
+        if locked_move.is_none()
+            && !context.mon_mut().deduct_pp(move_id, 1)
+            && !move_id.eq("struggle")
+        {
             // No PP, so this move action cannot be carried through.
             let move_name = &context.active_move()?.data.name;
             // SAFETY: Logging does not change the active move.
@@ -182,7 +192,7 @@ pub fn do_move(
     // Use the move.
     let move_id = context.active_move()?.id().clone();
     let target = context.mon().active_target;
-    use_move(context, &move_id, target)?;
+    use_move(context, &move_id, target, source_effect)?;
 
     // TODO: AfterMove event.
 
@@ -196,9 +206,10 @@ pub fn use_move(
     context: &mut MonContext,
     move_id: &Id,
     target: Option<MonHandle>,
+    source_effect: Option<EffectHandle>,
 ) -> Result<bool, Error> {
     context.mon_mut().move_this_turn_outcome = None;
-    let outcome = use_move_internal(context, move_id, target)?;
+    let outcome = use_move_internal(context, move_id, target, source_effect)?;
     context.mon_mut().move_this_turn_outcome = Some(outcome);
     Ok(outcome.into())
 }
@@ -207,6 +218,7 @@ fn use_move_internal(
     context: &mut MonContext,
     move_id: &Id,
     mut target: Option<MonHandle>,
+    source_effect: Option<EffectHandle>,
 ) -> Result<MoveOutcome, Error> {
     // This move becomes the active move.
     let active_mon_handle = register_active_move(context, move_id, target)?;
@@ -218,6 +230,9 @@ fn use_move_internal(
     if target.is_none() && context.active_move().data.target.requires_target() {
         target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
     }
+
+    context.active_move_mut().source_effect = source_effect;
+
     // Target may have been modified, so update the battle and context.
     let active_move_handle = context.active_move_handle();
     context
@@ -447,8 +462,6 @@ fn try_direct_move(
         if move_event_result.failed() {
             core_battle_logs::fail(context.as_mon_context_mut())?;
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-        }
-        if move_event_result.failed() {
             return Ok(MoveOutcome::Failed);
         }
         return Ok(MoveOutcome::Success);
@@ -798,9 +811,7 @@ fn modify_damage(
     }
 
     base_damage = core_battle_effects::run_event_for_applying_effect_expecting_u32(
-        &mut context
-            .as_active_move_context_mut()
-            .user_applying_effect_context()?,
+        &mut context.user_applying_effect_context()?,
         fxlang::BattleEvent::ModifyDamage,
         base_damage,
     );
@@ -1403,9 +1414,7 @@ fn apply_move_effects(
 
         if let Some(status) = hit_effect.status {
             let set_status = try_set_status(
-                &mut target_context
-                    .as_active_move_context_mut()
-                    .applying_effect_context()?,
+                &mut target_context.applying_effect_context()?,
                 Some(Id::from(status)),
                 !is_secondary && !is_self,
             )?;
@@ -1418,7 +1427,17 @@ fn apply_move_effects(
         }
 
         if let Some(volatile_status) = hit_effect.volatile_status {
-            // TODO: Add volatile status.
+            let set_status = try_add_volatile(
+                &mut target_context.applying_effect_context()?,
+                &Id::from(volatile_status),
+                !is_secondary && !is_self,
+            )?;
+            let outcome = if set_status {
+                MoveOutcomeOnTarget::Success
+            } else {
+                MoveOutcomeOnTarget::Failure
+            };
+            hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
         }
 
         if let Some(side_condition) = hit_effect.side_condition {
@@ -1708,11 +1727,18 @@ pub fn try_set_status(
         }
     };
 
+    let status_effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&status)?
+        .clone();
+    let status = status_effect_handle
+        .try_id()
+        .wrap_error_with_message("status must have an id")?
+        .clone();
+
     if check_status_immunity(&mut context.target_context()?, &status)? {
         if is_primary_move_effect {
-            if let Some(mut source_context) = context.source_context()? {
-                core_battle_logs::fail(&mut source_context)?;
-            }
+            core_battle_logs::immune(&mut context.target_context()?)?;
         }
         return Ok(false);
     }
@@ -1721,10 +1747,6 @@ pub fn try_set_status(
     let previous_status = context.target().status.clone();
     let previous_status_state = context.target().status_state.clone();
 
-    let status_effect_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&status)?
-        .clone();
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetStatus,
@@ -1737,7 +1759,10 @@ pub fn try_set_status(
     context.target_mut().status = Some(status);
     context.target_mut().status_state = fxlang::EffectState::new();
 
-    if let Some(condition) = context.effect().fxlang_condition() {
+    if let Some(condition) =
+        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &status_effect_handle)?
+            .fxlang_condition()
+    {
         if let Some(duration) = condition.duration {
             context.target_mut().status_state.set_duration(duration);
         }
@@ -1811,4 +1836,124 @@ pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Res
         }
     }
     try_set_status(context, None, false)
+}
+
+pub fn try_add_volatile(
+    context: &mut ApplyingEffectContext,
+    status: &Id,
+    is_primary_move_effect: bool,
+) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    let volatile_effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(status)?
+        .clone();
+    let status = volatile_effect_handle
+        .try_id()
+        .wrap_error_with_message("volatile must have an id")?
+        .clone();
+
+    if context.target().volatiles.contains_key(&status) {
+        return Ok(core_battle_effects::run_mon_volatile_event_expecting_bool(
+            context,
+            fxlang::BattleEvent::Restart,
+            &status,
+        )
+        .unwrap_or(true));
+    }
+
+    if check_status_immunity(&mut context.target_context()?, &status)? {
+        if is_primary_move_effect {
+            core_battle_logs::immune(&mut context.target_context()?)?;
+        }
+        return Ok(false);
+    }
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AddVolatile,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(volatile_effect_handle.clone())]),
+    ) {
+        return Ok(false);
+    }
+
+    context
+        .target_mut()
+        .volatiles
+        .insert(status.clone(), fxlang::EffectState::new());
+
+    if let Some(condition) =
+        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &volatile_effect_handle)?
+            .fxlang_condition()
+    {
+        if let Some(duration) = condition.duration {
+            context
+                .target_mut()
+                .volatiles
+                .get_mut(&status)
+                .wrap_error_with_message("expected volatile state to exist")?
+                .set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_mon_volatile_event_expecting_u8(
+            context,
+            fxlang::BattleEvent::Duration,
+            &status,
+        ) {
+            context
+                .target_mut()
+                .volatiles
+                .get_mut(&status)
+                .wrap_error_with_message("expected volatile state to exist")?
+                .set_duration(duration);
+        }
+    }
+
+    if core_battle_effects::run_mon_volatile_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::Start,
+        &status,
+    )
+    .is_some_and(|result| !result)
+    {
+        context.target_mut().volatiles.remove(&status);
+    }
+
+    let volatile_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
+        .name()
+        .to_owned();
+    core_battle_logs::add_volatile(context, &volatile_name)?;
+
+    Ok(true)
+}
+
+pub fn remove_volatile(context: &mut ApplyingEffectContext, status: &Id) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    let volatile_effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&status)?
+        .clone();
+    let status = volatile_effect_handle
+        .try_id()
+        .wrap_error_with_message("volatile must have an id")?
+        .clone();
+
+    if !context.target().volatiles.contains_key(&status) {
+        return Ok(false);
+    }
+
+    core_battle_effects::run_mon_volatile_event(context, fxlang::BattleEvent::End, &status);
+    context.target_mut().volatiles.remove(&status);
+
+    let volatile_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
+        .name()
+        .to_owned();
+    core_battle_logs::remove_volatile(context, &volatile_name)?;
+
+    Ok(true)
 }

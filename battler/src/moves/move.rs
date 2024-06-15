@@ -16,7 +16,10 @@ use crate::{
         Id,
         Identifiable,
     },
-    effect::fxlang,
+    effect::{
+        fxlang,
+        EffectHandle,
+    },
     mons::{
         Stat,
         Type,
@@ -281,6 +284,8 @@ pub struct Move {
     pub used_by: Option<MonHandle>,
     /// The move was used externally, rather than directly by a Mon through its moveset.
     pub external: bool,
+    /// The source of the move, if any.
+    pub source_effect: Option<EffectHandle>,
     /// Whether or not this move hit multiple targets.
     pub spread_hit: bool,
     /// Number of hits dealt by the move.
@@ -306,6 +311,7 @@ impl Move {
             used_by: None,
             stab_modifier: None,
             external: false,
+            source_effect: None,
             spread_hit: false,
             hit: 0,
             total_damage: 0,

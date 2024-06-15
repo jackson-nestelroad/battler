@@ -196,7 +196,7 @@ pub struct CoreBattle<'d> {
     pub field: Field,
     pub sides: [Side; 2],
     pub players: Vec<Player>,
-    pub effect_manager: RefCell<EffectManager>,
+    pub effect_manager: EffectManager,
 
     registry: BattleRegistry,
     player_ids: FastHashMap<String, usize>,
@@ -267,7 +267,7 @@ impl<'d> CoreBattle<'d> {
                 .map(|(index, _)| (index, FastHashMap::new())),
         );
 
-        let effect_manager = RefCell::new(EffectManager::new());
+        let effect_manager = EffectManager::new();
 
         let mut battle = Self {
             log,
@@ -943,6 +943,7 @@ impl<'d> CoreBattle<'d> {
                     &action.id,
                     action.target,
                     action.original_target,
+                    None,
                     false,
                 )?;
             }

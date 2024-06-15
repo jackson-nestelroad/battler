@@ -174,7 +174,7 @@ mod burn_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Gengar,player-1,1|name:Will-O-Wisp|target:Charizard,player-2,1",
-                "fail|mon:Gengar,player-1,1",
+                "immune|mon:Charizard,player-2,1",
                 "residual",
                 "turn|turn:2"
             ]"#,

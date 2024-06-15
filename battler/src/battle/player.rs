@@ -769,8 +769,8 @@ impl Player {
             _ => (),
         }
 
-        let moves = Mon::moves(&context)?;
-        let locked_move = Mon::locked_move(&context)?;
+        let moves = Mon::moves(&mut context)?;
+        let locked_move = Mon::locked_move(&mut context)?;
         if let Some(locked_move) = locked_move {
             let locked_move_target = context.mon().last_move_target;
             context

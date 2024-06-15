@@ -1,4 +1,8 @@
 {
+  "residual": {
+    "name": "Residual",
+    "condition_type": "Built-in"
+  },
   "drain": {
     "name": "Drain",
     "condition_type": "Built-in"
@@ -168,6 +172,32 @@
             "damage: expr($target.base_max_hp / 16 * $effect_state.stage)"
           ]
         }
+      }
+    }
+  },
+  "twoturnmove": {
+    "name": "Two Turn Move",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.move = $effect.id",
+          "add_volatile: $target $effect.id",
+          "# If this move is called by another move, we need to target outwards.",
+          "if $effect.has_source_effect and $effect.move_target != user:",
+          [
+            "if !$source or $source.fainted:",
+            ["$source = func_call(random_foe)"],
+            "$target.last_target_location = func_call(get_location_of_mon: $target $source)"
+          ],
+          "do_not_animate_last_move",
+          "# Still run events associated with the user preparing to hit the target, since they are locked into this move.",
+          "run_event: PrepareHit"
+        ],
+        "on_lock_move": ["return $effect_state.move"],
+        "on_move_aborted": ["remove_volatile: $target $effect_state.move"],
+        "on_end": ["remove_volatile: $target $effect_state.move"]
       }
     }
   }

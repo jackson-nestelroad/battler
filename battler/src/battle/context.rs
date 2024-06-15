@@ -926,7 +926,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Creates a new [`ApplyingEffectContext`] with the user set as the target, scoped to the
     /// lifetime of this context.
     ///
-    /// The Mon's active target is used as the source of the move.
+    /// The Mon's active target is used as the source of the effect, if there is an active target.
     ///
     /// The inverse of [`applying_effect_context`].
     pub fn user_applying_effect_context<'active_move>(
@@ -1250,6 +1250,37 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
             }
             _ => self.target_mon_context(),
         }
+    }
+
+    /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
+    pub fn applying_effect_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<ApplyingEffectContext<'active_target, 'active_target, 'battle, 'data>, Error> {
+        let source_handle = self.mon_handle();
+        let target_handle = self.target_mon_handle();
+        ApplyingEffectContext::new(
+            self.as_active_move_context_mut().effect_context()?.into(),
+            Some(source_handle),
+            target_handle,
+        )
+    }
+
+    /// Creates a new [`ApplyingEffectContext`] with the user set as the target, scoped to the
+    /// lifetime of this context.
+    ///
+    /// The target is used as the source of the effect.
+    ///
+    /// The inverse of [`applying_effect_context`].
+    pub fn user_applying_effect_context<'active_target>(
+        &'active_target mut self,
+    ) -> Result<ApplyingEffectContext<'active_target, 'active_target, 'battle, 'data>, Error> {
+        let source_handle = self.target_mon_handle();
+        let target_handle = self.mon_handle();
+        ApplyingEffectContext::new(
+            self.as_active_move_context_mut().effect_context()?.into(),
+            Some(source_handle),
+            target_handle,
+        )
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -1578,7 +1609,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         self.as_battle_context_mut().mon_context(target_handle)
     }
 
-    /// Creates a new [`ApplyingEffectContext`] for the same effect but different target, scopes to
+    /// Creates a new [`ApplyingEffectContext`] for the same effect but different target, scoped to
     /// the lifetime of this context.
     pub fn change_target_context<'applying_effect>(
         &'applying_effect mut self,

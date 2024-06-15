@@ -24,6 +24,7 @@ mod moves {
     mod struggle_test;
     mod switch_after_move_test;
     mod switch_before_move_test;
+    mod two_turn_move_test;
     mod type_effectiveness_test;
 }
 

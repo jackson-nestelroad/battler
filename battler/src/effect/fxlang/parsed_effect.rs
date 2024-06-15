@@ -40,18 +40,25 @@ impl ParsedCallbacks {
             callbacks: FastHashMap::new(),
         };
         if let Some(callbacks) = callbacks {
+            parsed.parse_and_save(BattleEvent::AddVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMoveSecondaryEffects, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamagingHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
+            parsed.parse_and_save(BattleEvent::End, &callbacks)?;
+            parsed.parse_and_save(BattleEvent::LockMove, &callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
+            parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
+            parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Restart, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;

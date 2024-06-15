@@ -5,6 +5,7 @@ use crate::{
     common::{
         Error,
         FastHashMap,
+        Id,
         WrapResultError,
     },
     effect::fxlang::Value,
@@ -17,15 +18,21 @@ use crate::{
 pub struct EffectState {
     values: FastHashMap<String, Value>,
     duration: Option<u8>,
+    move_id: Option<Id>,
+    target_location: Option<isize>,
 }
 
 impl EffectState {
     const DURATION: &'static str = "duration";
+    const MOVE_ID: &'static str = "move";
+    const TARGET_LOCATION: &'static str = "target_location";
 
     pub fn new() -> Self {
         Self {
             values: FastHashMap::new(),
             duration: None,
+            move_id: None,
+            target_location: None,
         }
     }
 
@@ -35,11 +42,38 @@ impl EffectState {
                 value
                     .clone()
                     .integer_u8()
-                    .wrap_error_with_message("duration must be an integer")?,
+                    .wrap_error_with_message("duration must be a u8 integer")?,
             ),
             _ => None,
         };
-        Ok(Self { values, duration })
+        let move_id = match values.get(Self::MOVE_ID) {
+            Some(value) => Some(Id::from(
+                value
+                    .clone()
+                    .string()
+                    .wrap_error_with_message("move must be a string")?,
+            )),
+            _ => None,
+        };
+        let mut target_location = match values.get(Self::TARGET_LOCATION) {
+            Some(value) => Some(
+                value
+                    .clone()
+                    .integer_isize()
+                    .wrap_error_with_message("target location must be an isize integer")?,
+            ),
+            _ => None,
+        };
+        // If no target was set, 0 is returned, which is equivalent to no last target.
+        if let Some(0) = target_location {
+            target_location = None;
+        }
+        Ok(Self {
+            values,
+            duration,
+            move_id,
+            target_location,
+        })
     }
 
     pub fn duration(&self) -> Option<u8> {
@@ -50,6 +84,14 @@ impl EffectState {
         self.values
             .insert(Self::DURATION.to_owned(), Value::U16(duration as u16));
         self.duration = Some(duration);
+    }
+
+    pub fn move_id(&self) -> Option<&Id> {
+        self.move_id.as_ref()
+    }
+
+    pub fn target_location(&self) -> Option<isize> {
+        self.target_location
     }
 }
 

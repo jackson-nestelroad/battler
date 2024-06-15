@@ -17,6 +17,7 @@ use crate::{
     },
     common::{
         Error,
+        Id,
         UnsafelyDetachBorrow,
         UnsafelyDetachBorrowMut,
         WrapResultError,
@@ -51,8 +52,9 @@ fn run_effect_event_with_errors(
 fn run_active_move_event_with_errors(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    input: fxlang::VariableInput,
+    mut input: fxlang::VariableInput,
 ) -> Result<Option<fxlang::Value>, Error> {
+    input.set_this_effect(context.effect_handle());
     // SAFETY: The active move lives for the lifetime of the turn.
     let active_move = unsafe { context.active_move_mut().unsafely_detach_borrow_mut() };
     let effect_state = active_move.effect_state.clone();
@@ -123,6 +125,7 @@ fn run_effect_event_by_handle(
 
 enum EffectOrigin {
     MonStatus(MonHandle),
+    MonVolatileStatus(MonHandle),
 }
 
 struct CallbackHandle {
@@ -150,6 +153,10 @@ impl CallbackHandle {
     ) -> Result<Option<&'context mut fxlang::EffectState>, Error> {
         match self.origin {
             EffectOrigin::MonStatus(mon) => Ok(Some(&mut context.mon_mut(mon)?.status_state)),
+            EffectOrigin::MonVolatileStatus(mon) => match self.effect_handle.try_id() {
+                None => Ok(None),
+                Some(id) => Ok(context.mon_mut(mon)?.volatiles.get_mut(id)),
+            },
         }
     }
 }
@@ -196,7 +203,7 @@ fn run_callback_under_applying_effect(
     .flatten()
 }
 
-fn run_mon_status_event(
+fn run_mon_status_event_internal(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -218,6 +225,28 @@ fn run_mon_status_event(
     )
 }
 
+fn run_mon_volatile_event_internal(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    status: &Id,
+) -> Option<fxlang::Value> {
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(status)
+        .ok()?
+        .clone();
+    run_callback_under_applying_effect(
+        context,
+        input,
+        CallbackHandle::new(
+            effect_handle,
+            event,
+            EffectOrigin::MonVolatileStatus(context.target_handle()),
+        ),
+    )
+}
+
 fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
@@ -234,8 +263,15 @@ fn find_callbacks_on_mon(
             EffectOrigin::MonStatus(mon),
         ));
     }
+    for volatile in context.mon().volatiles.clone().keys() {
+        let status_effect_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
+        callbacks.push(CallbackHandle::new(
+            status_effect_handle.clone(),
+            event,
+            EffectOrigin::MonVolatileStatus(mon),
+        ));
+    }
 
-    // TODO: Volatile statuses.
     // TODO: Ability.
     // TODO: Item.
     // TODO: Species.
@@ -434,14 +470,17 @@ fn run_callbacks_with_errors(
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>, Error> {
     for callback_handle in callbacks {
-        // If a value was returned, use it to determine what we do next.
-        match run_callback_with_errors(context, input.clone(), callback_handle)? {
-            // Early exit.
-            value @ Some(fxlang::Value::Boolean(false)) => return Ok(value),
-            // Pass the output to the next effect.
-            Some(value) => input = fxlang::VariableInput::from_iter([value]),
-            // Do nothing (the input will be passed to the next callback).
-            _ => (),
+        let value = run_callback_with_errors(context, input.clone(), callback_handle)?;
+        // Early exit.
+        if value
+            .as_ref()
+            .is_some_and(|value| value.signals_early_exit())
+        {
+            return Ok(value);
+        }
+        // Pass the output to the next effect.
+        if let Some(value) = value {
+            input = fxlang::VariableInput::from_iter([value]);
         }
     }
 
@@ -458,7 +497,7 @@ fn run_residual_callbacks_with_errors(
             break;
         }
 
-        let mut context = context.effect_context(&callback_handle.effect_handle)?;
+        let mut context = context.effect_context(&EffectHandle::Condition(Id::from("residual")))?;
 
         let mut ended = false;
         if let Some(effect_state) =
@@ -478,6 +517,24 @@ fn run_residual_callbacks_with_errors(
                 let mut context = context.applying_effect_context(None, mon)?;
                 if ended {
                     core_battle_actions::clear_status(&mut context, false)?;
+                } else {
+                    run_callback_with_errors(
+                        &mut fxlang::EvaluationContext::ApplyingEffect(&mut context),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
+            EffectOrigin::MonVolatileStatus(mon) => {
+                let mut context = context.applying_effect_context(None, mon)?;
+                if ended {
+                    core_battle_actions::remove_volatile(
+                        &mut context,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected volatile to have an id")?,
+                    )?;
                 } else {
                     run_callback_with_errors(
                         &mut fxlang::EvaluationContext::ApplyingEffect(&mut context),
@@ -629,9 +686,20 @@ pub fn run_mon_status_event_expecting_u8(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<u8> {
-    run_mon_status_event(context, event, fxlang::VariableInput::default())?
+    run_mon_status_event_internal(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
+}
+
+/// Runs an event on the target [`Mon`]'s volatile status.
+///
+/// Expects no input or output. Any output is ignored.
+pub fn run_mon_volatile_event(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    status: &Id,
+) {
+    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status);
 }
 
 /// Runs an event on the target [`Mon`]'s current status.
@@ -641,8 +709,34 @@ pub fn run_mon_status_event_expecting_bool(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_mon_status_event(context, event, fxlang::VariableInput::default())?
+    run_mon_status_event_internal(context, event, fxlang::VariableInput::default())?
         .boolean()
+        .ok()
+}
+
+/// Runs an event on the target [`Mon`]'s volatile status.
+///
+/// Expects a [`bool`].
+pub fn run_mon_volatile_event_expecting_bool(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    status: &Id,
+) -> Option<bool> {
+    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status)?
+        .boolean()
+        .ok()
+}
+
+/// Runs an event on the target [`Mon`]'s volatile status.
+///
+/// Expects an integer that can fit in a [`u8`].
+pub fn run_mon_volatile_event_expecting_u8(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    status: &Id,
+) -> Option<u8> {
+    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status)?
+        .integer_u8()
         .ok()
 }
 
@@ -701,6 +795,18 @@ pub fn run_event_for_mon_expecting_u16(
         Some(value) => value.integer_u16().unwrap_or(input),
         None => input,
     }
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`String`].
+pub fn run_event_for_mon_expecting_string(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+) -> Option<String> {
+    run_event_for_mon_internal(context, event, fxlang::VariableInput::default())?
+        .string()
+        .ok()
 }
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for the residual effect, which occurs

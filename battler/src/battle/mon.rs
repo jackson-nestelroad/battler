@@ -179,8 +179,10 @@ pub struct MonMoveRequest {
     /// Available moves.
     pub moves: Vec<MonMoveSlotData>,
     /// Is the Mon trapped?
+    #[serde(default)]
     pub trapped: bool,
     /// Can the Mon Mega Evolve?
+    #[serde(default)]
     pub can_mega_evo: bool,
 }
 
@@ -251,7 +253,7 @@ pub struct Mon {
 
     pub status: Option<Id>,
     pub status_state: fxlang::EffectState,
-    pub volatile_statuses: FastHashMap<Id, fxlang::EffectState>,
+    pub volatiles: FastHashMap<Id, fxlang::EffectState>,
 }
 
 // Construction and initialization logic.
@@ -370,7 +372,7 @@ impl Mon {
 
             status: None,
             status_state: fxlang::EffectState::new(),
-            volatile_statuses: FastHashMap::new(),
+            volatiles: FastHashMap::new(),
         })
     }
 
@@ -473,12 +475,14 @@ impl Mon {
         return Ok(types.contains(&typ));
     }
 
-    pub fn locked_move(context: &MonContext) -> Result<Option<String>, Error> {
-        // TODO: Run locked move event for the Mon.
-        return Ok(None);
+    pub fn locked_move(context: &mut MonContext) -> Result<Option<String>, Error> {
+        Ok(core_battle_effects::run_event_for_mon_expecting_string(
+            context,
+            fxlang::BattleEvent::LockMove,
+        ))
     }
 
-    pub fn moves(context: &MonContext) -> Result<Vec<MonMoveSlotData>, Error> {
+    pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>, Error> {
         let locked_move = Self::locked_move(context)?;
         Self::moves_with_locked_move(context, locked_move.as_deref())
     }
@@ -920,6 +924,7 @@ impl Mon {
                     disabled: false,
                 }]));
             }
+
             // Look for the locked move in the Mon's moveset.
             if let Some(locked_move) = context
                 .mon()

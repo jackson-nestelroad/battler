@@ -242,7 +242,7 @@ mod toxic_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Charizard,player-2,1|name:Toxic|target:Venusaur,player-1,1",
-                "fail|mon:Charizard,player-2,1",
+                "immune|mon:Venusaur,player-1,1",
                 "residual",
                 "turn|turn:2"
             ]"#,
@@ -276,7 +276,7 @@ mod toxic_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Charizard,player-2,1|name:Toxic|target:Steelix,player-1,1",
-                "fail|mon:Charizard,player-2,1",
+                "immune|mon:Steelix,player-1,1",
                 "residual",
                 "turn|turn:2"
             ]"#,

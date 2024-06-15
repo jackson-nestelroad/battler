@@ -76,6 +76,14 @@ pub struct BattleEngineOptions {
     /// control how the damage should be randomized. This is useful for tests against the damage
     /// calculator to discover the minimum and maximum damage values.
     pub randomize_base_damage: BattleEngineRandomizeBaseDamage,
+
+    /// Should volatile statuses be logged?
+    ///
+    /// By default, volatile statuses are invisible to Mons, since they are used to implement
+    /// complex interactions in the battle system. It may be helpful, especially for debugging
+    /// purposes, to view all volatile statuses added to and removed from Mons through the course
+    /// of a battle.
+    pub log_volatile_statuses: bool,
 }
 
 impl Default for BattleEngineOptions {
@@ -86,6 +94,7 @@ impl Default for BattleEngineOptions {
             rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
             allow_pass_for_unfainted_mon: false,
             randomize_base_damage: BattleEngineRandomizeBaseDamage::Randomize,
+            log_volatile_statuses: false,
         }
     }
 }

@@ -16,6 +16,7 @@ use crate::{
         ApplyingEffectContext,
         Context,
         CoreBattle,
+        EffectContext,
         Mon,
         MonContext,
         MonHandle,
@@ -25,7 +26,6 @@ use crate::{
     common::{
         Error,
         Fraction,
-        Id,
         Identifiable,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
@@ -127,7 +127,13 @@ impl<
     ) -> Result<MaybeOwnedMut<'eval, ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error>
     {
         match self {
-            Self::ActiveMove(context) => Ok(context.applying_effect_context()?.into()),
+            Self::ActiveMove(context) => {
+                if context.has_active_target() {
+                    Ok(context.applying_effect_context()?.into())
+                } else {
+                    Ok(context.user_applying_effect_context()?.into())
+                }
+            }
             Self::ApplyingEffect(context) => {
                 // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
                 // return a mutable reference to this context, scoped to the lifetime of self. Since
@@ -144,6 +150,51 @@ impl<
             Self::Mon(_) => Err(battler_error!(
                 "mon context cannot be converted into an applying effect context"
             )),
+        }
+    }
+
+    pub fn effect_context_mut<'eval>(
+        &'eval mut self,
+    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::ActiveMove(context) => Ok(context.effect_context()?.into()),
+            Self::ApplyingEffect(context) => {
+                let context = context.as_effect_context_mut();
+                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
+                // return a mutable reference to this context, scoped to the lifetime of self. Since
+                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
+                // Rust's borrow checker (around code that calls this method) protects us.
+                let context: &'eval mut &'eval mut EffectContext<'eval, 'battle, 'data> =
+                    unsafe { mem::transmute(context) };
+                Ok((*context).into())
+            }
+            Self::Mon(_) => Err(battler_error!(
+                "mon context cannot be converted into an effect context"
+            )),
+        }
+    }
+
+    pub fn active_move_context_mut<'eval>(
+        &'eval mut self,
+    ) -> Result<&'eval mut ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>, Error>
+    {
+        match self {
+            Self::ActiveMove(context) => {
+                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
+                // return a mutable reference to this context, scoped to the lifetime of self. Since
+                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
+                // Rust's borrow checker (around code that calls this method) protects us.
+                let context: &'eval mut &'eval mut ActiveMoveContext<
+                    'eval,
+                    'eval,
+                    'eval,
+                    'eval,
+                    'battle,
+                    'data,
+                > = unsafe { mem::transmute(context) };
+                Ok((*context).into())
+            }
+            _ => Err(battler_error!("not an active move context")),
         }
     }
 
@@ -225,7 +276,7 @@ impl<
         }
     }
 
-    fn mon<'eval>(&'eval self, mon_handle: MonHandle) -> Result<&'eval Mon, Error> {
+    pub fn mon<'eval>(&'eval self, mon_handle: MonHandle) -> Result<&'eval Mon, Error> {
         match self {
             Self::ActiveMove(context) => {
                 if mon_handle == context.mon_handle() {
@@ -458,7 +509,16 @@ where
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
+                        "fainted" => ValueRef::Boolean(context.mon(*mon_handle)?.fainted),
                         "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
+                        "last_target_location" => ValueRef::I64(
+                            context
+                                .mon(*mon_handle)?
+                                .last_move_target
+                                .unwrap_or(0)
+                                .try_into()
+                                .wrap_error_with_message("integer overflow")?,
+                        ),
                         "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
                         "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
                         "status" => ValueRef::TempString(
@@ -475,8 +535,35 @@ where
                 ValueRef::Effect(effect_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
+                        "has_source_effect" => ValueRef::Boolean(
+                            CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                effect_handle,
+                            )?
+                            .source_effect_handle()
+                            .is_some(),
+                        ),
+                        "id" => ValueRef::TempString(
+                            CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                effect_handle,
+                            )?
+                            .id()
+                            .as_ref()
+                            .to_owned(),
+                        ),
                         "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
                         "is_move" => ValueRef::Boolean(effect_handle.is_move()),
+                        "move_target" => ValueRef::MoveTarget(
+                            CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                effect_handle,
+                            )?
+                            .active_move()
+                            .wrap_error_with_message("effect is not a move")?
+                            .data
+                            .target,
+                        ),
                         "name" => ValueRef::TempString(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -583,6 +670,9 @@ where
                         "item" => {
                             ValueRefMut::OptionalString(&mut context.mon_mut(**mon_handle)?.item)
                         }
+                        "last_target_location" => ValueRefMut::OptionalISize(
+                            &mut context.mon_mut(**mon_handle)?.last_move_target,
+                        ),
                         _ => {
                             return Err(Self::bad_member_or_mutable_access(
                                 member,
@@ -1248,6 +1338,23 @@ impl Evaluator {
                 let mut value: MaybeReferenceValue = unsafe { mem::transmute(value) };
                 for rhs_expr in &binary_expr.rhs {
                     let lhs = MaybeReferenceValueForOperation::from(&value);
+
+                    // Short-circuiting logic.
+                    //
+                    // Important for cases where we might check if a variable exists before
+                    // accessing it.
+                    match (&lhs, rhs_expr.op) {
+                        (MaybeReferenceValueForOperation::Boolean(true), tree::Operator::Or) => {
+                            value = MaybeReferenceValue::Boolean(true);
+                            continue;
+                        }
+                        (MaybeReferenceValueForOperation::Boolean(false), tree::Operator::And) => {
+                            value = MaybeReferenceValue::Boolean(false);
+                            continue;
+                        }
+                        _ => (),
+                    }
+
                     let rhs_value = self.evaluate_expr(context, rhs_expr.expr.as_ref())?;
                     let rhs = MaybeReferenceValueForOperation::from(&rhs_value);
                     let result = Self::evaluate_binary_operator(lhs, rhs_expr.op, rhs)?;
@@ -1475,6 +1582,32 @@ impl Evaluator {
             }
             (ValueRefMut::I64(var), Value::UFraction(val)) => {
                 *var = val.round() as i64;
+            }
+            (ValueRefMut::OptionalISize(var), Value::U16(val)) => {
+                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
+            }
+            (ValueRefMut::OptionalISize(var), Value::U32(val)) => {
+                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
+            }
+            (ValueRefMut::OptionalISize(var), Value::U64(val)) => {
+                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
+            }
+            (ValueRefMut::OptionalISize(var), Value::I64(val)) => {
+                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
+            }
+            (ValueRefMut::OptionalISize(var), Value::Fraction(val)) => {
+                *var = Some(
+                    val.round()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::OptionalISize(var), Value::UFraction(val)) => {
+                *var = Some(
+                    val.floor()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?,
+                );
             }
             (ValueRefMut::Fraction(var), Value::U16(val)) => {
                 *var = Fraction::from(val as i32);

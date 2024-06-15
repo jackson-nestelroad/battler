@@ -297,3 +297,37 @@ pub fn cure_status(
     context.battle_mut().log(event);
     Ok(())
 }
+
+pub fn add_volatile(context: &mut ApplyingEffectContext, volatile: &str) -> Result<(), Error> {
+    if !context.battle().engine_options.log_volatile_statuses {
+        return Ok(());
+    }
+    let event = log_event!(
+        "addvolatile",
+        (
+            "mon",
+            Mon::position_details(&mut context.target_context()?)?
+        ),
+        ("volatile", volatile),
+        ("from", context.effect().name())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn remove_volatile(context: &mut ApplyingEffectContext, volatile: &str) -> Result<(), Error> {
+    if !context.battle().engine_options.log_volatile_statuses {
+        return Ok(());
+    }
+    let event = log_event!(
+        "removevolatile",
+        (
+            "mon",
+            Mon::position_details(&mut context.target_context()?)?
+        ),
+        ("volatile", volatile),
+        ("from", context.effect().name())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}

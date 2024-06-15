@@ -1,11 +1,10 @@
-use std::{
-    fmt,
-    fmt::Display,
-};
-
 use serde::{
     Deserialize,
     Serialize,
+};
+use serde_string_enum::{
+    DeserializeLabeledStringEnum,
+    SerializeLabeledStringEnum,
 };
 
 use crate::{
@@ -25,6 +24,7 @@ pub mod CallbackFlag {
     pub const TakesUserMon: u32 = 1 << 6;
     pub const TakesSourceTargetMon: u32 = 1 << 7;
 
+    pub const ReturnsString: u32 = 1 << 27;
     pub const ReturnsMoveResult: u32 = 1 << 28;
     pub const ReturnsNumber: u32 = 1 << 29;
     pub const ReturnsBoolean: u32 = 1 << 30;
@@ -84,31 +84,76 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMoveResult
-        | CallbackFlag::ReturnsBoolean,
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+    MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
 }
 
 /// A battle event that can trigger a [`Callback`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
+)]
 pub enum BattleEvent {
+    #[string = "AddVolatile"]
+    AddVolatile,
+    #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    #[string = "AfterSetStatus"]
     AfterSetStatus,
+    #[string = "AllySetStatus"]
     AllySetStatus,
+    #[string = "BeforeMove"]
     BeforeMove,
+    #[string = "BasePower"]
     BasePower,
+    #[string = "ChargeMove"]
+    ChargeMove,
+    #[string = "DamagingHit"]
     DamagingHit,
+    #[string = "Duration"]
     Duration,
+    #[string = "End"]
+    End,
+    #[string = "LockMove"]
+    LockMove,
+    #[string = "ModifyAtk"]
     ModifyAtk,
+    #[string = "ModifyDamage"]
     ModifyDamage,
+    #[string = "ModifyDef"]
     ModifyDef,
+    #[string = "ModifySpA"]
     ModifySpA,
+    #[string = "ModifySpD"]
     ModifySpD,
+    #[string = "ModifySpe"]
     ModifySpe,
+    #[string = "MoveAborted"]
+    MoveAborted,
+    #[string = "PrepareHit"]
+    PrepareHit,
+    #[string = "Residual"]
     Residual,
+    #[string = "Restart"]
+    Restart,
+    #[string = "SetStatus"]
     SetStatus,
+    #[string = "Start"]
     Start,
+    #[string = "SwitchIn"]
     SwitchIn,
+    #[string = "TryUseMove"]
     TryUseMove,
+    #[string = "UseMove"]
     UseMove,
+    #[string = "UseMoveMessage"]
     UseMoveMessage,
 }
 
@@ -116,20 +161,27 @@ impl BattleEvent {
     /// Maps the event to the [`CallbackType`] flags.
     pub fn callback_type_flags(&self) -> u32 {
         match self {
+            Self::AddVolatile => CommonCallbackType::EffectResult as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::EffectVoid as u32,
             Self::AllySetStatus => CommonCallbackType::EffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::Duration => CommonCallbackType::EffectModifier as u32,
+            Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MonModifier as u32,
             Self::ModifySpA => CommonCallbackType::MonModifier as u32,
             Self::ModifySpD => CommonCallbackType::MonModifier as u32,
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
+            Self::MoveAborted => CommonCallbackType::MoveVoid as u32,
+            Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
             Self::Residual => CommonCallbackType::EffectVoid as u32,
+            Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::SetStatus => CommonCallbackType::EffectResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
@@ -147,6 +199,7 @@ impl BattleEvent {
     /// The name of the input variable by index.
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
+            Self::AddVolatile => &[("volatile", ValueType::Effect)],
             Self::BasePower => &[("power", ValueType::U32)],
             Self::DamagingHit => &[("damage", ValueType::U16)],
             Self::ModifyDamage => &[("damage", ValueType::U32)],
@@ -156,6 +209,11 @@ impl BattleEvent {
         }
     }
 
+    /// Checks if the event takes input.
+    pub fn takes_input(&self) -> bool {
+        !self.input_vars().is_empty()
+    }
+
     /// Checks if the given output type is allowed.
     pub fn output_type_allowed(&self, value_type: Option<ValueType>) -> bool {
         match value_type {
@@ -163,7 +221,9 @@ impl BattleEvent {
                 self.has_flag(CallbackFlag::ReturnsNumber)
             }
             Some(ValueType::Boolean) => self.has_flag(CallbackFlag::ReturnsBoolean),
-            Some(ValueType::MoveResult) => self.has_flag(CallbackFlag::ReturnsMoveResult),
+            Some(ValueType::String) => {
+                self.has_flag(CallbackFlag::ReturnsString | CallbackFlag::ReturnsMoveResult)
+            }
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -196,12 +256,6 @@ impl BattleEvent {
         match self {
             _ => None,
         }
-    }
-}
-
-impl Display for BattleEvent {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
     }
 }
 
@@ -287,20 +341,27 @@ impl SpeedOrderable for Callback {
 /// All possible callbacks for an effect should be defined here.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
+    pub on_add_volatile: Callback,
     pub on_after_move_secondary_effects: Callback,
     pub on_after_set_status: Callback,
     pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
+    pub on_charge_move: Callback,
     pub on_damaging_hit: Callback,
     pub on_duration: Callback,
+    pub on_end: Callback,
+    pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
+    pub on_move_aborted: Callback,
+    pub on_prepare_hit: Callback,
     pub on_residual: Callback,
+    pub on_restart: Callback,
     pub on_set_status: Callback,
     pub on_start: Callback,
     pub on_switch_in: Callback,
@@ -312,20 +373,27 @@ pub struct Callbacks {
 impl Callbacks {
     pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
         match event {
+            BattleEvent::AddVolatile => Some(&self.on_add_volatile),
             BattleEvent::AfterMoveSecondaryEffects => Some(&self.on_after_move_secondary_effects),
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
+            BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::Duration => Some(&self.on_duration),
+            BattleEvent::End => Some(&self.on_end),
+            BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),
+            BattleEvent::MoveAborted => Some(&self.on_move_aborted),
+            BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
             BattleEvent::Residual => Some(&self.on_residual),
+            BattleEvent::Restart => Some(&self.on_restart),
             BattleEvent::SetStatus => Some(&self.on_set_status),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),

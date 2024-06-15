@@ -183,7 +183,7 @@ mod poison_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Charizard,player-2,1|name:Poison Powder|target:Venomoth,player-1,1",
-                "fail|mon:Charizard,player-2,1",
+                "immune|mon:Venomoth,player-1,1",
                 "residual",
                 "turn|turn:2"
             ]"#,
@@ -217,7 +217,7 @@ mod poison_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Charizard,player-2,1|name:Poison Powder|target:Steelix,player-1,1",
-                "fail|mon:Charizard,player-2,1",
+                "immune|mon:Steelix,player-1,1",
                 "residual",
                 "turn|turn:2"
             ]"#,

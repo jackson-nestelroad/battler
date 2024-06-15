@@ -121,6 +121,11 @@ impl TestBattleBuilder {
         self
     }
 
+    pub fn with_volatile_status_logs(mut self, log_volatile_statuses: bool) -> Self {
+        self.engine_options.log_volatile_statuses = log_volatile_statuses;
+        self
+    }
+
     pub fn with_team_validation(mut self, team_validation: bool) -> Self {
         self.validate_team = team_validation;
         self

@@ -162,7 +162,20 @@
       "NoSleepTalk",
       "Protect"
     ],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "prepare_move",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    }
   },
   "swordsdance": {
     "name": "Swords Dance",

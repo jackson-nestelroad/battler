@@ -9,7 +9,7 @@ mod context;
 mod context_cache;
 mod core_battle;
 pub mod core_battle_actions;
-mod core_battle_effects;
+pub mod core_battle_effects;
 pub mod core_battle_logs;
 mod field;
 mod mon;

@@ -188,9 +188,9 @@ mod paralysis_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Pikachu,player-2,1|name:Thunder Wave|target:Pikachu,player-1,1",
-                "fail|mon:Pikachu,player-2,1",
+                "immune|mon:Pikachu,player-1,1",
                 "move|mon:Pikachu,player-1,1|name:Thunder Wave|target:Pikachu,player-2,1",
-                "fail|mon:Pikachu,player-1,1",
+                "immune|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:2"
             ]"#,

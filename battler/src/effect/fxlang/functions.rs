@@ -6,6 +6,7 @@ use std::{
 use crate::{
     battle::{
         core_battle_actions,
+        core_battle_effects,
         core_battle_logs,
         ActiveMoveContext,
         ApplyingEffectContext,
@@ -22,9 +23,12 @@ use crate::{
     },
     effect::{
         fxlang::{
+            BattleEvent,
             EvaluationContext,
             Value,
+            VariableInput,
         },
+        Effect,
         EffectHandle,
     },
     log::Event,
@@ -42,12 +46,10 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
-        "activate" => match context {
-            EvaluationContext::ActiveMove(context) => activate_move(context, args).map(|()| None),
-            _ => Err(battler_error!(
-                "activate can only be called on an active move context"
-            )),
-        },
+        "activate" => activate(context, args).map(|()| None),
+        "add_volatile" => {
+            add_volatile(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
+        }
         "cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
         "cure_status" => {
@@ -65,6 +67,9 @@ pub fn run_function(
             .map(|()| None)
         }
         "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
+        "do_not_animate_last_move" => {
+            do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
+        }
         "has_ability" => has_ability(context.battle_context_mut(), args).map(|val| Some(val)),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
         "log_status" => {
@@ -74,7 +79,13 @@ pub fn run_function(
             log_status(context.applying_effect_context_mut()?.as_mut(), args, true).map(|()| None)
         }
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
+        "prepare_move" => prepare_move(context.active_move_context_mut()?).map(|()| None),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
+        "remove_volatile" => remove_volatile(context.applying_effect_context_mut()?.as_mut(), args)
+            .map(|val| Some(val)),
+        "run_event" => {
+            run_event(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
+        }
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -113,12 +124,33 @@ fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
     log_internal(context, title, args)
 }
 
-fn activate_move(context: &mut ActiveMoveContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    args.push_front(Value::String(format!(
-        "move:{}",
-        context.active_move().data.name
-    )));
-    log_internal(context.as_battle_context_mut(), "activate".to_owned(), args)
+fn activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    match context {
+        EvaluationContext::ActiveMove(context) => {
+            args.push_front(Value::String(format!(
+                "move:{}",
+                context.active_move().data.name
+            )));
+        }
+        EvaluationContext::ApplyingEffect(context) => match context.effect() {
+            Effect::Ability(ability) => {
+                args.push_front(Value::String(format!("ability:{}", ability.data.name)))
+            }
+            _ => (),
+        },
+        _ => (),
+    }
+    log_internal(context.battle_context_mut(), "activate".to_owned(), args)
+}
+
+fn prepare_move(context: &mut ActiveMoveContext) -> Result<(), Error> {
+    let event = log_event!(
+        "prepare",
+        ("mon", Mon::position_details(context.as_mon_context())?),
+        ("move", context.active_move().data.name.to_owned())
+    );
+    context.battle_mut().log(event);
+    Ok(())
 }
 
 fn log_cant(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -254,4 +286,67 @@ fn move_has_flag(
             .flags
             .contains(&move_flag),
     ))
+}
+
+fn add_volatile(
+    context: &mut ApplyingEffectContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let volatile = args
+        .pop_front()
+        .wrap_error_with_message("missing volatile id")?
+        .string()
+        .wrap_error_with_message("invalid volatile")?;
+    let volatile = Id::from(volatile);
+    let mut context = context.change_target_context(mon_handle)?;
+    core_battle_actions::try_add_volatile(&mut context, &volatile, false)
+        .map(|val| Value::Boolean(val))
+}
+
+fn remove_volatile(
+    context: &mut ApplyingEffectContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let volatile = args
+        .pop_front()
+        .wrap_error_with_message("missing volatile id")?
+        .string()
+        .wrap_error_with_message("invalid volatile")?;
+    let volatile = Id::from(volatile);
+    let mut context = context.change_target_context(mon_handle)?;
+    core_battle_actions::remove_volatile(&mut context, &volatile).map(|val| Value::Boolean(val))
+}
+
+fn run_event(
+    context: &mut ApplyingEffectContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let event = args
+        .pop_front()
+        .wrap_error_with_message("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    Ok(Value::Boolean(
+        core_battle_effects::run_event_for_applying_effect(
+            context,
+            event,
+            VariableInput::default(),
+        ),
+    ))
+}
+
+fn do_not_animate_last_move(context: &mut Context) -> Result<(), Error> {
+    core_battle_logs::do_not_animate_last_move(context);
+    Ok(())
 }
