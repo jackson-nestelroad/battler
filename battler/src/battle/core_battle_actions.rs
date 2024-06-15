@@ -886,8 +886,14 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            // TODO: Invulnerability event.
-            // should_continue = false if invulnerable.
+            if !core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::Invulnerability,
+                fxlang::VariableInput::default(),
+            ) {
+                target.outcome = MoveOutcome::Failed;
+                core_battle_logs::miss(&mut context.target_context(target.handle)?)?;
+            }
         }
         Ok(())
     }

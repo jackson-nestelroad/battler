@@ -48,8 +48,9 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamagingHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
-            parsed.parse_and_save(BattleEvent::End, &callbacks)?;
-            parsed.parse_and_save(BattleEvent::LockMove, &callbacks)?;
+            parsed.parse_and_save(BattleEvent::End, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
+            parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
@@ -59,6 +60,8 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Restart, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SetStatus, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;

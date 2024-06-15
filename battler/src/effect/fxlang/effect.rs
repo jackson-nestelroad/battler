@@ -37,16 +37,20 @@ enum CommonCallbackType {
     EffectModifier = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
-        | CallbackFlag::ReturnsNumber,
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
     MoveModifier = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsNumber,
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
     SourceMoveModifier = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsNumber,
-    MonModifier = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsNumber,
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
+    MonModifier =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsNumber | CallbackFlag::ReturnsVoid,
     EffectResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
@@ -121,6 +125,8 @@ pub enum BattleEvent {
     Duration,
     #[string = "End"]
     End,
+    #[string = "Invulnerability"]
+    Invulnerability,
     #[string = "LockMove"]
     LockMove,
     #[string = "ModifyAtk"]
@@ -145,6 +151,8 @@ pub enum BattleEvent {
     Restart,
     #[string = "SetStatus"]
     SetStatus,
+    #[string = "SourceModifyDamage"]
+    SourceModifyDamage,
     #[string = "Start"]
     Start,
     #[string = "SwitchIn"]
@@ -171,6 +179,7 @@ impl BattleEvent {
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::Duration => CommonCallbackType::EffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
@@ -183,6 +192,7 @@ impl BattleEvent {
             Self::Residual => CommonCallbackType::EffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::SetStatus => CommonCallbackType::EffectResult as u32,
+            Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
@@ -202,16 +212,11 @@ impl BattleEvent {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
             Self::BasePower => &[("power", ValueType::U32)],
             Self::DamagingHit => &[("damage", ValueType::U16)],
-            Self::ModifyDamage => &[("damage", ValueType::U32)],
+            Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U32)],
             Self::ModifySpe => &[("spe", ValueType::U16)],
             Self::SetStatus | Self::AllySetStatus => &[("status", ValueType::Effect)],
             _ => &[],
         }
-    }
-
-    /// Checks if the event takes input.
-    pub fn takes_input(&self) -> bool {
-        !self.input_vars().is_empty()
     }
 
     /// Checks if the given output type is allowed.
@@ -247,6 +252,7 @@ impl BattleEvent {
     /// Returns the associated source event.
     pub fn source_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::ModifyDamage => Some(Self::SourceModifyDamage),
             _ => None,
         }
     }
@@ -351,6 +357,7 @@ pub struct Callbacks {
     pub on_damaging_hit: Callback,
     pub on_duration: Callback,
     pub on_end: Callback,
+    pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
     pub on_modify_damage: Callback,
@@ -363,6 +370,7 @@ pub struct Callbacks {
     pub on_residual: Callback,
     pub on_restart: Callback,
     pub on_set_status: Callback,
+    pub on_source_modify_damage: Callback,
     pub on_start: Callback,
     pub on_switch_in: Callback,
     pub on_try_use_move: Callback,
@@ -383,6 +391,7 @@ impl Callbacks {
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
+            BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
@@ -395,6 +404,7 @@ impl Callbacks {
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),
             BattleEvent::SetStatus => Some(&self.on_set_status),
+            BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),

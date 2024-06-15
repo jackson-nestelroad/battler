@@ -263,7 +263,34 @@
       "NoAssist",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "prepare_move",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_invulnerability": [
+          "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
+          ["return"],
+          "return false"
+        ],
+        "on_source_modify_damage": [
+          "if [gust, twister] has $move.id:",
+          ["return expr($damage * 2)"]
+        ]
+      }
+    }
   },
   "bind": {
     "name": "Bind",

@@ -93,10 +93,7 @@ pub fn run_function(
 fn debug_log(context: &mut Context, args: VecDeque<Value>) -> Result<(), Error> {
     let mut event = log_event!("fxlang_debug");
     for (i, arg) in args.into_iter().enumerate() {
-        event.set(
-            format!("arg{i}"),
-            arg.string().unwrap_or("not a string".to_owned()),
-        );
+        event.set(format!("arg{i}"), format!("{arg:?}"));
     }
     context.battle_mut().log(event);
     Ok(())

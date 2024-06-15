@@ -76,7 +76,7 @@ impl Display for ValueType {
 }
 
 /// An fxlang value.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Value {
     Undefined,
     Boolean(bool),
@@ -1592,22 +1592,22 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(MaybeReferenceValue::Boolean(!self.equal_ref(&rhs)?))
     }
 
-    fn list_has_value<T>(lhs: Self, list: &'eval Vec<T>) -> bool
+    fn list_has_value<T>(list: &'eval Vec<T>, rhs: Self) -> bool
     where
         &'eval T: Into<Self> + 'eval,
     {
         list.iter()
             .map(|val| Into::<Self>::into(val))
-            .any(|rhs| lhs.equal_ref(&rhs).is_ok_and(|eq| eq))
+            .any(|lhs| lhs.equal_ref(&rhs).is_ok_and(|eq| eq))
     }
 
     pub fn has(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
-            (lhs @ _, Self::List(rhs)) => Self::list_has_value(lhs, rhs),
-            (lhs @ _, Self::StoredList(rhs)) => Self::list_has_value(lhs, rhs),
+            (Self::List(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
+            (Self::StoredList(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
             _ => {
                 return Err(battler_error!(
-                    "right-hand side of has operator must be a list"
+                    "left-hand side of has operator must be a list"
                 ));
             }
         };
@@ -1621,7 +1621,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     {
         lhs.iter()
             .map(|a| Into::<Self>::into(a))
-            .any(|lhs| Self::list_has_value(lhs, rhs))
+            .any(|lhs| Self::list_has_value(rhs, lhs))
     }
 
     pub fn has_any(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
