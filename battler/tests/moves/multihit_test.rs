@@ -34,7 +34,8 @@ mod multihit_test {
                         "moves": [
                             "Fury Attack",
                             "Double Kick",
-                            "Icicle Spear"
+                            "Icicle Spear",
+                            "Twineedle"
                         ],
                         "nature": "Hardy",
                         "gender": "M",
@@ -344,5 +345,51 @@ mod multihit_test {
         )
         .unwrap();
         assert_turn_logs_eq(&mut battle, 2, &expected_logs);
+    }
+
+    #[test]
+    fn second_hit_can_apply_secondary_effect() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(&data, 101217792730310).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:2",
+                "teamsize|player:player-2|size:2",
+                "start",
+                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:M",
+                "move|mon:Bulbasaur,player-1,1|name:Twineedle|target:Charmander,player-2,1",
+                "resisted|mon:Charmander,player-2,1",
+                "split|side:1",
+                "damage|mon:Charmander,player-2,1|health:93/99",
+                "damage|mon:Charmander,player-2,1|health:94/100",
+                "resisted|mon:Charmander,player-2,1",
+                "split|side:1",
+                "damage|mon:Charmander,player-2,1|health:87/99",
+                "damage|mon:Charmander,player-2,1|health:88/100",
+                "status|mon:Charmander,player-2,1|status:Poison",
+                "hitcount|hits:2",
+                "split|side:1",
+                "damage|mon:Charmander,player-2,1|from:status:Poison|health:75/99",
+                "damage|mon:Charmander,player-2,1|from:status:Poison|health:76/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        ).unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
     }
 }

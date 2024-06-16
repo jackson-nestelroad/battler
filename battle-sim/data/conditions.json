@@ -291,5 +291,26 @@
         }
       }
     }
+  },
+  "mustrecharge": {
+    "name": "Must Recharge",
+    "condition_type": "Volatile",
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": [
+          "log: mustrecharge str('mon:{}', $target.position_details)"
+        ],
+        "on_before_move": {
+          "priority": 11,
+          "program": [
+            "cant: $this.name",
+            "remove_volatile: $user $this.id",
+            "return false"
+          ]
+        },
+        "on_lock_move": ["return recharge"]
+      }
+    }
   }
 }

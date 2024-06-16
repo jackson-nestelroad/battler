@@ -2327,5 +2327,14 @@
     "ignore_immunity": true,
     "ignore_stab": true,
     "typeless": true
+  },
+  "recharge": {
+    "name": "Recharge",
+    "category": "Special",
+    "primary_type": "Normal",
+    "pp": 1,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": []
   }
 }

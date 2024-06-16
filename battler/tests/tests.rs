@@ -36,6 +36,7 @@ mod status {
     mod flinch_test;
     mod freeze_test;
     mod locked_move_test;
+    mod must_recharge_test;
     mod paralysis_test;
     mod partially_trapped_test;
     mod poison_test;

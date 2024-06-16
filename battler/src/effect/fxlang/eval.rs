@@ -532,7 +532,7 @@ where
             // `value_ref` value (i.e., the mutable borrow inside of it) is dropped.
             match value {
                 ValueRef::Mon(mon_handle) => {
-                    let context = unsafe { context.unsafely_detach_borrow() };
+                    let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
                         "active" => ValueRef::Boolean(context.mon(*mon_handle)?.active),
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
@@ -555,6 +555,10 @@ where
                                 .map(|outcome| !outcome.success())
                                 .unwrap_or(false),
                         ),
+                        "position_details" => ValueRef::TempString(format!(
+                            "{}",
+                            Mon::position_details(context.mon_context_mut(*mon_handle)?.as_ref())?
+                        )),
                         "status" => ValueRef::TempString(
                             context
                                 .mon(*mon_handle)?

@@ -729,7 +729,28 @@ impl Player {
                     context.mon().name,
                     choice.move_slot
                 ))?;
+
         let mut move_id = move_slot.id.clone();
+
+        let locked_move = Mon::locked_move(&mut context)?;
+        if let Some(locked_move) = locked_move {
+            let locked_move_target = context.mon().last_move_target;
+            context
+                .player_mut()
+                .choice
+                .actions
+                .push(Action::Move(MoveAction::new(MoveActionInput {
+                    id: Id::from(locked_move),
+                    mon: mon_handle,
+                    target: locked_move_target,
+                    mega: false,
+                })));
+            // Locked move, the Mon cannot do anything else.
+            return Ok(());
+        }
+
+        let moves = Mon::moves(&mut context)?;
+
         let mov = context
             .battle()
             .dex
@@ -742,6 +763,26 @@ impl Player {
         // We could find away around this if we're clever, but this keeps things simple for now.
         let move_name = mov.data.name.clone();
         let move_target = mov.data.target.clone();
+
+        if moves.is_empty() {
+            // No moves, the Mon must use Struggle.
+            move_id = Id::from_known("struggle");
+        } else {
+            // Make sure the selected move is not disabled.
+            let move_slot = moves
+                .iter()
+                .find(|mov| mov.id == move_id)
+                .wrap_error_with_format(format_args!(
+                    "expected move {move_id} to be in Mon's moveset"
+                ))?;
+            if move_slot.disabled {
+                return Err(battler_error!(
+                    "{}'s {} is disabled",
+                    context.mon().name,
+                    move_name
+                ));
+            }
+        }
 
         // Choosing 0 is the same as no target at all.
         if let Some(0) = choice.target {
@@ -767,42 +808,6 @@ impl Player {
                 ))
             }
             _ => (),
-        }
-
-        let moves = Mon::moves(&mut context)?;
-        let locked_move = Mon::locked_move(&mut context)?;
-        if let Some(locked_move) = locked_move {
-            let locked_move_target = context.mon().last_move_target;
-            context
-                .player_mut()
-                .choice
-                .actions
-                .push(Action::Move(MoveAction::new(MoveActionInput {
-                    id: Id::from(locked_move),
-                    mon: mon_handle,
-                    target: locked_move_target,
-                    mega: false,
-                })));
-            // Locked move, the Mon cannot do anything else.
-            return Ok(());
-        } else if moves.is_empty() {
-            // No moves, the Mon must use Struggle.
-            move_id = Id::from_known("struggle");
-        } else {
-            // Make sure the selected move is not disabled.
-            let move_slot = moves
-                .iter()
-                .find(|mov| mov.id == move_id)
-                .wrap_error_with_format(format_args!(
-                    "expected move {move_id} to be in Mon's moveset"
-                ))?;
-            if move_slot.disabled {
-                return Err(battler_error!(
-                    "{}'s {} is disabled",
-                    context.mon().name,
-                    move_name
-                ));
-            }
         }
 
         // Mega evoution.

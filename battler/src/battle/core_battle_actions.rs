@@ -185,6 +185,8 @@ pub fn do_move(
             CoreBattle::clear_active_move(context.as_battle_context_mut())?;
             return Ok(());
         }
+
+        context.mon_mut().last_move_target = target_location;
     }
 
     // Use the move.
@@ -207,7 +209,6 @@ pub fn do_move(
 
         // At this point, the move will be attempted, so we should remember it.
         context.mon_mut().last_move_selected = Some(active_move_handle);
-        context.mon_mut().last_move_target = target_location;
     }
 
     // TODO: AfterMove event.
