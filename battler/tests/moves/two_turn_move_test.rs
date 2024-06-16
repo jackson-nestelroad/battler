@@ -140,7 +140,7 @@ mod two_turn_move_test {
                 "split|side:1",
                 "damage|mon:Pidgeot,player-2,1|health:91/143",
                 "damage|mon:Pidgeot,player-2,1|health:64/100",
-                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Residual",
+                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3"
             ]"#,
@@ -229,7 +229,7 @@ mod two_turn_move_test {
                 "split|side:1",
                 "damage|mon:Pidgeot,player-2,1|health:85/143",
                 "damage|mon:Pidgeot,player-2,1|health:60/100",
-                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Residual",
+                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3",
                 ["time"],
@@ -249,7 +249,7 @@ mod two_turn_move_test {
                 "split|side:1",
                 "damage|mon:Pidgeot,player-2,1|health:25/143",
                 "damage|mon:Pidgeot,player-2,1|health:18/100",
-                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Residual",
+                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:5"
             ]"#,

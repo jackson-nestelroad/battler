@@ -497,7 +497,7 @@ fn run_residual_callbacks_with_errors(
             break;
         }
 
-        let mut context = context.effect_context(&EffectHandle::Condition(Id::from("residual")))?;
+        let mut context = context.effect_context(&callback_handle.effect_handle)?;
 
         let mut ended = false;
         if let Some(effect_state) =

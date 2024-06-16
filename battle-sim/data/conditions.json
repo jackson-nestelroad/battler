@@ -1,8 +1,4 @@
 {
-  "residual": {
-    "name": "Residual",
-    "condition_type": "Built-in"
-  },
   "drain": {
     "name": "Drain",
     "condition_type": "Built-in"
