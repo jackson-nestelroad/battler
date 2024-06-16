@@ -907,11 +907,13 @@ impl Mon {
     }
 
     fn moves_with_locked_move(
-        context: &MonContext,
+        context: &mut MonContext,
         locked_move: Option<&str>,
     ) -> Result<Vec<MonMoveSlotData>, Error> {
         // First, check if the Mon is locked into a certain move.
         if let Some(locked_move) = locked_move {
+            // A Mon with a locked move is trapped.
+            context.mon_mut().trapped = true;
             let locked_move_id = Id::from(locked_move.as_ref());
             // Recharge is a special move for moves that require a turn to recharge.
             if locked_move_id.eq("recharge") {
@@ -1135,6 +1137,24 @@ impl Mon {
     pub fn has_ability(context: &mut MonContext, id: &Id) -> Result<bool, Error> {
         // TODO: Consider ability suppression.
         Ok(&context.mon().ability.id == id)
+    }
+
+    pub fn reset_state_for_next_turn(context: &mut MonContext) {
+        context.mon_mut().move_this_turn_outcome = None;
+        context.mon_mut().hurt_this_turn = 0;
+        context.mon_mut().stats_raised_this_turn = false;
+        context.mon_mut().stats_lowered_this_turn = false;
+
+        for move_slot in &mut context.mon_mut().move_slots {
+            move_slot.disabled = false;
+            move_slot.disabled_source = None;
+        }
+
+        // TODO: DisableMove event.
+        // TODO: Modify attacked by storage.
+
+        context.mon_mut().trapped = false;
+        core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::TrapMon);
     }
 }
 

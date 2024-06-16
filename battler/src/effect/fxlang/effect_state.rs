@@ -1,6 +1,7 @@
 use ahash::HashMapExt;
 
 use crate::{
+    battle::MonHandle,
     battler_error,
     common::{
         Error,
@@ -8,7 +9,10 @@ use crate::{
         Id,
         WrapResultError,
     },
-    effect::fxlang::Value,
+    effect::{
+        fxlang::Value,
+        EffectHandle,
+    },
 };
 
 /// The persisted state of an individual [`Effect`][`crate::effect::Effect`].
@@ -20,12 +24,16 @@ pub struct EffectState {
     duration: Option<u8>,
     move_id: Option<Id>,
     target_location: Option<isize>,
+    source_effect: Option<EffectHandle>,
+    source: Option<MonHandle>,
 }
 
 impl EffectState {
     const DURATION: &'static str = "duration";
     const MOVE_ID: &'static str = "move";
     const TARGET_LOCATION: &'static str = "target_location";
+    const SOURCE_EFFECT: &'static str = "source_effect";
+    const SOURCE: &'static str = "source";
 
     pub fn new() -> Self {
         Self {
@@ -33,6 +41,8 @@ impl EffectState {
             duration: None,
             move_id: None,
             target_location: None,
+            source_effect: None,
+            source: None,
         }
     }
 
@@ -46,6 +56,7 @@ impl EffectState {
             ),
             _ => None,
         };
+
         let move_id = match values.get(Self::MOVE_ID) {
             Some(value) => Some(Id::from(
                 value
@@ -55,6 +66,7 @@ impl EffectState {
             )),
             _ => None,
         };
+
         let mut target_location = match values.get(Self::TARGET_LOCATION) {
             Some(value) => Some(
                 value
@@ -68,11 +80,34 @@ impl EffectState {
         if let Some(0) = target_location {
             target_location = None;
         }
+
+        let source_effect = match values.get(Self::SOURCE_EFFECT) {
+            Some(value) => Some(
+                value
+                    .clone()
+                    .effect_handle()
+                    .wrap_error_with_message("source effect must be an effect handle")?,
+            ),
+            _ => None,
+        };
+
+        let source = match values.get(Self::SOURCE) {
+            Some(value) => Some(
+                value
+                    .clone()
+                    .mon_handle()
+                    .wrap_error_with_message("source must be a mon handle")?,
+            ),
+            _ => None,
+        };
+
         Ok(Self {
             values,
             duration,
             move_id,
             target_location,
+            source_effect,
+            source,
         })
     }
 
@@ -92,6 +127,28 @@ impl EffectState {
 
     pub fn target_location(&self) -> Option<isize> {
         self.target_location
+    }
+
+    pub fn source_effect(&self) -> Option<EffectHandle> {
+        self.source_effect.clone()
+    }
+
+    pub fn set_source_effect(&mut self, source_effect: EffectHandle) {
+        self.values.insert(
+            Self::SOURCE_EFFECT.to_owned(),
+            Value::Effect(source_effect.clone()),
+        );
+        self.source_effect = Some(source_effect);
+    }
+
+    pub fn source(&self) -> Option<MonHandle> {
+        self.source.clone()
+    }
+
+    pub fn set_source(&mut self, source: MonHandle) {
+        self.values
+            .insert(Self::SOURCE.to_owned(), Value::Mon(source));
+        self.source = Some(source);
     }
 }
 

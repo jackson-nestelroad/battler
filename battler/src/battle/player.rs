@@ -596,7 +596,7 @@ impl Player {
         match context.player().request_type() {
             Some(RequestType::Turn) => {
                 if active_mon.trapped {
-                    return Err(battler_error!("the active Mon is trapped"));
+                    return Err(battler_error!("{} is trapped", active_mon.name));
                 }
             }
             Some(RequestType::Switch) => {

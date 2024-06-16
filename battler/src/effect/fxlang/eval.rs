@@ -216,6 +216,24 @@ impl<
         }
     }
 
+    pub fn source_context_mut<'eval>(
+        &'eval mut self,
+    ) -> Result<MaybeOwnedMut<'eval, MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::ActiveMove(context) => {
+                let context = context.as_mon_context_mut();
+                let context: &'eval mut &'eval mut MonContext<'eval, 'eval, 'eval, 'battle, 'data> =
+                    unsafe { mem::transmute(context) };
+                Ok((*context).into())
+            }
+            Self::ApplyingEffect(context) => Ok(context
+                .source_context()?
+                .wrap_error_with_message("applying effect context has no source context")?
+                .into()),
+            Self::Mon(_) => Err(battler_error!("mon context has no source context")),
+        }
+    }
+
     pub fn mon_context_mut<'eval>(
         &'eval mut self,
         mon_handle: MonHandle,
@@ -508,6 +526,7 @@ where
                 ValueRef::Mon(mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
+                        "active" => ValueRef::Boolean(context.mon(*mon_handle)?.active),
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
                         "fainted" => ValueRef::Boolean(context.mon(*mon_handle)?.fainted),
                         "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),

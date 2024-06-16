@@ -534,6 +534,7 @@ fn run_residual_callbacks_with_errors(
                             .effect_handle
                             .try_id()
                             .wrap_error_with_message("expected volatile to have an id")?,
+                        false,
                     )?;
                 } else {
                     run_callback_with_errors(

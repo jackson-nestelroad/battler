@@ -70,6 +70,7 @@ pub fn run_function(
         "do_not_animate_last_move" => {
             do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
         }
+        "end" => end(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "has_ability" => has_ability(context.battle_context_mut(), args).map(|val| Some(val)),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
         "log_status" => {
@@ -86,6 +87,8 @@ pub fn run_function(
         "run_event" => {
             run_event(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
         }
+        "start" => start(context.target_context_mut()?.as_mut(), args).map(|()| None),
+        "trap" => trap_mon(context, args).map(|()| None),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -122,6 +125,28 @@ fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
 }
 
 fn activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mut with_target = false;
+    let mut with_source = false;
+
+    match args.front().cloned() {
+        Some(value) => {
+            if value.string().is_ok_and(|value| value == "with_target") {
+                with_target = true;
+                args.pop_front();
+            }
+        }
+        _ => (),
+    }
+    match args.front().cloned() {
+        Some(value) => {
+            if value.string().is_ok_and(|value| value == "with_source") {
+                with_source = true;
+                args.pop_front();
+            }
+        }
+        _ => (),
+    }
+
     match context {
         EvaluationContext::ActiveMove(context) => {
             args.push_front(Value::String(format!(
@@ -137,7 +162,51 @@ fn activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         },
         _ => (),
     }
+
+    if with_target {
+        args.push_front(Value::String(format!(
+            "mon:{}",
+            Mon::position_details(context.target_context_mut()?.as_ref())?
+        )));
+    }
+    if with_source {
+        args.push_back(Value::String(format!(
+            "of:{}",
+            Mon::position_details(context.source_context_mut()?.as_ref())?
+        )));
+    }
+
     log_internal(context.battle_context_mut(), "activate".to_owned(), args)
+}
+
+fn start(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let status = args
+        .pop_front()
+        .wrap_error_with_message("missing status name")?
+        .string()
+        .wrap_error_with_message("invalid status name")?;
+    args.push_front(Value::String(format!("what:{status}")));
+    args.push_front(Value::String(format!(
+        "mon:{}",
+        Mon::position_details(context)?
+    )));
+
+    log_internal(context.as_battle_context_mut(), "start".to_owned(), args)
+}
+
+fn end(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let status = args
+        .pop_front()
+        .wrap_error_with_message("missing status name")?
+        .string()
+        .wrap_error_with_message("invalid status name")?;
+    args.push_front(Value::String(format!("what:{status}")));
+    args.push_front(Value::String(format!(
+        "mon:{}",
+        Mon::position_details(context)?
+    )));
+
+    log_internal(context.as_battle_context_mut(), "end".to_owned(), args)
 }
 
 fn prepare_move(context: &mut ActiveMoveContext) -> Result<(), Error> {
@@ -165,8 +234,9 @@ fn log_status(
 ) -> Result<(), Error> {
     let status = args
         .pop_front()
-        .wrap_error_with_message("missing status id")?
-        .string()?;
+        .wrap_error_with_message("missing status name")?
+        .string()
+        .wrap_error_with_message("invalid status name")?;
     let mut event = log_event!(
         "status",
         ("mon", Mon::position_details(&context.target_context()?)?),
@@ -319,9 +389,16 @@ fn remove_volatile(
         .wrap_error_with_message("missing volatile id")?
         .string()
         .wrap_error_with_message("invalid volatile")?;
+    let no_events = match args.pop_front() {
+        Some(value) => value
+            .boolean()
+            .wrap_error_with_message("invalid no_events argument")?,
+        _ => false,
+    };
     let volatile = Id::from(volatile);
     let mut context = context.change_target_context(mon_handle)?;
-    core_battle_actions::remove_volatile(&mut context, &volatile).map(|val| Value::Boolean(val))
+    core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
+        .map(|val| Value::Boolean(val))
 }
 
 fn run_event(
@@ -346,4 +423,13 @@ fn run_event(
 fn do_not_animate_last_move(context: &mut Context) -> Result<(), Error> {
     core_battle_logs::do_not_animate_last_move(context);
     Ok(())
+}
+
+fn trap_mon(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("mising mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_actions::trap_mon(context.mon_context_mut(mon_handle)?.as_mut())
 }

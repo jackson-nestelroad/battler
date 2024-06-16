@@ -31,6 +31,9 @@ pub enum ConditionType {
     /// Status, which is applied to a single Mon for a finite amount of time.
     #[string = "Status"]
     Status,
+    /// Volatile, which is applied to a single Mon for a finite amount of time.
+    #[string = "Volatile"]
+    Volatile,
 }
 
 /// Data about a particular condition.
@@ -70,6 +73,7 @@ impl Condition {
             ConditionType::BuiltIn => "",
             ConditionType::Condition => "condition",
             ConditionType::Status => "status",
+            ConditionType::Volatile => "",
             ConditionType::Weather => "weather",
         }
     }

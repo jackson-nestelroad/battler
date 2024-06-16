@@ -1069,8 +1069,6 @@ impl<'d> CoreBattle<'d> {
 
     fn next_turn(context: &mut Context) -> Result<(), Error> {
         context.battle_mut().turn += 1;
-        let turn_event = log_event!("turn", ("turn", context.battle().turn));
-        context.battle_mut().log(turn_event);
 
         if context.battle().turn >= 1000 {
             context.battle_mut().log(log_event!(
@@ -1078,7 +1076,22 @@ impl<'d> CoreBattle<'d> {
                 ("message", "It is turn 1000. You have hit the turn limit!"),
             ));
             Self::tie(context)?;
+            return Ok(());
         }
+
+        for mon_handle in context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>()
+        {
+            let mut context = context.mon_context(mon_handle)?;
+            Mon::reset_state_for_next_turn(&mut context);
+        }
+
+        // TODO: Endless battle clause.
+
+        let turn_event = log_event!("turn", ("turn", context.battle().turn));
+        context.battle_mut().log(turn_event);
 
         Self::make_request(context, RequestType::Turn)?;
         Ok(())

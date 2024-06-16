@@ -196,5 +196,46 @@
         "on_end": ["remove_volatile: $target $effect_state.move"]
       }
     }
+  },
+  "partiallytrapped": {
+    "name": "Partially Trapped",
+    "condition_type": "Volatile",
+    "condition": {
+      "callbacks": {
+        "on_duration": ["return func_call(random: 5 7)"],
+        "on_start": [
+          "activate: with_target with_source str('move:{}', $effect_state.source_effect.name)",
+          "$effect_state.divisor = 8"
+        ],
+        "on_residual": {
+          "order": 13,
+          "program": [
+            "$source = $effect_state.source",
+            "if !$source.active or $source.hp == 0:",
+            [
+              "remove_volatile: $target $this.id true",
+              "end: $effect_state.source_effect.name silent",
+              "return"
+            ],
+            "damage: expr($target.base_max_hp / $effect_state.divisor)"
+          ]
+        },
+        "on_end": ["end: $effect_state.source_effect.name"],
+        "on_trap_mon": ["trap: $mon"]
+      }
+    }
+  },
+  "flinch": {
+    "name": "Flinch",
+    "condition_type": "Volatile",
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_before_move": {
+          "priority": 8,
+          "program": ["cant: $this.name", "run_event: Flinch", "return false"]
+        }
+      }
+    }
   }
 }

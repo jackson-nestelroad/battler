@@ -125,6 +125,8 @@ pub enum BattleEvent {
     Duration,
     #[string = "End"]
     End,
+    #[string = "Flinch"]
+    Flinch,
     #[string = "Invulnerability"]
     Invulnerability,
     #[string = "LockMove"]
@@ -157,6 +159,10 @@ pub enum BattleEvent {
     Start,
     #[string = "SwitchIn"]
     SwitchIn,
+    #[string = "TrapMon"]
+    TrapMon,
+    #[string = "TryHit"]
+    TryHit,
     #[string = "TryUseMove"]
     TryUseMove,
     #[string = "UseMove"]
@@ -179,6 +185,7 @@ impl BattleEvent {
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::Duration => CommonCallbackType::EffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
@@ -195,6 +202,8 @@ impl BattleEvent {
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
+            Self::TrapMon => CommonCallbackType::MonVoid as u32,
+            Self::TryHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::MoveVoid as u32,
@@ -357,6 +366,7 @@ pub struct Callbacks {
     pub on_damaging_hit: Callback,
     pub on_duration: Callback,
     pub on_end: Callback,
+    pub on_flinch: Callback,
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
@@ -373,6 +383,8 @@ pub struct Callbacks {
     pub on_source_modify_damage: Callback,
     pub on_start: Callback,
     pub on_switch_in: Callback,
+    pub on_trap_mon: Callback,
+    pub on_try_hit: Callback,
     pub on_try_use_move: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
@@ -391,6 +403,7 @@ impl Callbacks {
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
+            BattleEvent::Flinch => Some(&self.on_flinch),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
@@ -407,6 +420,8 @@ impl Callbacks {
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
+            BattleEvent::TrapMon => Some(&self.on_trap_mon),
+            BattleEvent::TryHit => Some(&self.on_try_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),

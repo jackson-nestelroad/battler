@@ -243,6 +243,14 @@ impl Value {
             )),
         }
     }
+
+    /// Consumes the value into an [`EffectHandle`].
+    pub fn effect_handle(self) -> Result<EffectHandle, Error> {
+        match self {
+            Self::Effect(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Effect)),
+        }
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.

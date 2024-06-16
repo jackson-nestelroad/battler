@@ -2123,7 +2123,12 @@
     "pp": 40,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Gravity", "Metronome"]
+    "flags": ["Gravity", "Metronome"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["log: nothing"]
+      }
+    }
   },
   "acidarmor": {
     "name": "Acid Armor",

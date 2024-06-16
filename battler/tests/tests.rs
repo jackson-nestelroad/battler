@@ -17,6 +17,7 @@ mod moves {
     mod recoil_test;
     mod self_destruct_test;
     mod singles_damage_calculation_test;
+    mod splash_test;
     mod stab_test;
     mod stat_boost_drop_test;
     mod stat_override_test;
@@ -30,8 +31,10 @@ mod moves {
 
 mod status {
     mod burn_test;
+    mod flinch_test;
     mod freeze_test;
     mod paralysis_test;
+    mod partially_trapped_test;
     mod poison_test;
     mod sleep_test;
     mod toxic_test;

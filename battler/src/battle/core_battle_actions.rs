@@ -16,6 +16,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        MoveEventResult,
         MoveHandle,
         MoveOutcome,
         MoveOutcomeOnTarget,
@@ -543,16 +544,33 @@ fn hit_targets(
     targets: &mut [HitTargetState],
 ) -> Result<(), Error> {
     let move_target = context.active_move().data.target.clone();
-    if move_target == MoveTarget::All && !context.is_self() {
+    let try_move_result = if move_target == MoveTarget::All && !context.is_self() {
         // TODO: TryHitField event for the HitEffect.
+        MoveEventResult::Advance
     } else if (move_target == MoveTarget::FoeSide
         || move_target == MoveTarget::AllySide
         || move_target == MoveTarget::AllyTeam)
         && !context.is_self()
     {
         // TODO: TryHitSide event for the HitEffect.
+        MoveEventResult::Advance
     } else {
+        core_battle_effects::run_active_move_event_expecting_move_event_result(
+            context,
+            fxlang::BattleEvent::TryHit,
+        )
         // TODO: TryHit event for the HitEffect.
+    };
+
+    if !try_move_result.advance() {
+        if try_move_result.failed() {
+            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+        }
+        for target in targets {
+            target.outcome = MoveOutcomeOnTarget::Failure;
+        }
+        return Ok(());
     }
 
     // TODO: If any of the above events fail, the move should fail.
@@ -1885,10 +1903,17 @@ pub fn try_add_volatile(
         return Ok(false);
     }
 
+    let mut effect_state = fxlang::EffectState::new();
+
+    effect_state.set_source_effect(context.effect_handle());
+    if let Some(source_handle) = context.source_handle() {
+        effect_state.set_source(source_handle);
+    }
+
     context
         .target_mut()
         .volatiles
-        .insert(status.clone(), fxlang::EffectState::new());
+        .insert(status.clone(), effect_state);
 
     if let Some(condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &volatile_effect_handle)?
@@ -1935,7 +1960,11 @@ pub fn try_add_volatile(
     Ok(true)
 }
 
-pub fn remove_volatile(context: &mut ApplyingEffectContext, status: &Id) -> Result<bool, Error> {
+pub fn remove_volatile(
+    context: &mut ApplyingEffectContext,
+    status: &Id,
+    no_events: bool,
+) -> Result<bool, Error> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -1953,6 +1982,11 @@ pub fn remove_volatile(context: &mut ApplyingEffectContext, status: &Id) -> Resu
         return Ok(false);
     }
 
+    if no_events {
+        context.target_mut().volatiles.remove(&status);
+        return Ok(true);
+    }
+
     core_battle_effects::run_mon_volatile_event(context, fxlang::BattleEvent::End, &status);
     context.target_mut().volatiles.remove(&status);
 
@@ -1962,4 +1996,16 @@ pub fn remove_volatile(context: &mut ApplyingEffectContext, status: &Id) -> Resu
     core_battle_logs::remove_volatile(context, &volatile_name)?;
 
     Ok(true)
+}
+
+pub fn trap_mon(context: &mut MonContext) -> Result<(), Error> {
+    if check_status_immunity(context, &Id::from_known("trapped"))? {
+        return Ok(());
+    }
+    if context.mon().trapped {
+        return Ok(());
+    }
+    context.mon_mut().trapped = true;
+
+    Ok(())
 }
