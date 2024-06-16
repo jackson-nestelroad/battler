@@ -54,7 +54,11 @@ fn run_active_move_event_with_errors(
     event: fxlang::BattleEvent,
     mut input: fxlang::VariableInput,
 ) -> Result<Option<fxlang::Value>, Error> {
-    input.set_this_effect(context.effect_handle());
+    input.set_this_effect(
+        context
+            .effect_handle()
+            .stable_effect_handle(context.as_battle_context_mut())?,
+    );
     // SAFETY: The active move lives for the lifetime of the turn.
     let active_move = unsafe { context.active_move_mut().unsafely_detach_borrow_mut() };
     let effect_state = active_move.effect_state.clone();

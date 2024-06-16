@@ -58,6 +58,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
+            parsed.parse_and_save(BattleEvent::MoveFailed, callbacks)?;
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Restart, callbacks)?;

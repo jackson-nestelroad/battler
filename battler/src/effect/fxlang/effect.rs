@@ -145,6 +145,8 @@ pub enum BattleEvent {
     ModifySpe,
     #[string = "MoveAborted"]
     MoveAborted,
+    #[string = "MoveFailed"]
+    MoveFailed,
     #[string = "PrepareHit"]
     PrepareHit,
     #[string = "Residual"]
@@ -195,6 +197,7 @@ impl BattleEvent {
             Self::ModifySpD => CommonCallbackType::MonModifier as u32,
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
             Self::MoveAborted => CommonCallbackType::MoveVoid as u32,
+            Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
             Self::Residual => CommonCallbackType::EffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
@@ -376,6 +379,7 @@ pub struct Callbacks {
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
     pub on_move_aborted: Callback,
+    pub on_move_failed: Callback,
     pub on_prepare_hit: Callback,
     pub on_residual: Callback,
     pub on_restart: Callback,
@@ -413,6 +417,7 @@ impl Callbacks {
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),
             BattleEvent::MoveAborted => Some(&self.on_move_aborted),
+            BattleEvent::MoveFailed => Some(&self.on_move_failed),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),

@@ -1,5 +1,6 @@
 mod moves {
     mod accuracy_check_test;
+    mod crash_damage_test;
     mod crit_ratio_test;
     mod doubles_damage_calculation_test;
     mod drain_test;

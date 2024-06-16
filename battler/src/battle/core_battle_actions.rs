@@ -321,7 +321,12 @@ fn use_move_internal(
         )?;
     }
 
-    // TODO: MoveFail event if outcome is Failed.
+    if outcome == MoveOutcome::Failed {
+        core_battle_effects::run_active_move_event_expecting_void(
+            &mut context,
+            fxlang::BattleEvent::MoveFailed,
+        );
+    }
 
     Ok(outcome)
 }

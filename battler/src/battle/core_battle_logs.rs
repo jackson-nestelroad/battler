@@ -156,13 +156,12 @@ pub fn damage(
     // TODO: Handle other special cases where the damage log should have more information.
     let mut event = log_event!("damage", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
-        let effect_context = context.as_battle_context_mut().effect_context(effect)?;
-        let effect_type = effect_context.effect().effect_type();
-        if effect_type != EffectType::Move {
+        if !effect.is_move() {
+            let effect_context = context.as_battle_context_mut().effect_context(effect)?;
             event.set("from", effect_context.effect().full_name());
 
             if let Some(source) = source {
-                if source != context.mon_handle() || effect_type == EffectType::Ability {
+                if source != context.mon_handle() || effect.is_ability() {
                     event.set(
                         "source",
                         Mon::position_details(

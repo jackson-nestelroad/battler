@@ -424,6 +424,14 @@ impl<
         }
     }
 
+    pub fn target_handle(&self) -> Option<MonHandle> {
+        match self {
+            Self::ActiveMove(context) => context.active_target_handle(),
+            Self::ApplyingEffect(context) => Some(context.target_handle()),
+            Self::Mon(context) => Some(context.mon_handle()),
+        }
+    }
+
     pub fn source_handle(&self) -> Option<MonHandle> {
         match self {
             Self::ActiveMove(context) => Some(context.mon_handle()),
@@ -509,7 +517,7 @@ where
 
     fn get_ref<'var>(
         &'var self,
-        context: &'eval EvaluationContext,
+        context: &'eval mut EvaluationContext,
     ) -> Result<ValueRef<'var>, Error> {
         let mut value = ValueRef::from(&self.stored);
         for member in &self.member_access {
@@ -595,7 +603,7 @@ where
                     }
                 }
                 ValueRef::ActiveMove(active_move_handle) => {
-                    let context = unsafe { context.unsafely_detach_borrow() };
+                    let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
                         "base_power" => {
                             ValueRef::U32(context.active_move(*active_move_handle)?.data.base_power)
@@ -630,7 +638,10 @@ where
         Ok(value)
     }
 
-    fn get(self, context: &'eval EvaluationContext) -> Result<ValueRefToStoredValue<'eval>, Error> {
+    fn get(
+        self,
+        context: &'eval mut EvaluationContext,
+    ) -> Result<ValueRefToStoredValue<'eval>, Error> {
         let value_ref = self.get_ref(context)?;
         // SAFETY: This ValueRef references some internal part of `self.stored`. Since we are
         // bundling this reference alongside the owner object (which has runtime borrow checking),

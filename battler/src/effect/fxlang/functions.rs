@@ -13,7 +13,6 @@ use crate::{
         Context,
         Mon,
         MonContext,
-        MonHandle,
     },
     battler_error,
     common::{
@@ -29,7 +28,6 @@ use crate::{
             VariableInput,
         },
         Effect,
-        EffectHandle,
     },
     log::Event,
     log_event,
@@ -55,17 +53,7 @@ pub fn run_function(
         "cure_status" => {
             cure_status(context.applying_effect_context_mut()?.as_mut(), args).map(|()| None)
         }
-        "damage" => {
-            let source_handle = context.source_handle();
-            let effect_handle = context.effect_handle();
-            damage(
-                context.target_context_mut()?.as_mut(),
-                source_handle,
-                effect_handle,
-                args,
-            )
-            .map(|()| None)
-        }
+        "damage" => damage(context, args).map(|()| None),
         "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
         "do_not_animate_last_move" => {
             do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
@@ -128,23 +116,17 @@ fn activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     let mut with_target = false;
     let mut with_source = false;
 
-    match args.front().cloned() {
-        Some(value) => {
-            if value.string().is_ok_and(|value| value == "with_target") {
-                with_target = true;
-                args.pop_front();
-            }
+    if let Some(value) = args.front().cloned() {
+        if value.string().is_ok_and(|value| value == "with_target") {
+            with_target = true;
+            args.pop_front();
         }
-        _ => (),
     }
-    match args.front().cloned() {
-        Some(value) => {
-            if value.string().is_ok_and(|value| value == "with_source") {
-                with_source = true;
-                args.pop_front();
-            }
+    if let Some(value) = args.front().cloned() {
+        if value.string().is_ok_and(|value| value == "with_source") {
+            with_source = true;
+            args.pop_front();
         }
-        _ => (),
     }
 
     match context {
@@ -278,12 +260,19 @@ fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
     Ok(Value::Boolean(val))
 }
 
-fn damage(
-    context: &mut MonContext,
-    source_handle: Option<MonHandle>,
-    effect_handle: Option<EffectHandle>,
-    mut args: VecDeque<Value>,
-) -> Result<(), Error> {
+fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let source_handle = context.source_handle();
+    let effect_handle = context.effect_handle();
+
+    let mut target_handle = context.target_handle();
+    if let Some(value) = args.front().cloned() {
+        if let Ok(value) = value.mon_handle() {
+            args.pop_front();
+            target_handle = Some(value);
+        }
+    }
+    let target_handle = target_handle.wrap_error_with_message("missing target")?;
+
     let amount = args
         .pop_front()
         .wrap_error_with_message("missing damage amount")?
@@ -297,7 +286,12 @@ fn damage(
         ),
         None => effect_handle,
     };
-    core_battle_actions::damage(context, amount, source_handle, damaging_effect.as_ref())
+    core_battle_actions::damage(
+        context.mon_context_mut(target_handle)?.as_mut(),
+        amount,
+        source_handle,
+        damaging_effect.as_ref(),
+    )
 }
 
 fn has_ability(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {

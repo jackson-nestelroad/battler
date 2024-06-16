@@ -1022,6 +1022,11 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         self.mon().active_target.is_some()
     }
 
+    /// Returns the [`MonHandle`] for the active target, if any.
+    pub fn active_target_handle(&self) -> Option<MonHandle> {
+        self.mon().active_target
+    }
+
     /// Returns the [`EffectHandle`] for the active [`Move`].
     pub fn effect_handle(&self) -> EffectHandle {
         EffectHandle::ActiveMove(self.active_move_handle)
