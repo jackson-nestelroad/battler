@@ -25,22 +25,22 @@ mod paralysis_test {
     fn pikachu() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
-            "members": [
-                {
-                    "name": "Pikachu",
-                    "species": "Pikachu",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Thunder Wave",
-                        "Tackle"
-                    ],
-                    "nature": "Hardy",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                }
-            ]
-        }"#,
+                "members": [
+                    {
+                        "name": "Pikachu",
+                        "species": "Pikachu",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Thunder Wave",
+                            "Tackle"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
         )
         .wrap_error()
     }
@@ -74,9 +74,9 @@ mod paralysis_test {
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
+            .with_seed(48205749111)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_seed(48205749111)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)

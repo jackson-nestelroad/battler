@@ -26,22 +26,22 @@ mod burn_test {
     fn gengar() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
-            "members": [
-                {
-                    "name": "Gengar",
-                    "species": "Gengar",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Will-O-Wisp",
-                        "Knock Off"
-                    ],
-                    "nature": "Hardy",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                }
-            ]
-        }"#,
+                "members": [
+                    {
+                        "name": "Gengar",
+                        "species": "Gengar",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Will-O-Wisp",
+                            "Knock Off"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
         )
         .wrap_error()
     }
@@ -73,10 +73,10 @@ mod burn_test {
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
+            .with_seed(1234566456456)
             .with_team_validation(false)
             .with_pass_allowed(true)
             .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Max)
-            .with_seed(1234566456456)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)

@@ -4,10 +4,13 @@ use serde_string_enum::{
 };
 
 /// The outcome of a move used on a single turn of battle.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
 pub enum MoveOutcome {
+    #[string = "Skipped"]
     Skipped,
+    #[string = "Failed"]
     Failed,
+    #[string = "Success"]
     Success,
 }
 

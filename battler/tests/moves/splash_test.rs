@@ -3,7 +3,6 @@ mod splash_test {
     use battler::{
         battle::{
             Battle,
-            BattleEngineRandomizeBaseDamage,
             BattleType,
             PublicCoreBattle,
         },
@@ -26,21 +25,21 @@ mod splash_test {
     fn magikarp() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
-            "members": [
-                {
-                    "name": "Magikarp",
-                    "species": "Magikarp",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Splash"
-                    ],
-                    "nature": "Hardy",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                }
-            ]
-        }"#,
+                "members": [
+                    {
+                        "name": "Magikarp",
+                        "species": "Magikarp",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Splash"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
         )
         .wrap_error()
     }
@@ -54,7 +53,6 @@ mod splash_test {
             .with_battle_type(BattleType::Singles)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Max)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)

@@ -32,8 +32,10 @@ mod moves {
 
 mod status {
     mod burn_test;
+    mod confusion_test;
     mod flinch_test;
     mod freeze_test;
+    mod locked_move_test;
     mod paralysis_test;
     mod partially_trapped_test;
     mod poison_test;

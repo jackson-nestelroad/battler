@@ -3,7 +3,6 @@ mod partially_trapped_test {
     use battler::{
         battle::{
             Battle,
-            BattleEngineRandomizeBaseDamage,
             BattleType,
             PublicCoreBattle,
         },
@@ -27,33 +26,33 @@ mod partially_trapped_test {
     fn two_gyarados() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
-            "members": [
-                {
-                    "name": "Gyarados",
-                    "species": "Gyarados",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Bind"
-                    ],
-                    "nature": "Hardy",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                },
-                {
-                    "name": "Gyarados",
-                    "species": "Gyarados",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Bind"
-                    ],
-                    "nature": "Hardy",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                }
-            ]
-        }"#,
+                "members": [
+                    {
+                        "name": "Gyarados",
+                        "species": "Gyarados",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Bind"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    },
+                    {
+                        "name": "Gyarados",
+                        "species": "Gyarados",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Bind"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
         )
         .wrap_error()
     }
@@ -67,7 +66,6 @@ mod partially_trapped_test {
             .with_battle_type(BattleType::Singles)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Max)
             .with_seed(0)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
@@ -119,29 +117,29 @@ mod partially_trapped_test {
                 ["time"],
                 "move|mon:Gyarados,player-1,1|name:Bind|target:Gyarados,player-2,1",
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|health:143/155",
+                "damage|mon:Gyarados,player-2,1|health:144/155",
                 "damage|mon:Gyarados,player-2,1|health:93/100",
                 "activate|mon:Gyarados,player-2,1|move:Bind|of:Gyarados,player-1,1",
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:124/155",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:80/100",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:125/155",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:81/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:105/155",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:68/100",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:106/155",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:69/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:86/155",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:56/100",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:87/155",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:57/100",
                 "residual",
                 "turn|turn:4",
                 ["time"],
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:67/155",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:68/155",
                 "damage|mon:Gyarados,player-2,1|from:move:Bind|health:44/100",
                 "residual",
                 "turn|turn:5",
@@ -192,18 +190,18 @@ mod partially_trapped_test {
                 ["time"],
                 "move|mon:Gyarados,player-1,1|name:Bind|target:Gyarados,player-2,1",
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|health:143/155",
+                "damage|mon:Gyarados,player-2,1|health:144/155",
                 "damage|mon:Gyarados,player-2,1|health:93/100",
                 "activate|mon:Gyarados,player-2,1|move:Bind|of:Gyarados,player-1,1",
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:124/155",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:80/100",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:125/155",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:81/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
                 "split|side:1",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:105/155",
-                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:68/100",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:106/155",
+                "damage|mon:Gyarados,player-2,1|from:move:Bind|health:69/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],

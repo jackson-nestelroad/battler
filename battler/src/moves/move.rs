@@ -173,7 +173,7 @@ pub struct MoveData {
     pub override_defensive_mon: Option<MonOverride>,
     /// Stat override for defensive stat calculations.
     ///
-    /// By default, Def is used  for physical moves and SpD is used for special moves.
+    /// By default, Def is used for physical moves and SpD is used for special moves.
     pub override_defensive_stat: Option<Stat>,
 
     /// Critical hit ratio.
@@ -216,7 +216,6 @@ pub struct MoveData {
     /// The move will always critical hit.
     #[serde(default)]
     pub will_crit: bool,
-
     /// Does the move have crash damage?
     #[serde(default)]
     pub has_crash_damage: bool,
@@ -226,6 +225,9 @@ pub struct MoveData {
     /// The move stalls the battle.
     #[serde(default)]
     pub stalling_move: bool,
+    /// Does the move count as used only after the user is no longer locked into it?
+    #[serde(default)]
+    pub charging_turn: bool,
 
     /// Dynamic battle effects.
     #[serde(default)]

@@ -22,7 +22,6 @@ pub mod CallbackFlag {
     pub const TakesEffect: u32 = 1 << 4;
     pub const TakesActiveMove: u32 = 1 << 5;
     pub const TakesUserMon: u32 = 1 << 6;
-    pub const TakesSourceTargetMon: u32 = 1 << 7;
 
     pub const ReturnsString: u32 = 1 << 27;
     pub const ReturnsMoveResult: u32 = 1 << 28;
@@ -45,7 +44,6 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
     SourceMoveModifier = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
@@ -62,7 +60,6 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
     SourceMoveResult = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
@@ -74,10 +71,8 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsVoid,
-    SourceMoveVoid = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsVoid,
+    SourceMoveVoid =
+        CallbackFlag::TakesUserMon | CallbackFlag::TakesActiveMove | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MoveControllingResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -85,7 +80,6 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsMoveResult
         | CallbackFlag::ReturnsBoolean,
     SourceMoveControllingResult = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMoveResult
         | CallbackFlag::ReturnsBoolean

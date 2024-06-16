@@ -48,6 +48,9 @@ pub fn run_function(
         "add_volatile" => {
             add_volatile(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
         }
+        "calculate_confusion_damage" => {
+            calculate_confusion_damage(context, args).map(|val| Some(val))
+        }
         "cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
         "cure_status" => {
@@ -261,8 +264,15 @@ fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
 }
 
 fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let source_handle = context.source_handle();
     let effect_handle = context.effect_handle();
+
+    let mut source_handle = context.source_handle();
+    if let Some(value) = args.front().cloned() {
+        if value.string().is_ok_and(|value| value == "no_source") {
+            source_handle = None;
+            args.pop_front();
+        }
+    }
 
     let mut target_handle = context.target_handle();
     if let Some(value) = args.front().cloned() {
@@ -434,4 +444,25 @@ fn trap_mon(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::trap_mon(context.mon_context_mut(mon_handle)?.as_mut())
+}
+
+fn calculate_confusion_damage(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let base_power = args
+        .pop_front()
+        .wrap_error_with_message("missing base power")?
+        .integer_u32()
+        .wrap_error_with_message("invalid base power")?;
+    core_battle_actions::calculate_confusion_damage(
+        context.mon_context_mut(mon_handle)?.as_mut(),
+        base_power,
+    )
+    .map(|value| Value::U16(value))
 }

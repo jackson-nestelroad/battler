@@ -537,6 +537,7 @@ where
                         "active" => ValueRef::Boolean(context.mon(*mon_handle)?.active),
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
                         "fainted" => ValueRef::Boolean(context.mon(*mon_handle)?.fainted),
+                        "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
                         "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
                         "last_target_location" => ValueRef::I64(
                             context
@@ -546,8 +547,14 @@ where
                                 .try_into()
                                 .wrap_error_with_message("integer overflow")?,
                         ),
-                        "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
                         "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
+                        "move_this_turn_failed" => ValueRef::Boolean(
+                            context
+                                .mon(*mon_handle)?
+                                .move_this_turn_outcome
+                                .map(|outcome| !outcome.success())
+                                .unwrap_or(false),
+                        ),
                         "status" => ValueRef::TempString(
                             context
                                 .mon(*mon_handle)?
@@ -937,35 +944,6 @@ impl Evaluator {
                 EvaluationContext::ApplyingEffect(context) => {
                     // The user is the target of the effect.
                     self.vars.set("user", Value::Mon(context.target_handle()))?
-                }
-                _ => {
-                    return Err(Self::failed_var_initialization(
-                        "target",
-                        "ActiveMoveContext or ApplyingEffectContext",
-                    ))
-                }
-            }
-        }
-        if event.has_flag(CallbackFlag::TakesSourceTargetMon) {
-            match context {
-                EvaluationContext::ActiveMove(context) => {
-                    if context.has_active_target() {
-                        self.vars.set(
-                            "target",
-                            Value::Mon(context.active_target_context()?.mon_handle()),
-                        )?
-                    }
-                }
-                EvaluationContext::ApplyingEffect(context) => {
-                    // We expect that the source and target are flipped if this flag is set.
-                    self.vars.set(
-                        "target",
-                        Value::Mon(
-                            context
-                                .source_handle()
-                                .wrap_error_with_message("applying effect is missing a user mon")?,
-                        ),
-                    )?
                 }
                 _ => {
                     return Err(Self::failed_var_initialization(

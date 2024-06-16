@@ -1018,21 +1018,30 @@ impl Mon {
         self.active_target = None;
     }
 
-    /// Deducts PP from the given move.
+    /// Checks the PP for the given move.
     ///
     /// Returns if the move can be used with the PP deduction.
-    pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) -> bool {
-        if let Some(move_slot) = self.move_slot_mut(move_id) {
-            move_slot.used = true;
+    pub fn check_pp(&self, move_id: &Id, amount: u8) -> bool {
+        if let Some(move_slot) = self.move_slot(move_id) {
             if amount > move_slot.pp {
-                move_slot.pp = 0;
                 return false;
             } else {
-                move_slot.pp -= amount;
                 return true;
             }
         }
         return false;
+    }
+
+    /// Deducts PP from the given move.
+    pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) {
+        if let Some(move_slot) = self.move_slot_mut(move_id) {
+            move_slot.used = true;
+            if amount > move_slot.pp {
+                move_slot.pp = 0;
+            } else {
+                move_slot.pp -= amount;
+            }
+        }
     }
 
     /// Checks if the Mon is immune to the given type.

@@ -163,6 +163,7 @@
       "Protect"
     ],
     "crit_ratio": 2,
+    "charging_turn": true,
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -264,6 +265,7 @@
       "NoSleepTalk",
       "Protect"
     ],
+    "charging_turn": true,
     "effect": {
       "callbacks": {
         "on_try_use_move": [

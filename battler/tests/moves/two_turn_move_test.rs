@@ -24,27 +24,42 @@ mod two_turn_move_test {
         TestBattleBuilder,
     };
 
-    fn pidgeot() -> Result<TeamData, Error> {
+    fn two_pidgeot() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
-            "members": [
-                {
-                    "name": "Pidgeot",
-                    "species": "Pidgeot",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Razor Wind",
-                        "Fly",
-                        "Gust",
-                        "Tackle"
-                    ],
-                    "nature": "Hardy",
-                    "gender": "M",
-                    "ball": "Normal",
-                    "level": 50
-                }
-            ]
-        }"#,
+                "members": [
+                    {
+                        "name": "Pidgeot",
+                        "species": "Pidgeot",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Razor Wind",
+                            "Fly",
+                            "Gust",
+                            "Tackle"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    },
+                    {
+                        "name": "Pidgeot",
+                        "species": "Pidgeot",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Razor Wind",
+                            "Fly",
+                            "Gust",
+                            "Tackle"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
         )
         .wrap_error()
     }
@@ -71,8 +86,13 @@ mod two_turn_move_test {
     #[test]
     fn razor_wind_uses_two_turns() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle =
-            make_battle(&data, 10002323, pidgeot().unwrap(), pidgeot().unwrap()).unwrap();
+        let mut battle = make_battle(
+            &data,
+            10002323,
+            two_pidgeot().unwrap(),
+            two_pidgeot().unwrap(),
+        )
+        .unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -85,12 +105,13 @@ mod two_turn_move_test {
                     {
                         "name": "Razor Wind",
                         "id": "razorwind",
-                        "pp": 9,
+                        "pp": 10,
                         "max_pp": 10,
                         "target": "AllAdjacentFoes",
                         "disabled": false
                     }
-                ]
+                ],
+                "trapped": true
             }"#,
         )
         .unwrap();
@@ -110,6 +131,11 @@ mod two_turn_move_test {
             battle.set_player_choice("player-1", "move 1"),
             "cannot move: Pidgeot does not have a move in slot 1",
         );
+        assert_error_message(
+            battle.set_player_choice("player-1", "switch 1"),
+            "cannot switch: Pidgeot is trapped",
+        );
+
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
@@ -121,8 +147,8 @@ mod two_turn_move_test {
                 "player|id:player-1|name:Player 1|side:0|position:0",
                 "player|id:player-2|name:Player 2|side:1|position:0",
                 ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
+                "teamsize|player:player-1|size:2",
+                "teamsize|player:player-2|size:2",
                 "start",
                 "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
                 "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
@@ -138,8 +164,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Razor Wind",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Razor Wind|from:Razor Wind",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:92/143",
-                "damage|mon:Pidgeot,player-2,1|health:65/100",
+                "damage|mon:Pidgeot,player-2,1|health:91/143",
+                "damage|mon:Pidgeot,player-2,1|health:64/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3"
@@ -153,7 +179,7 @@ mod two_turn_move_test {
     fn fly_grants_invulnerability() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle =
-            make_battle(&data, 4745345345345, pidgeot().unwrap(), pidgeot().unwrap()).unwrap();
+            make_battle(&data, 67677, two_pidgeot().unwrap(), two_pidgeot().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -166,12 +192,13 @@ mod two_turn_move_test {
                     {
                         "name": "Fly",
                         "id": "fly",
-                        "pp": 14,
+                        "pp": 15,
                         "max_pp": 15,
                         "target": "Any",
                         "disabled": false
                     }
-                ]
+                ],
+                "trapped": true
             }"#,
         )
         .unwrap();
@@ -191,6 +218,11 @@ mod two_turn_move_test {
             battle.set_player_choice("player-1", "move 1"),
             "cannot move: Pidgeot does not have a move in slot 1",
         );
+        assert_error_message(
+            battle.set_player_choice("player-1", "switch 1"),
+            "cannot switch: Pidgeot is trapped",
+        );
+
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
 
@@ -208,8 +240,8 @@ mod two_turn_move_test {
                 "player|id:player-1|name:Player 1|side:0|position:0",
                 "player|id:player-2|name:Player 2|side:1|position:0",
                 ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
+                "teamsize|player:player-1|size:2",
+                "teamsize|player:player-2|size:2",
                 "start",
                 "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
                 "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
@@ -227,8 +259,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:82/143",
-                "damage|mon:Pidgeot,player-2,1|health:58/100",
+                "damage|mon:Pidgeot,player-2,1|health:88/143",
+                "damage|mon:Pidgeot,player-2,1|health:62/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3",
@@ -242,13 +274,13 @@ mod two_turn_move_test {
                 ["time"],
                 "move|mon:Pidgeot,player-2,1|name:Gust|target:Pidgeot,player-1,1",
                 "split|side:0",
-                "damage|mon:Pidgeot,player-1,1|health:93/143",
-                "damage|mon:Pidgeot,player-1,1|health:66/100",
+                "damage|mon:Pidgeot,player-1,1|health:89/143",
+                "damage|mon:Pidgeot,player-1,1|health:63/100",
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:27/143",
-                "damage|mon:Pidgeot,player-2,1|health:19/100",
+                "damage|mon:Pidgeot,player-2,1|health:25/143",
+                "damage|mon:Pidgeot,player-2,1|health:18/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:5"

@@ -166,14 +166,15 @@ pub fn do_move(
         return Ok(());
     }
 
-    // External moves do not have PP deducted.
+    let locked_move_before = Mon::locked_move(context)?;
+
+    // Check that move has enough PP to be used.
     if !external {
-        let locked_move = Mon::locked_move(context)?;
         let move_id = context.active_move()?.id();
         // SAFETY: move_id is only used for lookup.
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
-        if locked_move.is_none()
-            && !context.mon_mut().deduct_pp(move_id, 1)
+        if locked_move_before.is_none()
+            && !context.mon_mut().check_pp(move_id, 1)
             && !move_id.eq("struggle")
         {
             // No PP, so this move action cannot be carried through.
@@ -184,16 +185,30 @@ pub fn do_move(
             CoreBattle::clear_active_move(context.as_battle_context_mut())?;
             return Ok(());
         }
-
-        // At this point, the move will be attempted, so we should remember it.
-        context.mon_mut().last_move_selected = Some(active_move_handle);
-        context.mon_mut().last_move_target = target_location;
     }
 
     // Use the move.
     let move_id = context.active_move()?.id().clone();
     let target = context.mon().active_target;
     use_move(context, &move_id, target, source_effect)?;
+
+    let locked_move_after = Mon::locked_move(context)?;
+
+    // Deduct PP if the move was successful.
+    let charging_turn = context.active_move()?.data.charging_turn;
+    if !external
+        && ((!charging_turn && locked_move_before.is_none())
+            || (charging_turn && locked_move_after.is_none()))
+    {
+        let move_id = context.active_move()?.id();
+        // SAFETY: move_id is only used for lookup.
+        let move_id = unsafe { move_id.unsafely_detach_borrow() };
+        context.mon_mut().deduct_pp(move_id, 1);
+
+        // At this point, the move will be attempted, so we should remember it.
+        context.mon_mut().last_move_selected = Some(active_move_handle);
+        context.mon_mut().last_move_target = target_location;
+    }
 
     // TODO: AfterMove event.
 
@@ -470,7 +485,7 @@ fn try_direct_move(
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             return Ok(MoveOutcome::Failed);
         }
-        return Ok(MoveOutcome::Success);
+        return Ok(MoveOutcome::Skipped);
     }
 
     // TODO: PrepareHit event.
@@ -1654,6 +1669,8 @@ fn apply_user_effect(
                 if context.active_move().data.multihit.is_some() {
                     context.active_move_mut().primary_user_effect_applied = true;
                 }
+            } else {
+                move_hit(&mut context, &[mon_handle])?;
             }
         } else {
             move_hit(&mut context, &[mon_handle])?;
@@ -2017,4 +2034,36 @@ pub fn trap_mon(context: &mut MonContext) -> Result<(), Error> {
     context.mon_mut().trapped = true;
 
     Ok(())
+}
+
+pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> Result<u16, Error> {
+    let attack_stat = Stat::Atk;
+    let defense_stat = Stat::Def;
+    let attack_boosts = context.mon().boosts.get(attack_stat.try_into()?);
+    let defense_boosts = context.mon().boosts.get(defense_stat.try_into()?);
+    let attack = Mon::calculate_stat(
+        context,
+        attack_stat,
+        attack_boosts,
+        Fraction::from(1),
+        context.mon_handle(),
+        context.mon_handle(),
+    )?;
+    let defense = Mon::calculate_stat(
+        context,
+        defense_stat,
+        defense_boosts,
+        Fraction::from(1),
+        context.mon_handle(),
+        context.mon_handle(),
+    )?;
+    let level = context.mon().level as u32;
+    let base_damage = 2 * level / 5 + 2;
+    let base_damage = base_damage * base_power;
+    let base_damage = base_damage * attack as u32;
+    let base_damage = base_damage / defense as u32;
+    let base_damage = base_damage / 50;
+    let base_damage = base_damage + 2;
+    let base_damage = context.battle_mut().randomize_base_damage(base_damage);
+    Ok((base_damage as u16).max(1))
 }
