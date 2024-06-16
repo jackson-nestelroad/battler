@@ -289,7 +289,15 @@ fn damage(
         .wrap_error_with_message("missing damage amount")?
         .integer_u16()
         .wrap_error_with_message("invalid damage amount")?;
-    core_battle_actions::damage(context, amount, source_handle, effect_handle.as_ref())
+    let damaging_effect = match args.pop_front() {
+        Some(value) => Some(
+            value
+                .effect_handle()
+                .wrap_error_with_message("invalid damaging effect")?,
+        ),
+        None => effect_handle,
+    };
+    core_battle_actions::damage(context, amount, source_handle, damaging_effect.as_ref())
 }
 
 fn has_ability(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {

@@ -1905,7 +1905,11 @@ pub fn try_add_volatile(
 
     let mut effect_state = fxlang::EffectState::new();
 
-    effect_state.set_source_effect(context.effect_handle());
+    effect_state.set_source_effect(
+        context
+            .effect_handle()
+            .stable_effect_handle(context.as_battle_context_mut())?,
+    );
     if let Some(source_handle) = context.source_handle() {
         effect_state.set_source(source_handle);
     }

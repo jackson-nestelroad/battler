@@ -1088,6 +1088,8 @@ impl<'d> CoreBattle<'d> {
             Mon::reset_state_for_next_turn(&mut context);
         }
 
+        context.battle_mut().registry.next_turn()?;
+
         // TODO: Endless battle clause.
 
         let turn_event = log_event!("turn", ("turn", context.battle().turn));

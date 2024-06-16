@@ -10,8 +10,12 @@ use zone_alloc::{
 
 use crate::{
     abilities::Ability,
-    battle::MoveHandle,
+    battle::{
+        Context,
+        MoveHandle,
+    },
     common::{
+        Error,
         Id,
         Identifiable,
     },
@@ -112,6 +116,15 @@ impl EffectHandle {
             Self::MoveCondition(id) => Some(&id),
             Self::Item(id) => Some(&id),
             Self::NonExistent(id) => Some(&id),
+        }
+    }
+
+    pub fn stable_effect_handle(&self, context: &mut Context) -> Result<EffectHandle, Error> {
+        match self {
+            Self::ActiveMove(active_move_handle) => Ok(EffectHandle::MoveCondition(
+                context.active_move(*active_move_handle)?.id().clone(),
+            )),
+            val @ _ => Ok(val.clone()),
         }
     }
 }

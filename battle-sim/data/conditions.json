@@ -217,7 +217,7 @@
               "end: $effect_state.source_effect.name silent",
               "return"
             ],
-            "damage: expr($target.base_max_hp / $effect_state.divisor)"
+            "damage: expr($target.base_max_hp / $effect_state.divisor) $effect_state.source_effect"
           ]
         },
         "on_end": ["end: $effect_state.source_effect.name"],

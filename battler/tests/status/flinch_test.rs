@@ -73,6 +73,8 @@ mod flinch_test {
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
@@ -106,7 +108,19 @@ mod flinch_test {
                 "damage|mon:Rapidash,player-2,1|health:33/100",
                 "cant|mon:Rapidash,player-2,1|reason:Flinch",
                 "residual",
-                "turn|turn:3"
+                "turn|turn:3",
+                ["time"],
+                "move|mon:Rapidash,player-2,1|name:Stomp|target:Rapidash,player-1,1",
+                "crit|mon:Rapidash,player-1,1",
+                "split|side:0",
+                "damage|mon:Rapidash,player-1,1|health:20/125",
+                "damage|mon:Rapidash,player-1,1|health:16/100",
+                "move|mon:Rapidash,player-1,1|name:Stomp|target:Rapidash,player-2,1",
+                "split|side:1",
+                "damage|mon:Rapidash,player-2,1|health:0",
+                "damage|mon:Rapidash,player-2,1|health:0",
+                "faint|mon:Rapidash,player-2,1",
+                "win|side:0"
             ]"#,
         )
         .unwrap();
