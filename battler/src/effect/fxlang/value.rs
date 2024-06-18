@@ -14,6 +14,7 @@ use crate::{
         MonHandle,
         MoveEventResult,
         MoveHandle,
+        MoveOutcomeOnTarget,
     },
     battler_error,
     common::{
@@ -229,6 +230,14 @@ impl Value {
                 "value of type {} cannot be converted to a move event result",
                 val.value_type()
             )),
+        }
+    }
+
+    /// Consumes the value into a [`MoveOutcomeOnTarget`].
+    pub fn move_outcome_on_target(self) -> Result<MoveOutcomeOnTarget, Error> {
+        match self {
+            Self::Boolean(val) => Ok(MoveOutcomeOnTarget::from(val)),
+            _ => Ok(MoveOutcomeOnTarget::Damage(self.integer_u16()?)),
         }
     }
 

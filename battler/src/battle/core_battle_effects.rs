@@ -13,6 +13,7 @@ use crate::{
         MonContext,
         MonHandle,
         MoveEventResult,
+        MoveOutcomeOnTarget,
         SpeedOrderable,
     },
     common::{
@@ -811,6 +812,18 @@ pub fn run_event_for_applying_effect_expecting_u32(
         Some(value) => value.integer_u32().unwrap_or(input),
         None => input,
     }
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
+/// Expects a [`MoveOutcomeOnTarget`].
+pub fn run_event_for_applying_effect_expecting_move_outcome_on_target(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<MoveOutcomeOnTarget> {
+    run_event_for_applying_effect_internal(context, event, fxlang::VariableInput::default())?
+        .move_outcome_on_target()
+        .ok()
 }
 
 /// Runs an event targeted on the given [`Mon`].

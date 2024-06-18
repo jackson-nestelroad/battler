@@ -124,6 +124,19 @@ impl<'battle, 'data> Context<'battle, 'data> {
         EffectContext::new(self.into(), effect_handle.clone())
     }
 
+    /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
+    pub fn active_move_context<'context>(
+        &'context mut self,
+        active_move_handle: MoveHandle,
+    ) -> Result<ActiveMoveContext<'context, 'context, 'context, 'context, 'battle, 'data>, Error>
+    {
+        let user = self
+            .active_move(active_move_handle)?
+            .used_by
+            .wrap_error_with_message("active move handle does not have a user")?;
+        ActiveMoveContext::new_from_mon_context(self.mon_context(user)?.into())
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
         self.battle
@@ -1623,6 +1636,32 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         let source_handle = self.source_handle.clone();
         self.as_effect_context_mut()
             .applying_effect_context(source_handle, target_handle)
+    }
+
+    /// Creates a new [`ActiveMoveContext`] for the effect if it is an active move, scoped to the
+    /// lifetime of this context.
+    pub fn active_move_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<
+        Option<
+            ActiveMoveContext<
+                'applying_effect,
+                'applying_effect,
+                'applying_effect,
+                'applying_effect,
+                'battle,
+                'data,
+            >,
+        >,
+        Error,
+    > {
+        match self.effect_handle() {
+            EffectHandle::ActiveMove(active_move_handle) => self
+                .as_battle_context_mut()
+                .active_move_context(active_move_handle)
+                .map(|context| Some(context)),
+            _ => Ok(None),
+        }
     }
 
     /// Returns a reference to the [`CoreBattle`].

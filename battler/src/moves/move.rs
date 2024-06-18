@@ -286,6 +286,8 @@ pub struct Move {
     pub used_by: Option<MonHandle>,
     /// The move was used externally, rather than directly by a Mon through its moveset.
     pub external: bool,
+    /// Whether or not the move infiltrates effects.
+    pub infiltrates: bool,
     /// The source of the move, if any.
     pub source_effect: Option<EffectHandle>,
     /// Whether or not this move hit multiple targets.
@@ -313,6 +315,7 @@ impl Move {
             used_by: None,
             stab_modifier: None,
             external: false,
+            infiltrates: false,
             source_effect: None,
             spread_hit: false,
             hit: 0,

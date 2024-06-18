@@ -2335,7 +2335,60 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Metronome", "Snatch"],
+    "hit_effect": {
+      "volatile_status": "substitute"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if func_call(has_volatile: $user substitute) or $user.hp <= $user.max_hp / 4 or $user.max_hp == 1:",
+          ["fail: $user", "return stop"]
+        ],
+        "on_hit": ["direct_damage: expr($target.max_hp / 4)"]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "start: $this.name",
+          "$effect_state.hp = func_call(floor: expr($target.max_hp / 4))",
+          "if func_call(has_volatile: $target partiallytrapped):",
+          [
+            "end: partiallytrapped silent",
+            "remove_volatile: $target partiallytrapped"
+          ]
+        ],
+        "on_try_primary_hit": [
+          "# Some moves can hit through substitute.",
+          "if $target == $source or func_call(move_has_flag: $move bypasssubstitute) or $move.infiltrates:",
+          ["return"],
+          "# Calculate and apply damage.",
+          "$damage = func_call(calculate_damage: $target)",
+          "if func_call(is_boolean: $damage) and !$damage:",
+          ["fail: $source", "do_not_animate_last_move", "return false"],
+          "if $damage > $effect_state.hp:",
+          ["$damage = $effect_state.hp"],
+          "$effect_state.hp = $effect_state.hp - $damage",
+          "# Break the substitute when HP falls to 0.",
+          "if $effect_state.hp == 0:",
+          [
+            "if $move.ohko:",
+            ["ohko: $target"],
+            "remove_volatile: $target substitute"
+          ],
+          "else:",
+          ["activate: str('move:{}', $this.name) damage"],
+          "# Some move effects still apply.",
+          "apply_recoil_damage: $damage",
+          "apply_drain: $source $target $damage",
+          "run_event_on_move: AfterSubstituteDamage",
+          "run_event: AfterSubstituteDamage",
+          "return 0"
+        ],
+        "on_end": ["end: $this.name"]
+      }
+    }
   },
   "struggle": {
     "name": "Struggle",

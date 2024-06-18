@@ -3,7 +3,6 @@ use itertools::Itertools;
 use crate::{
     battle::{
         ActiveMoveContext,
-        ActiveTargetContext,
         ApplyingEffectContext,
         Boost,
         Context,
@@ -112,39 +111,33 @@ pub fn immune(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn move_event_on_target(context: &mut ActiveTargetContext, event: &str) -> Result<(), Error> {
-    let event = log_event!(
-        event,
-        (
-            "mon",
-            Mon::position_details(&context.target_mon_context()?)?
-        )
-    );
+fn move_event_on_target(context: &mut MonContext, event: &str) -> Result<(), Error> {
+    let event = log_event!(event, ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);
     Ok(())
 }
 
-pub fn fail_target(context: &mut ActiveTargetContext) -> Result<(), Error> {
+pub fn fail_target(context: &mut MonContext) -> Result<(), Error> {
     move_event_on_target(context, "fail")
 }
 
-pub fn miss(context: &mut ActiveTargetContext) -> Result<(), Error> {
+pub fn miss(context: &mut MonContext) -> Result<(), Error> {
     move_event_on_target(context, "miss")
 }
 
-pub fn super_effective(context: &mut ActiveTargetContext) -> Result<(), Error> {
+pub fn super_effective(context: &mut MonContext) -> Result<(), Error> {
     move_event_on_target(context, "supereffective")
 }
 
-pub fn resisted(context: &mut ActiveTargetContext) -> Result<(), Error> {
+pub fn resisted(context: &mut MonContext) -> Result<(), Error> {
     move_event_on_target(context, "resisted")
 }
 
-pub fn critical_hit(context: &mut ActiveTargetContext) -> Result<(), Error> {
+pub fn critical_hit(context: &mut MonContext) -> Result<(), Error> {
     move_event_on_target(context, "crit")
 }
 
-pub fn ohko(context: &mut ActiveTargetContext) -> Result<(), Error> {
+pub fn ohko(context: &mut MonContext) -> Result<(), Error> {
     move_event_on_target(context, "ohko")
 }
 
@@ -156,7 +149,7 @@ pub fn damage(
     // TODO: Handle other special cases where the damage log should have more information.
     let mut event = log_event!("damage", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
-        if !effect.is_move() {
+        if !effect.is_active_move() {
             let effect_context = context.as_battle_context_mut().effect_context(effect)?;
             event.set("from", effect_context.effect().full_name());
 

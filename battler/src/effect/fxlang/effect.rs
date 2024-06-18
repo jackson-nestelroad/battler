@@ -75,6 +75,12 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsMoveResult
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
+    MoveHitOutcomeResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
     MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
 }
 
@@ -107,6 +113,13 @@ pub enum BattleEvent {
     /// change.
     #[string = "AfterSetStatus"]
     AfterSetStatus,
+    /// Runs after damage is applied to a substitute.
+    ///
+    /// Hitting a substitute does not trigger ordinary effects that run when a target is hit. Thus,
+    /// this event is used to cover for scenarios where hitting a substitute should still trigger
+    /// some callback.
+    #[string = "AfterSubstituteDamage"]
+    AfterSubstituteDamage,
     /// Runs when a Mon's ally's status effect is changed.
     #[string = "AllySetStatus"]
     AllySetStatus,
@@ -144,6 +157,11 @@ pub enum BattleEvent {
     /// Runs when a Mon flinches.
     #[string = "Flinch"]
     Flinch,
+    /// Runs when a Mon is hit by a move.
+    ///
+    /// Can fail, but will only fail the move if everything else failed.
+    #[string = "Hit"]
+    Hit,
     /// Runs when determining if a Mon is invulnerable to targeting moves.
     ///
     /// Runs as the very first step in a move.
@@ -219,6 +237,14 @@ pub enum BattleEvent {
     /// Can fail the move.
     #[string = "TryHit"]
     TryHit,
+    /// Runs when a move's primary hit is being applied to a target.
+    ///
+    /// Used to override the core battle engine logic. Can fail the move or return an amount of
+    /// damage dealt to the target. If zero damage is returned, the core battle engien assumes a
+    /// substitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the
+    /// target).
+    #[string = "TryPrimaryHit"]
+    TryPrimaryHit,
     /// Runs when a Mon is trying to use a move on a set of targets.
     ///
     /// Can fail the move.
@@ -240,6 +266,7 @@ impl BattleEvent {
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::EffectVoid as u32,
+            Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::EffectResult as u32,
             Self::BasePower => CommonCallbackType::SourceMoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
@@ -249,6 +276,7 @@ impl BattleEvent {
             Self::Duration => CommonCallbackType::EffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
+            Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
@@ -268,6 +296,7 @@ impl BattleEvent {
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TrapMon => CommonCallbackType::MonVoid as u32,
             Self::TryHit => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::MoveVoid as u32,
@@ -423,6 +452,7 @@ pub struct Callbacks {
     pub on_after_move: Callback,
     pub on_after_move_secondary_effects: Callback,
     pub on_after_set_status: Callback,
+    pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
@@ -432,6 +462,7 @@ pub struct Callbacks {
     pub on_duration: Callback,
     pub on_end: Callback,
     pub on_flinch: Callback,
+    pub on_hit: Callback,
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
@@ -451,6 +482,7 @@ pub struct Callbacks {
     pub on_switch_in: Callback,
     pub on_trap_mon: Callback,
     pub on_try_hit: Callback,
+    pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
@@ -463,6 +495,7 @@ impl Callbacks {
             BattleEvent::AfterMove => Some(&self.on_after_move),
             BattleEvent::AfterMoveSecondaryEffects => Some(&self.on_after_move_secondary_effects),
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
+            BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
@@ -472,6 +505,7 @@ impl Callbacks {
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::Flinch => Some(&self.on_flinch),
+            BattleEvent::Hit => Some(&self.on_hit),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
@@ -491,6 +525,7 @@ impl Callbacks {
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
             BattleEvent::TryHit => Some(&self.on_try_hit),
+            BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),

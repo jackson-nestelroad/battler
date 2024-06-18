@@ -176,8 +176,10 @@ impl<
 
     pub fn active_move_context_mut<'eval>(
         &'eval mut self,
-    ) -> Result<&'eval mut ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>, Error>
-    {
+    ) -> Result<
+        MaybeOwnedMut<'eval, ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>>,
+        Error,
+    > {
         match self {
             Self::ActiveMove(context) => {
                 // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
@@ -194,6 +196,10 @@ impl<
                 > = unsafe { mem::transmute(context) };
                 Ok((*context).into())
             }
+            Self::ApplyingEffect(context) => Ok(context
+                .active_move_context()?
+                .wrap_error_with_message("applying effect is not an active move")?
+                .into()),
             _ => Err(battler_error!("not an active move context")),
         }
     }
@@ -595,7 +601,7 @@ where
                             .to_owned(),
                         ),
                         "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
-                        "is_move" => ValueRef::Boolean(effect_handle.is_move()),
+                        "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
                         "move_target" => ValueRef::MoveTarget(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -626,9 +632,35 @@ where
                         "category" => ValueRef::MoveCategory(
                             context.active_move(*active_move_handle)?.data.category,
                         ),
+                        "drain_percent" => ValueRef::UFraction(
+                            context
+                                .active_move(*active_move_handle)?
+                                .data
+                                .drain_percent
+                                .unwrap_or(Fraction::from(0))
+                                .convert(),
+                        ),
                         "id" => {
                             ValueRef::Str(context.active_move(*active_move_handle)?.id().as_ref())
                         }
+                        "infiltrates" => {
+                            ValueRef::Boolean(context.active_move(*active_move_handle)?.infiltrates)
+                        }
+                        "ohko" => ValueRef::Boolean(
+                            context
+                                .active_move(*active_move_handle)?
+                                .data
+                                .ohko_type
+                                .is_some(),
+                        ),
+                        "recoil_percent" => ValueRef::UFraction(
+                            context
+                                .active_move(*active_move_handle)?
+                                .data
+                                .recoil_percent
+                                .unwrap_or(Fraction::from(0))
+                                .convert(),
+                        ),
                         "sleep_usable" => ValueRef::Boolean(
                             context.active_move(*active_move_handle)?.data.sleep_usable,
                         ),

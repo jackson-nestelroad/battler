@@ -37,39 +37,58 @@ impl From<MoveOutcome> for bool {
 pub enum MoveOutcomeOnTarget {
     #[default]
     Failure,
+    HitSubstitute,
     Success,
     Damage(u16),
 }
 
 impl MoveOutcomeOnTarget {
     pub fn hit(&self) -> bool {
-        !self.failed()
+        match self {
+            Self::Failure => false,
+            _ => true,
+        }
+    }
+
+    pub fn hit_target(&self) -> bool {
+        match self {
+            Self::Failure | Self::HitSubstitute => false,
+            _ => true,
+        }
     }
 
     pub fn failed(&self) -> bool {
         match self {
             Self::Failure => true,
-            Self::Success => false,
-            Self::Damage(_) => false,
+            _ => false,
         }
     }
 
     pub fn damage(&self) -> u16 {
         match self {
-            Self::Failure => 0,
-            Self::Success => 0,
             Self::Damage(damage) => *damage,
+            _ => 0,
         }
     }
 
     pub fn combine(&self, other: Self) -> Self {
         match (*self, other) {
-            (Self::Failure, Self::Failure) => Self::Failure,
             (Self::Failure, right @ _) => right,
-            (Self::Success, Self::Failure | Self::Success) => Self::Success,
-            (Self::Success, right @ _) => right,
-            (left @ Self::Damage(_), Self::Failure | Self::Success) => left,
+            (Self::HitSubstitute, right @ _) => right,
+            (Self::Success, Self::Damage(right)) => Self::Damage(right),
+            (Self::Success, _) => Self::Success,
             (Self::Damage(left), Self::Damage(right)) => Self::Damage(left + right),
+            (left @ Self::Damage(_), _) => left,
+        }
+    }
+}
+
+impl From<bool> for MoveOutcomeOnTarget {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Success
+        } else {
+            Self::Failure
         }
     }
 }

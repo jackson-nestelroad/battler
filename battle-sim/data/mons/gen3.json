@@ -4069,6 +4069,7 @@
       "spd": 30,
       "spe": 40
     },
+    "max_hp": 1,
     "prevo": "Nincada",
     "evolution_data": { "method": "C", "condition": "" },
     "tags": [],

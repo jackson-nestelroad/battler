@@ -1155,6 +1155,10 @@ impl Mon {
         Ok(&context.mon().ability.id == id)
     }
 
+    pub fn has_volatile(context: &mut MonContext, id: &Id) -> Result<bool, Error> {
+        Ok(context.mon().volatiles.contains_key(id))
+    }
+
     pub fn reset_state_for_next_turn(context: &mut MonContext) {
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().hurt_this_turn = 0;

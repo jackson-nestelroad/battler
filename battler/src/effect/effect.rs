@@ -101,7 +101,7 @@ impl EffectHandle {
         }
     }
 
-    pub fn is_move(&self) -> bool {
+    pub fn is_active_move(&self) -> bool {
         match self {
             Self::ActiveMove(_) => true,
             _ => false,
