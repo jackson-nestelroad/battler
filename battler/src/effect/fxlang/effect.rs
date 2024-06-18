@@ -251,6 +251,8 @@ pub enum BattleEvent {
     #[string = "TryUseMove"]
     TryUseMove,
     /// Runs when a Mon uses a move.
+    ///
+    /// Can be used to modify a move when it is used.
     #[string = "UseMove"]
     UseMove,
     /// Runs when a custom message should be displayed when a Mon uses a move.
