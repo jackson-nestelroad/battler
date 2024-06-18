@@ -102,6 +102,15 @@ impl MoveEventResult {
             _ => false,
         }
     }
+
+    pub fn combine(&self, other: Self) -> Self {
+        match (*self, other) {
+            (Self::Fail, _) => Self::Fail,
+            (Self::Stop, _) => Self::Stop,
+            (Self::Advance, Self::Advance) => Self::Advance,
+            (Self::Advance, right @ _) => right,
+        }
+    }
 }
 
 impl From<bool> for MoveEventResult {

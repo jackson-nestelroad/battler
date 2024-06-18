@@ -85,7 +85,7 @@ mod splash_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Magikarp,player-1,1|name:Splash|target:Magikarp,player-1,1",
-                "nothing",
+                "activate|move:Splash",
                 "residual",
                 "turn|turn:2"
             ]"#,

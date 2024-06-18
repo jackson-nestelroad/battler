@@ -2,6 +2,7 @@ use std::{
     fmt,
     fmt::Display,
     iter,
+    mem,
     ops::Mul,
 };
 
@@ -11,6 +12,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use zone_alloc::ElementRef;
 
 use crate::{
     battle::{
@@ -51,6 +53,7 @@ use crate::{
         Gender,
         Nature,
         PartialStatTable,
+        Species,
         Stat,
         StatTable,
         Type,
@@ -229,6 +232,7 @@ pub struct Mon {
     pub base_max_hp: u16,
     pub max_hp: u16,
     pub speed: u16,
+    pub weight: u32,
     pub fainted: bool,
     pub needs_switch: bool,
     pub force_switch: bool,
@@ -352,6 +356,7 @@ impl Mon {
             base_max_hp: 0,
             max_hp: 0,
             speed: 0,
+            weight: 1,
             fainted: false,
             needs_switch: false,
             force_switch: false,
@@ -871,38 +876,40 @@ impl Mon {
             .get(species.as_str())
             .into_result()?;
 
-        let mon = context.mon();
+        // SAFETY: Nothing we do below will invalidate any data.
+        let species: ElementRef<Species> = unsafe { mem::transmute(species) };
+
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
-            &mon.ivs,
-            &mon.evs,
-            mon.level,
-            mon.nature,
+            &context.mon().ivs,
+            &context.mon().evs,
+            context.mon().level,
+            context.mon().nature,
         );
         // Forced max HP always overrides stat calculations.
         if let Some(max_hp) = species.data.max_hp {
             stats.hp = max_hp;
         }
 
-        let mon = context.mon_mut();
-
         // Max HP has not yet been set (beginning of the battle).
-        if mon.max_hp == 0 {
-            mon.max_hp = stats.hp;
+        if context.mon().max_hp == 0 {
+            context.mon_mut().max_hp = stats.hp;
         }
-        if mon.base_max_hp == 0 {
-            mon.base_max_hp = stats.hp;
+        if context.mon().base_max_hp == 0 {
+            context.mon_mut().base_max_hp = stats.hp;
         }
         // Transformations should keep the original "base" stats for the Mon.
         if !transform {
-            mon.base_stored_stats = stats.clone();
+            context.mon_mut().base_stored_stats = stats.clone();
         }
-        mon.stats = mon
+        context.mon_mut().stats = context
+            .mon()
             .stats
             .entries()
             .map(|(stat, _)| (stat, stats.get(stat)))
             .collect();
-        mon.speed = mon.stats.spe;
+        context.mon_mut().speed = context.mon().stats.spe;
+        context.mon_mut().weight = species.data.weight;
         Ok(())
     }
 
@@ -1164,6 +1171,11 @@ impl Mon {
 
         context.mon_mut().trapped = false;
         core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::TrapMon);
+    }
+
+    pub fn get_weight(context: &mut MonContext) -> u32 {
+        // TODO: ModifyWeight event.
+        context.mon().weight
     }
 }
 

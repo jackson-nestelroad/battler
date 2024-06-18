@@ -673,6 +673,42 @@ pub fn run_active_move_event_expecting_void(
 
 /// Runs an event on an active [`Move`][`crate::moves::Move`].
 ///
+/// Expects an integer that can fit in a [`u16`].
+pub fn run_active_move_event_expecting_u16(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+) -> Option<u16> {
+    run_active_move_event(context, event, fxlang::VariableInput::default())?
+        .integer_u16()
+        .ok()
+}
+
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
+/// Expects an integer that can fit in a [`u32`].
+pub fn run_active_move_event_expecting_u32(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+) -> Option<u32> {
+    run_active_move_event(context, event, fxlang::VariableInput::default())?
+        .integer_u32()
+        .ok()
+}
+
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
+/// Expects a [`bool`].
+pub fn run_active_move_event_expecting_bool(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_active_move_event(context, event, fxlang::VariableInput::default())?
+        .boolean()
+        .ok()
+}
+
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
 /// Expects a [`MoveEventResult`].
 pub fn run_active_move_event_expecting_move_event_result(
     context: &mut ActiveMoveContext,

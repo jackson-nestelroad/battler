@@ -211,7 +211,15 @@ pub fn do_move(
         context.mon_mut().last_move_selected = Some(active_move_handle);
     }
 
-    // TODO: AfterMove event.
+    core_battle_effects::run_event_for_applying_effect(
+        &mut context
+            .active_move_context()?
+            .user_applying_effect_context()?,
+        fxlang::BattleEvent::AfterMove,
+        fxlang::VariableInput::default(),
+    );
+
+    CoreBattle::clear_active_move(context.as_battle_context_mut())?;
 
     CoreBattle::faint_messages(context.as_battle_context_mut())?;
     CoreBattle::check_win(context.as_battle_context_mut())?;
@@ -459,10 +467,6 @@ fn try_direct_move(
         context.active_move_mut().spread_hit = true;
     }
 
-    // TODO: Try event.
-    // TODO: PrepareHit event.
-    // TODO: Potentially fail move early.
-
     lazy_static! {
         static ref STEPS: Vec<direct_move_step::DirectMoveStep> = vec![
             direct_move_step::check_targets_invulnerability,
@@ -480,6 +484,25 @@ fn try_direct_move(
         context,
         fxlang::BattleEvent::TryUseMove,
     );
+
+    let move_prepare_hit_result = core_battle_effects::run_active_move_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::PrepareHit,
+    )
+    .map(|value| MoveEventResult::from(value))
+    .unwrap_or(MoveEventResult::Advance);
+
+    let event_prepare_hit_result =
+        MoveEventResult::from(core_battle_effects::run_event_for_applying_effect(
+            &mut context.user_applying_effect_context()?,
+            fxlang::BattleEvent::PrepareHit,
+            fxlang::VariableInput::default(),
+        ));
+
+    let move_event_result = move_event_result
+        .combine(move_prepare_hit_result)
+        .combine(event_prepare_hit_result);
+
     if !move_event_result.advance() {
         if move_event_result.failed() {
             core_battle_logs::fail(context.as_mon_context_mut())?;
@@ -488,9 +511,6 @@ fn try_direct_move(
         }
         return Ok(MoveOutcome::Skipped);
     }
-
-    // TODO: PrepareHit event.
-    // TODO: Fail the move early if needed.
 
     let mut targets = targets
         .iter()
@@ -580,7 +600,6 @@ fn hit_targets(
             context,
             fxlang::BattleEvent::TryHit,
         )
-        // TODO: TryHit event for the HitEffect.
     };
 
     if !try_move_result.advance() {
@@ -643,8 +662,6 @@ fn hit_targets(
         );
     }
 
-    // TODO: Post-damage events.
-
     Ok(())
 }
 
@@ -684,7 +701,12 @@ fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTa
         return Ok(MoveOutcomeOnTarget::Damage(context.target_mon().max_hp));
     }
 
-    // TODO: Damage callback for moves that have special rules for damage calculation.
+    if let Some(damage) = core_battle_effects::run_active_move_event_expecting_u16(
+        context.as_active_move_context_mut(),
+        fxlang::BattleEvent::Damage,
+    ) {
+        return Ok(MoveOutcomeOnTarget::Damage(damage));
+    }
 
     // Static damage.
     match context.active_move().data.damage {
@@ -695,8 +717,13 @@ fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTa
         _ => (),
     }
 
-    let base_power = context.active_move().data.base_power;
-    // TODO: Base power callback for moves that have special rules for base power calculation.
+    let mut base_power = context.active_move().data.base_power;
+    if let Some(dynamic_base_power) = core_battle_effects::run_active_move_event_expecting_u32(
+        context.as_active_move_context_mut(),
+        fxlang::BattleEvent::BasePower,
+    ) {
+        base_power = dynamic_base_power;
+    }
 
     // If base power is explicitly 0, no damage should be dealt.
     //
@@ -704,7 +731,6 @@ fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTa
     if base_power == 0 {
         return Ok(MoveOutcomeOnTarget::Success);
     }
-    let base_power = context.active_move().data.base_power.max(1);
 
     // Critical hit.
     // TODO: ModifyCritRatio event.

@@ -1,0 +1,337 @@
+#[cfg(test)]
+mod custom_damage_test {
+    use battler::{
+        battle::{
+            Battle,
+            BattleType,
+            PublicCoreBattle,
+        },
+        common::{
+            Error,
+            WrapResultError,
+        },
+        dex::{
+            DataStore,
+            LocalDataStore,
+        },
+        teams::TeamData,
+    };
+    use battler_test_utils::{
+        assert_new_logs_eq,
+        assert_turn_logs_eq,
+        LogMatch,
+        TestBattleBuilder,
+    };
+
+    fn pikachu() -> Result<TeamData, Error> {
+        serde_json::from_str(
+            r#"{
+                "members": [
+                    {
+                        "name": "Pikachu",
+                        "species": "Pikachu",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Seismic Toss",
+                            "Psywave",
+                            "Super Fang",
+                            "Low Kick",
+                            "Calm Mind",
+                            "Harden"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
+        )
+        .wrap_error()
+    }
+
+    fn mon_by_species(species: &str) -> Result<TeamData, Error> {
+        let mut team: TeamData = serde_json::from_str(
+            r#"{
+                "members": [
+                    {
+                        "name": "",
+                        "species": "",
+                        "ability": "No Ability",
+                        "moves": [],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 50
+                    }
+                ]
+            }"#,
+        )
+        .wrap_error()?;
+        team.members[0].name = species.to_owned();
+        team.members[0].species = species.to_owned();
+        Ok(team)
+    }
+
+    fn make_battle(
+        data: &dyn DataStore,
+        seed: u64,
+        team_1: TeamData,
+        team_2: TeamData,
+    ) -> Result<PublicCoreBattle, Error> {
+        TestBattleBuilder::new()
+            .with_battle_type(BattleType::Singles)
+            .with_seed(seed)
+            .with_team_validation(false)
+            .with_pass_allowed(true)
+            .with_volatile_status_logs(true)
+            .add_player_to_side_1("player-1", "Player 1")
+            .add_player_to_side_2("player-2", "Player 2")
+            .with_team("player-1", team_1)
+            .with_team("player-2", team_2)
+            .build(data)
+    }
+
+    #[test]
+    fn seismic_toss_does_damage_equal_to_level() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Pikachu,player-1,1|name:Seismic Toss|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:45/95",
+                "damage|mon:Pikachu,player-2,1|health:48/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+
+        let mut team = pikachu().unwrap();
+        team.members[0].level = 75;
+        let mut battle = make_battle(&data, 0, team, pikachu().unwrap()).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:75|gender:M",
+                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Pikachu,player-1,1|name:Seismic Toss|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:20/95",
+                "damage|mon:Pikachu,player-2,1|health:22/100",
+                "residual",
+                "turn|turn:2"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    // Between 25 and 75 for level 50.
+    #[test]
+    fn psywave_applies_custom_damage_formula() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle =
+            make_battle(&data, 777294920103, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        // These special boosts should do nothing.
+        assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Psywave|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:46/95",
+                "damage|mon:Pikachu,player-2,1|health:49/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 4, &expected_logs);
+    }
+
+    #[test]
+    fn super_fang_does_half_hp_damge() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        // These defense boosts should do nothing.
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Super Fang|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:48/95",
+                "damage|mon:Pikachu,player-2,1|health:51/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 4, &expected_logs);
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Super Fang|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:24/95",
+                "damage|mon:Pikachu,player-2,1|health:26/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 5, &expected_logs);
+    }
+
+    #[test]
+    fn low_kick_deals_damage_based_on_weight() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            0,
+            pikachu().unwrap(),
+            mon_by_species("Chespin").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Low Kick|target:Chespin,player-2,1",
+                "split|side:1",
+                "damage|mon:Chespin,player-2,1|health:108/116",
+                "damage|mon:Chespin,player-2,1|health:94/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
+
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            0,
+            pikachu().unwrap(),
+            mon_by_species("Turtwig").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Low Kick|target:Turtwig,player-2,1",
+                "split|side:1",
+                "damage|mon:Turtwig,player-2,1|health:99/115",
+                "damage|mon:Turtwig,player-2,1|health:87/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
+
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            0,
+            pikachu().unwrap(),
+            mon_by_species("Serperior").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Low Kick|target:Serperior,player-2,1",
+                "split|side:1",
+                "damage|mon:Serperior,player-2,1|health:113/135",
+                "damage|mon:Serperior,player-2,1|health:84/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
+
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            0,
+            pikachu().unwrap(),
+            mon_by_species("Wailord").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "move|mon:Pikachu,player-1,1|name:Low Kick|target:Wailord,player-2,1",
+                "split|side:1",
+                "damage|mon:Wailord,player-2,1|health:168/230",
+                "damage|mon:Wailord,player-2,1|health:74/100",
+                "residual"
+            ]"#,
+        )
+        .unwrap();
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
+    }
+}

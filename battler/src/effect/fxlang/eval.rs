@@ -537,8 +537,8 @@ where
                         "active" => ValueRef::Boolean(context.mon(*mon_handle)?.active),
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
                         "fainted" => ValueRef::Boolean(context.mon(*mon_handle)?.fainted),
-                        "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
                         "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
+                        "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
                         "last_target_location" => ValueRef::I64(
                             context
                                 .mon(*mon_handle)?
@@ -547,6 +547,7 @@ where
                                 .try_into()
                                 .wrap_error_with_message("integer overflow")?,
                         ),
+                        "level" => ValueRef::U16(context.mon(*mon_handle)?.level as u16),
                         "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
                         "move_this_turn_failed" => ValueRef::Boolean(
                             context
@@ -567,6 +568,9 @@ where
                                 .map(|id| id.as_ref().to_owned())
                                 .unwrap_or(String::new()),
                         ),
+                        "weight" => ValueRef::U32(Mon::get_weight(
+                            context.mon_context_mut(*mon_handle)?.as_mut(),
+                        )),
                         _ => return Err(Self::bad_member_access(member, value.value_type())),
                     }
                 }
@@ -908,7 +912,7 @@ impl Evaluator {
                     if context.has_active_target() {
                         self.vars.set(
                             "target",
-                            Value::Mon(context.active_target_context()?.mon_handle()),
+                            Value::Mon(context.active_target_context()?.target_mon_handle()),
                         )?
                     }
                 }
@@ -951,7 +955,7 @@ impl Evaluator {
                 }
                 _ => {
                     return Err(Self::failed_var_initialization(
-                        "target",
+                        "user",
                         "ActiveMoveContext or ApplyingEffectContext",
                     ))
                 }

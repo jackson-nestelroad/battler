@@ -24,6 +24,7 @@ use crate::{
         fxlang::{
             BattleEvent,
             EvaluationContext,
+            MaybeReferenceValueForOperation,
             Value,
             VariableInput,
         },
@@ -70,6 +71,7 @@ pub fn run_function(
         "log_status_with_effect" => {
             log_status(context.applying_effect_context_mut()?.as_mut(), args, true).map(|()| None)
         }
+        "max" => max(args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "prepare_move" => prepare_move(context.active_move_context_mut()?).map(|()| None),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
@@ -465,4 +467,20 @@ fn calculate_confusion_damage(
         base_power,
     )
     .map(|value| Value::U16(value))
+}
+
+fn max(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mut first = args
+        .pop_front()
+        .wrap_error_with_message("max requires at least one argument")?;
+    while let Some(second) = args.pop_front() {
+        if MaybeReferenceValueForOperation::from(&second)
+            .greater_than(MaybeReferenceValueForOperation::from(&first))?
+            .boolean()
+            .unwrap_or(false)
+        {
+            first = second;
+        }
+    }
+    Ok(first)
 }

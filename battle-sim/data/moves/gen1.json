@@ -985,7 +985,25 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_base_power": [
+          "$weight = $target.weight",
+          "if $weight >= 2000:",
+          ["return 120"],
+          "if $weight >= 1000:",
+          ["return 100"],
+          "if $weight >= 500:",
+          ["return 80"],
+          "if $weight >= 250:",
+          ["return 60"],
+          "if $weight >= 100:",
+          ["return 40"],
+          "return 20"
+        ]
+      }
+    }
   },
   "counter": {
     "name": "Counter",
@@ -1932,7 +1950,12 @@
     "base_power": 130,
     "target": "Normal",
     "flags": ["Contact", "Gravity", "Metronome", "Mirror", "Protect"],
-    "has_crash_damage": true
+    "has_crash_damage": true,
+    "effect": {
+      "callbacks": {
+        "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this"]
+      }
+    }
   },
   "glare": {
     "name": "Glare",
@@ -2121,7 +2144,14 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_damage": [
+          "return expr(func_call(random: 50 151) * $user.level / 100)"
+        ]
+      }
+    }
   },
   "splash": {
     "name": "Splash",
@@ -2133,7 +2163,7 @@
     "flags": ["Gravity", "Metronome"],
     "effect": {
       "callbacks": {
-        "on_try_hit": ["log: nothing"]
+        "on_try_hit": ["activate"]
       }
     }
   },
@@ -2280,7 +2310,12 @@
     "pp": 10,
     "accuracy": 90,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_damage": ["return func_call(max: expr($target.hp / 2), 1)"]
+      }
+    }
   },
   "slash": {
     "name": "Slash",

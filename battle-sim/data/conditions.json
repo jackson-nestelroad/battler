@@ -266,10 +266,7 @@
           "if $user.move_this_turn_failed:",
           ["remove_volatile: $user $this.id true"]
         ],
-        "on_move_aborted": [
-          "if $user.move_this_turn_failed:",
-          ["remove_volatile: $user $this.id true"]
-        ],
+        "on_move_aborted": ["remove_volatile: $user $this.id true"],
         "on_end": ["add_volatile: $target confusion"],
         "on_lock_move": ["return $effect_state.move"],
         "on_residual": [

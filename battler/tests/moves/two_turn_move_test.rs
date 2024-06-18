@@ -178,8 +178,13 @@ mod two_turn_move_test {
     #[test]
     fn fly_grants_invulnerability() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle =
-            make_battle(&data, 67677, two_pidgeot().unwrap(), two_pidgeot().unwrap()).unwrap();
+        let mut battle = make_battle(
+            &data,
+            77777777777,
+            two_pidgeot().unwrap(),
+            two_pidgeot().unwrap(),
+        )
+        .unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -259,8 +264,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:88/143",
-                "damage|mon:Pidgeot,player-2,1|health:62/100",
+                "damage|mon:Pidgeot,player-2,1|health:82/143",
+                "damage|mon:Pidgeot,player-2,1|health:58/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3",
@@ -274,13 +279,13 @@ mod two_turn_move_test {
                 ["time"],
                 "move|mon:Pidgeot,player-2,1|name:Gust|target:Pidgeot,player-1,1",
                 "split|side:0",
-                "damage|mon:Pidgeot,player-1,1|health:89/143",
-                "damage|mon:Pidgeot,player-1,1|health:63/100",
+                "damage|mon:Pidgeot,player-1,1|health:95/143",
+                "damage|mon:Pidgeot,player-1,1|health:67/100",
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:25/143",
-                "damage|mon:Pidgeot,player-2,1|health:18/100",
+                "damage|mon:Pidgeot,player-2,1|health:24/143",
+                "damage|mon:Pidgeot,player-2,1|health:17/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:5"

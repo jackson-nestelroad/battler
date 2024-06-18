@@ -38,12 +38,8 @@ enum CommonCallbackType {
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
-    MoveModifier = CallbackFlag::TakesTargetMon
-        | CallbackFlag::TakesSourceMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsNumber
-        | CallbackFlag::ReturnsVoid,
     SourceMoveModifier = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
@@ -74,11 +70,6 @@ enum CommonCallbackType {
     SourceMoveVoid =
         CallbackFlag::TakesUserMon | CallbackFlag::TakesActiveMove | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
-    MoveControllingResult = CallbackFlag::TakesTargetMon
-        | CallbackFlag::TakesSourceMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsMoveResult
-        | CallbackFlag::ReturnsBoolean,
     SourceMoveControllingResult = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMoveResult
@@ -99,70 +90,144 @@ enum CommonCallbackType {
     DeserializeLabeledStringEnum,
 )]
 pub enum BattleEvent {
+    /// Runs after a volatile effect is added to a Mon.
     #[string = "AddVolatile"]
     AddVolatile,
+    /// Runs after a Mon finishes using a move.
+    #[string = "AfterMove"]
+    AfterMove,
+    /// Runs after a move's secondary effects have been applied.
+    ///
+    /// Should be viewed as the last effect the move needs to apply.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    /// Runs after a Mon's status effect is changed.
+    ///
+    /// Only runs if the status has been set successfully. This event will not undo a status
+    /// change.
     #[string = "AfterSetStatus"]
     AfterSetStatus,
+    /// Runs when a Mon's ally's status effect is changed.
     #[string = "AllySetStatus"]
     AllySetStatus,
+    /// Runs before a Mon uses a move.
+    ///
+    /// Can prevent the move from being used.
     #[string = "BeforeMove"]
     BeforeMove,
+    /// Runs when a move's base power is being calculated for a target.
+    ///
+    /// Used to apply dynamic base powers.
     #[string = "BasePower"]
     BasePower,
+    /// Runs when a Mon is using a charge move, on the charging turn.
     #[string = "ChargeMove"]
     ChargeMove,
+    /// Runs when a move's damage is beign calculated for a target.
+    ///
+    /// Used to override damage calculations.
+    #[string = "Damage"]
+    Damage,
+    /// Runs after a Mon hits another Mon, causing a nonzero amount of damage.
+    ///
+    /// Run for each target. Run once per hit (i.e., multi-hit moves execute one event per hit).
     #[string = "DamagingHit"]
     DamagingHit,
+    /// Runs when determining the duration of an effect.
+    ///
+    /// Used to apply dynamic durations.
     #[string = "Duration"]
     Duration,
+    /// Runs when an effect ends.
     #[string = "End"]
     End,
+    /// Runs when a Mon flinches.
     #[string = "Flinch"]
     Flinch,
+    /// Runs when determining if a Mon is invulnerable to targeting moves.
+    ///
+    /// Runs as the very first step in a move.
     #[string = "Invulnerability"]
     Invulnerability,
+    /// Runs when determining if a Mon is locked into a move.
     #[string = "LockMove"]
     LockMove,
+    /// Runs when calculating a Mon's Atk stat.
     #[string = "ModifyAtk"]
     ModifyAtk,
+    /// Runs when calculating the damage applied to a Mon.
+    ///
+    /// Runs as the very last step in the regular damage calculation formula.
     #[string = "ModifyDamage"]
     ModifyDamage,
+    /// Runs when calculating a Mon's Def stat.
     #[string = "ModifyDef"]
     ModifyDef,
+    /// Runs when calculating a Mon's SpA stat.
     #[string = "ModifySpA"]
     ModifySpA,
+    /// Runs when caclculating a Mon's SpD stat.
     #[string = "ModifySpD"]
     ModifySpD,
+    /// Runs when calculating a Mon's Spe stat.
     #[string = "ModifySpe"]
     ModifySpe,
+    /// Runs when a move is aborted due to failing the BeforeMove event.
     #[string = "MoveAborted"]
     MoveAborted,
+    /// Runs when a move fails.
+    ///
+    /// A move fails when it is successfully used by the user, but it does not hit or apply its
+    /// primary effect to any targets.
     #[string = "MoveFailed"]
     MoveFailed,
+    /// Runs when a Mon is preparing to hit all of its targets with a move.
+    ///
+    /// Can fail the move.
     #[string = "PrepareHit"]
     PrepareHit,
+    /// Runs at the end of every turn to apply residual effects.
     #[string = "Residual"]
     Residual,
+    /// Runs when a volatile effect is applied to a Mon that already has the volatile effect.
     #[string = "Restart"]
     Restart,
+    /// Runs when a Mon's status effect is being set.
+    ///
+    /// Runs before the status effect is applied. Can be used to fail the status change.
     #[string = "SetStatus"]
     SetStatus,
+    /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
+    /// apply against it).
+    ///
+    /// Used to modify damage calculations impacted by effets on the target Mon.
     #[string = "SourceModifyDamage"]
     SourceModifyDamage,
+    /// Runs when an effect starts.
+    ///
+    /// Used to set up state.
     #[string = "Start"]
     Start,
+    /// Runs when a Mon switches in.
     #[string = "SwitchIn"]
     SwitchIn,
+    /// Runs when determining if a Mon is trapped (i.e., cannot switch out).
     #[string = "TrapMon"]
     TrapMon,
+    /// Runs when a move is trying to hit a set of targets.
+    ///
+    /// Can fail the move.
     #[string = "TryHit"]
     TryHit,
+    /// Runs when a Mon is trying to use a move on a set of targets.
+    ///
+    /// Can fail the move.
     #[string = "TryUseMove"]
     TryUseMove,
+    /// Runs when a Mon uses a move.
     #[string = "UseMove"]
     UseMove,
+    /// Runs when a custom message should be displayed when a Mon uses a move.
     #[string = "UseMoveMessage"]
     UseMoveMessage,
 }
@@ -172,12 +237,14 @@ impl BattleEvent {
     pub fn callback_type_flags(&self) -> u32 {
         match self {
             Self::AddVolatile => CommonCallbackType::EffectResult as u32,
+            Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::EffectVoid as u32,
             Self::AllySetStatus => CommonCallbackType::EffectResult as u32,
-            Self::BasePower => CommonCallbackType::MoveModifier as u32,
+            Self::BasePower => CommonCallbackType::SourceMoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
+            Self::Damage => CommonCallbackType::SourceMoveModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::Duration => CommonCallbackType::EffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
@@ -216,7 +283,6 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
-            Self::BasePower => &[("power", ValueType::U32)],
             Self::DamagingHit => &[("damage", ValueType::U16)],
             Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U32)],
             Self::ModifySpe => &[("spe", ValueType::U16)],
@@ -354,12 +420,14 @@ impl SpeedOrderable for Callback {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
     pub on_add_volatile: Callback,
+    pub on_after_move: Callback,
     pub on_after_move_secondary_effects: Callback,
     pub on_after_set_status: Callback,
     pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
     pub on_charge_move: Callback,
+    pub on_damage: Callback,
     pub on_damaging_hit: Callback,
     pub on_duration: Callback,
     pub on_end: Callback,
@@ -392,12 +460,14 @@ impl Callbacks {
     pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
         match event {
             BattleEvent::AddVolatile => Some(&self.on_add_volatile),
+            BattleEvent::AfterMove => Some(&self.on_after_move),
             BattleEvent::AfterMoveSecondaryEffects => Some(&self.on_after_move_secondary_effects),
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
+            BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
