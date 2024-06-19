@@ -724,7 +724,7 @@ Then, we can define Fly as a move that applies this volatile status:
 }
 ```
 
-The first check in the above callback is the most important: if the Mon has the "fly" volatile status, that it means it received it from the "twoturnmove" volatile status that it received last turn, which means it successfully executed its charge turn. The `return` allows the move to be used as it normally would. You can imagine other checks here that would skip the charge turn (like Solar Beam being used in harsh sunlight weather).
+The first check in the above callback is the most important: if the Mon has the "fly" volatile status, that means it received it from the "twoturnmove" volatile status that it received last turn, which means it successfully executed its charge turn. The `return` allows the move to be used as it normally would. You can imagine other checks here that would skip the charge turn (like Solar Beam being used in harsh sunlight weather).
 
 Finally, a Mon in the "flying" state has some special invulnerability and damage rules:
 
