@@ -51,7 +51,7 @@
           "priority": 1,
           "program": [
             "if func_call(chance: 1 4):",
-            ["cant: $this.name", "return false"]
+            ["log_cant: $this.name", "return false"]
           ]
         },
         "on_modify_spe": [
@@ -83,7 +83,7 @@
             "$effect_state.time = $effect_state.time - 1",
             "if $effect_state.time <= 0:",
             ["cure_status: $user", "return"],
-            "cant: $this.name",
+            "log_cant: $this.name",
             "if $move.sleep_usable:",
             ["return"],
             "return false"
@@ -110,7 +110,7 @@
             ["return"],
             "if func_call(chance: 1 5):",
             ["cure_status: $user", "return"],
-            "cant: $this.name",
+            "log_cant: $this.name",
             ["return false"]
           ]
         },
@@ -178,19 +178,19 @@
       "callbacks": {
         "on_start": [
           "if $effect.id == lockedmove:",
-          ["start: $this.name fatigue"],
+          ["log_start: $this.name fatigue"],
           "else:",
-          ["start: $this.name"],
+          ["log_start: $this.name"],
           "$effect_state.time = func_call(random: 2 6)"
         ],
-        "on_end": ["end: $this.name"],
+        "on_end": ["log_end: $this.name"],
         "on_before_move": {
           "priority": 3,
           "program": [
             "$effect_state.time = $effect_state.time - 1",
             "if $effect_state.time == 0:",
             ["remove_volatile: $user $this.id", "return"],
-            "activate: with_target str('status:{}', $this.name)",
+            "log_activate: with_target str('status:{}', $this.name)",
             "if !func_call(chance: 33 100):",
             ["return"],
             "$damage = func_call(calculate_confusion_damage: $user 40)",
@@ -234,7 +234,7 @@
       "callbacks": {
         "on_duration": ["return func_call(random: 5 7)"],
         "on_start": [
-          "activate: with_target with_source str('move:{}', $effect_state.source_effect.name)",
+          "log_activate: with_target with_source str('move:{}', $effect_state.source_effect.name)",
           "$effect_state.divisor = 8"
         ],
         "on_residual": {
@@ -244,13 +244,13 @@
             "if !$source.active or $source.hp == 0:",
             [
               "remove_volatile: $target $this.id true",
-              "end: $effect_state.source_effect.name silent",
+              "log_end: $effect_state.source_effect.name silent",
               "return"
             ],
             "damage: expr($target.base_max_hp / $effect_state.divisor) $effect_state.source_effect"
           ]
         },
-        "on_end": ["end: $effect_state.source_effect.name"],
+        "on_end": ["log_end: $effect_state.source_effect.name"],
         "on_trap_mon": ["trap: $mon"]
       }
     }
@@ -268,11 +268,7 @@
         ],
         "on_move_aborted": ["remove_volatile: $user $this.id true"],
         "on_end": ["add_volatile: $target confusion"],
-        "on_lock_move": ["return $effect_state.move"],
-        "on_residual": [
-          "if $target.status == slp:",
-          ["remove_volatile: $target $this.id true"]
-        ]
+        "on_lock_move": ["return $effect_state.move"]
       }
     }
   },
@@ -284,7 +280,11 @@
       "callbacks": {
         "on_before_move": {
           "priority": 8,
-          "program": ["cant: $this.name", "run_event: Flinch", "return false"]
+          "program": [
+            "log_cant: $this.name",
+            "run_event: Flinch",
+            "return false"
+          ]
         }
       }
     }
@@ -301,7 +301,7 @@
         "on_before_move": {
           "priority": 11,
           "program": [
-            "cant: $this.name",
+            "log_cant: $this.name",
             "remove_volatile: $user $this.id",
             "return false"
           ]

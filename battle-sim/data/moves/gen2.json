@@ -650,7 +650,7 @@
           ["$effect_state.magnitude = 10", "$move.base_power = 150"]
         ],
         "on_use_move_message": [
-          "activate: str('magnitude:{}', $effect_state.magnitude)"
+          "log_activate: str('magnitude:{}', $effect_state.magnitude)"
         ]
       }
     }

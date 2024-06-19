@@ -87,7 +87,6 @@ pub enum Value {
     I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
-    OptionalString(Option<String>),
     String(String),
     Mon(MonHandle),
     Effect(EffectHandle),
@@ -111,7 +110,6 @@ impl Value {
             Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
-            Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
@@ -143,9 +141,6 @@ impl Value {
     pub fn string(self) -> Result<String, Error> {
         match self {
             Self::String(val) => Ok(val),
-            Self::OptionalString(val) => {
-                val.ok_or_else(|| battler_error!("optional string contains no value"))
-            }
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::String)),
         }
     }
@@ -277,7 +272,6 @@ pub enum MaybeReferenceValue<'eval> {
     I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
-    OptionalString(Option<String>),
     String(String),
     Mon(MonHandle),
     Effect(EffectHandle),
@@ -302,7 +296,6 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
-            Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Mon(_) => ValueType::Mon,
             Self::Effect(_) => ValueType::Effect,
@@ -327,7 +320,6 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::I64(val) => Value::I64(*val),
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
-            Self::OptionalString(val) => Value::OptionalString(val.clone()),
             Self::String(val) => Value::String(val.clone()),
             Self::Mon(val) => Value::Mon(*val),
             Self::Effect(val) => Value::Effect(val.clone()),
@@ -366,7 +358,6 @@ impl<'eval> MaybeReferenceValue<'eval> {
     /// Returns the length of the value, if supported.
     pub fn len(&self) -> Option<usize> {
         match self {
-            Self::OptionalString(val) => val.as_ref().map(|s| s.len()),
             Self::String(val) => Some(val.len()),
             Self::List(val) => Some(val.len()),
             Self::Object(val) => Some(val.len()),
@@ -407,7 +398,6 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::I64(val) => Self::I64(val),
             Value::Fraction(val) => Self::Fraction(val),
             Value::UFraction(val) => Self::UFraction(val),
-            Value::OptionalString(val) => Self::OptionalString(val),
             Value::String(val) => Self::String(val),
             Value::Mon(val) => Self::Mon(val),
             Value::Effect(val) => Self::Effect(val),
@@ -446,7 +436,6 @@ pub enum ValueRef<'eval> {
     I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
-    OptionalString(&'eval Option<String>),
     String(&'eval String),
     Str(&'eval str),
     TempString(String),
@@ -472,7 +461,6 @@ impl ValueRef<'_> {
             Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
-            Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Str(_) => ValueType::String,
             Self::TempString(_) => ValueType::String,
@@ -498,7 +486,6 @@ impl ValueRef<'_> {
             Self::I64(val) => Value::I64(*val),
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
-            Self::OptionalString(val) => Value::String((*val).clone().unwrap_or("".to_string())),
             Self::String(val) => Value::String(val.to_string()),
             Self::Str(val) => Value::String(val.to_string()),
             Self::TempString(val) => Value::String(val.clone()),
@@ -532,7 +519,6 @@ impl ValueRef<'_> {
     /// Returns the length of the value, if supported.
     pub fn len(&self) -> Option<usize> {
         match self {
-            Self::OptionalString(val) => val.as_ref().map(|s| s.len()),
             Self::String(val) => Some(val.len()),
             Self::Str(val) => Some(val.len()),
             Self::List(val) => Some(val.len()),
@@ -567,7 +553,6 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::I64(val) => Self::I64(*val),
             Value::Fraction(val) => Self::Fraction(*val),
             Value::UFraction(val) => Self::UFraction(*val),
-            Value::OptionalString(val) => Self::OptionalString(val),
             Value::String(val) => Self::String(val),
             Value::Mon(val) => Self::Mon(val),
             Value::Effect(val) => Self::Effect(val),
@@ -676,7 +661,6 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::I64(val) => Self::I64(val),
             Value::Fraction(val) => Self::Fraction(val),
             Value::UFraction(val) => Self::UFraction(val),
-            Value::OptionalString(val) => Self::OptionalString(val),
             Value::String(val) => Self::String(val),
             Value::Mon(val) => Self::Mon(val),
             Value::Effect(val) => Self::Effect(val),
@@ -710,7 +694,6 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     I64(i64),
     Fraction(Fraction<i32>),
     UFraction(Fraction<u32>),
-    OptionalString(&'eval Option<String>),
     String(&'eval String),
     Str(&'eval str),
     TempString(String),
@@ -738,7 +721,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::I64(_) => ValueType::I64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
-            Self::OptionalString(_) => ValueType::String,
             Self::String(_) => ValueType::String,
             Self::Str(_) => ValueType::String,
             Self::TempString(_) => ValueType::String,
@@ -766,7 +748,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::I64(val) => Value::I64(*val),
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
-            Self::OptionalString(val) => Value::OptionalString((*val).clone()),
             Self::String(val) => Value::String((*val).clone()),
             Self::Str(val) => Value::String(val.to_string()),
             Self::TempString(val) => Value::String(val.clone()),
@@ -797,10 +778,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::I64(_) => 11,
             Self::Fraction(_) => 32,
             Self::UFraction(_) => 33,
-            Self::OptionalString(_) => 64,
-            Self::String(_) => 65,
-            Self::Str(_) => 66,
-            Self::TempString(_) => 67,
+            Self::String(_) => 64,
+            Self::Str(_) => 65,
+            Self::TempString(_) => 66,
             Self::Mon(_) => 100,
             Self::Effect(_) => 101,
             Self::ActiveMove(_) => 102,
@@ -1529,25 +1509,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             | (lhs @ Self::Fraction(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::Fraction(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::UFraction(_), rhs @ Self::UFraction(_)) => lhs.compare_ref(rhs)?.is_eq(),
-            (Self::OptionalString(lhs), Self::OptionalString(rhs)) => lhs.eq(rhs),
-            (Self::OptionalString(lhs), Self::String(rhs)) => {
-                lhs.as_ref().is_some_and(|lhs| lhs.eq(*rhs))
-            }
-            (Self::OptionalString(lhs), Self::Str(rhs)) => {
-                lhs.as_ref().is_some_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::OptionalString(lhs), Self::TempString(rhs)) => {
-                lhs.as_ref().is_some_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::OptionalString(lhs), Self::MoveCategory(rhs)) => lhs
-                .as_ref()
-                .is_some_and(|lhs| MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))),
-            (Self::OptionalString(lhs), Self::MoveTarget(rhs)) => lhs
-                .as_ref()
-                .is_some_and(|lhs| MoveTarget::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))),
-            (Self::OptionalString(lhs), Self::Type(rhs)) => lhs
-                .as_ref()
-                .is_some_and(|lhs| Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))),
             (Self::String(lhs), Self::String(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
@@ -1700,7 +1661,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::I64(val) => val.to_string(),
             Self::Fraction(val) => val.to_string(),
             Self::UFraction(val) => val.to_string(),
-            Self::OptionalString(val) => (*val).clone().unwrap_or("".to_owned()),
             Self::String(val) => (*val).clone(),
             Self::Str(val) => val.to_string(),
             Self::TempString(val) => val.clone(),
@@ -1726,7 +1686,6 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::I64(val) => Self::I64(*val),
             Value::Fraction(val) => Self::Fraction(*val),
             Value::UFraction(val) => Self::UFraction(*val),
-            Value::OptionalString(val) => Self::OptionalString(val),
             Value::String(val) => Self::String(val),
             Value::Mon(val) => Self::Mon(*val),
             Value::Effect(val) => Self::Effect(val),
@@ -1751,7 +1710,6 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::I64(val) => Self::I64(*val),
             MaybeReferenceValue::Fraction(val) => Self::Fraction(*val),
             MaybeReferenceValue::UFraction(val) => Self::UFraction(*val),
-            MaybeReferenceValue::OptionalString(val) => Self::OptionalString(val),
             MaybeReferenceValue::String(val) => Self::String(val),
             MaybeReferenceValue::Mon(val) => Self::Mon(*val),
             MaybeReferenceValue::Effect(val) => Self::Effect(val),
@@ -1777,7 +1735,6 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::I64(val) => Self::I64(*val),
             ValueRef::Fraction(val) => Self::Fraction(*val),
             ValueRef::UFraction(val) => Self::UFraction(*val),
-            ValueRef::OptionalString(val) => Self::OptionalString(val),
             ValueRef::String(val) => Self::String(val),
             ValueRef::Str(val) => Self::Str(val),
             ValueRef::TempString(val) => Self::TempString(val.clone()),

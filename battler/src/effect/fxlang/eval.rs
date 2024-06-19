@@ -546,7 +546,13 @@ where
                         "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
                         "fainted" => ValueRef::Boolean(context.mon(*mon_handle)?.fainted),
                         "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
-                        "item" => ValueRef::OptionalString(&context.mon(*mon_handle)?.item),
+                        "item" => ValueRef::TempString(
+                            context
+                                .mon(*mon_handle)?
+                                .item
+                                .clone()
+                                .unwrap_or("".to_owned()),
+                        ),
                         "last_target_location" => ValueRef::I64(
                             context
                                 .mon(*mon_handle)?
@@ -1709,14 +1715,8 @@ impl Evaluator {
             (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
                 *var = val;
             }
-            (ValueRefMut::OptionalString(var), Value::OptionalString(val)) => {
-                *var = val;
-            }
             (ValueRefMut::OptionalString(var), Value::String(val)) => {
                 *var = if val.is_empty() { None } else { Some(val) };
-            }
-            (ValueRefMut::String(var), Value::OptionalString(val)) => {
-                *var = val.unwrap_or("".to_owned());
             }
             (ValueRefMut::String(var), Value::String(val)) => {
                 *var = val;

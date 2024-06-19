@@ -222,6 +222,10 @@ pub fn do_move(
         context.mon_mut().last_move_selected = Some(active_move_handle);
     }
 
+    core_battle_effects::run_active_move_event_expecting_void(
+        &mut context.active_move_context()?,
+        fxlang::BattleEvent::AfterMove,
+    );
     core_battle_effects::run_event_for_applying_effect(
         &mut context
             .active_move_context()?

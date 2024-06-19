@@ -46,7 +46,6 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
-        "activate" => activate(context, args).map(|()| None),
         "add_volatile" => {
             add_volatile(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
         }
@@ -60,7 +59,6 @@ pub fn run_function(
         "calculate_confusion_damage" => {
             calculate_confusion_damage(context, args).map(|val| Some(val))
         }
-        "cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
         "cure_status" => {
             cure_status(context.applying_effect_context_mut()?.as_mut(), args).map(|()| None)
@@ -71,21 +69,26 @@ pub fn run_function(
         "do_not_animate_last_move" => {
             do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
         }
-        "end" => end(context.target_context_mut()?.as_mut(), args).map(|()| None),
-        "fail" => fail(context, args).map(|()| None),
         "floor" => floor(args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
         "has_volatile" => has_volatile(context, args).map(|val| Some(val)),
         "heal" => heal(context, args).map(|()| None),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
+        "log_activate" => log_activate(context, args).map(|()| None),
+        "log_cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
+        "log_end" => log_end(context.target_context_mut()?.as_mut(), args).map(|()| None),
+        "log_fail" => log_fail(context, args).map(|()| None),
+        "log_ohko" => log_ohko(context, args).map(|()| None),
+        "log_prepare_move" => {
+            log_prepare_move(context.active_move_context_mut()?.as_mut()).map(|()| None)
+        }
+        "log_start" => log_start(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "log_status" => {
             log_status(context.applying_effect_context_mut()?.as_mut(), args).map(|()| None)
         }
         "max" => max(args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
-        "ohko" => ohko(context, args).map(|()| None),
-        "prepare_move" => prepare_move(context.active_move_context_mut()?.as_mut()).map(|()| None),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context.applying_effect_context_mut()?.as_mut(), args)
             .map(|val| Some(val)),
@@ -95,7 +98,6 @@ pub fn run_function(
         "run_event_on_move" => {
             run_event_on_move(context.active_move_context_mut()?.as_mut(), args).map(|()| None)
         }
-        "start" => start(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
         "set_status" => {
             set_status(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
@@ -135,7 +137,7 @@ fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
     log_internal(context, title, args)
 }
 
-fn activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mut with_target = false;
     let mut with_source = false;
 
@@ -184,7 +186,7 @@ fn activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     log_internal(context.battle_context_mut(), "activate".to_owned(), args)
 }
 
-fn start(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_start(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let status = args
         .pop_front()
         .wrap_error_with_message("missing status name")?
@@ -199,7 +201,7 @@ fn start(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Erro
     log_internal(context.as_battle_context_mut(), "start".to_owned(), args)
 }
 
-fn end(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_end(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let status = args
         .pop_front()
         .wrap_error_with_message("missing status name")?
@@ -214,7 +216,7 @@ fn end(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Error>
     log_internal(context.as_battle_context_mut(), "end".to_owned(), args)
 }
 
-fn prepare_move(context: &mut ActiveMoveContext) -> Result<(), Error> {
+fn log_prepare_move(context: &mut ActiveMoveContext) -> Result<(), Error> {
     let event = log_event!(
         "prepare",
         ("mon", Mon::position_details(context.as_mon_context())?),
@@ -264,7 +266,7 @@ fn log_status(context: &mut ApplyingEffectContext, mut args: VecDeque<Value>) ->
     Ok(())
 }
 
-fn fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -273,7 +275,7 @@ fn fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<()
     core_battle_logs::fail(context.mon_context_mut(mon_handle)?.as_mut())
 }
 
-fn ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
