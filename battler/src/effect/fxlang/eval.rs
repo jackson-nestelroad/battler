@@ -27,7 +27,6 @@ use crate::{
         Error,
         Fraction,
         Identifiable,
-        MaybeOwnedMut,
         UnsafelyDetachBorrow,
         UnsafelyDetachBorrowMut,
         WrapResultError,
@@ -55,260 +54,120 @@ use crate::{
 };
 
 /// The [`Context`][`crate::battle::Context`] for which an fxlang program is evaluated.
-pub enum EvaluationContext<
-    'mon_context,
-    'applying_effect,
-    'effect,
-    'active_move,
-    'mon,
-    'player,
-    'side,
-    'context,
-    'battle,
-    'data,
-> where
+pub enum EvaluationContext<'effect, 'context, 'battle, 'data>
+where
     'data: 'battle,
     'battle: 'context,
-    'context: 'side,
-    'side: 'player,
-    'player: 'mon,
-    'mon: 'active_move,
     'context: 'effect,
-    'effect: 'applying_effect,
 {
-    ActiveMove(&'active_move mut ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>),
-    ApplyingEffect(&'applying_effect mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>),
-    Mon(&'mon_context mut MonContext<'player, 'side, 'context, 'battle, 'data>),
+    ApplyingEffect(ApplyingEffectContext<'effect, 'context, 'battle, 'data>),
+    Effect(EffectContext<'context, 'battle, 'data>),
 }
 
-impl<
-        'mon_context,
-        'applying_effect,
-        'effect,
-        'active_move,
-        'mon,
-        'player,
-        'side,
-        'context,
-        'battle,
-        'data,
-    >
-    EvaluationContext<
-        'mon_context,
-        'applying_effect,
-        'effect,
-        'active_move,
-        'mon,
-        'player,
-        'side,
-        'context,
-        'battle,
-        'data,
-    >
-{
+impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'battle, 'data> {
     pub fn battle_context<'eval>(&'eval self) -> &'eval Context<'battle, 'data> {
         match self {
-            Self::ActiveMove(context) => context.as_battle_context(),
             Self::ApplyingEffect(context) => context.as_battle_context(),
-            Self::Mon(context) => context.as_battle_context(),
+            Self::Effect(context) => context.as_battle_context(),
         }
     }
 
     pub fn battle_context_mut<'eval>(&'eval mut self) -> &'eval mut Context<'battle, 'data> {
         match self {
-            Self::ActiveMove(context) => context.as_battle_context_mut(),
             Self::ApplyingEffect(context) => context.as_battle_context_mut(),
-            Self::Mon(context) => context.as_battle_context_mut(),
+            Self::Effect(context) => context.as_battle_context_mut(),
         }
     }
 
-    pub fn applying_effect_context_mut<'eval>(
-        &'eval mut self,
-    ) -> Result<MaybeOwnedMut<'eval, ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error>
-    {
+    pub fn effect_context<'eval>(&'eval self) -> &'eval EffectContext<'context, 'battle, 'data> {
         match self {
-            Self::ActiveMove(context) => {
-                if context.has_active_target() {
-                    Ok(context.applying_effect_context()?.into())
-                } else {
-                    Ok(context.user_applying_effect_context()?.into())
-                }
-            }
-            Self::ApplyingEffect(context) => {
-                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
-                // return a mutable reference to this context, scoped to the lifetime of self. Since
-                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
-                // Rust's borrow checker (around code that calls this method) protects us.
-                let context: &'eval mut &'eval mut ApplyingEffectContext<
-                    'eval,
-                    'eval,
-                    'battle,
-                    'data,
-                > = unsafe { mem::transmute(context) };
-                Ok((*context).into())
-            }
-            Self::Mon(_) => Err(battler_error!(
-                "mon context cannot be converted into an applying effect context"
-            )),
+            Self::ApplyingEffect(context) => context.as_effect_context(),
+            Self::Effect(context) => context,
         }
     }
 
     pub fn effect_context_mut<'eval>(
         &'eval mut self,
-    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>, Error> {
+    ) -> &'eval mut EffectContext<'context, 'battle, 'data> {
         match self {
-            Self::ActiveMove(context) => Ok(context.effect_context()?.into()),
-            Self::ApplyingEffect(context) => {
-                let context = context.as_effect_context_mut();
-                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
-                // return a mutable reference to this context, scoped to the lifetime of self. Since
-                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
-                // Rust's borrow checker (around code that calls this method) protects us.
-                let context: &'eval mut &'eval mut EffectContext<'eval, 'battle, 'data> =
-                    unsafe { mem::transmute(context) };
-                Ok((*context).into())
-            }
-            Self::Mon(_) => Err(battler_error!(
-                "mon context cannot be converted into an effect context"
-            )),
+            Self::ApplyingEffect(context) => context.as_effect_context_mut(),
+            Self::Effect(context) => context,
         }
     }
 
-    pub fn active_move_context_mut<'eval>(
+    pub fn source_effect_context<'eval>(
         &'eval mut self,
-    ) -> Result<
-        MaybeOwnedMut<'eval, ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>>,
-        Error,
-    > {
+    ) -> Result<Option<EffectContext<'eval, 'battle, 'data>>, Error> {
+        self.effect_context_mut().source_effect_context()
+    }
+
+    pub fn applying_effect_context<'eval>(
+        &'eval self,
+    ) -> Result<&'eval ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
-                // return a mutable reference to this context, scoped to the lifetime of self. Since
-                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
-                // Rust's borrow checker (around code that calls this method) protects us.
-                let context: &'eval mut &'eval mut ActiveMoveContext<
-                    'eval,
-                    'eval,
-                    'eval,
-                    'eval,
-                    'battle,
-                    'data,
-                > = unsafe { mem::transmute(context) };
-                Ok((*context).into())
-            }
-            Self::ApplyingEffect(context) => Ok(context
-                .active_move_context()?
-                .wrap_error_with_message("applying effect is not an active move")?
-                .into()),
-            _ => Err(battler_error!("not an active move context")),
+            Self::ApplyingEffect(context) => Ok(context),
+            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
         }
     }
 
-    pub fn target_context_mut<'eval>(
+    pub fn applying_effect_context_mut<'eval>(
         &'eval mut self,
-    ) -> Result<MaybeOwnedMut<'eval, MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+    ) -> Result<&'eval mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
-            Self::ActiveMove(context) => Ok(context.active_target_mon_context()?.into()),
-            Self::ApplyingEffect(context) => Ok(context.target_context()?.into()),
-            Self::Mon(context) => {
-                // SAFETY: 'eval is the shortest lifetime: the lifetime of self. Our goal is to
-                // return a mutable reference to this context, scoped to the lifetime of self. Since
-                // 'eval is a shorter lifetime than all other lifetimes, this cast is safe, and
-                // Rust's borrow checker (around code that calls this method) protects us.
-                let context: &'eval mut &'eval mut MonContext<'eval, 'eval, 'eval, 'battle, 'data> =
-                    unsafe { mem::transmute(context) };
-                Ok((*context).into())
-            }
+            Self::ApplyingEffect(context) => Ok(context),
+            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
         }
     }
 
-    pub fn source_context_mut<'eval>(
+    pub fn source_active_move_context<'eval>(
         &'eval mut self,
-    ) -> Result<MaybeOwnedMut<'eval, MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+    ) -> Result<Option<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+        self.effect_context_mut().source_active_move_context()
+    }
+
+    pub fn target_context<'eval>(
+        &'eval mut self,
+    ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                let context = context.as_mon_context_mut();
-                let context: &'eval mut &'eval mut MonContext<'eval, 'eval, 'eval, 'battle, 'data> =
-                    unsafe { mem::transmute(context) };
-                Ok((*context).into())
-            }
-            Self::ApplyingEffect(context) => Ok(context
-                .source_context()?
-                .wrap_error_with_message("applying effect context has no source context")?
-                .into()),
-            Self::Mon(_) => Err(battler_error!("mon context has no source context")),
+            Self::ApplyingEffect(context) => context.target_context(),
+            Self::Effect(_) => Err(battler_error!("effect has no target")),
         }
     }
 
-    pub fn mon_context_mut<'eval>(
+    pub fn source_context<'eval>(
+        &'eval mut self,
+    ) -> Result<Option<MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::ApplyingEffect(context) => context.source_context(),
+            Self::Effect(_) => Err(battler_error!("effect has no source")),
+        }
+    }
+
+    pub fn mon_context<'eval>(
         &'eval mut self,
         mon_handle: MonHandle,
-    ) -> Result<MaybeOwnedMut<'eval, MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+    ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                // SAFETY: 'eval is the shortest lifetime (scoped to self), so casting to the
-                // shorter lifetime is safe.
-                let context: &'eval mut &'eval mut ActiveMoveContext<
-                    'eval,
-                    'eval,
-                    'eval,
-                    'eval,
-                    'battle,
-                    'data,
-                > = unsafe { mem::transmute(context) };
-                if mon_handle == context.mon_handle() {
-                    Ok(context.as_mon_context_mut().into())
-                } else {
-                    Ok(context
-                        .as_battle_context_mut()
-                        .mon_context(mon_handle)?
-                        .into())
-                }
-            }
             Self::ApplyingEffect(context) => {
                 if context
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    Ok(context
+                    context
                         .source_context()?
-                        .wrap_error_with_message("expected source mon")?
-                        .into())
+                        .wrap_error_with_message("expected source mon")
                 } else if mon_handle == context.target_handle() {
-                    Ok(context.target_context()?.into())
+                    context.target_context()
                 } else {
-                    Ok(context
-                        .as_battle_context_mut()
-                        .mon_context(mon_handle)?
-                        .into())
+                    context.as_battle_context_mut().mon_context(mon_handle)
                 }
             }
-            Self::Mon(context) => {
-                // SAFETY: 'eval is the shortest lifetime (scoped to self), so casting to the
-                // shorter lifetime is safe.
-                let context: &'eval mut &'eval mut MonContext<'eval, 'eval, 'eval, 'battle, 'data> =
-                    unsafe { mem::transmute(context) };
-                if mon_handle == context.mon_handle() {
-                    Ok((*context).into())
-                } else {
-                    Ok(context
-                        .as_battle_context_mut()
-                        .mon_context(mon_handle)?
-                        .into())
-                }
-            }
+            Self::Effect(context) => context.as_battle_context_mut().mon_context(mon_handle),
         }
     }
 
     pub fn mon<'eval>(&'eval self, mon_handle: MonHandle) -> Result<&'eval Mon, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                if mon_handle == context.mon_handle() {
-                    Ok(context.mon())
-                } else {
-                    context.as_battle_context().mon(mon_handle)
-                }
-            }
             Self::ApplyingEffect(context) => {
                 if context
                     .source_handle()
@@ -323,25 +182,12 @@ impl<
                     context.as_battle_context().mon(mon_handle)
                 }
             }
-            Self::Mon(context) => {
-                if mon_handle == context.mon_handle() {
-                    Ok(context.mon())
-                } else {
-                    context.as_battle_context().mon(mon_handle)
-                }
-            }
+            Self::Effect(context) => context.as_battle_context().mon(mon_handle),
         }
     }
 
     fn mon_mut<'eval>(&'eval mut self, mon_handle: MonHandle) -> Result<&'eval mut Mon, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                if mon_handle == context.mon_handle() {
-                    Ok(context.mon_mut())
-                } else {
-                    context.as_battle_context_mut().mon_mut(mon_handle)
-                }
-            }
             Self::ApplyingEffect(context) => {
                 if context
                     .source_handle()
@@ -356,13 +202,7 @@ impl<
                     context.as_battle_context_mut().mon_mut(mon_handle)
                 }
             }
-            Self::Mon(context) => {
-                if mon_handle == context.mon_handle() {
-                    Ok(context.mon_mut())
-                } else {
-                    context.as_battle_context_mut().mon_mut(mon_handle)
-                }
-            }
+            Self::Effect(context) => context.as_battle_context_mut().mon_mut(mon_handle),
         }
     }
 
@@ -371,19 +211,14 @@ impl<
         active_move_handle: MoveHandle,
     ) -> Result<&'eval Move, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                if active_move_handle == context.active_move_handle() {
-                    Ok(context.active_move())
-                } else {
-                    context.as_battle_context().active_move(active_move_handle)
-                }
-            }
             Self::ApplyingEffect(context) => {
                 if let EffectHandle::ActiveMove(effect_active_move_handle, _) =
                     context.effect_handle()
                 {
-                    if active_move_handle == effect_active_move_handle {
-                        context.effect().active_move().wrap_error_with_message("effect handle referenced an active move, but effect was not an active move")
+                    if active_move_handle == *effect_active_move_handle {
+                        context.effect().active_move().wrap_error_with_message(
+                            "effect handle referenced an active move, but effect was not an active move",
+                        )
                     } else {
                         context.as_battle_context().active_move(active_move_handle)
                     }
@@ -391,7 +226,8 @@ impl<
                     context.as_battle_context().active_move(active_move_handle)
                 }
             }
-            Self::Mon(context) => context.as_battle_context().active_move(active_move_handle),
+
+            Self::Effect(context) => context.as_battle_context().active_move(active_move_handle),
         }
     }
 
@@ -400,21 +236,14 @@ impl<
         active_move_handle: MoveHandle,
     ) -> Result<&'eval mut Move, Error> {
         match self {
-            Self::ActiveMove(context) => {
-                if active_move_handle == context.active_move_handle() {
-                    Ok(context.active_move_mut())
-                } else {
-                    context
-                        .as_battle_context_mut()
-                        .active_move_mut(active_move_handle)
-                }
-            }
             Self::ApplyingEffect(context) => {
                 if let EffectHandle::ActiveMove(effect_active_move_handle, _) =
                     context.effect_handle()
                 {
-                    if active_move_handle == effect_active_move_handle {
-                        context.effect_mut().active_move_mut().wrap_error_with_message("effect handle referenced an active move, but effect was not an active move")
+                    if active_move_handle == *effect_active_move_handle {
+                        context.effect_mut().active_move_mut().wrap_error_with_message(
+                            "effect handle referenced an active move, but effect was not an active move",
+                        )
                     } else {
                         context
                             .as_battle_context_mut()
@@ -426,7 +255,8 @@ impl<
                         .active_move_mut(active_move_handle)
                 }
             }
-            Self::Mon(context) => context
+
+            Self::Effect(context) => context
                 .as_battle_context_mut()
                 .active_move_mut(active_move_handle),
         }
@@ -434,25 +264,37 @@ impl<
 
     pub fn target_handle(&self) -> Option<MonHandle> {
         match self {
-            Self::ActiveMove(context) => context.active_target_handle(),
             Self::ApplyingEffect(context) => Some(context.target_handle()),
-            Self::Mon(context) => Some(context.mon_handle()),
+            Self::Effect(_) => None,
         }
     }
 
     pub fn source_handle(&self) -> Option<MonHandle> {
         match self {
-            Self::ActiveMove(context) => Some(context.mon_handle()),
             Self::ApplyingEffect(context) => context.source_handle(),
-            Self::Mon(_) => None,
+            Self::Effect(_) => None,
         }
     }
 
-    pub fn effect_handle(&self) -> Option<EffectHandle> {
+    pub fn effect_handle(&self) -> &EffectHandle {
         match self {
-            Self::ActiveMove(context) => Some(context.effect_handle()),
-            Self::ApplyingEffect(context) => Some(context.effect_handle()),
-            Self::Mon(_) => None,
+            Self::ApplyingEffect(context) => context.effect_handle(),
+            Self::Effect(context) => context.effect_handle(),
+        }
+    }
+
+    pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
+        match self {
+            Self::ApplyingEffect(context) => context.source_effect_handle(),
+            Self::Effect(context) => context.source_effect_handle(),
+        }
+    }
+
+    pub fn source_active_move_handle(&self) -> Option<MoveHandle> {
+        if let Some(EffectHandle::ActiveMove(active_move_handle, _)) = self.source_effect_handle() {
+            Some(*active_move_handle)
+        } else {
+            None
         }
     }
 }
@@ -573,7 +415,7 @@ where
                         ),
                         "position_details" => ValueRef::TempString(format!(
                             "{}",
-                            Mon::position_details(context.mon_context_mut(mon_handle)?.as_ref())?
+                            Mon::position_details(&context.mon_context(mon_handle)?)?
                         )),
                         "status" => ValueRef::TempString(
                             context
@@ -583,9 +425,9 @@ where
                                 .map(|id| id.as_ref().to_owned())
                                 .unwrap_or(String::new()),
                         ),
-                        "weight" => ValueRef::U32(Mon::get_weight(
-                            context.mon_context_mut(mon_handle)?.as_mut(),
-                        )),
+                        "weight" => {
+                            ValueRef::U32(Mon::get_weight(&mut context.mon_context(mon_handle)?))
+                        }
                         _ => return Err(Self::bad_member_access(member, value_type)),
                     }
                 }
@@ -829,21 +671,11 @@ where
 #[derive(Clone, Default)]
 pub struct VariableInput {
     values: Vec<Value>,
-    this_effect_handle: Option<EffectHandle>,
-    source_effect_handle: Option<EffectHandle>,
 }
 
 impl VariableInput {
     pub fn get(&self, index: usize) -> Option<&Value> {
         self.values.get(index)
-    }
-
-    pub fn set_this_effect(&mut self, effect_handle: EffectHandle) {
-        self.this_effect_handle = Some(effect_handle);
-    }
-
-    pub fn set_source_effect(&mut self, effect_handle: EffectHandle) {
-        self.source_effect_handle = Some(effect_handle);
     }
 }
 
@@ -851,8 +683,6 @@ impl FromIterator<Value> for VariableInput {
     fn from_iter<T: IntoIterator<Item = Value>>(iter: T) -> Self {
         Self {
             values: iter.into_iter().collect(),
-            this_effect_handle: None,
-            source_effect_handle: None,
         }
     }
 }
@@ -931,10 +761,6 @@ impl Evaluator {
         }
     }
 
-    fn failed_var_initialization(var: &str, expected: &str) -> Error {
-        battler_error!("${var} could not be set before program start: expected {expected}")
-    }
-
     fn initialize_vars(
         &self,
         context: &mut EvaluationContext,
@@ -946,113 +772,77 @@ impl Evaluator {
             self.vars.set("effect_state", Value::from(effect_state))?;
         }
 
-        if let Some(this_effect_handle) = input.this_effect_handle {
-            self.vars.set("this", Value::Effect(this_effect_handle))?;
-        }
+        self.vars
+            .set("this", Value::Effect(context.effect_handle().clone()))?;
 
         if event.has_flag(CallbackFlag::TakesGeneralMon) {
-            match context {
-                EvaluationContext::Mon(context) => {
-                    self.vars.set("mon", Value::Mon(context.mon_handle()))?
-                }
-                _ => return Err(Self::failed_var_initialization("mon", "MonContext")),
-            }
+            self.vars.set(
+                "mon",
+                Value::Mon(
+                    context
+                        .target_handle()
+                        .wrap_error_with_message("context has no mon")?,
+                ),
+            )?;
         }
         if event.has_flag(CallbackFlag::TakesTargetMon) {
-            match context {
-                EvaluationContext::ActiveMove(context) => {
-                    if context.has_active_target() {
-                        self.vars.set(
-                            "target",
-                            Value::Mon(context.active_target_context()?.target_mon_handle()),
-                        )?
-                    }
-                }
-                EvaluationContext::ApplyingEffect(context) => self
-                    .vars
-                    .set("target", Value::Mon(context.target_handle()))?,
-                _ => {
-                    return Err(Self::failed_var_initialization(
-                        "target",
-                        "ActiveMoveContext or ApplyingEffectContext",
-                    ))
-                }
-            }
+            self.vars.set(
+                "target",
+                Value::Mon(
+                    context
+                        .target_handle()
+                        .wrap_error_with_message("context has no target")?,
+                ),
+            )?;
         }
         if event.has_flag(CallbackFlag::TakesSourceMon) {
-            match context {
-                EvaluationContext::ActiveMove(context) => {
-                    self.vars.set("source", Value::Mon(context.mon_handle()))?
-                }
-                EvaluationContext::ApplyingEffect(context) => match context.source_handle() {
-                    Some(source_handle) => self.vars.set("source", Value::Mon(source_handle))?,
-                    None => (),
-                },
-                _ => {
-                    return Err(Self::failed_var_initialization(
-                        "source",
-                        "ActiveMoveContext or ApplyingEffectContext",
-                    ))
-                }
+            match context.source_handle() {
+                Some(source_handle) => self.vars.set("source", Value::Mon(source_handle))?,
+                None => (),
             }
         }
         if event.has_flag(CallbackFlag::TakesUserMon) {
-            match context {
-                EvaluationContext::ActiveMove(context) => {
-                    self.vars.set("user", Value::Mon(context.mon_handle()))?
-                }
-                EvaluationContext::ApplyingEffect(context) => {
-                    // The user is the target of the effect.
-                    self.vars.set("user", Value::Mon(context.target_handle()))?
-                }
-                _ => {
-                    return Err(Self::failed_var_initialization(
-                        "user",
-                        "ActiveMoveContext or ApplyingEffectContext",
-                    ))
-                }
-            }
+            // The user is the target of the effect.
+            self.vars.set(
+                "user",
+                Value::Mon(
+                    context
+                        .target_handle()
+                        .wrap_error_with_message("context has no user")?,
+                ),
+            )?;
         }
         if event.has_flag(CallbackFlag::TakesEffect) {
-            match context {
-                EvaluationContext::ActiveMove(context) => self
-                    .vars
-                    .set("effect", Value::Effect(context.effect_handle()))?,
-                EvaluationContext::ApplyingEffect(context) => self
-                    .vars
-                    .set("effect", Value::Effect(context.effect_handle()))?,
-                _ => {
-                    return Err(Self::failed_var_initialization(
-                        "effect",
-                        "ActiveMoveContext or ApplyingEffectContext",
-                    ))
-                }
-            }
+            self.vars.set(
+                "effect",
+                Value::Effect(
+                    context
+                        .source_effect_handle()
+                        .cloned()
+                        .wrap_error_with_message("context has no effect")?,
+                ),
+            )?;
         }
         if event.has_flag(CallbackFlag::TakesSourceEffect) {
-            if let Some(source_effect_handle) = input.source_effect_handle {
-                self.vars
-                    .set("source_effect", Value::Effect(source_effect_handle))?;
-            }
+            self.vars.set(
+                "source_effect",
+                Value::Effect(
+                    context
+                        .source_effect_handle()
+                        .cloned()
+                        .wrap_error_with_message("context has no source effect")?,
+                ),
+            )?;
         }
         if event.has_flag(CallbackFlag::TakesActiveMove) {
-            match context {
-                EvaluationContext::ActiveMove(context) => self
-                    .vars
-                    .set("move", Value::ActiveMove(context.active_move_handle()))?,
-                EvaluationContext::ApplyingEffect(context) => match context.effect_handle() {
-                    EffectHandle::ActiveMove(active_move_handle, _) => self
-                        .vars
-                        .set("move", Value::ActiveMove(active_move_handle))?,
-                    _ => {
-                        return Err(Self::failed_var_initialization(
-                            "move",
-                            "ApplyingEffectContext with an active move",
-                        ))
-                    }
-                },
-                _ => return Err(Self::failed_var_initialization("move", "ActiveMoveContext")),
-            }
+            self.vars.set(
+                "move",
+                Value::ActiveMove(
+                    context
+                        .source_active_move_handle()
+                        .wrap_error_with_message("context has no active move")?,
+                ),
+            )?;
         }
 
         // Reverse the input so we can efficiently pop elements out of it.

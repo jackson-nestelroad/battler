@@ -40,10 +40,10 @@ impl EffectManager {
     }
 
     pub fn evaluate(
-        mut context: EvaluationContext,
+        context: &mut EvaluationContext,
         effect_handle: &EffectHandle,
         event: BattleEvent,
-        mut input: VariableInput,
+        input: VariableInput,
         effect_state: Option<EffectState>,
     ) -> Result<ProgramEvalResult, Error> {
         let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect_handle)
@@ -54,23 +54,7 @@ impl EffectManager {
         // SAFETY: Effects are guaranteed to live at least through this turn, and no effect is
         // allowed to change the turn of the battle.
         let effect = unsafe { mem::transmute(effect) };
-        let source_effect = context.battle_context().battle().active_effect_handle();
-        context
-            .battle_context_mut()
-            .battle_mut()
-            .set_active_effect(Some(effect_handle.clone()));
-
-        input.set_this_effect(effect_handle.clone());
-        if let Some(source_effect) = &source_effect {
-            input.set_source_effect(source_effect.clone());
-        }
-        let result = Self::evaluate_internal(&mut context, &effect, event, input, effect_state);
-
-        context
-            .battle_context_mut()
-            .battle_mut()
-            .set_active_effect(source_effect);
-        result
+        Self::evaluate_internal(context, &effect, event, input, effect_state)
     }
 
     fn get_parsed_effect(&mut self, effect: &Effect) -> Result<Rc<ParsedCallbacks>, Error> {

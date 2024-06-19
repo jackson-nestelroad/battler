@@ -8,7 +8,6 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
-        ActiveMoveContext,
         ApplyingEffectContext,
         Context,
         Mon,
@@ -47,22 +46,16 @@ pub fn run_function(
 ) -> Result<Option<Value>, Error> {
     match function_name {
         "add_volatile" => {
-            add_volatile(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
+            add_volatile(context.applying_effect_context_mut()?, args).map(|val| Some(val))
         }
         "apply_drain" => apply_drain(context, args).map(|()| None),
-        "apply_recoil_damage" => {
-            apply_recoil_damage(context.active_move_context_mut()?.as_mut(), args).map(|()| None)
-        }
-        "calculate_damage" => {
-            calculate_damage(context.active_move_context_mut()?.as_mut(), args).map(|val| Some(val))
-        }
+        "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
+        "calculate_damage" => calculate_damage(context, args).map(|val| Some(val)),
         "calculate_confusion_damage" => {
             calculate_confusion_damage(context, args).map(|val| Some(val))
         }
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
-        "cure_status" => {
-            cure_status(context.applying_effect_context_mut()?.as_mut(), args).map(|()| None)
-        }
+        "cure_status" => cure_status(context.applying_effect_context_mut()?, args).map(|()| None),
         "damage" => damage(context, args).map(|()| None),
         "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
         "direct_damage" => direct_damage(context, args).map(|()| None),
@@ -76,31 +69,24 @@ pub fn run_function(
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
-        "log_cant" => log_cant(context.target_context_mut()?.as_mut(), args).map(|()| None),
-        "log_end" => log_end(context.target_context_mut()?.as_mut(), args).map(|()| None),
+        "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
+        "log_end" => log_end(&mut context.target_context()?, args).map(|()| None),
         "log_fail" => log_fail(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
-        "log_prepare_move" => {
-            log_prepare_move(context.active_move_context_mut()?.as_mut()).map(|()| None)
-        }
-        "log_start" => log_start(context.target_context_mut()?.as_mut(), args).map(|()| None),
-        "log_status" => {
-            log_status(context.applying_effect_context_mut()?.as_mut(), args).map(|()| None)
-        }
+        "log_prepare_move" => log_prepare_move(context).map(|()| None),
+        "log_start" => log_start(&mut context.target_context()?, args).map(|()| None),
+        "log_status" => log_status(context, args).map(|()| None),
         "max" => max(args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
-        "remove_volatile" => remove_volatile(context.applying_effect_context_mut()?.as_mut(), args)
-            .map(|val| Some(val)),
-        "run_event" => {
-            run_event(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
+        "remove_volatile" => {
+            remove_volatile(context.applying_effect_context_mut()?, args).map(|val| Some(val))
         }
-        "run_event_on_move" => {
-            run_event_on_move(context.active_move_context_mut()?.as_mut(), args).map(|()| None)
-        }
+        "run_event" => run_event(context.applying_effect_context_mut()?, args).map(|val| Some(val)),
+        "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
         "set_status" => {
-            set_status(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
+            set_status(context.applying_effect_context_mut()?, args).map(|val| Some(val))
         }
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
@@ -155,32 +141,30 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
     let with_target = has_special_string_flag(&mut args, "with_target");
     let with_source = has_special_string_flag(&mut args, "with_source");
 
-    match context {
-        EvaluationContext::ActiveMove(context) => {
-            args.push_front(Value::String(format!(
-                "move:{}",
-                context.active_move().data.name
-            )));
+    match context.effect_context_mut().effect() {
+        Effect::ActiveMove(active_move, _) => {
+            args.push_front(Value::String(format!("move:{}", active_move.data.name)));
         }
-        EvaluationContext::ApplyingEffect(context) => match context.effect() {
-            Effect::Ability(ability) => {
-                args.push_front(Value::String(format!("ability:{}", ability.data.name)))
-            }
-            _ => (),
-        },
+        Effect::Ability(ability) => {
+            args.push_front(Value::String(format!("ability:{}", ability.data.name)))
+        }
         _ => (),
     }
 
     if with_target {
         args.push_front(Value::String(format!(
             "mon:{}",
-            Mon::position_details(context.target_context_mut()?.as_ref())?
+            Mon::position_details(&context.target_context()?)?
         )));
     }
     if with_source {
         args.push_back(Value::String(format!(
             "of:{}",
-            Mon::position_details(context.source_context_mut()?.as_ref())?
+            Mon::position_details(
+                &context
+                    .source_context()?
+                    .wrap_error_with_message("effect has no source")?
+            )?
         )));
     }
 
@@ -217,7 +201,10 @@ fn log_end(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Er
     log_internal(context.as_battle_context_mut(), "end".to_owned(), args)
 }
 
-fn log_prepare_move(context: &mut ActiveMoveContext) -> Result<(), Error> {
+fn log_prepare_move(context: &mut EvaluationContext) -> Result<(), Error> {
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_error_with_message("source effect is not an active move")?;
     let event = log_event!(
         "prepare",
         ("mon", Mon::position_details(context.as_mon_context())?),
@@ -235,7 +222,7 @@ fn log_cant(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), E
     core_battle_logs::cant(context, &reason, None)
 }
 
-fn log_status(context: &mut ApplyingEffectContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let status = args
         .pop_front()
         .wrap_error_with_message("missing status name")?
@@ -250,14 +237,21 @@ fn log_status(context: &mut ApplyingEffectContext, mut args: VecDeque<Value>) ->
         ("status", status)
     );
     if with_source_effect {
-        event.set("from", context.effect().full_name());
+        event.set(
+            "from",
+            context
+                .source_effect_context()?
+                .wrap_error_with_message("effect has no source effect")?
+                .effect()
+                .full_name(),
+        );
         if context.effect_handle().is_ability() {
             if let Some(source_context) = context.source_context()? {
                 event.set("of", Mon::position_details(&source_context)?);
             }
         }
     }
-    context.battle_mut().log(event);
+    context.battle_context_mut().battle_mut().log(event);
     Ok(())
 }
 
@@ -267,7 +261,7 @@ fn log_fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_logs::fail(context.mon_context_mut(mon_handle)?.as_mut())
+    core_battle_logs::fail(&mut context.mon_context(mon_handle)?)
 }
 
 fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -276,7 +270,7 @@ fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_logs::ohko(context.mon_context_mut(mon_handle)?.as_mut())
+    core_battle_logs::ohko(&mut context.mon_context(mon_handle)?)
 }
 
 fn random(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -304,8 +298,6 @@ fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
 }
 
 fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let effect_handle = context.effect_handle();
-
     let no_source = has_special_string_flag(&mut args, "no_source");
     let source_handle = if no_source {
         None
@@ -327,25 +319,27 @@ fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         .wrap_error_with_message("missing damage amount")?
         .integer_u16()
         .wrap_error_with_message("invalid damage amount")?;
-    let damaging_effect = match args.pop_front() {
-        Some(value) => Some(
-            value
-                .effect_handle()
-                .wrap_error_with_message("invalid damaging effect")?,
-        ),
-        None => effect_handle,
-    };
+
+    let mut damaging_effect = context.effect_handle().clone();
+    if let Some(value) = args.pop_front() {
+        damaging_effect = value
+            .effect_handle()
+            .wrap_error_with_message("invalid damaging effect")?;
+    }
+
+    let source_effect_handle = context.source_effect_handle().cloned();
     core_battle_actions::damage(
-        context.mon_context_mut(target_handle)?.as_mut(),
+        &mut context.battle_context_mut().applying_effect_context(
+            damaging_effect,
+            source_handle,
+            target_handle,
+            source_effect_handle,
+        )?,
         amount,
-        source_handle,
-        damaging_effect.as_ref(),
     )
 }
 
 fn direct_damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let effect_handle = context.effect_handle();
-
     let no_source = has_special_string_flag(&mut args, "no_source");
     let source_handle = if no_source {
         None
@@ -367,19 +361,19 @@ fn direct_damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> 
         .wrap_error_with_message("missing damage amount")?
         .integer_u16()
         .wrap_error_with_message("invalid damage amount")?;
-    let damaging_effect = match args.pop_front() {
-        Some(value) => Some(
-            value
-                .effect_handle()
-                .wrap_error_with_message("invalid damaging effect")?,
-        ),
-        None => effect_handle,
-    };
+
+    let mut damaging_effect = context.effect_handle().clone();
+    if let Some(value) = args.pop_front() {
+        damaging_effect = value
+            .effect_handle()
+            .wrap_error_with_message("invalid damaging effect")?;
+    }
+
     core_battle_actions::direct_damage(
-        context.mon_context_mut(target_handle)?.as_mut(),
+        &mut context.mon_context(target_handle)?,
         amount,
         source_handle,
-        damaging_effect.as_ref(),
+        Some(&damaging_effect),
     )?;
     Ok(())
 }
@@ -396,8 +390,7 @@ fn has_ability(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
         .string()
         .map(|ability| Id::from(ability))
         .wrap_error_with_message("invalid ability id")?;
-    Mon::has_ability(context.mon_context_mut(mon_handle)?.as_mut(), &ability)
-        .map(|val| Value::Boolean(val))
+    Mon::has_ability(&mut context.mon_context(mon_handle)?, &ability).map(|val| Value::Boolean(val))
 }
 
 fn has_volatile(
@@ -415,7 +408,7 @@ fn has_volatile(
         .string()
         .map(|ability| Id::from(ability))
         .wrap_error_with_message("invalid volatile id")?;
-    Mon::has_volatile(context.mon_context_mut(mon_handle)?.as_mut(), &volatile)
+    Mon::has_volatile(&mut context.mon_context(mon_handle)?, &volatile)
         .map(|val| Value::Boolean(val))
 }
 
@@ -524,16 +517,19 @@ fn run_event(
 }
 
 fn run_event_on_move(
-    context: &mut ActiveMoveContext,
+    context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<(), Error> {
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_error_with_message("source effect is not an active move")?;
     let event = args
         .pop_front()
         .wrap_error_with_message("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
-    core_battle_effects::run_active_move_event_expecting_void(context, event);
+    core_battle_effects::run_active_move_event_expecting_void(&mut context, event);
     Ok(())
 }
 
@@ -548,13 +544,16 @@ fn trap_mon(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .wrap_error_with_message("mising mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_actions::trap_mon(context.mon_context_mut(mon_handle)?.as_mut())
+    core_battle_actions::trap_mon(&mut context.mon_context(mon_handle)?)
 }
 
 fn calculate_damage(
-    context: &mut ActiveMoveContext,
+    context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<Value, Error> {
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_error_with_message("source effect is not an active move")?;
     let target_handle = args
         .pop_front()
         .wrap_error_with_message("missing target")?
@@ -582,7 +581,7 @@ fn calculate_confusion_damage(
         .integer_u32()
         .wrap_error_with_message("invalid base power")?;
     core_battle_actions::calculate_confusion_damage(
-        context.mon_context_mut(mon_handle)?.as_mut(),
+        &mut context.mon_context(mon_handle)?,
         base_power,
     )
     .map(|value| Value::U16(value))
@@ -625,12 +624,12 @@ fn heal(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<()
         .integer_u16()
         .wrap_error_with_message("invalid damage")?;
     let source_handle = context.source_handle();
-    let effect = context.effect_handle();
+    let effect = context.effect_handle().clone();
     core_battle_actions::heal(
-        context.mon_context_mut(mon_handle)?.as_mut(),
+        &mut context.mon_context(mon_handle)?,
         damage,
         source_handle,
-        effect.as_ref(),
+        Some(&effect),
         false,
     )?;
     Ok(())
@@ -652,29 +651,27 @@ fn apply_drain(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
         .wrap_error_with_message("missing damage")?
         .integer_u16()
         .wrap_error_with_message("invalid damage")?;
-    let effect_handle = context
-        .effect_handle()
-        .wrap_error_with_message("cannot drain outside of an effect")?;
-    let this_effect_handle = context.effect_handle();
     core_battle_actions::apply_drain(
         &mut context
-            .battle_context_mut()
-            .effect_context(effect_handle, this_effect_handle)?
+            .effect_context_mut()
             .applying_effect_context(Some(source_handle), target_handle)?,
         damage,
     )
 }
 
 fn apply_recoil_damage(
-    context: &mut ActiveMoveContext,
+    context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<(), Error> {
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_error_with_message("source effect is not an active move")?;
     let damage = args
         .pop_front()
         .wrap_error_with_message("missing damage")?
         .integer_u64()
         .wrap_error_with_message("invalid damage")?;
-    core_battle_actions::apply_recoil_damage(context, damage)
+    core_battle_actions::apply_recoil_damage(&mut context, damage)
 }
 
 fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {

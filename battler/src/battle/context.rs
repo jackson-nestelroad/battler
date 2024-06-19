@@ -585,6 +585,22 @@ impl<'player, 'side, 'context, 'battle, 'data>
         ActiveMoveContext::new_from_mon_context(self.into(), MoveHitEffectType::PrimaryEffect)
     }
 
+    /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
+    pub fn applying_effect_context<'mon>(
+        &'mon mut self,
+        effect_handle: EffectHandle,
+        source: Option<MonHandle>,
+        source_effect_handle: Option<EffectHandle>,
+    ) -> Result<ApplyingEffectContext<'mon, 'mon, 'battle, 'data>, Error> {
+        let mon_handle = self.mon_handle;
+        self.as_battle_context_mut().applying_effect_context(
+            effect_handle,
+            source,
+            mon_handle,
+            source_effect_handle,
+        )
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()
@@ -1532,6 +1548,52 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         }
     }
 
+    /// Creates a new [`EffectContext`] for the source effect, if it exists, scoped to the lifetime
+    /// of this context.
+    pub fn source_effect_context<'effect>(
+        &'effect mut self,
+    ) -> Result<Option<EffectContext<'effect, 'battle, 'data>>, Error> {
+        match self.source_effect_handle.clone() {
+            Some(effect_handle) => Ok(Some(EffectContext::new(
+                self.context.as_mut().into(),
+                effect_handle,
+                None,
+            )?)),
+            None => Ok(None),
+        }
+    }
+
+    /// Creates a new [`ActiveMoveContext`] for the source effect, if it exists, scoped to the
+    /// lifetime of this context.
+    ///
+    /// Fails if the source effect is not an active move.
+    pub fn source_active_move_context<'effect>(
+        &'effect mut self,
+    ) -> Result<Option<ActiveMoveContext<'effect, 'effect, 'effect, 'effect, 'battle, 'data>>, Error>
+    {
+        match self.source_effect_handle.clone() {
+            Some(EffectHandle::ActiveMove(active_move_handle, hit_effect_type)) => {
+                Ok(Some(ActiveMoveContext::new_from_move_handle(
+                    self.context.as_mut(),
+                    active_move_handle,
+                    hit_effect_type,
+                )?))
+            }
+            _ => Ok(None),
+        }
+    }
+
+    /// Creates a new [`EffectContext`] for a different effect, using this effect as its source,
+    /// scoped to the lifetime of this context.
+    pub fn forward_effect_context<'effect>(
+        &'effect mut self,
+        effect_handle: EffectHandle,
+    ) -> Result<EffectContext<'effect, 'battle, 'data>, Error> {
+        let source_effect_handle = self.effect_handle.clone();
+        self.as_battle_context_mut()
+            .effect_context(effect_handle, Some(source_effect_handle))
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()
@@ -1543,8 +1605,8 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
     }
 
     /// Returns the [`EffectHandle`] for the [`Effect`].
-    pub fn effect_handle(&self) -> EffectHandle {
-        self.effect_handle.clone()
+    pub fn effect_handle(&self) -> &EffectHandle {
+        &self.effect_handle
     }
 
     /// Returns a reference to the [`Effect`].
@@ -1684,9 +1746,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     }
 
     /// Creates a new [`ApplyingEffectContext`] for the same target and source but different effect,
-    /// scoped to the lifetime of this context.
-    ///
-    /// The current effect becomes the source of the new applying effect.
+    /// using this effect as its source, scoped to the lifetime of this context.
     pub fn forward_applying_effect_context<'applying_effect>(
         &'applying_effect mut self,
         effect_handle: EffectHandle,
@@ -1694,7 +1754,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     {
         let source_handle = self.source_handle;
         let target_handle = self.target_handle;
-        let source_effect_handle = self.effect_handle();
+        let source_effect_handle = self.effect_handle().clone();
         self.as_battle_context_mut().applying_effect_context(
             effect_handle,
             source_handle,
@@ -1720,7 +1780,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         >,
         Error,
     > {
-        match self.effect_handle() {
+        match self.effect_handle().clone() {
             EffectHandle::ActiveMove(active_move_handle, hit_effect_type) => self
                 .as_battle_context_mut()
                 .active_move_context(active_move_handle, hit_effect_type)
@@ -1740,7 +1800,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     }
 
     /// Returns the [`EffectHandle`] for the [`Effect`].
-    pub fn effect_handle(&self) -> EffectHandle {
+    pub fn effect_handle(&self) -> &EffectHandle {
         self.context.effect_handle()
     }
 

@@ -1359,7 +1359,7 @@ fn apply_spread_damage(
         // TODO: Run Damage event, which can cause damage to fail.
 
         let source_handle = context.source_handle();
-        let effect_handle = context.effect_handle();
+        let effect_handle = context.effect_handle().clone();
         *damage = Mon::damage(
             &mut context.target_context()?,
             *damage,
@@ -1368,8 +1368,6 @@ fn apply_spread_damage(
         )?;
         context.target_mut().hurt_this_turn = *damage;
 
-        let source_handle = context.source_handle();
-        let effect_handle = context.effect_handle();
         core_battle_logs::damage(
             &mut context.target_context()?,
             source_handle,
