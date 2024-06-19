@@ -244,8 +244,8 @@ pub struct Mon {
     pub active_move: Option<MoveHandle>,
     /// The last move selected for the Mon.
     pub last_move_selected: Option<MoveHandle>,
-    /// The last move used by the Mon, which can be different from `last_move` if that move
-    /// executed a different move (like Metronome).
+    /// The last move used by the Mon, which can be different from `last_move_selected` if that
+    /// move executed a different move (like Metronome).
     pub last_move_used: Option<MoveHandle>,
 
     pub active_target: Option<MonHandle>,

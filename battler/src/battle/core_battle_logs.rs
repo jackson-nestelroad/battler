@@ -150,7 +150,9 @@ pub fn damage(
     let mut event = log_event!("damage", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
         if !effect.is_active_move() {
-            let effect_context = context.as_battle_context_mut().effect_context(effect)?;
+            let effect_context = context
+                .as_battle_context_mut()
+                .effect_context(effect.clone(), None)?;
             event.set("from", effect_context.effect().full_name());
 
             if let Some(source) = source {
@@ -185,7 +187,9 @@ pub fn heal(
 ) -> Result<(), Error> {
     let mut event = log_event!("heal", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
-        let effect_context = context.as_battle_context_mut().effect_context(effect)?;
+        let effect_context = context
+            .as_battle_context_mut()
+            .effect_context(effect.clone(), None)?;
         if effect_context.effect().effect_type() != EffectType::Move {
             event.set("from", effect_context.effect().full_name());
             if let Some(source) = source {

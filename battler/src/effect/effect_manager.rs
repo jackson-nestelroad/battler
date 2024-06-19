@@ -1,10 +1,10 @@
 use std::{
-    cell::RefMut,
     mem,
     rc::Rc,
 };
 
 use crate::{
+    battle::CoreBattle,
     common::{
         Error,
         LruCache,
@@ -21,6 +21,7 @@ use crate::{
             VariableInput,
         },
         Effect,
+        EffectHandle,
     },
 };
 
@@ -39,13 +40,37 @@ impl EffectManager {
     }
 
     pub fn evaluate(
-        context: EvaluationContext,
-        effect: &Effect,
+        mut context: EvaluationContext,
+        effect_handle: &EffectHandle,
         event: BattleEvent,
-        input: VariableInput,
+        mut input: VariableInput,
         effect_state: Option<EffectState>,
     ) -> Result<ProgramEvalResult, Error> {
-        Self::evaluate_internal(context, effect, event, input, effect_state)
+        let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect_handle)
+        {
+            Ok(effect) => effect,
+            Err(_) => return Ok(ProgramEvalResult::default()),
+        };
+        // SAFETY: Effects are guaranteed to live at least through this turn, and no effect is
+        // allowed to change the turn of the battle.
+        let effect = unsafe { mem::transmute(effect) };
+        let source_effect = context.battle_context().battle().active_effect_handle();
+        context
+            .battle_context_mut()
+            .battle_mut()
+            .set_active_effect(Some(effect_handle.clone()));
+
+        input.set_this_effect(effect_handle.clone());
+        if let Some(source_effect) = &source_effect {
+            input.set_source_effect(source_effect.clone());
+        }
+        let result = Self::evaluate_internal(&mut context, &effect, event, input, effect_state);
+
+        context
+            .battle_context_mut()
+            .battle_mut()
+            .set_active_effect(source_effect);
+        result
     }
 
     fn get_parsed_effect(&mut self, effect: &Effect) -> Result<Rc<ParsedCallbacks>, Error> {
@@ -71,7 +96,7 @@ impl EffectManager {
     }
 
     fn evaluate_internal(
-        mut context: EvaluationContext,
+        context: &mut EvaluationContext,
         effect: &Effect,
         event: BattleEvent,
         input: VariableInput,

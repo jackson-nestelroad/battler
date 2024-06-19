@@ -106,6 +106,20 @@ pub fn run_function(
     }
 }
 
+fn has_special_string_flag(args: &mut VecDeque<Value>, flag: &str) -> bool {
+    match args
+        .iter()
+        .enumerate()
+        .find(|(_, arg)| (*arg).clone().string().is_ok_and(|arg| arg == flag))
+    {
+        Some((i, _)) => {
+            args.remove(i);
+            true
+        }
+        None => false,
+    }
+}
+
 fn debug_log(context: &mut Context, args: VecDeque<Value>) -> Result<(), Error> {
     let mut event = log_event!("fxlang_debug");
     for (i, arg) in args.into_iter().enumerate() {
@@ -138,21 +152,8 @@ fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
 }
 
 fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let mut with_target = false;
-    let mut with_source = false;
-
-    if let Some(value) = args.front().cloned() {
-        if value.string().is_ok_and(|value| value == "with_target") {
-            with_target = true;
-            args.pop_front();
-        }
-    }
-    if let Some(value) = args.front().cloned() {
-        if value.string().is_ok_and(|value| value == "with_source") {
-            with_source = true;
-            args.pop_front();
-        }
-    }
+    let with_target = has_special_string_flag(&mut args, "with_target");
+    let with_source = has_special_string_flag(&mut args, "with_source");
 
     match context {
         EvaluationContext::ActiveMove(context) => {
@@ -241,20 +242,14 @@ fn log_status(context: &mut ApplyingEffectContext, mut args: VecDeque<Value>) ->
         .string()
         .wrap_error_with_message("invalid status name")?;
 
-    let mut with_effect = false;
-    if let Some(value) = args.front().cloned() {
-        if value.string().is_ok_and(|value| value == "with_effect") {
-            with_effect = true;
-            args.pop_front();
-        }
-    }
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
 
     let mut event = log_event!(
         "status",
         ("mon", Mon::position_details(&context.target_context()?)?),
         ("status", status)
     );
-    if with_effect {
+    if with_source_effect {
         event.set("from", context.effect().full_name());
         if context.effect_handle().is_ability() {
             if let Some(source_context) = context.source_context()? {
@@ -311,13 +306,12 @@ fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Err
 fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let effect_handle = context.effect_handle();
 
-    let mut source_handle = context.source_handle();
-    if let Some(value) = args.front().cloned() {
-        if value.string().is_ok_and(|value| value == "no_source") {
-            source_handle = None;
-            args.pop_front();
-        }
-    }
+    let no_source = has_special_string_flag(&mut args, "no_source");
+    let source_handle = if no_source {
+        None
+    } else {
+        context.source_handle()
+    };
 
     let mut target_handle = context.target_handle();
     if let Some(value) = args.front().cloned() {
@@ -352,13 +346,12 @@ fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
 fn direct_damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let effect_handle = context.effect_handle();
 
-    let mut source_handle = context.source_handle();
-    if let Some(value) = args.front().cloned() {
-        if value.string().is_ok_and(|value| value == "no_source") {
-            source_handle = None;
-            args.pop_front();
-        }
-    }
+    let no_source = has_special_string_flag(&mut args, "no_source");
+    let source_handle = if no_source {
+        None
+    } else {
+        context.source_handle()
+    };
 
     let mut target_handle = context.target_handle();
     if let Some(value) = args.front().cloned() {
@@ -435,11 +428,7 @@ fn cure_status(
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let log_effect = args
-        .pop_front()
-        .unwrap_or(Value::Boolean(false))
-        .boolean()
-        .wrap_error_with_message("second parameter must be a boolean")?;
+    let log_effect = has_special_string_flag(&mut args, "log_effect");
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::cure_status(&mut context, log_effect)?;
     Ok(())
@@ -507,12 +496,8 @@ fn remove_volatile(
         .wrap_error_with_message("missing volatile id")?
         .string()
         .wrap_error_with_message("invalid volatile")?;
-    let no_events = match args.pop_front() {
-        Some(value) => value
-            .boolean()
-            .wrap_error_with_message("invalid no_events argument")?,
-        _ => false,
-    };
+
+    let no_events = has_special_string_flag(&mut args, "no_events");
     let volatile = Id::from(volatile);
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
@@ -670,10 +655,11 @@ fn apply_drain(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
     let effect_handle = context
         .effect_handle()
         .wrap_error_with_message("cannot drain outside of an effect")?;
+    let this_effect_handle = context.effect_handle();
     core_battle_actions::apply_drain(
         &mut context
             .battle_context_mut()
-            .effect_context(&effect_handle)?
+            .effect_context(effect_handle, this_effect_handle)?
             .applying_effect_context(Some(source_handle), target_handle)?,
         damage,
     )

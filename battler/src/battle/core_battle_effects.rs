@@ -1,5 +1,3 @@
-use std::mem;
-
 use crate::{
     battle::{
         core_battle_actions,
@@ -25,7 +23,6 @@ use crate::{
     },
     effect::{
         fxlang,
-        Effect,
         EffectHandle,
         EffectManager,
     },
@@ -33,7 +30,7 @@ use crate::{
 
 fn run_effect_event_with_errors(
     context: &mut fxlang::EvaluationContext,
-    effect: &Effect,
+    effect_handle: &EffectHandle,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
     effect_state: Option<fxlang::EffectState>,
@@ -47,7 +44,7 @@ fn run_effect_event_with_errors(
         }
         fxlang::EvaluationContext::Mon(context) => fxlang::EvaluationContext::Mon(context),
     };
-    EffectManager::evaluate(context, effect, event, input, effect_state)
+    EffectManager::evaluate(context, effect_handle, event, input, effect_state)
 }
 
 fn run_active_move_event_with_errors(
@@ -58,15 +55,15 @@ fn run_active_move_event_with_errors(
     input.set_this_effect(
         context
             .effect_handle()
-            .stable_effect_handle(context.as_battle_context_mut())?,
+            .stable_effect_handle(context.as_battle_context())?,
     );
     // SAFETY: The active move lives for the lifetime of the turn.
     let active_move = unsafe { context.active_move_mut().unsafely_detach_borrow_mut() };
     let effect_state = active_move.effect_state.clone();
-    let effect = Effect::for_active_move(active_move, context.hit_effect_type());
+    let effect_handle = context.effect_handle().clone();
     let result = run_effect_event_with_errors(
         &mut fxlang::EvaluationContext::ActiveMove(context),
-        &effect,
+        &effect_handle,
         event,
         input,
         Some(effect_state),
@@ -106,21 +103,18 @@ fn run_effect_event_by_handle(
     mut input: fxlang::VariableInput,
     effect_state: Option<fxlang::EffectState>,
 ) -> fxlang::ProgramEvalResult {
-    input.set_this_effect(effect.clone());
-    let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect) {
-        Ok(effect) => effect,
-        Err(_) => return fxlang::ProgramEvalResult::default(),
-    };
-    // SAFETY: Effect is guaranteed to exist beyond this turn. We do not advance the turn in
-    // any effect.
-    let effect: Effect = unsafe { mem::transmute(effect) };
     match run_effect_event_with_errors(context, &effect, event, input, effect_state) {
         Ok(result) => result,
         Err(error) => {
+            let effect_name =
+                match CoreBattle::get_effect_by_handle(context.battle_context(), effect) {
+                    Ok(effect) => effect.name().to_owned(),
+                    Err(_) => format!("{:?}", effect),
+                };
             core_battle_logs::debug_event_failure(
                 context.battle_context_mut(),
                 event,
-                effect.name(),
+                &effect_name,
                 &error.message(),
             );
             fxlang::ProgramEvalResult::default()
@@ -219,14 +213,11 @@ fn run_mon_status_event_internal(
         .get_effect_handle_by_id(&status)
         .ok()?
         .clone();
+    let target_handle = context.target_handle();
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(
-            effect_handle,
-            event,
-            EffectOrigin::MonStatus(context.target_handle()),
-        ),
+        CallbackHandle::new(effect_handle, event, EffectOrigin::MonStatus(target_handle)),
     )
 }
 
@@ -241,13 +232,14 @@ fn run_mon_volatile_event_internal(
         .get_effect_handle_by_id(status)
         .ok()?
         .clone();
+    let target_handle = context.target_handle();
     run_callback_under_applying_effect(
         context,
         input,
         CallbackHandle::new(
             effect_handle,
             event,
-            EffectOrigin::MonVolatileStatus(context.target_handle()),
+            EffectOrigin::MonVolatileStatus(target_handle),
         ),
     )
 }
@@ -502,7 +494,7 @@ fn run_residual_callbacks_with_errors(
             break;
         }
 
-        let mut context = context.effect_context(&callback_handle.effect_handle)?;
+        let mut context = context.effect_context(callback_handle.effect_handle.clone(), None)?;
 
         let mut ended = false;
         if let Some(effect_state) =
@@ -568,7 +560,7 @@ fn run_event_with_errors(
     match target {
         AllEffectsTarget::Mon(mon) => match effect {
             Some(effect) => {
-                let mut context = context.effect_context(&effect)?;
+                let mut context = context.effect_context(effect, None)?;
                 let mut context = context.applying_effect_context(source, mon)?;
                 run_callbacks_with_errors(
                     &mut fxlang::EvaluationContext::ApplyingEffect(&mut context),

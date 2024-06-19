@@ -156,6 +156,7 @@ pub fn do_move(
     // Make a copy of the move so we can work with it and modify it for the turn.
     let active_move_handle = register_active_move(context, move_id, target)?;
     context.active_move_mut()?.external = external;
+    context.active_move_mut()?.source_effect = source_effect;
 
     // BeforeMove event handlers can prevent the move from being used.
     if !core_battle_effects::run_event_for_applying_effect(
@@ -203,7 +204,7 @@ pub fn do_move(
     // Use the move.
     let move_id = context.active_move()?.id().clone();
     let target = context.mon().active_target;
-    use_move(context, &move_id, target, source_effect)?;
+    use_move(context, &move_id, target)?;
 
     let locked_move_after = Mon::locked_move(context)?;
 
@@ -246,10 +247,9 @@ pub fn use_move(
     context: &mut MonContext,
     move_id: &Id,
     target: Option<MonHandle>,
-    source_effect: Option<EffectHandle>,
 ) -> Result<bool, Error> {
     context.mon_mut().move_this_turn_outcome = None;
-    let outcome = use_move_internal(context, move_id, target, source_effect)?;
+    let outcome = use_move_internal(context, move_id, target)?;
     context.mon_mut().move_this_turn_outcome = Some(outcome);
     Ok(outcome.into())
 }
@@ -258,7 +258,6 @@ fn use_move_internal(
     context: &mut MonContext,
     move_id: &Id,
     mut target: Option<MonHandle>,
-    source_effect: Option<EffectHandle>,
 ) -> Result<MoveOutcome, Error> {
     // This move becomes the active move.
     let active_mon_handle = register_active_move(context, move_id, target)?;
@@ -270,8 +269,6 @@ fn use_move_internal(
     if target.is_none() && context.active_move().data.target.requires_target() {
         target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
     }
-
-    context.active_move_mut().source_effect = source_effect;
 
     // Target may have been modified, so update the battle and context.
     let active_move_handle = context.active_move_handle();
@@ -942,10 +939,12 @@ pub fn apply_recoil_damage(
         let recoil_damage = recoil_damage.min(u16::MAX as u64) as u16;
         let mon_handle = context.mon_handle();
         damage(
-            &mut context.as_mon_context_mut(),
+            &mut context
+                .user_applying_effect_context()?
+                .forward_applying_effect_context(EffectHandle::Condition(Id::from_known(
+                    "recoil",
+                )))?,
             recoil_damage,
-            Some(mon_handle),
-            Some(&EffectHandle::Condition(Id::from_known("recoil"))),
         )?;
     }
 
@@ -1323,22 +1322,14 @@ pub fn direct_damage(
     Ok(damage)
 }
 
-pub fn damage(
-    context: &mut MonContext,
-    damage: u16,
-    source: Option<MonHandle>,
-    effect: Option<&EffectHandle>,
-) -> Result<(), Error> {
-    let target = context.mon_handle();
-    let mut context = match effect {
-        None => return Err(battler_error!("damage dealt must be tied to some effect")),
-        Some(effect) => context.as_battle_context_mut().effect_context(effect)?,
-    };
+pub fn damage(context: &mut ApplyingEffectContext, damage: u16) -> Result<(), Error> {
+    let target = context.target_handle();
+    let source = context.source_handle();
     let mut targets = [HitTargetState::new(
         target,
         MoveOutcomeOnTarget::Damage(damage),
     )];
-    apply_spread_damage(&mut context, source, &mut targets)
+    apply_spread_damage(context.as_effect_context_mut(), source, &mut targets)
 }
 
 fn apply_spread_damage(
@@ -1697,7 +1688,9 @@ fn boost(
         if delta != 0 || (!is_secondary && !is_self) {
             core_battle_logs::boost(context, *boost, delta, original_delta)?;
         } else if let Some(effect) = effect {
-            let effect_context = context.as_battle_context_mut().effect_context(effect)?;
+            let effect_context = context
+                .as_battle_context_mut()
+                .effect_context(effect.clone(), None)?;
             let effect_type = effect_context.effect().effect_type();
             if effect_type == EffectType::Ability {
                 core_battle_logs::boost(context, *boost, delta, original_delta)?;
@@ -2023,7 +2016,7 @@ pub fn try_add_volatile(
     effect_state.set_source_effect(
         context
             .effect_handle()
-            .stable_effect_handle(context.as_battle_context_mut())?,
+            .stable_effect_handle(context.as_battle_context())?,
     );
     if let Some(source_handle) = context.source_handle() {
         effect_state.set_source(source_handle);

@@ -538,63 +538,69 @@ where
             // We can imagine that `value_ref` really does correctly mutably borrow `context`. If
             // the next iteration somehow also needs to borrow from `context`, the previous
             // `value_ref` value (i.e., the mutable borrow inside of it) is dropped.
+            let value_type = value.value_type();
             match value {
                 ValueRef::Mon(mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
-                        "active" => ValueRef::Boolean(context.mon(*mon_handle)?.active),
-                        "base_max_hp" => ValueRef::U16(context.mon(*mon_handle)?.base_max_hp),
-                        "fainted" => ValueRef::Boolean(context.mon(*mon_handle)?.fainted),
-                        "hp" => ValueRef::U16(context.mon(*mon_handle)?.hp),
+                        "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
+                        "base_max_hp" => ValueRef::U16(context.mon(mon_handle)?.base_max_hp),
+                        "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
+                        "hp" => ValueRef::U16(context.mon(mon_handle)?.hp),
                         "item" => ValueRef::TempString(
                             context
-                                .mon(*mon_handle)?
+                                .mon(mon_handle)?
                                 .item
                                 .clone()
                                 .unwrap_or("".to_owned()),
                         ),
                         "last_target_location" => ValueRef::I64(
                             context
-                                .mon(*mon_handle)?
+                                .mon(mon_handle)?
                                 .last_move_target
                                 .unwrap_or(0)
                                 .try_into()
                                 .wrap_error_with_message("integer overflow")?,
                         ),
-                        "level" => ValueRef::U16(context.mon(*mon_handle)?.level as u16),
-                        "max_hp" => ValueRef::U16(context.mon(*mon_handle)?.max_hp),
+                        "level" => ValueRef::U16(context.mon(mon_handle)?.level as u16),
+                        "max_hp" => ValueRef::U16(context.mon(mon_handle)?.max_hp),
                         "move_this_turn_failed" => ValueRef::Boolean(
                             context
-                                .mon(*mon_handle)?
+                                .mon(mon_handle)?
                                 .move_this_turn_outcome
                                 .map(|outcome| !outcome.success())
                                 .unwrap_or(false),
                         ),
                         "position_details" => ValueRef::TempString(format!(
                             "{}",
-                            Mon::position_details(context.mon_context_mut(*mon_handle)?.as_ref())?
+                            Mon::position_details(context.mon_context_mut(mon_handle)?.as_ref())?
                         )),
                         "status" => ValueRef::TempString(
                             context
-                                .mon(*mon_handle)?
+                                .mon(mon_handle)?
                                 .status
                                 .as_ref()
                                 .map(|id| id.as_ref().to_owned())
                                 .unwrap_or(String::new()),
                         ),
                         "weight" => ValueRef::U32(Mon::get_weight(
-                            context.mon_context_mut(*mon_handle)?.as_mut(),
+                            context.mon_context_mut(mon_handle)?.as_mut(),
                         )),
-                        _ => return Err(Self::bad_member_access(member, value.value_type())),
+                        _ => return Err(Self::bad_member_access(member, value_type)),
                     }
                 }
                 ValueRef::Effect(effect_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow() };
                     value = match *member {
+                        "condition" => ValueRef::Effect(
+                            effect_handle
+                                .condition_handle(context.battle_context())?
+                                .wrap_error_with_message("effect has no associated condition")?,
+                        ),
                         "has_source_effect" => ValueRef::Boolean(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
-                                effect_handle,
+                                &effect_handle,
                             )?
                             .source_effect_handle()
                             .is_some(),
@@ -602,7 +608,7 @@ where
                         "id" => ValueRef::TempString(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
-                                effect_handle,
+                                &effect_handle,
                             )?
                             .id()
                             .as_ref()
@@ -613,7 +619,7 @@ where
                         "move_target" => ValueRef::MoveTarget(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
-                                effect_handle,
+                                &effect_handle,
                             )?
                             .active_move()
                             .wrap_error_with_message("effect is not a move")?
@@ -623,62 +629,62 @@ where
                         "name" => ValueRef::TempString(
                             CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
-                                effect_handle,
+                                &effect_handle,
                             )?
                             .name()
                             .to_owned(),
                         ),
-                        _ => return Err(Self::bad_member_access(member, value.value_type())),
+                        _ => return Err(Self::bad_member_access(member, value_type)),
                     }
                 }
                 ValueRef::ActiveMove(active_move_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
                         "base_power" => {
-                            ValueRef::U32(context.active_move(*active_move_handle)?.data.base_power)
+                            ValueRef::U32(context.active_move(active_move_handle)?.data.base_power)
                         }
                         "category" => ValueRef::MoveCategory(
-                            context.active_move(*active_move_handle)?.data.category,
+                            context.active_move(active_move_handle)?.data.category,
                         ),
                         "drain_percent" => ValueRef::UFraction(
                             context
-                                .active_move(*active_move_handle)?
+                                .active_move(active_move_handle)?
                                 .data
                                 .drain_percent
                                 .unwrap_or(Fraction::from(0))
                                 .convert(),
                         ),
                         "id" => {
-                            ValueRef::Str(context.active_move(*active_move_handle)?.id().as_ref())
+                            ValueRef::Str(context.active_move(active_move_handle)?.id().as_ref())
                         }
                         "infiltrates" => {
-                            ValueRef::Boolean(context.active_move(*active_move_handle)?.infiltrates)
+                            ValueRef::Boolean(context.active_move(active_move_handle)?.infiltrates)
                         }
                         "ohko" => ValueRef::Boolean(
                             context
-                                .active_move(*active_move_handle)?
+                                .active_move(active_move_handle)?
                                 .data
                                 .ohko_type
                                 .is_some(),
                         ),
                         "recoil_percent" => ValueRef::UFraction(
                             context
-                                .active_move(*active_move_handle)?
+                                .active_move(active_move_handle)?
                                 .data
                                 .recoil_percent
                                 .unwrap_or(Fraction::from(0))
                                 .convert(),
                         ),
                         "sleep_usable" => ValueRef::Boolean(
-                            context.active_move(*active_move_handle)?.data.sleep_usable,
+                            context.active_move(active_move_handle)?.data.sleep_usable,
                         ),
                         "thaws_target" => ValueRef::Boolean(
-                            context.active_move(*active_move_handle)?.data.thaws_target,
+                            context.active_move(active_move_handle)?.data.thaws_target,
                         ),
                         "type" => ValueRef::Type(
-                            context.active_move(*active_move_handle)?.data.primary_type,
+                            context.active_move(active_move_handle)?.data.primary_type,
                         ),
-                        _ => return Err(Self::bad_member_access(member, value.value_type())),
+                        _ => return Err(Self::bad_member_access(member, value_type)),
                     }
                 }
                 ValueRef::Object(object) => {
@@ -687,7 +693,7 @@ where
                         _ => ValueRef::Undefined,
                     };
                 }
-                _ => return Err(Self::bad_member_access(member, value.value_type())),
+                _ => return Err(Self::bad_member_access(member, value_type)),
             }
         }
         Ok(value)
@@ -824,6 +830,7 @@ where
 pub struct VariableInput {
     values: Vec<Value>,
     this_effect_handle: Option<EffectHandle>,
+    source_effect_handle: Option<EffectHandle>,
 }
 
 impl VariableInput {
@@ -834,6 +841,10 @@ impl VariableInput {
     pub fn set_this_effect(&mut self, effect_handle: EffectHandle) {
         self.this_effect_handle = Some(effect_handle);
     }
+
+    pub fn set_source_effect(&mut self, effect_handle: EffectHandle) {
+        self.source_effect_handle = Some(effect_handle);
+    }
 }
 
 impl FromIterator<Value> for VariableInput {
@@ -841,6 +852,7 @@ impl FromIterator<Value> for VariableInput {
         Self {
             values: iter.into_iter().collect(),
             this_effect_handle: None,
+            source_effect_handle: None,
         }
     }
 }
@@ -1017,6 +1029,12 @@ impl Evaluator {
                 }
             }
         }
+        if event.has_flag(CallbackFlag::TakesSourceEffect) {
+            if let Some(source_effect_handle) = input.source_effect_handle {
+                self.vars
+                    .set("source_effect", Value::Effect(source_effect_handle))?;
+            }
+        }
         if event.has_flag(CallbackFlag::TakesActiveMove) {
             match context {
                 EvaluationContext::ActiveMove(context) => self
@@ -1069,17 +1087,17 @@ impl Evaluator {
 
     pub fn evaluate_program(
         &mut self,
-        mut context: EvaluationContext,
+        context: &mut EvaluationContext,
         event: BattleEvent,
         input: VariableInput,
         effect_state: Option<EffectState>,
         program: &ParsedProgram,
     ) -> Result<ProgramEvalResult, Error> {
         let has_effect_state = effect_state.is_some();
-        self.initialize_vars(&mut context, event, input, effect_state)?;
+        self.initialize_vars(context, event, input, effect_state)?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
-            .evaluate_program_block(&mut context, &program.block, &root_state)
+            .evaluate_program_block(context, &program.block, &root_state)
             .wrap_error_with_format(format_args!("error on statement {}", self.statement))?
         {
             ProgramStatementEvalResult::ReturnStatement(value) => value,

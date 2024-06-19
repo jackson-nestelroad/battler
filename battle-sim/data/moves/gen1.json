@@ -378,7 +378,9 @@
     "has_crash_damage": true,
     "effect": {
       "callbacks": {
-        "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this"]
+        "on_move_failed": [
+          "damage: $user expr($user.base_max_hp / 2) $this.condition"
+        ]
       }
     }
   },
@@ -1953,7 +1955,9 @@
     "has_crash_damage": true,
     "effect": {
       "callbacks": {
-        "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this"]
+        "on_move_failed": [
+          "damage: $user expr($user.base_max_hp / 2) $this.condition"
+        ]
       }
     }
   },

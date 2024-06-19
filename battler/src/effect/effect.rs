@@ -122,12 +122,21 @@ impl EffectHandle {
         }
     }
 
-    pub fn stable_effect_handle(&self, context: &mut Context) -> Result<EffectHandle, Error> {
+    pub fn stable_effect_handle(&self, context: &Context) -> Result<EffectHandle, Error> {
         match self {
             Self::ActiveMove(active_move_handle, _) => Ok(EffectHandle::MoveCondition(
                 context.active_move(*active_move_handle)?.id().clone(),
             )),
             val @ _ => Ok(val.clone()),
+        }
+    }
+
+    pub fn condition_handle(&self, context: &Context) -> Result<Option<EffectHandle>, Error> {
+        match self {
+            Self::ActiveMove(active_move_handle, _) => Ok(Some(EffectHandle::MoveCondition(
+                context.active_move(*active_move_handle)?.id().clone(),
+            ))),
+            _ => Ok(None),
         }
     }
 }
