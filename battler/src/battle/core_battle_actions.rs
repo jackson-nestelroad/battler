@@ -1597,7 +1597,7 @@ fn apply_move_effects(
             // Run the event for other effects only once.
             if !target_context.is_secondary() {
                 core_battle_effects::run_event_for_applying_effect(
-                    &mut context.applying_effect_context()?,
+                    &mut target_context.applying_effect_context()?,
                     fxlang::BattleEvent::Hit,
                     fxlang::VariableInput::default(),
                 );
