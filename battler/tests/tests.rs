@@ -17,6 +17,7 @@ mod moves {
     mod ohko_test;
     mod powder_test;
     mod recoil_test;
+    mod secondary_effect_callback_test;
     mod self_destruct_test;
     mod singles_damage_calculation_test;
     mod splash_test;

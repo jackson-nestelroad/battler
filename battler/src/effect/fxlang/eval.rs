@@ -379,7 +379,8 @@ impl<
                 }
             }
             Self::ApplyingEffect(context) => {
-                if let EffectHandle::ActiveMove(effect_active_move_handle) = context.effect_handle()
+                if let EffectHandle::ActiveMove(effect_active_move_handle, _) =
+                    context.effect_handle()
                 {
                     if active_move_handle == effect_active_move_handle {
                         context.effect().active_move().wrap_error_with_message("effect handle referenced an active move, but effect was not an active move")
@@ -409,7 +410,8 @@ impl<
                 }
             }
             Self::ApplyingEffect(context) => {
-                if let EffectHandle::ActiveMove(effect_active_move_handle) = context.effect_handle()
+                if let EffectHandle::ActiveMove(effect_active_move_handle, _) =
+                    context.effect_handle()
                 {
                     if active_move_handle == effect_active_move_handle {
                         context.effect_mut().active_move_mut().wrap_error_with_message("effect handle referenced an active move, but effect was not an active move")
@@ -1015,7 +1017,7 @@ impl Evaluator {
                     .vars
                     .set("move", Value::ActiveMove(context.active_move_handle()))?,
                 EvaluationContext::ApplyingEffect(context) => match context.effect_handle() {
-                    EffectHandle::ActiveMove(active_move_handle) => self
+                    EffectHandle::ActiveMove(active_move_handle, _) => self
                         .vars
                         .set("move", Value::ActiveMove(active_move_handle))?,
                     _ => {

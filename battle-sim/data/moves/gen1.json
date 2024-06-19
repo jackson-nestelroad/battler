@@ -2301,7 +2301,26 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "effect": {
+          "callbacks": {
+            "on_hit": [
+              "$rand = func_call(random: 3)",
+              "if $rand == 0:",
+              ["$status = par"],
+              "else if $rand == 1:",
+              ["$status = frz"],
+              "else:",
+              ["$status = brn"],
+              "set_status: $target $status"
+            ]
+          }
+        }
+      }
+    ]
   },
   "superfang": {
     "name": "Super Fang",

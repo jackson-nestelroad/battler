@@ -1479,121 +1479,128 @@ fn apply_move_effects(
         }
         let mut target_context = context.target_context(target.handle)?;
 
-        // HitEffect is optional. If it is unspecified, we exit early.
-        //
-        // We clone to avoid holding onto the reference, which prevents us from creating new
-        // contexts.
-        let hit_effect = match target_context.hit_effect() {
-            None => break,
-            Some(hit_effect) => hit_effect.clone(),
-        };
-
         let source_handle = target_context.mon_handle();
-        let effect_handle = EffectHandle::ActiveMove(target_context.active_move_handle());
+        let effect_handle = target_context.as_active_move_context().effect_handle();
 
         let mut hit_effect_outcome: Option<MoveOutcomeOnTarget> = None;
 
-        // Only run the following effects if we hit the target.
-        //
-        // In other words, this check skips applying effects to substitutes.
-        if target.outcome.hit_target() {
-            if let Some(boosts) = hit_effect.boosts {
-                let outcome = boost(
-                    &mut target_context.target_mon_context()?,
-                    boosts,
-                    Some(source_handle),
-                    Some(&effect_handle),
-                    is_secondary,
-                    is_self,
-                )?;
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
-            }
-
-            if let Some(heal_percent) = hit_effect.heal_percent {
-                let damage = heal_percent * target_context.mon().max_hp;
-                let damage = damage.round();
-                let damage = heal(
-                    &mut target_context.target_mon_context()?,
-                    damage,
-                    Some(source_handle),
-                    Some(&effect_handle),
-                    true,
-                )?;
-                let outcome = if damage == 0 {
-                    MoveOutcomeOnTarget::Failure
-                } else {
-                    MoveOutcomeOnTarget::Success
-                };
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
-            }
-
-            if let Some(status) = hit_effect.status {
-                let set_status = try_set_status(
-                    &mut target_context.applying_effect_context()?,
-                    Some(Id::from(status)),
-                    !is_secondary && !is_self,
-                )?;
-                let outcome = MoveOutcomeOnTarget::from(set_status);
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
-            }
-
-            if let Some(volatile_status) = hit_effect.volatile_status {
-                let set_status = try_add_volatile(
-                    &mut target_context.applying_effect_context()?,
-                    &Id::from(volatile_status),
-                    !is_secondary && !is_self,
-                )?;
-                let outcome = MoveOutcomeOnTarget::from(set_status);
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
-            }
-
-            if let Some(side_condition) = hit_effect.side_condition {
-                // TODO: Add side condition.
-            }
-
-            if let Some(slot_condition) = hit_effect.slot_condition {
-                // TODO: Add slot condition.
-            }
-
-            if let Some(weather) = hit_effect.weather {
-                // TODO: Set weather.
-            }
-
-            if let Some(terrain) = hit_effect.terrain {
-                // TODO: Set terrain.
-            }
-
-            if let Some(pseudo_weather) = hit_effect.pseudo_weather {
-                // TODO: Add pseudo weather.
-            }
-
-            if hit_effect.force_switch {
-                let outcome = if Player::can_switch(target_context.as_player_context()) {
-                    MoveOutcomeOnTarget::Success
-                } else {
-                    MoveOutcomeOnTarget::Failure
-                };
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
-            }
-
-            let move_target = target_context.active_move().data.target;
-            if move_target == MoveTarget::All && !target_context.is_self() {
-                // TODO: HitField event.
-            } else if (move_target == MoveTarget::FoeSide
-                || move_target == MoveTarget::AllySide
-                || move_target == MoveTarget::AllyTeam)
-                && !target_context.is_self()
-            {
-                // TODO: HitSide event.
-            } else if !target_context.is_self() && !target_context.is_secondary() {
-                if let Some(hit_result) = core_battle_effects::run_active_move_event_expecting_bool(
-                    target_context.as_active_move_context_mut(),
-                    fxlang::BattleEvent::Hit,
-                ) {
-                    let outcome = MoveOutcomeOnTarget::from(hit_result);
+        if let Some(hit_effect) = target_context.hit_effect().cloned() {
+            // Only run the following effects if we hit the target.
+            //
+            // In other words, this check skips applying effects to substitutes.
+            if target.outcome.hit_target() {
+                if let Some(boosts) = hit_effect.boosts {
+                    let outcome = boost(
+                        &mut target_context.target_mon_context()?,
+                        boosts,
+                        Some(source_handle),
+                        Some(&effect_handle),
+                        is_secondary,
+                        is_self,
+                    )?;
                     hit_effect_outcome =
                         Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
                 }
+
+                if let Some(heal_percent) = hit_effect.heal_percent {
+                    let damage = heal_percent * target_context.mon().max_hp;
+                    let damage = damage.round();
+                    let damage = heal(
+                        &mut target_context.target_mon_context()?,
+                        damage,
+                        Some(source_handle),
+                        Some(&effect_handle),
+                        true,
+                    )?;
+                    let outcome = if damage == 0 {
+                        MoveOutcomeOnTarget::Failure
+                    } else {
+                        MoveOutcomeOnTarget::Success
+                    };
+                    hit_effect_outcome =
+                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                }
+
+                if let Some(status) = hit_effect.status {
+                    let set_status = try_set_status(
+                        &mut target_context.applying_effect_context()?,
+                        Some(Id::from(status)),
+                        !is_secondary && !is_self,
+                    )?;
+                    let outcome = MoveOutcomeOnTarget::from(set_status);
+                    hit_effect_outcome =
+                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                }
+
+                if let Some(volatile_status) = hit_effect.volatile_status {
+                    let set_status = try_add_volatile(
+                        &mut target_context.applying_effect_context()?,
+                        &Id::from(volatile_status),
+                        !is_secondary && !is_self,
+                    )?;
+                    let outcome = MoveOutcomeOnTarget::from(set_status);
+                    hit_effect_outcome =
+                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                }
+
+                if let Some(side_condition) = hit_effect.side_condition {
+                    // TODO: Add side condition.
+                }
+
+                if let Some(slot_condition) = hit_effect.slot_condition {
+                    // TODO: Add slot condition.
+                }
+
+                if let Some(weather) = hit_effect.weather {
+                    // TODO: Set weather.
+                }
+
+                if let Some(terrain) = hit_effect.terrain {
+                    // TODO: Set terrain.
+                }
+
+                if let Some(pseudo_weather) = hit_effect.pseudo_weather {
+                    // TODO: Add pseudo weather.
+                }
+
+                if hit_effect.force_switch {
+                    let outcome = if Player::can_switch(target_context.as_player_context()) {
+                        MoveOutcomeOnTarget::Success
+                    } else {
+                        MoveOutcomeOnTarget::Failure
+                    };
+                    hit_effect_outcome =
+                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                }
+            }
+        }
+
+        // These event callbacks run regardless of if there is a hit effect defined.
+        let move_target = target_context.active_move().data.target;
+        if move_target == MoveTarget::All && !target_context.is_self() {
+            // TODO: HitField event.
+        } else if (move_target == MoveTarget::FoeSide
+            || move_target == MoveTarget::AllySide
+            || move_target == MoveTarget::AllyTeam)
+            && !target_context.is_self()
+        {
+            // TODO: HitSide event.
+        } else if !target_context.is_self() {
+            if let Some(hit_result) = core_battle_effects::run_active_move_event_expecting_bool(
+                target_context.as_active_move_context_mut(),
+                fxlang::BattleEvent::Hit,
+            ) {
+                let outcome = MoveOutcomeOnTarget::from(hit_result);
+                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+            }
+
+            // Run the event for other effects only once.
+            if !target_context.is_secondary() {
+                core_battle_effects::run_event_for_applying_effect(
+                    &mut context.applying_effect_context()?,
+                    fxlang::BattleEvent::Hit,
+                    fxlang::VariableInput::default(),
+                );
             }
         }
 

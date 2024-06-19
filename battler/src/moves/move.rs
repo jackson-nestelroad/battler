@@ -73,6 +73,9 @@ pub struct SecondaryEffect {
     pub target: Option<HitEffect>,
     /// Secondary hit effect on the user of the move.
     pub user: Option<HitEffect>,
+    /// Dynamic battle effects.
+    #[serde(default)]
+    pub effect: fxlang::Effect,
 }
 
 fn default_crit_ratio() -> Option<u8> {
@@ -263,10 +266,19 @@ impl MoveHitData {
 }
 
 /// The current type of [`HitEffect`] being applied on an active [`Move`].
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MoveHitEffectType {
     PrimaryEffect,
     SecondaryEffect(usize),
+}
+
+impl MoveHitEffectType {
+    pub fn secondary_index(&self) -> Option<usize> {
+        match self {
+            Self::PrimaryEffect => None,
+            Self::SecondaryEffect(index) => Some(*index),
+        }
+    }
 }
 
 /// An inidividual move, which can be used by a Mon in battle.
@@ -381,6 +393,23 @@ impl Move {
                 .get_mut(index)
                 .map(|effect| effect.user.as_mut())
                 .flatten(),
+        }
+    }
+
+    pub fn fxlang_callbacks(
+        &self,
+        hit_effect_type: MoveHitEffectType,
+    ) -> Option<&fxlang::Callbacks> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => Some(&self.data.effect.callbacks),
+            MoveHitEffectType::SecondaryEffect(secondary_index) => Some(
+                &self
+                    .data
+                    .secondary_effects
+                    .get(secondary_index)?
+                    .effect
+                    .callbacks,
+            ),
         }
     }
 }

@@ -63,7 +63,7 @@ fn run_active_move_event_with_errors(
     // SAFETY: The active move lives for the lifetime of the turn.
     let active_move = unsafe { context.active_move_mut().unsafely_detach_borrow_mut() };
     let effect_state = active_move.effect_state.clone();
-    let effect = Effect::for_active_move(active_move);
+    let effect = Effect::for_active_move(active_move, context.hit_effect_type());
     let result = run_effect_event_with_errors(
         &mut fxlang::EvaluationContext::ActiveMove(context),
         &effect,

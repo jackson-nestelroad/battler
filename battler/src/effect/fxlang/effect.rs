@@ -159,7 +159,8 @@ pub enum BattleEvent {
     Flinch,
     /// Runs when a Mon is hit by a move.
     ///
-    /// Can fail, but will only fail the move if everything else failed.
+    /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
+    /// the applying hit effect.
     #[string = "Hit"]
     Hit,
     /// Runs when determining if a Mon is invulnerable to targeting moves.

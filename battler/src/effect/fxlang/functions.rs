@@ -97,6 +97,9 @@ pub fn run_function(
         }
         "start" => start(context.target_context_mut()?.as_mut(), args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
+        "set_status" => {
+            set_status(context.applying_effect_context_mut()?.as_mut(), args).map(|val| Some(val))
+        }
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -689,4 +692,24 @@ fn apply_recoil_damage(
 fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {
     let value = args.pop_front().wrap_error_with_message("missing value")?;
     Ok(Value::Boolean(value.boolean().is_ok()))
+}
+
+fn set_status(
+    context: &mut ApplyingEffectContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let status = args
+        .pop_front()
+        .wrap_error_with_message("missing status id")?
+        .string()
+        .wrap_error_with_message("invalid status")?;
+    let status = Id::from(status);
+    let mut context = context.change_target_context(mon_handle)?;
+    core_battle_actions::try_set_status(&mut context, Some(status), false)
+        .map(|val| Value::Boolean(val))
 }

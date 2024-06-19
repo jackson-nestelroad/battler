@@ -128,13 +128,14 @@ impl<'battle, 'data> Context<'battle, 'data> {
     pub fn active_move_context<'context>(
         &'context mut self,
         active_move_handle: MoveHandle,
+        hit_effect_type: MoveHitEffectType,
     ) -> Result<ActiveMoveContext<'context, 'context, 'context, 'context, 'battle, 'data>, Error>
     {
         let user = self
             .active_move(active_move_handle)?
             .used_by
             .wrap_error_with_message("active move handle does not have a user")?;
-        ActiveMoveContext::new_from_mon_context(self.mon_context(user)?.into())
+        ActiveMoveContext::new_from_mon_context(self.mon_context(user)?.into(), hit_effect_type)
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -564,7 +565,7 @@ impl<'player, 'side, 'context, 'battle, 'data>
     pub fn active_move_context<'mon>(
         &'mon mut self,
     ) -> Result<ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>, Error> {
-        ActiveMoveContext::new_from_mon_context(self.into())
+        ActiveMoveContext::new_from_mon_context(self.into(), MoveHitEffectType::PrimaryEffect)
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -680,6 +681,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 {
     fn new_from_mon_context(
         context: MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>,
+        hit_effect_type: MoveHitEffectType,
     ) -> Result<Self, Error> {
         let active_move_handle = context
             .mon()
@@ -699,7 +701,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
             context,
             active_move_handle,
             active_move,
-            hit_effect_type: MoveHitEffectType::PrimaryEffect,
+            hit_effect_type,
             is_self: false,
             is_external: false,
         })
@@ -735,6 +737,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     fn new_from_move_handle(
         context: &'context mut Context<'battle, 'data>,
         active_move_handle: MoveHandle,
+        hit_effect_type: MoveHitEffectType,
     ) -> Result<Self, Error>
     where
         'side: 'context,
@@ -753,7 +756,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
             context: MaybeOwnedMut::Owned(context),
             active_move_handle,
             active_move,
-            hit_effect_type: MoveHitEffectType::PrimaryEffect,
+            hit_effect_type,
             is_self: false,
             is_external: false,
         })
@@ -895,16 +898,15 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     pub fn active_move_context(
         self,
     ) -> Result<ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>, Error> {
-        ActiveMoveContext::new_from_mon_context(self.context)
+        ActiveMoveContext::new_from_mon_context(self.context, self.hit_effect_type)
     }
 
     /// Creates a new [`EffectContext`], scoped to the lifetime of this context.
     pub fn effect_context<'active_move>(
         &'active_move mut self,
     ) -> Result<EffectContext<'active_move, 'battle, 'data>, Error> {
-        let active_move_handle = self.active_move_handle;
-        self.as_battle_context_mut()
-            .effect_context(&EffectHandle::ActiveMove(active_move_handle))
+        let effect_handle = self.effect_handle();
+        self.as_battle_context_mut().effect_context(&effect_handle)
     }
 
     /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
@@ -1042,7 +1044,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
     /// Returns the [`EffectHandle`] for the active [`Move`].
     pub fn effect_handle(&self) -> EffectHandle {
-        EffectHandle::ActiveMove(self.active_move_handle)
+        EffectHandle::ActiveMove(self.active_move_handle, self.hit_effect_type)
     }
 
     /// Returns the [`MoveHandle`] for the active [`Move`].
@@ -1088,6 +1090,11 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// explicitly select it).
     pub fn is_external(&self) -> bool {
         self.is_external
+    }
+
+    /// Returns the applying [`MoveHitEffectType`], which describes the source of [`hit_effect`].
+    pub fn hit_effect_type(&self) -> MoveHitEffectType {
+        self.hit_effect_type
     }
 
     /// Returns a reference to the applying [`HitEffect`].
@@ -1483,8 +1490,12 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         &'effect mut self,
     ) -> Result<ActiveMoveContext<'effect, 'effect, 'effect, 'effect, 'battle, 'data>, Error> {
         match self.effect_handle {
-            EffectHandle::ActiveMove(active_move_handle) => {
-                ActiveMoveContext::new_from_move_handle(self.context.as_mut(), active_move_handle)
+            EffectHandle::ActiveMove(active_move_handle, hit_effect_type) => {
+                ActiveMoveContext::new_from_move_handle(
+                    self.context.as_mut(),
+                    active_move_handle,
+                    hit_effect_type,
+                )
             }
             _ => Err(battler_error!(
                 "effect context does not contain an active move"
@@ -1656,9 +1667,9 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         Error,
     > {
         match self.effect_handle() {
-            EffectHandle::ActiveMove(active_move_handle) => self
+            EffectHandle::ActiveMove(active_move_handle, hit_effect_type) => self
                 .as_battle_context_mut()
-                .active_move_context(active_move_handle)
+                .active_move_context(active_move_handle, hit_effect_type)
                 .map(|context| Some(context)),
             _ => Ok(None),
         }

@@ -22,7 +22,10 @@ use crate::{
     conditions::Condition,
     effect::fxlang,
     items::Item,
-    moves::Move,
+    moves::{
+        Move,
+        MoveHitEffectType,
+    },
 };
 
 /// Similar to [`MaybeOwned`][`crate::common::MaybeOwned`], but for an optional mutable reference
@@ -85,7 +88,7 @@ pub enum EffectType {
 /// An [`Effect`] handle.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EffectHandle {
-    ActiveMove(MoveHandle),
+    ActiveMove(MoveHandle, MoveHitEffectType),
     Ability(Id),
     Condition(Id),
     MoveCondition(Id),
@@ -103,14 +106,14 @@ impl EffectHandle {
 
     pub fn is_active_move(&self) -> bool {
         match self {
-            Self::ActiveMove(_) => true,
+            Self::ActiveMove(_, _) => true,
             _ => false,
         }
     }
 
     pub fn try_id(&self) -> Option<&Id> {
         match self {
-            Self::ActiveMove(_) => None,
+            Self::ActiveMove(_, _) => None,
             Self::Ability(id) => Some(&id),
             Self::Condition(id) => Some(&id),
             Self::MoveCondition(id) => Some(&id),
@@ -121,7 +124,7 @@ impl EffectHandle {
 
     pub fn stable_effect_handle(&self, context: &mut Context) -> Result<EffectHandle, Error> {
         match self {
-            Self::ActiveMove(active_move_handle) => Ok(EffectHandle::MoveCondition(
+            Self::ActiveMove(active_move_handle, _) => Ok(EffectHandle::MoveCondition(
                 context.active_move(*active_move_handle)?.id().clone(),
             )),
             val @ _ => Ok(val.clone()),
@@ -132,7 +135,7 @@ impl EffectHandle {
 /// A battle effect.
 pub enum Effect<'borrow> {
     /// A move currently being used by a Mon.
-    ActiveMove(&'borrow mut Move),
+    ActiveMove(&'borrow mut Move, MoveHitEffectType),
     /// An ability, which is permanently applied to a Mon.
     Ability(ElementRef<'borrow, Ability>),
     /// A condition, which is applied to a Mon for some number of turns.
@@ -146,8 +149,11 @@ pub enum Effect<'borrow> {
 }
 
 impl<'borrow> Effect<'borrow> {
-    pub fn for_active_move(active_move: &'borrow mut Move) -> Self {
-        Self::ActiveMove(active_move)
+    pub fn for_active_move(
+        active_move: &'borrow mut Move,
+        hit_effect_type: MoveHitEffectType,
+    ) -> Self {
+        Self::ActiveMove(active_move, hit_effect_type)
     }
 
     pub fn for_ability(ability: ElementRef<'borrow, Ability>) -> Self {
@@ -172,7 +178,7 @@ impl<'borrow> Effect<'borrow> {
 
     pub fn name(&self) -> &str {
         match self {
-            Self::ActiveMove(active_move) => &active_move.data.name,
+            Self::ActiveMove(active_move, _) => &active_move.data.name,
             Self::Ability(ability) => &ability.data.name,
             Self::Condition(condition) => &condition.data.name,
             Self::MoveCondition(mov) => &mov.data.name,
@@ -183,7 +189,7 @@ impl<'borrow> Effect<'borrow> {
 
     pub fn effect_type(&self) -> EffectType {
         match self {
-            Self::ActiveMove(_) => EffectType::Move,
+            Self::ActiveMove(_, _) => EffectType::Move,
             Self::Ability(_) => EffectType::Ability,
             Self::Condition(_) => EffectType::Condition,
             Self::MoveCondition(_) => EffectType::MoveCondition,
@@ -194,7 +200,7 @@ impl<'borrow> Effect<'borrow> {
 
     fn effect_type_name(&self) -> &str {
         match self {
-            Self::ActiveMove(_) => "move",
+            Self::ActiveMove(_, _) => "move",
             Self::Ability(_) => "ability",
             Self::Condition(condition) => condition.condition_type_name(),
             Self::MoveCondition(_) => "move",
@@ -210,19 +216,22 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    fn internal_effect_type_name(&self) -> &str {
+    fn internal_effect_type_name(&self) -> String {
         match self {
-            Self::ActiveMove(_) => "move",
-            Self::Ability(_) => "ability",
-            Self::Condition(condition) => condition.condition_type_name(),
-            Self::MoveCondition(_) => "movecondition",
-            Self::Item(_) => "item",
-            Self::NonExistent(_) => "condition",
+            Self::ActiveMove(_, hit_effect_type) => match hit_effect_type.secondary_index() {
+                None => "move".to_owned(),
+                Some(secondary_index) => format!("movesecondary{secondary_index}"),
+            },
+            Self::Ability(_) => "ability".to_owned(),
+            Self::Condition(condition) => condition.condition_type_name().to_owned(),
+            Self::MoveCondition(_) => "movecondition".to_owned(),
+            Self::Item(_) => "item".to_owned(),
+            Self::NonExistent(_) => "condition".to_owned(),
         }
     }
 
     pub fn internal_fxlang_id(&self) -> String {
-        match self.internal_effect_type_name() {
+        match self.internal_effect_type_name().as_str() {
             "" => format!("{}", self.id()),
             prefix => format!("{prefix}:{}", self.id()),
         }
@@ -230,14 +239,14 @@ impl<'borrow> Effect<'borrow> {
 
     pub fn active_move<'effect>(&'effect self) -> Option<&'effect Move> {
         match self {
-            Self::ActiveMove(active_move) => Some(active_move.deref()),
+            Self::ActiveMove(active_move, _) => Some(active_move.deref()),
             _ => None,
         }
     }
 
     pub fn active_move_mut<'effect>(&'effect mut self) -> Option<&'effect mut Move> {
         match self {
-            Self::ActiveMove(active_move) => Some(active_move.deref_mut()),
+            Self::ActiveMove(active_move, _) => Some(active_move.deref_mut()),
             _ => None,
         }
     }
@@ -251,14 +260,16 @@ impl<'borrow> Effect<'borrow> {
 
     pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
         match self {
-            Self::ActiveMove(active_move) => active_move.source_effect.as_ref(),
+            Self::ActiveMove(active_move, _) => active_move.source_effect.as_ref(),
             _ => None,
         }
     }
 
     pub fn fxlang_callbacks<'effect>(&'effect self) -> Option<&'effect fxlang::Callbacks> {
         match self {
-            Self::ActiveMove(active_move) => Some(&active_move.data.effect.callbacks),
+            Self::ActiveMove(active_move, hit_effect_type) => {
+                active_move.fxlang_callbacks(*hit_effect_type)
+            }
             Self::Ability(ability) => Some(&ability.data.effect.callbacks),
             Self::Condition(condition) => Some(&condition.data.condition.callbacks),
             Self::MoveCondition(mov) => Some(&mov.data.condition.callbacks),
@@ -279,7 +290,7 @@ impl<'borrow> Effect<'borrow> {
 impl Identifiable for Effect<'_> {
     fn id(&self) -> &Id {
         match self {
-            Self::ActiveMove(active_move) => active_move.id(),
+            Self::ActiveMove(active_move, _) => active_move.id(),
             Self::Ability(ability) => ability.id(),
             Self::Condition(condition) => condition.id(),
             Self::MoveCondition(mov) => mov.id(),

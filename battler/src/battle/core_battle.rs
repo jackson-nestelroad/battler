@@ -1516,9 +1516,12 @@ impl<'d> CoreBattle<'d> {
         effect_handle: &EffectHandle,
     ) -> Result<Effect<'context>, Error> {
         match effect_handle {
-            EffectHandle::ActiveMove(active_move_handle) => Ok(Effect::for_active_move(
-                context.active_move_mut(*active_move_handle)?,
-            )),
+            EffectHandle::ActiveMove(active_move_handle, hit_effect_type) => {
+                Ok(Effect::for_active_move(
+                    context.active_move_mut(*active_move_handle)?,
+                    *hit_effect_type,
+                ))
+            }
             EffectHandle::Ability(id) => Ok(Effect::for_ability(
                 context.battle().dex.abilities.get_by_id(id).into_result()?,
             )),
