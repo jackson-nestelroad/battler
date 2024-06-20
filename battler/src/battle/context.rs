@@ -880,21 +880,6 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         ))
     }
 
-    /// Creates a new [`MonContext`] for the active target [`Mon`], scoped to the lifetime of this
-    /// context.
-    pub fn active_target_mon_context<'active_move>(
-        &'active_move mut self,
-    ) -> Result<MonContext<'active_move, 'active_move, 'active_move, 'battle, 'data>, Error> {
-        self.target_mon_context(
-            self.mon()
-                .active_target
-                .wrap_error_with_format(format_args!(
-                    "active mon {} has no active target",
-                    self.mon_handle()
-                ))?,
-        )
-    }
-
     /// Creates a new [`MonContext`] for the targeted [`Mon`], scoped to the lifetime of this
     /// context.
     pub fn target_context<'active_move>(
@@ -905,24 +890,6 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         Error,
     > {
         ActiveTargetContext::new_from_active_move_context(self.into(), target_mon_handle)
-    }
-
-    /// Creates a new [`ActiveTargetContext`] for the active target set on the curretn [`Mon`],
-    /// scoped to the lifetime of this context.
-    pub fn active_target_context<'active_move>(
-        &'active_move mut self,
-    ) -> Result<
-        ActiveTargetContext<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>,
-        Error,
-    > {
-        self.target_context(
-            self.mon()
-                .active_target
-                .wrap_error_with_format(format_args!(
-                    "active mon {} has no active target",
-                    self.mon_handle()
-                ))?,
-        )
     }
 
     /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
@@ -944,21 +911,6 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
             .effect_context(effect_handle, source_effect_handle)
     }
 
-    /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
-    ///
-    /// The Mon's active target is used as the target of the move.
-    pub fn applying_effect_context<'active_move>(
-        &'active_move mut self,
-    ) -> Result<ApplyingEffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
-        let source_handle = self.mon_handle();
-        let target_handle = self.active_target_mon_context()?.mon_handle();
-        ApplyingEffectContext::new(
-            self.effect_context()?.into(),
-            Some(source_handle),
-            target_handle,
-        )
-    }
-
     /// Creates a new [`ApplyingEffectContext`] for the target, scoped to the lifetime of this
     /// context.
     pub fn applying_effect_context_for_target<'active_move>(
@@ -976,15 +928,13 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Creates a new [`ApplyingEffectContext`] with the user set as the target, scoped to the
     /// lifetime of this context.
     ///
-    /// The Mon's active target is used as the source of the effect, if there is an active target.
-    ///
-    /// The inverse of [`applying_effect_context`].
+    /// If given, the target is used as the source of the effect.
     pub fn user_applying_effect_context<'active_move>(
         &'active_move mut self,
+        target_handle: Option<MonHandle>,
     ) -> Result<ApplyingEffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
-        let source_handle = self.active_target_handle();
-        let target_handle = self.mon_handle();
-        ApplyingEffectContext::new(self.effect_context()?.into(), source_handle, target_handle)
+        let user_handle = self.mon_handle();
+        ApplyingEffectContext::new(self.effect_context()?.into(), target_handle, user_handle)
     }
 
     /// Creates a new [`ActiveMoveContext`] for a secondary [`HitEffect`], scoped to the lifetime of
@@ -1062,16 +1012,6 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Returns a mutable reference to the active [`Mon`].
     pub fn mon_mut(&mut self) -> &mut Mon {
         self.context.mon_mut()
-    }
-
-    /// Checks if the [`Mon`] has a single active target.
-    pub fn has_active_target(&self) -> bool {
-        self.mon().active_target.is_some()
-    }
-
-    /// Returns the [`MonHandle`] for the active target, if any.
-    pub fn active_target_handle(&self) -> Option<MonHandle> {
-        self.mon().active_target
     }
 
     /// Returns the [`EffectHandle`] for the active [`Move`].
@@ -1761,6 +1701,29 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
             target_handle,
             Some(source_effect_handle),
         )
+    }
+
+    /// Creates a new [`ApplyingEffectContext`] for the source effect with the same target and
+    /// source, scoped to the lifetime of this context.
+    pub fn source_applying_effect_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<
+        Option<ApplyingEffectContext<'applying_effect, 'applying_effect, 'battle, 'data>>,
+        Error,
+    > {
+        match self.source_effect_handle().cloned() {
+            Some(source_effect_handle) => {
+                let source_handle = self.source_handle;
+                let target_handle = self.target_handle;
+                Ok(Some(self.as_battle_context_mut().applying_effect_context(
+                    source_effect_handle,
+                    source_handle,
+                    target_handle,
+                    None,
+                )?))
+            }
+            None => Ok(None),
+        }
     }
 
     /// Creates a new [`ActiveMoveContext`] for the effect if it is an active move, scoped to the

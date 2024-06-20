@@ -428,15 +428,6 @@ impl BattleEvent {
         }
     }
 
-    /// Checks if the event is an active move event that targets the user, rather than move
-    /// targets.
-    ///
-    /// This is critical for event callbacks that run for the move as a whole, rather than for each
-    /// individual target.
-    pub fn active_move_targets_user(&self) -> bool {
-        self.has_flag(CallbackFlag::TakesUserMon)
-    }
-
     /// Returns the associated ally event.
     pub fn ally_event(&self) -> Option<BattleEvent> {
         match self {

@@ -109,14 +109,14 @@ fn run_effect_event_with_errors(
 fn run_active_move_event_with_errors(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
     input: fxlang::VariableInput,
 ) -> Result<Option<fxlang::Value>, Error> {
     let effect_state = context.active_move().effect_state.clone();
 
-    let effect_context = if event.active_move_targets_user() {
-        context.user_applying_effect_context()?
-    } else {
-        context.applying_effect_context()?
+    let effect_context = match target {
+        Some(target) => context.applying_effect_context_for_target(target)?,
+        None => context.user_applying_effect_context(None)?,
     };
     let effect_handle = effect_context.effect_handle().clone();
     let result = run_effect_event_with_errors(
@@ -137,9 +137,10 @@ fn run_active_move_event_with_errors(
 fn run_active_move_event(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
-    match run_active_move_event_with_errors(context, event, input) {
+    match run_active_move_event_with_errors(context, event, target, input) {
         Ok(value) => value,
         Err(error) => {
             let active_move_name = &context.active_move().data.name;
@@ -725,8 +726,9 @@ fn run_event_for_no_target_internal(context: &mut Context, event: fxlang::Battle
 pub fn run_active_move_event_expecting_void(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
 ) {
-    run_active_move_event(context, event, fxlang::VariableInput::default());
+    run_active_move_event(context, event, target, fxlang::VariableInput::default());
 }
 
 /// Runs an event on an active [`Move`][`crate::moves::Move`].
@@ -735,8 +737,9 @@ pub fn run_active_move_event_expecting_void(
 pub fn run_active_move_event_expecting_u16(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
 ) -> Option<u16> {
-    run_active_move_event(context, event, fxlang::VariableInput::default())?
+    run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .integer_u16()
         .ok()
 }
@@ -747,8 +750,9 @@ pub fn run_active_move_event_expecting_u16(
 pub fn run_active_move_event_expecting_u32(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
 ) -> Option<u32> {
-    run_active_move_event(context, event, fxlang::VariableInput::default())?
+    run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .integer_u32()
         .ok()
 }
@@ -759,8 +763,9 @@ pub fn run_active_move_event_expecting_u32(
 pub fn run_active_move_event_expecting_bool(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
 ) -> Option<bool> {
-    run_active_move_event(context, event, fxlang::VariableInput::default())?
+    run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
@@ -771,8 +776,9 @@ pub fn run_active_move_event_expecting_bool(
 pub fn run_active_move_event_expecting_move_event_result(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
 ) -> MoveEventResult {
-    match run_active_move_event(context, event, fxlang::VariableInput::default()) {
+    match run_active_move_event(context, event, target, fxlang::VariableInput::default()) {
         Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
         None => MoveEventResult::Advance,
     }

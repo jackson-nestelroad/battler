@@ -1320,19 +1320,6 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
-    pub fn set_active_target(
-        context: &mut Context,
-        target: Option<MonHandle>,
-    ) -> Result<(), Error> {
-        context
-            .mon_context(context.battle().active_mon.wrap_error_with_message(
-                "cannot set an active target when no active mon is set",
-            )?)?
-            .mon_mut()
-            .active_target = target;
-        Ok(())
-    }
-
     pub fn register_move(&self, mov: Move) -> MoveHandle {
         self.registry.register_move(mov)
     }
@@ -1341,13 +1328,12 @@ impl<'d> CoreBattle<'d> {
         context: &mut Context,
         move_handle: MoveHandle,
         user: MonHandle,
-        target: Option<MonHandle>,
     ) -> Result<(), Error> {
         context.battle_mut().active_mon = Some(user);
         context
             .mon_context(user)?
             .mon_mut()
-            .set_active_move(move_handle, target);
+            .set_active_move(move_handle);
         Ok(())
     }
 

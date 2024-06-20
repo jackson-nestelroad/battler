@@ -27,6 +27,7 @@ use crate::{
         Error,
         Fraction,
         Identifiable,
+        MaybeOwnedMut,
         UnsafelyDetachBorrow,
         UnsafelyDetachBorrowMut,
         WrapResultError,
@@ -101,6 +102,25 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         self.effect_context_mut().source_effect_context()
     }
 
+    pub fn maybe_source_effect_context<'eval>(
+        &'eval mut self,
+        use_source: bool,
+    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>, Error> {
+        if use_source {
+            Ok(self
+                .source_effect_context()?
+                .wrap_error_with_message("context has no source effect")?
+                .into())
+        } else {
+            // SAFETY: We are shortening the lifetimes of this context to the lifetime of
+            // this object.
+            let context = self.effect_context_mut();
+            let context: &'eval mut EffectContext<'eval, 'battle, 'data> =
+                unsafe { mem::transmute(context) };
+            Ok(context.into())
+        }
+    }
+
     pub fn applying_effect_context<'eval>(
         &'eval self,
     ) -> Result<&'eval ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
@@ -115,6 +135,39 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<&'eval mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
+            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
+        }
+    }
+
+    pub fn source_applying_effect_context<'eval>(
+        &'eval mut self,
+    ) -> Result<Option<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::ApplyingEffect(context) => context.source_applying_effect_context(),
+            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
+        }
+    }
+
+    pub fn maybe_source_applying_effect_context<'eval>(
+        &'eval mut self,
+        use_source: bool,
+    ) -> Result<MaybeOwnedMut<'eval, ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error>
+    {
+        match self {
+            Self::ApplyingEffect(context) => {
+                if use_source {
+                    Ok(context
+                        .source_applying_effect_context()?
+                        .wrap_error_with_message("context has no source effect")?
+                        .into())
+                } else {
+                    // SAFETY: We are shortening the lifetimes of this context to the lifetime of
+                    // this object.
+                    let context: &'eval mut ApplyingEffectContext<'eval, 'eval, 'battle, 'data> =
+                        unsafe { mem::transmute(context) };
+                    Ok(context.into())
+                }
+            }
             Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
         }
     }

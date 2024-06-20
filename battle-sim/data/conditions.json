@@ -116,15 +116,15 @@
         },
         "on_use_move": [
           "if func_call(move_has_flag: $move thawing):",
-          ["cure_status: $user log_effect"]
+          ["cure_status: $user use_source log_effect"]
         ],
         "on_after_move_secondary_effects": [
           "if $move.thaws_target:",
-          ["cure_status: $target"]
+          ["cure_status: $target use_source"]
         ],
         "on_damaging_hit": [
           "if $move.type == fire and $move.category != status:",
-          ["cure_status: $target"]
+          ["cure_status: $target use_source"]
         ]
       }
     }

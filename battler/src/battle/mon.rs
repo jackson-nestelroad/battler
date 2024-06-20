@@ -248,7 +248,6 @@ pub struct Mon {
     /// move executed a different move (like Metronome).
     pub last_move_used: Option<MoveHandle>,
 
-    pub active_target: Option<MonHandle>,
     pub move_this_turn_outcome: Option<MoveOutcome>,
     pub last_move_target: Option<isize>,
     pub hurt_this_turn: u16,
@@ -368,7 +367,6 @@ impl Mon {
             last_move_selected: None,
             last_move_used: None,
 
-            active_target: None,
             move_this_turn_outcome: None,
             last_move_target: None,
             hurt_this_turn: 0,
@@ -1013,16 +1011,14 @@ impl Mon {
         self.needs_switch = false;
     }
 
-    /// Sets the active move and target.
-    pub fn set_active_move(&mut self, active_move: MoveHandle, target: Option<MonHandle>) {
+    /// Sets the active move.
+    pub fn set_active_move(&mut self, active_move: MoveHandle) {
         self.active_move = Some(active_move);
-        self.active_target = target;
     }
 
     /// Clears the active move.
     pub fn clear_active_move(&mut self) {
         self.active_move = None;
-        self.active_target = None;
     }
 
     /// Checks the PP for the given move.

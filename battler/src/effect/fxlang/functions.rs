@@ -8,7 +8,6 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
-        ApplyingEffectContext,
         Context,
         Mon,
         MonContext,
@@ -45,9 +44,7 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
-        "add_volatile" => {
-            add_volatile(context.applying_effect_context_mut()?, args).map(|val| Some(val))
-        }
+        "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
         "calculate_damage" => calculate_damage(context, args).map(|val| Some(val)),
@@ -55,7 +52,7 @@ pub fn run_function(
             calculate_confusion_damage(context, args).map(|val| Some(val))
         }
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
-        "cure_status" => cure_status(context.applying_effect_context_mut()?, args).map(|()| None),
+        "cure_status" => cure_status(context, args).map(|()| None),
         "damage" => damage(context, args).map(|()| None),
         "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
         "direct_damage" => direct_damage(context, args).map(|()| None),
@@ -79,15 +76,11 @@ pub fn run_function(
         "max" => max(args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
-        "remove_volatile" => {
-            remove_volatile(context.applying_effect_context_mut()?, args).map(|val| Some(val))
-        }
-        "run_event" => run_event(context.applying_effect_context_mut()?, args).map(|val| Some(val)),
+        "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
+        "run_event" => run_event(context, args).map(|val| Some(val)),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
-        "set_status" => {
-            set_status(context.applying_effect_context_mut()?, args).map(|val| Some(val))
-        }
+        "set_status" => set_status(context, args).map(|val| Some(val)),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -104,6 +97,10 @@ fn has_special_string_flag(args: &mut VecDeque<Value>, flag: &str) -> bool {
         }
         None => false,
     }
+}
+
+fn should_use_source_effect(args: &mut VecDeque<Value>) -> bool {
+    has_special_string_flag(args, "use_source")
 }
 
 fn debug_log(context: &mut Context, args: VecDeque<Value>) -> Result<(), Error> {
@@ -412,16 +409,15 @@ fn has_volatile(
         .map(|val| Value::Boolean(val))
 }
 
-fn cure_status(
-    context: &mut ApplyingEffectContext,
-    mut args: VecDeque<Value>,
-) -> Result<(), Error> {
+fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let log_effect = has_special_string_flag(&mut args, "log_effect");
+    let mut context =
+        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::cure_status(&mut context, log_effect)?;
     Ok(())
@@ -456,7 +452,7 @@ fn move_has_flag(
 }
 
 fn add_volatile(
-    context: &mut ApplyingEffectContext,
+    context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<Value, Error> {
     let mon_handle = args
@@ -470,13 +466,15 @@ fn add_volatile(
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
+    let mut context =
+        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::try_add_volatile(&mut context, &volatile, false)
         .map(|val| Value::Boolean(val))
 }
 
 fn remove_volatile(
-    context: &mut ApplyingEffectContext,
+    context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<Value, Error> {
     let mon_handle = args
@@ -492,24 +490,25 @@ fn remove_volatile(
 
     let no_events = has_special_string_flag(&mut args, "no_events");
     let volatile = Id::from(volatile);
+    let mut context =
+        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
         .map(|val| Value::Boolean(val))
 }
 
-fn run_event(
-    context: &mut ApplyingEffectContext,
-    mut args: VecDeque<Value>,
-) -> Result<Value, Error> {
+fn run_event(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let event = args
         .pop_front()
         .wrap_error_with_message("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    let mut context =
+        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
     Ok(Value::Boolean(
         core_battle_effects::run_event_for_applying_effect(
-            context,
+            context.as_mut(),
             event,
             VariableInput::default(),
         ),
@@ -520,6 +519,7 @@ fn run_event_on_move(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<(), Error> {
+    let target_handle = context.target_handle();
     let mut context = context
         .source_active_move_context()?
         .wrap_error_with_message("source effect is not an active move")?;
@@ -528,8 +528,10 @@ fn run_event_on_move(
         .wrap_error_with_message("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
+    let on_user = has_special_string_flag(&mut args, "on_user");
+    let target_handle = if on_user { None } else { target_handle };
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
-    core_battle_effects::run_active_move_event_expecting_void(&mut context, event);
+    core_battle_effects::run_active_move_event_expecting_void(&mut context, event, target_handle);
     Ok(())
 }
 
@@ -679,10 +681,7 @@ fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {
     Ok(Value::Boolean(value.boolean().is_ok()))
 }
 
-fn set_status(
-    context: &mut ApplyingEffectContext,
-    mut args: VecDeque<Value>,
-) -> Result<Value, Error> {
+fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -694,6 +693,8 @@ fn set_status(
         .string()
         .wrap_error_with_message("invalid status")?;
     let status = Id::from(status);
+    let mut context =
+        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::try_set_status(&mut context, Some(status), false)
         .map(|val| Value::Boolean(val))
