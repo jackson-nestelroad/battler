@@ -303,13 +303,17 @@ Context objects are critical to the battle engine. Even something simple like ca
 
 As a consequence, very few operations in the core battle engine are implemented as methods. Almost every important operation is implemented as a function that takes in a context. Contexts do act as "this" objects, since they can be scoped to things like Mons (`MonContext`), active moves (`ActiveMoveContext`), and effects (`EffectContext`).
 
-Since event callbacks run in the context of a battle, the fxlang evaluator runs under some evaluation context that holds all of the battle state. An program can run under one of three context types:
+Since event callbacks run in the context of a battle, the fxlang evaluator runs under some evaluation context that holds all of the battle state. Internally, during evaluation, the following state is kept on the context:
 
-- `MonContext` - The program runs under the context of a single Mon.
-- `ActiveMoveContext` - The program runs under the context of an active move. This consists of an active move, a source (user) Mon of the move, and sometimes a target Mon that the move is hitting.
-- `ApplyingEffectContext` - The program runs under the context of an applying effect. This consists of an effect, a target of the effect, and sometimes a source Mon (that triggered the effect).
+1. **Effect** - The effect whose event callback is being evaluated.
+1. **Source Effect** (optional) - The effect that is triggered this event callback.
+1. **Target** (optional) - The target Mon of the source effect.
+1. **Source** (optional) - The source Mon that triggered the source effect.
 
-Note that an `ActiveMoveContext` is very closely related `ApplyingEffectContext`. Many event callbacks that can run under an `ActiveMoveContext` can also run under an `ApplyingEffectContext`, especially when the target of the effect is the user of the move (in which case, the two contexts make the exact same guarantees).
+In the code, this means we can evaluate event callbacks under the following contexts:
+
+- `EffectContext` - The program runs under the context of an effect (which owns the event callback) and an optional source effect (that triggered the event).
+- `ApplyingEffectContext` - The program runs under the context of an applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target Mon (that the source effect is being applied to), and an optional source Mon (who triggered the source effect).
 
 #### Context Variables
 
@@ -324,6 +328,32 @@ The context variables to be set are defined directly by the type of event. For e
 You can find all event definitions, including their context variable flags, in the [code](./battler/src/effect/fxlang/effect.rs). Choosing the correct event will be discussed later in the event section.
 
 It's important to remember the context under which a program is evaluating, as it determines which variables are directly available when the program starts.
+
+Overall there are a handful of event callback categories:
+
+1. **Applying Effect** - Callback that runs in the context of an applying effect on some Mon.
+   - `$target` - The target Mon of the effect.
+   - `$source` (optional) - The source Mon of the effect.
+   - `$effect` - The source effect that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
+1. **Effect** - Callback that runs in the context of the effect itself.
+   - `$target` - The target Mon of the effect.
+   - `$source` (optional) - The source Mon of the effect.
+   - `$source_effect` - The source effect that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
+1. **User-Focused Active Move** - Callback that runs in the context of an active move, focused on the user.
+   - `$user` - The user of the move.
+   - `$target` (optional) - The target Mon of the move.
+   - `$move` - The active move that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
+1. **Target-Focused Active Move** - Callback that runs in the context of an active move, focused on the target.
+   - `$target` - The target of the move. Note that if there are multiple targets, the callback will run for each target implicitly.
+   - `$source` The source (user) of the move.
+   - `$move` - The active move that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
+1. **Individual Mon** - Callback that runs in the context of an individual Mon.
+   - `$mon` - The target Mon.
+   - `$this` - This effect that the event callback is running on.
 
 ##### Program Input
 
@@ -550,7 +580,7 @@ Burn applies residual damage and also halves damage dealt by physical moves.
   "condition": {
     "callbacks": {
       "on_start": [
-        "if $effect.is_ability:",
+        "if $source_effect.is_ability:",
         ["log_status: $this.name with_effect"],
         "else:",
         ["log_status: $this.name"]
@@ -580,7 +610,7 @@ Freeze completley immobilizes the target until it is thawed at the beginning of 
   "condition": {
     "callbacks": {
       "on_start": [
-        "if $effect.is_ability:",
+        "if $source_effect.is_ability:",
         ["log_status: $this.name with_effect"],
         "else:",
         ["log_status: $this.name"]
@@ -598,15 +628,15 @@ Freeze completley immobilizes the target until it is thawed at the beginning of 
       },
       "on_use_move": [
         "if func_call(move_has_flag: $move thawing):",
-        ["cure_status: $user true"]
+        ["cure_status: $user use_source log_effect"]
       ],
       "on_after_move_secondary_effects": [
         "if $move.thaws_target:",
-        ["cure_status: $target"]
+        ["cure_status: $target use_source"]
       ],
       "on_damaging_hit": [
         "if $move.type == fire and $move.category != status:",
-        ["cure_status: $target"]
+        ["cure_status: $target use_source"]
       ]
     }
   }
@@ -626,7 +656,7 @@ We use a custom time state variable because confusion does not wear off at the e
   "condition": {
     "callbacks": {
       "on_start": [
-        "if $effect.id == lockedmove:",
+        "if $source_effect.id == lockedmove:",
         ["log_start: $this.name fatigue"],
         "else:",
         ["log_start: $this.name"],
@@ -661,7 +691,7 @@ Moves like Thrash or Outrage lock the user into a move for 2-3 turns and confuse
   "condition": {
     "callbacks": {
       "on_duration": ["return func_call(random: 2 4)"],
-      "on_start": ["$effect_state.move = $effect.id"],
+      "on_start": ["$effect_state.move = $source_effect.id"],
       "on_after_move": [
         "if $user.move_this_turn_failed:",
         ["remove_volatile: $user $this.id true"]
@@ -690,8 +720,8 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
     "duration": 2,
     "callbacks": {
       "on_start": [
-        "$effect_state.move = $effect.id",
-        "add_volatile: $target $effect.id",
+        "$effect_state.move = $source_effect.id",
+        "add_volatile: $target $source_effect.id",
         "do_not_animate_last_move",
         "# Still run events associated with the user preparing to hit the target, since they are locked into this move.",
         "run_event: PrepareHit"

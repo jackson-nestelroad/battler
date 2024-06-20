@@ -60,7 +60,6 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsVoid,
 
     SourceMoveModifier = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
@@ -76,6 +75,11 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
+    MoveModifier = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
     MoveResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
@@ -361,10 +365,10 @@ impl BattleEvent {
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::BasePower => CommonCallbackType::SourceMoveModifier as u32,
+            Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
-            Self::Damage => CommonCallbackType::SourceMoveModifier as u32,
+            Self::Damage => CommonCallbackType::MoveModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
