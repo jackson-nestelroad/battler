@@ -502,7 +502,7 @@ Psywave has its own custom damage calculation formula:
   "effect": {
     "callbacks": {
       "on_damage": [
-        "return expr(func_call(random: 50 151) * $user.level / 100)"
+        "return expr(func_call(random: 50 151) * $source.level / 100)"
       ]
     }
   }
