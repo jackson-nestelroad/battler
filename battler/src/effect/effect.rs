@@ -294,6 +294,13 @@ impl<'borrow> Effect<'borrow> {
             _ => None,
         }
     }
+
+    pub fn infiltrates(&self) -> bool {
+        match self {
+            Self::ActiveMove(active_move, _) => active_move.infiltrates,
+            _ => false,
+        }
+    }
 }
 
 impl Identifiable for Effect<'_> {

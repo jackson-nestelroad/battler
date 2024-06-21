@@ -21,6 +21,7 @@ use crate::{
         MonContext,
         MonHandle,
         MoveHandle,
+        SideEffectContext,
     },
     battler_error,
     common::{
@@ -63,6 +64,7 @@ where
 {
     ApplyingEffect(ApplyingEffectContext<'effect, 'context, 'battle, 'data>),
     Effect(EffectContext<'context, 'battle, 'data>),
+    SideEffect(SideEffectContext<'effect, 'context, 'battle, 'data>),
 }
 
 impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'battle, 'data> {
@@ -70,6 +72,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_battle_context(),
             Self::Effect(context) => context.as_battle_context(),
+            Self::SideEffect(context) => context.as_battle_context(),
         }
     }
 
@@ -77,6 +80,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_battle_context_mut(),
             Self::Effect(context) => context.as_battle_context_mut(),
+            Self::SideEffect(context) => context.as_battle_context_mut(),
         }
     }
 
@@ -84,6 +88,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_effect_context(),
             Self::Effect(context) => context,
+            Self::SideEffect(context) => context.as_effect_context(),
         }
     }
 
@@ -93,6 +98,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_effect_context_mut(),
             Self::Effect(context) => context,
+            Self::SideEffect(context) => context.as_effect_context_mut(),
         }
     }
 
@@ -126,7 +132,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<&'eval ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
-            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
+            _ => Err(battler_error!("context is not an applying effect")),
         }
     }
 
@@ -135,7 +141,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<&'eval mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
-            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
+            _ => Err(battler_error!("context is not an applying effect")),
         }
     }
 
@@ -144,7 +150,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<Option<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
         match self {
             Self::ApplyingEffect(context) => context.source_applying_effect_context(),
-            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
+            _ => Err(battler_error!("context is not an applying effect")),
         }
     }
 
@@ -168,7 +174,57 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     Ok(context.into())
                 }
             }
-            Self::Effect(_) => Err(battler_error!("context is not an applying effect")),
+            _ => Err(battler_error!("context is not an applying effect")),
+        }
+    }
+
+    pub fn side_effect_context<'eval>(
+        &'eval self,
+    ) -> Result<&'eval SideEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+        match self {
+            Self::SideEffect(context) => Ok(context),
+            _ => Err(battler_error!("context is not a side-applying effect")),
+        }
+    }
+
+    pub fn side_effect_context_mut<'eval>(
+        &'eval mut self,
+    ) -> Result<&'eval mut SideEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+        match self {
+            Self::SideEffect(context) => Ok(context),
+            _ => Err(battler_error!("context is not a side-applying effect")),
+        }
+    }
+
+    pub fn source_side_effect_context<'eval>(
+        &'eval mut self,
+    ) -> Result<Option<SideEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::SideEffect(context) => context.source_side_effect_context(),
+            _ => Err(battler_error!("context is not a side-applying effect")),
+        }
+    }
+
+    pub fn maybe_side_applying_effect_context<'eval>(
+        &'eval mut self,
+        use_source: bool,
+    ) -> Result<MaybeOwnedMut<'eval, SideEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::SideEffect(context) => {
+                if use_source {
+                    Ok(context
+                        .source_side_effect_context()?
+                        .wrap_error_with_message("context has no source effect")?
+                        .into())
+                } else {
+                    // SAFETY: We are shortening the lifetimes of this context to the lifetime of
+                    // this object.
+                    let context: &'eval mut SideEffectContext<'eval, 'eval, 'battle, 'data> =
+                        unsafe { mem::transmute(context) };
+                    Ok(context.into())
+                }
+            }
+            _ => Err(battler_error!("context is not an applying effect")),
         }
     }
 
@@ -183,7 +239,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => context.target_context(),
-            Self::Effect(_) => Err(battler_error!("effect has no target")),
+            _ => Err(battler_error!("effect cannot have a target")),
         }
     }
 
@@ -192,7 +248,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<Option<MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
         match self {
             Self::ApplyingEffect(context) => context.source_context(),
-            Self::Effect(_) => Err(battler_error!("effect has no source")),
+            Self::SideEffect(context) => context.source_context(),
+            _ => Err(battler_error!("effect cannot have a source")),
         }
     }
 
@@ -216,6 +273,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 }
             }
             Self::Effect(context) => context.as_battle_context_mut().mon_context(mon_handle),
+            Self::SideEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source_context()?
+                        .wrap_error_with_message("expected source mon")
+                } else {
+                    context.as_battle_context_mut().mon_context(mon_handle)
+                }
+            }
         }
     }
 
@@ -236,6 +305,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 }
             }
             Self::Effect(context) => context.as_battle_context().mon(mon_handle),
+            Self::SideEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source()
+                        .wrap_error_with_message("expected source mon")
+                } else {
+                    context.as_battle_context().mon(mon_handle)
+                }
+            }
         }
     }
 
@@ -256,6 +337,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 }
             }
             Self::Effect(context) => context.as_battle_context_mut().mon_mut(mon_handle),
+            Self::SideEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source_mut()
+                        .wrap_error_with_message("expected source mon")
+                } else {
+                    context.as_battle_context_mut().mon_mut(mon_handle)
+                }
+            }
         }
     }
 
@@ -279,8 +372,10 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     context.as_battle_context().active_move(active_move_handle)
                 }
             }
-
             Self::Effect(context) => context.as_battle_context().active_move(active_move_handle),
+            Self::SideEffect(context) => {
+                context.as_battle_context().active_move(active_move_handle)
+            }
         }
     }
 
@@ -308,8 +403,10 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                         .active_move_mut(active_move_handle)
                 }
             }
-
             Self::Effect(context) => context
+                .as_battle_context_mut()
+                .active_move_mut(active_move_handle),
+            Self::SideEffect(context) => context
                 .as_battle_context_mut()
                 .active_move_mut(active_move_handle),
         }
@@ -318,14 +415,15 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn target_handle(&self) -> Option<MonHandle> {
         match self {
             Self::ApplyingEffect(context) => Some(context.target_handle()),
-            Self::Effect(_) => None,
+            _ => None,
         }
     }
 
     pub fn source_handle(&self) -> Option<MonHandle> {
         match self {
             Self::ApplyingEffect(context) => context.source_handle(),
-            Self::Effect(_) => None,
+            Self::SideEffect(context) => context.source_handle(),
+            _ => None,
         }
     }
 
@@ -333,6 +431,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.effect_handle(),
             Self::Effect(context) => context.effect_handle(),
+            Self::SideEffect(context) => context.effect_handle(),
         }
     }
 
@@ -340,6 +439,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.source_effect_handle(),
             Self::Effect(context) => context.source_effect_handle(),
+            Self::SideEffect(context) => context.source_effect_handle(),
         }
     }
 
@@ -348,6 +448,14 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Some(*active_move_handle)
         } else {
             None
+        }
+    }
+
+    pub fn side_index(&self) -> Option<usize> {
+        match self {
+            Self::ApplyingEffect(context) => Some(context.target().side),
+            Self::Effect(_) => None,
+            Self::SideEffect(context) => Some(context.side().index),
         }
     }
 }
@@ -399,7 +507,7 @@ impl VariableRegistry {
 ///
 /// Acts as a wrapper for an immutale access of a variable that can be consumed at some later time.
 struct Variable<'eval, 'program> {
-    stored: ElementRef<'eval, Value>,
+    stored: Option<ElementRef<'eval, Value>>,
     member_access: Vec<&'program str>,
 }
 
@@ -407,7 +515,7 @@ impl<'eval, 'program> Variable<'eval, 'program>
 where
     'program: 'eval,
 {
-    fn new(stored: ElementRef<'eval, Value>, member_access: Vec<&'program str>) -> Self {
+    fn new(stored: Option<ElementRef<'eval, Value>>, member_access: Vec<&'program str>) -> Self {
         Self {
             stored,
             member_access,
@@ -422,7 +530,10 @@ where
         &'var self,
         context: &'eval mut EvaluationContext,
     ) -> Result<ValueRef<'var>, Error> {
-        let mut value = ValueRef::from(&self.stored);
+        let mut value = match &self.stored {
+            Some(stored) => ValueRef::from(stored),
+            None => ValueRef::Undefined,
+        };
         for member in &self.member_access {
             // SAFETY: For changing the lifetime of context: the mutable reference inside of
             // `value_ref` is only mutated at the very end of this method. Thus, this entire for
@@ -470,6 +581,7 @@ where
                             "{}",
                             Mon::position_details(&context.mon_context(mon_handle)?)?
                         )),
+                        "side" => ValueRef::Side(context.mon(mon_handle)?.side),
                         "status" => ValueRef::TempString(
                             context
                                 .mon(mon_handle)?
@@ -508,6 +620,13 @@ where
                             .id()
                             .as_ref()
                             .to_owned(),
+                        ),
+                        "infiltrates" => ValueRef::Boolean(
+                            CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .infiltrates(),
                         ),
                         "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
                         "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
@@ -894,6 +1013,16 @@ impl Evaluator {
                     context
                         .source_active_move_handle()
                         .wrap_error_with_message("context has no active move")?,
+                ),
+            )?;
+        }
+        if event.has_flag(CallbackFlag::TakesSide) {
+            self.vars.set(
+                "side",
+                Value::Side(
+                    context
+                        .side_index()
+                        .wrap_error_with_message("context has no side")?,
                 ),
             )?;
         }
@@ -1591,6 +1720,24 @@ impl Evaluator {
             (ValueRefMut::ActiveMove(var), Value::ActiveMove(val)) => {
                 *var = val;
             }
+            (ValueRefMut::MoveCategory(var), Value::MoveCategory(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::MoveTarget(var), Value::MoveTarget(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Type(var), Value::Type(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Boost(var), Value::Boost(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::BoostTable(var), Value::BoostTable(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Side(var), Value::Side(val)) => {
+                *var = val;
+            }
             (ValueRefMut::List(var), Value::List(val)) => {
                 *var = val;
             }
@@ -1612,10 +1759,7 @@ impl Evaluator {
     where
         'program: 'eval,
     {
-        let value = self
-            .vars
-            .get(&var.name.0)?
-            .wrap_error_with_format(format_args!("variable ${} is undefined", var.name.0))?;
+        let value = self.vars.get(&var.name.0)?;
         let member_access = var
             .member_access
             .iter()

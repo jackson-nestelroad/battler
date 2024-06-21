@@ -190,7 +190,7 @@
             "$effect_state.time = $effect_state.time - 1",
             "if $effect_state.time == 0:",
             ["remove_volatile: $user $this.id", "return"],
-            "log_activate: with_target str('status:{}', $this.name)",
+            "log_activate: with_target",
             "if !func_call(chance: 33 100):",
             ["return"],
             "$damage = func_call(calculate_confusion_damage: $user 40)",
@@ -234,7 +234,7 @@
       "callbacks": {
         "on_duration": ["return func_call(random: 5 7)"],
         "on_start": [
-          "log_activate: with_target with_source str('move:{}', $effect_state.source_effect.name)",
+          "log_activate: with_target with_source no_effect str('move:{}', $effect_state.source_effect.name)",
           "$effect_state.divisor = 8"
         ],
         "on_residual": {

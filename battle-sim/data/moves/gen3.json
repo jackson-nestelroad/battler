@@ -286,7 +286,13 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "user_effect": {
+      "boosts": {
+        "atk": -1,
+        "def": -1
+      }
+    }
   },
   "magiccoat": {
     "name": "Magic Coat",
@@ -783,7 +789,14 @@
     "accuracy": 100,
     "base_power": 150,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_base_power": [
+          "return expr($move.base_power * $source.hp / $source.max_hp)"
+        ]
+      }
+    }
   },
   "signalbeam": {
     "name": "Signal Beam",
@@ -793,7 +806,15 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "chance": "10%",
+          "volatile_status": "confusion"
+        }
+      }
+    ]
   },
   "shadowpunch": {
     "name": "Shadow Punch",
@@ -803,7 +824,15 @@
     "accuracy": "exempt",
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"],
+    "secondary_effects": [
+      {
+        "target": {
+          "chance": "10%",
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "extrasensory": {
     "name": "Extrasensory",
@@ -833,7 +862,10 @@
     "accuracy": 85,
     "base_power": 35,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Metronome", "Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "partiallytrapped"
+    }
   },
   "sheercold": {
     "name": "Sheer Cold",
@@ -853,7 +885,17 @@
     "accuracy": 85,
     "base_power": 90,
     "target": "AllAdjacentFoes",
-    "flags": ["AccuracyLowering", "Metronome", "Mirror", "Protect"]
+    "flags": ["AccuracyLowering", "Metronome", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
+    ]
   },
   "bulletseed": {
     "name": "Bullet Seed",
@@ -1028,7 +1070,15 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Metronome", "Mirror", "Protect"],
-    "recoil_percent": "33/100"
+    "recoil_percent": "33%",
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "magicalleaf": {
     "name": "Magical Leaf",
@@ -1113,7 +1163,15 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Any",
-    "flags": ["Distance", "Metronome", "Mirror", "Protect", "Pulse"]
+    "flags": ["Distance", "Metronome", "Mirror", "Protect", "Pulse"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
+    ]
   },
   "doomdesire": {
     "name": "Doom Desire",

@@ -810,7 +810,35 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Metronome", "Snatch"],
+    "hit_effect": {
+      "side_condition": "mist"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_try_boost": [
+          "if $effect.infiltrates and !func_call(is_ally: $target $source):",
+          ["return"],
+          "if !func_call(is_defined: $source) or $source == $target:",
+          ["return"],
+          "$activated = false",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if func_call(get_boost: $boosts $stat) < 0:",
+            [
+              "$boosts = func_call(set_boost: $boosts $stat 0)",
+              "$activated = true"
+            ]
+          ],
+          "if $activated:",
+          ["log_activate: str('mon:{}', $target.position_details)"],
+          "return $boosts"
+        ],
+        "on_side_start": ["log_side_start: $this.name"],
+        "on_side_end": ["log_side_end: $this.name"]
+      }
+    }
   },
   "watergun": {
     "name": "Water Gun",
@@ -2365,8 +2393,8 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if func_call(has_volatile: $user substitute) or $user.hp <= $user.max_hp / 4 or $user.max_hp == 1:",
-          ["log_fail: $user", "return stop"]
+          "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
+          ["log_fail: $source", "return stop"]
         ],
         "on_hit": ["direct_damage: expr($target.max_hp / 4)"]
       }
@@ -2401,7 +2429,7 @@
             "remove_volatile: $target substitute"
           ],
           "else:",
-          ["log_activate: str('move:{}', $this.name) damage"],
+          ["log_activate: damage"],
           "# Some move effects still apply.",
           "apply_recoil_damage: $damage",
           "apply_drain: $source $target $damage",

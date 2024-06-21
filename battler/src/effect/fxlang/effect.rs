@@ -23,7 +23,10 @@ pub mod CallbackFlag {
     pub const TakesActiveMove: u32 = 1 << 5;
     pub const TakesUserMon: u32 = 1 << 6;
     pub const TakesSourceEffect: u32 = 1 << 7;
+    pub const TakesSide: u32 = 1 << 8;
+    pub const TakesBoosts: u32 = 1 << 9;
 
+    pub const ReturnsBoosts: u32 = 1 << 27;
     pub const ReturnsString: u32 = 1 << 27;
     pub const ReturnsMoveResult: u32 = 1 << 28;
     pub const ReturnsNumber: u32 = 1 << 29;
@@ -47,6 +50,12 @@ enum CommonCallbackType {
     ApplyingEffectVoid = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsVoid,
+    ApplyingEffectBoostModifier = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::TakesBoosts
+        | CallbackFlag::ReturnsBoosts
         | CallbackFlag::ReturnsVoid,
 
     EffectResult = CallbackFlag::TakesTargetMon
@@ -95,11 +104,34 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
+    MoveControllingResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
 
     MonModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsNumber | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
+
+    SideVoid = CallbackFlag::TakesSide | CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsVoid,
+    SideResult = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+
+    MoveSideControllingResult = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+
+    MoveFieldControllingResult = CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
 }
 
 /// A battle event that can trigger a [`Callback`].
@@ -292,6 +324,31 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "SetStatus"]
     SetStatus,
+    /// Runs when a side condition starts successfully.
+    ///
+    /// Runs in the context of an applying effect on the side.
+    #[string = "SideConditionStart"]
+    SideConditionStart,
+    /// Runs when a side condition ends.
+    ///
+    /// Runs in the context of the side condition itself.
+    #[string = "SideEnd"]
+    SideEnd,
+    /// Runs at the end of every turn to apply residual effects on the side.
+    ///
+    /// Runs in the context of the side condition itself.
+    #[string = "SideResidual"]
+    SideResidual,
+    /// Runs when a side condition restarts.
+    ///
+    /// Runs in the context of the side condition itself.
+    #[string = "SideRestart"]
+    SideRestart,
+    /// Runs when a side condition starts.
+    ///
+    /// Runs in the context of the side condition itself.
+    #[string = "SideStart"]
+    SideStart,
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
@@ -314,9 +371,14 @@ pub enum BattleEvent {
     SwitchIn,
     /// Runs when determining if a Mon is trapped (i.e., cannot switch out).
     ///
-    /// Runs in the context of the target Mon/
+    /// Runs in the context of the target Mon.
     #[string = "TrapMon"]
     TrapMon,
+    /// Runs when a group of stat boosts is being applied to a Mon.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "TryBoost"]
+    TryBoost,
     /// Runs when a move is trying to hit a set of targets.
     ///
     /// Can fail the move.
@@ -324,6 +386,20 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "TryHit"]
     TryHit,
+    /// Runs when a move is trying to hit the whole field.
+    ///
+    /// Can fail the move.
+    ///
+    /// Runs on the active move itself and in the context of an applying effect on the field.
+    #[string = "TryHitField"]
+    TryHitField,
+    /// Runs when a move is trying to hit the whole field.
+    ///
+    /// Can fail the move.
+    ///
+    /// Runs on the active move itself and in the context of an applying effect on the side.
+    #[string = "TryHitSide"]
+    TryHitSide,
     /// Runs when a move's primary hit is being applied to a target.
     ///
     /// Used to override the core battle engine logic. Can fail the move or return an amount of
@@ -388,11 +464,19 @@ impl BattleEvent {
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::SideConditionStart => CommonCallbackType::SideVoid as u32,
+            Self::SideEnd => CommonCallbackType::SideVoid as u32,
+            Self::SideResidual => CommonCallbackType::SideVoid as u32,
+            Self::SideRestart => CommonCallbackType::SideResult as u32,
+            Self::SideStart => CommonCallbackType::SideResult as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TrapMon => CommonCallbackType::MonVoid as u32,
-            Self::TryHit => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
+            Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
+            Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
+            Self::TryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -409,10 +493,14 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
+            Self::AllySetStatus | Self::AfterSetStatus | Self::SetStatus => {
+                &[("status", ValueType::Effect)]
+            }
             Self::DamagingHit => &[("damage", ValueType::U16)],
             Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U32)],
             Self::ModifySpe => &[("spe", ValueType::U16)],
-            Self::SetStatus | Self::AllySetStatus => &[("status", ValueType::Effect)],
+            Self::SideConditionStart => &[("condition", ValueType::Effect)],
+            Self::TryBoost => &[("boosts", ValueType::BoostTable)],
             _ => &[],
         }
     }
@@ -427,6 +515,7 @@ impl BattleEvent {
             Some(ValueType::String) => {
                 self.has_flag(CallbackFlag::ReturnsString | CallbackFlag::ReturnsMoveResult)
             }
+            Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -574,11 +663,19 @@ pub struct Callbacks {
     pub on_residual: Callback,
     pub on_restart: Callback,
     pub on_set_status: Callback,
+    pub on_side_condition_start: Callback,
+    pub on_side_end: Callback,
+    pub on_side_residual: Callback,
+    pub on_side_restart: Callback,
+    pub on_side_start: Callback,
     pub on_source_modify_damage: Callback,
     pub on_start: Callback,
     pub on_switch_in: Callback,
     pub on_trap_mon: Callback,
+    pub on_try_boost: Callback,
     pub on_try_hit: Callback,
+    pub on_try_hit_field: Callback,
+    pub on_try_hit_side: Callback,
     pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
     pub on_use_move: Callback,
@@ -617,11 +714,19 @@ impl Callbacks {
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),
             BattleEvent::SetStatus => Some(&self.on_set_status),
+            BattleEvent::SideConditionStart => Some(&self.on_side_condition_start),
+            BattleEvent::SideEnd => Some(&self.on_side_end),
+            BattleEvent::SideResidual => Some(&self.on_side_residual),
+            BattleEvent::SideRestart => Some(&self.on_side_restart),
+            BattleEvent::SideStart => Some(&self.on_side_start),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
+            BattleEvent::TryBoost => Some(&self.on_try_boost),
             BattleEvent::TryHit => Some(&self.on_try_hit),
+            BattleEvent::TryHitField => Some(&self.on_try_hit_field),
+            BattleEvent::TryHitSide => Some(&self.on_try_hit_side),
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::UseMove => Some(&self.on_use_move),

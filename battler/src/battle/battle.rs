@@ -84,6 +84,13 @@ pub struct BattleEngineOptions {
     /// purposes, to view all volatile statuses added to and removed from Mons through the course
     /// of a battle.
     pub log_volatile_statuses: bool,
+
+    /// Should side conditions be logged?
+    ///
+    /// By default, side conditions are invisible to Mons unless explicitly logged. It may be
+    /// helpful, especially for debugging purposes, to view all volatile statuses added to and
+    /// removed from sides through the course of a battle.
+    pub log_side_conditions: bool,
 }
 
 impl Default for BattleEngineOptions {
@@ -95,6 +102,7 @@ impl Default for BattleEngineOptions {
             allow_pass_for_unfainted_mon: false,
             randomize_base_damage: BattleEngineRandomizeBaseDamage::Randomize,
             log_volatile_statuses: false,
+            log_side_conditions: false,
         }
     }
 }

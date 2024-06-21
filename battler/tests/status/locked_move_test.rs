@@ -49,12 +49,13 @@ mod locked_move_test {
 
     fn make_battle(
         data: &dyn DataStore,
+        seed: u64,
         team_1: TeamData,
         team_2: TeamData,
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
-            .with_seed(0)
+            .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
             .add_player_to_side_1("player-1", "Player 1")
@@ -67,7 +68,13 @@ mod locked_move_test {
     #[test]
     fn thrash_locks_move_and_confuses_user() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, blissey().unwrap(), blissey().unwrap()).unwrap();
+        let mut battle = make_battle(
+            &data,
+            20598204958240985,
+            blissey().unwrap(),
+            blissey().unwrap(),
+        )
+        .unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -107,7 +114,7 @@ mod locked_move_test {
         );
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
@@ -128,23 +135,28 @@ mod locked_move_test {
                 ["time"],
                 "move|mon:Blissey,player-1,1|name:Thrash|target:Blissey,player-2,1",
                 "split|side:1",
-                "damage|mon:Blissey,player-2,1|health:239/315",
+                "damage|mon:Blissey,player-2,1|health:237/315",
                 "damage|mon:Blissey,player-2,1|health:76/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
                 "move|mon:Blissey,player-1,1|name:Thrash|target:Blissey,player-2,1",
                 "split|side:1",
-                "damage|mon:Blissey,player-2,1|health:172/315",
-                "damage|mon:Blissey,player-2,1|health:55/100",
+                "damage|mon:Blissey,player-2,1|health:168/315",
+                "damage|mon:Blissey,player-2,1|health:54/100",
                 "start|mon:Blissey,player-1,1|what:Confusion|fatigue",
+                "move|mon:Blissey,player-2,1|name:Tackle|target:Blissey,player-1,1",
+                "split|side:0",
+                "damage|mon:Blissey,player-1,1|health:288/315",
+                "damage|mon:Blissey,player-1,1|health:92/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "activate|mon:Blissey,player-1,1|status:Confusion",
-                "split|side:0",
-                "damage|mon:Blissey,player-1,1|from:Confusion|health:297/315",
-                "damage|mon:Blissey,player-1,1|from:Confusion|health:95/100",
+                "activate|mon:Blissey,player-1,1|condition:Confusion",
+                "move|mon:Blissey,player-1,1|name:Tackle|target:Blissey,player-2,1",
+                "split|side:1",
+                "damage|mon:Blissey,player-2,1|health:141/315",
+                "damage|mon:Blissey,player-2,1|health:45/100",
                 "residual",
                 "turn|turn:4"
             ]"#,

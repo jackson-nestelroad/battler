@@ -54,6 +54,7 @@ pub use boosts::{
     BoostMap,
     BoostMapInOrderIterator,
     BoostTable,
+    ContainsOptionalBoosts,
     PartialBoostTable,
 };
 pub use calculations::{
@@ -71,6 +72,7 @@ pub use context::{
     MonContext,
     PlayerContext,
     SideContext,
+    SideEffectContext,
 };
 pub use context_cache::ContextCache;
 pub use core_battle::{

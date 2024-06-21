@@ -8,6 +8,7 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
+        Boost,
         Context,
         Mon,
         MonContext,
@@ -47,6 +48,7 @@ pub fn run_function(
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
+        "boostable_stats" => Ok(Some(boostable_stats())),
         "calculate_damage" => calculate_damage(context, args).map(|val| Some(val)),
         "calculate_confusion_damage" => {
             calculate_confusion_damage(context, args).map(|val| Some(val))
@@ -60,10 +62,13 @@ pub fn run_function(
             do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
         }
         "floor" => floor(args).map(|val| Some(val)),
+        "get_boost" => get_boost(args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
         "has_volatile" => has_volatile(context, args).map(|val| Some(val)),
         "heal" => heal(context, args).map(|()| None),
+        "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
+        "is_defined" => is_defined(args).map(|val| Some(val)),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
@@ -71,6 +76,8 @@ pub fn run_function(
         "log_fail" => log_fail(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
+        "log_side_end" => log_side_end(context, args).map(|()| None),
+        "log_side_start" => log_side_start(context, args).map(|()| None),
         "log_start" => log_start(&mut context.target_context()?, args).map(|()| None),
         "log_status" => log_status(context, args).map(|()| None),
         "max" => max(args).map(|val| Some(val)),
@@ -80,6 +87,7 @@ pub fn run_function(
         "run_event" => run_event(context, args).map(|val| Some(val)),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
+        "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
@@ -137,15 +145,29 @@ fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
 fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let with_target = has_special_string_flag(&mut args, "with_target");
     let with_source = has_special_string_flag(&mut args, "with_source");
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
 
-    match context.effect_context_mut().effect() {
-        Effect::ActiveMove(active_move, _) => {
-            args.push_front(Value::String(format!("move:{}", active_move.data.name)));
+    if !no_effect {
+        match context.effect_context_mut().effect() {
+            Effect::ActiveMove(active_move, _) => {
+                args.push_front(Value::String(format!("move:{}", active_move.data.name)))
+            }
+            Effect::Ability(ability) => {
+                args.push_front(Value::String(format!("ability:{}", ability.data.name)))
+            }
+            Effect::Item(item) => {
+                args.push_front(Value::String(format!("item:{}", item.data.name)))
+            }
+            Effect::Condition(condition) => args.push_front(Value::String(format!(
+                "{}:{}",
+                condition.non_empty_condition_type_name(),
+                condition.data.name
+            ))),
+            Effect::MoveCondition(condition) => {
+                args.push_front(Value::String(format!("move:{}", condition.data.name)))
+            }
+            _ => (),
         }
-        Effect::Ability(ability) => {
-            args.push_front(Value::String(format!("ability:{}", ability.data.name)))
-        }
-        _ => (),
     }
 
     if with_target {
@@ -196,6 +218,36 @@ fn log_end(context: &mut MonContext, mut args: VecDeque<Value>) -> Result<(), Er
     )));
 
     log_internal(context.as_battle_context_mut(), "end".to_owned(), args)
+}
+
+fn log_side_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let side_index = context
+        .side_index()
+        .wrap_error_with_message("context has no side index")?;
+    let condition = args
+        .pop_front()
+        .wrap_error_with_message("missing side condition name")?
+        .string()
+        .wrap_error_with_message("invalid side condition name")?;
+    args.push_front(Value::String(format!("what:{condition}")));
+    args.push_front(Value::String(format!("side:{side_index}")));
+
+    log_internal(context.battle_context_mut(), "sidestart".to_owned(), args)
+}
+
+fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let side_index = context
+        .side_index()
+        .wrap_error_with_message("context has no side index")?;
+    let condition = args
+        .pop_front()
+        .wrap_error_with_message("missing side condition name")?
+        .string()
+        .wrap_error_with_message("invalid side condition name")?;
+    args.push_front(Value::String(format!("what:{condition}")));
+    args.push_front(Value::String(format!("side:{side_index}")));
+
+    log_internal(context.battle_context_mut(), "sideend".to_owned(), args)
 }
 
 fn log_prepare_move(context: &mut EvaluationContext) -> Result<(), Error> {
@@ -519,7 +571,15 @@ fn run_event_on_move(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<(), Error> {
-    let target_handle = context.target_handle();
+    let on_user = has_special_string_flag(&mut args, "on_user");
+    let target = match (on_user, context.target_handle()) {
+        (true, _) => core_battle_effects::MoveTargetForEvent::User,
+        (_, Some(target_handle)) => core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+        (_, None) => match context.side_index() {
+            Some(side_index) => core_battle_effects::MoveTargetForEvent::Side(side_index),
+            None => core_battle_effects::MoveTargetForEvent::None,
+        },
+    };
     let mut context = context
         .source_active_move_context()?
         .wrap_error_with_message("source effect is not an active move")?;
@@ -528,10 +588,8 @@ fn run_event_on_move(
         .wrap_error_with_message("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
-    let on_user = has_special_string_flag(&mut args, "on_user");
-    let target_handle = if on_user { None } else { target_handle };
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
-    core_battle_effects::run_active_move_event_expecting_void(&mut context, event, target_handle);
+    core_battle_effects::run_active_move_event_expecting_void(&mut context, event, target);
     Ok(())
 }
 
@@ -681,6 +739,11 @@ fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {
     Ok(Value::Boolean(value.boolean().is_ok()))
 }
 
+fn is_defined(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let value = args.pop_front().wrap_error_with_message("missing value")?;
+    Ok(Value::Boolean(!value.is_undefined()))
+}
+
 fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let mon_handle = args
         .pop_front()
@@ -698,4 +761,71 @@ fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::try_set_status(&mut context, Some(status), false)
         .map(|val| Value::Boolean(val))
+}
+
+fn is_ally(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let left_mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing first mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid first mon")?;
+    let right_mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing first mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid first mon")?;
+    Ok(Value::Boolean(
+        context
+            .mon(left_mon_handle)?
+            .is_ally(context.mon(right_mon_handle)?),
+    ))
+}
+
+fn boostable_stats() -> Value {
+    Value::List(Vec::from_iter(
+        [
+            Boost::Atk,
+            Boost::Def,
+            Boost::SpAtk,
+            Boost::SpDef,
+            Boost::Spe,
+            Boost::Accuracy,
+            Boost::Evasion,
+        ]
+        .map(|boost| Value::Boost(boost)),
+    ))
+}
+
+fn get_boost(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let boosts = args
+        .pop_front()
+        .wrap_error_with_message("missing boosts")?
+        .boost_table()
+        .wrap_error_with_message("invalid boosts")?;
+    let boost = args
+        .pop_front()
+        .wrap_error_with_message("missing boost")?
+        .boost()
+        .wrap_error_with_message("invalid boost")?;
+    Ok(Value::I64(boosts.get(boost) as i64))
+}
+
+fn set_boost(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mut boosts = args
+        .pop_front()
+        .wrap_error_with_message("missing boosts")?
+        .boost_table()
+        .wrap_error_with_message("invalid boosts")?;
+    let boost = args
+        .pop_front()
+        .wrap_error_with_message("missing boost")?
+        .boost()
+        .wrap_error_with_message("invalid boost")?;
+    let value = args
+        .pop_front()
+        .wrap_error_with_message("missing boost value")?
+        .integer_i8()
+        .wrap_error_with_message("invalid boost value")?;
+    boosts.set(boost, value);
+    Ok(Value::BoostTable(boosts))
 }

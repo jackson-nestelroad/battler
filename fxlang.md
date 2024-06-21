@@ -140,7 +140,7 @@ String formatting in fxlang looks extremely similar to string formatting in the 
 It's now easy to piece together dynamic logs:
 
 - `log: mustrecharge str('mon:{}', $target.position_details)` - Adds the log `mustrecharge|mon:Bulbasaur,player-1,1` to the battle log, which follows standard formatting.
-- `log_activate: with_target with_source str('move:{}', $effect_state.source_effect.name)` - Logs the "activate" event with the source move name for the effect, the target Mon, and the source Mon. Note that `with_target` and `with_source` are special strings interpreted by the `log_activate` function to specialize behavior.
+- `log_activate: with_target with_source no_effect str('move:{}', $effect_state.source_effect.name)` - Logs the "activate" event with the source move name for the effect, the target Mon, and the source Mon. Note that `with_target`, `with_source`, and `no_effect` are all special strings interpreted by the `log_activate` function to specialize behavior.
 
 #### Branching
 
@@ -336,6 +336,11 @@ Overall there are a handful of event callback categories:
    - `$source` (optional) - The source Mon of the effect.
    - `$effect` - The source effect that is triggering the callback.
    - `$this` - This effect that the event callback is running on.
+1. **Side-Applying Effect** - Callback that runs in the context of an applying effect on some side.
+   - `$side` - The target side of the effect.
+   - `$source` (optional) - The source Mon of the effect.
+   - `$effect` - The source effect that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
 1. **Effect** - Callback that runs in the context of the effect itself.
    - `$target` - The target Mon of the effect.
    - `$source` (optional) - The source Mon of the effect.
@@ -351,13 +356,22 @@ Overall there are a handful of event callback categories:
    - `$source` The source (user) of the move.
    - `$move` - The active move that is triggering the callback.
    - `$this` - This effect that the event callback is running on.
+1. **Side-Focused Active Move** - Callback that runs in the context of an active move, focused on the target side.
+   - `$side` - The target side of the move.
+   - `$source` The source (user) of the move.
+   - `$move` - The active move that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
+1. **Active Move** - Callback that runs in the context of an active move, focused on hitting the field.
+   - `$source` The source (user) of the move.
+   - `$move` - The active move that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
 1. **Individual Mon** - Callback that runs in the context of an individual Mon.
    - `$mon` - The target Mon.
    - `$this` - This effect that the event callback is running on.
 
 ##### Program Input
 
-Event callbacks may also take in special input values, depending on the intention of the event. For example, an `AddVolatile` event callback should take a special `$volatile` input variable that contains the volatile status being added. A `ModifyDamage` event callback should take provide a `$damage` variable to be able to returned a modified value.
+Event callbacks may also take in special input values, depending on the intention of the event. For example, an `AddVolatile` event callback provides a special `$volatile` input variable that contains the volatile status being added. A `ModifyDamage` event callback provides a `$damage` variable to be able to returned a modified value. A `TryBoost` event callback provides a `$boosts` variable to view and modify boosts that are going to be applied to a Mon.
 
 ##### Persistent State
 
@@ -443,6 +457,7 @@ Scope matters a lot here for context variables. For example:
 1. The `LockMove` event only runs under the scope of a single Mon, with no applying effect. It's easy to understand how `$effect` will be undefined but `$mon` will be defined.
 1. The `AfterMove` event runs under the scope of an applying effect on the user of the move. Thus, the `$move` and `$user` variables will be defined.
 1. The `DamagingHit` event runs under the scope of an applying effect on the target of the move. Thus, the `$move`, `$target`, and `$source` variables will all be defined. This event also provides `$damage` as an input variable.
+1. The `SideStart` event runs under the scope of a side condition. Thus, only the `$side` variable will be defined. The `$source` variable may be defined, depending on if the side condition has a source Mon or not.
 
 All contexts are documented on the [events themselves](./battler/src/effect/fxlang/effect.rs).
 
@@ -669,7 +684,7 @@ We use a custom time state variable because confusion does not wear off at the e
           "$effect_state.time = $effect_state.time - 1",
           "if $effect_state.time == 0:",
           ["remove_volatile: $user $this.id", "return"],
-          "log_activate: with_target str('status:{}', $this.name)",
+          "log_activate: with_target",
           "if !func_call(chance: 33 100):",
           ["return"],
           "$damage = func_call(calculate_confusion_damage: $user 40)",
@@ -684,7 +699,7 @@ We use a custom time state variable because confusion does not wear off at the e
 
 #### Locked Move
 
-Moves like Thrash or Outrage lock the user into a move for 2-3 turns and confuse the target from fatigue afterwards.
+Moves like Thrash or Outrage lock the user into a move for 2-3 turns and confuse the target from fatigue afterwards. Notice that we use the `AfterMove` event to end the volatile status earlier.
 
 ```json
 {
@@ -694,11 +709,52 @@ Moves like Thrash or Outrage lock the user into a move for 2-3 turns and confuse
       "on_start": ["$effect_state.move = $source_effect.id"],
       "on_after_move": [
         "if $user.move_this_turn_failed:",
-        ["remove_volatile: $user $this.id true"]
+        ["remove_volatile: $user $this.id no_events"],
+        "else if $effect_state.duration == 1:",
+        ["remove_volatile: $user $this.id"]
       ],
       "on_move_aborted": ["remove_volatile: $user $this.id true"],
       "on_end": ["add_volatile: $target confusion"],
       "on_lock_move": ["return $effect_state.move"]
+    }
+  }
+}
+```
+
+### Side Conditions
+
+#### Mist
+
+Mist protects all Mons on the user's side from stat drops from opposing Mons.
+
+```json
+{
+  "hit_effect": {
+    "side_condition": "mist"
+  },
+  "condition": {
+    "duration": 5,
+    "callbacks": {
+      "on_try_boost": [
+        "if $effect.infiltrates and !func_call(is_ally: $target $source):",
+        ["return"],
+        "if !func_call(is_defined: $source) or $source == $target:",
+        ["return"],
+        "$activated = false",
+        "foreach $stat in func_call(boostable_stats):",
+        [
+          "if func_call(get_boost: $boosts $stat) < 0:",
+          [
+            "$boosts = func_call(set_boost: $boosts $stat 0)",
+            "$activated = true"
+          ]
+        ],
+        "if $activated:",
+        ["log_activate: str('mon:{}', $target.position_details)"],
+        "return $boosts"
+      ],
+      "on_side_start": ["log_side_start: $this.name"],
+      "on_side_end": ["log_side_end: $this.name"]
     }
   }
 }
@@ -795,8 +851,8 @@ Here is the code in all of its glory:
   "effect": {
     "callbacks": {
       "on_try_hit": [
-        "if func_call(has_volatile: $user substitute) or $user.hp <= $user.max_hp / 4 or $user.max_hp == 1:",
-        ["log_fail: $user", "return stop"]
+        "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
+        ["log_fail: $source", "return stop"]
       ],
       "on_hit": ["direct_damage: expr($target.max_hp / 4)"]
     }

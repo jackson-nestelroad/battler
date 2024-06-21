@@ -9,6 +9,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        SideEffectContext,
     },
     common::Error,
     effect::{
@@ -322,6 +323,37 @@ pub fn remove_volatile(context: &mut ApplyingEffectContext, volatile: &str) -> R
             Mon::position_details(&mut context.target_context()?)?
         ),
         ("volatile", volatile),
+        ("from", context.effect().name())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn add_side_condition(context: &mut SideEffectContext, condition: &str) -> Result<(), Error> {
+    if !context.battle().engine_options.log_side_conditions {
+        return Ok(());
+    }
+    let event = log_event!(
+        "addsidecondition",
+        ("side", context.side().index),
+        ("condition", condition),
+        ("from", context.effect().name())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn remove_side_conditions(
+    context: &mut SideEffectContext,
+    condition: &str,
+) -> Result<(), Error> {
+    if !context.battle().engine_options.log_side_conditions {
+        return Ok(());
+    }
+    let event = log_event!(
+        "removeaddsidecondition",
+        ("side", context.side().index),
+        ("condition", condition),
         ("from", context.effect().name())
     );
     context.battle_mut().log(event);

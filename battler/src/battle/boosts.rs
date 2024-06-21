@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use serde::{
     Deserialize,
     Serialize,
@@ -69,16 +71,29 @@ impl TryFrom<Stat> for Boost {
     }
 }
 
+pub trait ContainsOptionalBoosts<T> {
+    fn get_boost(&self, boost: Boost) -> Option<(Boost, T)>;
+}
+
 /// A map of values for each boostable stat.
 pub type BoostMap<T> = FastHashMap<Boost, T>;
 
 /// A table of boost values.
 pub type PartialBoostTable = BoostMap<i8>;
 
+impl<T> ContainsOptionalBoosts<T> for BoostMap<T>
+where
+    T: Copy,
+{
+    fn get_boost(&self, boost: Boost) -> Option<(Boost, T)> {
+        self.get_key_value(&boost).map(|(k, v)| (*k, *v))
+    }
+}
+
 /// A full boost table.
 ///
 /// Similar to [`PartialBoostTable`], but all values must be defined.
-#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BoostTable {
     #[serde(default)]
     pub atk: i8,
@@ -127,6 +142,17 @@ impl BoostTable {
     pub fn set(&mut self, boost: Boost, value: i8) {
         *self.get_mut(boost) = value;
     }
+
+    /// Creates an iterator over all values of the table.
+    pub fn values<'a>(&'a self) -> impl Iterator<Item = i8> + 'a {
+        BoostMapInOrderIterator::new(self).map(|(_, val)| val)
+    }
+}
+
+impl ContainsOptionalBoosts<i8> for BoostTable {
+    fn get_boost(&self, boost: Boost) -> Option<(Boost, i8)> {
+        Some((boost, self.get(boost)))
+    }
 }
 
 impl From<&PartialBoostTable> for BoostTable {
@@ -144,20 +170,30 @@ impl From<&PartialBoostTable> for BoostTable {
 }
 
 /// Iterator type for iterating over boosts in a [`BoostMap`] in a stable order.
-pub struct BoostMapInOrderIterator<'m, T> {
-    table: &'m BoostMap<T>,
+pub struct BoostMapInOrderIterator<'m, B, T>
+where
+    B: ContainsOptionalBoosts<T>,
+    T: Copy,
+{
+    table: &'m B,
     next: Option<Boost>,
+    _phantom: PhantomData<T>,
 }
 
-impl<'m, T> BoostMapInOrderIterator<'m, T> {
-    pub fn new(table: &'m BoostMap<T>) -> Self {
+impl<'m, B, T> BoostMapInOrderIterator<'m, B, T>
+where
+    B: ContainsOptionalBoosts<T>,
+    T: Copy,
+{
+    pub fn new(table: &'m B) -> Self {
         Self {
             table,
             next: Some(Boost::Atk),
+            _phantom: PhantomData,
         }
     }
 
-    fn next_entry(&self, current: &Option<Boost>) -> (Option<(&'m Boost, &'m T)>, Option<Boost>) {
+    fn next_entry(&self, current: &Option<Boost>) -> (Option<(Boost, T)>, Option<Boost>) {
         let next = match current {
             Some(Boost::Atk) => Some(Boost::Def),
             Some(Boost::Def) => Some(Boost::SpAtk),
@@ -168,14 +204,12 @@ impl<'m, T> BoostMapInOrderIterator<'m, T> {
             None | Some(Boost::Evasion) => None,
         };
         (
-            current
-                .map(|boost| self.table.get_key_value(&boost))
-                .flatten(),
+            current.map(|boost| self.table.get_boost(boost)).flatten(),
             next,
         )
     }
 
-    fn next_non_zero_entry(&mut self) -> Option<(&'m Boost, &'m T)> {
+    fn next_non_zero_entry(&mut self) -> Option<(Boost, T)> {
         while self.next.is_some() {
             let (entry, next) = self.next_entry(&self.next);
             self.next = next;
@@ -187,8 +221,12 @@ impl<'m, T> BoostMapInOrderIterator<'m, T> {
     }
 }
 
-impl<'m, T> Iterator for BoostMapInOrderIterator<'m, T> {
-    type Item = (&'m Boost, &'m T);
+impl<'m, B, T> Iterator for BoostMapInOrderIterator<'m, B, T>
+where
+    B: ContainsOptionalBoosts<T>,
+    T: Copy,
+{
+    type Item = (Boost, T);
     fn next(&mut self) -> Option<Self::Item> {
         self.next_non_zero_entry()
     }
@@ -296,7 +334,7 @@ mod boost_table_tests {
         let mut table = PartialBoostTable::new();
         assert_eq!(
             BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (*boost, *val))
+                .map(|(boost, val)| (boost, val))
                 .collect::<Vec<(Boost, i8)>>(),
             Vec::<(Boost, i8)>::new(),
         );
@@ -304,7 +342,7 @@ mod boost_table_tests {
         table.insert(Boost::SpAtk, 1);
         assert_eq!(
             BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (*boost, *val))
+                .map(|(boost, val)| (boost, val))
                 .collect::<Vec<(Boost, i8)>>(),
             vec![(Boost::SpAtk, 1)],
         );
@@ -312,7 +350,7 @@ mod boost_table_tests {
         table.insert(Boost::Atk, 2);
         assert_eq!(
             BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (*boost, *val))
+                .map(|(boost, val)| (boost, val))
                 .collect::<Vec<(Boost, i8)>>(),
             vec![(Boost::Atk, 2), (Boost::SpAtk, 1)],
         );
@@ -320,7 +358,7 @@ mod boost_table_tests {
         table.insert(Boost::Accuracy, -1);
         assert_eq!(
             BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (*boost, *val))
+                .map(|(boost, val)| (boost, val))
                 .collect::<Vec<(Boost, i8)>>(),
             vec![(Boost::Atk, 2), (Boost::SpAtk, 1), (Boost::Accuracy, -1)],
         );
@@ -336,7 +374,7 @@ mod boost_table_tests {
         ]);
         assert_eq!(
             BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (*boost, *val))
+                .map(|(boost, val)| (boost, val))
                 .collect::<Vec<(Boost, i8)>>(),
             vec![
                 (Boost::Atk, 1),

@@ -77,6 +77,15 @@ impl Condition {
             ConditionType::Weather => "weather",
         }
     }
+
+    pub fn non_empty_condition_type_name(&self) -> &str {
+        let type_name = self.condition_type_name();
+        if type_name.is_empty() {
+            "condition"
+        } else {
+            type_name
+        }
+    }
 }
 
 impl Identifiable for Condition {

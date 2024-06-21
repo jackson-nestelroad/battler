@@ -141,6 +141,22 @@ impl<'battle, 'data> Context<'battle, 'data> {
         )
     }
 
+    /// Creates a new [`SideEffectContext`], scoped to the lifetime of this context.
+    pub fn side_effect_context<'context>(
+        &'context mut self,
+        effect_handle: EffectHandle,
+        side: usize,
+        source_handle: Option<MonHandle>,
+        source_effect_handle: Option<EffectHandle>,
+    ) -> Result<SideEffectContext<'context, 'context, 'battle, 'data>, Error> {
+        SideEffectContext::new(
+            self.effect_context(effect_handle, source_effect_handle)?
+                .into(),
+            side,
+            source_handle,
+        )
+    }
+
     /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
     pub fn active_move_context<'context>(
         &'context mut self,
@@ -255,6 +271,22 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
         let player = Side::player_position_to_index(self, position)
             .wrap_error_with_format(format_args!("side has no player in position {position}"))?;
         PlayerContext::new_from_side_context(self.into(), player)
+    }
+
+    /// Creates a new [`SideEffectContext`], scoped to the lifetime of this context.
+    pub fn side_effect_context<'mon>(
+        &'mon mut self,
+        effect_handle: EffectHandle,
+        source: Option<MonHandle>,
+        source_effect_handle: Option<EffectHandle>,
+    ) -> Result<SideEffectContext<'mon, 'mon, 'battle, 'data>, Error> {
+        let side = unsafe { &*self.side }.index;
+        self.as_battle_context_mut().side_effect_context(
+            effect_handle,
+            side,
+            source,
+            source_effect_handle,
+        )
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -925,6 +957,16 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         )
     }
 
+    /// Creates a new [`SideEffectContext`] for the target side, scoped to the lifetime of this
+    /// context.
+    pub fn side_effect_context<'active_move>(
+        &'active_move mut self,
+        side: usize,
+    ) -> Result<SideEffectContext<'active_move, 'active_move, 'battle, 'data>, Error> {
+        let source_handle = self.mon_handle();
+        SideEffectContext::new(self.effect_context()?.into(), side, Some(source_handle))
+    }
+
     /// Creates a new [`ApplyingEffectContext`] with the user set as the target, scoped to the
     /// lifetime of this context.
     ///
@@ -1468,6 +1510,15 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         ApplyingEffectContext::new(self.into(), source_handle, target_handle)
     }
 
+    /// Creates a new [`SideEffectContext`], scoped to the lifetime of this context.
+    pub fn side_effect_context<'effect>(
+        &'effect mut self,
+        side: usize,
+        source_handle: Option<MonHandle>,
+    ) -> Result<SideEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+        SideEffectContext::new(self.into(), side, source_handle)
+    }
+
     /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
     ///
     /// Fails if the effect is not an active move.
@@ -1565,7 +1616,7 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
     }
 }
 
-/// The context of an applying [`Effect`] in a battle.
+/// The context of an [`Effect`] applying on a [`Mon`] in a battle.
 ///
 /// See [`Context`] for more information on how context objects work.
 pub struct ApplyingEffectContext<'effect, 'context, 'battle, 'data>
@@ -1586,7 +1637,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
         source_handle: Option<MonHandle>,
         target_handle: MonHandle,
-    ) -> Result<ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+    ) -> Result<Self, Error> {
         let target = context
             .as_battle_context()
             .cache
@@ -1752,6 +1803,17 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         }
     }
 
+    /// Creates a new [`SideEffectContext`] for the effect, targeted at the target Mon's whole side,
+    /// scoped to the lifetime of this context.
+    pub fn side_effect_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<SideEffectContext<'applying_effect, 'context, 'battle, 'data>, Error> {
+        let target_side = self.target.side;
+        let source_handle = self.source_handle;
+        self.as_effect_context_mut()
+            .side_effect_context(target_side, source_handle)
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()
@@ -1815,5 +1877,194 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     /// Returns a mutable reference to the target [`Mon`].
     pub fn target_mut(&mut self) -> &mut Mon {
         &mut self.target
+    }
+}
+
+/// The context of an [`Effect`] applying on a [`Side`] in a battle.
+///
+/// See [`Context`] for more information on how context objects work.
+pub struct SideEffectContext<'effect, 'context, 'battle, 'data>
+where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'effect,
+{
+    context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
+    // SAFETY: [`CoreBattle::sides`] cannot be modified for the lifetime of the battle.
+    side: *mut Side,
+    source_handle: Option<MonHandle>,
+    source: Option<&'context mut Mon>,
+}
+
+impl<'effect, 'context, 'battle, 'data> SideEffectContext<'effect, 'context, 'battle, 'data> {
+    fn new(
+        mut context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
+        side: usize,
+        source_handle: Option<MonHandle>,
+    ) -> Result<Self, Error> {
+        // SAFETY: No side is added or removed for the duration of the battle.
+        let side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(side)?) };
+        let source = match source_handle {
+            None => None,
+            Some(source_handle) => {
+                let source = context
+                    .as_battle_context()
+                    .cache
+                    .mon(context.battle(), source_handle)?;
+                // SAFETY: Mons live as long as the battle itself, since they are stored in a
+                // registry. The reference can be borrowed as long as the element reference exists
+                // in the root context. We ensure that element references are borrowed for the
+                // lifetime of the root context.
+                let source = unsafe { source.unsafely_detach_borrow_mut() };
+                Some(source)
+            }
+        };
+        Ok(Self {
+            context,
+            side,
+            source_handle,
+            source,
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'side_effect>(
+        &'side_effect self,
+    ) -> &'side_effect Context<'battle, 'data> {
+        self.context.as_battle_context()
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'side_effect>(
+        &'side_effect mut self,
+    ) -> &'side_effect mut Context<'battle, 'data> {
+        self.context.as_battle_context_mut()
+    }
+
+    /// Returns a reference to the inner [`EffectContext`].
+    pub fn as_effect_context<'side_effect>(
+        &'side_effect self,
+    ) -> &'side_effect EffectContext<'context, 'battle, 'data> {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`EffectContext`].
+    pub fn as_effect_context_mut<'side_effect>(
+        &'side_effect mut self,
+    ) -> &'side_effect mut EffectContext<'context, 'battle, 'data> {
+        &mut self.context
+    }
+
+    /// Creates a new [`MonContext`] for the effect source, scoped to the lifetime of this context.
+    pub fn source_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<
+        Option<MonContext<'applying_effect, 'applying_effect, 'applying_effect, 'battle, 'data>>,
+        Error,
+    > {
+        match self.source_handle {
+            None => Ok(None),
+            Some(source_handle) => self
+                .as_battle_context_mut()
+                .mon_context(source_handle)
+                .map(|mon_context| Some(mon_context)),
+        }
+    }
+
+    /// Creates a new [`SideEffectContext`] for the same target side but different effect,
+    /// using this effect as its source, scoped to the lifetime of this context.
+    pub fn forward_side_effect_context<'side_effect>(
+        &'side_effect mut self,
+        effect_handle: EffectHandle,
+    ) -> Result<SideEffectContext<'side_effect, 'side_effect, 'battle, 'data>, Error> {
+        let source_effect_handle = self.effect_handle().clone();
+        let side = unsafe { &*self.side }.index;
+        let source_handle = self.source_handle;
+        self.as_battle_context_mut().side_effect_context(
+            effect_handle,
+            side,
+            source_handle,
+            Some(source_effect_handle),
+        )
+    }
+
+    /// Creates a new [`SideEffectContext`] for the source effect with the same target side, scoped
+    /// to the lifetime of this context.
+    pub fn source_side_effect_context<'side_effect>(
+        &'side_effect mut self,
+    ) -> Result<Option<SideEffectContext<'side_effect, 'side_effect, 'battle, 'data>>, Error> {
+        match self.source_effect_handle().cloned() {
+            Some(source_effect_handle) => {
+                let side = unsafe { &*self.side }.index;
+                let source_handle = self.source_handle;
+                Ok(Some(self.as_battle_context_mut().side_effect_context(
+                    source_effect_handle,
+                    side,
+                    source_handle,
+                    None,
+                )?))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns the [`EffectHandle`] for the [`Effect`].
+    pub fn effect_handle(&self) -> &EffectHandle {
+        self.context.effect_handle()
+    }
+
+    /// Returns a reference to the [`Effect`].
+    pub fn effect(&self) -> &Effect {
+        self.context.effect()
+    }
+
+    /// Returns a mutable reference to the [`Effect`].
+    pub fn effect_mut(&mut self) -> &mut Effect<'context> {
+        self.context.effect_mut()
+    }
+
+    /// Returns a reference to the source [`EffectHandle`], if it exists.
+    pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
+        self.context.source_effect_handle()
+    }
+
+    /// Returns a reference to the target [`Side`].
+    pub fn side(&self) -> &Side {
+        unsafe { &*self.side }
+    }
+
+    /// Returns a mutable reference to the target [`Side`].
+    pub fn side_mut(&mut self) -> &mut Side {
+        unsafe { &mut *self.side }
+    }
+
+    /// Returns the [`MonHandle`] for the source [`Mon`], if one exists.
+    pub fn source_handle(&self) -> Option<MonHandle> {
+        self.source_handle
+    }
+
+    /// Checks if the effect has a source [`Mon`].
+    pub fn has_source(&self) -> bool {
+        self.source.is_some()
+    }
+
+    /// Returns a reference to the source [`Mon`], if one exists.
+    pub fn source(&self) -> Option<&Mon> {
+        self.source.as_deref()
+    }
+
+    /// Returns a mutable reference to the source [`Mon`], if one exists.
+    pub fn source_mut(&mut self) -> Option<&mut Mon> {
+        self.source.as_deref_mut()
     }
 }

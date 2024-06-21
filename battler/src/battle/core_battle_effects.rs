@@ -5,6 +5,7 @@ use crate::{
         speed_sort,
         ActiveMoveContext,
         ApplyingEffectContext,
+        BoostTable,
         Context,
         CoreBattle,
         EffectContext,
@@ -13,6 +14,8 @@ use crate::{
         MonHandle,
         MoveEventResult,
         MoveOutcomeOnTarget,
+        SideContext,
+        SideEffectContext,
         SpeedOrderable,
     },
     common::{
@@ -30,6 +33,7 @@ use crate::{
 };
 
 enum UpcomingEvaluationContext<
+    'side_effect,
     'applying_effect,
     'effect,
     'mon,
@@ -46,16 +50,20 @@ enum UpcomingEvaluationContext<
     'player: 'mon,
     'context: 'effect,
     'effect: 'applying_effect,
+    'effect: 'side_effect,
 {
     ApplyingEffect(
         MaybeOwnedMut<'applying_effect, ApplyingEffectContext<'effect, 'context, 'battle, 'data>>,
     ),
-    Effect(&'effect mut EffectContext<'context, 'battle, 'data>),
+    Effect(MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>),
     Mon(MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>),
+    SideEffect(MaybeOwnedMut<'side_effect, SideEffectContext<'effect, 'context, 'battle, 'data>>),
+    Side(MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>),
 }
 
-impl<'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'battle, 'data>
+impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'battle, 'data>
     UpcomingEvaluationContext<
+        'side_effect,
         'applying_effect,
         'effect,
         'mon,
@@ -71,6 +79,8 @@ impl<'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'battle, 'data>
             Self::ApplyingEffect(context) => context.as_battle_context(),
             Self::Effect(context) => context.as_battle_context(),
             Self::Mon(context) => context.as_battle_context(),
+            Self::SideEffect(context) => context.as_battle_context(),
+            Self::Side(context) => context.as_battle_context(),
         }
     }
 
@@ -79,6 +89,8 @@ impl<'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'battle, 'data>
             Self::ApplyingEffect(context) => context.as_battle_context_mut(),
             Self::Effect(context) => context.as_battle_context_mut(),
             Self::Mon(context) => context.as_battle_context_mut(),
+            Self::SideEffect(context) => context.as_battle_context_mut(),
+            Self::Side(context) => context.as_battle_context_mut(),
         }
     }
 }
@@ -102,6 +114,12 @@ fn run_effect_event_with_errors(
         UpcomingEvaluationContext::Mon(context) => fxlang::EvaluationContext::ApplyingEffect(
             context.applying_effect_context(effect_handle.clone(), None, None)?,
         ),
+        UpcomingEvaluationContext::SideEffect(context) => fxlang::EvaluationContext::SideEffect(
+            context.forward_side_effect_context(effect_handle.clone())?,
+        ),
+        UpcomingEvaluationContext::Side(context) => fxlang::EvaluationContext::SideEffect(
+            context.side_effect_context(effect_handle.clone(), None, None)?,
+        ),
     };
     EffectManager::evaluate(&mut context, effect_handle, event, input, effect_state)
 }
@@ -109,23 +127,46 @@ fn run_effect_event_with_errors(
 fn run_active_move_event_with_errors(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
     input: fxlang::VariableInput,
 ) -> Result<Option<fxlang::Value>, Error> {
     let effect_state = context.active_move().effect_state.clone();
+    let effect_handle = context.effect_handle().clone();
 
-    let effect_context = match target {
-        Some(target) => context.applying_effect_context_for_target(target)?,
-        None => context.user_applying_effect_context(None)?,
+    let result = match target {
+        MoveTargetForEvent::Mon(mon) => run_effect_event_with_errors(
+            &mut UpcomingEvaluationContext::ApplyingEffect(
+                context.applying_effect_context_for_target(mon)?.into(),
+            ),
+            &effect_handle,
+            event,
+            input,
+            Some(effect_state),
+        )?,
+        MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
+            &mut UpcomingEvaluationContext::SideEffect(context.side_effect_context(side)?.into()),
+            &effect_handle,
+            event,
+            input,
+            Some(effect_state),
+        )?,
+        MoveTargetForEvent::User => run_effect_event_with_errors(
+            &mut UpcomingEvaluationContext::ApplyingEffect(
+                context.user_applying_effect_context(None)?.into(),
+            ),
+            &effect_handle,
+            event,
+            input,
+            Some(effect_state),
+        )?,
+        MoveTargetForEvent::None => run_effect_event_with_errors(
+            &mut UpcomingEvaluationContext::Effect(context.effect_context()?.into()),
+            &effect_handle,
+            event,
+            input,
+            Some(effect_state),
+        )?,
     };
-    let effect_handle = effect_context.effect_handle().clone();
-    let result = run_effect_event_with_errors(
-        &mut UpcomingEvaluationContext::ApplyingEffect(effect_context.into()),
-        &effect_handle,
-        event,
-        input,
-        Some(effect_state),
-    )?;
 
     context.active_move_mut().effect_state = result
         .effect_state
@@ -137,7 +178,7 @@ fn run_active_move_event_with_errors(
 fn run_active_move_event(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
     match run_active_move_event_with_errors(context, event, target, input) {
@@ -183,9 +224,17 @@ fn run_effect_event_by_handle(
     }
 }
 
+pub enum MoveTargetForEvent {
+    None,
+    User,
+    Mon(MonHandle),
+    Side(usize),
+}
+
 enum EffectOrigin {
     MonStatus(MonHandle),
     MonVolatileStatus(MonHandle),
+    SideCondition(usize),
 }
 
 struct CallbackHandle {
@@ -216,6 +265,10 @@ impl CallbackHandle {
             EffectOrigin::MonVolatileStatus(mon) => match self.effect_handle.try_id() {
                 None => Ok(None),
                 Some(id) => Ok(context.mon_mut(mon)?.volatiles.get_mut(id)),
+            },
+            EffectOrigin::SideCondition(side) => match self.effect_handle.try_id() {
+                None => Ok(None),
+                Some(id) => Ok(context.battle_mut().side_mut(side)?.conditions.get_mut(id)),
             },
         }
     }
@@ -256,6 +309,20 @@ fn run_callback_under_applying_effect(
 ) -> Option<fxlang::Value> {
     run_callback_with_errors(
         UpcomingEvaluationContext::ApplyingEffect(context.into()),
+        input,
+        callback_handle,
+    )
+    .ok()
+    .flatten()
+}
+
+fn run_callback_under_side_effect(
+    context: &mut SideEffectContext,
+    input: fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Option<fxlang::Value> {
+    run_callback_with_errors(
+        UpcomingEvaluationContext::SideEffect(context.into()),
         input,
         callback_handle,
     )
@@ -305,6 +372,29 @@ fn run_mon_volatile_event_internal(
     )
 }
 
+fn run_side_condition_event_internal(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    condition: &Id,
+) -> Option<fxlang::Value> {
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(condition)
+        .ok()?
+        .clone();
+    let side_index = context.side().index;
+    run_callback_under_side_effect(
+        context,
+        input,
+        CallbackHandle::new(
+            effect_handle,
+            event,
+            EffectOrigin::SideCondition(side_index),
+        ),
+    )
+}
+
 fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
@@ -346,7 +436,16 @@ fn find_callbacks_on_side(
     let mut callbacks = Vec::new();
     let mut context = context.side_context(side)?;
 
-    // TODO: Side conditions.
+    for side_condition in context.side().conditions.clone().keys() {
+        let side_condition_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&side_condition)?;
+        callbacks.push(CallbackHandle::new(
+            side_condition_handle.clone(),
+            event,
+            EffectOrigin::SideCondition(side),
+        ));
+    }
 
     Ok(callbacks)
 }
@@ -368,6 +467,7 @@ fn find_callbacks_on_field(
 enum AllEffectsTarget {
     Mon(MonHandle),
     Side(usize),
+    Field,
     Residual,
 }
 
@@ -415,11 +515,34 @@ fn find_all_callbacks(
                     )?);
                 }
             }
+            let side = context.side().index;
+            callbacks.extend(find_callbacks_on_side(
+                context.as_battle_context_mut(),
+                event,
+                side,
+            )?);
+            if let Some(foe_event) = event.foe_event() {
+                let foe_side = context.foe_side().index;
+                callbacks.extend(find_callbacks_on_side(
+                    context.as_battle_context_mut(),
+                    foe_event,
+                    foe_side,
+                )?);
+            }
         }
         AllEffectsTarget::Side(side) => {
             callbacks.extend(find_callbacks_on_side(context, event, side)?);
+            let mut context = context.side_context(side)?;
+            if let Some(foe_event) = event.foe_event() {
+                let foe_side = context.foe_side().index;
+                callbacks.extend(find_callbacks_on_side(
+                    context.as_battle_context_mut(),
+                    foe_event,
+                    foe_side,
+                )?);
+            }
         }
-        AllEffectsTarget::Residual => {
+        AllEffectsTarget::Field | AllEffectsTarget::Residual => {
             for mon in context
                 .battle()
                 .all_active_mon_handles()
@@ -522,6 +645,27 @@ fn get_ordered_effects_for_event(
         .collect())
 }
 
+fn run_callbacks_with_forwarding_input_with_errors(
+    context: UpcomingEvaluationContext,
+    input: &mut fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Result<Option<Option<fxlang::Value>>, Error> {
+    let value = run_callback_with_errors(context, input.clone(), callback_handle)?;
+    // Support for early exit.
+    if value
+        .as_ref()
+        .is_some_and(|value| value.signals_early_exit())
+    {
+        return Ok(Some(value));
+    }
+    // Pass the output to the next effect.
+    if let Some(value) = value {
+        *input = fxlang::VariableInput::from_iter([value]);
+    }
+
+    Ok(None)
+}
+
 fn run_mon_callbacks_with_errors(
     context: &mut MonContext,
     source_effect: Option<&EffectHandle>,
@@ -530,32 +674,57 @@ fn run_mon_callbacks_with_errors(
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>, Error> {
     for callback_handle in callbacks {
-        let value = match source_effect {
-            Some(source_effect) => run_callback_with_errors(
+        let result = match source_effect {
+            Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::ApplyingEffect(
                     context
                         .applying_effect_context(source_effect.clone(), source, None)?
                         .into(),
                 ),
-                input.clone(),
+                &mut input,
                 callback_handle,
             )?,
-            None => run_callback_with_errors(
+            None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Mon(context.into()),
-                input.clone(),
+                &mut input,
                 callback_handle,
             )?,
         };
-        // Early exit.
-        if value
-            .as_ref()
-            .is_some_and(|value| value.signals_early_exit())
-        {
-            return Ok(value);
+        if let Some(return_value) = result {
+            return Ok(return_value);
         }
-        // Pass the output to the next effect.
-        if let Some(value) = value {
-            input = fxlang::VariableInput::from_iter([value]);
+    }
+
+    // The first input variable is always returned as the result.
+    Ok(input.get(0).cloned())
+}
+
+fn run_side_callbacks_with_errors(
+    context: &mut SideContext,
+    source_effect: Option<&EffectHandle>,
+    source: Option<MonHandle>,
+    mut input: fxlang::VariableInput,
+    callbacks: Vec<CallbackHandle>,
+) -> Result<Option<fxlang::Value>, Error> {
+    for callback_handle in callbacks {
+        let result = match source_effect {
+            Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
+                UpcomingEvaluationContext::SideEffect(
+                    context
+                        .side_effect_context(source_effect.clone(), source, None)?
+                        .into(),
+                ),
+                &mut input,
+                callback_handle,
+            )?,
+            None => run_callbacks_with_forwarding_input_with_errors(
+                UpcomingEvaluationContext::Side(context.into()),
+                &mut input,
+                callback_handle,
+            )?,
+        };
+        if let Some(return_value) = result {
+            return Ok(return_value);
         }
     }
 
@@ -619,6 +788,24 @@ fn run_residual_callbacks_with_errors(
                     )?;
                 }
             }
+            EffectOrigin::SideCondition(side) => {
+                let mut context = context.side_effect_context(side, None)?;
+                if ended {
+                    core_battle_actions::remove_side_condition(
+                        &mut context,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected side condition to have an id")?,
+                    )?;
+                } else {
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::SideEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
         }
     }
     Ok(())
@@ -643,7 +830,14 @@ fn run_event_with_errors(
             input,
             callbacks,
         ),
-        AllEffectsTarget::Side(_) => todo!("running effects against a side is not implemented"),
+        AllEffectsTarget::Side(side) => run_side_callbacks_with_errors(
+            &mut context.side_context(side)?,
+            source_effect,
+            source,
+            input,
+            callbacks,
+        ),
+        AllEffectsTarget::Field => todo!("running effects against a field is not implemented"),
         AllEffectsTarget::Residual => {
             run_residual_callbacks_with_errors(context, callbacks).map(|()| None)
         }
@@ -704,6 +898,61 @@ fn run_event_for_mon_internal(
     }
 }
 
+fn run_event_for_side_effect_internal(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let target = AllEffectsTarget::Side(context.side().index);
+    let effect = context.effect_handle().clone();
+    let source = context.source_handle();
+    match run_event_with_errors(
+        context.as_battle_context_mut(),
+        event,
+        Some(&effect),
+        target,
+        source,
+        input,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            core_battle_logs::debug_full_event_failure(
+                context.as_battle_context_mut(),
+                event,
+                &error.message(),
+            );
+            None
+        }
+    }
+}
+
+fn run_event_for_effect_internal(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let target = AllEffectsTarget::Field;
+    let effect = context.effect_handle().clone();
+    match run_event_with_errors(
+        context.as_battle_context_mut(),
+        event,
+        Some(&effect),
+        target,
+        None,
+        input,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            core_battle_logs::debug_full_event_failure(
+                context.as_battle_context_mut(),
+                event,
+                &error.message(),
+            );
+            None
+        }
+    }
+}
+
 fn run_event_for_no_target_internal(context: &mut Context, event: fxlang::BattleEvent) {
     match run_event_with_errors(
         context,
@@ -726,7 +975,7 @@ fn run_event_for_no_target_internal(context: &mut Context, event: fxlang::Battle
 pub fn run_active_move_event_expecting_void(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
 ) {
     run_active_move_event(context, event, target, fxlang::VariableInput::default());
 }
@@ -737,7 +986,7 @@ pub fn run_active_move_event_expecting_void(
 pub fn run_active_move_event_expecting_u16(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
 ) -> Option<u16> {
     run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .integer_u16()
@@ -750,7 +999,7 @@ pub fn run_active_move_event_expecting_u16(
 pub fn run_active_move_event_expecting_u32(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
 ) -> Option<u32> {
     run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .integer_u32()
@@ -763,7 +1012,7 @@ pub fn run_active_move_event_expecting_u32(
 pub fn run_active_move_event_expecting_bool(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
 ) -> Option<bool> {
     run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .boolean()
@@ -776,7 +1025,7 @@ pub fn run_active_move_event_expecting_bool(
 pub fn run_active_move_event_expecting_move_event_result(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
-    target: Option<MonHandle>,
+    target: MoveTargetForEvent,
 ) -> MoveEventResult {
     match run_active_move_event(context, event, target, fxlang::VariableInput::default()) {
         Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
@@ -845,6 +1094,43 @@ pub fn run_mon_volatile_event_expecting_u8(
         .ok()
 }
 
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
+///
+/// Expects no input or output. Any output is ignored.
+pub fn run_side_condition_event(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    condition: &Id,
+) {
+    run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition);
+}
+
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
+///
+/// Expects a [`bool`].
+pub fn run_side_condition_event_expecting_bool(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    condition: &Id,
+) -> Option<bool> {
+    run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition)?
+        .boolean()
+        .ok()
+}
+
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
+///
+/// Expects a [`u8`].
+pub fn run_side_condition_event_expecting_u8(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    condition: &Id,
+) -> Option<u8> {
+    run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition)?
+        .integer_u8()
+        .ok()
+}
+
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
@@ -889,6 +1175,24 @@ pub fn run_event_for_applying_effect_expecting_move_outcome_on_target(
         .ok()
 }
 
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
+/// Expects a [`BoostTable`].
+pub fn run_event_for_applying_effect_expecting_boost_table(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    boost_table: BoostTable,
+) -> BoostTable {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boost_table.clone())]),
+    ) {
+        Some(value) => value.boost_table().unwrap_or(boost_table),
+        None => boost_table,
+    }
+}
+
 /// Runs an event targeted on the given [`Mon`].
 ///
 /// Expects no input or output.
@@ -926,10 +1230,84 @@ pub fn run_event_for_mon_expecting_string(
         .ok()
 }
 
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`BoostTable`].
+pub fn run_event_for_mon_expecting_boost_table(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    boost_table: BoostTable,
+) -> BoostTable {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boost_table.clone())]),
+    ) {
+        Some(value) => value.boost_table().unwrap_or(boost_table),
+        None => boost_table,
+    }
+}
+
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for the residual effect, which occurs
 /// at the end of every turn.
 ///
 /// Expects no input or output.
 pub fn run_event_for_no_target(context: &mut Context, event: fxlang::BattleEvent) {
     run_event_for_no_target_internal(context, event)
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a side-applying effect.
+///
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_side_effect(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> bool {
+    run_event_for_side_effect_internal(context, event, input)
+        .map(|value| value.boolean().ok())
+        .flatten()
+        .unwrap_or(true)
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a side-applying effect.
+///
+/// Expects a [`MoveEventResult`].
+pub fn run_event_for_side_effect_expecting_move_event_result(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> MoveEventResult {
+    match run_event_for_side_effect_internal(context, event, input) {
+        Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
+        None => MoveEventResult::Advance,
+    }
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an effect.
+///
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_effect(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> bool {
+    run_event_for_effect_internal(context, event, input)
+        .map(|value| value.boolean().ok())
+        .flatten()
+        .unwrap_or(true)
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an effect.
+///
+/// Expects a [`MoveEventResult`].
+pub fn run_event_for_effect_expecting_move_event_result(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> MoveEventResult {
+    match run_event_for_effect_internal(context, event, input) {
+        Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
+        None => MoveEventResult::Advance,
+    }
 }

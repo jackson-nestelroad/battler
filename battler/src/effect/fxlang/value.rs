@@ -11,6 +11,8 @@ use zone_alloc::ElementRef;
 
 use crate::{
     battle::{
+        Boost,
+        BoostTable,
         MonHandle,
         MoveEventResult,
         MoveHandle,
@@ -54,6 +56,9 @@ pub enum ValueType {
     MoveCategory,
     MoveTarget,
     Type,
+    Boost,
+    BoostTable,
+    Side,
     List,
     Object,
 
@@ -94,6 +99,9 @@ pub enum Value {
     MoveCategory(MoveCategory),
     MoveTarget(MoveTarget),
     Type(Type),
+    Boost(Boost),
+    BoostTable(BoostTable),
+    Side(usize),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
 }
@@ -116,7 +124,10 @@ impl Value {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
             Self::Type(_) => ValueType::Type,
+            Self::Side(_) => ValueType::Side,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -171,6 +182,13 @@ impl Value {
         }
     }
 
+    /// Consumes the value into an [`i8`].
+    pub fn integer_i8(self) -> Result<i8, Error> {
+        self.integer_i64()?
+            .try_into()
+            .wrap_error_with_message("integer overflow")
+    }
+
     /// Consumes the value into a [`u8`].
     pub fn integer_u8(self) -> Result<u8, Error> {
         self.integer_u64()?
@@ -197,6 +215,14 @@ impl Value {
         self.integer_i64()?
             .try_into()
             .wrap_error_with_message("integer overflow")
+    }
+
+    /// Checks if the value is undefined.
+    pub fn is_undefined(&self) -> bool {
+        match self {
+            Self::Undefined => true,
+            _ => false,
+        }
     }
 
     /// Consumes the value into a [`bool`].
@@ -255,6 +281,22 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Effect)),
         }
     }
+
+    /// Consumes the value into a [`Boost`].
+    pub fn boost(self) -> Result<Boost, Error> {
+        match self {
+            Self::Boost(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
+        }
+    }
+
+    /// Consumes the value into a [`BoostTable`].
+    pub fn boost_table(self) -> Result<BoostTable, Error> {
+        match self {
+            Self::BoostTable(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
+        }
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.
@@ -279,6 +321,9 @@ pub enum MaybeReferenceValue<'eval> {
     MoveCategory(MoveCategory),
     MoveTarget(MoveTarget),
     Type(Type),
+    Boost(Boost),
+    BoostTable(BoostTable),
+    Side(usize),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
@@ -302,7 +347,10 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
             Self::Type(_) => ValueType::Type,
+            Self::Side(_) => ValueType::Side,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -327,6 +375,9 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
             Self::Type(val) => Value::Type(*val),
+            Self::Boost(val) => Value::Boost(*val),
+            Self::BoostTable(val) => Value::BoostTable(val.clone()),
+            Self::Side(val) => Value::Side(*val),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
@@ -405,6 +456,9 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
             Value::Type(val) => Self::Type(val),
+            Value::Boost(val) => Self::Boost(val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::Side(val) => Self::Side(val),
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -445,6 +499,9 @@ pub enum ValueRef<'eval> {
     MoveCategory(MoveCategory),
     MoveTarget(MoveTarget),
     Type(Type),
+    Boost(Boost),
+    BoostTable(&'eval BoostTable),
+    Side(usize),
     List(&'eval Vec<Value>),
     Object(&'eval FastHashMap<String, Value>),
 }
@@ -470,6 +527,9 @@ impl ValueRef<'_> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveTarget(_) => ValueType::MoveTarget,
             Self::Type(_) => ValueType::Type,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::Side(_) => ValueType::Side,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -495,6 +555,9 @@ impl ValueRef<'_> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
             Self::Type(val) => Value::Type(*val),
+            Self::Boost(val) => Value::Boost(*val),
+            Self::BoostTable(val) => Value::BoostTable((*val).clone()),
+            Self::Side(val) => Value::Side(*val),
             Self::List(val) => Value::List((*val).clone()),
             Self::Object(val) => Value::Object((*val).clone()),
         }
@@ -560,6 +623,9 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
             Value::Type(val) => Self::Type(*val),
+            Value::Boost(val) => Self::Boost(*val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::Side(val) => Self::Side(*val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -571,13 +637,13 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
 /// Assumes the underlying value is stored in an [`ElementRef`].
 #[derive(Clone)]
 pub struct ValueRefToStoredValue<'eval> {
-    _stored: ElementRef<'eval, Value>,
+    _stored: Option<ElementRef<'eval, Value>>,
     value: ValueRef<'eval>,
 }
 
 impl<'eval> ValueRefToStoredValue<'eval> {
     /// Creates a new reference to a stored value.
-    pub fn new(stored: ElementRef<'eval, Value>, value: ValueRef<'eval>) -> Self {
+    pub fn new(stored: Option<ElementRef<'eval, Value>>, value: ValueRef<'eval>) -> Self {
         Self {
             _stored: stored,
             value,
@@ -619,6 +685,9 @@ pub enum ValueRefMut<'eval> {
     MoveCategory(&'eval mut MoveCategory),
     MoveTarget(&'eval mut MoveTarget),
     Type(&'eval mut Type),
+    Boost(&'eval mut Boost),
+    BoostTable(&'eval mut BoostTable),
+    Side(&'eval mut usize),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -644,6 +713,9 @@ impl<'eval> ValueRefMut<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveTarget(_) => ValueType::MoveTarget,
             Self::Type(_) => ValueType::Type,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::Side(_) => ValueType::Side,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -668,6 +740,9 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
             Value::Type(val) => Self::Type(val),
+            Value::Boost(val) => Self::Boost(val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::Side(val) => Self::Side(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -703,9 +778,13 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     MoveCategory(MoveCategory),
     MoveTarget(MoveTarget),
     Type(Type),
+    Boost(Boost),
+    BoostTable(&'eval BoostTable),
+    Side(usize),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
-    Object(&'eval FastHashMap<String, MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
+    TempList(Vec<MaybeReferenceValue<'eval>>),
+    Object(&'eval FastHashMap<String, MaybeReferenceValue<'eval>>),
     StoredObject(&'eval FastHashMap<String, Value>),
 }
 
@@ -730,9 +809,13 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveTarget(_) => ValueType::MoveTarget,
             Self::Type(_) => ValueType::Type,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::Side(_) => ValueType::Side,
             Self::List(_) => ValueType::List,
-            Self::Object(_) => ValueType::Object,
             Self::StoredList(_) => ValueType::List,
+            Self::TempList(_) => ValueType::List,
+            Self::Object(_) => ValueType::Object,
             Self::StoredObject(_) => ValueType::Object,
         }
     }
@@ -757,13 +840,17 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
             Self::Type(val) => Value::Type(*val),
+            Self::Boost(val) => Value::Boost(*val),
+            Self::BoostTable(val) => Value::BoostTable((*val).clone()),
+            Self::Side(val) => Value::Side(*val),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
+            Self::StoredList(val) => Value::List((*val).clone()),
+            Self::TempList(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.iter()
                     .map(|(key, val)| (key.clone(), val.to_owned()))
                     .collect(),
             ),
-            Self::StoredList(val) => Value::List((*val).clone()),
             Self::StoredObject(val) => Value::Object((*val).clone()),
         }
     }
@@ -787,10 +874,14 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(_) => 103,
             Self::MoveTarget(_) => 104,
             Self::Type(_) => 105,
+            Self::Boost(_) => 106,
+            Self::BoostTable(_) => 107,
+            Self::Side(_) => 108,
             Self::List(_) => 200,
-            Self::Object(_) => 201,
-            Self::StoredList(_) => 300,
-            Self::StoredObject(_) => 301,
+            Self::StoredList(_) => 201,
+            Self::TempList(_) => 202,
+            Self::Object(_) => 250,
+            Self::StoredObject(_) => 251,
         }
     }
 
@@ -1352,6 +1443,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::I64(lhs), Self::UFraction(rhs)) => {
                 if *lhs > u32::MAX as i64 {
                     Some(Ordering::Greater)
+                } else if *lhs < u32::MIN as i64 {
+                    Some(Ordering::Less)
                 } else {
                     Fraction::from(*lhs as u32).partial_cmp(rhs)
                 }
@@ -1521,6 +1614,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::Boost(rhs)) => {
+                Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
             (Self::Str(lhs), Self::MoveCategory(rhs)) => {
@@ -1530,6 +1626,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 MoveTarget::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::Boost(rhs)) => Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
             (Self::TempString(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
@@ -1540,14 +1637,23 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempString(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::TempString(lhs), Self::Boost(rhs)) => {
+                Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Mon(lhs), Self::Mon(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
             (Self::ActiveMove(lhs), Self::ActiveMove(rhs)) => lhs.eq(rhs),
             (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
             (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
+            (Self::Boost(lhs), Self::Boost(rhs)) => lhs.eq(rhs),
+            (Self::BoostTable(lhs), Self::BoostTable(rhs)) => lhs.eq(rhs),
+            (Self::Side(lhs), Self::Side(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
+            (Self::List(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::StoredList(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
+            (Self::StoredList(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
+            (Self::TempList(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::Object(lhs), Self::Object(rhs)) => Self::equal_objects(lhs, rhs)?,
             (Self::Object(lhs), Self::StoredObject(rhs)) => Self::equal_objects(lhs, rhs)?,
             (Self::StoredObject(lhs), Self::StoredObject(rhs)) => Self::equal_objects(lhs, rhs)?,
@@ -1570,12 +1676,12 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(MaybeReferenceValue::Boolean(!self.equal_ref(&rhs)?))
     }
 
-    fn list_has_value<T>(list: &'eval Vec<T>, rhs: Self) -> bool
+    fn list_has_value<'a, T>(list: &'a Vec<T>, rhs: Self) -> bool
     where
-        &'eval T: Into<Self> + 'eval,
+        &'a T: Into<MaybeReferenceValueForOperation<'a>>,
     {
         list.iter()
-            .map(|val| Into::<Self>::into(val))
+            .map(|val| Into::<MaybeReferenceValueForOperation<'a>>::into(val))
             .any(|lhs| lhs.equal_ref(&rhs).is_ok_and(|eq| eq))
     }
 
@@ -1583,6 +1689,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         let result = match (self, rhs) {
             (Self::List(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
             (Self::StoredList(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
+            (Self::TempList(lhs), rhs @ _) => Self::list_has_value(&lhs, rhs),
             _ => {
                 return Err(battler_error!(
                     "left-hand side of has operator must be a list"
@@ -1592,22 +1699,27 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(MaybeReferenceValue::Boolean(result))
     }
 
-    fn list_has_any_value<T, U>(lhs: &'eval Vec<T>, rhs: &'eval Vec<U>) -> bool
+    fn list_has_any_value<'a, 'b, T, U>(lhs: &'a Vec<T>, rhs: &'b Vec<U>) -> bool
     where
-        &'eval T: Into<Self> + 'eval,
-        &'eval U: Into<Self> + 'eval,
+        &'a T: Into<MaybeReferenceValueForOperation<'a>>,
+        &'b U: Into<MaybeReferenceValueForOperation<'b>>,
     {
         lhs.iter()
-            .map(|a| Into::<Self>::into(a))
-            .any(|lhs| Self::list_has_value(rhs, lhs))
+            .map(|a| Into::<MaybeReferenceValueForOperation<'a>>::into(a))
+            .any(|lhs| MaybeReferenceValueForOperation::list_has_value(rhs, lhs))
     }
 
     pub fn has_any(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::List(lhs), Self::List(rhs)) => Self::list_has_any_value(lhs, rhs),
             (Self::List(lhs), Self::StoredList(rhs)) => Self::list_has_any_value(lhs, rhs),
+            (Self::List(lhs), Self::TempList(rhs)) => Self::list_has_any_value(lhs, &rhs),
             (Self::StoredList(lhs), Self::List(rhs)) => Self::list_has_any_value(lhs, rhs),
             (Self::StoredList(lhs), Self::StoredList(rhs)) => Self::list_has_any_value(lhs, rhs),
+            (Self::StoredList(lhs), Self::TempList(rhs)) => Self::list_has_any_value(lhs, &rhs),
+            (Self::TempList(lhs), Self::List(rhs)) => Self::list_has_any_value(&lhs, rhs),
+            (Self::TempList(lhs), Self::StoredList(rhs)) => Self::list_has_any_value(&lhs, rhs),
+            (Self::TempList(lhs), Self::TempList(rhs)) => Self::list_has_any_value(&lhs, &rhs),
             _ => {
                 return Err(battler_error!(
                     "both operands to hasany operator must be a list"
@@ -1693,6 +1805,9 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
             Value::Type(val) => Self::Type(*val),
+            Value::Boost(val) => Self::Boost(*val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::Side(val) => Self::Side(*val),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -1717,6 +1832,9 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
             MaybeReferenceValue::MoveTarget(val) => Self::MoveTarget(*val),
             MaybeReferenceValue::Type(val) => Self::Type(*val),
+            MaybeReferenceValue::Boost(val) => Self::Boost(*val),
+            MaybeReferenceValue::BoostTable(val) => Self::BoostTable(val),
+            MaybeReferenceValue::Side(val) => Self::Side(*val),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
             MaybeReferenceValue::Reference(val) => Self::from(val),
@@ -1744,6 +1862,9 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(*val),
             ValueRef::Type(val) => Self::Type(*val),
+            ValueRef::Boost(val) => Self::Boost(*val),
+            ValueRef::BoostTable(val) => Self::BoostTable(val),
+            ValueRef::Side(val) => Self::Side(*val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::Object(val) => Self::StoredObject(val),
         }

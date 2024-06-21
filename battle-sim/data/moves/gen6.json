@@ -411,7 +411,12 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute", "Metronome"]
+    "flags": ["BypassSubstitute", "Metronome"],
+    "hit_effect": {
+      "boosts": {
+        "spd": 1
+      }
+    }
   },
   "eerieimpulse": {
     "name": "Eerie Impulse",

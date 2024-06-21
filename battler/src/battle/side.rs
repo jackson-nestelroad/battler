@@ -1,3 +1,4 @@
+use ahash::HashMapExt;
 use num::Integer;
 use serde::{
     Deserialize,
@@ -13,8 +14,13 @@ use crate::{
         PlayerData,
         SideContext,
     },
-    common::Error,
+    common::{
+        Error,
+        FastHashMap,
+        Id,
+    },
     dex::Dex,
+    effect::fxlang,
 };
 
 /// Data about a single side of a battle.
@@ -39,6 +45,8 @@ pub struct SideData {
 pub struct Side {
     pub name: String,
     pub index: usize,
+
+    pub conditions: FastHashMap<Id, fxlang::EffectState>,
 }
 
 // Construction and initialization logic.
@@ -61,6 +69,7 @@ impl Side {
             Self {
                 name: data.name,
                 index,
+                conditions: FastHashMap::new(),
             },
             players,
         ))
