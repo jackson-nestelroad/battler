@@ -550,9 +550,9 @@ where
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
                         "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
-                        "base_max_hp" => ValueRef::U16(context.mon(mon_handle)?.base_max_hp),
+                        "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
                         "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
-                        "hp" => ValueRef::U16(context.mon(mon_handle)?.hp),
+                        "hp" => ValueRef::U64(context.mon(mon_handle)?.hp as u64),
                         "item" => ValueRef::TempString(
                             context
                                 .mon(mon_handle)?
@@ -568,8 +568,8 @@ where
                                 .try_into()
                                 .wrap_error_with_message("integer overflow")?,
                         ),
-                        "level" => ValueRef::U16(context.mon(mon_handle)?.level as u16),
-                        "max_hp" => ValueRef::U16(context.mon(mon_handle)?.max_hp),
+                        "level" => ValueRef::U64(context.mon(mon_handle)?.level as u64),
+                        "max_hp" => ValueRef::U64(context.mon(mon_handle)?.max_hp as u64),
                         "move_this_turn_failed" => ValueRef::Boolean(
                             context
                                 .mon(mon_handle)?
@@ -590,9 +590,9 @@ where
                                 .map(|id| id.as_ref().to_owned())
                                 .unwrap_or(String::new()),
                         ),
-                        "weight" => {
-                            ValueRef::U32(Mon::get_weight(&mut context.mon_context(mon_handle)?))
-                        }
+                        "weight" => ValueRef::U64(Mon::get_weight(
+                            &mut context.mon_context(mon_handle)?,
+                        ) as u64),
                         _ => return Err(Self::bad_member_access(member, value_type)),
                     }
                 }
@@ -654,9 +654,9 @@ where
                 ValueRef::ActiveMove(active_move_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
-                        "base_power" => {
-                            ValueRef::U32(context.active_move(active_move_handle)?.data.base_power)
-                        }
+                        "base_power" => ValueRef::U64(
+                            context.active_move(active_move_handle)?.data.base_power as u64,
+                        ),
                         "category" => ValueRef::MoveCategory(
                             context.active_move(active_move_handle)?.data.category,
                         ),
@@ -1551,12 +1551,6 @@ impl Evaluator {
             (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
                 *var = val;
             }
-            (ValueRefMut::U16(var), Value::U16(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::U16(var), Value::U32(val)) => {
-                *var = val.try_into().wrap_error_with_message("integer overflow")?;
-            }
             (ValueRefMut::U16(var), Value::U64(val)) => {
                 *var = val.try_into().wrap_error_with_message("integer overflow")?;
             }
@@ -1575,12 +1569,6 @@ impl Evaluator {
                     .try_into()
                     .wrap_error_with_message("integer overflow")?;
             }
-            (ValueRefMut::U32(var), Value::U16(val)) => {
-                *var = val as u32;
-            }
-            (ValueRefMut::U32(var), Value::U32(val)) => {
-                *var = val;
-            }
             (ValueRefMut::U32(var), Value::U64(val)) => {
                 *var = val.try_into().wrap_error_with_message("integer overflow")?;
             }
@@ -1592,12 +1580,6 @@ impl Evaluator {
             }
             (ValueRefMut::U32(var), Value::UFraction(val)) => {
                 *var = val.round();
-            }
-            (ValueRefMut::U64(var), Value::U16(val)) => {
-                *var = val as u64;
-            }
-            (ValueRefMut::U64(var), Value::U32(val)) => {
-                *var = val as u64;
             }
             (ValueRefMut::U64(var), Value::U64(val)) => {
                 *var = val;
@@ -1611,12 +1593,6 @@ impl Evaluator {
             (ValueRefMut::U64(var), Value::UFraction(val)) => {
                 *var = val.round() as u64;
             }
-            (ValueRefMut::I64(var), Value::U16(val)) => {
-                *var = val as i64;
-            }
-            (ValueRefMut::I64(var), Value::U32(val)) => {
-                *var = val as i64;
-            }
             (ValueRefMut::I64(var), Value::U64(val)) => {
                 *var = val.try_into().wrap_error_with_message("integer overflow")?;
             }
@@ -1628,12 +1604,6 @@ impl Evaluator {
             }
             (ValueRefMut::I64(var), Value::UFraction(val)) => {
                 *var = val.round() as i64;
-            }
-            (ValueRefMut::OptionalISize(var), Value::U16(val)) => {
-                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
-            }
-            (ValueRefMut::OptionalISize(var), Value::U32(val)) => {
-                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
             }
             (ValueRefMut::OptionalISize(var), Value::U64(val)) => {
                 *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
@@ -1655,14 +1625,6 @@ impl Evaluator {
                         .wrap_error_with_message("integer overflow")?,
                 );
             }
-            (ValueRefMut::Fraction(var), Value::U16(val)) => {
-                *var = Fraction::from(val as i32);
-            }
-            (ValueRefMut::Fraction(var), Value::U32(val)) => {
-                *var = Fraction::from(
-                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
-                );
-            }
             (ValueRefMut::Fraction(var), Value::U64(val)) => {
                 *var = Fraction::from(
                     TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
@@ -1680,12 +1642,6 @@ impl Evaluator {
                 *var = val
                     .try_convert()
                     .wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::UFraction(var), Value::U16(val)) => {
-                *var = Fraction::from(val as u32);
-            }
-            (ValueRefMut::UFraction(var), Value::U32(val)) => {
-                *var = Fraction::from(val);
             }
             (ValueRefMut::UFraction(var), Value::U64(val)) => {
                 *var = Fraction::from(

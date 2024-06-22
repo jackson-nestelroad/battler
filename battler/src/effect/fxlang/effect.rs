@@ -504,9 +504,9 @@ impl BattleEvent {
             Self::AllySetStatus | Self::AfterSetStatus | Self::SetStatus => {
                 &[("status", ValueType::Effect)]
             }
-            Self::DamagingHit => &[("damage", ValueType::U16)],
-            Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U32)],
-            Self::ModifySpe => &[("spe", ValueType::U16)],
+            Self::DamagingHit => &[("damage", ValueType::U64)],
+            Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U64)],
+            Self::ModifySpe => &[("spe", ValueType::U64)],
             Self::SideConditionStart => &[("condition", ValueType::Effect)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable)],
             _ => &[],

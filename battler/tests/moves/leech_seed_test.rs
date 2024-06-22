@@ -87,6 +87,10 @@ mod leech_seed_test {
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        // Switch out and show that target is still seeded, healing the switched-in Mon.
+        assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+        // Effect should end.
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
 
@@ -139,9 +143,24 @@ mod leech_seed_test {
                 "residual",
                 "turn|turn:4",
                 ["time"],
+                "switch|player:player-1|position:1|name:Exeggcute|health:100/100|species:Exeggcute|level:50|gender:M",
+                "move|mon:Eevee,player-2,1|name:Brick Break|target:Exeggcute,player-1,1",
+                "resisted|mon:Exeggcute,player-1,1",
+                "split|side:0",
+                "damage|mon:Exeggcute,player-1,1|health:109/120",
+                "damage|mon:Exeggcute,player-1,1|health:91/100",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:59/115",
+                "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:52/100",
+                "split|side:0",
+                "heal|mon:Exeggcute,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:120/120",
+                "heal|mon:Exeggcute,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:100/100",
+                "residual",
+                "turn|turn:5",
+                ["time"],
                 "switch|player:player-2|position:1|name:Exeggcute|health:100/100|species:Exeggcute|level:50|gender:M",
                 "residual",
-                "turn|turn:5"
+                "turn|turn:6"
             ]"#,
         )
         .unwrap();

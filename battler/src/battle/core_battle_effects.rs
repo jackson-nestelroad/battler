@@ -1156,7 +1156,7 @@ pub fn run_event_for_applying_effect_expecting_u32(
     match run_event_for_applying_effect_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U32(input)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
     ) {
         Some(value) => value.integer_u32().unwrap_or(input),
         None => input,
@@ -1211,7 +1211,7 @@ pub fn run_event_for_mon_expecting_u16(
     match run_event_for_mon_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U16(input)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),
         None => input,

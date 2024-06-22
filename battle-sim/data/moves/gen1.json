@@ -1107,8 +1107,8 @@
       "callbacks": {
         "on_start": ["log_start"],
         "on_residual": [
-          "$source = $effect_state.source",
-          "if $source.fainted or $source.hp == 0:",
+          "$source = func_call(mon_in_position: $effect_state.source_side $effect_state.source_position)",
+          "if !func_call(is_defined: $source) or $source.fainted or $source.hp == 0:",
           ["return"],
           "$damage = func_call(damage: $target expr($target.base_max_hp / 8))",
           "if $damage > 0:",

@@ -1,7 +1,6 @@
 use std::ops::Deref;
 
 use lazy_static::lazy_static;
-use serde::de;
 
 use crate::{
     battle::{
@@ -749,7 +748,7 @@ fn hit_targets(
         core_battle_effects::run_event_for_applying_effect(
             &mut context.applying_effect_context_for_target(target.handle)?,
             fxlang::BattleEvent::DamagingHit,
-            fxlang::VariableInput::from_iter([fxlang::Value::U16(target.outcome.damage())]),
+            fxlang::VariableInput::from_iter([fxlang::Value::U64(target.outcome.damage() as u64)]),
         );
     }
 
@@ -1952,7 +1951,7 @@ fn force_switch(
 }
 
 fn initial_effect_state(
-    context: &EffectContext,
+    context: &mut EffectContext,
     source: Option<MonHandle>,
 ) -> Result<fxlang::EffectState, Error> {
     let mut effect_state = fxlang::EffectState::new();
@@ -1963,6 +1962,11 @@ fn initial_effect_state(
     );
     if let Some(source_handle) = source {
         effect_state.set_source(source_handle);
+        let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
+        effect_state.set_source_side(context.mon().side);
+        if let Ok(source_position) = Mon::position_on_side(&mut context) {
+            effect_state.set_source_position(source_position);
+        }
     }
     Ok(effect_state)
 }
@@ -2029,8 +2033,10 @@ pub fn try_set_status(
 
     // Set the status so that the following effects can use it.
     context.target_mut().status = Some(status);
+
+    let source_handle = context.source_handle();
     context.target_mut().status_state =
-        initial_effect_state(context.as_effect_context(), context.source_handle())?;
+        initial_effect_state(context.as_effect_context_mut(), source_handle)?;
 
     if let Some(condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &status_effect_handle)?
@@ -2152,7 +2158,8 @@ pub fn try_add_volatile(
         return Ok(false);
     }
 
-    let effect_state = initial_effect_state(context.as_effect_context(), context.source_handle())?;
+    let source_handle = context.source_handle();
+    let effect_state = initial_effect_state(context.as_effect_context_mut(), source_handle)?;
     context
         .target_mut()
         .volatiles
@@ -2306,7 +2313,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         );
     }
 
-    let effect_state = initial_effect_state(context.as_effect_context(), None)?;
+    let effect_state = initial_effect_state(context.as_effect_context_mut(), None)?;
     context
         .side_mut()
         .conditions

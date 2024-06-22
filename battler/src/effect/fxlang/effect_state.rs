@@ -26,6 +26,8 @@ pub struct EffectState {
     target_location: Option<isize>,
     source_effect: Option<EffectHandle>,
     source: Option<MonHandle>,
+    source_side: Option<usize>,
+    source_position: Option<usize>,
 }
 
 impl EffectState {
@@ -34,6 +36,8 @@ impl EffectState {
     const TARGET_LOCATION: &'static str = "target_location";
     const SOURCE_EFFECT: &'static str = "source_effect";
     const SOURCE: &'static str = "source";
+    const SOURCE_SIDE: &'static str = "source_side";
+    const SOURCE_POSITION: &'static str = "source_position";
 
     pub fn new() -> Self {
         Self {
@@ -43,6 +47,8 @@ impl EffectState {
             target_location: None,
             source_effect: None,
             source: None,
+            source_side: None,
+            source_position: None,
         }
     }
 
@@ -101,6 +107,26 @@ impl EffectState {
             _ => None,
         };
 
+        let source_side = match values.get(Self::SOURCE_SIDE) {
+            Some(value) => Some(
+                value
+                    .clone()
+                    .side_index()
+                    .wrap_error_with_message("source side must be a side index")?,
+            ),
+            _ => None,
+        };
+
+        let source_position = match values.get(Self::SOURCE_POSITION) {
+            Some(value) => Some(
+                value
+                    .clone()
+                    .integer_usize()
+                    .wrap_error_with_message("source position must be a usize")?,
+            ),
+            _ => None,
+        };
+
         Ok(Self {
             values,
             duration,
@@ -108,6 +134,8 @@ impl EffectState {
             target_location,
             source_effect,
             source,
+            source_side,
+            source_position,
         })
     }
 
@@ -117,7 +145,7 @@ impl EffectState {
 
     pub fn set_duration(&mut self, duration: u8) {
         self.values
-            .insert(Self::DURATION.to_owned(), Value::U16(duration as u16));
+            .insert(Self::DURATION.to_owned(), Value::U64(duration as u64));
         self.duration = Some(duration);
     }
 
@@ -142,13 +170,35 @@ impl EffectState {
     }
 
     pub fn source(&self) -> Option<MonHandle> {
-        self.source.clone()
+        self.source
     }
 
     pub fn set_source(&mut self, source: MonHandle) {
         self.values
             .insert(Self::SOURCE.to_owned(), Value::Mon(source));
         self.source = Some(source);
+    }
+
+    pub fn source_side(&self) -> Option<usize> {
+        self.source_side
+    }
+
+    pub fn set_source_side(&mut self, source_side: usize) {
+        self.values
+            .insert(Self::SOURCE_SIDE.to_owned(), Value::Side(source_side));
+        self.source_side = Some(source_side);
+    }
+
+    pub fn source_position(&self) -> Option<usize> {
+        self.source_position
+    }
+
+    pub fn set_source_position(&mut self, source_position: usize) {
+        self.values.insert(
+            Self::SOURCE_POSITION.to_owned(),
+            Value::U64(source_position as u64),
+        );
+        self.source_position = Some(source_position);
     }
 }
 

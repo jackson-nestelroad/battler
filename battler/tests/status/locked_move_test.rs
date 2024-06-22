@@ -144,7 +144,7 @@ mod locked_move_test {
                 "split|side:1",
                 "damage|mon:Blissey,player-2,1|health:168/315",
                 "damage|mon:Blissey,player-2,1|health:54/100",
-                "start|mon:Blissey,player-1,1|what:Confusion|fatigue",
+                "start|mon:Blissey,player-1,1|condition:Confusion|fatigue",
                 "move|mon:Blissey,player-2,1|name:Tackle|target:Blissey,player-1,1",
                 "split|side:0",
                 "damage|mon:Blissey,player-1,1|health:288/315",

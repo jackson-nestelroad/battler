@@ -13,6 +13,7 @@ use crate::{
         Mon,
         MonContext,
         MoveOutcomeOnTarget,
+        Side,
     },
     battler_error,
     common::{
@@ -82,6 +83,7 @@ pub fn run_function(
         "log_start" => log_start(context, args).map(|()| None),
         "log_status" => log_status(context, args).map(|()| None),
         "max" => max(args).map(|val| Some(val)),
+        "mon_in_position" => mon_in_position(context, args),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
@@ -385,7 +387,7 @@ fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         )?,
         amount,
     )
-    .map(|damage| Value::U16(damage))
+    .map(|damage| Value::U64(damage as u64))
 }
 
 fn direct_damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -620,8 +622,8 @@ fn calculate_damage(
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     match core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)? {
-        MoveOutcomeOnTarget::Damage(damage) => Ok(Value::U16(damage)),
-        MoveOutcomeOnTarget::Success => Ok(Value::U16(0)),
+        MoveOutcomeOnTarget::Damage(damage) => Ok(Value::U64(damage as u64)),
+        MoveOutcomeOnTarget::Success => Ok(Value::U64(0)),
         _ => Ok(Value::Boolean(false)),
     }
 }
@@ -644,7 +646,7 @@ fn calculate_confusion_damage(
         &mut context.mon_context(mon_handle)?,
         base_power,
     )
-    .map(|value| Value::U16(value))
+    .map(|value| Value::U64(value as u64))
 }
 
 fn max(mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -847,4 +849,25 @@ fn has_type(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .mon_type()
         .wrap_error_with_message("invalid type")?;
     Mon::has_type(&mut context.mon_context(mon_handle)?, typ).map(|val| Value::Boolean(val))
+}
+
+fn mon_in_position(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let side_index = args
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let position = args
+        .pop_front()
+        .wrap_error_with_message("missing position")?
+        .integer_usize()
+        .wrap_error_with_message("invalid position")?;
+    Ok(Side::mon_in_position(
+        &mut context.battle_context_mut().side_context(side_index)?,
+        position,
+    )?
+    .map(|mon| Value::Mon(mon)))
 }
