@@ -400,6 +400,13 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an applying effect on the side.
     #[string = "TryHitSide"]
     TryHitSide,
+    /// Runs when a move is checking general immunity for its target.
+    ///
+    /// Can fail th emove (by marking the target as immune).
+    ///
+    /// Runs in the context of the active move itself.
+    #[string = "TryImmunity"]
+    TryImmunity,
     /// Runs when a move's primary hit is being applied to a target.
     ///
     /// Used to override the core battle engine logic. Can fail the move or return an amount of
@@ -477,6 +484,7 @@ impl BattleEvent {
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
             Self::TryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
+            Self::TryImmunity => CommonCallbackType::MoveResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -676,6 +684,7 @@ pub struct Callbacks {
     pub on_try_hit: Callback,
     pub on_try_hit_field: Callback,
     pub on_try_hit_side: Callback,
+    pub on_try_immunity: Callback,
     pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
     pub on_use_move: Callback,
@@ -727,6 +736,7 @@ impl Callbacks {
             BattleEvent::TryHit => Some(&self.on_try_hit),
             BattleEvent::TryHitField => Some(&self.on_try_hit_field),
             BattleEvent::TryHitSide => Some(&self.on_try_hit_side),
+            BattleEvent::TryImmunity => Some(&self.on_try_immunity),
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::UseMove => Some(&self.on_use_move),

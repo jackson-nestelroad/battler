@@ -672,9 +672,9 @@ We use a custom time state variable because confusion does not wear off at the e
     "callbacks": {
       "on_start": [
         "if $source_effect.id == lockedmove:",
-        ["log_start: $this.name fatigue"],
+        ["log_start: fatigue"],
         "else:",
-        ["log_start: $this.name"],
+        ["log_start"],
         "$effect_state.time = func_call(random: 2 6)"
       ],
       "on_end": ["log_end: $this.name"],
@@ -860,7 +860,7 @@ Here is the code in all of its glory:
   "condition": {
     "callbacks": {
       "on_start": [
-        "log_start: $this.name",
+        "log_start",
         "$effect_state.hp = func_call(floor: expr($target.max_hp / 4))",
         "if func_call(has_volatile: $target partiallytrapped):",
         [

@@ -178,9 +178,9 @@
       "callbacks": {
         "on_start": [
           "if $source_effect.id == lockedmove:",
-          ["log_start: $this.name fatigue"],
+          ["log_start: fatigue"],
           "else:",
-          ["log_start: $this.name"],
+          ["log_start"],
           "$effect_state.time = func_call(random: 2 6)"
         ],
         "on_end": ["log_end: $this.name"],

@@ -76,10 +76,11 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHitField, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHitSide, callbacks)?;
-            parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TryImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryPrimaryHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;

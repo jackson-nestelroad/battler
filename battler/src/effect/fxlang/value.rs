@@ -286,7 +286,10 @@ impl Value {
     pub fn boost(self) -> Result<Boost, Error> {
         match self {
             Self::Boost(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
+            Self::String(val) => {
+                Boost::from_str(&val).wrap_error_with_message("invalid boost from string")
+            }
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boost)),
         }
     }
 
@@ -295,6 +298,17 @@ impl Value {
         match self {
             Self::BoostTable(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
+        }
+    }
+
+    /// Consumes the value into a [`Type`].
+    pub fn mon_type(self) -> Result<Type, Error> {
+        match self {
+            Self::Type(val) => Ok(val),
+            Self::String(val) => {
+                Type::from_str(&val).wrap_error_with_message("invalid type from string")
+            }
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Type)),
         }
     }
 }

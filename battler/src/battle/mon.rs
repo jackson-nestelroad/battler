@@ -465,7 +465,7 @@ impl Mon {
         context.mon().actual_health()
     }
 
-    pub fn types(context: &MonContext) -> Result<Vec<Type>, Error> {
+    pub fn types(context: &mut MonContext) -> Result<Vec<Type>, Error> {
         // TODO: Run type event for the Mon, since there could be volatile effects here.
         if !context.mon().types.is_empty() {
             return Ok(context.mon().types.clone());
@@ -473,7 +473,7 @@ impl Mon {
         return Ok(Vec::from_iter([Type::Normal]));
     }
 
-    pub fn has_type(context: &MonContext, typ: Type) -> Result<bool, Error> {
+    pub fn has_type(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
         let types = Self::types(context)?;
         return Ok(types.contains(&typ));
     }
@@ -857,6 +857,9 @@ impl Mon {
             context.mon_mut().needs_switch = false;
             context.mon_mut().force_switch = false;
         }
+
+        context.mon_mut().volatiles.clear();
+
         let species = context.mon().species.clone();
         Self::set_species(context, species, false)?;
         Ok(())
@@ -965,9 +968,9 @@ impl Mon {
                     .get_by_id(&move_slot.id)
                     .into_result()?;
                 // Some moves may have a special target for non-Ghost types.
-                let target = if let Some(non_ghost_target) = &mov.data.non_ghost_target {
+                let target = if let Some(non_ghost_target) = mov.data.non_ghost_target {
                     if !Self::has_type(context, Type::Ghost)? {
-                        non_ghost_target.clone()
+                        non_ghost_target
                     } else {
                         move_slot.target
                     }
@@ -1006,9 +1009,14 @@ impl Mon {
     }
 
     /// Switches the Mon out of the given position for the player.
-    pub fn switch_out(&mut self) {
-        self.active = false;
-        self.needs_switch = false;
+    pub fn switch_out(context: &mut MonContext) -> Result<(), Error> {
+        context.mon_mut().active = false;
+        context.mon_mut().needs_switch = false;
+
+        // TODO: SwitchOut event.
+
+        Mon::clear_volatile(context, false)?;
+        Ok(())
     }
 
     /// Sets the active move.

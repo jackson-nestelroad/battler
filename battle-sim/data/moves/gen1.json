@@ -1094,7 +1094,28 @@
     "pp": 10,
     "accuracy": 90,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "leechseed"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_immunity": ["return expr(!func_call(has_type: $target grass))"]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_residual": [
+          "$source = $effect_state.source",
+          "if $source.fainted or $source.hp == 0:",
+          ["return"],
+          "$damage = func_call(damage: $target expr($target.base_max_hp / 8))",
+          "if $damage > 0:",
+          ["heal: $source $damage $target"]
+        ]
+      }
+    }
   },
   "growth": {
     "name": "Growth",
@@ -2402,7 +2423,7 @@
     "condition": {
       "callbacks": {
         "on_start": [
-          "log_start: $this.name",
+          "log_start",
           "$effect_state.hp = func_call(floor: expr($target.max_hp / 4))",
           "if func_call(has_volatile: $target partiallytrapped):",
           [

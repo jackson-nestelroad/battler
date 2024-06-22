@@ -101,7 +101,9 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
         ))?;
     if let Some(mon) = prev {
         let mut context = context.as_battle_context_mut().mon_context(mon)?;
-        context.mon_mut().switch_out();
+        if context.mon().hp > 0 {
+            Mon::switch_out(&mut context)?;
+        }
     }
     Mon::switch_in(context, position);
     context.player_mut().active[position] = Some(context.mon_handle());
@@ -951,7 +953,7 @@ fn modify_damage(
 
     // STAB.
     let move_type = context.active_move().data.primary_type;
-    let stab = Mon::has_type(&context.as_mon_context(), move_type)?;
+    let stab = Mon::has_type(context.as_mon_context_mut(), move_type)?;
     if stab {
         let stab_modifier = context
             .active_move()
@@ -1147,17 +1149,25 @@ mod direct_move_step {
                 .flags
                 .contains(&MoveFlags::Powder);
 
-            let mut context = context.target_mon_context(target.handle)?;
-            let types = Mon::types(&mut context)?;
-            let immune = is_powder
+            let types = Mon::types(&mut context.target_mon_context(target.handle)?)?;
+            let immune = (is_powder
                 && context
                     .battle()
-                    .check_multiple_type_immunity_against_effect(&types, &Id::from_known("powder"));
-            // TODO: TryImmunity event.
+                    .check_multiple_type_immunity_against_effect(
+                        &types,
+                        &Id::from_known("powder"),
+                    ))
+                || !core_battle_effects::run_active_move_event_expecting_bool(
+                    context,
+                    fxlang::BattleEvent::TryImmunity,
+                    core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                )
+                .unwrap_or(true);
+
             // TODO: Prankster immunity.
 
             if immune {
-                core_battle_logs::immune(&mut context)?;
+                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?)?;
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -1188,7 +1198,7 @@ mod direct_move_step {
             // TODO: Skip if target is semi-invulnerable.
             let mut immune = context.mon().level < context.target_mon().level;
             if let OhkoType::Type(typ) = ohko {
-                if Mon::has_type(&context.target_mon_context()?, typ)? {
+                if Mon::has_type(&mut context.target_mon_context()?, typ)? {
                     immune = true;
                 }
             }
@@ -1202,7 +1212,7 @@ mod direct_move_step {
                 if context.mon().level >= context.target_mon().level {
                     let user_has_ohko_type = match ohko {
                         OhkoType::Always => true,
-                        OhkoType::Type(typ) => Mon::has_type(context.as_mon_context(), typ)?,
+                        OhkoType::Type(typ) => Mon::has_type(context.as_mon_context_mut(), typ)?,
                     };
                     if user_has_ohko_type {
                         *accuracy += context.mon().level - context.target_mon().level;
@@ -1402,14 +1412,19 @@ pub fn direct_damage(
     Ok(damage)
 }
 
-pub fn damage(context: &mut ApplyingEffectContext, damage: u16) -> Result<(), Error> {
+pub fn damage(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Error> {
     let target = context.target_handle();
     let source = context.source_handle();
     let mut targets = [HitTargetState::new(
         target,
         MoveOutcomeOnTarget::Damage(damage),
     )];
-    apply_spread_damage(context.as_effect_context_mut(), source, &mut targets)
+    apply_spread_damage(context.as_effect_context_mut(), source, &mut targets)?;
+    Ok(targets
+        .get(0)
+        .wrap_error_with_message("expected target result to exist after applying spread damage")?
+        .outcome
+        .damage())
 }
 
 fn apply_spread_damage(
