@@ -1107,6 +1107,7 @@
       "callbacks": {
         "on_start": ["log_start"],
         "on_residual": [
+          "# Leech Seed activates as long as there is a Mon in the original source position to heal.",
           "$source = func_call(mon_in_position: $effect_state.source_side $effect_state.source_position)",
           "if !func_call(is_defined: $source) or $source.fainted or $source.hp == 0:",
           ["return"],
