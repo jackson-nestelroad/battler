@@ -47,6 +47,7 @@ use crate::{
         MoveCategory,
         MoveTarget,
         SelfDestructType,
+        SwitchType,
     },
     rng::rand_util,
 };
@@ -74,13 +75,17 @@ where
 }
 
 /// Switches a Mon into the given position.
-pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error> {
+pub fn switch_in(
+    context: &mut MonContext,
+    position: usize,
+    mut switch_type: Option<SwitchType>,
+) -> Result<bool, Error> {
     if context.mon_mut().active {
         core_battle_logs::hint(
             context.as_battle_context_mut(),
             "A switch failed because the Mon trying to switch in is already in.",
         )?;
-        return Ok(());
+        return Ok(false);
     }
 
     let active_len = context.player().active.len();
@@ -90,7 +95,7 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
         ));
     }
 
-    let prev = context
+    let previous_mon = context
         .player()
         .active
         .get(position)
@@ -98,20 +103,65 @@ pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error>
         .wrap_error_with_format(format_args!(
             "expected {position} to be a valid index to active Mons"
         ))?;
-    if let Some(mon) = prev {
-        let mut context = context.as_battle_context_mut().mon_context(mon)?;
+    if let Some(previous_mon) = previous_mon {
+        let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
         if context.mon().hp > 0 {
-            Mon::switch_out(&mut context)?;
+            if let Some(previous_mon_switch_type) = context.mon().needs_switch {
+                switch_type = Some(previous_mon_switch_type);
+            }
+
+            context.mon_mut().being_called_back = true;
+
+            if !context.mon().skip_before_switch_out {
+                // TODO: BeforeSwitchOut event.
+                // TODO: Update event.
+            }
+            context.mon_mut().skip_before_switch_out = false;
+
+            // TODO: SwitchOut event.
+
+            // The Mon could faint here, which cancels the switch (Pursuit).
+            if context.mon().hp == 0 {
+                return Ok(false);
+            }
+
+            // TODO: Ability End event.
+
+            if let Some(SwitchType::CopyVolatile) = switch_type {
+                // TODO: Copy volatiles to the new Mon.
+            }
+
+            Mon::clear_volatile(&mut context, true)?;
         }
+
+        context.mon_mut().active = false;
+        context.mon_mut().needs_switch = None;
+        context.mon_mut().stats_raised_this_turn = false;
+        context.mon_mut().stats_lowered_this_turn = false;
     }
+
     Mon::switch_in(context, position);
     context.player_mut().active[position] = Some(context.mon_handle());
 
     core_battle_logs::switch(context)?;
 
+    run_switch_in_events(context)
+}
+
+pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
     core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::SwitchIn);
 
-    Ok(())
+    // TODO: EntryHazard event.
+
+    if context.mon().hp == 0 {
+        return Ok(false);
+    }
+    if !context.mon().fainted {
+        // TODO: Ability Start event.
+        // TODO: Item Start event.
+    }
+
+    Ok(true)
 }
 
 fn register_active_move(context: &mut MonContext, move_id: &Id) -> Result<MoveHandle, Error> {
@@ -1543,7 +1593,8 @@ pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Err
     if context.mon().active {
         return Ok(false);
     }
-    switch_in(&mut context, position)?;
+    let switch_type = context.mon().force_switch.unwrap_or_default();
+    switch_in(&mut context, position, Some(switch_type))?;
     Ok(true)
 }
 
@@ -1758,7 +1809,7 @@ fn apply_move_effects(
             core_battle_logs::fail(context.as_mon_context_mut())?;
         }
     } else if context.active_move().data.user_switch.is_some() && context.mon().hp > 0 {
-        context.mon_mut().needs_switch = true;
+        context.mon_mut().needs_switch = context.active_move().data.user_switch;
     }
 
     Ok(())
@@ -1944,7 +1995,7 @@ fn force_switch(
             continue;
         }
         // TODO: DragOut event.
-        context.target_mon_mut().force_switch = true;
+        context.target_mon_mut().force_switch = Some(SwitchType::Normal);
     }
 
     Ok(())

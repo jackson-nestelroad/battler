@@ -34,7 +34,7 @@ use crate::{
         MultihitType,
         OhkoType,
         SelfDestructType,
-        UserSwitchType,
+        SwitchType,
     },
 };
 
@@ -125,7 +125,7 @@ pub struct MoveData {
     #[serde(default)]
     pub thaws_target: bool,
     /// Type of switch that occurs on the user.
-    pub user_switch: Option<UserSwitchType>,
+    pub user_switch: Option<SwitchType>,
     /// How the user self destructs.
     pub self_destruct: Option<SelfDestructType>,
     /// Does the move break protect?

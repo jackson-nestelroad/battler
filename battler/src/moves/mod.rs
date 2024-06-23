@@ -8,7 +8,7 @@ mod move_target;
 mod multihit_type;
 mod ohko_type;
 mod self_destruct_type;
-mod user_switch_type;
+mod switch_type;
 
 pub use accuracy::Accuracy;
 pub use damage_type::DamageType;
@@ -26,4 +26,4 @@ pub use r#move::{
     SecondaryEffect,
 };
 pub use self_destruct_type::SelfDestructType;
-pub use user_switch_type::UserSwitchType;
+pub use switch_type::SwitchType;

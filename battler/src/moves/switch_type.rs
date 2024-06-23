@@ -1,6 +1,8 @@
 use std::{
-    fmt,
-    fmt::Display,
+    fmt::{
+        self,
+        Display,
+    },
     str::FromStr,
 };
 
@@ -20,15 +22,16 @@ use crate::{
 };
 
 /// The type of user switch performed when using a move.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UserSwitchType {
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum SwitchType {
     /// Normal switch out.
+    #[default]
     Normal,
     /// Switch out that copies all volatile effects to the replacement Mon.
     CopyVolatile,
 }
 
-impl Display for UserSwitchType {
+impl Display for SwitchType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Normal => write!(f, "{}", true),
@@ -37,7 +40,7 @@ impl Display for UserSwitchType {
     }
 }
 
-impl FromStr for UserSwitchType {
+impl FromStr for SwitchType {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -47,7 +50,7 @@ impl FromStr for UserSwitchType {
     }
 }
 
-impl Serialize for UserSwitchType {
+impl Serialize for SwitchType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -62,7 +65,7 @@ impl Serialize for UserSwitchType {
 struct UserSwitchTypeVisitor;
 
 impl<'de> Visitor<'de> for UserSwitchTypeVisitor {
-    type Value = UserSwitchType;
+    type Value = SwitchType;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(formatter, "true or \"copyvolatile\"")
@@ -87,7 +90,7 @@ impl<'de> Visitor<'de> for UserSwitchTypeVisitor {
     }
 }
 
-impl<'de> Deserialize<'de> for UserSwitchType {
+impl<'de> Deserialize<'de> for SwitchType {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -100,12 +103,12 @@ impl<'de> Deserialize<'de> for UserSwitchType {
 mod user_switch_type_tests {
     use crate::{
         common::test_serialization,
-        moves::UserSwitchType,
+        moves::SwitchType,
     };
 
     #[test]
     fn serializes_to_string() {
-        test_serialization(UserSwitchType::Normal, true);
-        test_serialization(UserSwitchType::CopyVolatile, "\"copyvolatile\"");
+        test_serialization(SwitchType::Normal, true);
+        test_serialization(SwitchType::CopyVolatile, "\"copyvolatile\"");
     }
 }

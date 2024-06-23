@@ -342,7 +342,11 @@ impl Player {
     /// Counts the number of Mons that must switch out.
     pub fn count_must_switch_out(context: &mut PlayerContext) -> usize {
         Self::active_mon_handles(context)
-            .filter(|mon_handle| context.mon(**mon_handle).is_ok_and(|mon| mon.needs_switch))
+            .filter(|mon_handle| {
+                context
+                    .mon(**mon_handle)
+                    .is_ok_and(|mon| mon.needs_switch.is_some())
+            })
             .count()
     }
 
@@ -644,7 +648,9 @@ impl Player {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
                         mon.is_none()
                             || mon.is_some_and(|mon| {
-                                context.mon(mon).is_ok_and(|mon| !mon.needs_switch)
+                                context
+                                    .mon(mon)
+                                    .is_ok_and(|mon| !mon.needs_switch.is_some())
                             })
                     }) {
                         Self::choose_pass(context)?;
@@ -665,7 +671,7 @@ impl Player {
                 let mon = context.mon(active_mon_handle)?;
                 match context.player().request_type() {
                     Some(RequestType::Switch) => {
-                        if mon.needs_switch {
+                        if mon.needs_switch.is_some() {
                             if context.player().choice.forced_passes_left == 0 {
                                 return Err(battler_error!(
                                     "cannot pass: you must select a Mon to replace {}",
@@ -838,7 +844,7 @@ impl Player {
 
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
         for mon in Self::active_mon_handles(&context) {
-            if context.mon(*mon)?.needs_switch {
+            if context.mon(*mon)?.needs_switch.is_some() {
                 return Ok(true);
             }
         }

@@ -73,6 +73,7 @@ use crate::{
     moves::{
         Move,
         MoveTarget,
+        SwitchType,
     },
     rng::{
         rand_util,
@@ -762,7 +763,7 @@ impl<'d> CoreBattle<'d> {
                 }
                 let mut needs_switch = Vec::new();
                 for (slot, mon) in Player::field_positions_with_active_mon(&context) {
-                    if context.mon(*mon)?.needs_switch {
+                    if context.mon(*mon)?.needs_switch.is_some() {
                         needs_switch.push(slot);
                     }
                 }
@@ -916,7 +917,7 @@ impl<'d> CoreBattle<'d> {
                         .collect::<Vec<_>>();
                 for (position, mon) in switch_ins {
                     let mut context = context.mon_context(mon)?;
-                    core_battle_actions::switch_in(&mut context, position)?;
+                    core_battle_actions::switch_in(&mut context, position, None)?;
                 }
                 context.battle_mut().mid_turn = true;
             }
@@ -930,7 +931,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::Switch(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                core_battle_actions::switch_in(&mut context, action.position)?;
+                core_battle_actions::switch_in(&mut context, action.position, None)?;
             }
             Action::Move(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
@@ -972,11 +973,11 @@ impl<'d> CoreBattle<'d> {
             .collect::<Vec<_>>();
         for mon in mons {
             let mut context = context.mon_context(mon)?;
-            if context.mon().force_switch && context.mon().hp > 0 {
+            if context.mon().force_switch.is_some() && context.mon().hp > 0 {
                 let position = context.mon().active_position;
                 core_battle_actions::drag_in(context.as_player_context_mut(), position)?;
             }
-            context.mon_mut().force_switch = false;
+            context.mon_mut().force_switch = None;
         }
 
         Self::clear_active_move(context)?;
@@ -1012,7 +1013,7 @@ impl<'d> CoreBattle<'d> {
                         .collect::<Vec<_>>()
                         .into_iter()
                     {
-                        context.mon_mut(mon)?.needs_switch = false;
+                        context.mon_mut(mon)?.needs_switch = None;
                     }
                 } else {
                     // Switch out will occur mid turn.
@@ -1025,7 +1026,7 @@ impl<'d> CoreBattle<'d> {
                         .into_iter()
                     {
                         let mut context = context.mon_context(mon)?;
-                        if context.mon().needs_switch {
+                        if context.mon().needs_switch.is_some() {
                             // TODO: BeforeSwitchOut event.
                             context.mon_mut().skip_before_switch_out = true;
                             // Mon may have fainted here.
@@ -1061,7 +1062,7 @@ impl<'d> CoreBattle<'d> {
             let mut context = context.mon_context(mon)?;
             if context.mon().fainted {
                 context.mon_mut().status = Some(Id::from_known("fnt"));
-                context.mon_mut().needs_switch = true;
+                context.mon_mut().needs_switch = Some(SwitchType::Normal);
             }
         }
         Ok(())

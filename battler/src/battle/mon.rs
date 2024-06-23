@@ -58,7 +58,10 @@ use crate::{
         StatTable,
         Type,
     },
-    moves::MoveTarget,
+    moves::{
+        MoveTarget,
+        SwitchType,
+    },
     teams::MonData,
 };
 
@@ -234,9 +237,10 @@ pub struct Mon {
     pub speed: u16,
     pub weight: u32,
     pub fainted: bool,
-    pub needs_switch: bool,
-    pub force_switch: bool,
+    pub needs_switch: Option<SwitchType>,
+    pub force_switch: Option<SwitchType>,
     pub skip_before_switch_out: bool,
+    pub being_called_back: bool,
     pub trapped: bool,
     pub can_mega_evo: bool,
 
@@ -357,9 +361,10 @@ impl Mon {
             speed: 0,
             weight: 1,
             fainted: false,
-            needs_switch: false,
-            force_switch: false,
+            needs_switch: None,
+            force_switch: None,
             skip_before_switch_out: false,
+            being_called_back: false,
             trapped: false,
             can_mega_evo: false,
 
@@ -852,10 +857,10 @@ impl Mon {
 }
 
 impl Mon {
-    fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<(), Error> {
+    pub fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<(), Error> {
         if clear_switch_flags {
-            context.mon_mut().needs_switch = false;
-            context.mon_mut().force_switch = false;
+            context.mon_mut().needs_switch = None;
+            context.mon_mut().force_switch = None;
         }
 
         context.mon_mut().volatiles.clear();
@@ -1008,17 +1013,6 @@ impl Mon {
         mon.ability.priority = ability_priority
     }
 
-    /// Switches the Mon out of the given position for the player.
-    pub fn switch_out(context: &mut MonContext) -> Result<(), Error> {
-        context.mon_mut().active = false;
-        context.mon_mut().needs_switch = false;
-
-        // TODO: SwitchOut event.
-
-        Mon::clear_volatile(context, false)?;
-        Ok(())
-    }
-
     /// Sets the active move.
     pub fn set_active_move(&mut self, active_move: MoveHandle) {
         self.active_move = Some(active_move);
@@ -1105,7 +1099,7 @@ impl Mon {
             return Ok(());
         }
         context.mon_mut().hp = 0;
-        context.mon_mut().needs_switch = false;
+        context.mon_mut().needs_switch = None;
         let mon_handle = context.mon_handle();
         context.battle_mut().faint_queue.push_back(FaintEntry {
             target: mon_handle,
