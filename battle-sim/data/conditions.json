@@ -183,7 +183,7 @@
           ["log_start"],
           "$effect_state.time = func_call(random: 2 6)"
         ],
-        "on_end": ["log_end: $this.name"],
+        "on_end": ["log_end"],
         "on_before_move": {
           "priority": 3,
           "program": [
@@ -244,13 +244,15 @@
             "if !$source.active or $source.hp == 0:",
             [
               "remove_volatile: $target $this.id no_events",
-              "log_end: $effect_state.source_effect.name silent",
+              "log_end: no_effect str('move:{}', $effect_state.source_effect.name) silent",
               "return"
             ],
             "damage: expr($target.base_max_hp / $effect_state.divisor) $effect_state.source_effect"
           ]
         },
-        "on_end": ["log_end: $effect_state.source_effect.name"],
+        "on_end": [
+          "log_end: no_effect str('move:{}', $effect_state.source_effect.name)"
+        ],
         "on_trap_mon": ["trap: $mon"]
       }
     }

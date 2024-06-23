@@ -173,8 +173,8 @@ fn add_effect_to_args(
 fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let with_target = has_special_string_flag(&mut args, "with_target");
     let with_source = has_special_string_flag(&mut args, "with_source");
-    let no_effect = has_special_string_flag(&mut args, "no_effect");
 
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
     if !no_effect {
         add_effect_to_args(context, &mut args)?;
     }
@@ -200,7 +200,10 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
 }
 
 fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    add_effect_to_args(context, &mut args)?;
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
+    if !no_effect {
+        add_effect_to_args(context, &mut args)?;
+    }
 
     args.push_front(Value::String(format!(
         "mon:{}",
@@ -211,7 +214,10 @@ fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
 }
 
 fn log_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    add_effect_to_args(context, &mut args)?;
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
+    if !no_effect {
+        add_effect_to_args(context, &mut args)?;
+    }
 
     args.push_front(Value::String(format!(
         "mon:{}",
@@ -225,12 +231,12 @@ fn log_side_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) ->
     let side_index = context
         .side_index()
         .wrap_error_with_message("context has no side index")?;
-    let condition = args
-        .pop_front()
-        .wrap_error_with_message("missing side condition name")?
-        .string()
-        .wrap_error_with_message("invalid side condition name")?;
-    args.push_front(Value::String(format!("what:{condition}")));
+
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
+    if !no_effect {
+        add_effect_to_args(context, &mut args)?;
+    }
+
     args.push_front(Value::String(format!("side:{side_index}")));
 
     log_internal(context.battle_context_mut(), "sidestart".to_owned(), args)
@@ -240,12 +246,12 @@ fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
     let side_index = context
         .side_index()
         .wrap_error_with_message("context has no side index")?;
-    let condition = args
-        .pop_front()
-        .wrap_error_with_message("missing side condition name")?
-        .string()
-        .wrap_error_with_message("invalid side condition name")?;
-    args.push_front(Value::String(format!("what:{condition}")));
+
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
+    if !no_effect {
+        add_effect_to_args(context, &mut args)?;
+    }
+
     args.push_front(Value::String(format!("side:{side_index}")));
 
     log_internal(context.battle_context_mut(), "sideend".to_owned(), args)
