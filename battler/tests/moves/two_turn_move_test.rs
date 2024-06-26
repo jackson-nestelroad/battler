@@ -105,9 +105,8 @@ mod two_turn_move_test {
                     {
                         "name": "Razor Wind",
                         "id": "razorwind",
-                        "pp": 10,
-                        "max_pp": 10,
-                        "target": "AllAdjacentFoes",
+                        "pp": 0,
+                        "max_pp": 0,
                         "disabled": false
                     }
                 ],
@@ -164,8 +163,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Razor Wind",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Razor Wind|from:Razor Wind",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:89/143",
-                "damage|mon:Pidgeot,player-2,1|health:63/100",
+                "damage|mon:Pidgeot,player-2,1|health:94/143",
+                "damage|mon:Pidgeot,player-2,1|health:66/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3"
@@ -180,7 +179,7 @@ mod two_turn_move_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
-            676027139780867,
+            1035924651236077,
             two_pidgeot().unwrap(),
             two_pidgeot().unwrap(),
         )
@@ -197,9 +196,8 @@ mod two_turn_move_test {
                     {
                         "name": "Fly",
                         "id": "fly",
-                        "pp": 15,
-                        "max_pp": 15,
-                        "target": "Any",
+                        "pp": 0,
+                        "max_pp": 0,
                         "disabled": false
                     }
                 ],
@@ -264,8 +262,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:86/143",
-                "damage|mon:Pidgeot,player-2,1|health:61/100",
+                "damage|mon:Pidgeot,player-2,1|health:79/143",
+                "damage|mon:Pidgeot,player-2,1|health:56/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3",
@@ -284,8 +282,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:31/143",
-                "damage|mon:Pidgeot,player-2,1|health:22/100",
+                "damage|mon:Pidgeot,player-2,1|health:21/143",
+                "damage|mon:Pidgeot,player-2,1|health:15/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:5"

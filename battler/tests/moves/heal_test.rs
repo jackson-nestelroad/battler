@@ -122,9 +122,9 @@ mod heal_test {
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "move|mon:Charizard,player-2,1|name:Recover|target:Charizard,player-2,1",
+                "move|mon:Charizard,player-2,1|name:Recover|noanim",
                 "fail|mon:Charizard,player-2,1|what:heal",
-                "move|mon:Charizard,player-1,1|name:Recover|target:Charizard,player-1,1",
+                "move|mon:Charizard,player-1,1|name:Recover|noanim",
                 "fail|mon:Charizard,player-1,1|what:heal",
                 "residual",
                 "turn|turn:5"

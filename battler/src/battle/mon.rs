@@ -123,7 +123,7 @@ impl Display for MonPositionDetails<'_> {
 }
 
 /// A single move slot for a Mon.
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MoveSlot {
     pub id: Id,
     pub name: String,
@@ -131,7 +131,6 @@ pub struct MoveSlot {
     pub max_pp: u8,
     pub target: MoveTarget,
     pub disabled: bool,
-    pub disabled_source: Option<String>,
     pub used: bool,
     pub simulated: bool,
 }
@@ -173,7 +172,7 @@ pub struct MonMoveSlotData {
     pub id: Id,
     pub pp: u8,
     pub max_pp: u8,
-    pub target: MoveTarget,
+    pub target: Option<MoveTarget>,
     pub disabled: bool,
 }
 
@@ -294,7 +293,6 @@ impl Mon {
                 max_pp,
                 target: mov.data.target.clone(),
                 disabled: false,
-                disabled_source: None,
                 used: false,
                 simulated: false,
             })
@@ -490,9 +488,18 @@ impl Mon {
         ))
     }
 
-    pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>, Error> {
+    fn moves_and_locked_move(
+        context: &mut MonContext,
+    ) -> Result<(Vec<MonMoveSlotData>, Option<String>), Error> {
         let locked_move = Self::locked_move(context)?;
-        Self::moves_with_locked_move(context, locked_move.as_deref())
+        let moves = Self::moves_with_locked_move(context, locked_move.as_deref())?;
+        let has_usable_move = moves.iter().any(|mov| !mov.disabled);
+        let moves = if has_usable_move { moves } else { Vec::new() };
+        Ok((moves, locked_move))
+    }
+
+    pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>, Error> {
+        Self::moves_and_locked_move(context).map(|(moves, _)| moves)
     }
 
     /// The Mon's current position on its side.
@@ -764,13 +771,13 @@ impl Mon {
         Ok(())
     }
 
-    fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
+    pub fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
         self.move_slots
             .iter()
             .find(|move_slot| &move_slot.id == move_id)
     }
 
-    fn move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
+    pub fn move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
         self.move_slots
             .iter_mut()
             .find(|move_slot| &move_slot.id == move_id)
@@ -820,16 +827,14 @@ impl Mon {
     }
 
     pub fn move_request(context: &mut MonContext) -> Result<MonMoveRequest, Error> {
-        let mut locked_move = Self::locked_move(context)?;
-        let mut moves = Self::moves_with_locked_move(context, locked_move.as_deref())?;
-        let has_usable_move = moves.iter().any(|mov| !mov.disabled);
-        if moves.is_empty() || !has_usable_move {
+        let (mut moves, mut locked_move) = Self::moves_and_locked_move(context)?;
+        if moves.is_empty() {
             // No moves, the Mon must use Struggle.
             locked_move = Some("struggle".to_owned());
             moves = Vec::from_iter([MonMoveSlotData {
                 name: "Struggle".to_owned(),
                 id: Id::from_known("struggle"),
-                target: MoveTarget::RandomNormal,
+                target: Some(MoveTarget::RandomNormal),
                 pp: 1,
                 max_pp: 1,
                 disabled: false,
@@ -935,7 +940,7 @@ impl Mon {
                     id: Id::from_known("recharge"),
                     pp: 0,
                     max_pp: 0,
-                    target: MoveTarget::User,
+                    target: Some(MoveTarget::User),
                     disabled: false,
                 }]));
             }
@@ -950,10 +955,10 @@ impl Mon {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: locked_move.name.clone(),
                     id: locked_move.id.clone(),
-                    pp: locked_move.pp,
-                    max_pp: locked_move.max_pp,
-                    target: locked_move.target.clone(),
-                    disabled: locked_move.disabled,
+                    pp: 0,
+                    max_pp: 0,
+                    target: None,
+                    disabled: false,
                 }]));
             }
             return Err(battler_error!(
@@ -991,7 +996,7 @@ impl Mon {
                     id: move_slot.id,
                     pp: move_slot.pp,
                     max_pp: move_slot.max_pp,
-                    target,
+                    target: Some(target),
                     disabled,
                 })
             })
@@ -1165,10 +1170,10 @@ impl Mon {
 
         for move_slot in &mut context.mon_mut().move_slots {
             move_slot.disabled = false;
-            move_slot.disabled_source = None;
         }
 
-        // TODO: DisableMove event.
+        core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::DisableMove);
+
         // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
@@ -1178,6 +1183,16 @@ impl Mon {
     pub fn get_weight(context: &mut MonContext) -> u32 {
         // TODO: ModifyWeight event.
         context.mon().weight
+    }
+
+    pub fn disable_move(context: &mut MonContext, move_id: &Id) -> Result<(), Error> {
+        match context.mon_mut().move_slot_mut(move_id) {
+            Some(move_slot) => {
+                move_slot.disabled = true;
+            }
+            None => (),
+        }
+        Ok(())
     }
 }
 

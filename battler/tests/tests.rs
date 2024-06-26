@@ -3,6 +3,7 @@ mod moves {
     mod crash_damage_test;
     mod crit_ratio_test;
     mod custom_damage_test;
+    mod disable_test;
     mod doubles_damage_calculation_test;
     mod drain_test;
     mod heal_test;

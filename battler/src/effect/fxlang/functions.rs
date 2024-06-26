@@ -59,6 +59,7 @@ pub fn run_function(
         "damage" => damage(context, args).map(|val| Some(val)),
         "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
         "direct_damage" => direct_damage(context, args).map(|()| None),
+        "disable_move" => disable_move(context, args).map(|()| None),
         "do_not_animate_last_move" => {
             do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
         }
@@ -201,6 +202,28 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
 
 fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let no_effect = has_special_string_flag(&mut args, "no_effect");
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+
+    if with_source_effect {
+        args.push_back(Value::String(format!(
+            "from:{}",
+            context
+                .source_effect_context()?
+                .wrap_error_with_message("effect has no source effect")?
+                .effect()
+                .full_name()
+        )));
+
+        if context.effect_handle().is_ability() {
+            if let Some(source_context) = context.source_context()? {
+                args.push_back(Value::String(format!(
+                    "of:{}",
+                    Mon::position_details(&source_context)?
+                )));
+            }
+        }
+    }
+
     if !no_effect {
         add_effect_to_args(context, &mut args)?;
     }
@@ -629,7 +652,7 @@ fn calculate_damage(
         .wrap_error_with_message("invalid target")?;
     match core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)? {
         MoveOutcomeOnTarget::Damage(damage) => Ok(Value::U64(damage as u64)),
-        MoveOutcomeOnTarget::Success => Ok(Value::U64(0)),
+        MoveOutcomeOnTarget::Success | MoveOutcomeOnTarget::Unknown => Ok(Value::U64(0)),
         _ => Ok(Value::Boolean(false)),
     }
 }
@@ -703,7 +726,6 @@ fn heal(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<()
         damage,
         source_handle,
         Some(&effect),
-        false,
     )?;
     Ok(())
 }
@@ -773,7 +795,7 @@ fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
         context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
     let mut context = context.change_target_context(mon_handle)?;
     core_battle_actions::try_set_status(&mut context, Some(status), false)
-        .map(|val| Value::Boolean(val))
+        .map(|val| Value::Boolean(val.success()))
 }
 
 fn is_ally(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -876,4 +898,19 @@ fn mon_in_position(
         position,
     )?
     .map(|mon| Value::Mon(mon)))
+}
+
+fn disable_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    Mon::disable_move(&mut context.mon_context(mon_handle)?, &move_id)
 }

@@ -202,6 +202,11 @@ impl<'battle, 'data> Context<'battle, 'data> {
     pub fn active_move_mut(&self, active_move_handle: MoveHandle) -> Result<&mut Move, Error> {
         self.cache.active_move(self.battle(), active_move_handle)
     }
+
+    /// Clears the context cache, dropping all borrowed state.
+    pub fn clear_context_cache(&mut self) {
+        self.cache.clear();
+    }
 }
 
 // Manual `Drop` implementation, so that the borrow checker does not allow `Context` references to

@@ -93,32 +93,34 @@ impl BattleRegistry {
         self.this_turn_moves.register(mov)
     }
 
-    /// Returns a reference to the [`Move`] (from this turn) by [`MoveHandle`].
-    pub fn this_turn_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>, Error> {
-        self.this_turn_moves
-            .get(mov)
-            .wrap_error_with_format(format_args!("failed to access move from this turn {mov}"))
+    /// Returns a reference to the [`Move`] by [`MoveHandle`].
+    ///
+    /// The move must be from this turn or last turn.
+    pub fn active_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>, Error> {
+        match self.this_turn_moves.get(mov) {
+            Ok(active_move) => Ok(active_move),
+            _ => match self.last_turn_moves.get(mov) {
+                Ok(active_move) => Ok(active_move),
+                _ => Err(battler_error!(
+                    "access move {mov} does not exist in this turn or last turn"
+                )),
+            },
+        }
     }
 
-    /// Returns a mutable reference to the [`Move`] (from this turn) by [`MoveHandle`].
-    pub fn this_turn_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>, Error> {
-        self.this_turn_moves
-            .get_mut(mov)
-            .wrap_error_with_format(format_args!("failed to access move from this turn {mov}"))
-    }
-
-    /// Returns a reference to the [`Move`] (from last turn) by [`MoveHandle`].
-    pub fn last_turn_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>, Error> {
-        self.this_turn_moves
-            .get(mov)
-            .wrap_error_with_format(format_args!("failed to access move from last turn {mov}"))
-    }
-
-    /// Returns a mutable reference to the [`Move`] (from last turn) by [`MoveHandle`].
-    pub fn last_turn_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>, Error> {
-        self.this_turn_moves
-            .get_mut(mov)
-            .wrap_error_with_format(format_args!("failed to access move from last turn {mov}"))
+    /// Returns a mutable reference to the [`Move`] by [`MoveHandle`].
+    ///
+    /// The move must be from this turn or last turn.
+    pub fn active_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>, Error> {
+        match self.this_turn_moves.get_mut(mov) {
+            Ok(active_move) => Ok(active_move),
+            _ => match self.last_turn_moves.get_mut(mov) {
+                Ok(active_move) => Ok(active_move),
+                _ => Err(battler_error!(
+                    "access move {mov} does not exist in this turn or last turn"
+                )),
+            },
+        }
     }
 
     /// Move the registry to the next turn.
@@ -128,10 +130,8 @@ impl BattleRegistry {
     pub fn next_turn(&mut self) -> Result<(), Error> {
         // We detach element references in context chains, so we must check at runtime that no
         // dangling references will exist.
-        //
-        // Luckily, we don't currently have contexts that store references to this map.
         if !self.last_turn_moves.safe_to_drop() {
-            return Err(battler_error!("cannot advance battle registry to the next turn: this_turn_moves is not safe to drop"));
+            return Err(battler_error!("cannot advance battle registry to the next turn: last_turn_moves is not safe to drop"));
         }
         mem::swap(&mut self.last_turn_moves, &mut self.this_turn_moves);
         self.this_turn_moves = MoveRegistry::new();

@@ -140,8 +140,9 @@ mod stat_boost_drop_test {
                 "residual",
                 "turn|turn:7",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
+                "move|mon:Pikachu,player-1,1|name:Double Team|noanim",
                 "boost|mon:Pikachu,player-1,1|stat:eva|by:0",
+                "fail|mon:Pikachu,player-1,1",
                 "residual",
                 "turn|turn:8"
             ]"#).unwrap();
@@ -233,8 +234,9 @@ mod stat_boost_drop_test {
                 "residual",
                 "turn|turn:7",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
+                "move|mon:Pikachu,player-1,1|name:Sand Attack|noanim",
                 "unboost|mon:Pikachu,player-2,1|stat:acc|by:0",
+                "fail|mon:Pikachu,player-1,1",
                 "residual",
                 "turn|turn:8"
             ]"#).unwrap();

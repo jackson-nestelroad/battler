@@ -545,169 +545,182 @@ where
             // the next iteration somehow also needs to borrow from `context`, the previous
             // `value_ref` value (i.e., the mutable borrow inside of it) is dropped.
             let value_type = value.value_type();
-            match value {
-                ValueRef::Mon(mon_handle) => {
-                    let context = unsafe { context.unsafely_detach_borrow_mut() };
-                    value = match *member {
-                        "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
-                        "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
-                        "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
-                        "hp" => ValueRef::U64(context.mon(mon_handle)?.hp as u64),
-                        "item" => ValueRef::TempString(
-                            context
-                                .mon(mon_handle)?
-                                .item
-                                .clone()
-                                .unwrap_or("".to_owned()),
-                        ),
-                        "last_target_location" => ValueRef::I64(
-                            context
-                                .mon(mon_handle)?
-                                .last_move_target
-                                .unwrap_or(0)
-                                .try_into()
-                                .wrap_error_with_message("integer overflow")?,
-                        ),
-                        "level" => ValueRef::U64(context.mon(mon_handle)?.level as u64),
-                        "max_hp" => ValueRef::U64(context.mon(mon_handle)?.max_hp as u64),
-                        "move_this_turn_failed" => ValueRef::Boolean(
-                            context
-                                .mon(mon_handle)?
-                                .move_this_turn_outcome
-                                .map(|outcome| !outcome.success())
-                                .unwrap_or(false),
-                        ),
-                        "position_details" => ValueRef::TempString(format!(
-                            "{}",
-                            Mon::position_details(&context.mon_context(mon_handle)?)?
-                        )),
-                        "side" => ValueRef::Side(context.mon(mon_handle)?.side),
-                        "status" => ValueRef::TempString(
-                            context
-                                .mon(mon_handle)?
-                                .status
-                                .as_ref()
-                                .map(|id| id.as_ref().to_owned())
-                                .unwrap_or(String::new()),
-                        ),
-                        "weight" => ValueRef::U64(Mon::get_weight(
-                            &mut context.mon_context(mon_handle)?,
-                        ) as u64),
-                        _ => return Err(Self::bad_member_access(member, value_type)),
+
+            if let Some(mon_handle) = value.mon_handle() {
+                let context = unsafe { context.unsafely_detach_borrow_mut() };
+                value = match *member {
+                    "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
+                    "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
+                    "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
+                    "hp" => ValueRef::U64(context.mon(mon_handle)?.hp as u64),
+                    "item" => ValueRef::TempString(
+                        context
+                            .mon(mon_handle)?
+                            .item
+                            .clone()
+                            .unwrap_or("".to_owned()),
+                    ),
+                    "last_move_selected" => match context.mon(mon_handle)?.last_move_selected {
+                        Some(last_move_selected) => ValueRef::ActiveMove(last_move_selected),
+                        _ => ValueRef::Undefined,
+                    },
+                    "last_target_location" => ValueRef::I64(
+                        context
+                            .mon(mon_handle)?
+                            .last_move_target
+                            .unwrap_or(0)
+                            .try_into()
+                            .wrap_error_with_message("integer overflow")?,
+                    ),
+                    "level" => ValueRef::U64(context.mon(mon_handle)?.level as u64),
+                    "max_hp" => ValueRef::U64(context.mon(mon_handle)?.max_hp as u64),
+                    "move_slots" => ValueRef::TempList(
+                        context
+                            .mon(mon_handle)?
+                            .move_slots
+                            .iter()
+                            .map(|move_slot| {
+                                ValueRefToStoredValue::new(
+                                    self.stored.clone(),
+                                    ValueRef::MoveSlot(move_slot),
+                                )
+                            })
+                            .collect(),
+                    ),
+                    "move_this_turn_failed" => ValueRef::Boolean(
+                        context
+                            .mon(mon_handle)?
+                            .move_this_turn_outcome
+                            .map(|outcome| !outcome.success())
+                            .unwrap_or(false),
+                    ),
+                    "position_details" => ValueRef::TempString(format!(
+                        "{}",
+                        Mon::position_details(&context.mon_context(mon_handle)?)?
+                    )),
+                    "side" => ValueRef::Side(context.mon(mon_handle)?.side),
+                    "status" => ValueRef::TempString(
+                        context
+                            .mon(mon_handle)?
+                            .status
+                            .as_ref()
+                            .map(|id| id.as_ref().to_owned())
+                            .unwrap_or(String::new()),
+                    ),
+                    "weight" => {
+                        ValueRef::U64(Mon::get_weight(&mut context.mon_context(mon_handle)?) as u64)
                     }
+                    "will_move_this_turn" => ValueRef::Boolean(
+                        context
+                            .battle_context()
+                            .battle()
+                            .queue
+                            .will_move_this_turn(mon_handle),
+                    ),
+                    _ => return Err(Self::bad_member_access(member, value_type)),
                 }
-                ValueRef::Effect(effect_handle) => {
-                    let context = unsafe { context.unsafely_detach_borrow() };
-                    value = match *member {
-                        "condition" => ValueRef::Effect(
-                            effect_handle
-                                .condition_handle(context.battle_context())?
-                                .wrap_error_with_message("effect has no associated condition")?,
-                        ),
-                        "has_source_effect" => ValueRef::Boolean(
-                            CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
+            } else if let Some(effect_handle) = value.effect_handle() {
+                let context = unsafe { context.unsafely_detach_borrow() };
+                value = match *member {
+                    "condition" => ValueRef::TempEffect(
+                        effect_handle
+                            .condition_handle(context.battle_context())?
+                            .wrap_error_with_message("effect has no associated condition")?,
+                    ),
+                    "has_source_effect" => ValueRef::Boolean(
+                        CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
                             .source_effect_handle()
                             .is_some(),
-                        ),
-                        "id" => ValueRef::TempString(
-                            CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
+                    ),
+                    "id" => ValueRef::TempString(
+                        CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
                             .id()
                             .as_ref()
                             .to_owned(),
-                        ),
-                        "infiltrates" => ValueRef::Boolean(
-                            CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
+                    ),
+                    "infiltrates" => ValueRef::Boolean(
+                        CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
                             .infiltrates(),
-                        ),
-                        "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
-                        "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
-                        "move_target" => ValueRef::MoveTarget(
-                            CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
+                    ),
+                    "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
+                    "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
+                    "move_target" => ValueRef::MoveTarget(
+                        CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
                             .active_move()
                             .wrap_error_with_message("effect is not a move")?
                             .data
                             .target,
-                        ),
-                        "name" => ValueRef::TempString(
-                            CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
+                    ),
+                    "name" => ValueRef::TempString(
+                        CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
                             .name()
                             .to_owned(),
-                        ),
-                        _ => return Err(Self::bad_member_access(member, value_type)),
+                    ),
+                    _ => return Err(Self::bad_member_access(member, value_type)),
+                }
+            } else if let Some(active_move_handle) = value.active_move_handle() {
+                let context = unsafe { context.unsafely_detach_borrow_mut() };
+                value = match *member {
+                    "base_power" => ValueRef::U64(
+                        context.active_move(active_move_handle)?.data.base_power as u64,
+                    ),
+                    "category" => ValueRef::MoveCategory(
+                        context.active_move(active_move_handle)?.data.category,
+                    ),
+                    "drain_percent" => ValueRef::UFraction(
+                        context
+                            .active_move(active_move_handle)?
+                            .data
+                            .drain_percent
+                            .unwrap_or(Fraction::from(0))
+                            .convert(),
+                    ),
+                    "id" => ValueRef::Str(context.active_move(active_move_handle)?.id().as_ref()),
+                    "infiltrates" => {
+                        ValueRef::Boolean(context.active_move(active_move_handle)?.infiltrates)
                     }
-                }
-                ValueRef::ActiveMove(active_move_handle) => {
-                    let context = unsafe { context.unsafely_detach_borrow_mut() };
-                    value = match *member {
-                        "base_power" => ValueRef::U64(
-                            context.active_move(active_move_handle)?.data.base_power as u64,
-                        ),
-                        "category" => ValueRef::MoveCategory(
-                            context.active_move(active_move_handle)?.data.category,
-                        ),
-                        "drain_percent" => ValueRef::UFraction(
-                            context
-                                .active_move(active_move_handle)?
-                                .data
-                                .drain_percent
-                                .unwrap_or(Fraction::from(0))
-                                .convert(),
-                        ),
-                        "id" => {
-                            ValueRef::Str(context.active_move(active_move_handle)?.id().as_ref())
-                        }
-                        "infiltrates" => {
-                            ValueRef::Boolean(context.active_move(active_move_handle)?.infiltrates)
-                        }
-                        "ohko" => ValueRef::Boolean(
-                            context
-                                .active_move(active_move_handle)?
-                                .data
-                                .ohko_type
-                                .is_some(),
-                        ),
-                        "recoil_percent" => ValueRef::UFraction(
-                            context
-                                .active_move(active_move_handle)?
-                                .data
-                                .recoil_percent
-                                .unwrap_or(Fraction::from(0))
-                                .convert(),
-                        ),
-                        "sleep_usable" => ValueRef::Boolean(
-                            context.active_move(active_move_handle)?.data.sleep_usable,
-                        ),
-                        "thaws_target" => ValueRef::Boolean(
-                            context.active_move(active_move_handle)?.data.thaws_target,
-                        ),
-                        "type" => ValueRef::Type(
-                            context.active_move(active_move_handle)?.data.primary_type,
-                        ),
-                        _ => return Err(Self::bad_member_access(member, value_type)),
+                    "name" => {
+                        ValueRef::Str(context.active_move(active_move_handle)?.data.name.as_ref())
                     }
+                    "ohko" => ValueRef::Boolean(
+                        context
+                            .active_move(active_move_handle)?
+                            .data
+                            .ohko_type
+                            .is_some(),
+                    ),
+                    "recoil_percent" => ValueRef::UFraction(
+                        context
+                            .active_move(active_move_handle)?
+                            .data
+                            .recoil_percent
+                            .unwrap_or(Fraction::from(0))
+                            .convert(),
+                    ),
+                    "sleep_usable" => ValueRef::Boolean(
+                        context.active_move(active_move_handle)?.data.sleep_usable,
+                    ),
+                    "thaws_target" => ValueRef::Boolean(
+                        context.active_move(active_move_handle)?.data.thaws_target,
+                    ),
+                    "type" => {
+                        ValueRef::Type(context.active_move(active_move_handle)?.data.primary_type)
+                    }
+                    _ => return Err(Self::bad_member_access(member, value_type)),
                 }
-                ValueRef::Object(object) => {
-                    value = match object.get(*member) {
-                        Some(value) => ValueRef::from(value),
-                        _ => ValueRef::Undefined,
-                    };
+            } else if let ValueRef::MoveSlot(move_slot) = value {
+                value = match *member {
+                    "id" => ValueRef::Str(move_slot.id.as_ref()),
+                    "pp" => ValueRef::U64(move_slot.pp as u64),
+                    _ => return Err(Self::bad_member_access(member, value_type)),
                 }
-                _ => return Err(Self::bad_member_access(member, value_type)),
+            } else if let ValueRef::Object(object) = value {
+                value = match object.get(*member) {
+                    Some(value) => ValueRef::from(value),
+                    _ => ValueRef::Undefined,
+                };
+            } else {
+                return Err(Self::bad_member_access(member, value_type));
             }
         }
         Ok(value)
@@ -1183,12 +1196,14 @@ impl Evaluator {
                 }
                 ProgramStatementEvalResult::Skipped => (),
                 ProgramStatementEvalResult::IfStatement(condition_met) => {
+                    state.for_each_context = None;
                     // Remember this result in case we find an associated else statement.
                     state.last_if_statement_result = Some(condition_met);
                     // Skip the next block if the condition was not met.
                     state.skip_next_block = !condition_met;
                 }
                 ProgramStatementEvalResult::ElseIfStatement(condition_met) => {
+                    state.for_each_context = None;
                     // Only remember this result if we have evaluated an if statement before.
                     //
                     // This prevents else blocks from being run on their own, without a leading if
@@ -1692,6 +1707,9 @@ impl Evaluator {
                 *var = val;
             }
             (ValueRefMut::Side(var), Value::Side(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::MoveSlot(var), Value::MoveSlot(val)) => {
                 *var = val;
             }
             (ValueRefMut::List(var), Value::List(val)) => {

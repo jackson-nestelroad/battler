@@ -50,6 +50,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Damage, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamagingHit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::DisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
             parsed.parse_and_save(BattleEvent::Flinch, callbacks)?;

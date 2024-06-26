@@ -745,7 +745,61 @@
       "Mirror",
       "Protect",
       "Reflectable"
-    ]
+    ],
+    "hit_effect": {
+      "volatile_status": "disable"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if !func_call(is_defined: $target.last_move_selected) or $target.last_move_selected.id == strugle:",
+          ["return false"]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 5,
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "# The target hasn't taken its turn yet, so this turn counts as a disabled turn.",
+          "if $target.will_move_this_turn:",
+          ["$effect_state.duration = $effect_state.duration - 1"],
+          "if !func_call(is_defined: $target.last_move_selected):",
+          ["return false"],
+          "# Ensure the target's last move can be disbled.",
+          "foreach $move_slot in $target.move_slots:",
+          [
+            "if $move_slot.id == $target.last_move_selected.id and $move_slot.pp == 0:",
+            ["return false"]
+          ],
+          "if $source_effect.is_ability:",
+          [
+            "log_start: with_source_effect str('disabledmove:{}', $target.last_move_selected.name)"
+          ],
+          "else:",
+          [
+            "log_start: str('disabledmove:{}', $target.last_move_selected.name)"
+          ],
+          "$effect_state.move = $target.last_move_selected.id"
+        ],
+        "on_end": ["log_end"],
+        "on_before_move": {
+          "priority": 7,
+          "program": [
+            "if $move.id == $effect_state.move:",
+            ["log_cant: $this.name", "return false"]
+          ]
+        },
+        "on_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.id == $effect_state.move:",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ]
+      }
+    }
   },
   "acid": {
     "name": "Acid",
@@ -2483,7 +2537,6 @@
     "struggle_recoil": true,
     "no_sketch": true,
     "ignore_immunity": true,
-    "ignore_stab": true,
     "typeless": true
   },
   "recharge": {

@@ -385,18 +385,18 @@ impl<'d> CoreBattle<'d> {
         self.registry.mon_mut(mon_handle)
     }
 
-    pub unsafe fn this_turn_move<'b>(
+    pub unsafe fn active_move<'b>(
         &'b self,
         move_handle: MoveHandle,
     ) -> Result<ElementRef<'b, Move>, Error> {
-        self.registry.this_turn_move(move_handle)
+        self.registry.active_move(move_handle)
     }
 
-    pub unsafe fn this_turn_move_mut<'b>(
+    pub unsafe fn active_move_mut<'b>(
         &'b self,
         move_handle: MoveHandle,
     ) -> Result<ElementRefMut<'b, Move>, Error> {
-        self.registry.this_turn_move_mut(move_handle)
+        self.registry.active_move_mut(move_handle)
     }
 
     pub fn all_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
@@ -886,6 +886,8 @@ impl<'d> CoreBattle<'d> {
             }
         }
 
+        // We must drop all borrowed state before moving to the next turn.
+        context.clear_context_cache();
         Self::next_turn(context)?;
         context.battle_mut().mid_turn = false;
         Ok(())

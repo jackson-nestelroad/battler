@@ -218,6 +218,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "DamagingHit"]
     DamagingHit,
+    /// Runs when determining which moves are disabled.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "DisableMove"]
+    DisableMove,
     /// Runs when determining the duration of an effect.
     ///
     /// Used to apply dynamic durations.
@@ -453,6 +458,7 @@ impl BattleEvent {
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::Damage => CommonCallbackType::MoveModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
+            Self::DisableMove => CommonCallbackType::MonVoid as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
@@ -653,6 +659,7 @@ pub struct Callbacks {
     pub on_charge_move: Callback,
     pub on_damage: Callback,
     pub on_damaging_hit: Callback,
+    pub on_disable_move: Callback,
     pub on_duration: Callback,
     pub on_end: Callback,
     pub on_flinch: Callback,
@@ -705,6 +712,7 @@ impl Callbacks {
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
+            BattleEvent::DisableMove => Some(&self.on_disable_move),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::Flinch => Some(&self.on_flinch),
@@ -757,6 +765,11 @@ pub struct Condition {
     ///
     /// Can be overwritten by the [`on_duration`][`Callbacks::on_duration`] callback.
     pub duration: Option<u8>,
+    /// Whether or not the condition can be copied to another Mon.
+    ///
+    /// If true, moves like "Baton Pass" will not copy this condition. `false` by default.
+    #[serde(default)]
+    pub no_copy: bool,
     /// Callbacks associated with the condition.
     pub callbacks: Callbacks,
 }

@@ -47,6 +47,11 @@ impl<'borrow> ContextCache<'borrow> {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.mons.get_mut().clear();
+        self.active_moves.get_mut().clear();
+    }
+
     pub fn mon(&self, battle: &CoreBattle, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
         // SAFETY: This is the only method that accesses this map.
         let mons = unsafe { &mut *self.mons.get() };
@@ -93,7 +98,7 @@ impl<'borrow> ContextCache<'borrow> {
         }
         // SAFETY: This should always succeed, assuming that a move was not incorrectly borrowed
         // outside of this context.
-        let mov = unsafe { battle.this_turn_move_mut(move_handle)? };
+        let mov = unsafe { battle.active_move_mut(move_handle)? };
         // SAFETY: We extend the lifetime of the ElementRef (dynamic borrow checking) so that the
         // borrow lives for the lifetime of the context chain.
         //

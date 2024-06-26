@@ -139,7 +139,7 @@ mod poison_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Venomoth,player-1,1|name:Poison Powder|target:Charizard,player-2,1",
+                "move|mon:Venomoth,player-1,1|name:Poison Powder|noanim",
                 "fail|mon:Venomoth,player-1,1",
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|from:status:Poison|health:104/138",
@@ -182,7 +182,7 @@ mod poison_test {
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Charizard,player-2,1|name:Poison Powder|target:Venomoth,player-1,1",
+                "move|mon:Charizard,player-2,1|name:Poison Powder|noanim",
                 "immune|mon:Venomoth,player-1,1",
                 "residual",
                 "turn|turn:2"
@@ -216,7 +216,7 @@ mod poison_test {
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Charizard,player-2,1|name:Poison Powder|target:Steelix,player-1,1",
+                "move|mon:Charizard,player-2,1|name:Poison Powder|noanim",
                 "immune|mon:Steelix,player-1,1",
                 "residual",
                 "turn|turn:2"

@@ -179,7 +179,7 @@ mod toxic_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Venusaur,player-1,1|name:Toxic|target:Charizard,player-2,1",
+                "move|mon:Venusaur,player-1,1|name:Toxic|noanim",
                 "fail|mon:Venusaur,player-1,1",
                 "split|side:1",
                 "damage|mon:Charizard,player-2,1|from:status:Bad Poison|health:113/138",
@@ -241,7 +241,7 @@ mod toxic_test {
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Charizard,player-2,1|name:Toxic|target:Venusaur,player-1,1",
+                "move|mon:Charizard,player-2,1|name:Toxic|noanim",
                 "immune|mon:Venusaur,player-1,1",
                 "residual",
                 "turn|turn:2"
@@ -275,7 +275,7 @@ mod toxic_test {
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Charizard,player-2,1|name:Toxic|target:Steelix,player-1,1",
+                "move|mon:Charizard,player-2,1|name:Toxic|noanim",
                 "immune|mon:Steelix,player-1,1",
                 "residual",
                 "turn|turn:2"

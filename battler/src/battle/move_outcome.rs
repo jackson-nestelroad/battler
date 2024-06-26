@@ -4,7 +4,9 @@ use serde_string_enum::{
 };
 
 /// The outcome of a move used on a single turn of battle.
-#[derive(Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+)]
 pub enum MoveOutcome {
     #[string = "Skipped"]
     Skipped,
@@ -21,11 +23,22 @@ impl MoveOutcome {
             _ => false,
         }
     }
+
+    pub fn failed(&self) -> bool {
+        match self {
+            Self::Failed => true,
+            _ => false,
+        }
+    }
 }
 
-impl From<MoveOutcome> for bool {
-    fn from(value: MoveOutcome) -> Self {
-        value.success()
+impl From<bool> for MoveOutcome {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Success
+        } else {
+            Self::Failed
+        }
     }
 }
 
@@ -36,6 +49,7 @@ impl From<MoveOutcome> for bool {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum MoveOutcomeOnTarget {
     #[default]
+    Unknown,
     Failure,
     HitSubstitute,
     Success,
@@ -73,6 +87,8 @@ impl MoveOutcomeOnTarget {
 
     pub fn combine(&self, other: Self) -> Self {
         match (*self, other) {
+            (Self::Unknown, right @ _) => right,
+            (Self::Failure, Self::Unknown) => Self::Failure,
             (Self::Failure, right @ _) => right,
             (Self::HitSubstitute, right @ _) => right,
             (Self::Success, Self::Damage(right)) => Self::Damage(right),

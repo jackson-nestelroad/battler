@@ -791,7 +791,7 @@ impl Player {
         }
 
         // Choosing 0 is the same as no target at all.
-        if let Some(0) = choice.target {
+        if choice.target.is_some_and(|target| target == 0) {
             choice.target = None;
         }
 

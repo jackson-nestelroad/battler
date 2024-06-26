@@ -120,7 +120,7 @@ mod burn_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Gengar,player-1,1|name:Will-O-Wisp|target:Gengar,player-2,1",
+                "move|mon:Gengar,player-1,1|name:Will-O-Wisp|noanim",
                 "fail|mon:Gengar,player-1,1",
                 "split|side:1",
                 "damage|mon:Gengar,player-2,1|from:status:Burn|health:106/120",
@@ -173,7 +173,7 @@ mod burn_test {
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Gengar,player-1,1|name:Will-O-Wisp|target:Charizard,player-2,1",
+                "move|mon:Gengar,player-1,1|name:Will-O-Wisp|noanim",
                 "immune|mon:Charizard,player-2,1",
                 "residual",
                 "turn|turn:2"

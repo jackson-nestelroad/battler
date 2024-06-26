@@ -300,7 +300,7 @@ pub fn use_move(
     context.mon_mut().move_this_turn_outcome = None;
     let outcome = use_move_internal(context, move_id, target)?;
     context.mon_mut().move_this_turn_outcome = Some(outcome);
-    Ok(outcome.into())
+    Ok(outcome.success())
 }
 
 fn use_move_internal(
@@ -642,10 +642,8 @@ fn try_direct_move(
     let mut at_least_one_failure = false;
     for step in &*STEPS {
         step(context, targets.as_mut_slice())?;
-        at_least_one_failure = at_least_one_failure
-            || targets
-                .iter()
-                .any(|target| target.outcome == MoveOutcome::Failed);
+        at_least_one_failure =
+            at_least_one_failure || targets.iter().any(|target| target.outcome.failed());
         targets = targets
             .into_iter()
             .filter(|target| target.outcome.success())
@@ -665,7 +663,7 @@ fn try_direct_move(
         MoveOutcome::Success
     };
 
-    if context.active_move().spread_hit {
+    if context.active_move().spread_hit && !outcome.failed() {
         core_battle_logs::last_move_spread_targets(
             context.as_battle_context_mut(),
             targets.into_iter().map(|target| target.handle),
@@ -831,7 +829,7 @@ fn calculate_spread_damage(
         if !target.outcome.hit_target() {
             continue;
         }
-        target.outcome = MoveOutcomeOnTarget::Success;
+        target.outcome = MoveOutcomeOnTarget::Unknown;
         // Secondary or effects on the user cannot deal damage.
         //
         // Note that this is different from moves that target the user.
@@ -848,7 +846,8 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     let target_mon_handle = context.target_mon_handle();
     // Type immunity.
     let move_type = context.active_move().data.primary_type;
-    let ignore_immunity = context.active_move().data.ignore_immunity();
+    let ignore_immunity =
+        context.active_move().data.ignore_immunity() || context.active_move().data.typeless;
     if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
         return Ok(MoveOutcomeOnTarget::Failure);
     }
@@ -889,7 +888,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     //
     // Status moves stop here.
     if base_power == 0 {
-        return Ok(MoveOutcomeOnTarget::Success);
+        return Ok(MoveOutcomeOnTarget::Unknown);
     }
 
     // Critical hit.
@@ -1002,7 +1001,8 @@ fn modify_damage(
 
     // STAB.
     let move_type = context.active_move().data.primary_type;
-    let stab = Mon::has_type(context.as_mon_context_mut(), move_type)?;
+    let stab = !context.active_move().data.typeless
+        && Mon::has_type(context.as_mon_context_mut(), move_type)?;
     if stab {
         let stab_modifier = context
             .active_move()
@@ -1013,7 +1013,11 @@ fn modify_damage(
     }
 
     // Type effectiveness.
-    let type_modifier = Mon::type_effectiveness(&mut context.target_mon_context()?, move_type)?;
+    let type_modifier = if context.active_move().data.typeless {
+        0
+    } else {
+        Mon::type_effectiveness(&mut context.target_mon_context()?, move_type)?
+    };
     let type_modifier = type_modifier.max(-6).min(6);
     context
         .active_move_mut()
@@ -1156,13 +1160,15 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets.iter_mut() {
-            // TODO: TryHit event.
-            // should_continue = false if failed.
+            if !core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::TryHit,
+                fxlang::VariableInput::default(),
+            ) {
+                target.outcome = MoveOutcome::Failed;
+            }
         }
-        if targets
-            .iter()
-            .all(|target| target.outcome == MoveOutcome::Failed)
-        {
+        if targets.iter().all(|target| target.outcome.failed()) {
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             core_battle_logs::fail(context.as_mon_context_mut())?;
         }
@@ -1376,12 +1382,35 @@ mod direct_move_step {
 
             let hit_targets = targets
                 .iter()
-                .filter_map(|target| target.outcome.success().then_some(target.handle))
+                .enumerate()
+                .filter_map(|(i, target)| target.outcome.success().then_some((i, target.handle)))
                 .collect::<Vec<_>>();
             let hit_targets_state = core_battle_actions::move_hit(
                 context,
-                core_battle_actions::hit_targets_state_from_targets(hit_targets),
+                core_battle_actions::hit_targets_state_from_targets(
+                    hit_targets
+                        .iter()
+                        .map(|(_, target_handle)| target_handle)
+                        .cloned(),
+                ),
             )?;
+
+            // Update the outcome for the target as soon as possible.
+            for (i, _) in hit_targets {
+                let new_outcome = MoveOutcome::from(
+                    !hit_targets_state
+                        .get(i)
+                        .wrap_error_with_format(format_args!(
+                            "expected target hit state at index {i}"
+                        ))?
+                        .outcome
+                        .failed(),
+                );
+                targets
+                    .get_mut(i)
+                    .wrap_error_with_format(format_args!("expected target at index {i}"))?
+                    .outcome = new_outcome;
+            }
 
             if hit_targets_state
                 .iter()
@@ -1484,11 +1513,8 @@ fn apply_spread_damage(
     for target in targets {
         let mut context = context.applying_effect_context(source, target.handle)?;
         let damage = match &mut target.outcome {
-            MoveOutcomeOnTarget::Failure
-            | MoveOutcomeOnTarget::HitSubstitute
-            | MoveOutcomeOnTarget::Success
-            | MoveOutcomeOnTarget::Damage(0) => continue,
             MoveOutcomeOnTarget::Damage(damage) => damage,
+            _ => continue,
         };
         if context.target().hp == 0 {
             target.outcome = MoveOutcomeOnTarget::Damage(0);
@@ -1538,7 +1564,6 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
                 amount,
                 Some(target_handle),
                 Some(&EffectHandle::Condition(Id::from_known("drain"))),
-                false,
             )?;
         }
     }
@@ -1551,7 +1576,6 @@ pub fn heal(
     damage: u16,
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
-    log_failure: bool,
 ) -> Result<u16, Error> {
     // TODO: TryHeal event.
     if damage == 0
@@ -1565,8 +1589,6 @@ pub fn heal(
     let healed = Mon::heal(context, damage)?;
     if healed > 0 {
         core_battle_logs::heal(context, source, effect)?;
-    } else if log_failure {
-        core_battle_logs::fail_heal(context)?;
     }
     // TODO: Heal event.
     Ok(healed)
@@ -1608,55 +1630,62 @@ fn apply_move_effects(
 
     let is_secondary = context.is_secondary();
     let is_self = context.is_self();
+    let mut log_failure = !is_self && !is_secondary;
 
-    let mut did_anything_to_user = MoveOutcomeOnTarget::Failure;
+    let mut did_anything = targets
+        .iter()
+        .map(|target| target.outcome)
+        .reduce(|acc, outcome| acc.combine(outcome))
+        .unwrap_or(MoveOutcomeOnTarget::Unknown);
 
     for target in targets.iter_mut() {
         if target.outcome.failed() {
             continue;
         }
+
         let mut target_context = context.target_context(target.handle)?;
 
         let source_handle = target_context.mon_handle();
         let effect_handle = target_context.as_active_move_context().effect_handle();
 
-        let mut hit_effect_outcome: Option<MoveOutcomeOnTarget> = None;
+        let mut hit_effect_outcome = MoveOutcomeOnTarget::Unknown;
 
         if let Some(hit_effect) = target_context.hit_effect().cloned() {
             // Only run the following effects if we hit the target.
             //
             // In other words, this check skips applying effects to substitutes.
             if target.outcome.hit_target() {
-                if let Some(boosts) = hit_effect.boosts {
-                    let outcome = boost(
-                        &mut target_context.target_mon_context()?,
-                        boosts,
-                        Some(source_handle),
-                        Some(&effect_handle),
-                        is_secondary,
-                        is_self,
-                    )?;
-                    hit_effect_outcome =
-                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
-                }
+                if !target_context.target_mon().fainted {
+                    if let Some(boosts) = hit_effect.boosts {
+                        let outcome = boost(
+                            &mut target_context.target_mon_context()?,
+                            boosts,
+                            Some(source_handle),
+                            Some(&effect_handle),
+                            is_secondary,
+                            is_self,
+                        )?;
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                    }
 
-                if let Some(heal_percent) = hit_effect.heal_percent {
-                    let damage = heal_percent * target_context.mon().max_hp;
-                    let damage = damage.round();
-                    let damage = heal(
-                        &mut target_context.target_mon_context()?,
-                        damage,
-                        Some(source_handle),
-                        Some(&effect_handle),
-                        true,
-                    )?;
-                    let outcome = if damage == 0 {
-                        MoveOutcomeOnTarget::Failure
-                    } else {
-                        MoveOutcomeOnTarget::Success
-                    };
-                    hit_effect_outcome =
-                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                    if let Some(heal_percent) = hit_effect.heal_percent {
+                        if target_context.target_mon().hp >= target_context.target_mon().max_hp {
+                            core_battle_logs::fail_heal(&mut target_context.target_mon_context()?)?;
+                            core_battle_logs::do_not_animate_last_move(
+                                target_context.as_battle_context_mut(),
+                            );
+                        } else {
+                            let damage = heal_percent * target_context.mon().max_hp;
+                            let damage = damage.round();
+                            heal(
+                                &mut target_context.target_mon_context()?,
+                                damage,
+                                Some(source_handle),
+                                Some(&effect_handle),
+                            )?;
+                            hit_effect_outcome = MoveOutcomeOnTarget::Success;
+                        }
+                    }
                 }
 
                 if let Some(status) = hit_effect.status {
@@ -1665,9 +1694,12 @@ fn apply_move_effects(
                         Some(Id::from(status)),
                         !is_secondary && !is_self,
                     )?;
-                    let outcome = MoveOutcomeOnTarget::from(set_status);
-                    hit_effect_outcome =
-                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                    match set_status {
+                        ApplyMoveEffectResult::Immune => log_failure = false,
+                        _ => (),
+                    }
+                    let outcome = MoveOutcomeOnTarget::from(set_status.success());
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if let Some(volatile_status) = hit_effect.volatile_status {
@@ -1677,8 +1709,7 @@ fn apply_move_effects(
                         !is_secondary && !is_self,
                     )?;
                     let outcome = MoveOutcomeOnTarget::from(added_volatile);
-                    hit_effect_outcome =
-                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if let Some(side_condition) = hit_effect.side_condition {
@@ -1689,8 +1720,7 @@ fn apply_move_effects(
                         &Id::from(side_condition),
                     )?;
                     let outcome = MoveOutcomeOnTarget::from(added_side_condition);
-                    hit_effect_outcome =
-                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if let Some(slot_condition) = hit_effect.slot_condition {
@@ -1715,8 +1745,7 @@ fn apply_move_effects(
                     } else {
                         MoveOutcomeOnTarget::Failure
                     };
-                    hit_effect_outcome =
-                        Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
             }
         }
@@ -1739,7 +1768,7 @@ fn apply_move_effects(
                 core_battle_effects::MoveTargetForEvent::Mon(target_handle),
             ) {
                 let outcome = MoveOutcomeOnTarget::from(hit_result);
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                hit_effect_outcome = hit_effect_outcome.combine(outcome);
             }
 
             // Run the event for other effects only once.
@@ -1758,8 +1787,6 @@ fn apply_move_effects(
         // If we are checking the primary hit event on the targets, we should check these as well.
         if !is_secondary && !is_self {
             if let Some(self_destruct_type) = &context.active_move().data.self_destruct {
-                did_anything_to_user = MoveOutcomeOnTarget::Success;
-
                 // At this point, we know we have hit the target, so we self-destruct the user now.
                 if self_destruct_type == &SelfDestructType::IfHit {
                     if target.outcome.hit() {
@@ -1777,36 +1804,23 @@ fn apply_move_effects(
                 } else {
                     MoveOutcomeOnTarget::Failure
                 };
-                hit_effect_outcome = Some(hit_effect_outcome.unwrap_or_default().combine(outcome));
+                hit_effect_outcome = hit_effect_outcome.combine(outcome);
             }
         }
 
-        // Move did not try to do anything, so it trivially succeeds.
-        let hit_effect_outcome = match hit_effect_outcome {
-            Some(hit_effect_outcome) => hit_effect_outcome,
-            None => MoveOutcomeOnTarget::Success,
-        };
-
         // The target's outcome is affected by the outcome here.
         target.outcome = target.outcome.combine(hit_effect_outcome);
+        did_anything = did_anything.combine(hit_effect_outcome);
     }
 
-    // Did the move do anything to its targets?
-    let did_anything_to_targets = targets
-        .iter()
-        .map(|target| target.outcome)
-        .reduce(|acc, outcome| acc.combine(outcome))
-        .unwrap_or(MoveOutcomeOnTarget::Success);
-
-    // Did the move do anything at all, to the targets or the user?
-    let did_anything = did_anything_to_user.combine(did_anything_to_targets);
-
     if did_anything.failed() {
-        // This is the primary hit of the move, and it failed to do anything, so the move failed as
-        // a whole.
         if !is_self && !is_secondary {
+            // This is the primary hit of the move, and it failed to do anything, so the move failed
+            // as a whole.
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            if log_failure {
+                core_battle_logs::fail(context.as_mon_context_mut())?;
+            }
         }
     } else if context.active_move().data.user_switch.is_some() && context.mon().hp > 0 {
         context.mon_mut().needs_switch = context.active_move().data.user_switch;
@@ -1856,7 +1870,7 @@ fn boost(
         let suppressed = value == 0;
 
         let delta = Mon::boost_stat(context, boost, value);
-        success = success && delta != 0;
+        success = success || delta != 0;
 
         // We are careful to only log stat changes that should be visible to the user.
         if delta != 0 || capped || (!is_secondary && !is_self && user_intended && !suppressed) {
@@ -2022,24 +2036,35 @@ fn initial_effect_state(
     Ok(effect_state)
 }
 
+#[derive(Clone, PartialEq, Eq)]
+pub enum ApplyMoveEffectResult {
+    Failed,
+    Success,
+    Immune,
+}
+
+impl ApplyMoveEffectResult {
+    pub fn success(&self) -> bool {
+        match self {
+            Self::Success => true,
+            _ => false,
+        }
+    }
+}
+
 pub fn try_set_status(
     context: &mut ApplyingEffectContext,
     status: Option<Id>,
     is_primary_move_effect: bool,
-) -> Result<bool, Error> {
+) -> Result<ApplyMoveEffectResult, Error> {
     if context.target().hp == 0 {
-        return Ok(false);
+        return Ok(ApplyMoveEffectResult::Failed);
     }
 
     // A Mon may only have one status set at a time.
     match (&status, &context.target().status) {
         (Some(_), Some(_)) => {
-            if is_primary_move_effect {
-                if let Some(mut source_context) = context.source_context()? {
-                    core_battle_logs::fail(&mut source_context)?;
-                }
-            }
-            return Ok(false);
+            return Ok(ApplyMoveEffectResult::Failed);
         }
         _ => (),
     }
@@ -2050,7 +2075,7 @@ pub fn try_set_status(
         None => {
             context.target_mut().status = status;
             context.target_mut().status_state = fxlang::EffectState::new();
-            return Ok(true);
+            return Ok(ApplyMoveEffectResult::Success);
         }
     };
 
@@ -2067,7 +2092,7 @@ pub fn try_set_status(
         if is_primary_move_effect {
             core_battle_logs::immune(&mut context.target_context()?)?;
         }
-        return Ok(false);
+        return Ok(ApplyMoveEffectResult::Immune);
     }
 
     // Save the previous status in case an effect callback cancels the status.
@@ -2079,7 +2104,7 @@ pub fn try_set_status(
         fxlang::BattleEvent::SetStatus,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle.clone())]),
     ) {
-        return Ok(false);
+        return Ok(ApplyMoveEffectResult::Failed);
     }
 
     // Set the status so that the following effects can use it.
@@ -2117,10 +2142,10 @@ pub fn try_set_status(
         fxlang::BattleEvent::AfterSetStatus,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle)]),
     ) {
-        return Ok(false);
+        return Ok(ApplyMoveEffectResult::Failed);
     }
 
-    Ok(true)
+    Ok(ApplyMoveEffectResult::Success)
 }
 
 fn check_status_immunity(context: &mut MonContext, status: &Id) -> Result<bool, Error> {
@@ -2144,19 +2169,22 @@ fn check_status_immunity(context: &mut MonContext, status: &Id) -> Result<bool, 
 pub fn clear_status(
     context: &mut ApplyingEffectContext,
     is_primary_move_effect: bool,
-) -> Result<bool, Error> {
+) -> Result<ApplyMoveEffectResult, Error> {
     if context.target().hp == 0 || context.target().status.is_none() {
-        return Ok(false);
+        return Ok(ApplyMoveEffectResult::Failed);
     }
     try_set_status(context, None, is_primary_move_effect)
 }
 
-pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Result<bool, Error> {
+pub fn cure_status(
+    context: &mut ApplyingEffectContext,
+    log_effect: bool,
+) -> Result<ApplyMoveEffectResult, Error> {
     if context.target().hp == 0 {
-        return Ok(false);
+        return Ok(ApplyMoveEffectResult::Failed);
     }
     match context.target().status.clone() {
-        None => return Ok(false),
+        None => return Ok(ApplyMoveEffectResult::Failed),
         Some(status) => {
             let status_name =
                 CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
@@ -2192,7 +2220,7 @@ pub fn try_add_volatile(
             fxlang::BattleEvent::Restart,
             &status,
         )
-        .unwrap_or(true));
+        .unwrap_or(false));
     }
 
     if check_status_immunity(&mut context.target_context()?, &status)? {

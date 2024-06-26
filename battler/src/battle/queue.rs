@@ -9,6 +9,7 @@ use crate::{
         Action,
         Context,
         CoreBattle,
+        MonHandle,
     },
     common::Error,
     rng::PseudoRandomNumberGenerator,
@@ -98,6 +99,14 @@ impl BattleQueue {
     fn sort_internal(&mut self, prng: &mut dyn PseudoRandomNumberGenerator) {
         let actions = self.actions.make_contiguous();
         speed_sort(actions, prng);
+    }
+
+    /// Checks if the given Mon will move this turn.
+    pub fn will_move_this_turn(&self, mon: MonHandle) -> bool {
+        self.actions.iter().any(|action| match action {
+            Action::Move(move_action) => move_action.mon_action.mon == mon,
+            _ => false,
+        })
     }
 }
 

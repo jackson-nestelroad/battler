@@ -87,9 +87,8 @@ mod locked_move_test {
                     {
                         "name": "Thrash",
                         "id": "thrash",
-                        "pp": 9,
-                        "max_pp": 10,
-                        "target": "RandomNormal",
+                        "pp": 0,
+                        "max_pp": 0,
                         "disabled": false
                     }
                 ]

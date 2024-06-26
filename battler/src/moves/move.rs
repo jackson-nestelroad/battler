@@ -141,9 +141,6 @@ pub struct MoveData {
     /// Apply Struggle recoil?
     #[serde(default)]
     pub struggle_recoil: bool,
-    /// Ignore STAB?
-    #[serde(default)]
-    pub ignore_stab: bool,
     /// Typeless?
     #[serde(default)]
     pub typeless: bool,
