@@ -7,6 +7,7 @@ use crate::{
     battle::{
         speed_sort,
         Action,
+        BattleEngineSpeedSortTieResolution,
         Context,
         CoreBattle,
         MonHandle,
@@ -53,6 +54,10 @@ impl BattleQueue {
         }
 
         if let Action::Move(action) = &action {
+            context
+                .battle_mut()
+                .queue
+                .push(Action::BeforeTurnMove(action.clone()));
             if action.mega {
                 context
                     .battle_mut()
@@ -93,12 +98,20 @@ impl BattleQueue {
         let prng = context.battle_mut().prng.as_mut();
         // SAFETY: PRNG and battle queue are completely disjoint.
         let prng = unsafe { mem::transmute(prng) };
-        context.battle_mut().queue.sort_internal(prng)
+        let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
+        context
+            .battle_mut()
+            .queue
+            .sort_internal(prng, tie_resolution)
     }
 
-    fn sort_internal(&mut self, prng: &mut dyn PseudoRandomNumberGenerator) {
+    fn sort_internal(
+        &mut self,
+        prng: &mut dyn PseudoRandomNumberGenerator,
+        tie_resolution: BattleEngineSpeedSortTieResolution,
+    ) {
         let actions = self.actions.make_contiguous();
-        speed_sort(actions, prng);
+        speed_sort(actions, prng, tie_resolution);
     }
 
     /// Checks if the given Mon will move this turn.
@@ -115,6 +128,7 @@ mod queue_tests {
     use crate::{
         battle::{
             Action,
+            BattleEngineSpeedSortTieResolution,
             BattleQueue,
             MonAction,
             MonHandle,
@@ -168,7 +182,7 @@ mod queue_tests {
     fn sort(queue: &mut BattleQueue, seed: Option<u64>) {
         let mut prng = RealPseudoRandomNumberGenerator::new(seed);
         queue.actions.make_contiguous();
-        queue.sort_internal(&mut prng);
+        queue.sort_internal(&mut prng, BattleEngineSpeedSortTieResolution::Random);
     }
 
     fn battle_queue_actions_to_string_for_test(queue: &BattleQueue) -> Vec<String> {
@@ -179,6 +193,9 @@ mod queue_tests {
                 Action::Start => "start".to_owned(),
                 Action::Pass => "pass".to_owned(),
                 Action::BeforeTurn => "beforeturn".to_owned(),
+                Action::BeforeTurnMove(action) => {
+                    format!("beforeturnmove {}", action.mon_action.mon)
+                }
                 Action::Residual => "residual".to_owned(),
                 Action::Team(action) => format!("team {}", action.mon_action.mon),
                 Action::Switch(action) => format!("switch {}", action.mon_action.mon),

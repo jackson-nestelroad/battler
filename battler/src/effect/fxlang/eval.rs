@@ -594,6 +594,11 @@ where
                             .map(|outcome| !outcome.success())
                             .unwrap_or(false),
                     ),
+                    "position" => ValueRef::U64(
+                        Mon::position_on_side(&context.mon_context(mon_handle)?)?
+                            .try_into()
+                            .wrap_error_with_message("integer overflow")?,
+                    ),
                     "position_details" => ValueRef::TempString(format!(
                         "{}",
                         Mon::position_details(&context.mon_context(mon_handle)?)?
@@ -675,6 +680,7 @@ where
                             .unwrap_or(Fraction::from(0))
                             .convert(),
                     ),
+                    "hit" => ValueRef::U64(context.active_move(active_move_handle)?.hit as u64),
                     "id" => ValueRef::Str(context.active_move(active_move_handle)?.id().as_ref()),
                     "infiltrates" => {
                         ValueRef::Boolean(context.active_move(active_move_handle)?.infiltrates)
@@ -1507,17 +1513,25 @@ impl Evaluator {
                 Ok(MaybeReferenceValue::Fraction(*number))
             }
             tree::Value::StringLiteral(string) => Ok(MaybeReferenceValue::String(string.0.clone())),
-            tree::Value::List(list) => Ok(MaybeReferenceValue::List(self.resolve_values(context, &list.0)?)),
+            tree::Value::List(list) => Ok(MaybeReferenceValue::List(
+                self.resolve_values(context, &list.0)?,
+            )),
             tree::Value::Var(var) => {
                 let var = self.create_var(var)?;
                 Ok(MaybeReferenceValue::from(var.get(context)?))
             }
-            tree::Value::ValueExpr(expr) => Ok(MaybeReferenceValue::from(self.evaluate_expr(context, &expr.0)?)),
-            tree::Value::ValueFunctionCall(function_call) => match self.evaluate_function_call(context, &function_call.0)? {
-                Some(value) => Ok(MaybeReferenceValue::from(value)),
-                None => Err(battler_error!("cannot use result of function {} as a value, because it did not produce a value", function_call.0.function.0))
-            },
-            tree::Value::FormattedString(formatted_string) => self.evaluate_formatted_string(context, formatted_string),
+            tree::Value::ValueExpr(expr) => Ok(MaybeReferenceValue::from(
+                self.evaluate_expr(context, &expr.0)?,
+            )),
+            tree::Value::ValueFunctionCall(function_call) => {
+                match self.evaluate_function_call(context, &function_call.0)? {
+                    Some(value) => Ok(MaybeReferenceValue::from(value)),
+                    None => Ok(MaybeReferenceValue::Undefined),
+                }
+            }
+            tree::Value::FormattedString(formatted_string) => {
+                self.evaluate_formatted_string(context, formatted_string)
+            }
         }
     }
 

@@ -26,7 +26,8 @@ pub mod CallbackFlag {
     pub const TakesSide: u32 = 1 << 8;
     pub const TakesBoosts: u32 = 1 << 9;
 
-    pub const ReturnsBoosts: u32 = 1 << 27;
+    pub const ReturnsMon: u32 = 1 << 25;
+    pub const ReturnsBoosts: u32 = 1 << 26;
     pub const ReturnsString: u32 = 1 << 27;
     pub const ReturnsMoveResult: u32 = 1 << 28;
     pub const ReturnsNumber: u32 = 1 << 29;
@@ -82,6 +83,10 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMoveResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+    SourceMoveMonModifier = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsMon
         | CallbackFlag::ReturnsVoid,
 
     MoveModifier = CallbackFlag::TakesTargetMon
@@ -192,6 +197,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "BeforeMove"]
     BeforeMove,
+    /// Runs before a turn of a battle.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "BeforeTurn"]
+    BeforeTurn,
     /// Runs when a move's base power is being calculated for a target.
     ///
     /// Used to apply dynamic base powers.
@@ -312,6 +322,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move from the user.
     #[string = "PrepareHit"]
     PrepareHit,
+    /// Runs when a move is being redirected towards a different target.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "RedirectTarget"]
+    RedirectTarget,
     /// Runs at the end of every turn to apply residual effects.
     ///
     /// Runs in the context of an applying effect on the target.
@@ -455,6 +470,7 @@ impl BattleEvent {
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::Damage => CommonCallbackType::MoveModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
@@ -474,6 +490,7 @@ impl BattleEvent {
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
+            Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
@@ -513,6 +530,7 @@ impl BattleEvent {
             Self::DamagingHit => &[("damage", ValueType::U64)],
             Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U64)],
             Self::ModifySpe => &[("spe", ValueType::U64)],
+            Self::RedirectTarget => &[("target", ValueType::Mon)],
             Self::SideConditionStart => &[("condition", ValueType::Effect)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable)],
             _ => &[],
@@ -530,6 +548,7 @@ impl BattleEvent {
                 self.has_flag(CallbackFlag::ReturnsString | CallbackFlag::ReturnsMoveResult)
             }
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
+            Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -656,6 +675,7 @@ pub struct Callbacks {
     pub on_ally_set_status: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
+    pub on_before_turn: Callback,
     pub on_charge_move: Callback,
     pub on_damage: Callback,
     pub on_damaging_hit: Callback,
@@ -675,6 +695,7 @@ pub struct Callbacks {
     pub on_move_aborted: Callback,
     pub on_move_failed: Callback,
     pub on_prepare_hit: Callback,
+    pub on_redirect_target: Callback,
     pub on_residual: Callback,
     pub on_restart: Callback,
     pub on_set_status: Callback,
@@ -709,6 +730,7 @@ impl Callbacks {
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
+            BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
@@ -728,6 +750,7 @@ impl Callbacks {
             BattleEvent::MoveAborted => Some(&self.on_move_aborted),
             BattleEvent::MoveFailed => Some(&self.on_move_failed),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
+            BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),
             BattleEvent::SetStatus => Some(&self.on_set_status),

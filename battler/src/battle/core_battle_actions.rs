@@ -45,6 +45,7 @@ use crate::{
     moves::{
         DamageType,
         MoveCategory,
+        MoveFlags,
         MoveTarget,
         SelfDestructType,
         SwitchType,
@@ -183,6 +184,15 @@ fn register_active_move(context: &mut MonContext, move_id: &Id) -> Result<MoveHa
     Ok(active_move_handle)
 }
 
+fn mon_is_charging(context: &mut ActiveMoveContext) -> Result<bool, Error> {
+    Ok(context
+        .active_move()
+        .data
+        .flags
+        .contains(&MoveFlags::Charge)
+        && Mon::has_volatile(context.as_mon_context_mut(), &Id::from_known("twoturnmove"))?)
+}
+
 /// Executes the given move by a Mon.
 pub fn do_move(
     context: &mut MonContext,
@@ -254,14 +264,10 @@ pub fn do_move(
     let move_id = context.active_move()?.id().clone();
     use_move(context, &move_id, target)?;
 
-    let locked_move_after = Mon::locked_move(context)?;
-
     // Deduct PP if the move was successful.
-    let charging_turn = context.active_move()?.data.charging_turn;
-    if !external
-        && ((!charging_turn && locked_move_before.is_none())
-            || (charging_turn && locked_move_after.is_none()))
-    {
+    //
+    // Charging moves do not have their PP deducted.
+    if !external && !mon_is_charging(&mut context.active_move_context()?)? {
         let move_id = context.active_move()?.id();
         // SAFETY: move_id is only used for lookup.
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
@@ -426,7 +432,7 @@ pub fn faint(
 
 pub fn get_move_targets(
     context: &mut ActiveMoveContext,
-    target: Option<MonHandle>,
+    selected_target: Option<MonHandle>,
 ) -> Result<Vec<MonHandle>, Error> {
     let mut targets = Vec::new();
     match context.active_move().data.target {
@@ -483,28 +489,52 @@ pub fn get_move_targets(
             );
         }
         _ => {
-            let mut target = target;
-            if let Some(possible_target) = target {
-                let mon = context.mon_handle();
-                let target_context = context.target_mon_context(possible_target)?;
-                if target_context.mon().fainted
-                    && !target_context
-                        .mon()
-                        .is_ally(target_context.as_battle_context().mon(mon)?)
-                {
-                    // A targeted Mon has fainted, so the move should retarget.
+            let mut target = match selected_target {
+                Some(target) => {
                     let mon = context.mon_handle();
-                    let active_move = context.active_move().id().clone();
-                    target = CoreBattle::random_target(
-                        context.as_battle_context_mut(),
-                        mon,
-                        &active_move,
-                    )?;
+                    let target_context = context.target_mon_context(target)?;
+                    if target_context.mon().fainted
+                        && !target_context
+                            .mon()
+                            .is_ally(target_context.as_battle_context().mon(mon)?)
+                    {
+                        // The targeted Mon has fainted, so the move should retarget.
+                        None
+                    } else {
+                        Some(target)
+                    }
+                }
+                None => None,
+            };
+
+            if target.is_none() {
+                let mon = context.mon_handle();
+                let active_move = context.active_move().id().clone();
+                target =
+                    CoreBattle::random_target(context.as_battle_context_mut(), mon, &active_move)?;
+            }
+
+            let mut target = match target {
+                Some(target) => target,
+                None => return Ok(Vec::new()),
+            };
+
+            if context.battle().format.battle_type.active_per_player() > 1
+                && !context.active_move().data.tracks_target
+            {
+                if !mon_is_charging(context)? {
+                    target = core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
+                        &mut context.user_applying_effect_context(Some(target))?,
+                        fxlang::BattleEvent::RedirectTarget,
+                        fxlang::VariableInput::from_iter([fxlang::Value::Mon(target)]),
+                    ).unwrap_or(target);
                 }
             }
 
-            if let Some(target) = target {
-                targets.push(target);
+            targets.push(target);
+
+            if Some(target) != selected_target {
+                core_battle_logs::retarget_last_move(context.as_battle_context_mut(), target)?;
             }
         }
     }
@@ -1369,6 +1399,11 @@ mod direct_move_step {
                 break;
             }
 
+            // Record number of hits.
+            //
+            // We do this now so that damage and base power callbacks can use this value.
+            context.active_move_mut().hit = hit + 1;
+
             // Of all the eligible targets, determine which ones we will actually hit.
             for target in targets.iter_mut().filter(|target| target.outcome.success()) {
                 let mut context = context.target_context(target.handle)?;
@@ -1416,11 +1451,11 @@ mod direct_move_step {
                 .iter()
                 .all(|target| target.outcome.failed())
             {
+                // This hit failed.
+                context.active_move_mut().hit -= 1;
                 break;
             }
 
-            // Record number of hits.
-            context.active_move_mut().hit = hit + 1;
             context.active_move_mut().total_damage += hit_targets_state
                 .iter()
                 .filter_map(|target| {

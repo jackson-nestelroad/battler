@@ -25,6 +25,17 @@ pub enum BattleEngineRandomizeBaseDamage {
     Min,
 }
 
+/// How the battle engine should resolve ties when sorting by speed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BattleEngineSpeedSortTieResolution {
+    /// Resolves ties randomly by advancing RNG.
+    Random,
+    /// Do not resolve ties and keep the original order of tied elements.
+    Keep,
+    /// Reverse the original order of tied elements.
+    Reverse,
+}
+
 /// Options that change how the battle engine itself behaves, which is not necessarily specific to
 /// any individual battle.
 ///
@@ -77,6 +88,13 @@ pub struct BattleEngineOptions {
     /// calculator to discover the minimum and maximum damage values.
     pub randomize_base_damage: BattleEngineRandomizeBaseDamage,
 
+    /// Desribse how ties should be resolved when sorting elements by speed.
+    ///
+    /// By default, speed ties are resolved randomly. However, many tests involve a lot of speed
+    /// ties, complicating test results when RNG shifts slightly. This property can be used to
+    /// avoid using RNG in speed sorting completely.
+    pub speed_sort_tie_resolution: BattleEngineSpeedSortTieResolution,
+
     /// Should volatile statuses be logged?
     ///
     /// By default, volatile statuses are invisible to Mons, since they are used to implement
@@ -101,6 +119,7 @@ impl Default for BattleEngineOptions {
             rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
             allow_pass_for_unfainted_mon: false,
             randomize_base_damage: BattleEngineRandomizeBaseDamage::Randomize,
+            speed_sort_tie_resolution: BattleEngineSpeedSortTieResolution::Random,
             log_volatile_statuses: false,
             log_side_conditions: false,
         }

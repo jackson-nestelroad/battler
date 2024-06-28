@@ -549,6 +549,14 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
+    pub fn remove_attribute_from_last_move(&mut self, attribute: &str) {
+        if let Some(EventLogEntryMut::Uncommitted(event)) =
+            self.last_move_log.and_then(|index| self.log.get_mut(index))
+        {
+            event.remove(attribute);
+        }
+    }
+
     pub fn started(&self) -> bool {
         self.started
     }
@@ -952,6 +960,20 @@ impl<'d> CoreBattle<'d> {
             Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
             Action::Pass => (),
             Action::BeforeTurn => (),
+            Action::BeforeTurnMove(action) => {
+                let mut context = context.mon_context(action.mon_action.mon)?;
+                if !context.mon().active || context.mon().fainted {
+                    return Ok(());
+                }
+                core_battle_effects::run_applying_effect_event_expecting_void(
+                    &mut context.applying_effect_context(
+                        EffectHandle::InactiveMove(action.id.clone()),
+                        None,
+                        None,
+                    )?,
+                    fxlang::BattleEvent::BeforeTurn,
+                );
+            }
             Action::Residual => {
                 Self::clear_active_move(context)?;
                 Self::update_speed(context)?;
@@ -1511,6 +1533,12 @@ impl<'d> CoreBattle<'d> {
                     *hit_effect_type,
                 ))
             }
+            EffectHandle::MoveCondition(id) => Ok(Effect::for_move_condition(
+                context.battle().dex.moves.get_by_id(id).into_result()?,
+            )),
+            EffectHandle::InactiveMove(id) => Ok(Effect::for_inactive_move(
+                context.battle().dex.moves.get_by_id(id).into_result()?,
+            )),
             EffectHandle::Ability(id) => Ok(Effect::for_ability(
                 context.battle().dex.abilities.get_by_id(id).into_result()?,
             )),
@@ -1521,9 +1549,6 @@ impl<'d> CoreBattle<'d> {
                     .conditions
                     .get_by_id(id)
                     .into_result()?,
-            )),
-            EffectHandle::MoveCondition(id) => Ok(Effect::for_move_condition(
-                context.battle().dex.moves.get_by_id(id).into_result()?,
             )),
             EffectHandle::Item(id) => Ok(Effect::for_item(
                 context.battle().dex.items.get_by_id(id).into_result()?,

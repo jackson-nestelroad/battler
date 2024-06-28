@@ -89,9 +89,10 @@ pub enum EffectType {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EffectHandle {
     ActiveMove(MoveHandle, MoveHitEffectType),
+    MoveCondition(Id),
+    InactiveMove(Id),
     Ability(Id),
     Condition(Id),
-    MoveCondition(Id),
     Item(Id),
     NonExistent(Id),
 }
@@ -114,9 +115,10 @@ impl EffectHandle {
     pub fn try_id(&self) -> Option<&Id> {
         match self {
             Self::ActiveMove(_, _) => None,
+            Self::MoveCondition(id) => Some(&id),
+            Self::InactiveMove(id) => Some(&id),
             Self::Ability(id) => Some(&id),
             Self::Condition(id) => Some(&id),
-            Self::MoveCondition(id) => Some(&id),
             Self::Item(id) => Some(&id),
             Self::NonExistent(id) => Some(&id),
         }
@@ -145,12 +147,14 @@ impl EffectHandle {
 pub enum Effect<'borrow> {
     /// A move currently being used by a Mon.
     ActiveMove(&'borrow mut Move, MoveHitEffectType),
+    /// A condition induced by a previously-used move.
+    MoveCondition(ElementRef<'borrow, Move>),
+    /// An inactive move, which is not currently being used by a Mon.
+    InactiveMove(ElementRef<'borrow, Move>),
     /// An ability, which is permanently applied to a Mon.
     Ability(ElementRef<'borrow, Ability>),
     /// A condition, which is applied to a Mon for some number of turns.
     Condition(ElementRef<'borrow, Condition>),
-    /// A condition induced by a previously-used move.
-    MoveCondition(ElementRef<'borrow, Move>),
     /// An item, which is held by a Mon.
     Item(ElementRef<'borrow, Item>),
     /// A non-existent effect, which does nothing.
@@ -181,6 +185,10 @@ impl<'borrow> Effect<'borrow> {
         Self::Item(item)
     }
 
+    pub fn for_inactive_move(mov: ElementRef<'borrow, Move>) -> Self {
+        Self::InactiveMove(mov)
+    }
+
     pub fn for_non_existent(id: Id) -> Self {
         Self::NonExistent(id)
     }
@@ -188,9 +196,10 @@ impl<'borrow> Effect<'borrow> {
     pub fn name(&self) -> &str {
         match self {
             Self::ActiveMove(active_move, _) => &active_move.data.name,
+            Self::MoveCondition(mov) => &mov.data.name,
+            Self::InactiveMove(mov) => &mov.data.name,
             Self::Ability(ability) => &ability.data.name,
             Self::Condition(condition) => &condition.data.name,
-            Self::MoveCondition(mov) => &mov.data.name,
             Self::Item(item) => &item.data.name,
             Self::NonExistent(id) => id.as_ref(),
         }
@@ -199,9 +208,10 @@ impl<'borrow> Effect<'borrow> {
     pub fn effect_type(&self) -> EffectType {
         match self {
             Self::ActiveMove(_, _) => EffectType::Move,
+            Self::MoveCondition(_) => EffectType::MoveCondition,
+            Self::InactiveMove(_) => EffectType::Move,
             Self::Ability(_) => EffectType::Ability,
             Self::Condition(_) => EffectType::Condition,
-            Self::MoveCondition(_) => EffectType::MoveCondition,
             Self::Item(_) => EffectType::Item,
             Self::NonExistent(_) => EffectType::Condition,
         }
@@ -210,9 +220,10 @@ impl<'borrow> Effect<'borrow> {
     fn effect_type_name(&self) -> &str {
         match self {
             Self::ActiveMove(_, _) => "move",
+            Self::MoveCondition(_) => "move",
+            Self::InactiveMove(_) => "move",
             Self::Ability(_) => "ability",
             Self::Condition(condition) => condition.condition_type_name(),
-            Self::MoveCondition(_) => "move",
             Self::Item(_) => "item",
             Self::NonExistent(_) => "condition",
         }
@@ -231,9 +242,10 @@ impl<'borrow> Effect<'borrow> {
                 None => "move".to_owned(),
                 Some(secondary_index) => format!("movesecondary{secondary_index}"),
             },
+            Self::MoveCondition(_) => "movecondition".to_owned(),
+            Self::InactiveMove(_) => "move".to_owned(),
             Self::Ability(_) => "ability".to_owned(),
             Self::Condition(condition) => condition.condition_type_name().to_owned(),
-            Self::MoveCondition(_) => "movecondition".to_owned(),
             Self::Item(_) => "item".to_owned(),
             Self::NonExistent(_) => "condition".to_owned(),
         }
@@ -279,9 +291,10 @@ impl<'borrow> Effect<'borrow> {
             Self::ActiveMove(active_move, hit_effect_type) => {
                 active_move.fxlang_callbacks(*hit_effect_type)
             }
+            Self::MoveCondition(mov) => Some(&mov.data.condition.callbacks),
+            Self::InactiveMove(mov) => Some(&mov.data.effect.callbacks),
             Self::Ability(ability) => Some(&ability.data.effect.callbacks),
             Self::Condition(condition) => Some(&condition.data.condition.callbacks),
-            Self::MoveCondition(mov) => Some(&mov.data.condition.callbacks),
             Self::Item(item) => Some(&item.data.effect.callbacks),
             Self::NonExistent(_) => None,
         }
@@ -307,9 +320,10 @@ impl Identifiable for Effect<'_> {
     fn id(&self) -> &Id {
         match self {
             Self::ActiveMove(active_move, _) => active_move.id(),
+            Self::MoveCondition(mov) => mov.id(),
+            Self::InactiveMove(mov) => mov.id(),
             Self::Ability(ability) => ability.id(),
             Self::Condition(condition) => condition.id(),
-            Self::MoveCondition(mov) => mov.id(),
             Self::Item(item) => item.id(),
             Self::NonExistent(id) => id,
         }

@@ -962,10 +962,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         }
     }
 
-    fn invalid_operation(operation: &str, value_type: ValueType) -> Error {
-        battler_error!("cannot {operation} {value_type} value")
-    }
-
     fn invalid_binary_operation(operation: &str, lhs: ValueType, rhs: ValueType) -> Error {
         battler_error!("cannot {operation} {lhs} and {rhs}")
     }
@@ -974,7 +970,10 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         let result = match self {
             Self::Undefined => MaybeReferenceValue::Boolean(true),
             Self::Boolean(val) => MaybeReferenceValue::Boolean(!val),
-            _ => return Err(Self::invalid_operation("negate", self.value_type())),
+            val @ _ if self.value_type().is_number() => {
+                val.equal(MaybeReferenceValueForOperation::U64(0))?
+            }
+            _ => MaybeReferenceValue::Boolean(false),
         };
         Ok(result)
     }

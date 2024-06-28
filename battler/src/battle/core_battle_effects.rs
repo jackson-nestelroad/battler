@@ -232,6 +232,7 @@ pub enum MoveTargetForEvent {
 }
 
 enum EffectOrigin {
+    None,
     MonStatus(MonHandle),
     MonVolatileStatus(MonHandle),
     SideCondition(usize),
@@ -261,6 +262,7 @@ impl CallbackHandle {
         context: &'context mut Context<'battle, 'data>,
     ) -> Result<Option<&'context mut fxlang::EffectState>, Error> {
         match self.origin {
+            EffectOrigin::None => Ok(None),
             EffectOrigin::MonStatus(mon) => Ok(Some(&mut context.mon_mut(mon)?.status_state)),
             EffectOrigin::MonVolatileStatus(mon) => match self.effect_handle.try_id() {
                 None => Ok(None),
@@ -392,6 +394,19 @@ fn run_side_condition_event_internal(
             event,
             EffectOrigin::SideCondition(side_index),
         ),
+    )
+}
+
+fn run_applying_effect_event_internal(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let effect_handle = context.effect_handle().clone();
+    run_callback_under_applying_effect(
+        context,
+        input,
+        CallbackHandle::new(effect_handle, event, EffectOrigin::None),
     )
 }
 
@@ -635,9 +650,11 @@ fn get_ordered_effects_for_event(
         }
     }
 
+    let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
     speed_sort(
         speed_orderable_handles.as_mut_slice(),
         context.battle_mut().prng.as_mut(),
+        tie_resolution,
     );
     Ok(speed_orderable_handles
         .into_iter()
@@ -645,21 +662,31 @@ fn get_ordered_effects_for_event(
         .collect())
 }
 
+struct RunCallbacksOptions {
+    pub return_first_value: bool,
+}
+
+impl Default for RunCallbacksOptions {
+    fn default() -> Self {
+        Self {
+            return_first_value: false,
+        }
+    }
+}
+
 fn run_callbacks_with_forwarding_input_with_errors(
     context: UpcomingEvaluationContext,
     input: &mut fxlang::VariableInput,
     callback_handle: CallbackHandle,
-) -> Result<Option<Option<fxlang::Value>>, Error> {
+    options: &RunCallbacksOptions,
+) -> Result<Option<fxlang::Value>, Error> {
     let value = run_callback_with_errors(context, input.clone(), callback_handle)?;
     // Support for early exit.
-    if value
-        .as_ref()
-        .is_some_and(|value| value.signals_early_exit())
-    {
-        return Ok(Some(value));
-    }
-    // Pass the output to the next effect.
     if let Some(value) = value {
+        if value.signals_early_exit() || options.return_first_value {
+            return Ok(Some(value));
+        }
+        // Pass the output to the next effect.
         *input = fxlang::VariableInput::from_iter([value]);
     }
 
@@ -671,6 +698,7 @@ fn run_mon_callbacks_with_errors(
     source_effect: Option<&EffectHandle>,
     source: Option<MonHandle>,
     mut input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>, Error> {
     for callback_handle in callbacks {
@@ -683,15 +711,17 @@ fn run_mon_callbacks_with_errors(
                 ),
                 &mut input,
                 callback_handle,
+                options,
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Mon(context.into()),
                 &mut input,
                 callback_handle,
+                options,
             )?,
         };
         if let Some(return_value) = result {
-            return Ok(return_value);
+            return Ok(Some(return_value));
         }
     }
 
@@ -704,6 +734,7 @@ fn run_side_callbacks_with_errors(
     source_effect: Option<&EffectHandle>,
     source: Option<MonHandle>,
     mut input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>, Error> {
     for callback_handle in callbacks {
@@ -716,15 +747,17 @@ fn run_side_callbacks_with_errors(
                 ),
                 &mut input,
                 callback_handle,
+                options,
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Side(context.into()),
                 &mut input,
                 callback_handle,
+                options,
             )?,
         };
         if let Some(return_value) = result {
-            return Ok(return_value);
+            return Ok(Some(return_value));
         }
     }
 
@@ -757,6 +790,13 @@ fn run_residual_callbacks_with_errors(
         }
 
         match callback_handle.origin {
+            EffectOrigin::None => {
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::Effect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
+            }
             EffectOrigin::MonStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
                 if ended {
@@ -818,6 +858,7 @@ fn run_event_with_errors(
     target: AllEffectsTarget,
     source: Option<MonHandle>,
     input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
 ) -> Result<Option<fxlang::Value>, Error> {
     let callbacks = find_all_callbacks(context, event, target, source)?;
     let callbacks = get_ordered_effects_for_event(context, callbacks)?;
@@ -828,6 +869,7 @@ fn run_event_with_errors(
             source_effect,
             source,
             input,
+            options,
             callbacks,
         ),
         AllEffectsTarget::Side(side) => run_side_callbacks_with_errors(
@@ -835,6 +877,7 @@ fn run_event_with_errors(
             source_effect,
             source,
             input,
+            options,
             callbacks,
         ),
         AllEffectsTarget::Field => todo!("running effects against a field is not implemented"),
@@ -848,6 +891,7 @@ fn run_event_for_applying_effect_internal(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
 ) -> Option<fxlang::Value> {
     let target = AllEffectsTarget::Mon(context.target_handle());
     let effect = context.effect_handle().clone();
@@ -859,6 +903,7 @@ fn run_event_for_applying_effect_internal(
         target,
         source,
         input,
+        options,
     ) {
         Ok(value) => value,
         Err(error) => {
@@ -876,6 +921,7 @@ fn run_event_for_mon_internal(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
 ) -> Option<fxlang::Value> {
     let target = AllEffectsTarget::Mon(context.mon_handle());
     match run_event_with_errors(
@@ -885,6 +931,7 @@ fn run_event_for_mon_internal(
         target,
         None,
         input,
+        options,
     ) {
         Ok(value) => value,
         Err(error) => {
@@ -902,6 +949,7 @@ fn run_event_for_side_effect_internal(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
 ) -> Option<fxlang::Value> {
     let target = AllEffectsTarget::Side(context.side().index);
     let effect = context.effect_handle().clone();
@@ -913,6 +961,7 @@ fn run_event_for_side_effect_internal(
         target,
         source,
         input,
+        options,
     ) {
         Ok(value) => value,
         Err(error) => {
@@ -930,6 +979,7 @@ fn run_event_for_effect_internal(
     context: &mut EffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
 ) -> Option<fxlang::Value> {
     let target = AllEffectsTarget::Field;
     let effect = context.effect_handle().clone();
@@ -940,6 +990,7 @@ fn run_event_for_effect_internal(
         target,
         None,
         input,
+        options,
     ) {
         Ok(value) => value,
         Err(error) => {
@@ -961,6 +1012,7 @@ fn run_event_for_no_target_internal(context: &mut Context, event: fxlang::Battle
         AllEffectsTarget::Residual,
         None,
         fxlang::VariableInput::default(),
+        &RunCallbacksOptions::default(),
     ) {
         Ok(_) => (),
         Err(error) => {
@@ -1131,6 +1183,16 @@ pub fn run_side_condition_event_expecting_u8(
         .ok()
 }
 
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+///
+/// Expects no input or output. Any output is ignored.
+pub fn run_applying_effect_event_expecting_void(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) {
+    run_applying_effect_event_internal(context, event, fxlang::VariableInput::default());
+}
+
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
@@ -1139,7 +1201,7 @@ pub fn run_event_for_applying_effect(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> bool {
-    run_event_for_applying_effect_internal(context, event, input)
+    run_event_for_applying_effect_internal(context, event, input, &RunCallbacksOptions::default())
         .map(|value| value.boolean().ok())
         .flatten()
         .unwrap_or(true)
@@ -1157,6 +1219,7 @@ pub fn run_event_for_applying_effect_expecting_u32(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u32().unwrap_or(input),
         None => input,
@@ -1170,9 +1233,14 @@ pub fn run_event_for_applying_effect_expecting_move_outcome_on_target(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<MoveOutcomeOnTarget> {
-    run_event_for_applying_effect_internal(context, event, fxlang::VariableInput::default())?
-        .move_outcome_on_target()
-        .ok()
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions::default(),
+    )?
+    .move_outcome_on_target()
+    .ok()
 }
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
@@ -1187,17 +1255,43 @@ pub fn run_event_for_applying_effect_expecting_boost_table(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boost_table.clone())]),
+        &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.boost_table().unwrap_or(boost_table),
         None => boost_table,
     }
 }
 
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
+/// Exepcts a [`MonHandle`]. Returns the value of the first callback that returns a value.
+pub fn run_event_for_applying_effect_expecting_mon_quick_return(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<MonHandle> {
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        input,
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )?
+    .mon_handle()
+    .ok()
+}
+
 /// Runs an event targeted on the given [`Mon`].
 ///
 /// Expects no input or output.
 pub fn run_event_for_mon(context: &mut MonContext, event: fxlang::BattleEvent) {
-    run_event_for_mon_internal(context, event, fxlang::VariableInput::default());
+    run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions::default(),
+    );
 }
 
 /// Runs an event targeted on the given [`Mon`].
@@ -1212,6 +1306,7 @@ pub fn run_event_for_mon_expecting_u16(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),
         None => input,
@@ -1225,9 +1320,14 @@ pub fn run_event_for_mon_expecting_string(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
 ) -> Option<String> {
-    run_event_for_mon_internal(context, event, fxlang::VariableInput::default())?
-        .string()
-        .ok()
+    run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions::default(),
+    )?
+    .string()
+    .ok()
 }
 
 /// Runs an event targeted on the given [`Mon`].
@@ -1242,6 +1342,7 @@ pub fn run_event_for_mon_expecting_boost_table(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boost_table.clone())]),
+        &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.boost_table().unwrap_or(boost_table),
         None => boost_table,
@@ -1264,7 +1365,7 @@ pub fn run_event_for_side_effect(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> bool {
-    run_event_for_side_effect_internal(context, event, input)
+    run_event_for_side_effect_internal(context, event, input, &RunCallbacksOptions::default())
         .map(|value| value.boolean().ok())
         .flatten()
         .unwrap_or(true)
@@ -1278,7 +1379,8 @@ pub fn run_event_for_side_effect_expecting_move_event_result(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> MoveEventResult {
-    match run_event_for_side_effect_internal(context, event, input) {
+    match run_event_for_side_effect_internal(context, event, input, &RunCallbacksOptions::default())
+    {
         Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
         None => MoveEventResult::Advance,
     }
@@ -1292,7 +1394,7 @@ pub fn run_event_for_effect(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> bool {
-    run_event_for_effect_internal(context, event, input)
+    run_event_for_effect_internal(context, event, input, &RunCallbacksOptions::default())
         .map(|value| value.boolean().ok())
         .flatten()
         .unwrap_or(true)
@@ -1306,7 +1408,7 @@ pub fn run_event_for_effect_expecting_move_event_result(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> MoveEventResult {
-    match run_event_for_effect_internal(context, event, input) {
+    match run_event_for_effect_internal(context, event, input, &RunCallbacksOptions::default()) {
         Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
         None => MoveEventResult::Advance,
     }

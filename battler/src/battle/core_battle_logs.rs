@@ -90,6 +90,14 @@ where
     Ok(())
 }
 
+pub fn retarget_last_move(context: &mut Context, target: MonHandle) -> Result<(), Error> {
+    let position_details = Mon::position_details(&context.mon_context(target)?)?.to_string();
+    context
+        .battle_mut()
+        .add_attribute_value_to_last_move("target", position_details);
+    Ok(())
+}
+
 pub fn fail(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!("fail", ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);

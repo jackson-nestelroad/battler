@@ -47,6 +47,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AfterSubstituteDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Damage, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamagingHit, callbacks)?;
@@ -65,6 +66,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveFailed, callbacks)?;
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::RedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Restart, callbacks)?;
             parsed.parse_and_save(BattleEvent::SetStatus, callbacks)?;

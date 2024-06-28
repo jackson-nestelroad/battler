@@ -11,7 +11,6 @@ use serde::{
 
 use crate::{
     battle::{
-        action::SwitchAction,
         Action,
         BattleRegistry,
         BattleType,
@@ -24,6 +23,7 @@ use crate::{
         PlayerContext,
         Request,
         RequestType,
+        SwitchAction,
         SwitchActionInput,
         TeamAction,
         TeamActionInput,

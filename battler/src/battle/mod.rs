@@ -36,6 +36,7 @@ pub use battle::{
     Battle,
     BattleEngineOptions,
     BattleEngineRandomizeBaseDamage,
+    BattleEngineSpeedSortTieResolution,
 };
 pub use battle_builder::{
     BattleBuilder,

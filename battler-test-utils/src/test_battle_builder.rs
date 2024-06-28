@@ -12,6 +12,7 @@ use battler::{
         BattleBuilderSideData,
         BattleEngineOptions,
         BattleEngineRandomizeBaseDamage,
+        BattleEngineSpeedSortTieResolution,
         BattleType,
         PublicCoreBattle,
         TimerOptions,
@@ -118,6 +119,14 @@ impl TestBattleBuilder {
         randomize: BattleEngineRandomizeBaseDamage,
     ) -> Self {
         self.engine_options.randomize_base_damage = randomize;
+        self
+    }
+
+    pub fn with_speed_sort_tie_resolution(
+        mut self,
+        tie_resolution: BattleEngineSpeedSortTieResolution,
+    ) -> Self {
+        self.engine_options.speed_sort_tie_resolution = tie_resolution;
         self
     }
 

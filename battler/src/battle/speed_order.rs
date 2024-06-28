@@ -1,8 +1,11 @@
 use std::cmp::Ordering;
 
-use crate::rng::{
-    rand_util,
-    PseudoRandomNumberGenerator,
+use crate::{
+    battle::BattleEngineSpeedSortTieResolution,
+    rng::{
+        rand_util,
+        PseudoRandomNumberGenerator,
+    },
 };
 
 /// An object that can be ordered by speed.
@@ -54,8 +57,12 @@ where
 }
 
 // Selection sort implementation that shuffles tied elements.
-fn sort_with_random_ties<T, C>(items: &mut [T], comp: C, prng: &mut dyn PseudoRandomNumberGenerator)
-where
+fn sort_with_random_ties<T, C>(
+    items: &mut [T],
+    comp: C,
+    prng: &mut dyn PseudoRandomNumberGenerator,
+    tie_resolution: BattleEngineSpeedSortTieResolution,
+) where
     C: Fn(&T, &T) -> Ordering,
 {
     let mut shuffler = |items: &mut [T]| rand_util::shuffle(prng, items);
@@ -79,7 +86,15 @@ where
         }
         // Shuffle ties.
         if ties > 1 {
-            shuffler(&mut items[sorted..(sorted + ties)]);
+            match tie_resolution {
+                BattleEngineSpeedSortTieResolution::Random => {
+                    shuffler(&mut items[sorted..(sorted + ties)])
+                }
+                BattleEngineSpeedSortTieResolution::Keep => (),
+                BattleEngineSpeedSortTieResolution::Reverse => {
+                    items[sorted..(sorted + ties)].reverse()
+                }
+            }
         }
         sorted += ties;
         //items[0..sorted] is now sorted.
@@ -87,9 +102,12 @@ where
 }
 
 /// Sorts the given items by speed.
-pub fn speed_sort<T>(items: &mut [T], prng: &mut dyn PseudoRandomNumberGenerator)
-where
+pub fn speed_sort<T>(
+    items: &mut [T],
+    prng: &mut dyn PseudoRandomNumberGenerator,
+    tie_resolution: BattleEngineSpeedSortTieResolution,
+) where
     for<'a> &'a T: SpeedOrderable,
 {
-    sort_with_random_ties(items, |a, b| compare_priority(b, a), prng);
+    sort_with_random_ties(items, |a, b| compare_priority(b, a), prng, tie_resolution);
 }

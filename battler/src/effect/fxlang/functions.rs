@@ -71,7 +71,7 @@ pub fn run_function(
         "heal" => heal(context, args).map(|()| None),
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
-        "is_defined" => is_defined(args).map(|val| Some(val)),
+        "is_undefined" => is_undefined(args).map(|val| Some(val)),
         "log" => log(context.battle_context_mut(), args).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
@@ -93,6 +93,7 @@ pub fn run_function(
         "trap" => trap_mon(context, args).map(|()| None),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
+        "volatile_effect_state" => volatile_effect_state(context, args),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
 }
@@ -774,9 +775,9 @@ fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {
     Ok(Value::Boolean(value.boolean().is_ok()))
 }
 
-fn is_defined(mut args: VecDeque<Value>) -> Result<Value, Error> {
+fn is_undefined(mut args: VecDeque<Value>) -> Result<Value, Error> {
     let value = args.pop_front().wrap_error_with_message("missing value")?;
-    Ok(Value::Boolean(!value.is_undefined()))
+    Ok(Value::Boolean(value.is_undefined()))
 }
 
 fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -913,4 +914,27 @@ fn disable_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
     Mon::disable_move(&mut context.mon_context(mon_handle)?, &move_id)
+}
+
+fn volatile_effect_state(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let volatile_id = args
+        .pop_front()
+        .wrap_error_with_message("missing volatile")?
+        .string()
+        .wrap_error_with_message("invalid volatile")?;
+    let volatile_id = Id::from(volatile_id);
+    Ok(context
+        .mon_context(mon_handle)?
+        .mon()
+        .volatiles
+        .get(&volatile_id)
+        .map(|effect_state| Value::from(effect_state.clone())))
 }

@@ -225,9 +225,6 @@ pub struct MoveData {
     /// The move stalls the battle.
     #[serde(default)]
     pub stalling_move: bool,
-    /// Does the move count as used only after the user is no longer locked into it?
-    #[serde(default)]
-    pub charging_turn: bool,
 
     /// Dynamic battle effects.
     #[serde(default)]

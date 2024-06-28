@@ -124,6 +124,7 @@ pub enum Action {
     Start,
     Pass,
     BeforeTurn,
+    BeforeTurnMove(MoveAction),
     Residual,
     Team(TeamAction),
     Switch(SwitchAction),
@@ -156,6 +157,7 @@ impl SpeedOrderable for Action {
                 }
             }
             Self::BeforeTurn => 4,
+            Self::BeforeTurnMove(_) => 5,
             Self::MegaEvo(_) => 102,
             Self::Move(_) => 200,
             Self::Pass => 200,
