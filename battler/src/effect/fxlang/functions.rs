@@ -9,6 +9,7 @@ use crate::{
         core_battle_effects,
         core_battle_logs,
         Boost,
+        BoostTable,
         Context,
         Mon,
         MonContext,
@@ -49,6 +50,7 @@ pub fn run_function(
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
+        "boost" => boost(context, args).map(|val| Some(val)),
         "boostable_stats" => Ok(Some(boostable_stats())),
         "calculate_damage" => calculate_damage(context, args).map(|val| Some(val)),
         "calculate_confusion_damage" => {
@@ -937,4 +939,46 @@ fn volatile_effect_state(
         .volatiles
         .get(&volatile_id)
         .map(|effect_state| Value::from(effect_state.clone())))
+}
+
+struct StatBoost(Boost, i8);
+
+impl FromStr for StatBoost {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (boost, amount) = s.split_once(':').wrap_error_with_message("invalid boost")?;
+        let boost = Boost::from_str(boost).wrap_error_with_message("invalid boost stat")?;
+        let amount =
+            i8::from_str_radix(amount, 10).wrap_error_with_message("invalid boost amount")?;
+        Ok(Self(boost, amount))
+    }
+}
+
+fn boosts_from_rest_of_args(args: VecDeque<Value>) -> Result<BoostTable, Error> {
+    let boosts = args
+        .into_iter()
+        .map(|boost| StatBoost::from_str(&boost.string()?))
+        .map(|res| res.wrap_error_with_message("invalid boost"))
+        .collect::<Result<Vec<_>, Error>>()?;
+    Ok(BoostTable::from_iter(
+        boosts.into_iter().map(|boost| (boost.0, boost.1)),
+    ))
+}
+
+fn boost(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let boosts = boosts_from_rest_of_args(args)?;
+    core_battle_actions::boost(
+        &mut context.mon_context(mon_handle)?,
+        boosts,
+        None,
+        None,
+        false,
+        false,
+    )
+    .map(|val| Value::Boolean(val))
 }

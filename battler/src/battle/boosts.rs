@@ -11,10 +11,7 @@ use serde_string_enum::{
 
 use crate::{
     battler_error,
-    common::{
-        Error,
-        FastHashMap,
-    },
+    common::Error,
     mons::Stat,
 };
 
@@ -75,21 +72,6 @@ pub trait ContainsOptionalBoosts<T> {
     fn get_boost(&self, boost: Boost) -> Option<(Boost, T)>;
 }
 
-/// A map of values for each boostable stat.
-pub type BoostMap<T> = FastHashMap<Boost, T>;
-
-/// A table of boost values.
-pub type PartialBoostTable = BoostMap<i8>;
-
-impl<T> ContainsOptionalBoosts<T> for BoostMap<T>
-where
-    T: Copy,
-{
-    fn get_boost(&self, boost: Boost) -> Option<(Boost, T)> {
-        self.get_key_value(&boost).map(|(k, v)| (*k, *v))
-    }
-}
-
 /// A full boost table.
 ///
 /// Similar to [`PartialBoostTable`], but all values must be defined.
@@ -112,6 +94,11 @@ pub struct BoostTable {
 }
 
 impl BoostTable {
+    /// Creates a new boost table.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Returns the value for the given boost.
     pub fn get(&self, boost: Boost) -> i8 {
         match boost {
@@ -143,29 +130,34 @@ impl BoostTable {
         *self.get_mut(boost) = value;
     }
 
+    /// Creates an iterator over all entries in the table.
+    pub fn iter<'a>(&'a self) -> impl Iterator<Item = (Boost, i8)> + 'a {
+        BoostMapInOrderIterator::new(self)
+    }
+
+    pub fn non_zero_iter<'a>(&'a self) -> impl Iterator<Item = (Boost, i8)> + 'a {
+        self.iter().filter(|(_, val)| *val != 0)
+    }
+
     /// Creates an iterator over all values of the table.
     pub fn values<'a>(&'a self) -> impl Iterator<Item = i8> + 'a {
-        BoostMapInOrderIterator::new(self).map(|(_, val)| val)
+        self.iter().map(|(_, val)| val)
+    }
+}
+
+impl FromIterator<(Boost, i8)> for BoostTable {
+    fn from_iter<T: IntoIterator<Item = (Boost, i8)>>(iter: T) -> Self {
+        let mut table = Self::new();
+        for (boost, value) in iter {
+            *table.get_mut(boost) = value;
+        }
+        table
     }
 }
 
 impl ContainsOptionalBoosts<i8> for BoostTable {
     fn get_boost(&self, boost: Boost) -> Option<(Boost, i8)> {
         Some((boost, self.get(boost)))
-    }
-}
-
-impl From<&PartialBoostTable> for BoostTable {
-    fn from(value: &PartialBoostTable) -> Self {
-        Self {
-            atk: *value.get(&Boost::Atk).unwrap_or(&0),
-            def: *value.get(&Boost::Def).unwrap_or(&0),
-            spa: *value.get(&Boost::SpAtk).unwrap_or(&0),
-            spd: *value.get(&Boost::SpDef).unwrap_or(&0),
-            spe: *value.get(&Boost::Spe).unwrap_or(&0),
-            acc: *value.get(&Boost::Accuracy).unwrap_or(&0),
-            eva: *value.get(&Boost::Evasion).unwrap_or(&0),
-        }
     }
 }
 
@@ -280,34 +272,11 @@ mod boost_tests {
 
 #[cfg(test)]
 mod boost_table_tests {
-    use ahash::HashMapExt;
 
     use crate::battle::{
         Boost,
-        BoostMapInOrderIterator,
         BoostTable,
-        PartialBoostTable,
     };
-
-    #[test]
-    fn converts_from_partial_boost_table() {
-        let mut table = PartialBoostTable::new();
-        table.insert(Boost::Atk, 2);
-        table.insert(Boost::Accuracy, 1);
-        let table = BoostTable::from(&table);
-        assert_eq!(
-            table,
-            BoostTable {
-                atk: 2,
-                def: 0,
-                spa: 0,
-                spd: 0,
-                spe: 0,
-                acc: 1,
-                eva: 0,
-            }
-        )
-    }
 
     #[test]
     fn gets_associated_value() {
@@ -331,39 +300,31 @@ mod boost_table_tests {
 
     #[test]
     fn iterates_entries_in_order() {
-        let mut table = PartialBoostTable::new();
+        let mut table = BoostTable::new();
         assert_eq!(
-            BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (boost, val))
-                .collect::<Vec<(Boost, i8)>>(),
+            table.non_zero_iter().collect::<Vec<(Boost, i8)>>(),
             Vec::<(Boost, i8)>::new(),
         );
 
-        table.insert(Boost::SpAtk, 1);
+        *table.get_mut(Boost::SpAtk) = 1;
         assert_eq!(
-            BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (boost, val))
-                .collect::<Vec<(Boost, i8)>>(),
+            table.non_zero_iter().collect::<Vec<(Boost, i8)>>(),
             vec![(Boost::SpAtk, 1)],
         );
 
-        table.insert(Boost::Atk, 2);
+        *table.get_mut(Boost::Atk) = 2;
         assert_eq!(
-            BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (boost, val))
-                .collect::<Vec<(Boost, i8)>>(),
+            table.non_zero_iter().collect::<Vec<(Boost, i8)>>(),
             vec![(Boost::Atk, 2), (Boost::SpAtk, 1)],
         );
 
-        table.insert(Boost::Accuracy, -1);
+        *table.get_mut(Boost::Accuracy) = -1;
         assert_eq!(
-            BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (boost, val))
-                .collect::<Vec<(Boost, i8)>>(),
+            table.non_zero_iter().collect::<Vec<(Boost, i8)>>(),
             vec![(Boost::Atk, 2), (Boost::SpAtk, 1), (Boost::Accuracy, -1)],
         );
 
-        let table = PartialBoostTable::from_iter([
+        let table = BoostTable::from_iter([
             (Boost::Atk, 1),
             (Boost::Def, 1),
             (Boost::SpAtk, 1),
@@ -373,9 +334,7 @@ mod boost_table_tests {
             (Boost::Evasion, 1),
         ]);
         assert_eq!(
-            BoostMapInOrderIterator::new(&table)
-                .map(|(boost, val)| (boost, val))
-                .collect::<Vec<(Boost, i8)>>(),
+            table.iter().collect::<Vec<(Boost, i8)>>(),
             vec![
                 (Boost::Atk, 1),
                 (Boost::Def, 1),

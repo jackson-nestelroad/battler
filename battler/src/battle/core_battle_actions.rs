@@ -21,7 +21,6 @@ use crate::{
         MoveHandle,
         MoveOutcome,
         MoveOutcomeOnTarget,
-        PartialBoostTable,
         Player,
         PlayerContext,
         Side,
@@ -1700,6 +1699,7 @@ fn apply_move_effects(
                             is_secondary,
                             is_self,
                         )?;
+                        let outcome = MoveOutcomeOnTarget::from(outcome);
                         hit_effect_outcome = hit_effect_outcome.combine(outcome);
                     }
 
@@ -1864,44 +1864,42 @@ fn apply_move_effects(
     Ok(())
 }
 
-fn boost(
+pub fn boost(
     context: &mut MonContext,
-    original_boosts: PartialBoostTable,
+    original_boosts: BoostTable,
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
     is_secondary: bool,
     is_self: bool,
-) -> Result<MoveOutcomeOnTarget, Error> {
+) -> Result<bool, Error> {
     if context.mon().hp == 0
         || !context.mon().active
         || Side::mons_left(context.as_side_context()) == 0
     {
-        return Ok(MoveOutcomeOnTarget::Failure);
+        return Ok(false);
     }
     // TODO: ChangeBoost event.
     let capped_boosts = Mon::cap_boosts(context, original_boosts.clone());
-    let boosts = BoostTable::from(&capped_boosts);
     let boosts = match effect {
         Some(effect_handle) => {
             core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
                 &mut context.applying_effect_context(effect_handle.clone(), source, None)?,
                 fxlang::BattleEvent::TryBoost,
-                boosts,
+                capped_boosts.clone(),
             )
         }
         None => core_battle_effects::run_event_for_mon_expecting_boost_table(
             context,
             fxlang::BattleEvent::TryBoost,
-            boosts,
+            capped_boosts.clone(),
         ),
     };
 
     let mut success = false;
     for (boost, value) in BoostMapInOrderIterator::new(&boosts) {
-        let original_delta = *original_boosts.get(&boost).unwrap_or(&0);
+        let original_delta = original_boosts.get(boost);
         let user_intended = original_delta != 0;
-        let capped =
-            original_delta != 0 && capped_boosts.get(&boost).is_some_and(|value| value == &0);
+        let capped = original_delta != 0 && capped_boosts.get(boost) == 0;
         let suppressed = value == 0;
 
         let delta = Mon::boost_stat(context, boost, value);
@@ -1929,9 +1927,9 @@ fn boost(
         if boosts.values().any(|val| val < 0) {
             context.mon_mut().stats_lowered_this_turn = true;
         }
-        Ok(MoveOutcomeOnTarget::Success)
+        Ok(true)
     } else {
-        Ok(MoveOutcomeOnTarget::Failure)
+        Ok(false)
     }
 }
 

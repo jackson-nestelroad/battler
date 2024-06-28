@@ -163,7 +163,6 @@
       "Protect"
     ],
     "crit_ratio": 2,
-    "charging_turn": true,
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -265,7 +264,6 @@
       "NoSleepTalk",
       "Protect"
     ],
-    "charging_turn": true,
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -958,7 +956,14 @@
           "status": "frz"
         }
       }
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "# TODO: Exempt from accuracy if weather is hail or snow."
+        ]
+      }
+    }
   },
   "psybeam": {
     "name": "Psybeam",
@@ -1223,6 +1228,14 @@
         "atk": 1,
         "spa": 1
       }
+    },
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "# TODO: +1 for both boosts in the sun.",
+          "# TODO: $move.boosts = func_call(boosts: atk:2 spa:2)"
+        ]
+      }
     }
   },
   "razorleaf": {
@@ -1251,7 +1264,22 @@
       "Mirror",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "# TODO: Do not need to charge in the sun.",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ],
+        "on_base_power": ["# TODO: Weak to several weathers."]
+      }
+    }
   },
   "poisonpowder": {
     "name": "Poison Powder",
@@ -1415,7 +1443,12 @@
           "status": "par"
         }
       }
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_use_move": ["# TODO: Accuracy is changed by the weather."]
+      }
+    }
   },
   "rockthrow": {
     "name": "Rock Throw",
@@ -1464,7 +1497,35 @@
       "NoAssist",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_immunity": ["# TODO: Immune to weather damage."],
+        "on_invulnerability": [
+          "if [earthquake, magnitude] has $move.id:",
+          ["return"],
+          "return false"
+        ],
+        "on_source_modify_damage": [
+          "if [earthquake, magnitude] has $move.id:",
+          ["return expr($damage * 2)"]
+        ]
+      }
+    }
   },
   "toxic": {
     "name": "Toxic",
@@ -1575,7 +1636,19 @@
     "accuracy": 100,
     "base_power": 20,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "user_effect": {
+      "volatile_status": "rage"
+    },
+    "condition": {
+      "callbacks": {
+        "on_hit": [
+          "if $target != $source and $move.category != status:",
+          ["boost: $target atk:1"]
+        ],
+        "on_before_move": ["remove_volatile: $user $this.id"]
+      }
+    }
   },
   "teleport": {
     "name": "Teleport",

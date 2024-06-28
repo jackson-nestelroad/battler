@@ -258,6 +258,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move on the target.
     #[string = "Hit"]
     Hit,
+    /// Runs when determining if a Mon is immune to some status.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "Immunity"]
+    Immunity,
     /// Runs when determining if a Mon is invulnerable to targeting moves.
     ///
     /// Runs as the very first step in a move.
@@ -479,6 +484,7 @@ impl BattleEvent {
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
+            Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
@@ -684,6 +690,7 @@ pub struct Callbacks {
     pub on_end: Callback,
     pub on_flinch: Callback,
     pub on_hit: Callback,
+    pub on_immunity: Callback,
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
@@ -739,6 +746,7 @@ impl Callbacks {
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::Flinch => Some(&self.on_flinch),
             BattleEvent::Hit => Some(&self.on_hit),
+            BattleEvent::Immunity => Some(&self.on_immunity),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),

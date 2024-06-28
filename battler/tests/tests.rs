@@ -19,6 +19,7 @@ mod moves {
     mod no_target_test;
     mod ohko_test;
     mod powder_test;
+    mod rage_test;
     mod recoil_test;
     mod secondary_effect_callback_test;
     mod self_destruct_test;

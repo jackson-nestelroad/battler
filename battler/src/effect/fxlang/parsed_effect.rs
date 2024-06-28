@@ -1,6 +1,7 @@
 use ahash::HashMapExt;
 
 use crate::{
+    battle::Battle,
     common::{
         Error,
         FastHashMap,
@@ -56,6 +57,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
             parsed.parse_and_save(BattleEvent::Flinch, callbacks)?;
             parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;

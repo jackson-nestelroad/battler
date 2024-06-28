@@ -6,8 +6,8 @@ use serde::{
 
 use crate::{
     battle::{
+        BoostTable,
         MonHandle,
-        PartialBoostTable,
     },
     common::{
         FastHashMap,
@@ -42,7 +42,7 @@ use crate::{
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct HitEffect {
     /// Stat boosts.
-    pub boosts: Option<PartialBoostTable>,
+    pub boosts: Option<BoostTable>,
     /// Percentage of target's HP to heal.
     pub heal_percent: Option<Fraction<u16>>,
     /// Status applied.

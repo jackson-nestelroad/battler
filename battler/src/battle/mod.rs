@@ -52,11 +52,9 @@ pub use battle_options::{
 pub use battle_type::BattleType;
 pub use boosts::{
     Boost,
-    BoostMap,
     BoostMapInOrderIterator,
     BoostTable,
     ContainsOptionalBoosts,
-    PartialBoostTable,
 };
 pub use calculations::{
     apply_nature_to_stats,

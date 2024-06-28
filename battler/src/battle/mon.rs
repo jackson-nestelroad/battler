@@ -28,7 +28,6 @@ use crate::{
         MonHandle,
         MoveHandle,
         MoveOutcome,
-        PartialBoostTable,
         Player,
         Side,
     },
@@ -868,6 +867,7 @@ impl Mon {
             context.mon_mut().force_switch = None;
         }
 
+        context.mon_mut().boosts = BoostTable::new();
         context.mon_mut().volatiles.clear();
 
         let species = context.mon().species.clone();
@@ -1133,16 +1133,14 @@ impl Mon {
         Ok(())
     }
 
-    pub fn cap_boosts(context: &MonContext, boosts: PartialBoostTable) -> PartialBoostTable {
-        PartialBoostTable::from_iter(boosts.into_iter().filter(|(_, value)| value != &0).map(
-            |(boost, value)| {
-                let current_value = context.mon().boosts.get(boost);
-                (
-                    boost,
-                    (current_value + value).max(-6).min(6) - current_value,
-                )
-            },
-        ))
+    pub fn cap_boosts(context: &MonContext, boosts: BoostTable) -> BoostTable {
+        BoostTable::from_iter(boosts.non_zero_iter().map(|(boost, value)| {
+            let current_value = context.mon().boosts.get(boost);
+            (
+                boost,
+                (current_value + value).max(-6).min(6) - current_value,
+            )
+        }))
     }
 
     pub fn boost_stat(context: &mut MonContext, boost: Boost, value: i8) -> i8 {
