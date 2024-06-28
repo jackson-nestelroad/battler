@@ -3,6 +3,7 @@ mod secondary_effect_callback_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -55,6 +56,7 @@ mod secondary_effect_callback_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -67,7 +69,7 @@ mod secondary_effect_callback_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
-            499634460850216,
+            578204138820240,
             dugtrio().unwrap(),
             dugtrio().unwrap(),
         )
@@ -92,15 +94,15 @@ mod secondary_effect_callback_test {
                 "switch|player:player-2|position:1|name:Dugtrio|health:100/100|species:Dugtrio|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Dugtrio,player-1,1|name:Tri Attack|target:Dugtrio,player-2,1",
-                "split|side:1",
-                "damage|mon:Dugtrio,player-2,1|health:70/95",
-                "damage|mon:Dugtrio,player-2,1|health:74/100",
                 "move|mon:Dugtrio,player-2,1|name:Tri Attack|target:Dugtrio,player-1,1",
                 "split|side:0",
-                "damage|mon:Dugtrio,player-1,1|health:68/95",
-                "damage|mon:Dugtrio,player-1,1|health:72/100",
-                "status|mon:Dugtrio,player-1,1|status:Paralysis",
+                "damage|mon:Dugtrio,player-1,1|health:71/95",
+                "damage|mon:Dugtrio,player-1,1|health:75/100",
+                "move|mon:Dugtrio,player-1,1|name:Tri Attack|target:Dugtrio,player-2,1",
+                "split|side:1",
+                "damage|mon:Dugtrio,player-2,1|health:69/95",
+                "damage|mon:Dugtrio,player-2,1|health:73/100",
+                "status|mon:Dugtrio,player-2,1|status:Paralysis",
                 "residual",
                 "turn|turn:2"
             ]"#,

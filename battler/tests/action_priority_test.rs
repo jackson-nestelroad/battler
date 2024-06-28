@@ -310,7 +310,7 @@ mod action_priority_tests {
     fn speed_ties_broken_randomly() {
         let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
         add_test_moves(&mut data).unwrap();
-        let mut battle = make_battle_with_seed(&data, 2145345345).unwrap();
+        let mut battle = make_battle_with_seed(&data, 23567342414323).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(
@@ -357,8 +357,8 @@ mod action_priority_tests {
                 "switch|player:player-2|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
                 "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
+                "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
                 "residual",
                 "turn|turn:2",
                 ["time"],

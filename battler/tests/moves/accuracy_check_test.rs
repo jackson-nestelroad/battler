@@ -3,6 +3,7 @@ mod accuracy_check_tests {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -89,13 +90,15 @@ mod accuracy_check_tests {
 
     fn make_singles_battle(
         data: &dyn DataStore,
+        seed: u64,
         team: TeamData,
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
-            .with_seed(0)
+            .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team.clone())
@@ -105,13 +108,15 @@ mod accuracy_check_tests {
 
     fn make_doubles_battle(
         data: &dyn DataStore,
+        seed: u64,
         team: TeamData,
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Doubles)
-            .with_seed(0)
+            .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team.clone())
@@ -122,7 +127,7 @@ mod accuracy_check_tests {
     #[test]
     fn accuracy_check_applies_normally() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_singles_battle(&data, pikachu_team().unwrap()).unwrap();
+        let mut battle = make_singles_battle(&data, 998897846531, pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -149,20 +154,23 @@ mod accuracy_check_tests {
                 "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
                 "resisted|mon:Pikachu,player-1,1",
                 "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:58/95",
-                "damage|mon:Pikachu,player-1,1|health:62/100",
-                "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1|notarget",
-                "miss|mon:Pikachu,player-2,1",
-                "residual",
-                "turn|turn:2",
-                ["time"],
+                "damage|mon:Pikachu,player-1,1|health:61/95",
+                "damage|mon:Pikachu,player-1,1|health:65/100",
                 "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1",
                 "resisted|mon:Pikachu,player-2,1",
                 "split|side:1",
                 "damage|mon:Pikachu,player-2,1|health:59/95",
                 "damage|mon:Pikachu,player-2,1|health:63/100",
-                "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1|notarget",
-                "miss|mon:Pikachu,player-1,1",
+                "residual",
+                "turn|turn:2",
+                ["time"],
+                "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
+                "resisted|mon:Pikachu,player-1,1",
+                "split|side:0",
+                "damage|mon:Pikachu,player-1,1|health:28/95",
+                "damage|mon:Pikachu,player-1,1|health:30/100",
+                "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1|notarget",
+                "miss|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:3"
             ]"#,
@@ -174,7 +182,7 @@ mod accuracy_check_tests {
     #[test]
     fn accuracy_check_impacted_by_lowered_accuracy() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_singles_battle(&data, pikachu_team().unwrap()).unwrap();
+        let mut battle = make_singles_battle(&data, 0, pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -209,39 +217,36 @@ mod accuracy_check_tests {
                 ["time"],
                 "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
                 "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
-                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
-                "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
+                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1|notarget",
+                "miss|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1|notarget",
-                "miss|mon:Pikachu,player-1,1",
-                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
-                "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
+                "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
+                "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
+                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1|notarget",
+                "miss|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
-                "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
                 "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
                 "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
+                "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
+                "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1|notarget",
-                "miss|mon:Pikachu,player-2,1",
                 "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1|notarget",
                 "miss|mon:Pikachu,player-1,1",
+                "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1|notarget",
+                "miss|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:5",
                 ["time"],
                 "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1|notarget",
                 "miss|mon:Pikachu,player-1,1",
-                "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1",
-                "resisted|mon:Pikachu,player-2,1",
-                "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:60/95",
-                "damage|mon:Pikachu,player-2,1|health:64/100",
+                "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1|notarget",
+                "miss|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:6"
             ]"#,
@@ -253,7 +258,7 @@ mod accuracy_check_tests {
     #[test]
     fn accuracy_check_impacted_by_raised_evasion() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_singles_battle(&data, pikachu_team().unwrap()).unwrap();
+        let mut battle = make_singles_battle(&data, 0, pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -300,10 +305,10 @@ mod accuracy_check_tests {
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
-                "boost|mon:Pikachu,player-1,1|stat:eva|by:1",
                 "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
+                "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
+                "boost|mon:Pikachu,player-1,1|stat:eva|by:1",
                 "residual",
                 "turn|turn:4",
                 ["time"],
@@ -314,13 +319,10 @@ mod accuracy_check_tests {
                 "residual",
                 "turn|turn:5",
                 ["time"],
+                "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1|notarget",
+                "miss|mon:Pikachu,player-1,1",
                 "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1|notarget",
                 "miss|mon:Pikachu,player-2,1",
-                "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
-                "resisted|mon:Pikachu,player-1,1",
-                "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:62/95",
-                "damage|mon:Pikachu,player-1,1|health:66/100",
                 "residual",
                 "turn|turn:6"
             ]"#,
@@ -332,7 +334,8 @@ mod accuracy_check_tests {
     #[test]
     fn accuracy_check_for_each_target() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_doubles_battle(&data, doubles_pikachu_team().unwrap()).unwrap();
+        let mut battle =
+            make_doubles_battle(&data, 65564654, doubles_pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -368,11 +371,11 @@ mod accuracy_check_tests {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Icy Wind|spread:Pikachu,player-2,1",
-                "miss|mon:Pikachu,player-2,2",
+                "move|mon:Pikachu,player-1,1|name:Icy Wind|spread:Pikachu,player-2,2",
+                "miss|mon:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:78/95",
-                "damage|mon:Pikachu,player-2,1|health:83/100",
+                "damage|mon:Pikachu,player-2,2|health:78/95",
+                "damage|mon:Pikachu,player-2,2|health:83/100",
                 "residual",
                 "turn|turn:3"
             ]"#,
@@ -384,7 +387,8 @@ mod accuracy_check_tests {
     #[test]
     fn accuracy_check_only_once_for_multihit_moves() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_singles_battle(&data, pikachu_team().unwrap()).unwrap();
+        let mut battle =
+            make_singles_battle(&data, 453950743359796, pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -429,6 +433,13 @@ mod accuracy_check_tests {
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
                 "residual",
                 "turn|turn:3",
+                ["time"],
+                "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
+                "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
+                "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1|notarget",
+                "miss|mon:Pikachu,player-2,1",
+                "residual",
+                "turn|turn:4",
                 ["time"],
                 "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
@@ -441,13 +452,6 @@ mod accuracy_check_tests {
                 "damage|mon:Pikachu,player-2,1|health:82/100",
                 "hitcount|hits:2",
                 "residual",
-                "turn|turn:4",
-                ["time"],
-                "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1|notarget",
-                "miss|mon:Pikachu,player-2,1",
-                "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
-                "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
-                "residual",
                 "turn|turn:5",
                 ["time"],
                 "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1",
@@ -458,14 +462,21 @@ mod accuracy_check_tests {
                 "damage|mon:Pikachu,player-2,1|health:59/95",
                 "damage|mon:Pikachu,player-2,1|health:63/100",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:51/95",
-                "damage|mon:Pikachu,player-2,1|health:54/100",
+                "damage|mon:Pikachu,player-2,1|health:50/95",
+                "damage|mon:Pikachu,player-2,1|health:53/100",
                 "hitcount|hits:3",
                 "residual",
                 "turn|turn:6",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1|notarget",
-                "miss|mon:Pikachu,player-2,1",
+                "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1",
+                "crit|mon:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:38/95",
+                "damage|mon:Pikachu,player-2,1|health:40/100",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:30/95",
+                "damage|mon:Pikachu,player-2,1|health:32/100",
+                "hitcount|hits:2",
                 "residual",
                 "turn|turn:7"
             ]"#,
@@ -477,7 +488,7 @@ mod accuracy_check_tests {
     #[test]
     fn accuracy_check_for_multiaccuracy_moves() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_singles_battle(&data, pikachu_team().unwrap()).unwrap();
+        let mut battle = make_singles_battle(&data, 21241564315, pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -495,7 +506,6 @@ mod accuracy_check_tests {
         assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-        // TODO: Adjust damage dealt when increasing base power is implemented.
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
                 "info|battletype:Singles",
@@ -520,32 +530,44 @@ mod accuracy_check_tests {
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
                 "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:88/95",
-                "damage|mon:Pikachu,player-2,1|health:93/100",
+                "damage|mon:Pikachu,player-2,1|health:89/95",
+                "damage|mon:Pikachu,player-2,1|health:94/100",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:78/95",
+                "damage|mon:Pikachu,player-2,1|health:83/100",
                 "miss|mon:Pikachu,player-2,1",
-                "hitcount|hits:1",
+                "hitcount|hits:2",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1|notarget",
+                "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:72/95",
+                "damage|mon:Pikachu,player-2,1|health:76/100",
                 "miss|mon:Pikachu,player-2,1",
+                "hitcount|hits:1",
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1|notarget",
+                "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
+                "crit|mon:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:63/95",
+                "damage|mon:Pikachu,player-2,1|health:67/100",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:51/95",
+                "damage|mon:Pikachu,player-2,1|health:54/100",
                 "miss|mon:Pikachu,player-2,1",
+                "hitcount|hits:2",
                 "residual",
                 "turn|turn:5",
                 ["time"],
                 "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:82/95",
-                "damage|mon:Pikachu,player-2,1|health:87/100",
-                "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:76/95",
-                "damage|mon:Pikachu,player-2,1|health:80/100",
+                "damage|mon:Pikachu,player-2,1|health:45/95",
+                "damage|mon:Pikachu,player-2,1|health:48/100",
                 "miss|mon:Pikachu,player-2,1",
-                "hitcount|hits:2",
+                "hitcount|hits:1",
                 "residual",
                 "turn|turn:6"
             ]"#,
@@ -557,7 +579,7 @@ mod accuracy_check_tests {
     #[test]
     fn moves_can_ignore_evasion() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_singles_battle(&data, pikachu_team().unwrap()).unwrap();
+        let mut battle = make_singles_battle(&data, 0, pikachu_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));

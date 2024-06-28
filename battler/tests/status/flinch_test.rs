@@ -3,6 +3,7 @@ mod flinch_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -51,9 +52,10 @@ mod flinch_test {
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
-            .with_seed(8657868)
+            .with_seed(286917634402333)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -89,33 +91,30 @@ mod flinch_test {
                 "switch|player:player-2|position:1|name:Rapidash|health:100/100|species:Rapidash|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Rapidash,player-1,1|name:Stomp|target:Rapidash,player-2,1",
-                "split|side:1",
-                "damage|mon:Rapidash,player-2,1|health:90/125",
-                "damage|mon:Rapidash,player-2,1|health:72/100",
                 "move|mon:Rapidash,player-2,1|name:Stomp|target:Rapidash,player-1,1",
                 "split|side:0",
-                "damage|mon:Rapidash,player-1,1|health:85/125",
-                "damage|mon:Rapidash,player-1,1|health:68/100",
+                "damage|mon:Rapidash,player-1,1|health:86/125",
+                "damage|mon:Rapidash,player-1,1|health:69/100",
+                "cant|mon:Rapidash,player-1,1|reason:Flinch",
                 "residual",
                 "turn|turn:2",
                 ["time"],
+                "move|mon:Rapidash,player-2,1|name:Stomp|target:Rapidash,player-1,1",
+                "split|side:0",
+                "damage|mon:Rapidash,player-1,1|health:48/125",
+                "damage|mon:Rapidash,player-1,1|health:39/100",
                 "move|mon:Rapidash,player-1,1|name:Stomp|target:Rapidash,player-2,1",
                 "split|side:1",
-                "damage|mon:Rapidash,player-2,1|health:49/125",
-                "damage|mon:Rapidash,player-2,1|health:40/100",
-                "cant|mon:Rapidash,player-2,1|reason:Flinch",
+                "damage|mon:Rapidash,player-2,1|health:83/125",
+                "damage|mon:Rapidash,player-2,1|health:67/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Rapidash,player-1,1|name:Stomp|target:Rapidash,player-2,1",
-                "split|side:1",
-                "damage|mon:Rapidash,player-2,1|health:12/125",
-                "damage|mon:Rapidash,player-2,1|health:10/100",
                 "move|mon:Rapidash,player-2,1|name:Stomp|target:Rapidash,player-1,1",
                 "split|side:0",
-                "damage|mon:Rapidash,player-1,1|health:47/125",
-                "damage|mon:Rapidash,player-1,1|health:38/100",
+                "damage|mon:Rapidash,player-1,1|health:12/125",
+                "damage|mon:Rapidash,player-1,1|health:10/100",
+                "cant|mon:Rapidash,player-1,1|reason:Flinch",
                 "residual",
                 "turn|turn:4"
             ]"#,

@@ -3,6 +3,7 @@ mod disable_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
             Request,
@@ -85,6 +86,7 @@ mod disable_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -158,8 +160,8 @@ mod disable_test {
                 ["time"],
                 "move|mon:Aerodactyl,player-2,1|name:Razor Wind",
                 "split|side:0",
-                "damage|mon:Alakazam,player-1,1|health:57/115",
-                "damage|mon:Alakazam,player-1,1|health:50/100",
+                "damage|mon:Alakazam,player-1,1|health:56/115",
+                "damage|mon:Alakazam,player-1,1|health:49/100",
                 "residual",
                 "turn|turn:5",
                 ["time"],
@@ -261,8 +263,8 @@ mod disable_test {
                 ["time"],
                 "move|mon:Slowbro,player-2,1|name:Struggle|target:Alakazam,player-1,1",
                 "split|side:0",
-                "damage|mon:Alakazam,player-1,1|health:6/115",
-                "damage|mon:Alakazam,player-1,1|health:6/100",
+                "damage|mon:Alakazam,player-1,1|health:3/115",
+                "damage|mon:Alakazam,player-1,1|health:3/100",
                 "split|side:1",
                 "damage|mon:Slowbro,player-2,1|from:Struggle Recoil|health:116/155",
                 "damage|mon:Slowbro,player-2,1|from:Struggle Recoil|health:75/100",

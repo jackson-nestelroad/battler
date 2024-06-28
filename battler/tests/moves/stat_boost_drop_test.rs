@@ -3,6 +3,7 @@ mod stat_boost_drop_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -30,6 +31,7 @@ mod stat_boost_drop_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -48,6 +50,7 @@ mod stat_boost_drop_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -304,10 +307,10 @@ mod stat_boost_drop_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
-                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "move|mon:Pikachu,player-2,1|name:Cotton Spore",
                 "unboost|mon:Pikachu,player-1,1|stat:spe|by:2",
+                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
+                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "residual",
                 "turn|turn:3",
                 ["time"],
@@ -318,24 +321,24 @@ mod stat_boost_drop_test {
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
-                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "move|mon:Pikachu,player-2,1|name:Cotton Spore",
                 "unboost|mon:Pikachu,player-1,1|stat:spe|by:2",
+                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
+                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "residual",
                 "turn|turn:5",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
-                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "move|mon:Pikachu,player-2,1|name:Cotton Spore",
                 "unboost|mon:Pikachu,player-1,1|stat:spe|by:2",
+                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
+                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "residual",
                 "turn|turn:6",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
-                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "move|mon:Pikachu,player-2,1|name:Cotton Spore",
                 "unboost|mon:Pikachu,player-1,1|stat:spe|by:2",
+                "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
+                "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "residual",
                 "turn|turn:7"
             ]"#).unwrap();
@@ -416,7 +419,7 @@ mod stat_boost_drop_test {
             }"#,
         )
         .unwrap();
-        let mut battle = make_singles_battle(&data, team.clone(), team, 777).unwrap();
+        let mut battle = make_singles_battle(&data, team.clone(), team, 128127534754107).unwrap();
 
         assert_eq!(battle.start(), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -439,17 +442,17 @@ mod stat_boost_drop_test {
                 ["time"],
                 "move|mon:Pikachu,player-2,1|name:Ancient Power|target:Pikachu,player-1,1",
                 "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:69/95",
-                "damage|mon:Pikachu,player-1,1|health:73/100",
+                "damage|mon:Pikachu,player-1,1|health:71/95",
+                "damage|mon:Pikachu,player-1,1|health:75/100",
+                "boost|mon:Pikachu,player-2,1|stat:atk|by:1",
+                "boost|mon:Pikachu,player-2,1|stat:def|by:1",
+                "boost|mon:Pikachu,player-2,1|stat:spa|by:1",
+                "boost|mon:Pikachu,player-2,1|stat:spd|by:1",
+                "boost|mon:Pikachu,player-2,1|stat:spe|by:1",
                 "move|mon:Pikachu,player-1,1|name:Ancient Power|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:68/95",
-                "damage|mon:Pikachu,player-2,1|health:72/100",
-                "boost|mon:Pikachu,player-1,1|stat:atk|by:1",
-                "boost|mon:Pikachu,player-1,1|stat:def|by:1",
-                "boost|mon:Pikachu,player-1,1|stat:spa|by:1",
-                "boost|mon:Pikachu,player-1,1|stat:spd|by:1",
-                "boost|mon:Pikachu,player-1,1|stat:spe|by:1",
+                "damage|mon:Pikachu,player-2,1|health:77/95",
+                "damage|mon:Pikachu,player-2,1|health:82/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();

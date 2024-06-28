@@ -4,6 +4,7 @@ mod switch_out_state_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
             Request,
@@ -68,6 +69,7 @@ mod switch_out_state_test {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .with_seed(0)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
     }

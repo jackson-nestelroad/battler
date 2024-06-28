@@ -4,6 +4,7 @@ mod switch_after_faint_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
             Request,
@@ -70,6 +71,7 @@ mod switch_after_faint_test {
             .with_battle_type(BattleType::Doubles)
             .with_seed(0)
             .with_team_validation(false)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
     }
@@ -116,8 +118,8 @@ mod switch_after_faint_test {
                 ["time"],
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "split|side:0",
-                "damage|mon:Bulbasaur,player-1,1|health:86/105",
-                "damage|mon:Bulbasaur,player-1,1|health:82/100",
+                "damage|mon:Bulbasaur,player-1,1|health:87/105",
+                "damage|mon:Bulbasaur,player-1,1|health:83/100",
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,2",
                 "split|side:1",
                 "damage|mon:Charmander,player-2,2|health:0",
@@ -189,15 +191,15 @@ mod switch_after_faint_test {
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
                 ["time"],
+                "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Bulbasaur,player-1,1|health:70/105",
+                "damage|mon:Bulbasaur,player-1,1|health:67/100",
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Squirtle,player-2,2",
                 "split|side:1",
                 "damage|mon:Squirtle,player-2,2|health:0",
                 "damage|mon:Squirtle,player-2,2|health:0",
                 "faint|mon:Squirtle,player-2,2",
-                "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
-                "split|side:0",
-                "damage|mon:Bulbasaur,player-1,1|health:68/105",
-                "damage|mon:Bulbasaur,player-1,1|health:65/100",
                 "move|mon:Charmander,player-1,2|name:Scratch|target:Bulbasaur,player-2,1",
                 "split|side:1",
                 "damage|mon:Bulbasaur,player-2,1|health:103/105",
@@ -256,6 +258,7 @@ mod switch_after_faint_test {
                 ["time"],
                 "switch|player:player-2|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:F",
                 "move|mon:Bulbasaur,player-1,1|name:Air Cutter|spread:Squirtle,player-2,1;Charmander,player-2,2",
+                "crit|mon:Charmander,player-2,2",
                 "split|side:1",
                 "damage|mon:Squirtle,player-2,1|health:0",
                 "damage|mon:Squirtle,player-2,1|health:0",

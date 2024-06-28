@@ -3,6 +3,7 @@ mod leech_seed_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -68,6 +69,7 @@ mod leech_seed_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -78,7 +80,7 @@ mod leech_seed_test {
     #[test]
     fn leech_seed_leeches_user_until_switch_out() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+        let mut battle = make_battle(&data, 9284091283, team().unwrap(), team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -112,16 +114,16 @@ mod leech_seed_test {
                 "move|mon:Eevee,player-2,1|name:Brick Break|target:Eevee,player-1,1",
                 "supereffective|mon:Eevee,player-1,1",
                 "split|side:0",
-                "damage|mon:Eevee,player-1,1|health:39/115",
-                "damage|mon:Eevee,player-1,1|health:34/100",
+                "damage|mon:Eevee,player-1,1|health:47/115",
+                "damage|mon:Eevee,player-1,1|health:41/100",
                 "move|mon:Eevee,player-1,1|name:Leech Seed|target:Eevee,player-2,1",
                 "start|mon:Eevee,player-2,1|move:Leech Seed",
                 "split|side:1",
                 "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:101/115",
                 "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:88/100",
                 "split|side:0",
-                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:53/115",
-                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:47/100",
+                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:61/115",
+                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:54/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
@@ -129,8 +131,8 @@ mod leech_seed_test {
                 "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:87/115",
                 "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:76/100",
                 "split|side:0",
-                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:67/115",
-                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:59/100",
+                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:75/115",
+                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:66/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
@@ -138,8 +140,8 @@ mod leech_seed_test {
                 "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:73/115",
                 "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:64/100",
                 "split|side:0",
-                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:81/115",
-                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:71/100",
+                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:89/115",
+                "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:78/100",
                 "residual",
                 "turn|turn:4",
                 ["time"],

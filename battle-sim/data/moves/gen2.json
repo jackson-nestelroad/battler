@@ -28,7 +28,12 @@
     "target": "Normal",
     "flags": ["Contact", "Metronome", "Mirror", "Protect"],
     "multiaccuracy": true,
-    "multihit": 3
+    "multihit": 3,
+    "effect": {
+      "callbacks": {
+        "on_base_power": ["return expr(10 * $move.hit)"]
+      }
+    }
   },
   "thief": {
     "name": "Thief",

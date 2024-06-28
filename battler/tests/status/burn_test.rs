@@ -4,6 +4,7 @@ mod burn_test {
         battle::{
             Battle,
             BattleEngineRandomizeBaseDamage,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -77,6 +78,7 @@ mod burn_test {
             .with_team_validation(false)
             .with_pass_allowed(true)
             .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Max)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)

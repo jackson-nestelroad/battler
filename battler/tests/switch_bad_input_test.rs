@@ -3,6 +3,7 @@ mod switch_bad_input_tests {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -95,6 +96,7 @@ mod switch_bad_input_tests {
     fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Doubles)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team()?)

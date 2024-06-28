@@ -3,6 +3,7 @@ mod recoil_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -21,14 +22,16 @@ mod recoil_test {
 
     fn make_battle(
         data: &dyn DataStore,
+        seed: u64,
         team_1: TeamData,
         team_2: TeamData,
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
-            .with_seed(0)
+            .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -56,7 +59,7 @@ mod recoil_test {
             }"#,
         )
         .unwrap();
-        let mut battle = make_battle(&data, team.clone(), team).unwrap();
+        let mut battle = make_battle(&data, 0, team.clone(), team).unwrap();
 
         assert_eq!(battle.start(), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -79,18 +82,18 @@ mod recoil_test {
                 ["time"],
                 "move|mon:Slaking,player-2,1|name:Double-Edge|target:Slaking,player-1,1",
                 "split|side:0",
-                "damage|mon:Slaking,player-1,1|health:169/410",
-                "damage|mon:Slaking,player-1,1|health:42/100",
+                "damage|mon:Slaking,player-1,1|health:179/410",
+                "damage|mon:Slaking,player-1,1|health:44/100",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|from:Recoil|health:330/410",
-                "damage|mon:Slaking,player-2,1|from:Recoil|health:81/100",
+                "damage|mon:Slaking,player-2,1|from:Recoil|health:333/410",
+                "damage|mon:Slaking,player-2,1|from:Recoil|health:82/100",
                 "move|mon:Slaking,player-1,1|name:Double-Edge|target:Slaking,player-2,1",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|health:126/410",
-                "damage|mon:Slaking,player-2,1|health:31/100",
+                "damage|mon:Slaking,player-2,1|health:105/410",
+                "damage|mon:Slaking,player-2,1|health:26/100",
                 "split|side:0",
-                "damage|mon:Slaking,player-1,1|from:Recoil|health:101/410",
-                "damage|mon:Slaking,player-1,1|from:Recoil|health:25/100",
+                "damage|mon:Slaking,player-1,1|from:Recoil|health:103/410",
+                "damage|mon:Slaking,player-1,1|from:Recoil|health:26/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();
@@ -117,7 +120,7 @@ mod recoil_test {
             }"#,
         )
         .unwrap();
-        let mut battle = make_battle(&data, team.clone(), team).unwrap();
+        let mut battle = make_battle(&data, 766108902979015, team.clone(), team).unwrap();
 
         assert_eq!(battle.start(), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -140,18 +143,18 @@ mod recoil_test {
                 ["time"],
                 "move|mon:Slaking,player-2,1|name:Chloroblast|target:Slaking,player-1,1",
                 "split|side:0",
-                "damage|mon:Slaking,player-1,1|health:226/410",
-                "damage|mon:Slaking,player-1,1|health:56/100",
+                "damage|mon:Slaking,player-1,1|health:232/410",
+                "damage|mon:Slaking,player-1,1|health:57/100",
                 "split|side:1",
                 "damage|mon:Slaking,player-2,1|from:Recoil|health:205/410",
                 "damage|mon:Slaking,player-2,1|from:Recoil|health:50/100",
                 "move|mon:Slaking,player-1,1|name:Chloroblast|target:Slaking,player-2,1",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|health:49/410",
-                "damage|mon:Slaking,player-2,1|health:12/100",
+                "damage|mon:Slaking,player-2,1|health:45/410",
+                "damage|mon:Slaking,player-2,1|health:11/100",
                 "split|side:0",
-                "damage|mon:Slaking,player-1,1|from:Recoil|health:21/410",
-                "damage|mon:Slaking,player-1,1|from:Recoil|health:6/100",
+                "damage|mon:Slaking,player-1,1|from:Recoil|health:27/410",
+                "damage|mon:Slaking,player-1,1|from:Recoil|health:7/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();

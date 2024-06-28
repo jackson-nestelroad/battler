@@ -3,6 +3,7 @@ mod locked_move_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
             Request,
@@ -58,6 +59,7 @@ mod locked_move_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -139,23 +141,23 @@ mod locked_move_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
+                "move|mon:Blissey,player-2,1|name:Tackle|target:Blissey,player-1,1",
+                "split|side:0",
+                "damage|mon:Blissey,player-1,1|health:290/315",
+                "damage|mon:Blissey,player-1,1|health:93/100",
                 "move|mon:Blissey,player-1,1|name:Thrash|target:Blissey,player-2,1",
                 "split|side:1",
                 "damage|mon:Blissey,player-2,1|health:168/315",
                 "damage|mon:Blissey,player-2,1|health:54/100",
                 "start|mon:Blissey,player-1,1|condition:Confusion|fatigue",
-                "move|mon:Blissey,player-2,1|name:Tackle|target:Blissey,player-1,1",
-                "split|side:0",
-                "damage|mon:Blissey,player-1,1|health:288/315",
-                "damage|mon:Blissey,player-1,1|health:92/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
                 "activate|mon:Blissey,player-1,1|condition:Confusion",
                 "move|mon:Blissey,player-1,1|name:Tackle|target:Blissey,player-2,1",
                 "split|side:1",
-                "damage|mon:Blissey,player-2,1|health:141/315",
-                "damage|mon:Blissey,player-2,1|health:45/100",
+                "damage|mon:Blissey,player-2,1|health:144/315",
+                "damage|mon:Blissey,player-2,1|health:46/100",
                 "residual",
                 "turn|turn:4"
             ]"#,

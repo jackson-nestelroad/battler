@@ -3,6 +3,7 @@ mod substitute_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -82,6 +83,7 @@ mod substitute_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -137,23 +139,23 @@ mod substitute_test {
                 "activate|move:Substitute|damage",
                 "move|mon:Wobbuffet,player-1,1|name:Tackle|target:Wobbuffet,player-2,1",
                 "split|side:1",
-                "damage|mon:Wobbuffet,player-2,1|health:240/250",
+                "damage|mon:Wobbuffet,player-2,1|health:239/250",
                 "damage|mon:Wobbuffet,player-2,1|health:96/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Wobbuffet,player-1,1|name:Agility|target:Wobbuffet,player-1,1",
-                "boost|mon:Wobbuffet,player-1,1|stat:spe|by:2",
                 "move|mon:Wobbuffet,player-2,1|name:Cotton Spore",
                 "activate|move:Substitute|damage",
+                "move|mon:Wobbuffet,player-1,1|name:Agility|target:Wobbuffet,player-1,1",
+                "boost|mon:Wobbuffet,player-1,1|stat:spe|by:2",
                 "residual",
                 "turn|turn:4",
                 ["time"],
                 "move|mon:Wobbuffet,player-1,1|name:Crunch|target:Wobbuffet,player-2,1",
                 "supereffective|mon:Wobbuffet,player-2,1",
                 "split|side:1",
-                "damage|mon:Wobbuffet,player-2,1|health:200/250",
-                "damage|mon:Wobbuffet,player-2,1|health:80/100",
+                "damage|mon:Wobbuffet,player-2,1|health:195/250",
+                "damage|mon:Wobbuffet,player-2,1|health:78/100",
                 "move|mon:Wobbuffet,player-2,1|name:Crunch|target:Wobbuffet,player-1,1",
                 "supereffective|mon:Wobbuffet,player-1,1",
                 "activate|move:Substitute|damage",
@@ -174,12 +176,12 @@ mod substitute_test {
                 "move|mon:Wobbuffet,player-1,1|name:Crunch|target:Wobbuffet,player-2,1",
                 "supereffective|mon:Wobbuffet,player-2,1",
                 "split|side:1",
-                "damage|mon:Wobbuffet,player-2,1|health:154/250",
+                "damage|mon:Wobbuffet,player-2,1|health:153/250",
                 "damage|mon:Wobbuffet,player-2,1|health:62/100",
                 "move|mon:Wobbuffet,player-2,1|name:Crunch|target:Wobbuffet,player-1,1",
                 "supereffective|mon:Wobbuffet,player-1,1",
                 "split|side:0",
-                "damage|mon:Wobbuffet,player-1,1|health:150/250",
+                "damage|mon:Wobbuffet,player-1,1|health:148/250",
                 "damage|mon:Wobbuffet,player-1,1|health:60/100",
                 "residual",
                 "turn|turn:8"

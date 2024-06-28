@@ -3,6 +3,7 @@ mod mist_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -73,6 +74,7 @@ mod mist_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -160,8 +162,8 @@ mod mist_test {
                 "unboost|mon:Charizard,player-2,1|stat:acc|by:1",
                 "move|mon:Blastoise,player-1,2|name:Superpower|target:Blastoise,player-2,2",
                 "split|side:1",
-                "damage|mon:Blastoise,player-2,2|health:80/139",
-                "damage|mon:Blastoise,player-2,2|health:58/100",
+                "damage|mon:Blastoise,player-2,2|health:76/139",
+                "damage|mon:Blastoise,player-2,2|health:55/100",
                 "unboost|mon:Blastoise,player-1,2|stat:atk|by:1",
                 "unboost|mon:Blastoise,player-1,2|stat:def|by:1",
                 "move|mon:Charizard,player-2,1|name:Double Team|target:Charizard,player-2,1",
@@ -171,20 +173,22 @@ mod mist_test {
                 ["time"],
                 "move|mon:Charizard,player-1,1|name:Tackle|target:Charizard,player-2,1",
                 "split|side:1",
-                "damage|mon:Charizard,player-2,1|health:109/138",
-                "damage|mon:Charizard,player-2,1|health:79/100",
-                "move|mon:Charizard,player-2,1|name:Tackle|target:Charizard,player-1,1|notarget",
-                "miss|mon:Charizard,player-1,1",
+                "damage|mon:Charizard,player-2,1|health:110/138",
+                "damage|mon:Charizard,player-2,1|health:80/100",
+                "move|mon:Charizard,player-2,1|name:Tackle|target:Charizard,player-1,1",
+                "split|side:0",
+                "damage|mon:Charizard,player-1,1|health:121/138",
+                "damage|mon:Charizard,player-1,1|health:88/100",
                 "sideend|side:0|move:Mist",
                 "residual",
                 "turn|turn:6",
                 ["time"],
-                "move|mon:Charizard,player-1,1|name:Tail Whip|spread:Blastoise,player-2,2",
-                "miss|mon:Charizard,player-2,1",
+                "move|mon:Charizard,player-1,1|name:Tail Whip|spread:Charizard,player-2,1;Blastoise,player-2,2",
+                "unboost|mon:Charizard,player-2,1|stat:def|by:1",
                 "unboost|mon:Blastoise,player-2,2|stat:def|by:1",
-                "move|mon:Charizard,player-2,1|name:Tail Whip|spread:Charizard,player-1,1",
-                "miss|mon:Blastoise,player-1,2",
-                "unboost|mon:Charizard,player-1,1|stat:def|by:1",
+                "move|mon:Charizard,player-2,1|name:Tail Whip|spread:Blastoise,player-1,2",
+                "miss|mon:Charizard,player-1,1",
+                "unboost|mon:Blastoise,player-1,2|stat:def|by:1",
                 "residual",
                 "turn|turn:7"
             ]"#,

@@ -4,6 +4,7 @@ mod doubles_damage_calculation_tests {
         battle::{
             Battle,
             BattleEngineRandomizeBaseDamage,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -127,6 +128,7 @@ mod doubles_damage_calculation_tests {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Doubles)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)

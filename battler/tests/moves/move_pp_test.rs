@@ -4,6 +4,7 @@ mod move_pp_tests {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
             Request,
@@ -83,6 +84,7 @@ mod move_pp_tests {
             .with_actual_health(true)
             .with_pass_allowed(true)
             .with_team_validation(false)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("test-player", "Test Player")
             .add_player_to_side_2("foe", "Foe")
             .with_team("test-player", team(pp_boosts.clone())?)

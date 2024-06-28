@@ -3,6 +3,7 @@ mod switch_after_move_test {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -29,6 +30,7 @@ mod switch_after_move_test {
             .with_battle_type(BattleType::Singles)
             .with_seed(555432123456)
             .with_team_validation(false)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -214,16 +216,16 @@ mod switch_after_move_test {
                 "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
+                "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Bulbasaur,player-1,1|health:87/105",
+                "damage|mon:Bulbasaur,player-1,1|health:83/100",
                 "move|mon:Bulbasaur,player-1,1|name:U-turn|target:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:76/105",
-                "damage|mon:Bulbasaur,player-2,1|health:73/100",
+                "damage|mon:Bulbasaur,player-2,1|health:75/105",
+                "damage|mon:Bulbasaur,player-2,1|health:72/100",
                 ["time"],
                 "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:50|gender:M",
-                "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Squirtle,player-1,1",
-                "split|side:0",
-                "damage|mon:Squirtle,player-1,1|health:91/104",
-                "damage|mon:Squirtle,player-1,1|health:88/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();

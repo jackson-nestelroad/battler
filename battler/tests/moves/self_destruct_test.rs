@@ -3,6 +3,7 @@ mod self_destruct_tests {
     use battler::{
         battle::{
             Battle,
+            BattleEngineSpeedSortTieResolution,
             BattleType,
             PublicCoreBattle,
         },
@@ -74,6 +75,7 @@ mod self_destruct_tests {
             .with_battle_type(BattleType::Singles)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("test-player", "Test Player")
             .add_player_to_side_2("foe", "Foe")
             .with_team("test-player", test_team()?)
