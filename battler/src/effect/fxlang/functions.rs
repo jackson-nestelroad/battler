@@ -1116,10 +1116,10 @@ fn move_crit_target(
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     Ok(Value::Boolean(
-        (context
+        context
             .active_move(active_move_handle)?
             .maybe_hit_data(mon_handle)
             .map(|hit_data| hit_data.crit)
-            .unwrap_or(false)),
+            .unwrap_or(false),
     ))
 }
