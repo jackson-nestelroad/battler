@@ -12,6 +12,7 @@ mod moves {
     mod leech_seed_test;
     mod magnitude_test;
     mod mimic_test;
+    mod minimize_test;
     mod move_bad_input_test;
     mod move_pp_test;
     mod move_target_test;

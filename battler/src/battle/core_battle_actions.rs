@@ -1269,7 +1269,6 @@ mod direct_move_step {
                     core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
                 }
                 target.outcome = MoveOutcome::Failed;
-                // TODO: AccuracyFailure event.
             }
         }
         Ok(())
@@ -1329,10 +1328,18 @@ mod direct_move_step {
         if context.active_move().data.target == MoveTarget::User
             && context.active_move().data.category == MoveCategory::Status
         {
-            // TODO: If also not semi-invulnerable, accuracy is always.
+            // TODO: If also not semi-invulnerable, accuracy is exempt.
+        } else {
+            if core_battle_effects::run_event_for_applying_effect_expecting_bool(
+                &mut context.applying_effect_context()?,
+                fxlang::BattleEvent::AccuracyExempt,
+            )
+            .is_some()
+            {
+                accuracy = Accuracy::Exempt;
+            }
         }
 
-        // TODO: Accuracy event.
         let hit = match accuracy {
             Accuracy::Chance(accuracy) => {
                 rand_util::chance(context.battle_mut().prng.as_mut(), accuracy as u64, 100)

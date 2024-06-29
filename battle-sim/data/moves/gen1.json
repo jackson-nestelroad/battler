@@ -1774,7 +1774,29 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["EvasionRaising", "Metronome", "Snatch"]
+    "flags": ["EvasionRaising", "Metronome", "Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "eva": 2
+      },
+      "volatile_status": "minimize"
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.boosted = [stomp, steamroller, bodyslam, flyingpress, dragonrush, heatcrash, heavyslam]"
+        ],
+        "on_source_modify_damage": [
+          "if $effect_state.boosted has $move.id:",
+          ["return expr($damage * 2)"]
+        ],
+        "on_accuracy_exempt": [
+          "if $effect_state.boosted has $move.id:",
+          ["return true"]
+        ]
+      }
+    }
   },
   "smokescreen": {
     "name": "Smokescreen",

@@ -1209,6 +1209,23 @@ pub fn run_event_for_applying_effect(
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
 ///
+/// Expects a [`bool`].
+pub fn run_event_for_applying_effect_expecting_bool(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions::default(),
+    )?
+    .boolean()
+    .ok()
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
 /// Expects an integer that can fit in a [`u32`].
 pub fn run_event_for_applying_effect_expecting_u32(
     context: &mut ApplyingEffectContext,

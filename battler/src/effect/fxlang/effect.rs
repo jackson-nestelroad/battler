@@ -151,6 +151,11 @@ enum CommonCallbackType {
     DeserializeLabeledStringEnum,
 )]
 pub enum BattleEvent {
+    /// Runs when the accuracy of a move against a target is being determined.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "AccuracyExempt"]
+    AccuracyExempt,
     /// Runs after a volatile effect is added to a Mon.
     ///
     /// Runs in the context of an applying effect.
@@ -474,6 +479,7 @@ impl BattleEvent {
     /// Maps the event to the [`CallbackType`] flags.
     pub fn callback_type_flags(&self) -> u32 {
         match self {
+            Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
@@ -684,6 +690,7 @@ impl SpeedOrderable for Callback {
 /// All possible callbacks for an effect should be defined here.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
+    pub on_accuracy_exempt: Callback,
     pub on_add_volatile: Callback,
     pub on_after_move: Callback,
     pub on_after_move_secondary_effects: Callback,
@@ -741,6 +748,7 @@ pub struct Callbacks {
 impl Callbacks {
     pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
         match event {
+            BattleEvent::AccuracyExempt => Some(&self.on_accuracy_exempt),
             BattleEvent::AddVolatile => Some(&self.on_add_volatile),
             BattleEvent::AfterMove => Some(&self.on_after_move),
             BattleEvent::AfterMoveSecondaryEffects => Some(&self.on_after_move_secondary_effects),
