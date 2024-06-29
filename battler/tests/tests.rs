@@ -1,3 +1,7 @@
+mod field {
+    mod haze_test;
+}
+
 mod moves {
     mod accuracy_check_test;
     mod counter_test;

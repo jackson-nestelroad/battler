@@ -10,7 +10,6 @@ use crate::{
         core_battle_logs,
         Boost,
         BoostTable,
-        Context,
         Mon,
         MonContext,
         MoveOutcomeOnTarget,
@@ -51,6 +50,7 @@ pub fn run_function(
 ) -> Result<Option<Value>, Error> {
     match function_name {
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
+        "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
         "boost" => boost(context, args).map(|val| Some(val)),
@@ -60,15 +60,14 @@ pub fn run_function(
             calculate_confusion_damage(context, args).map(|val| Some(val))
         }
         "can_switch" => can_switch(context, args).map(|val| Some(val)),
-        "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
+        "chance" => chance(context, args).map(|val| Some(val)),
+        "clear_boosts" => clear_boosts(context, args).map(|()| None),
         "cure_status" => cure_status(context, args).map(|()| None),
         "damage" => damage(context, args).map(|val| Some(val)),
-        "debug_log" => debug_log(context.battle_context_mut(), args).map(|()| None),
+        "debug_log" => debug_log(context, args).map(|()| None),
         "direct_damage" => direct_damage(context, args).map(|()| None),
         "disable_move" => disable_move(context, args).map(|()| None),
-        "do_not_animate_last_move" => {
-            do_not_animate_last_move(context.battle_context_mut()).map(|()| None)
-        }
+        "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "floor" => floor(args).map(|val| Some(val)),
         "get_boost" => get_boost(args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
@@ -79,7 +78,7 @@ pub fn run_function(
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
         "is_undefined" => is_undefined(args).map(|val| Some(val)),
-        "log" => log(context.battle_context_mut(), args).map(|()| None),
+        "log" => log(context, args).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
         "log_end" => log_end(context, args).map(|()| None),
@@ -98,7 +97,7 @@ pub fn run_function(
         "move_slot" => move_slot(context, args).map(|val| Some(val)),
         "move_slot_index" => move_slot_index(context, args),
         "overwrite_move_slot" => overwrite_move_slot(context, args).map(|()| None),
-        "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
+        "random" => random(context, args).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
@@ -128,16 +127,20 @@ fn should_use_source_effect(args: &mut VecDeque<Value>) -> bool {
     has_special_string_flag(args, "use_source")
 }
 
-fn debug_log(context: &mut Context, args: VecDeque<Value>) -> Result<(), Error> {
+fn debug_log(context: &mut EvaluationContext, args: VecDeque<Value>) -> Result<(), Error> {
     let mut event = log_event!("fxlang_debug");
     for (i, arg) in args.into_iter().enumerate() {
         event.set(format!("arg{i}"), format!("{arg:?}"));
     }
-    context.battle_mut().log(event);
+    context.battle_context_mut().battle_mut().log(event);
     Ok(())
 }
 
-fn log_internal(context: &mut Context, title: String, args: VecDeque<Value>) -> Result<(), Error> {
+fn log_internal(
+    context: &mut EvaluationContext,
+    title: String,
+    args: VecDeque<Value>,
+) -> Result<(), Error> {
     let mut event = Event::new(title);
     for arg in args {
         let entry = arg.string().wrap_error_with_message("invalid log entry")?;
@@ -146,11 +149,11 @@ fn log_internal(context: &mut Context, title: String, args: VecDeque<Value>) -> 
             Some((a, b)) => event.extend(&(a, b)),
         }
     }
-    context.battle_mut().log(event);
+    context.battle_context_mut().battle_mut().log(event);
     Ok(())
 }
 
-fn log(context: &mut Context, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let title = args
         .pop_front()
         .wrap_error_with_message("missing log title")?
@@ -210,7 +213,7 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
         )));
     }
 
-    log_internal(context.battle_context_mut(), "activate".to_owned(), args)
+    log_internal(context, "activate".to_owned(), args)
 }
 
 fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -246,7 +249,7 @@ fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
         Mon::position_details(&mut context.target_context()?)?
     )));
 
-    log_internal(context.battle_context_mut(), "start".to_owned(), args)
+    log_internal(context, "start".to_owned(), args)
 }
 
 fn log_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -260,7 +263,7 @@ fn log_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result
         Mon::position_details(&mut context.target_context()?)?
     )));
 
-    log_internal(context.battle_context_mut(), "end".to_owned(), args)
+    log_internal(context, "end".to_owned(), args)
 }
 
 fn log_side_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -275,7 +278,7 @@ fn log_side_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) ->
 
     args.push_front(Value::String(format!("side:{side_index}")));
 
-    log_internal(context.battle_context_mut(), "sidestart".to_owned(), args)
+    log_internal(context, "sidestart".to_owned(), args)
 }
 
 fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -290,7 +293,7 @@ fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
 
     args.push_front(Value::String(format!("side:{side_index}")));
 
-    log_internal(context.battle_context_mut(), "sideend".to_owned(), args)
+    log_internal(context, "sideend".to_owned(), args)
 }
 
 fn log_prepare_move(context: &mut EvaluationContext) -> Result<(), Error> {
@@ -365,25 +368,41 @@ fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     core_battle_logs::ohko(&mut context.mon_context(mon_handle)?)
 }
 
-fn random(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {
+fn random(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let a = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let b = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let val = match (a, b) {
-        (None, None) => context.battle_mut().prng.next(),
-        (Some(max), None) => rand_util::range(context.battle_mut().prng.as_mut(), 0, max),
-        (Some(min), Some(max)) => rand_util::range(context.battle_mut().prng.as_mut(), min, max),
+        (None, None) => context.battle_context_mut().battle_mut().prng.next(),
+        (Some(max), None) => rand_util::range(
+            context.battle_context_mut().battle_mut().prng.as_mut(),
+            0,
+            max,
+        ),
+        (Some(min), Some(max)) => rand_util::range(
+            context.battle_context_mut().battle_mut().prng.as_mut(),
+            min,
+            max,
+        ),
         _ => return Err(battler_error!("invalid random arguments")),
     };
     Ok(Value::U64(val))
 }
 
-fn chance(context: &mut Context, mut args: VecDeque<Value>) -> Result<Value, Error> {
+fn chance(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let a = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let b = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let val = match (a, b) {
         (None, None) => return Err(battler_error!("chance requires at least one argument")),
-        (Some(den), None) => rand_util::chance(context.battle_mut().prng.as_mut(), 1, den),
-        (Some(num), Some(den)) => rand_util::chance(context.battle_mut().prng.as_mut(), num, den),
+        (Some(den), None) => rand_util::chance(
+            context.battle_context_mut().battle_mut().prng.as_mut(),
+            1,
+            den,
+        ),
+        (Some(num), Some(den)) => rand_util::chance(
+            context.battle_context_mut().battle_mut().prng.as_mut(),
+            num,
+            den,
+        ),
         _ => return Err(battler_error!("invalid chance arguments")),
     };
     Ok(Value::Boolean(val))
@@ -637,8 +656,8 @@ fn run_event_on_move(
     Ok(())
 }
 
-fn do_not_animate_last_move(context: &mut Context) -> Result<(), Error> {
-    core_battle_logs::do_not_animate_last_move(context);
+fn do_not_animate_last_move(context: &mut EvaluationContext) -> Result<(), Error> {
+    core_battle_logs::do_not_animate_last_move(context.battle_context_mut());
     Ok(())
 }
 
@@ -1122,4 +1141,25 @@ fn move_crit_target(
             .map(|hit_data| hit_data.crit)
             .unwrap_or(false),
     ))
+}
+
+fn all_active_mons(context: &mut EvaluationContext) -> Result<Value, Error> {
+    Ok(Value::List(
+        context
+            .battle_context()
+            .battle()
+            .all_active_mon_handles()
+            .map(|mon_handle| Value::Mon(mon_handle))
+            .collect(),
+    ))
+}
+
+fn clear_boosts(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    context.mon_context(mon_handle)?.mon_mut().clear_boosts();
+    Ok(())
 }

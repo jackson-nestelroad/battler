@@ -34,6 +34,7 @@ use crate::{
 };
 
 enum UpcomingEvaluationContext<
+    'field_effect,
     'side_effect,
     'applying_effect,
     'effect,
@@ -52,6 +53,7 @@ enum UpcomingEvaluationContext<
     'context: 'effect,
     'effect: 'applying_effect,
     'effect: 'side_effect,
+    'effect: 'field_effect,
 {
     ApplyingEffect(
         MaybeOwnedMut<'applying_effect, ApplyingEffectContext<'effect, 'context, 'battle, 'data>>,
@@ -60,11 +62,26 @@ enum UpcomingEvaluationContext<
     Mon(MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>),
     SideEffect(MaybeOwnedMut<'side_effect, SideEffectContext<'effect, 'context, 'battle, 'data>>),
     Side(MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>),
-    FieldEffect(MaybeOwnedMut<'side_effect, FieldEffectContext<'effect, 'context, 'battle, 'data>>),
+    FieldEffect(
+        MaybeOwnedMut<'field_effect, FieldEffectContext<'effect, 'context, 'battle, 'data>>,
+    ),
+    Field(MaybeOwnedMut<'context, Context<'battle, 'data>>),
 }
 
-impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'battle, 'data>
+impl<
+        'field_effect,
+        'side_effect,
+        'applying_effect,
+        'effect,
+        'mon,
+        'player,
+        'side,
+        'context,
+        'battle,
+        'data,
+    >
     UpcomingEvaluationContext<
+        'field_effect,
         'side_effect,
         'applying_effect,
         'effect,
@@ -84,6 +101,7 @@ impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'b
             Self::SideEffect(context) => context.as_battle_context(),
             Self::Side(context) => context.as_battle_context(),
             Self::FieldEffect(context) => context.as_battle_context(),
+            Self::Field(context) => context,
         }
     }
 
@@ -95,6 +113,7 @@ impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'b
             Self::SideEffect(context) => context.as_battle_context_mut(),
             Self::Side(context) => context.as_battle_context_mut(),
             Self::FieldEffect(context) => context.as_battle_context_mut(),
+            Self::Field(context) => context,
         }
     }
 }
@@ -126,6 +145,9 @@ fn run_effect_event_with_errors(
         ),
         UpcomingEvaluationContext::FieldEffect(context) => fxlang::EvaluationContext::FieldEffect(
             context.forward_field_effect_context(effect_handle.clone())?,
+        ),
+        UpcomingEvaluationContext::Field(context) => fxlang::EvaluationContext::FieldEffect(
+            context.field_effect_context(effect_handle.clone(), None, None)?,
         ),
     };
     EffectManager::evaluate(&mut context, effect_handle, event, input, effect_state)
@@ -782,6 +804,42 @@ fn run_side_callbacks_with_errors(
     Ok(input.get(0).cloned())
 }
 
+fn run_field_callbacks_with_errors(
+    context: &mut Context,
+    source_effect: Option<&EffectHandle>,
+    source: Option<MonHandle>,
+    mut input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
+    callbacks: Vec<CallbackHandle>,
+) -> Result<Option<fxlang::Value>, Error> {
+    for callback_handle in callbacks {
+        let result = match source_effect {
+            Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
+                UpcomingEvaluationContext::FieldEffect(
+                    context
+                        .field_effect_context(source_effect.clone(), source, None)?
+                        .into(),
+                ),
+                &mut input,
+                callback_handle,
+                options,
+            )?,
+            None => run_callbacks_with_forwarding_input_with_errors(
+                UpcomingEvaluationContext::Field(context.into()),
+                &mut input,
+                callback_handle,
+                options,
+            )?,
+        };
+        if let Some(return_value) = result {
+            return Ok(Some(return_value));
+        }
+    }
+
+    // The first input variable is always returned as the result.
+    Ok(input.get(0).cloned())
+}
+
 fn run_residual_callbacks_with_errors(
     context: &mut Context,
     callbacks: Vec<CallbackHandle>,
@@ -897,7 +955,14 @@ fn run_event_with_errors(
             options,
             callbacks,
         ),
-        AllEffectsTarget::Field => todo!("running effects against a field is not implemented"),
+        AllEffectsTarget::Field => run_field_callbacks_with_errors(
+            context,
+            source_effect,
+            source,
+            input,
+            options,
+            callbacks,
+        ),
         AllEffectsTarget::Residual => {
             run_residual_callbacks_with_errors(context, callbacks).map(|()| None)
         }

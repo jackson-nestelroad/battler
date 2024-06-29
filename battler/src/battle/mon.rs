@@ -835,6 +835,10 @@ impl Mon {
             .wrap_error_with_format(format_args!("no move slot in index {index}"))? = new_move_slot;
         Ok(())
     }
+
+    pub fn clear_boosts(&mut self) {
+        self.boosts = BoostTable::new();
+    }
 }
 
 // Request getters.
@@ -925,8 +929,9 @@ impl Mon {
         context.mon_mut().last_move_target = None;
         context.mon_mut().last_move_used = None;
 
+        context.mon_mut().clear_boosts();
+
         context.mon_mut().move_slots = context.mon().base_move_slots.clone();
-        context.mon_mut().boosts = BoostTable::new();
         context.mon_mut().volatiles.clear();
 
         let species = context.mon().species.clone();
