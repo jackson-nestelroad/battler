@@ -59,6 +59,7 @@ pub enum ValueType {
     BoostTable,
     Side,
     MoveSlot,
+    Player,
     List,
     Object,
 
@@ -101,6 +102,7 @@ pub enum Value {
     BoostTable(BoostTable),
     Side(usize),
     MoveSlot(MoveSlot),
+    Player(usize),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
 }
@@ -126,6 +128,7 @@ impl Value {
             Self::Type(_) => ValueType::Type,
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::Player(_) => ValueType::Player,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -320,6 +323,13 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Side)),
         }
     }
+
+    pub fn player_index(self) -> Result<usize, Error> {
+        match self {
+            Self::Player(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Player)),
+        }
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.
@@ -346,6 +356,7 @@ pub enum MaybeReferenceValue<'eval> {
     BoostTable(BoostTable),
     Side(usize),
     MoveSlot(MoveSlot),
+    Player(usize),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
@@ -372,6 +383,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Type(_) => ValueType::Type,
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::Player(_) => ValueType::Player,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -398,6 +410,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::BoostTable(val) => Value::BoostTable(val.clone()),
             Self::Side(val) => Value::Side(*val),
             Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
+            Self::Player(val) => Value::Player(*val),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
@@ -478,6 +491,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::BoostTable(val) => Self::BoostTable(val),
             Value::Side(val) => Self::Side(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::Player(val) => Self::Player(val),
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -521,6 +535,7 @@ pub enum ValueRef<'eval> {
     BoostTable(&'eval BoostTable),
     Side(usize),
     MoveSlot(&'eval MoveSlot),
+    Player(usize),
     List(&'eval Vec<Value>),
     TempList(Vec<ValueRefToStoredValue<'eval>>),
     Object(&'eval FastHashMap<String, Value>),
@@ -550,6 +565,7 @@ impl<'eval> ValueRef<'eval> {
             Self::BoostTable(_) => ValueType::BoostTable,
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::Player(_) => ValueType::Player,
             Self::List(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
@@ -579,6 +595,7 @@ impl<'eval> ValueRef<'eval> {
             Self::BoostTable(val) => Value::BoostTable((*val).clone()),
             Self::Side(val) => Value::Side(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
+            Self::Player(val) => Value::Player(*val),
             Self::List(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object((*val).clone()),
@@ -676,6 +693,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::BoostTable(val) => Self::BoostTable(val),
             Value::Side(val) => Self::Side(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::Player(val) => Self::Player(*val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -746,6 +764,7 @@ pub enum ValueRefMut<'eval> {
     BoostTable(&'eval mut BoostTable),
     Side(&'eval mut usize),
     MoveSlot(&'eval mut MoveSlot),
+    Player(&'eval mut usize),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -775,6 +794,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::BoostTable(_) => ValueType::BoostTable,
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::Player(_) => ValueType::Player,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -801,6 +821,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::BoostTable(val) => Self::BoostTable(val),
             Value::Side(val) => Self::Side(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::Player(val) => Self::Player(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -839,6 +860,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     BoostTable(&'eval BoostTable),
     Side(usize),
     MoveSlot(&'eval MoveSlot),
+    Player(usize),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
     TempList(Vec<MaybeReferenceValue<'eval>>),
@@ -868,8 +890,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Type(_) => ValueType::Type,
             Self::Boost(_) => ValueType::Boost,
             Self::BoostTable(_) => ValueType::BoostTable,
-            Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::Side(_) => ValueType::Side,
+            Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::Player(_) => ValueType::Player,
             Self::List(_) => ValueType::List,
             Self::StoredList(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
@@ -901,6 +924,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::BoostTable(val) => Value::BoostTable((*val).clone()),
             Self::Side(val) => Value::Side(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
+            Self::Player(val) => Value::Player(*val),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::StoredList(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
@@ -935,6 +959,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::BoostTable(_) => 108,
             Self::Side(_) => 109,
             Self::MoveSlot(_) => 110,
+            Self::Player(_) => 111,
             Self::List(_) => 200,
             Self::StoredList(_) => 201,
             Self::TempList(_) => 202,
@@ -1487,6 +1512,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::BoostTable(lhs), Self::BoostTable(rhs)) => lhs.eq(rhs),
             (Self::Side(lhs), Self::Side(rhs)) => lhs.eq(rhs),
             (Self::MoveSlot(lhs), Self::MoveSlot(rhs)) => lhs.eq(rhs),
+            (Self::Player(lhs), Self::Player(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -1644,6 +1670,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::BoostTable(val) => Self::BoostTable(val),
             Value::Side(val) => Self::Side(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::Player(val) => Self::Player(*val),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -1670,6 +1697,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::BoostTable(val) => Self::BoostTable(val),
             MaybeReferenceValue::Side(val) => Self::Side(*val),
             MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
+            MaybeReferenceValue::Player(val) => Self::Player(*val),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
             MaybeReferenceValue::Reference(val) => Self::from(val),
@@ -1700,6 +1728,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::BoostTable(val) => Self::BoostTable(val),
             ValueRef::Side(val) => Self::Side(val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
+            ValueRef::Player(val) => Self::Player(val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 val.into_iter()
@@ -1734,6 +1763,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::BoostTable(val) => Self::BoostTable(val),
             ValueRef::Side(val) => Self::Side(*val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
+            ValueRef::Player(val) => Self::Player(*val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 (0..val.len())

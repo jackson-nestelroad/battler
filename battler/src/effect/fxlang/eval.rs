@@ -594,6 +594,7 @@ where
                             .map(|outcome| !outcome.success())
                             .unwrap_or(false),
                     ),
+                    "player" => ValueRef::Player(context.mon(mon_handle)?.player),
                     "position" => ValueRef::U64(
                         Mon::position_on_side(&context.mon_context(mon_handle)?)?
                             .try_into()

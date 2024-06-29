@@ -1658,7 +1658,13 @@
     "accuracy": "exempt",
     "priority": -6,
     "target": "User",
-    "flags": ["Metronome"]
+    "flags": ["Metronome"],
+    "user_switch": true,
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["return func_call(can_switch: $user.player)"]
+      }
+    }
   },
   "nightshade": {
     "name": "Night Shade",

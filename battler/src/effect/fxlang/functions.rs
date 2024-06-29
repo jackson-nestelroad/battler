@@ -14,6 +14,7 @@ use crate::{
         Mon,
         MonContext,
         MoveOutcomeOnTarget,
+        Player,
         Side,
     },
     battler_error,
@@ -56,6 +57,7 @@ pub fn run_function(
         "calculate_confusion_damage" => {
             calculate_confusion_damage(context, args).map(|val| Some(val))
         }
+        "can_switch" => can_switch(context, args).map(|val| Some(val)),
         "chance" => chance(context.battle_context_mut(), args).map(|val| Some(val)),
         "cure_status" => cure_status(context, args).map(|()| None),
         "damage" => damage(context, args).map(|val| Some(val)),
@@ -981,4 +983,15 @@ fn boost(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<V
         false,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn can_switch(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let player_index = args
+        .pop_front()
+        .wrap_error_with_message("missing player")?
+        .player_index()
+        .wrap_error_with_message("invalid player")?;
+    Ok(Value::Boolean(Player::can_switch(
+        &mut context.battle_context_mut().player_context(player_index)?,
+    )))
 }
