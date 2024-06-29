@@ -1328,6 +1328,25 @@ pub fn run_event_for_applying_effect_expecting_u32(
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
 ///
+/// Expects an integer that can fit in a [`u8`].
+pub fn run_event_for_applying_effect_expecting_u8(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: u8,
+) -> u8 {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u8().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
 /// Expects a [`MoveOutcomeOnTarget`].
 pub fn run_event_for_applying_effect_expecting_move_outcome_on_target(
     context: &mut ApplyingEffectContext,

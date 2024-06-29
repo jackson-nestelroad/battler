@@ -919,8 +919,12 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     }
 
     // Critical hit.
-    // TODO: ModifyCritRatio event.
     let crit_ratio = context.active_move().data.crit_ratio.unwrap_or(0);
+    let crit_ratio = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+        &mut context.user_applying_effect_context()?,
+        fxlang::BattleEvent::ModifyCritRatio,
+        crit_ratio,
+    );
     let crit_ratio = crit_ratio.max(0).min(4);
     let crit_mult = [0, 24, 8, 2, 1];
     context.active_move_mut().hit_data(target_mon_handle).crit =

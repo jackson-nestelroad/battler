@@ -314,6 +314,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifyAtk"]
     ModifyAtk,
+    /// Runs when calculating a move's critical hit ratio.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "ModifyCritRatio"]
+    ModifyCritRatio,
     /// Runs when calculating the damage applied to a Mon.
     ///
     /// Runs as the very last step in the regular damage calculation formula.
@@ -525,6 +530,7 @@ impl BattleEvent {
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
+            Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MonModifier as u32,
             Self::ModifySpA => CommonCallbackType::MonModifier as u32,
@@ -568,7 +574,12 @@ impl BattleEvent {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
             Self::DamagingHit => &[("damage", ValueType::U64)],
+            Self::ModifyAtk => &[("atk", ValueType::U64)],
+            Self::ModifyCritRatio => &[("crit_ratio", ValueType::U64)],
             Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U64)],
+            Self::ModifyDef => &[("def", ValueType::U64)],
+            Self::ModifySpA => &[("spa", ValueType::U64)],
+            Self::ModifySpD => &[("spd", ValueType::U64)],
             Self::ModifySpe => &[("spe", ValueType::U64)],
             Self::RedirectTarget => &[("target", ValueType::Mon)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
@@ -734,6 +745,7 @@ pub struct Callbacks {
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
+    pub on_modify_crit_ratio: Callback,
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
     pub on_modify_spa: Callback,
@@ -793,6 +805,7 @@ impl Callbacks {
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
+            BattleEvent::ModifyCritRatio => Some(&self.on_modify_crit_ratio),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),

@@ -1953,7 +1953,16 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Metronome", "Snatch"],
+    "hit_effect": {
+      "volatile_status": "focusenergy"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_modify_crit_ratio": ["return expr($crit_ratio + 2)"]
+      }
+    }
   },
   "bide": {
     "name": "Bide",
