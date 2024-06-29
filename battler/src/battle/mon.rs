@@ -38,6 +38,7 @@ use crate::{
         Fraction,
         Id,
         Identifiable,
+        WrapResultError,
     },
     dex::Dex,
     effect::{
@@ -132,6 +133,34 @@ pub struct MoveSlot {
     pub disabled: bool,
     pub used: bool,
     pub simulated: bool,
+}
+
+impl MoveSlot {
+    pub fn new(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget) -> Self {
+        Self {
+            id,
+            name,
+            pp,
+            max_pp,
+            target,
+            disabled: false,
+            used: false,
+            simulated: false,
+        }
+    }
+
+    pub fn new_simulated(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget) -> Self {
+        Self {
+            id,
+            name,
+            pp,
+            max_pp,
+            target,
+            disabled: false,
+            used: false,
+            simulated: true,
+        }
+    }
 }
 
 /// A single ability slot for a Mon.
@@ -245,8 +274,8 @@ pub struct Mon {
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
     /// The last move selected for the Mon.
-    pub last_move_selected: Option<MoveHandle>,
-    /// The last move used by the Mon, which can be different from `last_move_selected` if that
+    pub last_move: Option<MoveHandle>,
+    /// The last move used by the Mon, which can be different from `last_move` if that
     /// move executed a different move (like Metronome).
     pub last_move_used: Option<MoveHandle>,
 
@@ -285,16 +314,13 @@ impl Mon {
                 let boosts = *data.pp_boosts.get(i).unwrap_or(&0).min(&3) as u32;
                 ((mov.data.pp as u32) * (boosts + 5) / 5) as u8
             };
-            base_move_slots.push(MoveSlot {
-                id: mov.id().clone(),
-                name: mov.data.name.clone(),
-                pp: max_pp,
+            base_move_slots.push(MoveSlot::new(
+                mov.id().clone(),
+                mov.data.name.clone(),
                 max_pp,
-                target: mov.data.target.clone(),
-                disabled: false,
-                used: false,
-                simulated: false,
-            })
+                max_pp,
+                mov.data.target.clone(),
+            ));
         }
 
         let move_slots = base_move_slots.clone();
@@ -366,7 +392,7 @@ impl Mon {
             can_mega_evo: false,
 
             active_move: None,
-            last_move_selected: None,
+            last_move: None,
             last_move_used: None,
 
             move_this_turn_outcome: None,
@@ -770,16 +796,44 @@ impl Mon {
         Ok(())
     }
 
-    pub fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
+    fn indexed_move_slot(&self, move_id: &Id) -> Option<(usize, &MoveSlot)> {
         self.move_slots
             .iter()
-            .find(|move_slot| &move_slot.id == move_id)
+            .enumerate()
+            .find(|(_, move_slot)| &move_slot.id == move_id)
     }
 
-    pub fn move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
+    fn move_slot(&self, move_id: &Id) -> Option<&MoveSlot> {
+        self.indexed_move_slot(move_id)
+            .map(|(_, move_slot)| move_slot)
+    }
+
+    pub fn move_slot_index(&self, move_id: &Id) -> Option<usize> {
+        self.indexed_move_slot(move_id).map(|(i, _)| i)
+    }
+
+    fn indexed_move_slot_mut(&mut self, move_id: &Id) -> Option<(usize, &mut MoveSlot)> {
         self.move_slots
             .iter_mut()
-            .find(|move_slot| &move_slot.id == move_id)
+            .enumerate()
+            .find(|(_, move_slot)| &move_slot.id == move_id)
+    }
+
+    fn move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
+        self.indexed_move_slot_mut(move_id)
+            .map(|(_, move_slot)| move_slot)
+    }
+
+    pub fn overwrite_move_slot(
+        &mut self,
+        index: usize,
+        new_move_slot: MoveSlot,
+    ) -> Result<(), Error> {
+        *self
+            .move_slots
+            .get_mut(index)
+            .wrap_error_with_format(format_args!("no move slot in index {index}"))? = new_move_slot;
+        Ok(())
     }
 }
 
@@ -867,6 +921,11 @@ impl Mon {
             context.mon_mut().force_switch = None;
         }
 
+        context.mon_mut().last_move = None;
+        context.mon_mut().last_move_target = None;
+        context.mon_mut().last_move_used = None;
+
+        context.mon_mut().move_slots = context.mon().base_move_slots.clone();
         context.mon_mut().boosts = BoostTable::new();
         context.mon_mut().volatiles.clear();
 
@@ -1044,12 +1103,24 @@ impl Mon {
 
     /// Deducts PP from the given move.
     pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) {
-        if let Some(move_slot) = self.move_slot_mut(move_id) {
+        let mut move_slot_index = None;
+        let mut pp = 0;
+        if let Some((i, move_slot)) = self.indexed_move_slot_mut(move_id) {
             move_slot.used = true;
             if amount > move_slot.pp {
                 move_slot.pp = 0;
             } else {
                 move_slot.pp -= amount;
+            }
+            if !move_slot.simulated {
+                move_slot_index = Some(i);
+                pp = move_slot.pp;
+            }
+        }
+
+        if let Some(index) = move_slot_index {
+            if let Some(base_move_slot) = self.base_move_slots.get_mut(index) {
+                base_move_slot.pp = pp;
             }
         }
     }

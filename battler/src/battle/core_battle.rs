@@ -1111,6 +1111,19 @@ impl<'d> CoreBattle<'d> {
         {
             let mut context = context.mon_context(mon_handle)?;
             Mon::reset_state_for_next_turn(&mut context);
+
+            if let Some(last_move) = context.mon().last_move {
+                context
+                    .battle()
+                    .registry
+                    .save_active_move_from_next_turn(last_move)?;
+            }
+            if let Some(last_move_used) = context.mon().last_move_used {
+                context
+                    .battle()
+                    .registry
+                    .save_active_move_from_next_turn(last_move_used)?;
+            }
         }
 
         context.battle_mut().registry.next_turn()?;
@@ -1345,7 +1358,7 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
-    pub fn register_move(&self, mov: Move) -> MoveHandle {
+    pub fn register_move(&mut self, mov: Move) -> MoveHandle {
         self.registry.register_move(mov)
     }
 

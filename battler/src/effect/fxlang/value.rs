@@ -245,6 +245,14 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`MoveHandle`].
+    pub fn active_move(self) -> Result<MoveHandle, Error> {
+        match self {
+            Self::ActiveMove(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::ActiveMove)),
+        }
+    }
+
     /// Consumes the value into a [`MoveEventResult`].
     pub fn move_result(self) -> Result<MoveEventResult, Error> {
         match self {
@@ -324,10 +332,19 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a player index.
     pub fn player_index(self) -> Result<usize, Error> {
         match self {
             Self::Player(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Player)),
+        }
+    }
+
+    /// Consumes the value into a [`MoveSlot`].
+    pub fn move_slot(self) -> Result<MoveSlot, Error> {
+        match self {
+            Self::MoveSlot(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveSlot)),
         }
     }
 }

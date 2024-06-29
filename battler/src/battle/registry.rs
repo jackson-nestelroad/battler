@@ -5,9 +5,11 @@ use std::{
 };
 
 use zone_alloc::{
+    BorrowError,
     ElementRef,
     ElementRefMut,
     Handle,
+    KeyedRegistry,
     StrongRegistry,
 };
 use zone_alloc_strong_handle_derive::StrongHandle;
@@ -48,15 +50,23 @@ pub type MonRegistry = StrongRegistry<MonHandle, Mon>;
 
 /// A [`Move`] registry, which is used for storing all move objects for a single turn of a
 /// [`Battle`][`crate::battle::Battle`].
-pub type MoveRegistry = StrongRegistry<MoveHandle, Move>;
+pub type MoveRegistry = KeyedRegistry<MoveHandle, Move>;
 
 /// A centralized place for objects that must be accessed by reference all across the different
-/// modules of a [`Battle`][`crate::battle::Battle`]. These objects are guaranteed to live as long
-/// as the battle itself.
+/// modules of a [`Battle`][`crate::battle::Battle`].
+///
+/// [`Mon`]s are guaranteed to live as long as the battle itself.
+///
+/// [`Move`]s are guaranteed to live at least two turns. A move will always live for the duration of
+/// the turn it was used in. Once the battle progresses to the next turn, the move will be saved for
+/// one more turn. If a [`Mon`] is still referencing a move that will be dropped at the end of the
+/// turn, it is up to the battle to "save" the move using
+/// [`Self::save_active_move_from_next_turn`] (which copies the move to the current turn).
 pub struct BattleRegistry {
     mons: MonRegistry,
     last_turn_moves: MoveRegistry,
     this_turn_moves: MoveRegistry,
+    next_active_move_handle: usize,
 }
 
 impl BattleRegistry {
@@ -66,6 +76,7 @@ impl BattleRegistry {
             mons: MonRegistry::with_capacity(12),
             last_turn_moves: MoveRegistry::new(),
             this_turn_moves: MoveRegistry::new(),
+            next_active_move_handle: 0,
         }
     }
 
@@ -88,18 +99,26 @@ impl BattleRegistry {
             .wrap_error_with_format(format_args!("failed to access Mon {mon}"))
     }
 
+    fn next_active_move_handle(&mut self) -> MoveHandle {
+        let handle = MoveHandle::from(self.next_active_move_handle);
+        self.next_active_move_handle += 1;
+        handle
+    }
+
     /// Registers a new [`Move`], returning out the associated [`MoveHandle`].
-    pub fn register_move(&self, mov: Move) -> MoveHandle {
-        self.this_turn_moves.register(mov)
+    pub fn register_move(&mut self, mov: Move) -> MoveHandle {
+        let handle = self.next_active_move_handle();
+        self.this_turn_moves.register(handle, mov);
+        handle
     }
 
     /// Returns a reference to the [`Move`] by [`MoveHandle`].
     ///
     /// The move must be from this turn or last turn.
     pub fn active_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>, Error> {
-        match self.this_turn_moves.get(mov) {
+        match self.this_turn_moves.get(&mov) {
             Ok(active_move) => Ok(active_move),
-            _ => match self.last_turn_moves.get(mov) {
+            _ => match self.last_turn_moves.get(&mov) {
                 Ok(active_move) => Ok(active_move),
                 _ => Err(battler_error!(
                     "access move {mov} does not exist in this turn or last turn"
@@ -112,15 +131,31 @@ impl BattleRegistry {
     ///
     /// The move must be from this turn or last turn.
     pub fn active_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>, Error> {
-        match self.this_turn_moves.get_mut(mov) {
+        match self.this_turn_moves.get_mut(&mov) {
             Ok(active_move) => Ok(active_move),
-            _ => match self.last_turn_moves.get_mut(mov) {
+            _ => match self.last_turn_moves.get_mut(&mov) {
                 Ok(active_move) => Ok(active_move),
                 _ => Err(battler_error!(
                     "access move {mov} does not exist in this turn or last turn"
                 )),
             },
         }
+    }
+
+    /// Saves the given [`Move`] at [`MoveHandle`] from being dropped at the next turn.
+    pub fn save_active_move_from_next_turn(&self, mov: MoveHandle) -> Result<(), Error> {
+        match self.last_turn_moves.get_mut(&mov) {
+            Ok(active_move) => {
+                self.this_turn_moves.register(mov, active_move.clone());
+            }
+            Err(BorrowError::OutOfBounds) => (),
+            result @ _ => {
+                return result
+                    .map(|_| ())
+                    .wrap_error_with_format(format_args!("failed to borrow active move {mov}"))
+            }
+        }
+        Ok(())
     }
 
     /// Move the registry to the next turn.

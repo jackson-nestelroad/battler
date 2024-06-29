@@ -1,5 +1,6 @@
 use ahash::HashMapExt;
 
+use super::ValueType;
 use crate::{
     battle::MonHandle,
     battler_error,
@@ -126,6 +127,13 @@ impl EffectState {
             ),
             _ => None,
         };
+
+        for value in values.values() {
+            match value.value_type() {
+                ValueType::ActiveMove => return Err(battler_error!("active moves cannot be stored on EffectState because they can be dropped at the end of a turn")),
+                _ => (),
+            }
+        }
 
         Ok(Self {
             values,

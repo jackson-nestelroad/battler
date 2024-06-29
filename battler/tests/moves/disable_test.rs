@@ -180,7 +180,7 @@ mod disable_test {
                 "turn|turn:8",
                 ["time"],
                 "move|mon:Alakazam,player-1,1|name:Disable|target:Aerodactyl,player-2,1",
-                "start|mon:Aerodactyl,player-2,1|move:Disable|disabledmove:Disable",
+                "start|mon:Aerodactyl,player-2,1|move:Disable|disabledmove:Tackle",
                 "residual",
                 "turn|turn:9"
             ]"#,
@@ -200,8 +200,7 @@ mod disable_test {
         assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
@@ -216,7 +215,7 @@ mod disable_test {
                 _ => false,
             }));
 
-        assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -257,19 +256,15 @@ mod disable_test {
                 ["time"],
                 "move|mon:Alakazam,player-1,1|name:Disable|noanim",
                 "fail|mon:Alakazam,player-1,1",
-                "cant|mon:Slowbro,player-2,1|reason:Disable",
-                "residual",
-                "turn|turn:5",
-                ["time"],
                 "move|mon:Slowbro,player-2,1|name:Struggle|target:Alakazam,player-1,1",
                 "split|side:0",
-                "damage|mon:Alakazam,player-1,1|health:3/115",
-                "damage|mon:Alakazam,player-1,1|health:3/100",
+                "damage|mon:Alakazam,player-1,1|health:8/115",
+                "damage|mon:Alakazam,player-1,1|health:7/100",
                 "split|side:1",
                 "damage|mon:Slowbro,player-2,1|from:Struggle Recoil|health:116/155",
                 "damage|mon:Slowbro,player-2,1|from:Struggle Recoil|health:75/100",
                 "residual",
-                "turn|turn:6"
+                "turn|turn:5"
             ]"#,
         )
         .unwrap();

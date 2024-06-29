@@ -750,7 +750,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if !$target.last_move_selected or $target.last_move_selected.id == struggle:",
+          "if !$target.last_move or $target.last_move.id == struggle:",
           ["return false"]
         ]
       }
@@ -763,23 +763,21 @@
           "# The target hasn't taken its turn yet, so this turn counts as a disabled turn.",
           "if $target.will_move_this_turn:",
           ["$effect_state.duration = $effect_state.duration - 1"],
-          "if !$target.last_move_selected:",
+          "if !$target.last_move:",
           ["return false"],
           "# Ensure the target's last move can be disbled.",
           "foreach $move_slot in $target.move_slots:",
           [
-            "if $move_slot.id == $target.last_move_selected.id and $move_slot.pp == 0:",
+            "if $move_slot.id == $target.last_move.id and $move_slot.pp == 0:",
             ["return false"]
           ],
           "if $source_effect.is_ability:",
           [
-            "log_start: with_source_effect str('disabledmove:{}', $target.last_move_selected.name)"
+            "log_start: with_source_effect str('disabledmove:{}', $target.last_move.name)"
           ],
           "else:",
-          [
-            "log_start: str('disabledmove:{}', $target.last_move_selected.name)"
-          ],
-          "$effect_state.move = $target.last_move_selected.id"
+          ["log_start: str('disabledmove:{}', $target.last_move.name)"],
+          "$effect_state.move = $target.last_move.id"
         ],
         "on_end": ["log_end"],
         "on_before_move": {
@@ -1692,7 +1690,21 @@
       "NoAssist",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$last_move = $target.last_move",
+          "if !$last_move or func_call(move_has_flag: $last_move failmimic) or func_call(has_move: $source $last_move.id):",
+          ["return false"],
+          "$mimic_index = func_call(move_slot_index: $source $this.id)",
+          "if !$mimic_index:",
+          ["return false"],
+          "overwrite_move_slot: $source $mimic_index func_call(move_slot: $last_move)",
+          "log_start: str('mimic:{}', $last_move.name)"
+        ]
+      }
+    }
   },
   "screech": {
     "name": "Screech",

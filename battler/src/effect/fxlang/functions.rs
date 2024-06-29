@@ -14,6 +14,7 @@ use crate::{
         Mon,
         MonContext,
         MoveOutcomeOnTarget,
+        MoveSlot,
         Player,
         Side,
     },
@@ -21,6 +22,7 @@ use crate::{
     common::{
         Error,
         Id,
+        Identifiable,
         WrapResultError,
     },
     effect::{
@@ -70,6 +72,7 @@ pub fn run_function(
         "floor" => floor(args).map(|val| Some(val)),
         "get_boost" => get_boost(args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
+        "has_move" => has_move(context, args).map(|val| Some(val)),
         "has_type" => has_type(context, args).map(|val| Some(val)),
         "has_volatile" => has_volatile(context, args).map(|val| Some(val)),
         "heal" => heal(context, args).map(|()| None),
@@ -90,6 +93,9 @@ pub fn run_function(
         "max" => max(args).map(|val| Some(val)),
         "mon_in_position" => mon_in_position(context, args),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
+        "move_slot" => move_slot(context, args).map(|val| Some(val)),
+        "move_slot_index" => move_slot_index(context, args),
+        "overwrite_move_slot" => overwrite_move_slot(context, args).map(|()| None),
         "random" => random(context.battle_context_mut(), args).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
@@ -994,4 +1000,90 @@ fn can_switch(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
     Ok(Value::Boolean(Player::can_switch(
         &mut context.battle_context_mut().player_context(player_index)?,
     )))
+}
+
+fn has_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    Ok(Value::Boolean(
+        context
+            .mon(mon_handle)?
+            .move_slot_index(&Id::from(move_id))
+            .is_some(),
+    ))
+}
+
+fn move_slot_index(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    match context.mon(mon_handle)?.move_slot_index(&Id::from(move_id)) {
+        Some(index) => Ok(Some(Value::U64(
+            index
+                .try_into()
+                .wrap_error_with_message("integer overflow")?,
+        ))),
+        None => Ok(None),
+    }
+}
+
+fn move_slot(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let active_move_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let active_move = context.active_move(active_move_handle)?;
+    let move_slot = MoveSlot::new_simulated(
+        active_move.id().clone(),
+        active_move.data.name.clone(),
+        active_move.data.pp,
+        active_move.data.pp,
+        active_move.data.target,
+    );
+    Ok(Value::MoveSlot(move_slot))
+}
+
+fn overwrite_move_slot(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let index = args
+        .pop_front()
+        .wrap_error_with_message("missing index")?
+        .integer_usize()
+        .wrap_error_with_message("invalid index")?;
+    let move_slot = args
+        .pop_front()
+        .wrap_error_with_message("missing move slot")?
+        .move_slot()
+        .wrap_error_with_message("invalid move slot")?;
+
+    context
+        .mon_context(mon_handle)?
+        .mon_mut()
+        .overwrite_move_slot(index, move_slot)
 }

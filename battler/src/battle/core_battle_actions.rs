@@ -173,7 +173,7 @@ fn register_active_move(context: &mut MonContext, move_id: &Id) -> Result<MoveHa
         .deref()
         .clone();
     active_move.used_by = Some(context.mon_handle());
-    let active_move_handle = context.battle().register_move(active_move);
+    let active_move_handle = context.battle_mut().register_move(active_move);
     let mon_handle = context.mon_handle();
     CoreBattle::set_active_move(
         context.as_battle_context_mut(),
@@ -272,8 +272,8 @@ pub fn do_move(
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
         context.mon_mut().deduct_pp(move_id, 1);
 
-        // At this point, the move will be attempted, so we should remember it.
-        context.mon_mut().last_move_selected = Some(active_move_handle);
+        // At this point, the move was used, so we should remember it.
+        context.mon_mut().last_move = Some(active_move_handle);
     }
 
     core_battle_effects::run_active_move_event_expecting_void(

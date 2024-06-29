@@ -560,8 +560,8 @@ where
                             .clone()
                             .unwrap_or("".to_owned()),
                     ),
-                    "last_move_selected" => match context.mon(mon_handle)?.last_move_selected {
-                        Some(last_move_selected) => ValueRef::ActiveMove(last_move_selected),
+                    "last_move" => match context.mon(mon_handle)?.last_move {
+                        Some(last_move) => ValueRef::ActiveMove(last_move),
                         _ => ValueRef::Undefined,
                     },
                     "last_target_location" => ValueRef::I64(
