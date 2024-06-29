@@ -1925,7 +1925,26 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Metronome", "Snatch"],
+    "hit_effect": {
+      "side_condition": "reflect"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $target == $user or $move.category != physical:",
+          ["return"],
+          "if func_call(move_crit_target: $move $target) or $move.infiltrates:",
+          ["return"],
+          "if func_call(mons_per_side) > 1:",
+          ["return expr($damage * 2 / 3)"],
+          "return expr($damage / 2)"
+        ],
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"]
+      }
+    }
   },
   "focusenergy": {
     "name": "Focus Energy",
