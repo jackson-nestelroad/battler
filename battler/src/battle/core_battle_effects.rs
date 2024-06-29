@@ -9,6 +9,7 @@ use crate::{
         Context,
         CoreBattle,
         EffectContext,
+        FieldEffectContext,
         Mon,
         MonContext,
         MonHandle,
@@ -59,6 +60,7 @@ enum UpcomingEvaluationContext<
     Mon(MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>),
     SideEffect(MaybeOwnedMut<'side_effect, SideEffectContext<'effect, 'context, 'battle, 'data>>),
     Side(MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>),
+    FieldEffect(MaybeOwnedMut<'side_effect, FieldEffectContext<'effect, 'context, 'battle, 'data>>),
 }
 
 impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'battle, 'data>
@@ -81,6 +83,7 @@ impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'b
             Self::Mon(context) => context.as_battle_context(),
             Self::SideEffect(context) => context.as_battle_context(),
             Self::Side(context) => context.as_battle_context(),
+            Self::FieldEffect(context) => context.as_battle_context(),
         }
     }
 
@@ -91,6 +94,7 @@ impl<'side_effect, 'applying_effect, 'effect, 'mon, 'player, 'side, 'context, 'b
             Self::Mon(context) => context.as_battle_context_mut(),
             Self::SideEffect(context) => context.as_battle_context_mut(),
             Self::Side(context) => context.as_battle_context_mut(),
+            Self::FieldEffect(context) => context.as_battle_context_mut(),
         }
     }
 }
@@ -120,6 +124,9 @@ fn run_effect_event_with_errors(
         UpcomingEvaluationContext::Side(context) => fxlang::EvaluationContext::SideEffect(
             context.side_effect_context(effect_handle.clone(), None, None)?,
         ),
+        UpcomingEvaluationContext::FieldEffect(context) => fxlang::EvaluationContext::FieldEffect(
+            context.forward_field_effect_context(effect_handle.clone())?,
+        ),
     };
     EffectManager::evaluate(&mut context, effect_handle, event, input, effect_state)
 }
@@ -145,6 +152,13 @@ fn run_active_move_event_with_errors(
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::SideEffect(context.side_effect_context(side)?.into()),
+            &effect_handle,
+            event,
+            input,
+            Some(effect_state),
+        )?,
+        MoveTargetForEvent::Field => run_effect_event_with_errors(
+            &mut UpcomingEvaluationContext::FieldEffect(context.field_effect_context()?.into()),
             &effect_handle,
             event,
             input,
@@ -229,6 +243,7 @@ pub enum MoveTargetForEvent {
     User,
     Mon(MonHandle),
     Side(usize),
+    Field,
 }
 
 enum EffectOrigin {
@@ -977,20 +992,21 @@ fn run_event_for_side_effect_internal(
     }
 }
 
-fn run_event_for_effect_internal(
-    context: &mut EffectContext,
+fn run_event_for_field_effect_internal(
+    context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
 ) -> Option<fxlang::Value> {
     let target = AllEffectsTarget::Field;
     let effect = context.effect_handle().clone();
+    let source = context.source_handle();
     match run_event_with_errors(
         context.as_battle_context_mut(),
         event,
         Some(&effect),
         target,
-        None,
+        source,
         input,
         options,
     ) {
@@ -1405,29 +1421,34 @@ pub fn run_event_for_side_effect_expecting_move_event_result(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an effect.
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a field-applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
-pub fn run_event_for_effect(
-    context: &mut EffectContext,
+pub fn run_event_for_field_effect(
+    context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> bool {
-    run_event_for_effect_internal(context, event, input, &RunCallbacksOptions::default())
+    run_event_for_field_effect_internal(context, event, input, &RunCallbacksOptions::default())
         .map(|value| value.boolean().ok())
         .flatten()
         .unwrap_or(true)
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an effect.
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a field-applying effect.
 ///
 /// Expects a [`MoveEventResult`].
-pub fn run_event_for_effect_expecting_move_event_result(
-    context: &mut EffectContext,
+pub fn run_event_for_field_effect_expecting_move_event_result(
+    context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> MoveEventResult {
-    match run_event_for_effect_internal(context, event, input, &RunCallbacksOptions::default()) {
+    match run_event_for_field_effect_internal(
+        context,
+        event,
+        input,
+        &RunCallbacksOptions::default(),
+    ) {
         Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
         None => MoveEventResult::Advance,
     }

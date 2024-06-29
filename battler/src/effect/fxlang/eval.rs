@@ -17,6 +17,7 @@ use crate::{
         Context,
         CoreBattle,
         EffectContext,
+        FieldEffectContext,
         Mon,
         MonContext,
         MonHandle,
@@ -65,6 +66,7 @@ where
     ApplyingEffect(ApplyingEffectContext<'effect, 'context, 'battle, 'data>),
     Effect(EffectContext<'context, 'battle, 'data>),
     SideEffect(SideEffectContext<'effect, 'context, 'battle, 'data>),
+    FieldEffect(FieldEffectContext<'effect, 'context, 'battle, 'data>),
 }
 
 impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'battle, 'data> {
@@ -73,6 +75,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.as_battle_context(),
             Self::Effect(context) => context.as_battle_context(),
             Self::SideEffect(context) => context.as_battle_context(),
+            Self::FieldEffect(context) => context.as_battle_context(),
         }
     }
 
@@ -81,6 +84,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.as_battle_context_mut(),
             Self::Effect(context) => context.as_battle_context_mut(),
             Self::SideEffect(context) => context.as_battle_context_mut(),
+            Self::FieldEffect(context) => context.as_battle_context_mut(),
         }
     }
 
@@ -89,6 +93,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.as_effect_context(),
             Self::Effect(context) => context,
             Self::SideEffect(context) => context.as_effect_context(),
+            Self::FieldEffect(context) => context.as_effect_context(),
         }
     }
 
@@ -99,6 +104,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.as_effect_context_mut(),
             Self::Effect(context) => context,
             Self::SideEffect(context) => context.as_effect_context_mut(),
+            Self::FieldEffect(context) => context.as_effect_context_mut(),
         }
     }
 
@@ -224,7 +230,57 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     Ok(context.into())
                 }
             }
-            _ => Err(battler_error!("context is not an applying effect")),
+            _ => Err(battler_error!("context is not a side-applying effect")),
+        }
+    }
+
+    pub fn field_effect_context<'eval>(
+        &'eval self,
+    ) -> Result<&'eval FieldEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+        match self {
+            Self::FieldEffect(context) => Ok(context),
+            _ => Err(battler_error!("context is not a field-applying effect")),
+        }
+    }
+
+    pub fn field_effect_context_mut<'eval>(
+        &'eval mut self,
+    ) -> Result<&'eval mut FieldEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+        match self {
+            Self::FieldEffect(context) => Ok(context),
+            _ => Err(battler_error!("context is not a field-applying effect")),
+        }
+    }
+
+    pub fn source_field_effect_context<'eval>(
+        &'eval mut self,
+    ) -> Result<Option<FieldEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::FieldEffect(context) => context.source_field_effect_context(),
+            _ => Err(battler_error!("context is not a field-applying effect")),
+        }
+    }
+
+    pub fn maybe_field_applying_effect_context<'eval>(
+        &'eval mut self,
+        use_source: bool,
+    ) -> Result<MaybeOwnedMut<'eval, FieldEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+        match self {
+            Self::FieldEffect(context) => {
+                if use_source {
+                    Ok(context
+                        .source_field_effect_context()?
+                        .wrap_error_with_message("context has no source effect")?
+                        .into())
+                } else {
+                    // SAFETY: We are shortening the lifetimes of this context to the lifetime of
+                    // this object.
+                    let context: &'eval mut FieldEffectContext<'eval, 'eval, 'battle, 'data> =
+                        unsafe { mem::transmute(context) };
+                    Ok(context.into())
+                }
+            }
+            _ => Err(battler_error!("context is not a field-applying effect")),
         }
     }
 
@@ -285,6 +341,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     context.as_battle_context_mut().mon_context(mon_handle)
                 }
             }
+            Self::FieldEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source_context()?
+                        .wrap_error_with_message("expected source mon")
+                } else {
+                    context.as_battle_context_mut().mon_context(mon_handle)
+                }
+            }
         }
     }
 
@@ -306,6 +374,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             }
             Self::Effect(context) => context.as_battle_context().mon(mon_handle),
             Self::SideEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source()
+                        .wrap_error_with_message("expected source mon")
+                } else {
+                    context.as_battle_context().mon(mon_handle)
+                }
+            }
+            Self::FieldEffect(context) => {
                 if context
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
@@ -349,6 +429,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     context.as_battle_context_mut().mon_mut(mon_handle)
                 }
             }
+            Self::FieldEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source_mut()
+                        .wrap_error_with_message("expected source mon")
+                } else {
+                    context.as_battle_context_mut().mon_mut(mon_handle)
+                }
+            }
         }
     }
 
@@ -356,60 +448,15 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         &'eval self,
         active_move_handle: MoveHandle,
     ) -> Result<&'eval Move, Error> {
-        match self {
-            Self::ApplyingEffect(context) => {
-                if let EffectHandle::ActiveMove(effect_active_move_handle, _) =
-                    context.effect_handle()
-                {
-                    if active_move_handle == *effect_active_move_handle {
-                        context.effect().active_move().wrap_error_with_message(
-                            "effect handle referenced an active move, but effect was not an active move",
-                        )
-                    } else {
-                        context.as_battle_context().active_move(active_move_handle)
-                    }
-                } else {
-                    context.as_battle_context().active_move(active_move_handle)
-                }
-            }
-            Self::Effect(context) => context.as_battle_context().active_move(active_move_handle),
-            Self::SideEffect(context) => {
-                context.as_battle_context().active_move(active_move_handle)
-            }
-        }
+        self.battle_context().active_move(active_move_handle)
     }
 
     fn active_move_mut<'eval>(
         &'eval mut self,
         active_move_handle: MoveHandle,
     ) -> Result<&'eval mut Move, Error> {
-        match self {
-            Self::ApplyingEffect(context) => {
-                if let EffectHandle::ActiveMove(effect_active_move_handle, _) =
-                    context.effect_handle()
-                {
-                    if active_move_handle == *effect_active_move_handle {
-                        context.effect_mut().active_move_mut().wrap_error_with_message(
-                            "effect handle referenced an active move, but effect was not an active move",
-                        )
-                    } else {
-                        context
-                            .as_battle_context_mut()
-                            .active_move_mut(active_move_handle)
-                    }
-                } else {
-                    context
-                        .as_battle_context_mut()
-                        .active_move_mut(active_move_handle)
-                }
-            }
-            Self::Effect(context) => context
-                .as_battle_context_mut()
-                .active_move_mut(active_move_handle),
-            Self::SideEffect(context) => context
-                .as_battle_context_mut()
-                .active_move_mut(active_move_handle),
-        }
+        self.battle_context_mut()
+            .active_move_mut(active_move_handle)
     }
 
     pub fn target_handle(&self) -> Option<MonHandle> {
@@ -423,6 +470,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.source_handle(),
             Self::SideEffect(context) => context.source_handle(),
+            Self::FieldEffect(context) => context.source_handle(),
             _ => None,
         }
     }
@@ -432,6 +480,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.effect_handle(),
             Self::Effect(context) => context.effect_handle(),
             Self::SideEffect(context) => context.effect_handle(),
+            Self::FieldEffect(context) => context.effect_handle(),
         }
     }
 
@@ -440,6 +489,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.source_effect_handle(),
             Self::Effect(context) => context.source_effect_handle(),
             Self::SideEffect(context) => context.source_effect_handle(),
+            Self::FieldEffect(context) => context.source_effect_handle(),
         }
     }
 
@@ -456,6 +506,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => Some(context.target().side),
             Self::Effect(_) => None,
             Self::SideEffect(context) => Some(context.side().index),
+            Self::FieldEffect(_) => None,
         }
     }
 }

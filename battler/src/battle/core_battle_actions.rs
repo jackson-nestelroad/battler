@@ -594,8 +594,8 @@ fn try_indirect_move(
 
     let move_target = context.active_move().data.target;
     let try_move_result = match move_target {
-        MoveTarget::All => core_battle_effects::run_event_for_effect_expecting_move_event_result(
-            &mut context.effect_context()?,
+        MoveTarget::All => core_battle_effects::run_event_for_field_effect_expecting_move_event_result(
+            &mut context.field_effect_context()?,
             fxlang::BattleEvent::TryHitField,
             fxlang::VariableInput::default(),
         ),
@@ -1790,34 +1790,70 @@ fn apply_move_effects(
             }
         }
 
-        // These event callbacks run regardless of if there is a hit effect defined.
-        let move_target = target_context.active_move().data.target;
-        let target_handle = target_context.target_mon_handle();
-        if move_target == MoveTarget::All && !target_context.is_self() {
-            // TODO: HitField event.
-        } else if (move_target == MoveTarget::FoeSide
-            || move_target == MoveTarget::AllySide
-            || move_target == MoveTarget::AllyTeam)
-            && !target_context.is_self()
-        {
-            // TODO: HitSide event.
-        } else if !target_context.is_self() {
-            if let Some(hit_result) = core_battle_effects::run_active_move_event_expecting_bool(
-                target_context.as_active_move_context_mut(),
-                fxlang::BattleEvent::Hit,
-                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-            ) {
-                let outcome = MoveOutcomeOnTarget::from(hit_result);
-                hit_effect_outcome = hit_effect_outcome.combine(outcome);
-            }
+        if !target_context.is_self() {
+            // These event callbacks run regardless of if there is a hit effect defined.
+            let move_target = target_context.active_move().data.target;
+            let target_handle = target_context.target_mon_handle();
+            match move_target {
+                MoveTarget::All => {
+                    if let Some(hit_result) =
+                        core_battle_effects::run_active_move_event_expecting_bool(
+                            target_context.as_active_move_context_mut(),
+                            fxlang::BattleEvent::HitField,
+                            core_battle_effects::MoveTargetForEvent::Field,
+                        )
+                    {
+                        let outcome = MoveOutcomeOnTarget::from(hit_result);
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                    }
+                }
+                MoveTarget::AllySide | MoveTarget::AllyTeam => {
+                    let side = target_context.side().index;
+                    if let Some(hit_result) =
+                        core_battle_effects::run_active_move_event_expecting_bool(
+                            target_context.as_active_move_context_mut(),
+                            fxlang::BattleEvent::HitSide,
+                            core_battle_effects::MoveTargetForEvent::Side(side),
+                        )
+                    {
+                        let outcome = MoveOutcomeOnTarget::from(hit_result);
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                    }
+                }
+                MoveTarget::FoeSide => {
+                    let side = target_context.foe_side().index;
+                    if let Some(hit_result) =
+                        core_battle_effects::run_active_move_event_expecting_bool(
+                            target_context.as_active_move_context_mut(),
+                            fxlang::BattleEvent::HitSide,
+                            core_battle_effects::MoveTargetForEvent::Side(side),
+                        )
+                    {
+                        let outcome = MoveOutcomeOnTarget::from(hit_result);
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                    }
+                }
+                _ => {
+                    if let Some(hit_result) =
+                        core_battle_effects::run_active_move_event_expecting_bool(
+                            target_context.as_active_move_context_mut(),
+                            fxlang::BattleEvent::Hit,
+                            core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                        )
+                    {
+                        let outcome = MoveOutcomeOnTarget::from(hit_result);
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                    }
 
-            // Run the event for other effects only once.
-            if !target_context.is_secondary() {
-                core_battle_effects::run_event_for_applying_effect(
-                    &mut target_context.applying_effect_context()?,
-                    fxlang::BattleEvent::Hit,
-                    fxlang::VariableInput::default(),
-                );
+                    // Run the event for other effects only once.
+                    if !target_context.is_secondary() {
+                        core_battle_effects::run_event_for_applying_effect(
+                            &mut target_context.applying_effect_context()?,
+                            fxlang::BattleEvent::Hit,
+                            fxlang::VariableInput::default(),
+                        );
+                    }
+                }
             }
         }
 

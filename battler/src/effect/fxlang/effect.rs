@@ -129,12 +129,23 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
-    MoveSideControllingResult = CallbackFlag::TakesSide
+    MoveSideResult = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
+    MoveSideControllingResult = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
 
+    MoveFieldResult = CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
     MoveFieldControllingResult = CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
@@ -265,6 +276,22 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move on the target.
     #[string = "Hit"]
     Hit,
+    /// Runs when the field is hit by a move.
+    ///
+    /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
+    /// the applying hit effect.
+    ///
+    /// Runs on the active move itself.
+    #[string = "HitField"]
+    HitField,
+    /// Runs when a side is hit by a move.
+    ///
+    /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
+    /// the applying hit effect.
+    ///
+    /// Runs on the active move itself.
+    #[string = "HitSide"]
+    HitSide,
     /// Runs when determining if a Mon is immune to some status.
     ///
     /// Runs in the context of an applying effect on the target.
@@ -492,6 +519,8 @@ impl BattleEvent {
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
+            Self::HitField => CommonCallbackType::MoveFieldResult as u32,
+            Self::HitSide => CommonCallbackType::MoveSideResult as u32,
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
@@ -699,6 +728,8 @@ pub struct Callbacks {
     pub on_end: Callback,
     pub on_flinch: Callback,
     pub on_hit: Callback,
+    pub on_hit_field: Callback,
+    pub on_hit_side: Callback,
     pub on_immunity: Callback,
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
@@ -756,6 +787,8 @@ impl Callbacks {
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::Flinch => Some(&self.on_flinch),
             BattleEvent::Hit => Some(&self.on_hit),
+            BattleEvent::HitField => Some(&self.on_hit_field),
+            BattleEvent::HitSide => Some(&self.on_hit_side),
             BattleEvent::Immunity => Some(&self.on_immunity),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::LockMove => Some(&self.on_lock_move),

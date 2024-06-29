@@ -68,6 +68,7 @@ pub use context::{
     ApplyingEffectContext,
     Context,
     EffectContext,
+    FieldEffectContext,
     MonContext,
     PlayerContext,
     SideContext,
