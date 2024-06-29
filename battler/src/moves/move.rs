@@ -336,6 +336,10 @@ impl Move {
         self.hit_data.entry(target).or_insert(MoveHitData::new())
     }
 
+    pub fn maybe_hit_data(&self, target: MonHandle) -> Option<&MoveHitData> {
+        self.hit_data.get(&target)
+    }
+
     pub fn target_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.hit_effect.as_ref(),

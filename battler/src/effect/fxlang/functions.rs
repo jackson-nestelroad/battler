@@ -92,6 +92,8 @@ pub fn run_function(
         "log_status" => log_status(context, args).map(|()| None),
         "max" => max(args).map(|val| Some(val)),
         "mon_in_position" => mon_in_position(context, args),
+        "mons_per_side" => mons_per_side(context).map(|val| Some(val)),
+        "move_crit_target" => move_crit_target(context, args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "move_slot" => move_slot(context, args).map(|val| Some(val)),
         "move_slot_index" => move_slot_index(context, args),
@@ -1086,4 +1088,38 @@ fn overwrite_move_slot(
         .mon_context(mon_handle)?
         .mon_mut()
         .overwrite_move_slot(index, move_slot)
+}
+
+fn mons_per_side(context: &mut EvaluationContext) -> Result<Value, Error> {
+    Ok(Value::U64(
+        context
+            .battle_context()
+            .battle()
+            .max_side_length()
+            .try_into()
+            .wrap_error_with_message("integer overflow")?,
+    ))
+}
+
+fn move_crit_target(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let active_move_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    Ok(Value::Boolean(
+        (context
+            .active_move(active_move_handle)?
+            .maybe_hit_data(mon_handle)
+            .map(|hit_data| hit_data.crit)
+            .unwrap_or(false)),
+    ))
 }

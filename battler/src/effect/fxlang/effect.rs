@@ -22,9 +22,10 @@ pub mod CallbackFlag {
     pub const TakesEffect: u32 = 1 << 4;
     pub const TakesActiveMove: u32 = 1 << 5;
     pub const TakesUserMon: u32 = 1 << 6;
-    pub const TakesSourceEffect: u32 = 1 << 7;
-    pub const TakesSide: u32 = 1 << 8;
-    pub const TakesBoosts: u32 = 1 << 9;
+    pub const TakesSourceTargetMon: u32 = 1 << 7;
+    pub const TakesSourceEffect: u32 = 1 << 8;
+    pub const TakesSide: u32 = 1 << 9;
+    pub const TakesBoosts: u32 = 1 << 10;
 
     pub const ReturnsMon: u32 = 1 << 25;
     pub const ReturnsBoosts: u32 = 1 << 26;
@@ -70,6 +71,7 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsVoid,
 
     SourceMoveModifier = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
@@ -195,13 +197,6 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect.
     #[string = "AllySetStatus"]
     AllySetStatus,
-    /// Runs when calculating the damage applied to a Mon.
-    ///
-    /// Runs as the very last step in the regular damage calculation formula.
-    ///
-    /// Runs in the context of an active move from the user.
-    #[string = "AnyModifyDamage"]
-    AnyModifyDamage,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
@@ -486,7 +481,6 @@ impl BattleEvent {
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::AnyModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -545,9 +539,7 @@ impl BattleEvent {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
             Self::DamagingHit => &[("damage", ValueType::U64)],
-            Self::ModifyDamage | Self::AnyModifyDamage | Self::SourceModifyDamage => {
-                &[("damage", ValueType::U64)]
-            }
+            Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U64)],
             Self::ModifySpe => &[("spe", ValueType::U64)],
             Self::RedirectTarget => &[("target", ValueType::Mon)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
@@ -602,7 +594,6 @@ impl BattleEvent {
     /// Returns the associated any event.
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
-            Self::ModifyDamage => Some(Self::AnyModifyDamage),
             _ => None,
         }
     }
@@ -697,7 +688,6 @@ pub struct Callbacks {
     pub on_after_set_status: Callback,
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
-    pub on_any_modify_damage: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
     pub on_before_turn: Callback,
@@ -755,7 +745,6 @@ impl Callbacks {
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
-            BattleEvent::AnyModifyDamage => Some(&self.on_any_modify_damage),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),

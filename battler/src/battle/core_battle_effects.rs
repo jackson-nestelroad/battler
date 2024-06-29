@@ -574,6 +574,8 @@ fn find_all_callbacks(
     if let Some(source) = source {
         if let Some(source_event) = event.source_event() {
             callbacks.extend(find_callbacks_on_mon(context, source_event, source)?);
+            let side = context.mon(source)?.side;
+            callbacks.extend(find_callbacks_on_side(context, source_event, side)?);
         }
     }
 

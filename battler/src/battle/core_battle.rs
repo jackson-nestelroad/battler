@@ -449,6 +449,7 @@ impl<'d> CoreBattle<'d> {
         self.players_on_side(side.index).count() * self.format.battle_type.active_per_player()
     }
 
+    // A.k.a., `mons_per_side`.
     pub fn max_side_length(&self) -> usize {
         self.sides()
             .map(|side| self.side_length(side))

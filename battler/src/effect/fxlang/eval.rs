@@ -1004,6 +1004,13 @@ impl Evaluator {
                 ),
             )?;
         }
+        if event.has_flag(CallbackFlag::TakesSourceTargetMon) {
+            // The target is the source of the effect.
+            match context.source_handle() {
+                Some(source_handle) => self.vars.set("target", Value::Mon(source_handle))?,
+                None => (),
+            }
+        }
         if event.has_flag(CallbackFlag::TakesEffect) {
             self.vars.set(
                 "effect",

@@ -518,9 +518,7 @@ pub fn get_move_targets(
                 None => return Ok(Vec::new()),
             };
 
-            if context.battle().format.battle_type.active_per_player() > 1
-                && !context.active_move().data.tracks_target
-            {
+            if context.battle().max_side_length() > 1 && !context.active_move().data.tracks_target {
                 if !mon_is_charging(context)? {
                     target = core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
                         &mut context.user_applying_effect_context(Some(target))?,

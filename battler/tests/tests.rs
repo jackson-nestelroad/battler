@@ -41,6 +41,7 @@ mod moves {
 }
 
 mod side {
+    mod light_screen_test;
     mod mist_test;
 }
 
