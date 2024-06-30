@@ -211,8 +211,6 @@ pub struct CoreBattle<'d> {
     last_move_log: Option<usize>,
     last_fainted: Option<FaintEntry>,
 
-    active_mon: Option<MonHandle>,
-
     input_log: FastHashMap<usize, FastHashMap<u64, String>>,
 
     _pin: PhantomPinned,
@@ -292,7 +290,6 @@ impl<'d> CoreBattle<'d> {
             next_ability_priority: 0,
             last_move_log: None,
             last_fainted: None,
-            active_mon: None,
             input_log,
             _pin: PhantomPinned,
         };
@@ -455,10 +452,6 @@ impl<'d> CoreBattle<'d> {
             .map(|side| self.side_length(side))
             .max()
             .unwrap_or(0)
-    }
-
-    pub fn active_mon_handle(&self) -> Option<MonHandle> {
-        self.active_mon.clone()
     }
 }
 
@@ -976,7 +969,7 @@ impl<'d> CoreBattle<'d> {
                 );
             }
             Action::Residual => {
-                Self::clear_active_move(context)?;
+                Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
                 core_battle_effects::run_event_for_no_target(
                     context,
@@ -1005,7 +998,6 @@ impl<'d> CoreBattle<'d> {
             context.mon_mut().force_switch = None;
         }
 
-        Self::clear_active_move(context)?;
         Self::faint_messages(context)?;
         if context.battle().ended {
             return Ok(());
@@ -1363,26 +1355,14 @@ impl<'d> CoreBattle<'d> {
         self.registry.register_move(mov)
     }
 
-    pub fn set_active_move(
-        context: &mut Context,
-        move_handle: MoveHandle,
-        user: MonHandle,
-    ) -> Result<(), Error> {
-        context.battle_mut().active_mon = Some(user);
-        context
-            .mon_context(user)?
-            .mon_mut()
-            .set_active_move(move_handle);
-        Ok(())
-    }
-
-    pub fn clear_active_move(context: &mut Context) -> Result<(), Error> {
-        if let Some(active_mon) = context.battle().active_mon {
-            context
-                .mon_context(active_mon)?
-                .mon_mut()
-                .clear_active_move();
-            context.battle_mut().active_mon = None;
+    pub fn clear_all_active_moves(context: &mut Context) -> Result<(), Error> {
+        for mon in context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>()
+        {
+            let mon = context.mon_mut(mon)?;
+            mon.clear_active_move();
         }
         Ok(())
     }

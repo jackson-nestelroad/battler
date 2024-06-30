@@ -767,6 +767,7 @@ pub enum ValueRefMut<'eval> {
     U64(&'eval mut u64),
     I64(&'eval mut i64),
     OptionalISize(&'eval mut Option<isize>),
+    OptionalU16(&'eval mut Option<u16>),
     Fraction(&'eval mut Fraction<i32>),
     UFraction(&'eval mut Fraction<u32>),
     OptionalString(&'eval mut Option<String>),
@@ -797,6 +798,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::U64(_) => ValueType::U64,
             Self::I64(_) => ValueType::I64,
             Self::OptionalISize(_) => ValueType::OptionalISize,
+            Self::OptionalU16(_) => ValueType::U64,
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::OptionalString(_) => ValueType::String,
@@ -1469,6 +1471,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
     fn equal_ref(&'eval self, rhs: &'eval Self) -> Result<bool, Error> {
         let result = match Self::sort_for_commutative_operation_ref(self, rhs) {
+            (Self::Undefined, Self::Undefined) => true,
+            (Self::Undefined, _) => false,
             (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs.eq(rhs),
             (lhs @ Self::U64(_), rhs @ Self::U64(_))
             | (lhs @ Self::U64(_), rhs @ Self::I64(_))

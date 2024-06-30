@@ -71,7 +71,9 @@ impl EffectManager {
         }
         self.callbacks.push(
             id.clone(),
-            Rc::new(ParsedCallbacks::from(effect.fxlang_callbacks())?),
+            Rc::new(ParsedCallbacks::from(
+                effect.fxlang_effect().map(|effect| &effect.callbacks),
+            )?),
         );
         self.callbacks
             .get(&id)

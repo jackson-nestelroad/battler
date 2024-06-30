@@ -662,8 +662,8 @@ fn get_speed_orderable_effect_handle(
     callback_handle: CallbackHandle,
 ) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
     let effect = CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle)?;
-    let callback = match effect.fxlang_callbacks() {
-        Some(callbacks) => match callbacks.event(callback_handle.event) {
+    let callback = match effect.fxlang_effect() {
+        Some(effect) => match effect.callbacks.event(callback_handle.event) {
             Some(callback) => callback,
             None => return Ok(None),
         },

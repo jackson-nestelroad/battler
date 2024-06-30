@@ -9,7 +9,10 @@ use serde_string_enum::{
 
 use crate::{
     battle::SpeedOrderable,
-    effect::fxlang::ValueType,
+    effect::fxlang::{
+        LocalData,
+        ValueType,
+    },
 };
 
 /// Flags used to indicate the input and output of a [`Callback`].
@@ -239,7 +242,12 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "Damage"]
     Damage,
-    /// Runs after a Mon hits another Mon, causing a nonzero amount of damage.
+    /// Runs after a Mon receives damage, regardless of the source.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "DamageReceived"]
+    DamageReceived,
+    /// Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.
     ///
     /// Run for each target. Run once per hit (i.e., multi-hit moves execute one event per hit).
     ///
@@ -518,6 +526,7 @@ impl BattleEvent {
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::Damage => CommonCallbackType::MoveModifier as u32,
+            Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
@@ -573,6 +582,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
+            Self::DamageReceived => &[("damage", ValueType::U64)],
             Self::DamagingHit => &[("damage", ValueType::U64)],
             Self::ModifyAtk => &[("atk", ValueType::U64)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::U64)],
@@ -733,6 +743,7 @@ pub struct Callbacks {
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
     pub on_damage: Callback,
+    pub on_damage_received: Callback,
     pub on_damaging_hit: Callback,
     pub on_disable_move: Callback,
     pub on_duration: Callback,
@@ -793,6 +804,7 @@ impl Callbacks {
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::Damage => Some(&self.on_damage),
+            BattleEvent::DamageReceived => Some(&self.on_damage_received),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::DisableMove => Some(&self.on_disable_move),
             BattleEvent::Duration => Some(&self.on_duration),
@@ -840,6 +852,19 @@ impl Callbacks {
     }
 }
 
+/// An effect, whose callbacks are triggered in the context of an ongoing battle.
+///
+/// When an effect is active, its event callbacks are triggered throughout the course of a battle.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct Effect {
+    /// Event callbacks for the effect.
+    pub callbacks: Callbacks,
+
+    /// Local data for the effects.
+    #[serde(default)]
+    pub local_data: LocalData,
+}
+
 /// A condition enabled by an effect.
 ///
 /// While an effect has its own set of callbacks, an effect can also apply a condition to some
@@ -852,20 +877,14 @@ pub struct Condition {
     ///
     /// Can be overwritten by the [`on_duration`][`Callbacks::on_duration`] callback.
     pub duration: Option<u8>,
+
     /// Whether or not the condition can be copied to another Mon.
     ///
     /// If true, moves like "Baton Pass" will not copy this condition. `false` by default.
     #[serde(default)]
     pub no_copy: bool,
-    /// Callbacks associated with the condition.
-    pub callbacks: Callbacks,
-}
 
-/// An effect, whose callbacks are triggered in the context of an ongoing battle.
-///
-/// When an effect is active, its event callbacks are triggered throughout the course of a battle.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct Effect {
-    /// Event callbacks for the effect.
-    pub callbacks: Callbacks,
+    /// The effect of the condition.
+    #[serde(flatten)]
+    pub effect: Effect,
 }

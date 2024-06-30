@@ -507,10 +507,15 @@ impl Mon {
     }
 
     pub fn locked_move(context: &mut MonContext) -> Result<Option<String>, Error> {
-        Ok(core_battle_effects::run_event_for_mon_expecting_string(
+        let locked_move = core_battle_effects::run_event_for_mon_expecting_string(
             context,
             fxlang::BattleEvent::LockMove,
-        ))
+        );
+        if locked_move.is_some() {
+            // A Mon with a locked move is trapped.
+            context.mon_mut().trapped = true;
+        }
+        Ok(locked_move)
     }
 
     fn moves_and_locked_move(
@@ -994,8 +999,6 @@ impl Mon {
     ) -> Result<Vec<MonMoveSlotData>, Error> {
         // First, check if the Mon is locked into a certain move.
         if let Some(locked_move) = locked_move {
-            // A Mon with a locked move is trapped.
-            context.mon_mut().trapped = true;
             let locked_move_id = Id::from(locked_move.as_ref());
             // Recharge is a special move for moves that require a turn to recharge.
             if locked_move_id.eq("recharge") {

@@ -1148,7 +1148,11 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Metronome", "Mirror", "Protect"],
-    "damage": "level"
+    "effect": {
+      "callbacks": {
+        "on_damage": ["return $source.level"]
+      }
+    }
   },
   "strength": {
     "name": "Strength",
@@ -1231,7 +1235,7 @@
       "callbacks": {
         "on_use_move": [
           "# TODO: +1 for both boosts in the sun.",
-          "# TODO: $move.boosts = func_call(boosts: atk:2 spa:2)"
+          "# TODO: $move.boosts = func_call(boost_table: atk:2 spa:2)"
         ]
       }
     }
@@ -1672,7 +1676,11 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Metronome", "Mirror", "Protect"],
-    "damage": "level"
+    "effect": {
+      "callbacks": {
+        "on_damage": ["return $source.level"]
+      }
+    }
   },
   "mimic": {
     "name": "Mimic",
@@ -1973,7 +1981,60 @@
     "priority": 1,
     "target": "User",
     "flags": ["Contact", "FailInstruct", "Metronome", "NoSleepTalk", "Protect"],
-    "ignore_immunity": true
+    "hit_effect": {
+      "volatile_status": "bide"
+    },
+    "condition": {
+      "duration": 3,
+      "callbacks": {
+        "on_start": ["$effect_state.total_damage = 0", "log_start"],
+        "on_restart": ["return true"],
+        "on_lock_move": ["return $this.id"],
+        "on_damage_received": [
+          "if $source != $target:",
+          ["$effect_state.last_damage_source = $source"],
+          "$effect_state.total_damage = $effect_state.total_damage + $damage"
+        ],
+        "on_before_move": [
+          "# This callback runs when the user is in storing energy.",
+          "if $effect_state.duration == 1:",
+          [
+            "# Bide is ending this turn, so this use of the move unleashes the energy.",
+            "log_end",
+            "$target = $effect_state.last_damage_source",
+            "# Retarget if the last source of direct damage switched out.",
+            "if func_call(is_defined: $target) and !$target.active:",
+            ["$target = func_call(random_target: $user)"],
+            " # Fail if there is no source of direct damage, or no damage was stored.",
+            "if !$target or $effect_state.total_damage == 0:",
+            ["log_fail: $user", "return false"],
+            "# Create a new active move that deals the damage to the target, and use it directly.",
+            "$move = func_call(new_active_move_from_local_data: $this.id)",
+            "$move.damage = expr($effect_state.total_damage * 2)",
+            "use_active_move: $user $move $target",
+            "remove_volatile: $user $this.id",
+            "# Since we used the fake Bide, we can exit this move early.",
+            "return false"
+          ],
+          "log_activate: str('mon:{}', $user.position_details)"
+        ],
+        "on_move_aborted": ["remove_volatile: $user $this.id"]
+      },
+      "local_data": {
+        "moves": {
+          "bide": {
+            "name": "Bide",
+            "category": "Physical",
+            "primary_type": "Normal",
+            "accuracy": "exempt",
+            "priority": 1,
+            "target": "Scripted",
+            "flags": ["Contact", "Protect"],
+            "ignore_immunity": true
+          }
+        }
+      }
+    }
   },
   "metronome": {
     "name": "Metronome",

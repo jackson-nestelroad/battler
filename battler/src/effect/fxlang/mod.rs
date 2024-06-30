@@ -2,6 +2,7 @@ mod effect;
 mod effect_state;
 mod eval;
 mod functions;
+mod local_data;
 mod parsed_effect;
 mod program_parser;
 mod statement_parser;
@@ -25,6 +26,7 @@ pub use eval::{
     VariableInput,
 };
 pub use functions::run_function;
+pub use local_data::LocalData;
 pub use parsed_effect::ParsedCallbacks;
 pub use program_parser::{
     ParsedProgram,

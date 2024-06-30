@@ -10,6 +10,7 @@ use crate::{
         core_battle_logs,
         Boost,
         BoostTable,
+        CoreBattle,
         Mon,
         MonContext,
         MoveOutcomeOnTarget,
@@ -36,7 +37,10 @@ use crate::{
     },
     log::Event,
     log_event,
-    moves::MoveFlags,
+    moves::{
+        Move,
+        MoveFlags,
+    },
     rng::rand_util,
 };
 
@@ -77,6 +81,7 @@ pub fn run_function(
         "heal" => heal(context, args).map(|()| None),
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
+        "is_defined" => is_defined(args).map(|val| Some(val)),
         "is_undefined" => is_undefined(args).map(|val| Some(val)),
         "log" => log(context, args).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
@@ -96,14 +101,19 @@ pub fn run_function(
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "move_slot" => move_slot(context, args).map(|val| Some(val)),
         "move_slot_index" => move_slot_index(context, args),
+        "new_active_move_from_local_data" => {
+            new_active_move_from_local_data(context, args).map(|val| Some(val))
+        }
         "overwrite_move_slot" => overwrite_move_slot(context, args).map(|()| None),
         "random" => random(context, args).map(|val| Some(val)),
+        "random_target" => random_target(context, args),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
+        "use_active_move" => use_active_move(context, args).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context, args),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
@@ -806,6 +816,11 @@ fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {
     Ok(Value::Boolean(value.boolean().is_ok()))
 }
 
+fn is_defined(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let value = args.pop_front().wrap_error_with_message("missing value")?;
+    Ok(Value::Boolean(!value.is_undefined()))
+}
+
 fn is_undefined(mut args: VecDeque<Value>) -> Result<Value, Error> {
     let value = args.pop_front().wrap_error_with_message("missing value")?;
     Ok(Value::Boolean(value.is_undefined()))
@@ -1162,4 +1177,86 @@ fn clear_boosts(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
         .wrap_error_with_message("invalid mon")?;
     context.mon_context(mon_handle)?.mon_mut().clear_boosts();
     Ok(())
+}
+
+fn random_target(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = match args.pop_front() {
+        Some(value) => Some(value.string().wrap_error_with_message("invalid move")?),
+        None => None,
+    };
+    let move_id = move_id.map(|move_id| Id::from(move_id));
+    let move_id = move_id.unwrap_or(Id::from_known("tackle"));
+    Ok(
+        CoreBattle::random_target(context.battle_context_mut(), mon_handle, &move_id)?
+            .map(|mon| Value::Mon(mon)),
+    )
+}
+
+fn new_active_move_from_local_data(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    let move_data = context
+        .effect_context()
+        .effect()
+        .fxlang_effect()
+        .wrap_error_with_message("effect does not have local data")?
+        .local_data
+        .moves
+        .get(&move_id)
+        .wrap_error_with_format(format_args!(
+            "move {move_id} does not exist in the effect's local data"
+        ))?
+        .clone();
+    let active_move = Move::new(move_data);
+    let active_move_handle =
+        core_battle_actions::register_active_move(context.battle_context_mut(), active_move)?;
+    Ok(Value::ActiveMove(active_move_handle))
+}
+
+fn use_active_move(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let active_move_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let target_handle = match args.pop_front() {
+        Some(value) => Some(
+            value
+                .mon_handle()
+                .wrap_error_with_message("invalid target")?,
+        ),
+        None => None,
+    };
+    let source_effect = context.source_effect_handle().cloned();
+    core_battle_actions::use_active_move(
+        &mut context.mon_context(mon_handle)?,
+        active_move_handle,
+        target_handle,
+        source_effect.as_ref(),
+        true,
+    )
+    .map(|val| Value::Boolean(val))
 }

@@ -51,13 +51,12 @@ mod haze_test {
 
     fn make_battle(
         data: &dyn DataStore,
-        battle_type: BattleType,
         seed: u64,
         team_1: TeamData,
         team_2: TeamData,
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
-            .with_battle_type(battle_type)
+            .with_battle_type(BattleType::Singles)
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
@@ -73,14 +72,7 @@ mod haze_test {
     #[test]
     fn haze_clears_all_stat_changes() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(
-            &data,
-            BattleType::Singles,
-            0,
-            team().unwrap(),
-            team().unwrap(),
-        )
-        .unwrap();
+        let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));

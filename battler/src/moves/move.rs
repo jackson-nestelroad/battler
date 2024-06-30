@@ -26,7 +26,6 @@ use crate::{
     },
     moves::{
         Accuracy,
-        DamageType,
         MonOverride,
         MoveCategory,
         MoveFlags,
@@ -102,6 +101,7 @@ pub struct MoveData {
     /// Base accuracy.
     pub accuracy: Accuracy,
     /// Total power points, which is the number of times this move can be used.
+    #[serde(default)]
     pub pp: u8,
     /// Move priority.
     #[serde(default)]
@@ -112,7 +112,7 @@ pub struct MoveData {
     pub flags: FastHashSet<MoveFlags>,
 
     /// Static damage dealt.
-    pub damage: Option<DamageType>,
+    pub damage: Option<u16>,
     /// Disallow PP boosts?
     #[serde(default)]
     pub no_pp_boosts: bool,
@@ -394,20 +394,12 @@ impl Move {
         }
     }
 
-    pub fn fxlang_callbacks(
-        &self,
-        hit_effect_type: MoveHitEffectType,
-    ) -> Option<&fxlang::Callbacks> {
+    pub fn fxlang_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&fxlang::Effect> {
         match hit_effect_type {
-            MoveHitEffectType::PrimaryEffect => Some(&self.data.effect.callbacks),
-            MoveHitEffectType::SecondaryEffect(secondary_index) => Some(
-                &self
-                    .data
-                    .secondary_effects
-                    .get(secondary_index)?
-                    .effect
-                    .callbacks,
-            ),
+            MoveHitEffectType::PrimaryEffect => Some(&self.data.effect),
+            MoveHitEffectType::SecondaryEffect(secondary_index) => {
+                Some(&self.data.secondary_effects.get(secondary_index)?.effect)
+            }
         }
     }
 }

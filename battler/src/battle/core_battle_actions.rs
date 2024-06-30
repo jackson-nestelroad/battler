@@ -12,6 +12,7 @@ use crate::{
         ApplyingEffectContext,
         BoostMapInOrderIterator,
         BoostTable,
+        Context,
         CoreBattle,
         EffectContext,
         Mon,
@@ -42,7 +43,7 @@ use crate::{
     },
     mons::Stat,
     moves::{
-        DamageType,
+        Move,
         MoveCategory,
         MoveFlags,
         MoveTarget,
@@ -164,7 +165,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
     Ok(true)
 }
 
-fn register_active_move(context: &mut MonContext, move_id: &Id) -> Result<MoveHandle, Error> {
+fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<MoveHandle, Error> {
     let mut active_move = context
         .battle_mut()
         .dex
@@ -172,14 +173,14 @@ fn register_active_move(context: &mut MonContext, move_id: &Id) -> Result<MoveHa
         .get_by_id(move_id)?
         .deref()
         .clone();
-    active_move.used_by = Some(context.mon_handle());
+    register_active_move(context, active_move)
+}
+
+pub fn register_active_move(
+    context: &mut Context,
+    mut active_move: Move,
+) -> Result<MoveHandle, Error> {
     let active_move_handle = context.battle_mut().register_move(active_move);
-    let mon_handle = context.mon_handle();
-    CoreBattle::set_active_move(
-        context.as_battle_context_mut(),
-        active_move_handle,
-        mon_handle,
-    )?;
     Ok(active_move_handle)
 }
 
@@ -198,7 +199,7 @@ pub fn do_move(
     move_id: &Id,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-    source_effect: Option<EffectHandle>,
+    source_effect: Option<&EffectHandle>,
     external: bool,
 ) -> Result<(), Error> {
     context.mon_mut().active_move_actions += 1;
@@ -212,35 +213,32 @@ pub fn do_move(
     )?;
 
     // Make a copy of the move so we can work with it and modify it for the turn.
-    let active_move_handle = register_active_move(context, move_id)?;
-    context.active_move_mut()?.external = external;
-    context.active_move_mut()?.source_effect = source_effect;
+    let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+
+    context.mon_mut().set_active_move(active_move_handle);
+
+    let mut context = context.active_move_context()?;
 
     // BeforeMove event handlers can prevent the move from being used.
     if !core_battle_effects::run_event_for_applying_effect(
-        &mut context
-            .active_move_context()?
-            .user_applying_effect_context(None)?,
+        &mut context.user_applying_effect_context(None)?,
         fxlang::BattleEvent::BeforeMove,
         fxlang::VariableInput::default(),
     ) {
         core_battle_effects::run_event_for_applying_effect(
-            &mut context
-                .active_move_context()?
-                .user_applying_effect_context(None)?,
+            &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::MoveAborted,
             fxlang::VariableInput::default(),
         );
-        CoreBattle::clear_active_move(context.as_battle_context_mut())?;
         context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(());
     }
 
-    let locked_move_before = Mon::locked_move(context)?;
+    let locked_move_before = Mon::locked_move(context.as_mon_context_mut())?;
 
     // Check that move has enough PP to be used.
     if !external {
-        let move_id = context.active_move()?.id();
+        let move_id = context.active_move().id();
         // SAFETY: move_id is only used for lookup.
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
         if locked_move_before.is_none()
@@ -248,11 +246,10 @@ pub fn do_move(
             && !move_id.eq("struggle")
         {
             // No PP, so this move action cannot be carried through.
-            let move_name = &context.active_move()?.data.name;
+            let move_name = &context.active_move().data.name;
             // SAFETY: Logging does not change the active move.
             let move_name = unsafe { move_name.unsafely_detach_borrow() };
-            core_battle_logs::cant(context, "nopp", Some(move_name))?;
-            CoreBattle::clear_active_move(context.as_battle_context_mut())?;
+            core_battle_logs::cant(context.as_mon_context_mut(), "nopp", Some(move_name))?;
             return Ok(());
         }
 
@@ -260,14 +257,19 @@ pub fn do_move(
     }
 
     // Use the move.
-    let move_id = context.active_move()?.id().clone();
-    use_move(context, &move_id, target)?;
+    use_active_move(
+        context.as_mon_context_mut(),
+        active_move_handle,
+        target,
+        source_effect,
+        external,
+    )?;
 
     // Deduct PP if the move was successful.
     //
     // Charging moves do not have their PP deducted.
-    if !external && !mon_is_charging(&mut context.active_move_context()?)? {
-        let move_id = context.active_move()?.id();
+    if !external && !mon_is_charging(&mut context)? {
+        let move_id = context.active_move().id();
         // SAFETY: move_id is only used for lookup.
         let move_id = unsafe { move_id.unsafely_detach_borrow() };
         context.mon_mut().deduct_pp(move_id, 1);
@@ -277,19 +279,17 @@ pub fn do_move(
     }
 
     core_battle_effects::run_active_move_event_expecting_void(
-        &mut context.active_move_context()?,
+        &mut context,
         fxlang::BattleEvent::AfterMove,
         core_battle_effects::MoveTargetForEvent::User,
     );
     core_battle_effects::run_event_for_applying_effect(
-        &mut context
-            .active_move_context()?
-            .user_applying_effect_context(None)?,
+        &mut context.user_applying_effect_context(None)?,
         fxlang::BattleEvent::AfterMove,
         fxlang::VariableInput::default(),
     );
 
-    CoreBattle::clear_active_move(context.as_battle_context_mut())?;
+    context.mon_mut().clear_active_move();
 
     CoreBattle::faint_messages(context.as_battle_context_mut())?;
     CoreBattle::check_win(context.as_battle_context_mut())?;
@@ -301,45 +301,61 @@ pub fn use_move(
     context: &mut MonContext,
     move_id: &Id,
     target: Option<MonHandle>,
+    source_effect: Option<&EffectHandle>,
+    external: bool,
 ) -> Result<bool, Error> {
-    context.mon_mut().move_this_turn_outcome = None;
-    let outcome = use_move_internal(context, move_id, target)?;
-    context.mon_mut().move_this_turn_outcome = Some(outcome);
-    Ok(outcome.success())
+    let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    use_active_move(context, active_move_handle, target, source_effect, external)
 }
 
-fn use_move_internal(
+pub fn use_active_move(
     context: &mut MonContext,
-    move_id: &Id,
-    mut target: Option<MonHandle>,
-) -> Result<MoveOutcome, Error> {
-    // This move becomes the active move.
-    let active_mon_handle = register_active_move(context, move_id)?;
-    let mut context = context.active_move_context()?;
-    context.mon_mut().last_move_used = Some(active_mon_handle);
-    let base_target = context.active_move().data.target.clone();
-    // TODO: ModifyTarget event.
-    let mon_handle = context.mon_handle();
-    if target.is_none() && context.active_move().data.target.requires_target() {
-        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
-    }
+    active_move_handle: MoveHandle,
+    target: Option<MonHandle>,
+    source_effect: Option<&EffectHandle>,
+    external: bool,
+) -> Result<bool, Error> {
+    context.mon_mut().move_this_turn_outcome = None;
 
-    // Target may have been modified, so update the battle and context.
-    let active_move_handle = context.active_move_handle();
     context.mon_mut().set_active_move(active_move_handle);
 
     let mut context = context.active_move_context()?;
+    context.active_move_mut().source_effect = source_effect.cloned();
+    context.active_move_mut().used_by = Some(context.mon_handle());
+    context.active_move_mut().external = external;
+
+    let outcome = use_active_move_internal(&mut context, target)?;
+
+    context.mon_mut().move_this_turn_outcome = Some(outcome);
+
+    Ok(outcome.success())
+}
+
+fn use_active_move_internal(
+    context: &mut ActiveMoveContext,
+    mut target: Option<MonHandle>,
+) -> Result<MoveOutcome, Error> {
+    context.mon_mut().last_move_used = Some(context.active_move_handle());
+
+    let base_target = context.active_move().data.target.clone();
+    // TODO: ModifyTarget event.
+    let mon_handle = context.mon_handle();
+    let move_id = context.active_move().id().clone();
+
+    if target.is_none() && context.active_move().data.target.requires_target() {
+        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, &move_id)?;
+    }
 
     // TODO: ModifyType on the move.
     core_battle_effects::run_active_move_event_expecting_void(
-        &mut context,
+        context,
         fxlang::BattleEvent::UseMove,
         core_battle_effects::MoveTargetForEvent::User,
     );
 
     // The target changed, so it must be adjusted here.
     if base_target != context.active_move().data.target {
-        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_id)?;
+        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, &move_id)?;
     }
 
     // TODO: ModifyType events on the Mon.
@@ -366,13 +382,13 @@ fn use_move_internal(
         return Ok(MoveOutcome::Failed);
     }
 
-    let targets = get_move_targets(&mut context, target)?;
+    let targets = get_move_targets(context, target)?;
 
     // TODO: DeductPP event (for Pressure).
     // TODO: Targeted event.
     // TODO: TryMove event.
     core_battle_effects::run_active_move_event_expecting_void(
-        &mut context,
+        context,
         fxlang::BattleEvent::UseMoveMessage,
         core_battle_effects::MoveTargetForEvent::User,
     );
@@ -388,14 +404,14 @@ fn use_move_internal(
     }
 
     let outcome = if !context.active_move().data.target.affects_mons_directly() {
-        try_indirect_move(&mut context, &targets)?
+        try_indirect_move(context, &targets)?
     } else {
         if targets.is_empty() {
             core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
             core_battle_logs::fail(context.as_mon_context_mut())?;
             return Ok(MoveOutcome::Failed);
         }
-        try_direct_move(&mut context, &targets)?
+        try_direct_move(context, &targets)?
     };
 
     // TODO: Move hit on self for boosts?
@@ -412,7 +428,7 @@ fn use_move_internal(
 
     if outcome == MoveOutcome::Failed {
         core_battle_effects::run_active_move_event_expecting_void(
-            &mut context,
+            context,
             fxlang::BattleEvent::MoveFailed,
             core_battle_effects::MoveTargetForEvent::User,
         );
@@ -894,12 +910,8 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     }
 
     // Static damage.
-    match context.active_move().data.damage {
-        Some(DamageType::Level) => {
-            return Ok(MoveOutcomeOnTarget::Damage(context.mon().level as u16))
-        }
-        Some(DamageType::Set(damage)) => return Ok(MoveOutcomeOnTarget::Damage(damage)),
-        _ => (),
+    if let Some(damage) = context.active_move().data.damage {
+        return Ok(MoveOutcomeOnTarget::Damage(damage));
     }
 
     let mut base_power = context.active_move().data.base_power;
@@ -1579,7 +1591,13 @@ fn apply_spread_damage(
             source_handle,
             Some(&effect_handle),
         )?;
-        context.target_mut().hurt_this_turn = *damage;
+        context.target_mut().hurt_this_turn = context.target().hp;
+
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context,
+            fxlang::BattleEvent::DamageReceived,
+            fxlang::VariableInput::from_iter([fxlang::Value::U64(*damage as u64)]),
+        );
 
         core_battle_logs::damage(
             &mut context.target_context()?,

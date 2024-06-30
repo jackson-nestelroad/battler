@@ -4,6 +4,7 @@ mod field {
 
 mod moves {
     mod accuracy_check_test;
+    mod bide_test;
     mod counter_test;
     mod crash_damage_test;
     mod crit_ratio_test;

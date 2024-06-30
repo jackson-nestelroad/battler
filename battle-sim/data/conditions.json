@@ -222,7 +222,7 @@
           "run_event: PrepareHit"
         ],
         "on_lock_move": ["return $effect_state.move"],
-        "on_move_aborted": ["remove_volatile: $target $effect_state.move"],
+        "on_move_aborted": ["remove_volatile: $user $effect_state.move"],
         "on_end": ["remove_volatile: $target $effect_state.move"]
       }
     }

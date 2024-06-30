@@ -286,16 +286,16 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    pub fn fxlang_callbacks<'effect>(&'effect self) -> Option<&'effect fxlang::Callbacks> {
+    pub fn fxlang_effect<'effect>(&'effect self) -> Option<&'effect fxlang::Effect> {
         match self {
             Self::ActiveMove(active_move, hit_effect_type) => {
-                active_move.fxlang_callbacks(*hit_effect_type)
+                active_move.fxlang_effect(*hit_effect_type)
             }
-            Self::MoveCondition(mov) => Some(&mov.data.condition.callbacks),
-            Self::InactiveMove(mov) => Some(&mov.data.effect.callbacks),
-            Self::Ability(ability) => Some(&ability.data.effect.callbacks),
-            Self::Condition(condition) => Some(&condition.data.condition.callbacks),
-            Self::Item(item) => Some(&item.data.effect.callbacks),
+            Self::MoveCondition(mov) => Some(&mov.data.condition.effect),
+            Self::InactiveMove(mov) => Some(&mov.data.effect),
+            Self::Ability(ability) => Some(&ability.data.effect),
+            Self::Condition(condition) => Some(&condition.data.condition.effect),
+            Self::Item(item) => Some(&item.data.effect),
             Self::NonExistent(_) => None,
         }
     }

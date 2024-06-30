@@ -866,7 +866,9 @@ where
                                 .data
                                 .base_power,
                         ),
-
+                        "damage" => ValueRefMut::OptionalU16(
+                            &mut context.active_move_mut(**active_move_handle)?.data.damage,
+                        ),
                         _ => {
                             return Err(Self::bad_member_or_mutable_access(
                                 member,
@@ -1709,6 +1711,26 @@ impl Evaluator {
             (ValueRefMut::OptionalISize(var), Value::UFraction(val)) => {
                 *var = Some(
                     val.floor()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::OptionalU16(var), Value::U64(val)) => {
+                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
+            }
+            (ValueRefMut::OptionalU16(var), Value::I64(val)) => {
+                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
+            }
+            (ValueRefMut::OptionalU16(var), Value::Fraction(val)) => {
+                *var = Some(
+                    val.round()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::OptionalU16(var), Value::UFraction(val)) => {
+                *var = Some(
+                    val.round()
                         .try_into()
                         .wrap_error_with_message("integer overflow")?,
                 );
