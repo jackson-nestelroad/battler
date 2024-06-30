@@ -40,6 +40,7 @@ use crate::{
     moves::{
         Move,
         MoveFlags,
+        MoveTarget,
     },
     rng::rand_util,
 };
@@ -1188,14 +1189,14 @@ fn random_target(
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let move_id = match args.pop_front() {
-        Some(value) => Some(value.string().wrap_error_with_message("invalid move")?),
-        None => None,
+    let move_target = match args.pop_front() {
+        Some(value) => value
+            .move_target()
+            .wrap_error_with_message("invalid move target")?,
+        None => MoveTarget::Normal,
     };
-    let move_id = move_id.map(|move_id| Id::from(move_id));
-    let move_id = move_id.unwrap_or(Id::from_known("tackle"));
     Ok(
-        CoreBattle::random_target(context.battle_context_mut(), mon_handle, &move_id)?
+        CoreBattle::random_target(context.battle_context_mut(), mon_handle, move_target)?
             .map(|mon| Value::Mon(mon)),
     )
 }
@@ -1222,7 +1223,7 @@ fn new_active_move_from_local_data(
             "move {move_id} does not exist in the effect's local data"
         ))?
         .clone();
-    let active_move = Move::new(move_data);
+    let active_move = Move::new_unlinked(move_data);
     let active_move_handle =
         core_battle_actions::register_active_move(context.battle_context_mut(), active_move)?;
     Ok(Value::ActiveMove(active_move_handle))
@@ -1243,11 +1244,17 @@ fn use_active_move(
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let target_handle = match args.pop_front() {
-        Some(value) => Some(
-            value
-                .mon_handle()
-                .wrap_error_with_message("invalid target")?,
-        ),
+        Some(value) => {
+            if value.is_undefined() {
+                None
+            } else {
+                Some(
+                    value
+                        .mon_handle()
+                        .wrap_error_with_message("invalid target")?,
+                )
+            }
+        }
         None => None,
     };
     let source_effect = context.source_effect_handle().cloned();

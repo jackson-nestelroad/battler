@@ -141,6 +141,15 @@ impl EffectHandle {
             _ => Ok(None),
         }
     }
+
+    pub fn unlinked_internal_fxlang_id(&self) -> Option<String> {
+        match self {
+            Self::ActiveMove(active_move_handle, _) => {
+                Some(format!("activemove:{}", active_move_handle))
+            }
+            _ => None,
+        }
+    }
 }
 
 /// A battle effect.
@@ -311,6 +320,13 @@ impl<'borrow> Effect<'borrow> {
     pub fn infiltrates(&self) -> bool {
         match self {
             Self::ActiveMove(active_move, _) => active_move.infiltrates,
+            _ => false,
+        }
+    }
+
+    pub fn unlinked(&self) -> bool {
+        match self {
+            Self::ActiveMove(active_move, _) => active_move.unlinked,
             _ => false,
         }
     }

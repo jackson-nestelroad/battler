@@ -347,6 +347,14 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveSlot)),
         }
     }
+
+    /// Consumes the value into a [`MoveTarget`].
+    pub fn move_target(self) -> Result<MoveTarget, Error> {
+        match self {
+            Self::MoveTarget(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveTarget)),
+        }
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.
@@ -762,6 +770,7 @@ impl<'eval> ValueRefToStoredValue<'eval> {
 pub enum ValueRefMut<'eval> {
     Undefined(&'eval mut Value),
     Boolean(&'eval mut bool),
+    OptionalBoolean(&'eval mut Option<bool>),
     U16(&'eval mut u16),
     U32(&'eval mut u32),
     U64(&'eval mut u64),
@@ -793,6 +802,7 @@ impl<'eval> ValueRefMut<'eval> {
         match self {
             Self::Undefined(_) => ValueType::Undefined,
             Self::Boolean(_) => ValueType::Boolean,
+            Self::OptionalBoolean(_) => ValueType::Boolean,
             Self::U16(_) => ValueType::U64,
             Self::U32(_) => ValueType::U64,
             Self::U64(_) => ValueType::U64,
@@ -1528,6 +1538,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempEffect(lhs), Self::TempEffect(rhs)) => lhs.eq(rhs),
             (Self::ActiveMove(lhs), Self::ActiveMove(rhs)) => lhs.eq(rhs),
             (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
+            (Self::MoveTarget(lhs), Self::MoveTarget(rhs)) => lhs.eq(rhs),
             (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
             (Self::Boost(lhs), Self::Boost(rhs)) => lhs.eq(rhs),
             (Self::BoostTable(lhs), Self::BoostTable(rhs)) => lhs.eq(rhs),

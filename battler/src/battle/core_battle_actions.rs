@@ -340,11 +340,11 @@ fn use_active_move_internal(
     let base_target = context.active_move().data.target.clone();
     // TODO: ModifyTarget event.
     let mon_handle = context.mon_handle();
-    let move_id = context.active_move().id().clone();
 
-    if target.is_none() && context.active_move().data.target.requires_target() {
-        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, &move_id)?;
-    }
+    // if target.is_none() && base_target.requires_target() {
+    //     target =
+    //         CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, base_target)?;
+    // }
 
     // TODO: ModifyType on the move.
     core_battle_effects::run_active_move_event_expecting_void(
@@ -354,9 +354,11 @@ fn use_active_move_internal(
     );
 
     // The target changed, so it must be adjusted here.
-    if base_target != context.active_move().data.target {
-        target = CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, &move_id)?;
-    }
+    // let move_target = context.active_move().data.target;
+    // if base_target != move_target {
+    //     target =
+    //         CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?;
+    // }
 
     // TODO: ModifyType events on the Mon.
     core_battle_effects::run_event_for_applying_effect(
@@ -370,19 +372,20 @@ fn use_active_move_internal(
         return Ok(MoveOutcome::Failed);
     }
 
-    // Log that the move is being used.
-    let move_name = &context.active_move().data.name;
-    // SAFETY: Logging does not change the active move.
-    let move_name = unsafe { move_name.unsafely_detach_borrow() };
-    core_battle_logs::use_move(context.as_mon_context_mut(), move_name, target)?;
+    let targets = get_move_targets(context, target)?;
+    if context.active_move().data.target.has_single_target() {
+        target = targets.first().cloned();
+    }
 
-    if target.is_none() && context.active_move().data.target.requires_target() {
+    // Log that the move is being used.
+    let move_name = context.active_move().data.name.clone();
+    core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target)?;
+
+    if context.active_move().data.target.requires_target() && target.is_none() {
         core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
         core_battle_logs::fail(context.as_mon_context_mut())?;
         return Ok(MoveOutcome::Failed);
     }
-
-    let targets = get_move_targets(context, target)?;
 
     // TODO: DeductPP event (for Pressure).
     // TODO: Targeted event.
@@ -522,11 +525,11 @@ pub fn get_move_targets(
                 None => None,
             };
 
-            if target.is_none() {
+            if target.is_none() && !context.active_move().data.no_random_target {
                 let mon = context.mon_handle();
-                let active_move = context.active_move().id().clone();
+                let move_target = context.active_move().data.target;
                 target =
-                    CoreBattle::random_target(context.as_battle_context_mut(), mon, &active_move)?;
+                    CoreBattle::random_target(context.as_battle_context_mut(), mon, move_target)?;
             }
 
             let mut target = match target {
@@ -545,10 +548,6 @@ pub fn get_move_targets(
             }
 
             targets.push(target);
-
-            if Some(target) != selected_target {
-                core_battle_logs::retarget_last_move(context.as_battle_context_mut(), target)?;
-            }
         }
     }
     let targets = targets

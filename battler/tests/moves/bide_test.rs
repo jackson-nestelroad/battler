@@ -222,6 +222,7 @@ mod bide_test {
                 "turn|turn:3",
                 ["time"],
                 "end|mon:Blissey,player-1,1|move:Bide",
+                "move|mon:Blissey,player-1,1|name:Bide|notarget",
                 "fail|mon:Blissey,player-1,1",
                 "split|side:0",
                 "damage|mon:Blissey,player-1,1|from:status:Bad Poison|health:198/315",

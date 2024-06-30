@@ -54,11 +54,20 @@ impl EffectManager {
         // SAFETY: Effects are guaranteed to live at least through this turn, and no effect is
         // allowed to change the turn of the battle.
         let effect = unsafe { mem::transmute(effect) };
-        Self::evaluate_internal(context, &effect, event, input, effect_state)
+        Self::evaluate_internal(context, effect_handle, &effect, event, input, effect_state)
     }
 
-    fn get_parsed_effect(&mut self, effect: &Effect) -> Result<Rc<ParsedCallbacks>, Error> {
-        let id = effect.internal_fxlang_id();
+    fn get_parsed_effect(
+        &mut self,
+        effect_handle: &EffectHandle,
+        effect: &Effect,
+    ) -> Result<Rc<ParsedCallbacks>, Error> {
+        let id = if effect.unlinked() {
+            effect_handle.unlinked_internal_fxlang_id().wrap_error_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
+        } else {
+            effect.internal_fxlang_id()
+        };
+
         // TODO: Borrow checker is too strict to remove the extra lookup here.
         if self.callbacks.contains_key(&id) {
             return self
@@ -83,6 +92,7 @@ impl EffectManager {
 
     fn evaluate_internal(
         context: &mut EvaluationContext,
+        effect_handle: &EffectHandle,
         effect: &Effect,
         event: BattleEvent,
         input: VariableInput,
@@ -93,7 +103,7 @@ impl EffectManager {
             .battle_context_mut()
             .battle_mut()
             .effect_manager
-            .get_parsed_effect(effect)?;
+            .get_parsed_effect(&effect_handle, effect)?;
         match callbacks.event(event) {
             Some(program) => {
                 evaluator.evaluate_program(context, event, input, effect_state, program)

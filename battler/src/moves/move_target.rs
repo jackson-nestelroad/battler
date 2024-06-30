@@ -95,6 +95,20 @@ impl MoveTarget {
         }
     }
 
+    /// Does the move have a single target?
+    pub fn has_single_target(&self) -> bool {
+        match self {
+            Self::All
+            | Self::AllAdjacent
+            | Self::AllAdjacentFoes
+            | Self::Allies
+            | Self::AllySide
+            | Self::AllyTeam
+            | Self::FoeSide => false,
+            _ => true,
+        }
+    }
+
     /// Does the move affect Mons directly?
     pub fn affects_mons_directly(&self) -> bool {
         match self {

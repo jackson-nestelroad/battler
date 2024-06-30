@@ -1211,28 +1211,20 @@ impl<'d> CoreBattle<'d> {
     pub fn random_target(
         context: &mut Context,
         mon: MonHandle,
-        move_id: &Id,
+        move_target: MoveTarget,
     ) -> Result<Option<MonHandle>, Error> {
-        let mov = context
-            .battle()
-            .dex
-            .moves
-            .get_by_id(move_id)
-            .into_result()?;
-        let target = mov.data.target.clone();
-
-        if target.can_target_user() {
+        if move_target.can_target_user() {
             // Target the user if possible.
             return Ok(Some(mon));
         }
 
         let mut context = context.mon_context(mon)?;
-        let mons = if !target.can_target_foes() {
+        let mons = if !move_target.can_target_foes() {
             // Cannot target foes, so only consider allies.
             Mon::adjacent_allies(&mut context)?
                 .filter_map(|ally| ally)
                 .collect::<Vec<_>>()
-        } else if target.is_adjacent_only() {
+        } else if move_target.is_adjacent_only() {
             // Consider adjacent foes. Allies are excluded, so that a move will never randomly
             // target an ally if it doesn't need to.
             Mon::adjacent_foes(&mut context)?
@@ -1322,7 +1314,7 @@ impl<'d> CoreBattle<'d> {
         if !move_target.requires_target() {
             Ok(None)
         } else {
-            Self::random_target(context, mon, move_id)
+            Self::random_target(context, mon, move_target)
         }
     }
 

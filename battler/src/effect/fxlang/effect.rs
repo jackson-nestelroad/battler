@@ -374,7 +374,8 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move from the user.
     #[string = "PrepareHit"]
     PrepareHit,
-    /// Runs when a move is being redirected towards a different target.
+    /// Runs when a move is going to target one Mon but can be redirected towards a different
+    /// target.
     ///
     /// Runs in the context of an active move from the user.
     #[string = "RedirectTarget"]

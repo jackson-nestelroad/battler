@@ -1991,32 +1991,24 @@
         "on_restart": ["return true"],
         "on_lock_move": ["return $this.id"],
         "on_damage_received": [
-          "if $source != $target:",
+          "if func_call(is_defined: $source) and $source != $target:",
           ["$effect_state.last_damage_source = $source"],
           "$effect_state.total_damage = $effect_state.total_damage + $damage"
         ],
         "on_before_move": [
-          "# This callback runs when the user is in storing energy.",
-          "if $effect_state.duration == 1:",
-          [
-            "# Bide is ending this turn, so this use of the move unleashes the energy.",
-            "log_end",
-            "$target = $effect_state.last_damage_source",
-            "# Retarget if the last source of direct damage switched out.",
-            "if func_call(is_defined: $target) and !$target.active:",
-            ["$target = func_call(random_target: $user)"],
-            " # Fail if there is no source of direct damage, or no damage was stored.",
-            "if !$target or $effect_state.total_damage == 0:",
-            ["log_fail: $user", "return false"],
-            "# Create a new active move that deals the damage to the target, and use it directly.",
-            "$move = func_call(new_active_move_from_local_data: $this.id)",
-            "$move.damage = expr($effect_state.total_damage * 2)",
-            "use_active_move: $user $move $target",
-            "remove_volatile: $user $this.id",
-            "# Since we used the fake Bide, we can exit this move early.",
-            "return false"
-          ],
-          "log_activate: str('mon:{}', $user.position_details)"
+          "# This callback runs when the user is storing energy.",
+          "if $effect_state.duration > 1:",
+          ["log_activate: str('mon:{}', $user.position_details)", "return"],
+          "# Bide is ending this turn, so this use of the move unleashes the energy.",
+          "log_end",
+          "$target = $effect_state.last_damage_source",
+          "# Create a new active move that deals the damage to the target, and use it directly.",
+          "$move = func_call(new_active_move_from_local_data: $this.id)",
+          "$move.damage = expr($effect_state.total_damage * 2)",
+          "use_active_move: $user $move $target",
+          "remove_volatile: $user $this.id",
+          "# Since we used the local Bide, we can exit this move early.",
+          "return false"
         ],
         "on_move_aborted": ["remove_volatile: $user $this.id"]
       },
@@ -2030,7 +2022,17 @@
             "priority": 1,
             "target": "Scripted",
             "flags": ["Contact", "Protect"],
-            "ignore_immunity": true
+            "ignore_immunity": true,
+            "no_random_target": true,
+            "effect": {
+              "callbacks": {
+                "on_try_use_move": [
+                  "# Fail if no direct damage was received.",
+                  "if $move.damage == 0:",
+                  ["return false"]
+                ]
+              }
+            }
           }
         }
       }

@@ -1,6 +1,7 @@
 use std::{
     collections::VecDeque,
     mem,
+    str::FromStr,
 };
 
 use zone_alloc::{
@@ -53,7 +54,10 @@ use crate::{
         },
         EffectHandle,
     },
-    moves::Move,
+    moves::{
+        Move,
+        MoveTarget,
+    },
 };
 
 /// The [`Context`][`crate::battle::Context`] for which an fxlang program is evaluated.
@@ -724,6 +728,10 @@ where
                     "category" => ValueRef::MoveCategory(
                         context.active_move(active_move_handle)?.data.category,
                     ),
+                    "damage" => match context.active_move(active_move_handle)?.data.damage {
+                        Some(damage) => ValueRef::U64(damage as u64),
+                        None => ValueRef::Undefined,
+                    },
                     "drain_percent" => ValueRef::UFraction(
                         context
                             .active_move(active_move_handle)?
@@ -758,6 +766,9 @@ where
                     "sleep_usable" => ValueRef::Boolean(
                         context.active_move(active_move_handle)?.data.sleep_usable,
                     ),
+                    "target" => {
+                        ValueRef::MoveTarget(context.active_move(active_move_handle)?.data.target)
+                    }
                     "thaws_target" => ValueRef::Boolean(
                         context.active_move(active_move_handle)?.data.thaws_target,
                     ),
@@ -868,6 +879,15 @@ where
                         ),
                         "damage" => ValueRefMut::OptionalU16(
                             &mut context.active_move_mut(**active_move_handle)?.data.damage,
+                        ),
+                        "ignore_immunity" => ValueRefMut::OptionalBoolean(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .ignore_immunity,
+                        ),
+                        "target" => ValueRefMut::MoveTarget(
+                            &mut context.active_move_mut(**active_move_handle)?.data.target,
                         ),
                         _ => {
                             return Err(Self::bad_member_or_mutable_access(
@@ -1641,6 +1661,9 @@ impl Evaluator {
             (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
                 *var = val;
             }
+            (ValueRefMut::OptionalBoolean(var), Value::Boolean(val)) => {
+                *var = Some(val);
+            }
             (ValueRefMut::U16(var), Value::U64(val)) => {
                 *var = val.try_into().wrap_error_with_message("integer overflow")?;
             }
@@ -1791,6 +1814,9 @@ impl Evaluator {
             }
             (ValueRefMut::MoveTarget(var), Value::MoveTarget(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::MoveTarget(var), Value::String(val)) => {
+                *var = MoveTarget::from_str(&val).wrap_error_with_message("invalid move target")?;
             }
             (ValueRefMut::Type(var), Value::Type(val)) => {
                 *var = val;

@@ -225,6 +225,9 @@ pub struct MoveData {
     /// The move stalls the battle.
     #[serde(default)]
     pub stalling_move: bool,
+    /// Does the move avoid random targets?
+    #[serde(default)]
+    pub no_random_target: bool,
 
     /// Dynamic battle effects.
     #[serde(default)]
@@ -307,6 +310,14 @@ pub struct Move {
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
+    /// Whether or not the move is unlinked from the original data.
+    ///
+    /// If set to true, fxlang effect programs will be parsed and cached relative to this
+    /// individual move instance, rather than relative to the original move data. In other words,
+    /// the effects of this move are "unlinked" from the effects of the original move, allowing
+    /// this move to specify different callbacks than the original move, even though they share the
+    /// same ID.
+    pub unlinked: bool,
 
     hit_data: FastHashMap<MonHandle, MoveHitData>,
 }
@@ -328,6 +339,28 @@ impl Move {
             total_damage: 0,
             primary_user_effect_applied: false,
             effect_state: fxlang::EffectState::new(),
+            unlinked: false,
+            hit_data: FastHashMap::new(),
+        }
+    }
+
+    /// Creates a new [`Move`] instance from [`MoveData`], with unlinked effect callbacks.
+    pub fn new_unlinked(data: MoveData) -> Self {
+        let id = Id::from(data.name.as_ref());
+        Self {
+            data,
+            id,
+            used_by: None,
+            stab_modifier: None,
+            external: false,
+            infiltrates: false,
+            source_effect: None,
+            spread_hit: false,
+            hit: 0,
+            total_damage: 0,
+            primary_user_effect_applied: false,
+            effect_state: fxlang::EffectState::new(),
+            unlinked: true,
             hit_data: FastHashMap::new(),
         }
     }
