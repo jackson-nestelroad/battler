@@ -337,28 +337,12 @@ fn use_active_move_internal(
 ) -> Result<MoveOutcome, Error> {
     context.mon_mut().last_move_used = Some(context.active_move_handle());
 
-    let base_target = context.active_move().data.target.clone();
-    // TODO: ModifyTarget event.
-    let mon_handle = context.mon_handle();
-
-    // if target.is_none() && base_target.requires_target() {
-    //     target =
-    //         CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, base_target)?;
-    // }
-
     // TODO: ModifyType on the move.
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::UseMove,
         core_battle_effects::MoveTargetForEvent::User,
     );
-
-    // The target changed, so it must be adjusted here.
-    // let move_target = context.active_move().data.target;
-    // if base_target != move_target {
-    //     target =
-    //         CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?;
-    // }
 
     // TODO: ModifyType events on the Mon.
     core_battle_effects::run_event_for_applying_effect(
