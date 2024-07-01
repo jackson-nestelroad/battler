@@ -947,8 +947,6 @@ impl<'d> CoreBattle<'d> {
                     &action.id,
                     action.target,
                     action.original_target,
-                    None,
-                    false,
                 )?;
             }
             Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
@@ -984,6 +982,11 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn after_action(context: &mut Context) -> Result<(), Error> {
+        Self::faint_messages(context)?;
+        if context.battle().ended {
+            return Ok(());
+        }
+
         // Drag out any Mons in the place of force switches.
         let mons = context
             .battle()
@@ -996,11 +999,6 @@ impl<'d> CoreBattle<'d> {
                 core_battle_actions::drag_in(context.as_player_context_mut(), position)?;
             }
             context.mon_mut().force_switch = None;
-        }
-
-        Self::faint_messages(context)?;
-        if context.battle().ended {
-            return Ok(());
         }
 
         if context.battle().queue.is_empty() {

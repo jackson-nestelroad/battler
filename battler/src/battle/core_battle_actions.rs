@@ -150,7 +150,11 @@ pub fn switch_in(
 }
 
 pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
-    core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::SwitchIn);
+    core_battle_effects::run_event_for_mon(
+        context,
+        fxlang::BattleEvent::SwitchIn,
+        fxlang::VariableInput::default(),
+    );
 
     // TODO: EntryHazard event.
 
@@ -176,21 +180,9 @@ fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<Mov
     register_active_move(context, active_move)
 }
 
-pub fn register_active_move(
-    context: &mut Context,
-    mut active_move: Move,
-) -> Result<MoveHandle, Error> {
+pub fn register_active_move(context: &mut Context, active_move: Move) -> Result<MoveHandle, Error> {
     let active_move_handle = context.battle_mut().register_move(active_move);
     Ok(active_move_handle)
-}
-
-fn mon_is_charging(context: &mut ActiveMoveContext) -> Result<bool, Error> {
-    Ok(context
-        .active_move()
-        .data
-        .flags
-        .contains(&MoveFlags::Charge)
-        && Mon::has_volatile(context.as_mon_context_mut(), &Id::from_known("twoturnmove"))?)
 }
 
 /// Executes the given move by a Mon.
@@ -199,10 +191,22 @@ pub fn do_move(
     move_id: &Id,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-    source_effect: Option<&EffectHandle>,
-    external: bool,
 ) -> Result<(), Error> {
     context.mon_mut().active_move_actions += 1;
+
+    do_move_internal(context, move_id, target_location, original_target)?;
+
+    context.mon_mut().clear_active_move();
+
+    Ok(())
+}
+
+fn do_move_internal(
+    context: &mut MonContext,
+    move_id: &Id,
+    target_location: Option<isize>,
+    original_target: Option<MonHandle>,
+) -> Result<(), Error> {
     let mon_handle = context.mon_handle();
     let target = CoreBattle::get_target(
         context.as_battle_context_mut(),
@@ -214,46 +218,30 @@ pub fn do_move(
 
     // Make a copy of the move so we can work with it and modify it for the turn.
     let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
-
     context.mon_mut().set_active_move(active_move_handle);
-
     let mut context = context.active_move_context()?;
-
-    // BeforeMove event handlers can prevent the move from being used.
-    if !core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(None)?,
-        fxlang::BattleEvent::BeforeMove,
-        fxlang::VariableInput::default(),
-    ) {
-        core_battle_effects::run_event_for_applying_effect(
-            &mut context.user_applying_effect_context(None)?,
-            fxlang::BattleEvent::MoveAborted,
-            fxlang::VariableInput::default(),
-        );
-        context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
-        return Ok(());
-    }
 
     let locked_move_before = Mon::locked_move(context.as_mon_context_mut())?;
 
     // Check that move has enough PP to be used.
-    if !external {
-        let move_id = context.active_move().id();
-        // SAFETY: move_id is only used for lookup.
-        let move_id = unsafe { move_id.unsafely_detach_borrow() };
-        if locked_move_before.is_none()
-            && !context.mon_mut().check_pp(move_id, 1)
-            && !move_id.eq("struggle")
-        {
-            // No PP, so this move action cannot be carried through.
-            let move_name = &context.active_move().data.name;
-            // SAFETY: Logging does not change the active move.
-            let move_name = unsafe { move_name.unsafely_detach_borrow() };
-            core_battle_logs::cant(context.as_mon_context_mut(), "nopp", Some(move_name))?;
-            return Ok(());
-        }
+    let move_id = context.active_move().id().clone();
+    if locked_move_before.is_none()
+        && !context.mon_mut().check_pp(&move_id, 1)
+        && !move_id.eq("struggle")
+    {
+        // No PP, so this move action cannot be carried through.
+        let move_name = &context.active_move().data.name;
+        // SAFETY: Logging does not change the active move.
+        let move_name = unsafe { move_name.unsafely_detach_borrow() };
+        core_battle_logs::cant(context.as_mon_context_mut(), "nopp", Some(move_name))?;
+        return Ok(());
+    }
 
-        context.mon_mut().last_move_target = target_location;
+    // The move is goin to be used, so remember the choices made here. This is important for locking
+    // moves.
+    if locked_move_before.is_none() {
+        context.mon_mut().last_move_selected = Some(move_id.clone());
+        context.mon_mut().last_move_target_location = target_location;
     }
 
     // Use the move.
@@ -261,21 +249,64 @@ pub fn do_move(
         context.as_mon_context_mut(),
         active_move_handle,
         target,
-        source_effect,
-        external,
+        None,
+        false,
     )?;
 
-    // Deduct PP if the move was successful.
-    //
-    // Charging moves do not have their PP deducted.
-    if !external && !mon_is_charging(&mut context)? {
-        let move_id = context.active_move().id();
-        // SAFETY: move_id is only used for lookup.
-        let move_id = unsafe { move_id.unsafely_detach_borrow() };
-        context.mon_mut().deduct_pp(move_id, 1);
+    let this_move_is_the_last_selected = context
+        .mon()
+        .last_move_selected
+        .as_ref()
+        .is_some_and(|move_id| move_id == context.active_move().id());
 
-        // At this point, the move was used, so we should remember it.
-        context.mon_mut().last_move = Some(active_move_handle);
+    // Set the last move of the user only if they selected it for use.
+    //
+    // Locked moves (like Razor Wind) can be used externally by other moves (like Mirror Move). The
+    // use of the locked move on the next turn will go through this logic, even though the user does
+    // not own the move. This check prevents this.
+    //
+    // Without this check, there is a discrepency between how `last_move` is set for external moves:
+    // moves that require multple turns get set as the last move while single-turn moves do not.
+    //
+    // If you really want the last move used regardless of selection, you should use
+    // `last_move_used`, which is set for all external moves on any turn with no preconditions.
+    if this_move_is_the_last_selected {
+        // Some moves, like charging moves, do not count as the last move until the last turn.
+        let set_last_move = core_battle_effects::run_event_for_mon(
+            context.as_mon_context_mut(),
+            fxlang::BattleEvent::SetLastMove,
+            fxlang::VariableInput::default(),
+        );
+        if set_last_move {
+            context.mon_mut().last_move = Some(active_move_handle);
+        }
+    }
+
+    // Deduct PP if the Mon selected this move for use, and the Mon was not forced to use it, or if
+    // the move is a charging move.
+    //
+    // Note that charging moves have their PP deducted on the last turn of use, as opposed to the
+    // first (default). The effect of such a move should hook into this event to ensure PP is not
+    // continually deducted every turn.
+    if this_move_is_the_last_selected && locked_move_before.is_none()
+        || context
+            .active_move()
+            .data
+            .flags
+            .contains(&MoveFlags::Charge)
+    {
+        let deduction = core_battle_effects::run_event_for_mon_expecting_u8(
+            context.as_mon_context_mut(),
+            fxlang::BattleEvent::DeductPp,
+            1,
+        );
+        if deduction > 0 {
+            // TODO: DeductPP event to interrupt this (or set deduction to 0).
+            let move_id = context.active_move().id();
+            // SAFETY: move_id is only used for lookup.
+            let move_id = unsafe { move_id.unsafely_detach_borrow() };
+            context.mon_mut().deduct_pp(move_id, 1);
+        }
     }
 
     core_battle_effects::run_active_move_event_expecting_void(
@@ -288,11 +319,6 @@ pub fn do_move(
         fxlang::BattleEvent::AfterMove,
         fxlang::VariableInput::default(),
     );
-
-    context.mon_mut().clear_active_move();
-
-    CoreBattle::faint_messages(context.as_battle_context_mut())?;
-    CoreBattle::check_win(context.as_battle_context_mut())?;
 
     Ok(())
 }
@@ -324,8 +350,22 @@ pub fn use_active_move(
     context.active_move_mut().used_by = Some(context.mon_handle());
     context.active_move_mut().external = external;
 
-    let outcome = use_active_move_internal(&mut context, target)?;
+    // BeforeMove event handlers can prevent the move from being used.
+    if !core_battle_effects::run_event_for_applying_effect(
+        &mut context.user_applying_effect_context(None)?,
+        fxlang::BattleEvent::BeforeMove,
+        fxlang::VariableInput::default(),
+    ) {
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context.user_applying_effect_context(None)?,
+            fxlang::BattleEvent::MoveAborted,
+            fxlang::VariableInput::default(),
+        );
+        context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
+        return Ok(false);
+    }
 
+    let outcome = use_active_move_internal(&mut context, target)?;
     context.mon_mut().move_this_turn_outcome = Some(outcome);
 
     Ok(outcome.success())
@@ -522,13 +562,13 @@ pub fn get_move_targets(
             };
 
             if context.battle().max_side_length() > 1 && !context.active_move().data.tracks_target {
-                if !mon_is_charging(context)? {
-                    target = core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
+                target =
+                    core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
                         &mut context.user_applying_effect_context(Some(target))?,
                         fxlang::BattleEvent::RedirectTarget,
                         fxlang::VariableInput::from_iter([fxlang::Value::Mon(target)]),
-                    ).unwrap_or(target);
-                }
+                    )
+                    .unwrap_or(target);
             }
 
             targets.push(target);
@@ -1596,7 +1636,7 @@ fn apply_spread_damage(
 pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(), Error> {
     if let Some(Some(drain_percent)) = context
         .effect()
-        .active_move()
+        .move_effect()
         .map(|active_move| active_move.data.drain_percent)
     {
         let target_handle = context.target_handle();

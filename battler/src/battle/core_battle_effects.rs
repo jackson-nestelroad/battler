@@ -1403,14 +1403,16 @@ pub fn run_event_for_applying_effect_expecting_mon_quick_return(
 
 /// Runs an event targeted on the given [`Mon`].
 ///
-/// Expects no input or output.
-pub fn run_event_for_mon(context: &mut MonContext, event: fxlang::BattleEvent) {
-    run_event_for_mon_internal(
-        context,
-        event,
-        fxlang::VariableInput::default(),
-        &RunCallbacksOptions::default(),
-    );
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_mon(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> bool {
+    run_event_for_mon_internal(context, event, input, &RunCallbacksOptions::default())
+        .map(|value| value.boolean().ok())
+        .flatten()
+        .unwrap_or(true)
 }
 
 /// Runs an event targeted on the given [`Mon`].
@@ -1428,6 +1430,25 @@ pub fn run_event_for_mon_expecting_u16(
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects an integer that can fit in a [`u8`].
+pub fn run_event_for_mon_expecting_u8(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    input: u8,
+) -> u8 {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u8().unwrap_or(input),
         None => input,
     }
 }

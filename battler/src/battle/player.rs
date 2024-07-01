@@ -740,7 +740,7 @@ impl Player {
 
         let locked_move = Mon::locked_move(&mut context)?;
         if let Some(locked_move) = locked_move {
-            let locked_move_target = context.mon().last_move_target;
+            let locked_move_target = context.mon().last_move_target_location;
             context
                 .player_mut()
                 .choice

@@ -619,14 +619,16 @@ where
                         Some(last_move) => ValueRef::ActiveMove(last_move),
                         _ => ValueRef::Undefined,
                     },
-                    "last_target_location" => ValueRef::I64(
-                        context
-                            .mon(mon_handle)?
-                            .last_move_target
-                            .unwrap_or(0)
-                            .try_into()
-                            .wrap_error_with_message("integer overflow")?,
-                    ),
+                    "last_target_location" => {
+                        match context.mon(mon_handle)?.last_move_target_location {
+                            Some(last_target_location) => ValueRef::I64(
+                                last_target_location
+                                    .try_into()
+                                    .wrap_error_with_message("integer overflow")?,
+                            ),
+                            None => ValueRef::Undefined,
+                        }
+                    }
                     "level" => ValueRef::U64(context.mon(mon_handle)?.level as u64),
                     "max_hp" => ValueRef::U64(context.mon(mon_handle)?.max_hp as u64),
                     "move_slots" => ValueRef::TempList(
@@ -707,7 +709,7 @@ where
                     "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
                     "move_target" => ValueRef::MoveTarget(
                         CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
-                            .active_move()
+                            .move_effect()
                             .wrap_error_with_message("effect is not a move")?
                             .data
                             .target,
@@ -858,7 +860,7 @@ where
                             ValueRefMut::OptionalString(&mut context.mon_mut(**mon_handle)?.item)
                         }
                         "last_target_location" => ValueRefMut::OptionalISize(
-                            &mut context.mon_mut(**mon_handle)?.last_move_target,
+                            &mut context.mon_mut(**mon_handle)?.last_move_target_location,
                         ),
                         _ => {
                             return Err(Self::bad_member_or_mutable_access(

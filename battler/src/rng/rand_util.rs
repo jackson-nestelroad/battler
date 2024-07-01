@@ -38,6 +38,9 @@ pub fn sample_slice<'a, T>(
     if slice.is_empty() {
         return None;
     }
+    if slice.len() == 1 {
+        return slice.first();
+    }
     let index = range(prng, 0, slice.len() as u64);
     unsafe { Some(slice.get_unchecked(index as usize)) }
 }

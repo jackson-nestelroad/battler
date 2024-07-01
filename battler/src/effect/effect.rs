@@ -267,16 +267,10 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    pub fn active_move<'effect>(&'effect self) -> Option<&'effect Move> {
+    pub fn move_effect<'effect>(&'effect self) -> Option<&'effect Move> {
         match self {
             Self::ActiveMove(active_move, _) => Some(active_move.deref()),
-            _ => None,
-        }
-    }
-
-    pub fn active_move_mut<'effect>(&'effect mut self) -> Option<&'effect mut Move> {
-        match self {
-            Self::ActiveMove(active_move, _) => Some(active_move.deref_mut()),
+            Self::InactiveMove(mov) => Some(mov),
             _ => None,
         }
     }

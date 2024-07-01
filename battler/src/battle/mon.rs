@@ -273,14 +273,16 @@ pub struct Mon {
 
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
-    /// The last move selected for the Mon.
+    /// The last move selected.
+    pub last_move_selected: Option<Id>,
+    /// The last move used for the Mon.
     pub last_move: Option<MoveHandle>,
     /// The last move used by the Mon, which can be different from `last_move` if that
     /// move executed a different move (like Metronome).
     pub last_move_used: Option<MoveHandle>,
 
     pub move_this_turn_outcome: Option<MoveOutcome>,
-    pub last_move_target: Option<isize>,
+    pub last_move_target_location: Option<isize>,
     pub hurt_this_turn: u16,
     pub stats_raised_this_turn: bool,
     pub stats_lowered_this_turn: bool,
@@ -392,11 +394,12 @@ impl Mon {
             can_mega_evo: false,
 
             active_move: None,
+            last_move_selected: None,
             last_move: None,
             last_move_used: None,
 
             move_this_turn_outcome: None,
-            last_move_target: None,
+            last_move_target_location: None,
             hurt_this_turn: 0,
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
@@ -623,6 +626,20 @@ impl Mon {
         let mut side_context = context.pick_side_context(target < 0)?;
         let position = (target.abs() - 1) as usize;
         Side::mon_in_position(&mut side_context, position)
+    }
+
+    pub fn get_target_location(
+        context: &mut MonContext,
+        target: MonHandle,
+    ) -> Result<isize, Error> {
+        let target_context = context.as_battle_context_mut().mon_context(target)?;
+        let target_side = target_context.mon().side;
+        let target_position = Mon::position_on_side(context)? + 1;
+        if target_side != context.mon().side {
+            Ok(-(target_position as isize))
+        } else {
+            Ok(target_position as isize)
+        }
     }
 
     pub fn is_ally(&self, mon: &Mon) -> bool {
@@ -931,7 +948,7 @@ impl Mon {
         }
 
         context.mon_mut().last_move = None;
-        context.mon_mut().last_move_target = None;
+        context.mon_mut().last_move_target_location = None;
         context.mon_mut().last_move_used = None;
 
         context.mon_mut().clear_boosts();
@@ -1239,6 +1256,10 @@ impl Mon {
         Ok(context.mon().volatiles.contains_key(id))
     }
 
+    pub fn volatile_duration(context: &mut MonContext, id: &Id) -> Option<u8> {
+        context.mon().volatiles.get(id)?.duration()
+    }
+
     pub fn reset_state_for_next_turn(context: &mut MonContext) {
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().hurt_this_turn = 0;
@@ -1249,12 +1270,20 @@ impl Mon {
             move_slot.disabled = false;
         }
 
-        core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::DisableMove);
+        core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::DisableMove,
+            fxlang::VariableInput::default(),
+        );
 
         // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
-        core_battle_effects::run_event_for_mon(context, fxlang::BattleEvent::TrapMon);
+        core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::TrapMon,
+            fxlang::VariableInput::default(),
+        );
     }
 
     pub fn get_weight(context: &mut MonContext) -> u32 {

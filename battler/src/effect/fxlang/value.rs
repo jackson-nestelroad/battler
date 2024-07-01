@@ -355,6 +355,14 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveTarget)),
         }
     }
+
+    /// Consumes the value into a [`Vec<Value>`].
+    pub fn list(self) -> Result<Vec<Value>, Error> {
+        match self {
+            Self::List(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::List)),
+        }
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.

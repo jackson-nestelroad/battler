@@ -123,6 +123,8 @@ enum CommonCallbackType {
 
     MonModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsNumber | CallbackFlag::ReturnsVoid,
+    MonResult =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
 
@@ -254,6 +256,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "DamagingHit"]
     DamagingHit,
+    /// Runs after a move is used that should have PP deducted.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "DeductPp"]
+    DeductPp,
     /// Runs when determining which moves are disabled.
     ///
     /// Runs in the context of the target Mon.
@@ -390,6 +397,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Restart"]
     Restart,
+    /// Runs when the Mon's last move selected is being set.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "SetLastMove"]
+    SetLastMove,
     /// Runs when a Mon's status effect is being set.
     ///
     /// Runs before the status effect is applied. Can be used to fail the status change.
@@ -530,6 +542,7 @@ impl BattleEvent {
             Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
+            Self::DeductPp => CommonCallbackType::MonModifier as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
@@ -552,6 +565,7 @@ impl BattleEvent {
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
+            Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SideConditionStart => CommonCallbackType::SideVoid as u32,
             Self::SideEnd => CommonCallbackType::SideVoid as u32,
@@ -583,6 +597,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect)],
+            Self::DeductPp => &[("pp", ValueType::U64)],
             Self::DamageReceived => &[("damage", ValueType::U64)],
             Self::DamagingHit => &[("damage", ValueType::U64)],
             Self::ModifyAtk => &[("atk", ValueType::U64)],
@@ -747,6 +762,7 @@ pub struct Callbacks {
     pub on_damage_received: Callback,
     pub on_damaging_hit: Callback,
     pub on_disable_move: Callback,
+    pub on_deduct_pp: Callback,
     pub on_duration: Callback,
     pub on_end: Callback,
     pub on_flinch: Callback,
@@ -769,6 +785,7 @@ pub struct Callbacks {
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
     pub on_restart: Callback,
+    pub on_set_last_move: Callback,
     pub on_set_status: Callback,
     pub on_side_condition_start: Callback,
     pub on_side_end: Callback,
@@ -807,6 +824,7 @@ impl Callbacks {
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamageReceived => Some(&self.on_damage_received),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
+            BattleEvent::DeductPp => Some(&self.on_deduct_pp),
             BattleEvent::DisableMove => Some(&self.on_disable_move),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
@@ -830,6 +848,7 @@ impl Callbacks {
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),
+            BattleEvent::SetLastMove => Some(&self.on_set_last_move),
             BattleEvent::SetStatus => Some(&self.on_set_status),
             BattleEvent::SideConditionStart => Some(&self.on_side_condition_start),
             BattleEvent::SideEnd => Some(&self.on_side_end),

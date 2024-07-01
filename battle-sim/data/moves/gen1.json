@@ -2068,7 +2068,18 @@
       "FailMimic",
       "NoAssist",
       "NoSleepTalk"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "$last_move = $target.last_move",
+          "if !$last_move or !func_call(move_has_flag: $last_move mirror):",
+          ["return false"],
+          "use_move: $source $last_move.id $target",
+          "return stop"
+        ]
+      }
+    }
   },
   "selfdestruct": {
     "name": "Self-Destruct",
@@ -2238,7 +2249,21 @@
       "Mirror",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "boost: $user def:1",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    }
   },
   "spikecannon": {
     "name": "Spike Cannon",
@@ -2421,7 +2446,28 @@
       "NoSleepTalk",
       "Protect"
     ],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    }
   },
   "transform": {
     "name": "Transform",

@@ -34,6 +34,7 @@ use crate::{
             VariableInput,
         },
         Effect,
+        EffectHandle,
     },
     log::Event,
     log_event,
@@ -75,6 +76,7 @@ pub fn run_function(
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "floor" => floor(args).map(|val| Some(val)),
         "get_boost" => get_boost(args).map(|val| Some(val)),
+        "get_move" => get_move(context, args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
         "has_move" => has_move(context, args).map(|val| Some(val)),
         "has_type" => has_type(context, args).map(|val| Some(val)),
@@ -96,6 +98,7 @@ pub fn run_function(
         "log_start" => log_start(context, args).map(|()| None),
         "log_status" => log_status(context, args).map(|()| None),
         "max" => max(args).map(|val| Some(val)),
+        "mon_at_target_location" => mon_at_target_location(context, args),
         "mon_in_position" => mon_in_position(context, args),
         "mons_per_side" => mons_per_side(context).map(|val| Some(val)),
         "move_crit_target" => move_crit_target(context, args).map(|val| Some(val)),
@@ -114,7 +117,9 @@ pub fn run_function(
         "trap" => trap_mon(context, args).map(|()| None),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
+        "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
         "use_active_move" => use_active_move(context, args).map(|val| Some(val)),
+        "use_move" => use_move(context, args).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context, args),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
@@ -1267,3 +1272,105 @@ fn use_active_move(
     )
     .map(|val| Value::Boolean(val))
 }
+
+fn use_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .move_id(context)
+        .wrap_error_with_message("invalid move")?;
+    let target_handle = match args.pop_front() {
+        Some(value) => {
+            if value.is_undefined() {
+                None
+            } else {
+                Some(
+                    value
+                        .mon_handle()
+                        .wrap_error_with_message("invalid target")?,
+                )
+            }
+        }
+        None => None,
+    };
+    let source_effect = context.source_effect_handle().cloned();
+    core_battle_actions::use_move(
+        &mut context.mon_context(mon_handle)?,
+        &move_id,
+        target_handle,
+        source_effect.as_ref(),
+        true,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn mon_at_target_location(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let relative_location = args
+        .pop_front()
+        .wrap_error_with_message("missing relative location")?
+        .integer_isize()
+        .wrap_error_with_message("invalid relative location")?;
+    Mon::get_target(&mut context.mon_context(mon_handle)?, relative_location)
+        .map(|mon| Some(Value::Mon(mon?)))
+}
+
+fn target_location_of_mon(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let target_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    Ok(Value::I64(
+        Mon::get_target_location(&mut context.mon_context(mon_handle)?, target_handle)?
+            .try_into()
+            .wrap_error_with_message("integer overflow")?,
+    ))
+}
+
+fn get_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move id")?
+        .move_id(context)
+        .wrap_error_with_message("invalid move id")?;
+    Ok(Value::Effect(EffectHandle::InactiveMove(move_id)))
+}
+
+// fn all_active_foes(
+//     context: &mut EvaluationContext,
+//     mut args: VecDeque<Value>,
+// ) -> Result<Value, Error> { let mon_handle = args .pop_front() .wrap_error_with_message("missing
+//   mon")? .mon_handle() .wrap_error_with_message("invalid mon")?; Ok(Value::List(
+//   Mon::adjacent_foes(&mut context.mon_context(mon_handle)?)? .filter_map(|foe|
+//   Some(Value::Mon(foe?))) .collect::<Vec<_>>(), ))
+// }
+
+// fn sample(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+//     let list = args
+//         .pop_front()
+//         .wrap_error_with_message("missing list")?
+//         .list()
+//         .wrap_error_with_message("invalid list")?;
+//     context.battle_context_mut().pr
+// }

@@ -208,19 +208,48 @@
       "duration": 2,
       "callbacks": {
         "on_start": [
+          "# Note that the $target here is the user of the move (target of this condition).",
           "$effect_state.move = $source_effect.id",
           "add_volatile: $target $source_effect.id",
-          "# If this move is called by another move, we need to target outwards.",
+          "# If this move is called by another move, we may need to modify the targer that the user will be locked into.",
+          "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
           "if $source_effect.has_source_effect and $source_effect.move_target != user:",
           [
-            "if !$source or $source.fainted:",
-            ["$source = func_call(random_foe)"],
-            "$target.last_target_location = func_call(get_location_of_mon: $target $source)"
+            "$need_new_target = false",
+            "if !$target.last_target_location:",
+            [
+              "# No target selected for the last move.",
+              "$need_new_target = true"
+            ],
+            "else:",
+            [
+              "# The last target selected no longer exists or fainted.",
+              "$last_target = func_call(mon_at_target_location: $target $target.last_target_location)",
+              "$need_new_target = expr(!$last_target or $last_target.fainted)"
+            ],
+            "if $need_new_target:",
+            [
+              "# Choose a random target for the move being used.",
+              "$move_data = func_call(get_move: $effect_state.move)",
+              "$target.last_target_location = func_call(target_location_of_mon: $target func_call(random_target: $target $move_data.move_target))"
+            ]
           ],
           "do_not_animate_last_move",
           "# Still run events associated with the user preparing to hit the target, since they are locked into this move.",
           "run_event: PrepareHit"
         ],
+        "on_set_last_move": [
+          "if $effect_state.duration > 1:",
+          ["return false"]
+        ],
+        "on_deduct_pp": {
+          "order": 999,
+          "program": [
+            "# Run last, to ensure no PP is deducted while charging.",
+            "if $effect_state.duration > 1:",
+            ["return 0"]
+          ]
+        },
         "on_lock_move": ["return $effect_state.move"],
         "on_move_aborted": ["remove_volatile: $user $effect_state.move"],
         "on_end": ["remove_volatile: $target $effect_state.move"]
