@@ -79,10 +79,8 @@ mod ohko_test {
         )
         .unwrap();
 
-        let mut battle = make_battle(&data, team_1, team_2, 2452345434).unwrap();
+        let mut battle = make_battle(&data, team_1, team_2, 71576326561355).unwrap();
         assert_eq!(battle.start(), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
@@ -100,11 +98,6 @@ mod ohko_test {
                 "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
                 "switch|player:player-2|position:1|name:Ivysaur|health:100/100|species:Ivysaur|level:20|gender:M",
                 "turn|turn:1",
-                ["time"],
-                "move|mon:Venusaur,player-1,1|name:Fissure|target:Ivysaur,player-2,1|notarget",
-                "miss|mon:Ivysaur,player-2,1",
-                "residual",
-                "turn|turn:2",
                 ["time"],
                 "move|mon:Venusaur,player-1,1|name:Fissure|target:Ivysaur,player-2,1",
                 "split|side:1",
@@ -227,7 +220,7 @@ mod ohko_test {
         )
         .unwrap();
 
-        let mut battle = make_battle(&data, team_1, team_2, 1111110000111).unwrap();
+        let mut battle = make_battle(&data, team_1, team_2, 1022714371015146).unwrap();
         assert_eq!(battle.start(), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));

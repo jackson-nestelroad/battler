@@ -68,7 +68,8 @@ mod focus_energy_test {
     #[test]
     fn focus_energy_increases_crit_ratio() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+        let mut battle =
+            make_battle(&data, 425479950183495, team().unwrap(), team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -101,31 +102,34 @@ mod focus_energy_test {
                 "move|mon:Nidoking,player-1,1|name:Spike Cannon|target:Nidoking,player-2,1",
                 "crit|mon:Nidoking,player-2,1",
                 "split|side:1",
-                "damage|mon:Nidoking,player-2,1|health:122/141",
-                "damage|mon:Nidoking,player-2,1|health:87/100",
+                "damage|mon:Nidoking,player-2,1|health:124/141",
+                "damage|mon:Nidoking,player-2,1|health:88/100",
                 "crit|mon:Nidoking,player-2,1",
                 "split|side:1",
-                "damage|mon:Nidoking,player-2,1|health:105/141",
-                "damage|mon:Nidoking,player-2,1|health:75/100",
-                "split|side:1",
-                "damage|mon:Nidoking,player-2,1|health:94/141",
-                "damage|mon:Nidoking,player-2,1|health:67/100",
-                "hitcount|hits:3",
+                "damage|mon:Nidoking,player-2,1|health:108/141",
+                "damage|mon:Nidoking,player-2,1|health:77/100",
+                "hitcount|hits:2",
                 "residual",
                 "turn|turn:3",
                 ["time"],
                 "move|mon:Nidoking,player-1,1|name:Spike Cannon|target:Nidoking,player-2,1",
                 "crit|mon:Nidoking,player-2,1",
                 "split|side:1",
-                "damage|mon:Nidoking,player-2,1|health:77/141",
-                "damage|mon:Nidoking,player-2,1|health:55/100",
+                "damage|mon:Nidoking,player-2,1|health:90/141",
+                "damage|mon:Nidoking,player-2,1|health:64/100",
+                "crit|mon:Nidoking,player-2,1",
                 "split|side:1",
-                "damage|mon:Nidoking,player-2,1|health:65/141",
-                "damage|mon:Nidoking,player-2,1|health:47/100",
+                "damage|mon:Nidoking,player-2,1|health:72/141",
+                "damage|mon:Nidoking,player-2,1|health:52/100",
+                "crit|mon:Nidoking,player-2,1",
                 "split|side:1",
-                "damage|mon:Nidoking,player-2,1|health:53/141",
-                "damage|mon:Nidoking,player-2,1|health:38/100",
-                "hitcount|hits:3",
+                "damage|mon:Nidoking,player-2,1|health:56/141",
+                "damage|mon:Nidoking,player-2,1|health:40/100",
+                "crit|mon:Nidoking,player-2,1",
+                "split|side:1",
+                "damage|mon:Nidoking,player-2,1|health:40/141",
+                "damage|mon:Nidoking,player-2,1|health:29/100",
+                "hitcount|hits:4",
                 "residual",
                 "turn|turn:4"
             ]"#,

@@ -19,6 +19,7 @@ mod paralysis_test {
     };
     use battler_test_utils::{
         assert_new_logs_eq,
+        get_controlled_rng_for_battle,
         LogMatch,
         TestBattleBuilder,
     };
@@ -78,6 +79,7 @@ mod paralysis_test {
             .with_seed(48205749111)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_controlled_rng(true)
             .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
@@ -92,11 +94,10 @@ mod paralysis_test {
         let mut battle = make_battle(&data, pikachu().unwrap(), alakazam().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
+        let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
@@ -120,45 +121,31 @@ mod paralysis_test {
                 ["time"],
                 "move|mon:Alakazam,player-2,1|name:Lick|target:Pikachu,player-1,1",
                 "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:80/95",
-                "damage|mon:Pikachu,player-1,1|health:85/100",
+                "damage|mon:Pikachu,player-1,1|health:77/95",
+                "damage|mon:Pikachu,player-1,1|health:82/100",
                 "move|mon:Pikachu,player-1,1|name:Thunder Wave|target:Alakazam,player-2,1",
                 "status|mon:Alakazam,player-2,1|status:Paralysis",
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Thunder Wave|noanim",
-                "fail|mon:Pikachu,player-1,1",
-                "cant|mon:Alakazam,player-2,1|reason:Paralysis",
+                "move|mon:Pikachu,player-1,1|name:Tackle|target:Alakazam,player-2,1",
+                "split|side:1",
+                "damage|mon:Alakazam,player-2,1|health:96/115",
+                "damage|mon:Alakazam,player-2,1|health:84/100",
+                "move|mon:Alakazam,player-2,1|name:Lick|target:Pikachu,player-1,1",
+                "split|side:0",
+                "damage|mon:Pikachu,player-1,1|health:60/95",
+                "damage|mon:Pikachu,player-1,1|health:64/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
                 "move|mon:Pikachu,player-1,1|name:Tackle|target:Alakazam,player-2,1",
                 "split|side:1",
-                "damage|mon:Alakazam,player-2,1|health:92/115",
-                "damage|mon:Alakazam,player-2,1|health:80/100",
+                "damage|mon:Alakazam,player-2,1|health:77/115",
+                "damage|mon:Alakazam,player-2,1|health:67/100",
                 "cant|mon:Alakazam,player-2,1|reason:Paralysis",
                 "residual",
-                "turn|turn:4",
-                ["time"],
-                "move|mon:Pikachu,player-1,1|name:Tackle|target:Alakazam,player-2,1",
-                "split|side:1",
-                "damage|mon:Alakazam,player-2,1|health:71/115",
-                "damage|mon:Alakazam,player-2,1|health:62/100",
-                "cant|mon:Alakazam,player-2,1|reason:Paralysis",
-                "residual",
-                "turn|turn:5",
-                ["time"],
-                "move|mon:Pikachu,player-1,1|name:Tackle|target:Alakazam,player-2,1",
-                "split|side:1",
-                "damage|mon:Alakazam,player-2,1|health:50/115",
-                "damage|mon:Alakazam,player-2,1|health:44/100",
-                "move|mon:Alakazam,player-2,1|name:Lick|target:Pikachu,player-1,1",
-                "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:64/95",
-                "damage|mon:Pikachu,player-1,1|health:68/100",
-                "residual",
-                "turn|turn:6"
+                "turn|turn:4"
             ]"#,
         )
         .unwrap();
@@ -170,6 +157,9 @@ mod paralysis_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(&data, pikachu().unwrap(), pikachu().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
+
+        let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));

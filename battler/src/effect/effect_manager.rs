@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     battle::CoreBattle,
+    battler_error,
     common::{
         Error,
         LruCache,
@@ -28,14 +29,17 @@ use crate::{
 /// Module for managing fxlang effect programs and their evaluation.
 pub struct EffectManager {
     callbacks: LruCache<String, Rc<ParsedCallbacks>>,
+    stack: u8,
 }
 
 impl EffectManager {
     const MAX_SAVED_EFFECTS: usize = 6 * 4 * 2 + 16;
+    const MAX_STACK_SIZE: u8 = 10;
 
     pub fn new() -> Self {
         Self {
             callbacks: LruCache::new(Self::MAX_SAVED_EFFECTS),
+            stack: 0,
         }
     }
 
@@ -51,10 +55,40 @@ impl EffectManager {
             Ok(effect) => effect,
             Err(_) => return Ok(ProgramEvalResult::default()),
         };
+
         // SAFETY: Effects are guaranteed to live at least through this turn, and no effect is
         // allowed to change the turn of the battle.
-        let effect = unsafe { mem::transmute(effect) };
-        Self::evaluate_internal(context, effect_handle, &effect, event, input, effect_state)
+        let effect: Effect = unsafe { mem::transmute(effect) };
+
+        context
+            .battle_context_mut()
+            .battle_mut()
+            .effect_manager
+            .stack += 1;
+
+        if context
+            .battle_context_mut()
+            .battle_mut()
+            .effect_manager
+            .stack
+            > Self::MAX_STACK_SIZE
+        {
+            return Err(battler_error!(
+                "fxlang effect callback stack size exceeded for {event} callback of effect {}",
+                effect.full_name()
+            ));
+        }
+
+        let result =
+            Self::evaluate_internal(context, effect_handle, &effect, event, input, effect_state);
+
+        context
+            .battle_context_mut()
+            .battle_mut()
+            .effect_manager
+            .stack -= 1;
+
+        result
     }
 
     fn get_parsed_effect(

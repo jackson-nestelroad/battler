@@ -329,7 +329,7 @@ mod damage_calculation_tests {
             make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
         let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+        rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
@@ -366,7 +366,7 @@ mod damage_calculation_tests {
             make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
         let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+        rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
@@ -740,7 +740,7 @@ mod damage_calculation_tests {
             make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
         let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+        rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
@@ -776,7 +776,7 @@ mod damage_calculation_tests {
             make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
         let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+        rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
@@ -818,7 +818,7 @@ mod damage_calculation_tests {
             make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
         let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+        rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
@@ -855,7 +855,7 @@ mod damage_calculation_tests {
             make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
         let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-        rng.insert_fake_values_relative_to_sequence_count([(3, 0)]);
+        rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
 
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));

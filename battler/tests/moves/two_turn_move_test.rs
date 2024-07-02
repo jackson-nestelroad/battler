@@ -217,7 +217,7 @@ mod two_turn_move_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
-            1035924651236077,
+            60528764357287,
             two_pidgeot().unwrap(),
             two_pidgeot().unwrap(),
         )
@@ -314,7 +314,7 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:79/143",
+                "damage|mon:Pidgeot,player-2,1|health:80/143",
                 "damage|mon:Pidgeot,player-2,1|health:56/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
@@ -334,8 +334,8 @@ mod two_turn_move_test {
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
                 "split|side:1",
-                "damage|mon:Pidgeot,player-2,1|health:16/143",
-                "damage|mon:Pidgeot,player-2,1|health:12/100",
+                "damage|mon:Pidgeot,player-2,1|health:25/143",
+                "damage|mon:Pidgeot,player-2,1|health:18/100",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:5"
@@ -383,8 +383,8 @@ mod two_turn_move_test {
                 "move|mon:Blastoise,player-1,1|name:Skull Bash|target:Blastoise,player-2,1",
                 "removevolatile|mon:Blastoise,player-1,1|volatile:Skull Bash|from:Skull Bash",
                 "split|side:1",
-                "damage|mon:Blastoise,player-2,1|health:90/139",
-                "damage|mon:Blastoise,player-2,1|health:65/100",
+                "damage|mon:Blastoise,player-2,1|health:92/139",
+                "damage|mon:Blastoise,player-2,1|health:67/100",
                 "removevolatile|mon:Blastoise,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
                 "residual",
                 "turn|turn:3"

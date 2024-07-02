@@ -122,24 +122,24 @@ mod switch_out_state_test {
                 "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:87/105",
-                "damage|mon:Bulbasaur,player-2,1|health:83/100",
+                "damage|mon:Bulbasaur,player-2,1|health:88/105",
+                "damage|mon:Bulbasaur,player-2,1|health:84/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
                 "switch|player:player-2|position:1|name:Charmander|health:80/100|species:Charmander|level:50|gender:F",
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,1",
                 "split|side:1",
-                "damage|mon:Charmander,player-2,1|health:60/99",
-                "damage|mon:Charmander,player-2,1|health:61/100",
+                "damage|mon:Charmander,player-2,1|health:62/99",
+                "damage|mon:Charmander,player-2,1|health:63/100",
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "switch|player:player-2|position:1|name:Bulbasaur|health:83/100|species:Bulbasaur|level:50|gender:F",
+                "switch|player:player-2|position:1|name:Bulbasaur|health:84/100|species:Bulbasaur|level:50|gender:F",
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:69/105",
-                "damage|mon:Bulbasaur,player-2,1|health:66/100",
+                "damage|mon:Bulbasaur,player-2,1|health:71/105",
+                "damage|mon:Bulbasaur,player-2,1|health:68/100",
                 "residual",
                 "turn|turn:5"
             ]"#,
@@ -148,8 +148,8 @@ mod switch_out_state_test {
         assert_new_logs_eq(&mut battle, &expected_logs);
 
         assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
-            assert_eq!(request.player.mons[0].health, "69/105");
-            assert_eq!(request.player.mons[1].health, "60/99");
+            assert_eq!(request.player.mons[0].health, "71/105");
+            assert_eq!(request.player.mons[1].health, "62/99");
         });
     }
 }

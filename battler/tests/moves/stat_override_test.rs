@@ -102,8 +102,8 @@ mod stat_override_test {
                 ["time"],
                 "move|mon:Pikachu,player-1,1|name:Psyshock|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:24/95",
-                "damage|mon:Pikachu,player-2,1|health:26/100",
+                "damage|mon:Pikachu,player-2,1|health:25/95",
+                "damage|mon:Pikachu,player-2,1|health:27/100",
                 "residual",
                 "turn|turn:4"
             ]"#).unwrap();
@@ -174,8 +174,8 @@ mod stat_override_test {
                 ["time"],
                 "move|mon:Slaking,player-1,1|name:Foul Play|target:Slaking,player-2,1",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|health:51/210",
-                "damage|mon:Slaking,player-2,1|health:25/100",
+                "damage|mon:Slaking,player-2,1|health:56/210",
+                "damage|mon:Slaking,player-2,1|health:27/100",
                 "residual",
                 "turn|turn:4"
             ]"#).unwrap();
@@ -248,8 +248,8 @@ mod stat_override_test {
                 "move|mon:Slaking,player-1,1|name:Body Press|target:Slaking,player-2,1",
                 "supereffective|mon:Slaking,player-2,1",
                 "split|side:1",
-                "damage|mon:Slaking,player-2,1|health:38/210",
-                "damage|mon:Slaking,player-2,1|health:19/100",
+                "damage|mon:Slaking,player-2,1|health:44/210",
+                "damage|mon:Slaking,player-2,1|health:21/100",
                 "residual",
                 "turn|turn:4"
             ]"#).unwrap();

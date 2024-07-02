@@ -237,8 +237,8 @@ fn do_move_internal(
         return Ok(());
     }
 
-    // The move is goin to be used, so remember the choices made here. This is important for locking
-    // moves.
+    // The move is going to be used, so remember the choices made here. This is important for
+    // locking moves.
     if locked_move_before.is_none() {
         context.mon_mut().last_move_selected = Some(move_id.clone());
         context.mon_mut().last_move_target_location = target_location;

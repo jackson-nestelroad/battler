@@ -72,7 +72,7 @@ mod haze_test {
     #[test]
     fn haze_clears_all_stat_changes() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+        let mut battle = make_battle(&data, 98371927, team().unwrap(), team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -128,6 +128,7 @@ mod haze_test {
                 "split|side:1",
                 "damage|mon:Weezing,player-2,1|health:95/125",
                 "damage|mon:Weezing,player-2,1|health:76/100",
+                "status|mon:Weezing,player-2,1|status:Paralysis",
                 "residual",
                 "turn|turn:5"
             ]"#,

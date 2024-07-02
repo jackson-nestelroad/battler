@@ -67,9 +67,10 @@ mod minimize_test {
     }
 
     #[test]
-    fn rage_increases_attack_on_hit() {
+    fn minimize_raises_evasion_and_effects_vulnerable_moves() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+        let mut battle =
+            make_battle(&data, 16484988376723, team().unwrap(), team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -110,8 +111,8 @@ mod minimize_test {
                 ["time"],
                 "move|mon:Muk,player-2,1|name:Stomp|target:Muk,player-1,1",
                 "split|side:0",
-                "damage|mon:Muk,player-1,1|health:83/165",
-                "damage|mon:Muk,player-1,1|health:51/100",
+                "damage|mon:Muk,player-1,1|health:85/165",
+                "damage|mon:Muk,player-1,1|health:52/100",
                 "move|mon:Muk,player-1,1|name:Minimize|target:Muk,player-1,1",
                 "boost|mon:Muk,player-1,1|stat:eva|by:2",
                 "residual",
@@ -119,8 +120,8 @@ mod minimize_test {
                 ["time"],
                 "move|mon:Muk,player-2,1|name:Stomp|target:Muk,player-1,1",
                 "split|side:0",
-                "damage|mon:Muk,player-1,1|health:15/165",
-                "damage|mon:Muk,player-1,1|health:10/100",
+                "damage|mon:Muk,player-1,1|health:9/165",
+                "damage|mon:Muk,player-1,1|health:6/100",
                 "move|mon:Muk,player-1,1|name:Minimize|noanim",
                 "boost|mon:Muk,player-1,1|stat:eva|by:0",
                 "fail|mon:Muk,player-1,1",

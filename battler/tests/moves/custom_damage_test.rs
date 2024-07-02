@@ -186,8 +186,8 @@ mod custom_damage_test {
             r#"[
                 "move|mon:Pikachu,player-1,1|name:Psywave|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:46/95",
-                "damage|mon:Pikachu,player-2,1|health:49/100",
+                "damage|mon:Pikachu,player-2,1|health:28/95",
+                "damage|mon:Pikachu,player-2,1|health:30/100",
                 "residual"
             ]"#,
         )
@@ -328,8 +328,8 @@ mod custom_damage_test {
             r#"[
                 "move|mon:Pikachu,player-1,1|name:Low Kick|target:Wailord,player-2,1",
                 "split|side:1",
-                "damage|mon:Wailord,player-2,1|health:168/230",
-                "damage|mon:Wailord,player-2,1|health:74/100",
+                "damage|mon:Wailord,player-2,1|health:167/230",
+                "damage|mon:Wailord,player-2,1|health:73/100",
                 "residual"
             ]"#,
         )

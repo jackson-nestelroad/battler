@@ -142,14 +142,14 @@ mod crit_ratio_test {
                 "supereffective|mon:Bulbasaur,player-1,1",
                 "crit|mon:Bulbasaur,player-1,1",
                 "split|side:0",
-                "damage|mon:Bulbasaur,player-1,1|health:31/105",
-                "damage|mon:Bulbasaur,player-1,1|health:30/100",
+                "damage|mon:Bulbasaur,player-1,1|health:25/105",
+                "damage|mon:Bulbasaur,player-1,1|health:24/100",
                 "move|mon:Bulbasaur,player-1,1|name:Frost Breath|target:Bulbasaur,player-2,1",
                 "supereffective|mon:Bulbasaur,player-2,1",
                 "crit|mon:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:25/105",
-                "damage|mon:Bulbasaur,player-2,1|health:24/100",
+                "damage|mon:Bulbasaur,player-2,1|health:23/105",
+                "damage|mon:Bulbasaur,player-2,1|health:22/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();
@@ -213,15 +213,15 @@ mod crit_ratio_test {
                 "supereffective|mon:Bulbasaur,player-2,1",
                 "crit|mon:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:31/105",
-                "damage|mon:Bulbasaur,player-2,1|health:30/100",
+                "damage|mon:Bulbasaur,player-2,1|health:25/105",
+                "damage|mon:Bulbasaur,player-2,1|health:24/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
                 "move|mon:Bulbasaur,player-2,1|name:Recover|target:Bulbasaur,player-2,1",
                 "split|side:1",
-                "heal|mon:Bulbasaur,player-2,1|health:84/105",
-                "heal|mon:Bulbasaur,player-2,1|health:80/100",
+                "heal|mon:Bulbasaur,player-2,1|health:78/105",
+                "heal|mon:Bulbasaur,player-2,1|health:75/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
@@ -247,10 +247,10 @@ mod crit_ratio_test {
                 "supereffective|mon:Bulbasaur,player-2,1",
                 "crit|mon:Bulbasaur,player-2,1",
                 "split|side:1",
-                "damage|mon:Bulbasaur,player-2,1|health:4/105",
-                "damage|mon:Bulbasaur,player-2,1|health:4/100",
-                "residual",
-                "turn|turn:7"
+                "damage|mon:Bulbasaur,player-2,1|health:0",
+                "damage|mon:Bulbasaur,player-2,1|health:0",
+                "faint|mon:Bulbasaur,player-2,1",
+                "win|side:0"
             ]"#).unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);
     }

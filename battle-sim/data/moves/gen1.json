@@ -2005,8 +2005,9 @@
           "# Create a new active move that deals the damage to the target, and use it directly.",
           "$move = func_call(new_active_move_from_local_data: $this.id)",
           "$move.damage = expr($effect_state.total_damage * 2)",
-          "use_active_move: $user $move $target",
+          "# Remove this volatile effect before using the new move, or else this callback gets triggered endlessly.",
           "remove_volatile: $user $this.id",
+          "use_active_move: $user $move $target",
           "# Since we used the local Bide, we can exit this move early.",
           "return false"
         ],

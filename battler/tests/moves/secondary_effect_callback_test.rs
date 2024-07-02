@@ -69,7 +69,7 @@ mod secondary_effect_callback_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
-            578204138820240,
+            605915376004016,
             dugtrio().unwrap(),
             dugtrio().unwrap(),
         )
@@ -100,9 +100,9 @@ mod secondary_effect_callback_test {
                 "damage|mon:Dugtrio,player-1,1|health:75/100",
                 "move|mon:Dugtrio,player-1,1|name:Tri Attack|target:Dugtrio,player-2,1",
                 "split|side:1",
-                "damage|mon:Dugtrio,player-2,1|health:69/95",
-                "damage|mon:Dugtrio,player-2,1|health:73/100",
-                "status|mon:Dugtrio,player-2,1|status:Paralysis",
+                "damage|mon:Dugtrio,player-2,1|health:68/95",
+                "damage|mon:Dugtrio,player-2,1|health:72/100",
+                "status|mon:Dugtrio,player-2,1|status:Freeze",
                 "residual",
                 "turn|turn:2"
             ]"#,

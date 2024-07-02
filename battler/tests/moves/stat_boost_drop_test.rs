@@ -16,6 +16,7 @@ mod stat_boost_drop_test {
     };
     use battler_test_utils::{
         assert_new_logs_eq,
+        get_controlled_rng_for_battle,
         LogMatch,
         TestBattleBuilder,
     };
@@ -31,6 +32,7 @@ mod stat_boost_drop_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_controlled_rng(true)
             .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
@@ -419,7 +421,10 @@ mod stat_boost_drop_test {
             }"#,
         )
         .unwrap();
-        let mut battle = make_singles_battle(&data, team.clone(), team, 128127534754107).unwrap();
+        let mut battle = make_singles_battle(&data, team.clone(), team, 0).unwrap();
+
+        let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+        rng.insert_fake_values_relative_to_sequence_count([(4, 0)]);
 
         assert_eq!(battle.start(), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -442,8 +447,8 @@ mod stat_boost_drop_test {
                 ["time"],
                 "move|mon:Pikachu,player-2,1|name:Ancient Power|target:Pikachu,player-1,1",
                 "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:71/95",
-                "damage|mon:Pikachu,player-1,1|health:75/100",
+                "damage|mon:Pikachu,player-1,1|health:68/95",
+                "damage|mon:Pikachu,player-1,1|health:72/100",
                 "boost|mon:Pikachu,player-2,1|stat:atk|by:1",
                 "boost|mon:Pikachu,player-2,1|stat:def|by:1",
                 "boost|mon:Pikachu,player-2,1|stat:spa|by:1",
@@ -451,8 +456,8 @@ mod stat_boost_drop_test {
                 "boost|mon:Pikachu,player-2,1|stat:spe|by:1",
                 "move|mon:Pikachu,player-1,1|name:Ancient Power|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:77/95",
-                "damage|mon:Pikachu,player-2,1|health:82/100",
+                "damage|mon:Pikachu,player-2,1|health:78/95",
+                "damage|mon:Pikachu,player-2,1|health:83/100",
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();
@@ -609,19 +614,19 @@ mod stat_boost_drop_test {
                 ["time"],
                 "move|mon:Pikachu,player-1,1|name:Tackle|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:72/95",
-                "damage|mon:Pikachu,player-2,1|health:76/100",
+                "damage|mon:Pikachu,player-2,1|health:73/95",
+                "damage|mon:Pikachu,player-2,1|health:77/100",
                 "move|mon:Pikachu,player-2,1|name:Tackle|target:Pikachu,player-1,1",
                 "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:53/95",
-                "damage|mon:Pikachu,player-1,1|health:56/100",
+                "damage|mon:Pikachu,player-1,1|health:54/95",
+                "damage|mon:Pikachu,player-1,1|health:57/100",
                 "residual",
                 "turn|turn:3",
                 ["time"],
                 "move|mon:Pikachu,player-1,1|name:Tackle|target:Pikachu,player-2,1",
                 "split|side:1",
-                "damage|mon:Pikachu,player-2,1|health:49/95",
-                "damage|mon:Pikachu,player-2,1|health:52/100",
+                "damage|mon:Pikachu,player-2,1|health:51/95",
+                "damage|mon:Pikachu,player-2,1|health:54/100",
                 "move|mon:Pikachu,player-2,1|name:Tackle|target:Pikachu,player-1,1",
                 "split|side:0",
                 "damage|mon:Pikachu,player-1,1|health:34/95",
@@ -635,8 +640,8 @@ mod stat_boost_drop_test {
                 "damage|mon:Pikachu,player-2,1|health:29/100",
                 "move|mon:Pikachu,player-2,1|name:Tackle|target:Pikachu,player-1,1",
                 "split|side:0",
-                "damage|mon:Pikachu,player-1,1|health:14/95",
-                "damage|mon:Pikachu,player-1,1|health:15/100",
+                "damage|mon:Pikachu,player-1,1|health:12/95",
+                "damage|mon:Pikachu,player-1,1|health:13/100",
                 "residual",
                 "turn|turn:5"
             ]"#).unwrap();

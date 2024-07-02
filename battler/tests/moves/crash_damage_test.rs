@@ -53,7 +53,7 @@ mod crash_damage_test {
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
-            .with_seed(0)
+            .with_seed(69384300492104)
             .with_team_validation(false)
             .with_pass_allowed(true)
             .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)

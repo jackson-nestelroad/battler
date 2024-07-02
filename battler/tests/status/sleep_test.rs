@@ -73,7 +73,7 @@ mod sleep_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
-            788654855088017,
+            910624796386061,
             charizard().unwrap(),
             charizard().unwrap(),
         )
