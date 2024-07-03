@@ -1115,7 +1115,8 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "RandomNormal",
-    "flags": ["Contact", "Dance", "FailInstruct", "Mirror", "Protect"]
+    "flags": ["Contact", "Dance", "FailInstruct", "Mirror", "Protect"],
+    "user_effect": { "volatile_status": "lockedmove" }
   },
   "stringshot": {
     "name": "String Shot",
