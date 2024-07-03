@@ -89,12 +89,13 @@ mod two_turn_move_test {
 
     fn make_battle(
         data: &dyn DataStore,
+        battle_type: BattleType,
         seed: u64,
         team_1: TeamData,
         team_2: TeamData,
     ) -> Result<PublicCoreBattle, Error> {
         TestBattleBuilder::new()
-            .with_battle_type(BattleType::Singles)
+            .with_battle_type(battle_type)
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
@@ -112,6 +113,7 @@ mod two_turn_move_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
+            BattleType::Singles,
             10002323,
             two_pidgeot().unwrap(),
             two_pidgeot().unwrap(),
@@ -217,6 +219,7 @@ mod two_turn_move_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle = make_battle(
             &data,
+            BattleType::Singles,
             60528764357287,
             two_pidgeot().unwrap(),
             two_pidgeot().unwrap(),
@@ -346,9 +349,108 @@ mod two_turn_move_test {
     }
 
     #[test]
+    fn fly_locks_target() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            BattleType::Doubles,
+            0,
+            two_pidgeot().unwrap(),
+            two_pidgeot().unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(
+            battle.set_player_choice("player-1", "move 1,2;pass"),
+            Ok(())
+        );
+        assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+        let expected_lock_move_request = serde_json::from_str(
+            r#"{
+                "team_position": 0,
+                "moves": [
+                    {
+                        "name": "Fly",
+                        "id": "fly",
+                        "pp": 0,
+                        "max_pp": 0,
+                        "disabled": false
+                    }
+                ],
+                "trapped": false
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(
+            battle
+                .request_for_player("player-1")
+                .map(|req| if let Request::Turn(req) = req {
+                    req.active.get(0).cloned()
+                } else {
+                    None
+                })
+                .flatten(),
+            Some(expected_lock_move_request)
+        );
+
+        // This target is ignored.
+        assert_eq!(
+            battle.set_player_choice("player-1", "move 0,1;pass"),
+            Ok(())
+        );
+        assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Doubles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:2",
+                "teamsize|player:player-2|size:2",
+                "start",
+                "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "switch|player:player-1|position:2|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "switch|player:player-2|position:2|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Pidgeot,player-1,1|name:Fly|noanim",
+                "prepare|mon:Pidgeot,player-1,1|move:Fly",
+                "addvolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Two Turn Move",
+                "addvolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Fly",
+                "residual",
+                "turn|turn:2",
+                ["time"],
+                "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,2",
+                "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
+                "split|side:1",
+                "damage|mon:Pidgeot,player-2,2|health:80/143",
+                "damage|mon:Pidgeot,player-2,2|health:56/100",
+                "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
+                "residual",
+                "turn|turn:3"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
     fn skull_bash_also_boosts_defense() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, blastoise().unwrap(), blastoise().unwrap()).unwrap();
+        let mut battle = make_battle(
+            &data,
+            BattleType::Singles,
+            0,
+            blastoise().unwrap(),
+            blastoise().unwrap(),
+        )
+        .unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));

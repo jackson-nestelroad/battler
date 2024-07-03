@@ -45,7 +45,7 @@ mod mirror_move_test {
                     },
                     {
                         "name": "Pikachu",
-                        "species": "Pidgeot",
+                        "species": "Pikachu",
                         "ability": "No Ability",
                         "moves": [
                             "Thunder Shock"
@@ -212,6 +212,88 @@ mod mirror_move_test {
                 "fail|mon:Pidgeot,player-2,1",
                 "residual",
                 "turn|turn:10"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
+    fn mirror_move_locks_target_like_source_move() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            BattleType::Doubles,
+            0,
+            team().unwrap(),
+            team().unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+        assert_eq!(
+            battle.set_player_choice("player-2", "move 4,2;pass"),
+            Ok(())
+        );
+
+        assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 0;pass"), Ok(()));
+
+        assert_eq!(
+            battle.set_player_choice("player-1", "move 0,1;pass"),
+            Ok(())
+        );
+        assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+        assert_eq!(
+            battle.set_player_choice("player-1", "move 0,2;pass"),
+            Ok(())
+        );
+        assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Doubles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:2",
+                "teamsize|player:player-2|size:2",
+                "start",
+                "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "switch|player:player-1|position:2|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "switch|player:player-2|position:2|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Pidgeot,player-2,1|name:Fly|noanim",
+                "prepare|mon:Pidgeot,player-2,1|move:Fly",
+                "residual",
+                "turn|turn:2",
+                ["time"],
+                "move|mon:Pidgeot,player-2,1|name:Fly|target:Pikachu,player-1,2",
+                "resisted|mon:Pikachu,player-1,2",
+                "split|side:0",
+                "damage|mon:Pikachu,player-1,2|health:41/95",
+                "damage|mon:Pikachu,player-1,2|health:44/100",
+                "residual",
+                "turn|turn:3",
+                ["time"],
+                "move|mon:Pidgeot,player-1,1|name:Mirror Move|target:Pidgeot,player-2,1",
+                "move|mon:Pidgeot,player-1,1|name:Fly|noanim",
+                "prepare|mon:Pidgeot,player-1,1|move:Fly",
+                "residual",
+                "turn|turn:4",
+                ["time"],
+                "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
+                "split|side:1",
+                "damage|mon:Pidgeot,player-2,1|health:85/143",
+                "damage|mon:Pidgeot,player-2,1|health:60/100",
+                "residual",
+                "turn|turn:5"
             ]"#,
         )
         .unwrap();
