@@ -17,6 +17,7 @@ mod moves {
     mod immunity_test;
     mod leech_seed_test;
     mod magnitude_test;
+    mod metronome_test;
     mod mimic_test;
     mod minimize_test;
     mod mirror_move_test;

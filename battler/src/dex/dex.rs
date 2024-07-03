@@ -1,5 +1,8 @@
 use crate::{
-    common::Error,
+    common::{
+        Error,
+        Id,
+    },
     dex::{
         AbilityDex,
         ClauseDex,
@@ -11,6 +14,7 @@ use crate::{
         SpeciesDex,
     },
     mons::TypeChart,
+    moves::MoveData,
 };
 
 /// Collection of all resources indexed by ID.
@@ -29,6 +33,8 @@ pub struct Dex<'d> {
     pub species: SpeciesDex<'d>,
     /// Type chart.
     type_chart: SingleValueDex<'d, TypeChart>,
+
+    data: &'d dyn DataStore,
 }
 
 impl<'d> Dex<'d> {
@@ -43,11 +49,17 @@ impl<'d> Dex<'d> {
             moves: MoveDex::new(data),
             species: SpeciesDex::new(data),
             type_chart,
+            data,
         })
     }
 
     /// Returns the cached type chart.
     pub fn type_chart(&self) -> &TypeChart {
         self.type_chart.get()
+    }
+
+    /// Gets all move IDs, applying the given filter on the underlying data.
+    pub fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error> {
+        self.data.all_move_ids(filter)
     }
 }

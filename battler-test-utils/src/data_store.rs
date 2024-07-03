@@ -47,6 +47,17 @@ impl TestDataStore {
 }
 
 impl DataStore for TestDataStore {
+    fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error> {
+        let mut all_moves = self.local.all_move_ids(filter)?;
+        let mut fake_moves = self
+            .fake_moves
+            .iter()
+            .filter_map(|(id, move_data)| filter(move_data).then(|| id.clone()))
+            .collect::<Vec<_>>();
+        all_moves.append(&mut fake_moves);
+        Ok(all_moves)
+    }
+
     fn get_type_chart(&self) -> DataLookupResult<TypeChart> {
         self.local.get_type_chart()
     }

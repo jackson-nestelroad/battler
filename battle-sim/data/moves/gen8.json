@@ -7,8 +7,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": [],
-
+    "flags": ["NoMetronome"],
     "stalling_move": true
   },
   "dynamaxcannon": {
@@ -24,6 +23,7 @@
       "FailEncore",
       "FailInstruct",
       "FailMimic",
+      "NoMetronome",
       "NoParentalBond",
       "NoSleepTalk",
       "Protect"
@@ -37,7 +37,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "crit_ratio": 2,
     "tracks_target": true
   },
@@ -49,7 +49,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"]
   },
   "stuffcheeks": {
     "name": "Stuff Cheeks",
@@ -58,7 +58,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Snatch"]
   },
   "noretreat": {
     "name": "No Retreat",
@@ -67,7 +67,7 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Snatch"]
   },
   "tarshot": {
     "name": "Tar Shot",
@@ -76,7 +76,7 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "magicpowder": {
     "name": "Magic Powder",
@@ -85,7 +85,7 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Powder", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Powder", "Protect", "Reflectable"]
   },
   "dragondarts": {
     "name": "Dragon Darts",
@@ -95,7 +95,7 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "NoParentalBond", "Protect"],
+    "flags": ["Mirror", "NoParentalBond", "Protect"],
     "multihit": 2,
     "smart_target": true
   },
@@ -106,7 +106,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["BypassSubstitute", "Metronome"]
+    "flags": ["BypassSubstitute"]
   },
   "octolock": {
     "name": "Octolock",
@@ -115,7 +115,7 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "boltbeak": {
     "name": "Bolt Beak",
@@ -125,7 +125,7 @@
     "accuracy": 100,
     "base_power": 85,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "fishiousrend": {
     "name": "Fishious Rend",
@@ -135,7 +135,7 @@
     "accuracy": 100,
     "base_power": 85,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"]
   },
   "courtchange": {
     "name": "Court Change",
@@ -144,7 +144,7 @@
     "pp": 10,
     "accuracy": 100,
     "target": "All",
-    "flags": ["Metronome", "Mirror"]
+    "flags": ["Mirror"]
   },
   "maxflare": {
     "name": "Max Flare",
@@ -154,7 +154,7 @@
     "accuracy": "exempt",
     "base_power": 100,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxflutterby": {
     "name": "Max Flutterby",
@@ -164,7 +164,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxlightning": {
     "name": "Max Lightning",
@@ -174,7 +174,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxstrike": {
     "name": "Max Strike",
@@ -184,7 +184,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxknuckle": {
     "name": "Max Knuckle",
@@ -194,7 +194,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxphantasm": {
     "name": "Max Phantasm",
@@ -204,7 +204,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxhailstorm": {
     "name": "Max Hailstorm",
@@ -214,7 +214,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxooze": {
     "name": "Max Ooze",
@@ -224,7 +224,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxgeyser": {
     "name": "Max Geyser",
@@ -234,7 +234,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxairstream": {
     "name": "Max Airstream",
@@ -244,7 +244,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxstarfall": {
     "name": "Max Starfall",
@@ -254,7 +254,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxwyrmwind": {
     "name": "Max Wyrmwind",
@@ -264,7 +264,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxmindstorm": {
     "name": "Max Mindstorm",
@@ -274,7 +274,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxrockfall": {
     "name": "Max Rockfall",
@@ -284,7 +284,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxquake": {
     "name": "Max Quake",
@@ -294,7 +294,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxdarkness": {
     "name": "Max Darkness",
@@ -304,7 +304,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxovergrowth": {
     "name": "Max Overgrowth",
@@ -314,7 +314,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "maxsteelspike": {
     "name": "Max Steelspike",
@@ -324,7 +324,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "clangoroussoul": {
     "name": "Clangorous Soul",
@@ -333,7 +333,7 @@
     "pp": 5,
     "accuracy": 100,
     "target": "User",
-    "flags": ["Dance", "Snatch", "Sound"]
+    "flags": ["Dance", "NoMetronome", "Snatch", "Sound"]
   },
   "bodypress": {
     "name": "Body Press",
@@ -343,7 +343,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
     "override_offensive_stat": "def"
   },
   "decorate": {
@@ -353,7 +353,7 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "drumbeating": {
     "name": "Drum Beating",
@@ -363,7 +363,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "snaptrap": {
     "name": "Snap Trap",
@@ -373,7 +373,7 @@
     "accuracy": 100,
     "base_power": 35,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "pyroball": {
     "name": "Pyro Ball",
@@ -383,7 +383,7 @@
     "accuracy": 90,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect", "Thawing"]
+    "flags": ["Bullet", "Mirror", "NoMetronome", "Protect", "Thawing"]
   },
   "behemothblade": {
     "name": "Behemoth Blade",
@@ -398,6 +398,7 @@
       "FailCopycat",
       "FailMimic",
       "Mirror",
+      "NoMetronome",
       "Protect",
       "Slicing"
     ]
@@ -410,7 +411,14 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Contact", "FailCopycat", "FailMimic", "Mirror", "Protect"]
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMimic",
+      "Mirror",
+      "NoMetronome",
+      "Protect"
+    ]
   },
   "aurawheel": {
     "name": "Aura Wheel",
@@ -420,7 +428,7 @@
     "accuracy": 100,
     "base_power": 110,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "breakingswipe": {
     "name": "Breaking Swipe",
@@ -430,7 +438,7 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "AllAdjacentFoes",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "branchpoke": {
     "name": "Branch Poke",
@@ -440,7 +448,7 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "overdrive": {
     "name": "Overdrive",
@@ -450,7 +458,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "AllAdjacentFoes",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "Protect", "Sound"]
   },
   "appleacid": {
     "name": "Apple Acid",
@@ -460,7 +468,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "gravapple": {
     "name": "Grav Apple",
@@ -470,7 +478,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "spiritbreak": {
     "name": "Spirit Break",
@@ -480,7 +488,7 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "strangesteam": {
     "name": "Strange Steam",
@@ -490,7 +498,7 @@
     "accuracy": 95,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "lifedew": {
     "name": "Life Dew",
@@ -499,10 +507,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["BypassSubstitute", "Heal", "Snatch"],
-    "hit_effect": {
-      "heal_percent": "25%"
-    }
+    "flags": ["BypassSubstitute", "Heal", "NoMetronome", "Snatch"],
+    "hit_effect": { "heal_percent": "25%" }
   },
   "obstruct": {
     "name": "Obstruct",
@@ -512,8 +518,7 @@
     "accuracy": 100,
     "priority": 4,
     "target": "User",
-    "flags": ["FailInstruct"],
-
+    "flags": ["FailInstruct", "NoMetronome"],
     "stalling_move": true
   },
   "falsesurrender": {
@@ -524,7 +529,7 @@
     "accuracy": "exempt",
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "meteorassault": {
     "name": "Meteor Assault",
@@ -534,7 +539,7 @@
     "accuracy": 100,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["FailInstruct", "Mirror", "Protect", "Recharge"]
+    "flags": ["FailInstruct", "Mirror", "NoMetronome", "Protect", "Recharge"]
   },
   "eternabeam": {
     "name": "Eternabeam",
@@ -544,7 +549,7 @@
     "accuracy": 90,
     "base_power": 160,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Recharge"]
+    "flags": ["Mirror", "NoMetronome", "Protect", "Recharge"]
   },
   "steelbeam": {
     "name": "Steel Beam",
@@ -554,7 +559,7 @@
     "accuracy": 95,
     "base_power": 140,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "expandingforce": {
     "name": "Expanding Force",
@@ -564,7 +569,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "steelroller": {
     "name": "Steel Roller",
@@ -574,7 +579,7 @@
     "accuracy": 100,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "scaleshot": {
     "name": "Scale Shot",
@@ -584,7 +589,7 @@
     "accuracy": 90,
     "base_power": 25,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5]
   },
   "meteorbeam": {
@@ -595,7 +600,7 @@
     "accuracy": 90,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Charge", "Metronome", "Mirror", "Protect"]
+    "flags": ["Charge", "Mirror", "Protect"]
   },
   "shellsidearm": {
     "name": "Shell Side Arm",
@@ -605,7 +610,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "mistyexplosion": {
     "name": "Misty Explosion",
@@ -615,7 +620,7 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "AllAdjacent",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "self_destruct": true
   },
   "grassyglide": {
@@ -626,7 +631,7 @@
     "accuracy": 100,
     "base_power": 55,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "risingvoltage": {
     "name": "Rising Voltage",
@@ -636,7 +641,7 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "terrainpulse": {
     "name": "Terrain Pulse",
@@ -646,7 +651,7 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Pulse"]
+    "flags": ["Mirror", "Protect", "Pulse"]
   },
   "skittersmack": {
     "name": "Skitter Smack",
@@ -656,7 +661,7 @@
     "accuracy": 90,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "burningjealousy": {
     "name": "Burning Jealousy",
@@ -666,7 +671,7 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "lashout": {
     "name": "Lash Out",
@@ -676,7 +681,7 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "poltergeist": {
     "name": "Poltergeist",
@@ -686,7 +691,7 @@
     "accuracy": 90,
     "base_power": 110,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "corrosivegas": {
     "name": "Corrosive Gas",
@@ -695,7 +700,7 @@
     "pp": 40,
     "accuracy": 100,
     "target": "AllAdjacent",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "coaching": {
     "name": "Coaching",
@@ -704,7 +709,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute", "Metronome"]
+    "flags": ["BypassSubstitute"]
   },
   "flipturn": {
     "name": "Flip Turn",
@@ -714,7 +719,7 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "tripleaxel": {
     "name": "Triple Axel",
@@ -724,7 +729,7 @@
     "accuracy": 90,
     "base_power": 20,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
     "multihit": 3
   },
@@ -736,7 +741,7 @@
     "accuracy": 90,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2
   },
   "scorchingsands": {
@@ -747,7 +752,7 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Thawing"],
+    "flags": ["Mirror", "Protect", "Thawing"],
     "thaws_target": true
   },
   "junglehealing": {
@@ -757,7 +762,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["BypassSubstitute", "Heal"]
+    "flags": ["BypassSubstitute", "Heal", "NoMetronome"]
   },
   "wickedblow": {
     "name": "Wicked Blow",
@@ -767,7 +772,7 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Punch"],
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "will_crit": true
   },
   "surgingstrikes": {
@@ -778,7 +783,7 @@
     "accuracy": 100,
     "base_power": 25,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Punch"],
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "multihit": 3,
     "will_crit": true
   },
@@ -790,7 +795,7 @@
     "accuracy": 90,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "dragonenergy": {
     "name": "Dragon Energy",
@@ -800,7 +805,7 @@
     "accuracy": 100,
     "base_power": 150,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "freezingglare": {
     "name": "Freezing Glare",
@@ -810,7 +815,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "fierywrath": {
     "name": "Fiery Wrath",
@@ -820,7 +825,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "thunderouskick": {
     "name": "Thunderous Kick",
@@ -830,7 +835,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "glaciallance": {
     "name": "Glacial Lance",
@@ -840,7 +845,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "astralbarrage": {
     "name": "Astral Barrage",
@@ -850,7 +855,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "eeriespell": {
     "name": "Eerie Spell",
@@ -860,7 +865,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
   },
   "direclaw": {
     "name": "Dire Claw",
@@ -870,7 +875,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "psyshieldbash": {
     "name": "Psyshield Bash",
@@ -880,7 +885,7 @@
     "accuracy": 90,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "powershift": {
     "name": "Power Shift",
@@ -890,7 +895,7 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["NoMetronome", "Snatch"]
   },
   "stoneaxe": {
     "name": "Stone Axe",
@@ -900,7 +905,7 @@
     "accuracy": 90,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Slicing"]
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
   "springtidestorm": {
     "name": "Springtide Storm",
@@ -910,7 +915,7 @@
     "accuracy": 80,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "NoMetronome", "Protect", "Wind"]
   },
   "mysticalpower": {
     "name": "Mystical Power",
@@ -920,7 +925,7 @@
     "accuracy": 90,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "ragingfury": {
     "name": "Raging Fury",
@@ -930,7 +935,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "RandomNormal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "wavecrash": {
     "name": "Wave Crash",
@@ -940,7 +945,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"],
+    "flags": ["Contact", "Mirror", "Protect"],
     "recoil_percent": "33/100"
   },
   "chloroblast": {
@@ -951,7 +956,7 @@
     "accuracy": 95,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "recoil_percent": "50%",
     "recoil_from_user_hp": true
   },
@@ -963,7 +968,7 @@
     "accuracy": 85,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "victorydance": {
     "name": "Victory Dance",
@@ -973,7 +978,7 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "User",
-    "flags": ["Dance", "Metronome", "Snatch"]
+    "flags": ["Dance", "Snatch"]
   },
   "headlongrush": {
     "name": "Headlong Rush",
@@ -983,7 +988,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+    "flags": ["Contact", "Mirror", "Protect", "Punch"]
   },
   "barbbarrage": {
     "name": "Barb Barrage",
@@ -993,7 +998,7 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "esperwing": {
     "name": "Esper Wing",
@@ -1003,7 +1008,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
   },
   "bittermalice": {
@@ -1014,7 +1019,7 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "shelter": {
     "name": "Shelter",
@@ -1024,7 +1029,7 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "User",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Snatch"]
   },
   "triplearrows": {
     "name": "Triple Arrows",
@@ -1034,7 +1039,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
   },
   "infernalparade": {
@@ -1045,7 +1050,7 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "ceaselessedge": {
     "name": "Ceaseless Edge",
@@ -1055,7 +1060,7 @@
     "accuracy": 90,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Slicing"]
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
   "bleakwindstorm": {
     "name": "Bleakwind Storm",
@@ -1065,7 +1070,7 @@
     "accuracy": 80,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"]
   },
   "wildboltstorm": {
     "name": "Wildbolt Storm",
@@ -1075,7 +1080,7 @@
     "accuracy": 80,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"]
   },
   "sandsearstorm": {
     "name": "Sandsear Storm",
@@ -1085,7 +1090,7 @@
     "accuracy": 80,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"]
   },
   "lunarblessing": {
     "name": "Lunar Blessing",
@@ -1095,7 +1100,7 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "Allies",
-    "flags": ["Heal", "Metronome", "Snatch"]
+    "flags": ["Heal", "Snatch"]
   },
   "takeheart": {
     "name": "Take Heart",
@@ -1105,6 +1110,6 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "User",
-    "flags": ["Metronome", "Snatch"]
+    "flags": ["Snatch"]
   }
 }

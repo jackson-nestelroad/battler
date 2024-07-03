@@ -62,7 +62,9 @@ impl<T> From<Result<T, BorrowError>> for DataLookupResult<T> {
 /// This collection is used for "raw lookup" of resources by ID. Individual dexes may implement
 /// specialized lookup rules over this table, such as resolving aliases or special names.
 pub trait DataStore {
-    /// Gets the type char.
+    /// Gets all move IDs, applying the given filter on the underlying data.
+    fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error>;
+    /// Gets the type chart.
     fn get_type_chart(&self) -> DataLookupResult<TypeChart>;
     /// Translates the given alias to another ID, if the alias mapping exists.
     fn translate_alias(&self, id: &Id) -> DataLookupResult<Id>;
@@ -221,6 +223,20 @@ impl LocalDataStore {
 }
 
 impl DataStore for LocalDataStore {
+    fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error> {
+        let mut move_ids = Vec::new();
+        for (id, move_data) in self.moves.iter() {
+            if filter(
+                move_data
+                    .wrap_error_with_format(format_args!("failed to read move data for {id}"))?
+                    .as_ref(),
+            ) {
+                move_ids.push(id.clone());
+            }
+        }
+        Ok(move_ids)
+    }
+
     fn get_type_chart(&self) -> DataLookupResult<TypeChart> {
         DataLookupResult::Found(self.type_chart.clone())
     }
@@ -268,7 +284,11 @@ pub mod fake_data_store {
 
     use crate::{
         abilities::AbilityData,
-        common::Id,
+        common::{
+            Error,
+            Id,
+            WrapResultError,
+        },
         conditions::ConditionData,
         config::ClauseData,
         dex::{
@@ -313,6 +333,20 @@ pub mod fake_data_store {
     }
 
     impl DataStore for FakeDataStore {
+        fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error> {
+            let mut move_ids = Vec::new();
+            for (id, move_data) in self.moves.iter() {
+                if filter(
+                    move_data
+                        .wrap_error_with_format(format_args!("failed to read move data for {id}"))?
+                        .as_ref(),
+                ) {
+                    move_ids.push(id.clone());
+                }
+            }
+            Ok(move_ids)
+        }
+
         fn get_type_chart(&self) -> DataLookupResult<TypeChart> {
             DataLookupResult::Found(self.type_chart.clone())
         }

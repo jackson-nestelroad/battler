@@ -170,7 +170,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
 }
 
 fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<MoveHandle, Error> {
-    let mut active_move = context
+    let active_move = context
         .battle_mut()
         .dex
         .moves

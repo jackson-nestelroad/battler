@@ -3,6 +3,8 @@ use std::{
     str::FromStr,
 };
 
+use ahash::HashSetExt;
+
 use crate::{
     battle::{
         core_battle_actions,
@@ -21,6 +23,7 @@ use crate::{
     battler_error,
     common::{
         Error,
+        FastHashSet,
         Id,
         Identifiable,
         WrapResultError,
@@ -75,6 +78,7 @@ pub fn run_function(
         "disable_move" => disable_move(context, args).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "floor" => floor(args).map(|val| Some(val)),
+        "get_all_moves" => get_all_moves(context, args).map(|val| Some(val)),
         "get_boost" => get_boost(args).map(|val| Some(val)),
         "get_move" => get_move(context, args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
@@ -115,6 +119,7 @@ pub fn run_function(
         "run_event" => run_event(context, args).map(|val| Some(val)),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
+        "sample" => sample(context, args),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
@@ -422,6 +427,22 @@ fn chance(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         _ => return Err(battler_error!("invalid chance arguments")),
     };
     Ok(Value::Boolean(val))
+}
+
+fn sample(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let list = args
+        .pop_front()
+        .wrap_error_with_message("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    Ok(rand_util::sample_slice(
+        context.battle_context_mut().battle_mut().prng.as_mut(),
+        list.as_slice(),
+    )
+    .cloned())
 }
 
 fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1357,20 +1378,40 @@ fn get_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     Ok(Value::Effect(EffectHandle::InactiveMove(move_id)))
 }
 
-// fn all_active_foes(
-//     context: &mut EvaluationContext,
-//     mut args: VecDeque<Value>,
-// ) -> Result<Value, Error> { let mon_handle = args .pop_front() .wrap_error_with_message("missing
-//   mon")? .mon_handle() .wrap_error_with_message("invalid mon")?; Ok(Value::List(
-//   Mon::adjacent_foes(&mut context.mon_context(mon_handle)?)? .filter_map(|foe|
-//   Some(Value::Mon(foe?))) .collect::<Vec<_>>(), ))
-// }
+fn get_all_moves(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mut with_flags = FastHashSet::new();
+    let mut without_flags = FastHashSet::new();
+    while let Some(arg) = args.pop_front() {
+        match arg
+            .string()
+            .wrap_error_with_message("invalid filter")?
+            .split_once(':')
+        {
+            Some(("with_flag", flag)) => with_flags
+                .insert(MoveFlags::from_str(flag).wrap_error_with_message("invalid move flag")?),
+            Some(("without_flag", flag)) => without_flags
+                .insert(MoveFlags::from_str(flag).wrap_error_with_message("invalid move flag")?),
+            _ => return Err(battler_error!("invalid filter")),
+        };
+    }
 
-// fn sample(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
-//     let list = args
-//         .pop_front()
-//         .wrap_error_with_message("missing list")?
-//         .list()
-//         .wrap_error_with_message("invalid list")?;
-//     context.battle_context_mut().pr
-// }
+    let mut moves = context
+        .battle_context()
+        .battle()
+        .dex
+        .all_move_ids(&|move_data| {
+            with_flags.is_subset(&move_data.flags)
+                && without_flags.intersection(&move_data.flags).count() == 0
+        })?;
+    // This sort must be stable for RNG stability.
+    moves.sort();
+    Ok(Value::List(
+        moves
+            .into_iter()
+            .map(|id| Value::Effect(EffectHandle::InactiveMove(id)))
+            .collect(),
+    ))
+}

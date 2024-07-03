@@ -7,14 +7,7 @@
     "accuracy": 95,
     "base_power": 100,
     "target": "Any",
-    "flags": [
-      "Contact",
-      "Distance",
-      "Gravity",
-      "Metronome",
-      "Mirror",
-      "Protect"
-    ]
+    "flags": ["Contact", "Distance", "Gravity", "Mirror", "Protect"]
   },
   "matblock": {
     "name": "Mat Block",
@@ -23,8 +16,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["FailCopycat", "NoAssist", "Snatch"],
-
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Snatch"],
     "stalling_move": true
   },
   "belch": {
@@ -41,6 +33,7 @@
       "FailMeFirst",
       "FailMimic",
       "NoAssist",
+      "NoMetronome",
       "NoSleepTalk",
       "Protect"
     ]
@@ -52,7 +45,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Distance", "Metronome"]
+    "flags": ["Distance"]
   },
   "stickyweb": {
     "name": "Sticky Web",
@@ -61,7 +54,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "FoeSide",
-    "flags": ["Metronome", "Reflectable"]
+    "flags": ["Reflectable"]
   },
   "fellstinger": {
     "name": "Fell Stinger",
@@ -71,7 +64,7 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "phantomforce": {
     "name": "Phantom Force",
@@ -85,7 +78,6 @@
       "Charge",
       "Contact",
       "FailInstruct",
-      "Metronome",
       "Mirror",
       "NoAssist",
       "NoSleepTalk"
@@ -99,7 +91,7 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "nobleroar": {
     "name": "Noble Roar",
@@ -108,14 +100,7 @@
     "pp": 30,
     "accuracy": 100,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "Metronome",
-      "Mirror",
-      "Protect",
-      "Reflectable",
-      "Sound"
-    ]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"]
   },
   "iondeluge": {
     "name": "Ion Deluge",
@@ -125,7 +110,7 @@
     "accuracy": "exempt",
     "priority": 1,
     "target": "All",
-    "flags": ["Metronome"]
+    "flags": []
   },
   "paraboliccharge": {
     "name": "Parabolic Charge",
@@ -135,7 +120,7 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "AllAdjacent",
-    "flags": ["Heal", "Metronome", "Mirror", "Protect"],
+    "flags": ["Heal", "Mirror", "Protect"],
     "drain_percent": "1/2"
   },
   "forestscurse": {
@@ -145,7 +130,7 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "petalblizzard": {
     "name": "Petal Blizzard",
@@ -155,7 +140,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "AllAdjacent",
-    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"]
   },
   "freezedry": {
     "name": "Freeze-Dry",
@@ -165,7 +150,7 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "disarmingvoice": {
     "name": "Disarming Voice",
@@ -175,7 +160,7 @@
     "accuracy": "exempt",
     "base_power": 40,
     "target": "AllAdjacentFoes",
-    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
   },
   "partingshot": {
     "name": "Parting Shot",
@@ -184,14 +169,7 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "Metronome",
-      "Mirror",
-      "Protect",
-      "Reflectable",
-      "Sound"
-    ]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"]
   },
   "topsyturvy": {
     "name": "Topsy-Turvy",
@@ -200,7 +178,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "drainingkiss": {
     "name": "Draining Kiss",
@@ -210,7 +188,7 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Contact", "Heal", "Metronome", "Mirror", "Protect"],
+    "flags": ["Contact", "Heal", "Mirror", "Protect"],
     "drain_percent": "3/4"
   },
   "craftyshield": {
@@ -221,7 +199,7 @@
     "accuracy": "exempt",
     "priority": 3,
     "target": "AllySide",
-    "flags": []
+    "flags": ["NoMetronome"]
   },
   "flowershield": {
     "name": "Flower Shield",
@@ -230,7 +208,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Distance", "Metronome"]
+    "flags": ["Distance"]
   },
   "grassyterrain": {
     "name": "Grassy Terrain",
@@ -239,7 +217,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Metronome"]
+    "flags": []
   },
   "mistyterrain": {
     "name": "Misty Terrain",
@@ -248,7 +226,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Metronome"]
+    "flags": []
   },
   "electrify": {
     "name": "Electrify",
@@ -257,7 +235,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "playrough": {
     "name": "Play Rough",
@@ -267,7 +245,7 @@
     "accuracy": 90,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "fairywind": {
     "name": "Fairy Wind",
@@ -277,7 +255,7 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"]
   },
   "moonblast": {
     "name": "Moonblast",
@@ -287,7 +265,7 @@
     "accuracy": 100,
     "base_power": 95,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "boomburst": {
     "name": "Boomburst",
@@ -297,7 +275,7 @@
     "accuracy": 100,
     "base_power": 140,
     "target": "AllAdjacent",
-    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
   },
   "fairylock": {
     "name": "Fairy Lock",
@@ -306,7 +284,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["BypassSubstitute", "Metronome", "Mirror"]
+    "flags": ["BypassSubstitute", "Mirror"]
   },
   "kingsshield": {
     "name": "King's Shield",
@@ -316,8 +294,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "FailInstruct", "NoAssist"],
-
+    "flags": ["FailCopycat", "FailInstruct", "NoAssist", "NoMetronome"],
     "stalling_move": true
   },
   "playnice": {
@@ -327,7 +304,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Reflectable"]
   },
   "confide": {
     "name": "Confide",
@@ -336,7 +313,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Metronome", "Mirror", "Reflectable", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Reflectable", "Sound"]
   },
   "diamondstorm": {
     "name": "Diamond Storm",
@@ -346,7 +323,7 @@
     "accuracy": 95,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "steameruption": {
     "name": "Steam Eruption",
@@ -356,7 +333,7 @@
     "accuracy": 95,
     "base_power": 110,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Thawing"],
+    "flags": ["Mirror", "NoMetronome", "Protect", "Thawing"],
     "thaws_target": true
   },
   "hyperspacehole": {
@@ -367,7 +344,7 @@
     "accuracy": "exempt",
     "base_power": 80,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror"],
+    "flags": ["BypassSubstitute", "Mirror", "NoMetronome"],
     "breaks_protect": true
   },
   "watershuriken": {
@@ -379,7 +356,7 @@
     "base_power": 15,
     "priority": 1,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"],
+    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5]
   },
   "mysticalfire": {
@@ -390,7 +367,7 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "spikyshield": {
     "name": "Spiky Shield",
@@ -400,8 +377,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist"],
-
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
     "stalling_move": true
   },
   "aromaticmist": {
@@ -411,12 +387,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute", "Metronome"],
-    "hit_effect": {
-      "boosts": {
-        "spd": 1
-      }
-    }
+    "flags": ["BypassSubstitute"],
+    "hit_effect": { "boosts": { "spd": 1 } }
   },
   "eerieimpulse": {
     "name": "Eerie Impulse",
@@ -425,7 +397,7 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "venomdrench": {
     "name": "Venom Drench",
@@ -434,7 +406,7 @@
     "pp": 20,
     "accuracy": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "powder": {
     "name": "Powder",
@@ -444,14 +416,7 @@
     "accuracy": 100,
     "priority": 1,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "Metronome",
-      "Mirror",
-      "Powder",
-      "Protect",
-      "Reflectable"
-    ]
+    "flags": ["BypassSubstitute", "Mirror", "Powder", "Protect", "Reflectable"]
   },
   "geomancy": {
     "name": "Geomancy",
@@ -460,7 +425,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Charge", "FailInstruct", "Metronome", "NoSleepTalk"]
+    "flags": ["Charge", "FailInstruct", "NoSleepTalk"]
   },
   "magneticflux": {
     "name": "Magnetic Flux",
@@ -469,7 +434,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["BypassSubstitute", "Distance", "Metronome", "Snatch"]
+    "flags": ["BypassSubstitute", "Distance", "Snatch"]
   },
   "happyhour": {
     "name": "Happy Hour",
@@ -478,7 +443,7 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Metronome"]
+    "flags": []
   },
   "electricterrain": {
     "name": "Electric Terrain",
@@ -487,7 +452,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Metronome"]
+    "flags": []
   },
   "dazzlinggleam": {
     "name": "Dazzling Gleam",
@@ -497,7 +462,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "celebrate": {
     "name": "Celebrate",
@@ -511,6 +476,7 @@
       "FailInstruct",
       "FailMimic",
       "NoAssist",
+      "NoMetronome",
       "NoSleepTalk"
     ]
   },
@@ -527,6 +493,7 @@
       "FailInstruct",
       "FailMimic",
       "NoAssist",
+      "NoMetronome",
       "NoSleepTalk"
     ]
   },
@@ -538,7 +505,7 @@
     "accuracy": 100,
     "priority": 1,
     "target": "Normal",
-    "flags": ["Metronome", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"]
   },
   "nuzzle": {
     "name": "Nuzzle",
@@ -548,7 +515,7 @@
     "accuracy": 100,
     "base_power": 20,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "holdback": {
     "name": "Hold Back",
@@ -558,7 +525,7 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "infestation": {
     "name": "Infestation",
@@ -568,7 +535,7 @@
     "accuracy": 100,
     "base_power": 20,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "poweruppunch": {
     "name": "Power-Up Punch",
@@ -578,7 +545,7 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Contact", "Metronome", "Mirror", "Protect", "Punch"]
+    "flags": ["Contact", "Mirror", "Protect", "Punch"]
   },
   "oblivionwing": {
     "name": "Oblivion Wing",
@@ -588,7 +555,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Any",
-    "flags": ["Distance", "Heal", "Metronome", "Mirror", "Protect"],
+    "flags": ["Distance", "Heal", "Mirror", "Protect"],
     "drain_percent": "3/4"
   },
   "thousandarrows": {
@@ -599,7 +566,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "thousandwaves": {
     "name": "Thousand Waves",
@@ -609,7 +576,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "landswrath": {
     "name": "Land's Wrath",
@@ -619,7 +586,7 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "AllAdjacentFoes",
-    "flags": ["Metronome", "Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"]
   },
   "lightofruin": {
     "name": "Light of Ruin",
@@ -629,7 +596,7 @@
     "accuracy": 90,
     "base_power": 140,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
+    "flags": ["Mirror", "NoMetronome", "Protect"],
     "recoil_percent": "1/2"
   },
   "originpulse": {
@@ -640,7 +607,7 @@
     "accuracy": 85,
     "base_power": 110,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Pulse"]
+    "flags": ["Mirror", "NoMetronome", "Protect", "Pulse"]
   },
   "precipiceblades": {
     "name": "Precipice Blades",
@@ -650,7 +617,7 @@
     "accuracy": 85,
     "base_power": 120,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "dragonascent": {
     "name": "Dragon Ascent",
@@ -660,7 +627,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Any",
-    "flags": ["Contact", "Distance", "Mirror", "Protect"]
+    "flags": ["Contact", "Distance", "Mirror", "NoMetronome", "Protect"]
   },
   "hyperspacefury": {
     "name": "Hyperspace Fury",
@@ -670,7 +637,7 @@
     "accuracy": "exempt",
     "base_power": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror"],
+    "flags": ["BypassSubstitute", "Mirror", "NoMetronome"],
     "breaks_protect": true,
     "no_sketch": true
   }

@@ -60,9 +60,6 @@ pub enum MoveFlags {
     /// Cannot be used during Heal Block's effect.
     #[string = "Heal"]
     Heal,
-    /// Can be used by Metronome.
-    #[string = "Metronome"]
-    Metronome,
     /// Can be copied by Mirror Move.
     #[string = "Mirror"]
     Mirror,
@@ -72,6 +69,9 @@ pub enum MoveFlags {
     /// Cannot be selected by Assist.
     #[string = "NoAssist"]
     NoAssist,
+    /// Cannot be used by Metronome.
+    #[string = "NoMetronome"]
+    NoMetronome,
     /// Cannot be made to hit twice via Parental Bond.
     #[string = "NoParentalBond"]
     NoParentalBond,
