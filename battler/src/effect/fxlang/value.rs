@@ -249,6 +249,7 @@ impl Value {
     pub fn active_move(self) -> Result<MoveHandle, Error> {
         match self {
             Self::ActiveMove(val) => Ok(val),
+            Self::Effect(EffectHandle::ActiveMove(val, _)) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::ActiveMove)),
         }
     }
@@ -277,7 +278,9 @@ impl Value {
     /// Consumes the value into a move ID.
     pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id, Error> {
         match self {
-            Self::ActiveMove(val) => Ok(context.active_move(val)?.id().clone()),
+            Self::ActiveMove(val) | Self::Effect(EffectHandle::ActiveMove(val, _)) => {
+                Ok(context.active_move(val)?.id().clone())
+            }
             Self::String(val) => Ok(Id::from(val)),
             val @ _ => Err(battler_error!(
                 "value of type {} cannot be converted to a move id",

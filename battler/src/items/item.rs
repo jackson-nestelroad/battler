@@ -72,16 +72,14 @@ pub struct ItemData {
 /// An individual item, which can be held by a Mon in battle.
 #[derive(Debug, Clone)]
 pub struct Item {
-    /// Item data.
-    pub data: ItemData,
     id: Id,
+    pub data: ItemData,
 }
 
 impl Item {
     /// Constructs a new [`Item`] instance from [`ItemData`].
-    pub fn new(data: ItemData) -> Self {
-        let id = Id::from(data.name.as_ref());
-        Self { data, id }
+    pub fn new(id: Id, data: ItemData) -> Self {
+        Self { id, data }
     }
 }
 

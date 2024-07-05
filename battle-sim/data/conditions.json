@@ -11,6 +11,131 @@
     "name": "Struggle Recoil",
     "condition_type": "Built-in"
   },
+  "normaltype": {
+    "name": "Normal",
+    "condition_type": "Type"
+  },
+  "firetype": {
+    "name": "Fire",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == brn:", ["return false"]]
+      }
+    }
+  },
+  "watertype": {
+    "name": "Water",
+    "condition_type": "Type"
+  },
+  "electrictype": {
+    "name": "Electric",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == par:", ["return false"]]
+      }
+    }
+  },
+  "grasstype": {
+    "name": "Grass",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": [
+          "if $effect.is_move and func_call(move_has_flag: $effect powder):",
+          ["return false"]
+        ]
+      }
+    }
+  },
+  "icetype": {
+    "name": "Ice",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if [frz, hail] has $effect.id:", ["return false"]]
+      }
+    }
+  },
+  "fightingtype": {
+    "name": "Fighting",
+    "condition_type": "Type"
+  },
+  "poisontype": {
+    "name": "Poison",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
+      }
+    }
+  },
+  "groundtype": {
+    "name": "Ground",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == sandstorm:", ["return false"]]
+      }
+    }
+  },
+  "flyingtype": {
+    "name": "Flying",
+    "condition_type": "Type"
+  },
+  "psychictype": {
+    "name": "Psychic",
+    "condition_type": "Type"
+  },
+  "bugtype": {
+    "name": "Bug",
+    "condition_type": "Type"
+  },
+  "rocktype": {
+    "name": "Rock",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == sandstorm:", ["return false"]]
+      }
+    }
+  },
+  "ghosttype": {
+    "name": "Ghost",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == trapped:", ["return false"]]
+      }
+    }
+  },
+  "dragontype": {
+    "name": "Dragon",
+    "condition_type": "Type"
+  },
+  "darktype": {
+    "name": "Dark",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["# TODO: Prankster immunity"]
+      }
+    }
+  },
+  "steeltype": {
+    "name": "Steel",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
+      }
+    }
+  },
+  "fairytype": {
+    "name": "Fairy",
+    "condition_type": "Type"
+  },
   "brn": {
     "name": "Burn",
     "condition_type": "Status",

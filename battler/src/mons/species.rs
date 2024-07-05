@@ -192,16 +192,14 @@ impl SpeciesData {
 /// A Mon species.
 #[derive(Debug, Clone)]
 pub struct Species {
-    /// Species data.
-    pub data: SpeciesData,
     id: Id,
+    pub data: SpeciesData,
 }
 
 impl Species {
     /// Constructs a new [`Species`] instance from [`SpeciesData`].
-    pub fn new(data: SpeciesData) -> Self {
-        let id = Id::from(data.name.as_ref());
-        Self { data, id }
+    pub fn new(id: Id, data: SpeciesData) -> Self {
+        Self { id, data }
     }
 }
 

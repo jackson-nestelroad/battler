@@ -32,8 +32,8 @@ impl<'d> ResourceLookup<'d, ItemData> for ItemLookup<'d> {
 pub struct ItemWrapper;
 
 impl ResourceWrapper<ItemData, Item> for ItemWrapper {
-    fn wrap(data: ItemData) -> Item {
-        Item::new(data)
+    fn wrap(id: Id, data: ItemData) -> Item {
+        Item::new(id, data)
     }
 }
 

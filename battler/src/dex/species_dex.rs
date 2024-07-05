@@ -48,8 +48,8 @@ impl<'d> ResourceLookup<'d, SpeciesData> for SpeciesLookup<'d> {
 pub struct SpeciesWrapper;
 
 impl ResourceWrapper<SpeciesData, Species> for SpeciesWrapper {
-    fn wrap(data: SpeciesData) -> Species {
-        Species::new(data)
+    fn wrap(id: Id, data: SpeciesData) -> Species {
+        Species::new(id, data)
     }
 }
 

@@ -1178,6 +1178,7 @@ pub fn apply_recoil_damage(
 mod direct_move_step {
     use std::ops::Mul;
 
+    use super::check_immunity;
     use crate::{
         battle::{
             core_battle_actions,
@@ -1283,28 +1284,13 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            let is_powder = context
-                .active_move()
-                .data
-                .flags
-                .contains(&MoveFlags::Powder);
-
-            let types = Mon::types(&mut context.target_mon_context(target.handle)?)?;
-            let immune = (is_powder
-                && context
-                    .battle()
-                    .check_multiple_type_immunity_against_effect(
-                        &types,
-                        &Id::from_known("powder"),
-                    ))
-                || !core_battle_effects::run_active_move_event_expecting_bool(
-                    context,
-                    fxlang::BattleEvent::TryImmunity,
-                    core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                )
-                .unwrap_or(true);
-
-            // TODO: Prankster immunity.
+            let immune = !core_battle_effects::run_active_move_event_expecting_bool(
+                context,
+                fxlang::BattleEvent::TryImmunity,
+                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+            )
+            .unwrap_or(true)
+                || check_immunity(&mut context.applying_effect_context_for_target(target.handle)?)?;
 
             if immune {
                 core_battle_logs::immune(&mut context.target_mon_context(target.handle)?)?;
@@ -2233,7 +2219,8 @@ pub fn try_set_status(
         .wrap_error_with_message("status must have an id")?
         .clone();
 
-    if check_status_immunity(&mut context.target_context()?, &status)? {
+    if check_immunity(&mut context.forward_applying_effect_context(status_effect_handle.clone())?)?
+    {
         if is_primary_move_effect {
             core_battle_logs::immune(&mut context.target_context()?)?;
         }
@@ -2293,20 +2280,18 @@ pub fn try_set_status(
     Ok(ApplyMoveEffectResult::Success)
 }
 
-fn check_status_immunity(context: &mut MonContext, status: &Id) -> Result<bool, Error> {
-    if context.mon().hp == 0 {
+fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+    if context.target().hp == 0 {
         return Ok(true);
     }
 
-    let types = Mon::types(context)?;
-    if context
-        .battle_mut()
-        .check_multiple_type_immunity_against_effect(&types, status)
-    {
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::Immunity,
+        fxlang::VariableInput::default(),
+    ) {
         return Ok(true);
     }
-
-    // TODO: Immunity event.
 
     Ok(false)
 }
@@ -2368,7 +2353,9 @@ pub fn try_add_volatile(
         .unwrap_or(false));
     }
 
-    if check_status_immunity(&mut context.target_context()?, &status)? {
+    if check_immunity(
+        &mut context.forward_applying_effect_context(volatile_effect_handle.clone())?,
+    )? {
         if is_primary_move_effect {
             core_battle_logs::immune(&mut context.target_context()?)?;
         }
@@ -2473,7 +2460,11 @@ pub fn remove_volatile(
 }
 
 pub fn trap_mon(context: &mut MonContext) -> Result<(), Error> {
-    if check_status_immunity(context, &Id::from_known("trapped"))? {
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&Id::from_known("trapped"))?
+        .clone();
+    if check_immunity(&mut context.applying_effect_context(effect_handle, None, None)?)? {
         return Ok(());
     }
     if context.mon().trapped {

@@ -32,8 +32,8 @@ impl<'d> ResourceLookup<'d, MoveData> for MoveLookup<'d> {
 pub struct MoveWrapper;
 
 impl ResourceWrapper<MoveData, Move> for MoveWrapper {
-    fn wrap(data: MoveData) -> Move {
-        Move::new(data)
+    fn wrap(id: Id, data: MoveData) -> Move {
+        Move::new(id, data)
     }
 }
 

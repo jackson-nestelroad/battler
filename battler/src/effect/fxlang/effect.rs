@@ -309,7 +309,7 @@ pub enum BattleEvent {
     HitSide,
     /// Runs when determining if a Mon is immune to some status.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on the target, including moves.
     #[string = "Immunity"]
     Immunity,
     /// Runs when determining if a Mon is invulnerable to targeting moves.
@@ -468,7 +468,7 @@ pub enum BattleEvent {
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move itself and in the context of an applying effect on each target.
     #[string = "TryHit"]
     TryHit,
     /// Runs when a move is trying to hit the whole field.
@@ -487,7 +487,7 @@ pub enum BattleEvent {
     TryHitSide,
     /// Runs when a move is checking general immunity for its target.
     ///
-    /// Can fail th emove (by marking the target as immune).
+    /// Can fail the move (by marking the target as immune).
     ///
     /// Runs in the context of the active move itself.
     #[string = "TryImmunity"]

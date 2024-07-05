@@ -32,8 +32,8 @@ impl<'d> ResourceLookup<'d, ClauseData> for ClauseLookup<'d> {
 pub struct ClauseWrapper;
 
 impl ResourceWrapper<ClauseData, Clause> for ClauseWrapper {
-    fn wrap(data: ClauseData) -> Clause {
-        Clause::new(data)
+    fn wrap(id: Id, data: ClauseData) -> Clause {
+        Clause::new(id, data)
     }
 }
 

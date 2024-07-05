@@ -1398,26 +1398,6 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
-    pub fn check_type_immunity_against_effect(&self, offense: Type, effect: &Id) -> bool {
-        self.dex
-            .type_chart()
-            .effects
-            .get(&offense)
-            .and_then(|row| row.get(effect))
-            .unwrap_or(&TypeEffectiveness::Normal)
-            == &TypeEffectiveness::None
-    }
-
-    pub fn check_multiple_type_immunity_against_effect(
-        &self,
-        offense: &[Type],
-        effect: &Id,
-    ) -> bool {
-        offense
-            .into_iter()
-            .any(|typ| self.check_type_immunity_against_effect(*typ, effect))
-    }
-
     pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {
         let random_factor = match self.engine_options.randomize_base_damage {
             BattleEngineRandomizeBaseDamage::Randomize => {

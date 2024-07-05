@@ -271,6 +271,7 @@ pub enum MoveTargetForEvent {
 enum EffectOrigin {
     None,
     MonStatus(MonHandle),
+    MonType(MonHandle),
     MonVolatileStatus(MonHandle),
     SideCondition(usize),
 }
@@ -301,6 +302,7 @@ impl CallbackHandle {
         match self.origin {
             EffectOrigin::None => Ok(None),
             EffectOrigin::MonStatus(mon) => Ok(Some(&mut context.mon_mut(mon)?.status_state)),
+            EffectOrigin::MonType(_) => Ok(None),
             EffectOrigin::MonVolatileStatus(mon) => match self.effect_handle.try_id() {
                 None => Ok(None),
                 Some(id) => Ok(context.mon_mut(mon)?.volatiles.get_mut(id)),
@@ -454,6 +456,15 @@ fn find_callbacks_on_mon(
 ) -> Result<Vec<CallbackHandle>, Error> {
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
+
+    let types = Mon::types(&mut context)?;
+    for typ in types {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Condition(typ.id()),
+            event,
+            EffectOrigin::MonType(mon),
+        ))
+    }
 
     if let Some(status) = context.mon().status.clone() {
         let status_effect_handle = context.battle_mut().get_effect_handle_by_id(&status)?;
@@ -661,7 +672,11 @@ fn get_speed_orderable_effect_handle(
     context: &mut Context,
     callback_handle: CallbackHandle,
 ) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
-    let effect = CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle)?;
+    let effect = CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle)
+        .wrap_error_with_format(format_args!(
+            "effect {:?} not found",
+            callback_handle.effect_handle
+        ))?;
     let callback = match effect.fxlang_effect() {
         Some(effect) => match effect.callbacks.event(callback_handle.event) {
             Some(callback) => callback,
@@ -883,6 +898,14 @@ fn run_residual_callbacks_with_errors(
                         callback_handle,
                     )?;
                 }
+            }
+            EffectOrigin::MonType(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
             EffectOrigin::MonVolatileStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;

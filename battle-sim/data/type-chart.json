@@ -156,40 +156,5 @@
       "Dark": 2,
       "Steel": 0.5
     }
-  },
-  "effects": {
-    "Fire": {
-      "brn": 0
-    },
-    "Electric": {
-      "par": 0
-    },
-    "Grass": {
-      "powder": 0
-    },
-    "Ice": {
-      "frz": 0,
-      "hail": 0
-    },
-    "Poison": {
-      "psn": 0,
-      "tox": 0
-    },
-    "Ground": {
-      "sandstorm": 0
-    },
-    "Rock": {
-      "sandstorm": 0
-    },
-    "Ghost": {
-      "trapped": 0
-    },
-    "Dark": {
-      "prankster": 0
-    },
-    "Steel": {
-      "psn": 0,
-      "tox": 0
-    }
   }
 }

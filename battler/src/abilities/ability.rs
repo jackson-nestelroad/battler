@@ -31,15 +31,14 @@ pub struct AbilityData {
 /// An individual ability on a Mon that affects the battle in a wide variety of ways.
 #[derive(Clone)]
 pub struct Ability {
-    pub data: AbilityData,
     id: Id,
+    pub data: AbilityData,
 }
 
 impl Ability {
     /// Creates a new [`Ability`] instance from [`AbilityData`].
-    pub fn new(data: AbilityData) -> Self {
-        let id = Id::from(data.name.as_ref());
-        Self { data, id }
+    pub fn new(id: Id, data: AbilityData) -> Self {
+        Self { id, data }
     }
 }
 

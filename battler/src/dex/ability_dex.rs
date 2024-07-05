@@ -32,8 +32,8 @@ impl<'d> ResourceLookup<'d, AbilityData> for AbilityLookup<'d> {
 pub struct AbilityWrapper;
 
 impl ResourceWrapper<AbilityData, Ability> for AbilityWrapper {
-    fn wrap(data: AbilityData) -> Ability {
-        Ability::new(data)
+    fn wrap(id: Id, data: AbilityData) -> Ability {
+        Ability::new(id, data)
     }
 }
 

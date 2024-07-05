@@ -31,6 +31,10 @@ pub enum ConditionType {
     /// Status, which is applied to a single Mon for a finite amount of time.
     #[string = "Status"]
     Status,
+    /// Type, which is applied to a single Mon for a finite amount of time while the user has the
+    /// type.
+    #[string = "Type"]
+    Type,
     /// Volatile, which is applied to a single Mon for a finite amount of time.
     #[string = "Volatile"]
     Volatile,
@@ -58,14 +62,13 @@ pub struct ConditionData {
 
 /// An individual condition, which can affect a Mon in a variety of ways.
 pub struct Condition {
-    pub data: ConditionData,
     id: Id,
+    pub data: ConditionData,
 }
 
 impl Condition {
-    pub fn new(data: ConditionData) -> Self {
-        let id = Id::from(data.name.as_ref());
-        Self { data, id }
+    pub fn new(id: Id, data: ConditionData) -> Self {
+        Self { id, data }
     }
 
     pub fn condition_type_name(&self) -> &str {
@@ -73,6 +76,7 @@ impl Condition {
             ConditionType::BuiltIn => "",
             ConditionType::Condition => "condition",
             ConditionType::Status => "status",
+            ConditionType::Type => "type",
             ConditionType::Volatile => "",
             ConditionType::Weather => "weather",
         }

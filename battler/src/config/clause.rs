@@ -95,21 +95,16 @@ pub(in crate::config) struct ClauseStaticHooks {
 /// rules, or it can be a simple rule with an assigned value.
 #[derive(Clone)]
 pub struct Clause {
-    /// Clause data.
+    id: Id,
     pub data: ClauseData,
     hooks: &'static ClauseStaticHooks,
-    id: Id,
 }
 
 impl Clause {
     /// Creates a new [`Clause`] instance from [`ClauseData`].
-    pub fn new(data: ClauseData) -> Self {
-        let id = Id::from(data.name.as_ref());
-        Self {
-            data,
-            hooks: clause_hooks(&id),
-            id,
-        }
+    pub fn new(id: Id, data: ClauseData) -> Self {
+        let hooks = clause_hooks(&id);
+        Self { id, data, hooks }
     }
 
     /// Validates the given value according to clause's configuration.
@@ -254,12 +249,15 @@ mod clause_tests {
 
     #[test]
     fn validates_type_value() {
-        let clause = Clause::new(ClauseData {
-            name: "Test Clause".to_owned(),
-            requires_value: true,
-            value_type: Some(ClauseValueType::Type),
-            ..Default::default()
-        });
+        let clause = Clause::new(
+            Id::from_known("testclause"),
+            ClauseData {
+                name: "Test Clause".to_owned(),
+                requires_value: true,
+                value_type: Some(ClauseValueType::Type),
+                ..Default::default()
+            },
+        );
         assert!(clause
             .validate_value("")
             .err()
@@ -277,12 +275,15 @@ mod clause_tests {
 
     #[test]
     fn validates_positive_integer() {
-        let clause = Clause::new(ClauseData {
-            name: "Test Clause".to_owned(),
-            requires_value: false,
-            value_type: Some(ClauseValueType::PositiveInteger),
-            ..Default::default()
-        });
+        let clause = Clause::new(
+            Id::from_known("testclause"),
+            ClauseData {
+                name: "Test Clause".to_owned(),
+                requires_value: false,
+                value_type: Some(ClauseValueType::PositiveInteger),
+                ..Default::default()
+            },
+        );
         assert!(clause.validate_value("").is_ok());
         assert!(clause
             .validate_value("bad")
@@ -307,12 +308,15 @@ mod clause_tests {
 
     #[test]
     fn validates_non_negative_integer() {
-        let clause = Clause::new(ClauseData {
-            name: "Test Clause".to_owned(),
-            requires_value: false,
-            value_type: Some(ClauseValueType::NonNegativeInteger),
-            ..Default::default()
-        });
+        let clause = Clause::new(
+            Id::from_known("testclause"),
+            ClauseData {
+                name: "Test Clause".to_owned(),
+                requires_value: false,
+                value_type: Some(ClauseValueType::NonNegativeInteger),
+                ..Default::default()
+            },
+        );
         assert!(clause.validate_value("").is_ok());
         assert!(clause
             .validate_value("bad")

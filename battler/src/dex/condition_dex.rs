@@ -32,8 +32,8 @@ impl<'d> ResourceLookup<'d, ConditionData> for ConditionLookup<'d> {
 pub struct ConditionWrapper;
 
 impl ResourceWrapper<ConditionData, Condition> for ConditionWrapper {
-    fn wrap(data: ConditionData) -> Condition {
-        Condition::new(data)
+    fn wrap(id: Id, data: ConditionData) -> Condition {
+        Condition::new(id, data)
     }
 }
 

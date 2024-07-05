@@ -45,7 +45,7 @@ pub trait ResourceLookup<'d, T> {
 /// Trait for wrapping a resource data type to create a resource instance.
 pub trait ResourceWrapper<D, T> {
     /// Wraps the given resource data in a resource instance type.
-    fn wrap(data: D) -> T;
+    fn wrap(id: Id, data: D) -> T;
 }
 
 /// A resource cache that can be used internally by [`Dex`][`crate::dex::Dex`] for caching resource
@@ -105,9 +105,9 @@ where
     }
 
     fn cache_data(&self, id: &Id) -> DataLookupResult<()> {
-        let (id, data) = self.lookup_data_by_id(id.clone())?;
-        let resource = W::wrap(data);
-        if !self.cache.save(&id, resource) {
+        let data = self.lookup_data_by_id(id)?;
+        let resource = W::wrap(id.clone(), data);
+        if !self.cache.save(id, resource) {
             DataLookupResult::Error(battler_error!("failed to save data for {id} in cache"))
         } else {
             DataLookupResult::Found(())
@@ -121,12 +121,13 @@ where
 
     /// Retrieves a resource by ID.
     pub fn get_by_id(&self, id: &Id) -> DataLookupResult<ElementRef<T>> {
+        let id = self.resolve_alias(id.clone())?;
         // The borrow checker struggles if we use pattern matching here, so we have to do two
         // lookups.
         if self.cache.is_cached(&id) {
             return self.cache.get(&id).into();
         }
-        self.cache_data(id)?;
+        self.cache_data(&id)?;
         self.cache.get(&id).into()
     }
 
@@ -141,15 +142,8 @@ where
     }
 
     /// Looks up a resource by ID using the internal [`ResourceLookup`] implementation.
-    fn lookup_data_by_id(&self, id: Id) -> DataLookupResult<(Id, D)> {
-        // Translate alias iteratively until we reach the end of the chain.
-        let resolved_id = self.resolve_alias(id.clone())?;
-
-        if id == resolved_id {
-            DataLookupResult::Found((id.clone(), self.lookup.lookup(&id)?))
-        } else {
-            DataLookupResult::Found((id.clone(), self.lookup.lookup_alias(&id, &resolved_id)?))
-        }
+    fn lookup_data_by_id(&self, id: &Id) -> DataLookupResult<D> {
+        DataLookupResult::Found(self.lookup.lookup(&id)?)
     }
 }
 
@@ -238,6 +232,7 @@ mod dex_tests {
 
     #[derive(Debug, Clone, PartialEq)]
     struct TestResource {
+        id: Id,
         data: TestData,
     }
 
@@ -268,8 +263,8 @@ mod dex_tests {
     struct TestResourceWrapper;
 
     impl ResourceWrapper<TestData, TestResource> for TestResourceWrapper {
-        fn wrap(data: TestData) -> TestResource {
-            TestResource { data }
+        fn wrap(id: Id, data: TestData) -> TestResource {
+            TestResource { data, id }
         }
     }
 
@@ -304,10 +299,10 @@ mod dex_tests {
         assert_eq!(a.unwrap().deref(), b.as_ref().unwrap().deref());
         assert_eq!(b.unwrap().data.id, c.as_ref().unwrap().data.id);
         assert_eq!(c.unwrap().data.id, d.unwrap().data.id);
-        // Only a single lookup occurred.
+        // Only a single lookup occurred for the resolved alias.
         assert_eq!(
             *dex.lookup.lookup_calls.borrow(),
-            FastHashMap::from_iter([(Id::from("native"), 3)])
+            FastHashMap::from_iter([(Id::from("native"), 1)])
         );
     }
 }

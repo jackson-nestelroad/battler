@@ -284,9 +284,8 @@ impl MoveHitEffectType {
 /// one Mon can have different effects than the ame move used by another Mon.
 #[derive(Clone)]
 pub struct Move {
-    /// Move data.
-    pub data: MoveData,
     id: Id,
+    pub data: MoveData,
 
     /// Custom STAB modifier, if any.
     pub stab_modifier: Option<Fraction<u32>>,
@@ -324,11 +323,10 @@ pub struct Move {
 
 impl Move {
     /// Creates a new [`Move`] instance from [`MoveData`].
-    pub fn new(data: MoveData) -> Self {
-        let id = Id::from(data.name.as_ref());
+    pub fn new(id: Id, data: MoveData) -> Self {
         Self {
-            data,
             id,
+            data,
             used_by: None,
             stab_modifier: None,
             external: false,
@@ -345,11 +343,10 @@ impl Move {
     }
 
     /// Creates a new [`Move`] instance from [`MoveData`], with unlinked effect callbacks.
-    pub fn new_unlinked(data: MoveData) -> Self {
-        let id = Id::from(data.name.as_ref());
+    pub fn new_unlinked(id: Id, data: MoveData) -> Self {
         Self {
-            data,
             id,
+            data,
             used_by: None,
             stab_modifier: None,
             external: false,

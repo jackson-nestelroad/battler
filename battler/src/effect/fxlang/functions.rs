@@ -1249,7 +1249,7 @@ fn new_active_move_from_local_data(
             "move {move_id} does not exist in the effect's local data"
         ))?
         .clone();
-    let active_move = Move::new_unlinked(move_data);
+    let active_move = Move::new_unlinked(move_id, move_data);
     let active_move_handle =
         core_battle_actions::register_active_move(context.battle_context_mut(), active_move)?;
     Ok(Value::ActiveMove(active_move_handle))
