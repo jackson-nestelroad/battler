@@ -125,7 +125,7 @@ mod conversion_test {
                 "turn|turn:1",
                 ["time"],
                 "move|mon:Porygon,player-2,1|name:Conversion|target:Porygon,player-2,1",
-                "typechange|mon:Porygon,player-2,1|types:Water|from:move:Conversion",
+                "typechange|mon:Porygon,player-2,1|types:Water",
                 "move|mon:Porygon,player-1,1|name:Conversion|noanim",
                 "fail|mon:Porygon,player-1,1",
                 "residual",

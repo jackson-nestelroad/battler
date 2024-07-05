@@ -376,16 +376,20 @@ pub fn type_change(
         ("types", types)
     );
     if let Some(effect) = effect {
-        let effect_context = context
-            .as_battle_context_mut()
-            .effect_context(effect.clone(), None)?;
-        event.set("from", effect_context.effect().full_name());
-        if let Some(source) = source {
-            if source != context.mon_handle() {
-                event.set(
-                    "of",
-                    Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
-                );
+        if !effect.is_active_move() {
+            let effect_context = context
+                .as_battle_context_mut()
+                .effect_context(effect.clone(), None)?;
+            event.set("from", effect_context.effect().full_name());
+            if let Some(source) = source {
+                if source != context.mon_handle() {
+                    event.set(
+                        "of",
+                        Mon::position_details(
+                            &context.as_battle_context_mut().mon_context(source)?,
+                        )?,
+                    );
+                }
             }
         }
     }
