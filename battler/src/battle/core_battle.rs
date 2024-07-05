@@ -531,6 +531,7 @@ impl<'d> CoreBattle<'d> {
             event.add_flag(attribute);
             if attribute == "noanim" {
                 event.remove("target");
+                event.remove("spread");
             }
         }
     }

@@ -87,9 +87,9 @@ mod powder_test {
                 "switch|player:player-2|position:1|name:Paras|health:100/100|species:Paras|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Paras,player-2,1|name:Stun Spore|target:Paras,player-1,1",
+                "move|mon:Paras,player-2,1|name:Stun Spore|noanim",
                 "immune|mon:Paras,player-1,1",
-                "move|mon:Paras,player-1,1|name:Spore|target:Paras,player-2,1",
+                "move|mon:Paras,player-1,1|name:Spore|noanim",
                 "immune|mon:Paras,player-2,1",
                 "residual",
                 "turn|turn:2"

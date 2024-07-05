@@ -427,7 +427,7 @@ mod damage_calculation_tests {
                 "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:100|gender:F",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Venusaur,player-1,1|name:Earthquake",
+                "move|mon:Venusaur,player-1,1|name:Earthquake|noanim",
                 "immune|mon:Charizard,player-2,1",
                 "residual",
                 "turn|turn:2"

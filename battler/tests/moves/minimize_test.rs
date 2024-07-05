@@ -102,7 +102,7 @@ mod minimize_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Muk,player-2,1|name:Tackle|target:Muk,player-1,1|notarget",
+                "move|mon:Muk,player-2,1|name:Tackle|noanim",
                 "miss|mon:Muk,player-1,1",
                 "move|mon:Muk,player-1,1|name:Minimize|target:Muk,player-1,1",
                 "boost|mon:Muk,player-1,1|stat:eva|by:2",

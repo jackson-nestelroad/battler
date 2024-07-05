@@ -1383,6 +1383,25 @@ pub fn run_event_for_applying_effect_expecting_boost_table(
 
 /// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
 ///
+/// Expects a [`MoveEventResult`].
+pub fn run_event_for_applying_effect_expecting_move_event_result(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> MoveEventResult {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        input,
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(result) => result.move_result().unwrap_or(MoveEventResult::Advance),
+        None => MoveEventResult::Advance,
+    }
+}
+
+/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+///
 /// Exepcts a [`MonHandle`]. Returns the value of the first callback that returns a value.
 pub fn run_event_for_applying_effect_expecting_mon_quick_return(
     context: &mut ApplyingEffectContext,

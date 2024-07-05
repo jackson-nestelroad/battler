@@ -144,7 +144,7 @@ mod metronome_test {
                 "damage|mon:Togepi,player-1,2|health:75/100",
                 "faint|mon:Togepi,player-2,2",
                 "move|mon:Togepi,player-1,1|name:Metronome|target:Togepi,player-1,1",
-                "move|mon:Togepi,player-1,1|name:Pin Missile|target:Togepi,player-2,1|notarget",
+                "move|mon:Togepi,player-1,1|name:Pin Missile|noanim",
                 "miss|mon:Togepi,player-2,1",
                 "residual",
                 "turn|turn:2"

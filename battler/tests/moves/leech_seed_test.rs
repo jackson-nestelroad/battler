@@ -194,7 +194,7 @@ mod leech_seed_test {
                 "turn|turn:1",
                 ["time"],
                 "switch|player:player-2|position:1|name:Exeggcute|health:100/100|species:Exeggcute|level:50|gender:M",
-                "move|mon:Eevee,player-1,1|name:Leech Seed|target:Exeggcute,player-2,1",
+                "move|mon:Eevee,player-1,1|name:Leech Seed|noanim",
                 "immune|mon:Exeggcute,player-2,1",
                 "residual",
                 "turn|turn:2"

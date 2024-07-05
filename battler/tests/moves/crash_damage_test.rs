@@ -102,7 +102,7 @@ mod crash_damage_test {
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Hitmonlee,player-1,1|name:Jump Kick|target:Hitmonlee,player-2,1|notarget",
+                "move|mon:Hitmonlee,player-1,1|name:Jump Kick|noanim",
                 "miss|mon:Hitmonlee,player-2,1",
                 "split|side:0",
                 "damage|mon:Hitmonlee,player-1,1|from:move:Jump Kick|health:55/110",

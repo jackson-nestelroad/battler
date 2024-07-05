@@ -366,7 +366,14 @@ pub fn use_active_move(
     }
 
     let outcome = use_active_move_internal(&mut context, target)?;
-    context.mon_mut().move_this_turn_outcome = Some(outcome);
+    context.mon_mut().move_this_turn_outcome =
+        match (context.mon_mut().move_this_turn_outcome, outcome) {
+            (
+                left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
+                MoveOutcome::Skipped | MoveOutcome::Failed,
+            ) => left,
+            _ => Some(outcome),
+        };
 
     Ok(outcome.success())
 }
@@ -403,7 +410,7 @@ fn use_active_move_internal(
 
     // Log that the move is being used.
     let move_name = context.active_move().data.name.clone();
-    core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target)?;
+    core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target, false)?;
 
     if context.active_move().data.target.requires_target() && target.is_none() {
         core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
@@ -454,6 +461,8 @@ fn use_active_move_internal(
     }
 
     if outcome == MoveOutcome::Failed {
+        core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+
         core_battle_effects::run_active_move_event_expecting_void(
             context,
             fxlang::BattleEvent::MoveFailed,
@@ -811,7 +820,11 @@ fn hit_targets(
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
         }
         for target in targets {
-            target.outcome = MoveOutcomeOnTarget::Failure;
+            target.outcome = if try_move_result.failed() {
+                MoveOutcomeOnTarget::Failure
+            } else {
+                MoveOutcomeOnTarget::Unknown
+            };
         }
         return Ok(());
     }
@@ -1226,12 +1239,18 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets.iter_mut() {
-            if !core_battle_effects::run_event_for_applying_effect(
-                &mut context.applying_effect_context_for_target(target.handle)?,
-                fxlang::BattleEvent::TryHit,
-                fxlang::VariableInput::default(),
-            ) {
-                target.outcome = MoveOutcome::Failed;
+            let result =
+                core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
+                    &mut context.applying_effect_context_for_target(target.handle)?,
+                    fxlang::BattleEvent::TryHit,
+                    fxlang::VariableInput::default(),
+                );
+            if !result.advance() {
+                target.outcome = if result.failed() {
+                    MoveOutcome::Failed
+                } else {
+                    MoveOutcome::Skipped
+                }
             }
         }
         if targets.iter().all(|target| target.outcome.failed()) {
@@ -1302,9 +1321,6 @@ mod direct_move_step {
         for target in targets {
             let mut context = context.target_context(target.handle)?;
             if !accuracy_check(&mut context)? {
-                if !context.active_move().spread_hit {
-                    core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
-                }
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -1446,6 +1462,16 @@ mod direct_move_step {
             //
             // We do this now so that damage and base power callbacks can use this value.
             context.active_move_mut().hit = hit + 1;
+
+            if context.active_move().hit > 1 {
+                let target = if context.active_move().data.target.has_single_target() {
+                    targets.first().map(|target| target.handle)
+                } else {
+                    None
+                };
+                let move_name = context.active_move().data.name.clone();
+                core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target, true)?;
+            }
 
             // Of all the eligible targets, determine which ones we will actually hit.
             for target in targets.iter_mut().filter(|target| target.outcome.success()) {

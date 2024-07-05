@@ -161,7 +161,7 @@ mod immunity_test {
                 "switch|player:player-2|position:1|name:Sandshrew|health:100/100|species:Sandshrew|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Pikachu,player-1,1|name:Thunder Wave|target:Sandshrew,player-2,1",
+                "move|mon:Pikachu,player-1,1|name:Thunder Wave|noanim",
                 "immune|mon:Sandshrew,player-2,1",
                 "residual",
                 "turn|turn:2"

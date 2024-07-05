@@ -312,7 +312,7 @@ mod two_turn_move_test {
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Pidgeot,player-2,1|name:Tackle|target:Pidgeot,player-1,1",
+                "move|mon:Pidgeot,player-2,1|name:Tackle|noanim",
                 "miss|mon:Pidgeot,player-1,1",
                 "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
                 "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",

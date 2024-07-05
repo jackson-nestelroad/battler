@@ -171,7 +171,7 @@ mod ohko_test {
                 "switch|player:player-2|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Venusaur,player-1,1|name:Fissure|target:Venusaur,player-2,1|notarget",
+                "move|mon:Venusaur,player-1,1|name:Fissure|noanim",
                 "immune|mon:Venusaur,player-2,1",
                 "residual",
                 "turn|turn:2"
@@ -312,7 +312,7 @@ mod ohko_test {
                 "switch|player:player-2|position:1|name:Lapras|health:100/100|species:Lapras|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Lapras,player-1,1|name:Sheer Cold|target:Lapras,player-2,1|notarget",
+                "move|mon:Lapras,player-1,1|name:Sheer Cold|noanim",
                 "immune|mon:Lapras,player-2,1",
                 "residual",
                 "turn|turn:2"

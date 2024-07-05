@@ -124,7 +124,7 @@ mod self_destruct_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "move|mon:Venusaur,test-player,1|name:Self-Destruct|notarget",
+                "move|mon:Venusaur,test-player,1|name:Self-Destruct|noanim",
                 "miss|mon:Venusaur,foe,1",
                 "faint|mon:Venusaur,test-player,1",
                 "win|side:1"
@@ -173,7 +173,7 @@ mod self_destruct_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "move|mon:Venusaur,test-player,1|name:Memento|target:Venusaur,foe,1|notarget",
+                "move|mon:Venusaur,test-player,1|name:Memento|noanim",
                 "miss|mon:Venusaur,foe,1",
                 "residual"
             ]"#,

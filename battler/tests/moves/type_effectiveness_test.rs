@@ -241,7 +241,7 @@ mod type_effectiveness_test {
                 "switch|player:player-2|position:1|name:Gengar|health:100/100|species:Gengar|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Pidgeot,player-1,1|name:Tackle|target:Gengar,player-2,1",
+                "move|mon:Pidgeot,player-1,1|name:Tackle|noanim",
                 "immune|mon:Gengar,player-2,1",
                 "residual",
                 "turn|turn:2"
