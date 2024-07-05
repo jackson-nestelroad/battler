@@ -31,6 +31,7 @@ use crate::{
         EffectHandle,
         EffectManager,
     },
+    mons::Type,
 };
 
 enum UpcomingEvaluationContext<
@@ -457,13 +458,17 @@ fn find_callbacks_on_mon(
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
 
-    let types = Mon::types(&mut context)?;
-    for typ in types {
-        callbacks.push(CallbackHandle::new(
-            EffectHandle::Condition(typ.id()),
-            event,
-            EffectOrigin::MonType(mon),
-        ))
+    // We obviously cannot have the type of a Mon affectin the type of a Mon, since that causes
+    // infinite recursion.
+    if event != fxlang::BattleEvent::Types {
+        let types = Mon::types(&mut context)?;
+        for typ in types {
+            callbacks.push(CallbackHandle::new(
+                EffectHandle::Condition(typ.id()),
+                event,
+                EffectOrigin::MonType(mon),
+            ))
+        }
     }
 
     if let Some(status) = context.mon().status.clone() {
@@ -1528,6 +1533,27 @@ pub fn run_event_for_mon_expecting_boost_table(
     ) {
         Some(value) => value.boost_table().unwrap_or(boost_table),
         None => boost_table,
+    }
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`Vec<Type>`].
+pub fn run_event_for_mon_expecting_types(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    types: Vec<Type>,
+) -> Vec<Type> {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::List(
+            types.iter().map(|typ| fxlang::Value::Type(*typ)).collect(),
+        )]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.types_list().unwrap_or(types),
+        None => types,
     }
 }
 

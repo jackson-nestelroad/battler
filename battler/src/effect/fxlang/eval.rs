@@ -719,6 +719,13 @@ where
                             .name()
                             .to_owned(),
                     ),
+                    "type" => ValueRef::Type(
+                        CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
+                            .move_effect()
+                            .wrap_error_with_message("effect is not a move")?
+                            .data
+                            .primary_type,
+                    ),
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let Some(active_move_handle) = value.active_move_handle() {

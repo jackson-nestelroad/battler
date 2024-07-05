@@ -95,6 +95,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::TryImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryPrimaryHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Types, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
         }

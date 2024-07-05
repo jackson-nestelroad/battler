@@ -30,6 +30,7 @@ pub mod CallbackFlag {
     pub const TakesSide: u32 = 1 << 9;
     pub const TakesBoosts: u32 = 1 << 10;
 
+    pub const ReturnsTypes: u32 = 1 << 24;
     pub const ReturnsMon: u32 = 1 << 25;
     pub const ReturnsBoosts: u32 = 1 << 26;
     pub const ReturnsString: u32 = 1 << 27;
@@ -127,6 +128,7 @@ enum CommonCallbackType {
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
+    MonTypes = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes,
 
     SideVoid = CallbackFlag::TakesSide | CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsVoid,
     SideResult = CallbackFlag::TakesSide
@@ -509,6 +511,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "TryUseMove"]
     TryUseMove,
+    /// Runs when determining the types of a Mon.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "Types"]
+    Types,
     /// Runs when a Mon uses a move.
     ///
     /// Can be used to modify a move when it is used.
@@ -583,6 +590,7 @@ impl BattleEvent {
             Self::TryImmunity => CommonCallbackType::MoveResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::Types => CommonCallbackType::MonTypes as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
         }
@@ -613,6 +621,7 @@ impl BattleEvent {
             }
             Self::SideConditionStart => &[("condition", ValueType::Effect)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable)],
+            Self::Types => &[("types", ValueType::List)],
             _ => &[],
         }
     }
@@ -629,6 +638,7 @@ impl BattleEvent {
             }
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
+            Some(ValueType::List) => self.has_flag(CallbackFlag::ReturnsTypes),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -803,6 +813,7 @@ pub struct Callbacks {
     pub on_try_immunity: Callback,
     pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
+    pub on_types: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
 }
@@ -866,6 +877,7 @@ impl Callbacks {
             BattleEvent::TryImmunity => Some(&self.on_try_immunity),
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
+            BattleEvent::Types => Some(&self.on_types),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
         }

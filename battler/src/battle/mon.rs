@@ -334,13 +334,6 @@ impl Mon {
             priority: 0,
         };
 
-        let species = dex.species.get(&species_name).into_result()?;
-        let mut types = Vec::with_capacity(4);
-        types.push(species.data.primary_type);
-        if let Some(secondary_type) = species.data.secondary_type {
-            types.push(secondary_type);
-        }
-        // TODO: Hidden Power type calculation.
         let hidden_power_type = data
             .hidden_power_type
             .unwrap_or(calculate_hidden_power_type(&ivs));
@@ -375,7 +368,7 @@ impl Mon {
 
             ability,
 
-            types,
+            types: Vec::new(),
             hidden_power_type,
 
             item,
@@ -497,9 +490,13 @@ impl Mon {
     }
 
     pub fn types(context: &mut MonContext) -> Result<Vec<Type>, Error> {
-        // TODO: Run type event for the Mon, since there could be volatile effects here.
-        if !context.mon().types.is_empty() {
-            return Ok(context.mon().types.clone());
+        let types = core_battle_effects::run_event_for_mon_expecting_types(
+            context,
+            fxlang::BattleEvent::Types,
+            context.mon().types.clone(),
+        );
+        if !types.is_empty() {
+            return Ok(types);
         }
         return Ok(Vec::from_iter([Type::Normal]));
     }
@@ -845,22 +842,6 @@ impl Mon {
         self.indexed_move_slot_mut(move_id)
             .map(|(_, move_slot)| move_slot)
     }
-
-    pub fn overwrite_move_slot(
-        &mut self,
-        index: usize,
-        new_move_slot: MoveSlot,
-    ) -> Result<(), Error> {
-        *self
-            .move_slots
-            .get_mut(index)
-            .wrap_error_with_format(format_args!("no move slot in index {index}"))? = new_move_slot;
-        Ok(())
-    }
-
-    pub fn clear_boosts(&mut self) {
-        self.boosts = BoostTable::new();
-    }
 }
 
 // Request getters.
@@ -976,6 +957,12 @@ impl Mon {
         // SAFETY: Nothing we do below will invalidate any data.
         let species: ElementRef<Species> = unsafe { mem::transmute(species) };
 
+        context.mon_mut().types = Vec::with_capacity(4);
+        context.mon_mut().types.push(species.data.primary_type);
+        if let Some(secondary_type) = species.data.secondary_type {
+            context.mon_mut().types.push(secondary_type);
+        }
+
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
             &context.mon().ivs,
@@ -1008,6 +995,22 @@ impl Mon {
         context.mon_mut().speed = context.mon().stats.spe;
         context.mon_mut().weight = species.data.weight;
         Ok(())
+    }
+
+    pub fn overwrite_move_slot(
+        &mut self,
+        index: usize,
+        new_move_slot: MoveSlot,
+    ) -> Result<(), Error> {
+        *self
+            .move_slots
+            .get_mut(index)
+            .wrap_error_with_format(format_args!("no move slot in index {index}"))? = new_move_slot;
+        Ok(())
+    }
+
+    pub fn clear_boosts(&mut self) {
+        self.boosts = BoostTable::new();
     }
 
     fn moves_with_locked_move(

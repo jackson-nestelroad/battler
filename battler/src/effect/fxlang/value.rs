@@ -366,6 +366,10 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::List)),
         }
     }
+
+    pub fn types_list(self) -> Result<Vec<Type>, Error> {
+        self.list()?.into_iter().map(|val| val.mon_type()).collect()
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.

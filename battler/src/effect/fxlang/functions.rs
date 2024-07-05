@@ -105,6 +105,7 @@ pub fn run_function(
         "mon_at_target_location" => mon_at_target_location(context, args),
         "mon_in_position" => mon_in_position(context, args),
         "mons_per_side" => mons_per_side(context).map(|val| Some(val)),
+        "move_at_move_slot_index" => move_at_move_slot_index(context, args),
         "move_crit_target" => move_crit_target(context, args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "move_slot" => move_slot(context, args).map(|val| Some(val)),
@@ -122,6 +123,7 @@ pub fn run_function(
         "sample" => sample(context, args),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
+        "set_types" => set_types(context, args).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
         "use_active_move" => use_active_move(context, args).map(|val| Some(val)),
         "use_move" => use_move(context, args).map(|val| Some(val)),
@@ -1414,4 +1416,46 @@ fn get_all_moves(
             .map(|id| Value::Effect(EffectHandle::InactiveMove(id)))
             .collect(),
     ))
+}
+
+fn move_at_move_slot_index(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let index = args
+        .pop_front()
+        .wrap_error_with_message("missing index")?
+        .integer_usize()
+        .wrap_error_with_message("invalid index")?;
+    let context = context.mon_context(mon_handle)?;
+    Ok(context
+        .mon()
+        .move_slots
+        .get(index)
+        .map(|move_slot| Value::Effect(EffectHandle::InactiveMove(move_slot.id.clone()))))
+}
+
+fn set_types(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let typ = args
+        .pop_front()
+        .wrap_error_with_message("missing type")?
+        .mon_type()
+        .wrap_error_with_message("invalid type")?;
+    core_battle_actions::set_types(
+        &mut context
+            .applying_effect_context_mut()?
+            .change_target_context(mon_handle)?,
+        Vec::from_iter([typ]),
+    )
+    .map(|val| Value::Boolean(val))
 }

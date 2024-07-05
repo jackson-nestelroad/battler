@@ -41,7 +41,10 @@ use crate::{
         EffectHandle,
         EffectType,
     },
-    mons::Stat,
+    mons::{
+        Stat,
+        Type,
+    },
     moves::{
         Move,
         MoveCategory,
@@ -2615,5 +2618,21 @@ pub fn remove_side_condition(
         .to_owned();
     core_battle_logs::remove_side_conditions(context, &condition_name)?;
 
+    Ok(true)
+}
+
+pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool, Error> {
+    // TODO: SetTypes event (block Arceus and Silvally).
+    if types.is_empty() {
+        return Ok(false);
+    }
+    context.target_mut().types = types;
+    let source = context.source_handle();
+    let source_effect = context.source_effect_handle().cloned();
+    let mut context = context.target_context()?;
+    let types = &context.mon().types;
+    // SAFETY: Types are not modified in the log statement.
+    let types = unsafe { types.unsafely_detach_borrow() };
+    core_battle_logs::type_change(&mut context, types, source, source_effect.as_ref())?;
     Ok(true)
 }

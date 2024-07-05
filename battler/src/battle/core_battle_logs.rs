@@ -18,6 +18,7 @@ use crate::{
         EffectType,
     },
     log_event,
+    mons::Type,
 };
 
 pub fn switch(context: &mut MonContext) -> Result<(), Error> {
@@ -358,6 +359,36 @@ pub fn remove_side_conditions(
         ("condition", condition),
         ("from", context.effect().name())
     );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn type_change(
+    context: &mut MonContext,
+    types: &[Type],
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+) -> Result<(), Error> {
+    let types = types.iter().map(|typ| typ.to_string()).join("/");
+    let mut event = log_event!(
+        "typechange",
+        ("mon", Mon::position_details(context)?),
+        ("types", types)
+    );
+    if let Some(effect) = effect {
+        let effect_context = context
+            .as_battle_context_mut()
+            .effect_context(effect.clone(), None)?;
+        event.set("from", effect_context.effect().full_name());
+        if let Some(source) = source {
+            if source != context.mon_handle() {
+                event.set(
+                    "of",
+                    Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
+                );
+            }
+        }
+    }
     context.battle_mut().log(event);
     Ok(())
 }
