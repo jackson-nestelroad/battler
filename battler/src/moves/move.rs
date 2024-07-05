@@ -204,9 +204,6 @@ pub struct MoveData {
     pub multihit: Option<MultihitType>,
     /// Target used if the user is not Ghost type (used for Curse).
     pub non_ghost_target: Option<MoveTarget>,
-    /// Is the move usable when the user is asleep?
-    #[serde(default)]
-    pub sleep_usable: bool,
     /// Does the move target automatically adjust when the original target is gone?
     #[serde(default)]
     pub smart_target: bool,
@@ -216,15 +213,6 @@ pub struct MoveData {
     /// The move will always critical hit.
     #[serde(default)]
     pub will_crit: bool,
-    /// Does the move have crash damage?
-    #[serde(default)]
-    pub has_crash_damage: bool,
-    /// The move cannot be sketched.
-    #[serde(default)]
-    pub no_sketch: bool,
-    /// The move stalls the battle.
-    #[serde(default)]
-    pub stalling_move: bool,
     /// Does the move avoid random targets?
     #[serde(default)]
     pub no_random_target: bool,

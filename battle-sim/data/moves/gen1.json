@@ -327,8 +327,7 @@
     "accuracy": 95,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Contact", "Gravity", "Mirror", "Protect"],
-    "has_crash_damage": true,
+    "flags": ["Contact", "CrashDamage", "Gravity", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
         "on_move_failed": [
@@ -1958,8 +1957,7 @@
     "accuracy": 90,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Contact", "Gravity", "Mirror", "Protect"],
-    "has_crash_damage": true,
+    "flags": ["Contact", "CrashDamage", "Gravity", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
         "on_move_failed": [
@@ -2389,12 +2387,12 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect"
     ],
     "no_pp_boosts": true,
     "struggle_recoil": true,
-    "no_sketch": true,
     "ignore_immunity": true,
     "typeless": true
   },
@@ -2413,6 +2411,7 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "NoMetronome"
     ]

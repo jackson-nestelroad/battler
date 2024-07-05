@@ -14,10 +14,10 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk"
     ],
-    "no_pp_boosts": true,
-    "no_sketch": true
+    "no_pp_boosts": true
   },
   "triplekick": {
     "name": "Triple Kick",
@@ -98,8 +98,14 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "Protect", "Sound"],
-    "sleep_usable": true,
+    "flags": [
+      "BypassSubstitute",
+      "Mirror",
+      "NoMetronome",
+      "Protect",
+      "SleepUsable",
+      "Sound"
+    ],
     "secondary_effects": [
       { "chance": "30%", "target": { "volatile_status": "flinch" } }
     ],
@@ -196,8 +202,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
   },
   "machpunch": {
     "name": "Mach Punch",
@@ -341,8 +346,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
   },
   "bonerush": {
     "name": "Bone Rush",
@@ -402,8 +406,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
   },
   "charm": {
     "name": "Charm",
@@ -514,9 +517,9 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
-      "NoSleepTalk"
-    ],
-    "sleep_usable": true
+      "NoSleepTalk",
+      "SleepUsable"
+    ]
   },
   "healbell": {
     "name": "Heal Bell",

@@ -765,9 +765,6 @@ where
                             .unwrap_or(Fraction::from(0))
                             .convert(),
                     ),
-                    "sleep_usable" => ValueRef::Boolean(
-                        context.active_move(active_move_handle)?.data.sleep_usable,
-                    ),
                     "target" => {
                         ValueRef::MoveTarget(context.active_move(active_move_handle)?.data.target)
                     }

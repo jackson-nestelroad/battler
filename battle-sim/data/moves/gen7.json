@@ -361,8 +361,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
   },
   "spiritshackle": {
     "name": "Spirit Shackle",

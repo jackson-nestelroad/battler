@@ -209,7 +209,7 @@
             "if $effect_state.time <= 0:",
             ["cure_status: $user", "return"],
             "log_cant: $this.name",
-            "if $move.sleep_usable:",
+            "if func_call(move_has_flag: $move sleepusable):",
             ["return"],
             "return false"
           ]

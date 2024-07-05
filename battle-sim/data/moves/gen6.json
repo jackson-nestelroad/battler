@@ -16,8 +16,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Snatch"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Snatch", "Stalling"]
   },
   "belch": {
     "name": "Belch",
@@ -294,8 +293,13 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "FailInstruct", "NoAssist", "NoMetronome"],
-    "stalling_move": true
+    "flags": [
+      "FailCopycat",
+      "FailInstruct",
+      "NoAssist",
+      "NoMetronome",
+      "Stalling"
+    ]
   },
   "playnice": {
     "name": "Play Nice",
@@ -377,8 +381,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
   },
   "aromaticmist": {
     "name": "Aromatic Mist",
@@ -637,8 +640,7 @@
     "accuracy": "exempt",
     "base_power": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "NoMetronome"],
-    "breaks_protect": true,
-    "no_sketch": true
+    "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "NoSketch"],
+    "breaks_protect": true
   }
 }

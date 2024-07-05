@@ -950,11 +950,11 @@
       "Mirror",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect",
       "Sound"
-    ],
-    "no_sketch": true
+    ]
   },
   "judgment": {
     "name": "Judgment",
@@ -1116,8 +1116,7 @@
     "pp": 10,
     "accuracy": 50,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Reflectable", "SleepInducing"],
-    "no_sketch": true
+    "flags": ["Mirror", "NoSketch", "Protect", "Reflectable", "SleepInducing"]
   },
   "seedflare": {
     "name": "Seed Flare",

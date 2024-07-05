@@ -7,8 +7,7 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["NoMetronome"],
-    "stalling_move": true
+    "flags": ["NoMetronome", "Stalling"]
   },
   "dynamaxcannon": {
     "name": "Dynamax Cannon",
@@ -518,8 +517,7 @@
     "accuracy": 100,
     "priority": 4,
     "target": "User",
-    "flags": ["FailInstruct", "NoMetronome"],
-    "stalling_move": true
+    "flags": ["FailInstruct", "NoMetronome", "Stalling"]
   },
   "falsesurrender": {
     "name": "False Surrender",

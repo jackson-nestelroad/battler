@@ -18,8 +18,7 @@
     "base_power": 0,
     "priority": 4,
     "target": "User",
-    "flags": ["NoMetronome"],
-    "stalling_move": true
+    "flags": ["NoMetronome", "Stalling"]
   },
   "axekick": {
     "name": "Axe Kick",
@@ -29,8 +28,7 @@
     "accuracy": 90,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "has_crash_damage": true
+    "flags": ["Contact", "CrashDamage", "Mirror", "Protect"]
   },
   "lastrespects": {
     "name": "Last Respects",
@@ -133,9 +131,8 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "User",
-    "flags": ["Heal", "NoMetronome"],
-    "no_pp_boosts": true,
-    "no_sketch": true
+    "flags": ["Heal", "NoMetronome", "NoSketch"],
+    "no_pp_boosts": true
   },
   "saltcure": {
     "name": "Salt Cure",
@@ -479,10 +476,10 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect"
-    ],
-    "no_sketch": true
+    ]
   },
   "wickedtorque": {
     "name": "Wicked Torque",
@@ -500,11 +497,11 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect",
       "SleepInducing"
-    ],
-    "no_sketch": true
+    ]
   },
   "noxioustorque": {
     "name": "Noxious Torque",
@@ -522,10 +519,10 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect"
-    ],
-    "no_sketch": true
+    ]
   },
   "combattorque": {
     "name": "Combat Torque",
@@ -543,10 +540,10 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect"
-    ],
-    "no_sketch": true
+    ]
   },
   "magicaltorque": {
     "name": "Magical Torque",
@@ -564,10 +561,10 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "NoSleepTalk",
       "Protect"
-    ],
-    "no_sketch": true
+    ]
   },
   "bloodmoon": {
     "name": "Blood Moon",
@@ -636,9 +633,9 @@
       "Mirror",
       "NoAssist",
       "NoMetronome",
+      "NoSketch",
       "Protect"
-    ],
-    "no_sketch": true
+    ]
   },
   "ficklebeam": {
     "name": "Fickle Beam",
@@ -659,8 +656,7 @@
     "base_power": 0,
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist"],
-    "stalling_move": true
+    "flags": ["FailCopycat", "NoAssist", "Stalling"]
   },
   "thunderclap": {
     "name": "Thunderclap",
@@ -742,8 +738,7 @@
     "accuracy": 95,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "has_crash_damage": true
+    "flags": ["Contact", "CrashDamage", "Mirror", "Protect"]
   },
   "psychicnoise": {
     "name": "Psychic Noise",

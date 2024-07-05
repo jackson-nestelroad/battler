@@ -27,6 +27,9 @@ pub enum MoveFlags {
     /// Makes contact.
     #[string = "Contact"]
     Contact,
+    /// A move with crash damage.
+    #[string = "CrashDamage"]
+    CrashDamage,
     /// A dance move.
     #[string = "Dance"]
     Dance,
@@ -75,6 +78,9 @@ pub enum MoveFlags {
     /// Cannot be made to hit twice via Parental Bond.
     #[string = "NoParentalBond"]
     NoParentalBond,
+    /// Cannot be copied by Sketch.
+    #[string = "NoSketch"]
+    NoSketch,
     /// Cannot be selected by sleep talk.
     #[string = "NoSleepTalk"]
     NoSleepTalk,
@@ -105,6 +111,9 @@ pub enum MoveFlags {
     /// A sleep-inducing move.
     #[string = "SleepInducing"]
     SleepInducing,
+    /// A sleep-usable move.
+    #[string = "SleepUsable"]
+    SleepUsable,
     /// A slicing move.
     #[string = "Slicing"]
     Slicing,
@@ -114,6 +123,9 @@ pub enum MoveFlags {
     /// A sound move.
     #[string = "Sound"]
     Sound,
+    /// A stalling move.
+    #[string = "Stalling"]
+    Stalling,
     /// A thawing move.
     #[string = "Thawing"]
     Thawing,
