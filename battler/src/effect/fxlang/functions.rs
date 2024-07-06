@@ -125,6 +125,7 @@ pub fn run_function(
         "set_status" => set_status(context, args).map(|val| Some(val)),
         "set_types" => set_types(context, args).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
+        "transform_into" => transform_into(context, args).map(|val| Some(val)),
         "use_active_move" => use_active_move(context, args).map(|val| Some(val)),
         "use_move" => use_move(context, args).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context, args),
@@ -1456,6 +1457,35 @@ fn set_types(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
             .applying_effect_context_mut()?
             .change_target_context(mon_handle)?,
         Vec::from_iter([typ]),
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn transform_into(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let target_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+
+    let source_effect = with_source_effect
+        .then(|| context.source_effect_handle().cloned())
+        .flatten();
+
+    Mon::transform_into(
+        &mut context.mon_context(mon_handle)?,
+        target_handle,
+        source_effect.as_ref(),
     )
     .map(|val| Value::Boolean(val))
 }

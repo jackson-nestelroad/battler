@@ -396,3 +396,28 @@ pub fn type_change(
     context.battle_mut().log(event);
     Ok(())
 }
+
+pub fn transform(
+    context: &mut MonContext,
+    target: MonHandle,
+    effect: Option<&EffectHandle>,
+) -> Result<(), Error> {
+    let mut event = log_event!(
+        "transform",
+        ("mon", Mon::position_details(context)?),
+        (
+            "into",
+            Mon::position_details(&mut context.as_battle_context_mut().mon_context(target)?)?
+        )
+    );
+
+    if let Some(effect) = effect {
+        let effect_context = context
+            .as_battle_context_mut()
+            .effect_context(effect.clone(), None)?;
+        event.set("from", effect_context.effect().full_name());
+    }
+
+    context.battle_mut().log(event);
+    Ok(())
+}

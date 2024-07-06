@@ -20,6 +20,7 @@ use crate::{
         calculate_mon_stats,
         core_battle::FaintEntry,
         core_battle_effects,
+        core_battle_logs,
         modify_32,
         Boost,
         BoostTable,
@@ -171,26 +172,6 @@ pub struct AbilitySlot {
     pub priority: u32,
 }
 
-/// Data for a single [`Mon`] when a player is requested an action on their entire team.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonTeamRequestData {
-    pub name: String,
-    pub species_name: String,
-    pub level: u8,
-    pub gender: Gender,
-    pub shiny: bool,
-    pub health: String,
-    pub status: String,
-    pub active: bool,
-    pub player_active_position: Option<usize>,
-    pub side_position: Option<usize>,
-    pub stats: PartialStatTable,
-    pub moves: Vec<String>,
-    pub ability: String,
-    pub item: Option<String>,
-    pub ball: String,
-}
-
 /// Data for a single move on a [`Mon`].
 ///
 /// Makes a copy of underlying data so that it can be stored on move requests.
@@ -202,6 +183,62 @@ pub struct MonMoveSlotData {
     pub max_pp: u8,
     pub target: Option<MoveTarget>,
     pub disabled: bool,
+}
+
+impl MonMoveSlotData {
+    pub fn from(context: &mut MonContext, move_slot: &MoveSlot) -> Result<Self, Error> {
+        let mov = context
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&move_slot.id)
+            .into_result()?;
+        let name = mov.data.name.clone();
+        let id = mov.id().clone();
+        // Some moves may have a special target for non-Ghost types.
+        let target = if let Some(non_ghost_target) = mov.data.non_ghost_target {
+            if !Mon::has_type(context, Type::Ghost)? {
+                non_ghost_target
+            } else {
+                move_slot.target
+            }
+        } else {
+            move_slot.target
+        };
+        let mut disabled = move_slot.disabled;
+        if move_slot.pp == 0 {
+            disabled = true;
+        }
+        Ok(Self {
+            name,
+            id,
+            pp: move_slot.pp,
+            max_pp: move_slot.max_pp,
+            target: Some(target),
+            disabled,
+        })
+    }
+}
+
+/// Data for a single [`Mon`] when a player is requested an action on their entire team.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MonTeamRequestData {
+    pub name: String,
+    pub species_name: String,
+    pub level: u8,
+    pub gender: Gender,
+    pub shiny: bool,
+    pub health: String,
+    pub types: Vec<Type>,
+    pub status: String,
+    pub active: bool,
+    pub player_active_position: Option<usize>,
+    pub side_position: Option<usize>,
+    pub stats: PartialStatTable,
+    pub moves: Vec<MonMoveSlotData>,
+    pub ability: String,
+    pub item: Option<String>,
+    pub ball: String,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -251,6 +288,7 @@ pub struct Mon {
     pub base_move_slots: Vec<MoveSlot>,
     pub move_slots: Vec<MoveSlot>,
 
+    pub base_ability: AbilitySlot,
     pub ability: AbilitySlot,
 
     pub types: Vec<Type>,
@@ -270,6 +308,7 @@ pub struct Mon {
     pub being_called_back: bool,
     pub trapped: bool,
     pub can_mega_evo: bool,
+    pub transformed: bool,
 
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
@@ -366,6 +405,7 @@ impl Mon {
             base_move_slots,
             move_slots,
 
+            base_ability: ability.clone(),
             ability,
 
             types: Vec::new(),
@@ -385,6 +425,7 @@ impl Mon {
             being_called_back: false,
             trapped: false,
             can_mega_evo: false,
+            transformed: false,
 
             active_move: None,
             last_move_selected: None,
@@ -846,7 +887,7 @@ impl Mon {
 
 // Request getters.
 impl Mon {
-    pub fn team_request_data(context: &MonContext) -> Result<MonTeamRequestData, Error> {
+    pub fn team_request_data(context: &mut MonContext) -> Result<MonTeamRequestData, Error> {
         let player_active_position = if context.mon().active {
             Some(context.mon().active_position)
         } else {
@@ -864,6 +905,7 @@ impl Mon {
             gender: context.mon().gender.clone(),
             shiny: context.mon().shiny,
             health: context.mon().actual_health(),
+            types: context.mon().types.clone(),
             status: context
                 .mon()
                 .status
@@ -873,13 +915,14 @@ impl Mon {
             active: context.mon().active,
             player_active_position,
             side_position,
-            stats: context.mon().base_stored_stats.without_hp(),
+            stats: context.mon().stats.without_hp(),
             moves: context
                 .mon()
                 .move_slots
-                .iter()
-                .map(|move_slot| move_slot.name.clone())
-                .collect(),
+                .clone()
+                .into_iter()
+                .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
+                .collect::<Result<Vec<_>, Error>>()?,
             ability: context.mon().ability.name.clone(),
             item: context.mon().item.clone(),
             ball: context.mon().ball.clone(),
@@ -933,6 +976,8 @@ impl Mon {
         context.mon_mut().last_move_used = None;
 
         context.mon_mut().clear_boosts();
+
+        context.mon_mut().ability = context.mon_mut().base_ability.clone();
 
         context.mon_mut().move_slots = context.mon().base_move_slots.clone();
         context.mon_mut().volatiles.clear();
@@ -997,6 +1042,53 @@ impl Mon {
         Ok(())
     }
 
+    pub fn transform_into(
+        context: &mut MonContext,
+        target: MonHandle,
+        effect: Option<&EffectHandle>,
+    ) -> Result<bool, Error> {
+        if context.mon().transformed {
+            return Ok(false);
+        }
+
+        let target_context = context.as_battle_context_mut().mon_context(target)?;
+        if target_context.mon().fainted || target_context.mon().transformed {
+            return Ok(false);
+        }
+
+        // Collect all data specific to the target Mon that should be set after changing the
+        // species.
+        let weight = target_context.mon().weight;
+        let types = target_context.mon().types.clone();
+        let stats = target_context.mon().stats.clone();
+        let boosts = target_context.mon().boosts.clone();
+        let ability_id = target_context.mon().ability.id.clone();
+        let mut move_slots = target_context.mon().move_slots.clone();
+        for move_slot in &mut move_slots {
+            move_slot.pp = move_slot.max_pp.min(5);
+            move_slot.max_pp = move_slot.max_pp.min(5);
+            move_slot.disabled = false;
+            move_slot.used = false;
+            move_slot.simulated = true;
+        }
+
+        // Set the species first, for the baseline transformation.
+        let species = target_context.mon().species.clone();
+        Self::set_species(context, species, true)?;
+
+        // Then, manually set everything else.
+        context.mon_mut().weight = weight;
+        context.mon_mut().types = types;
+        context.mon_mut().stats = stats;
+        context.mon_mut().boosts = boosts;
+        Self::set_ability(context, &ability_id)?;
+        context.mon_mut().move_slots = move_slots;
+
+        core_battle_logs::transform(context, target, effect)?;
+
+        Ok(true)
+    }
+
     pub fn overwrite_move_slot(
         &mut self,
         index: usize,
@@ -1057,36 +1149,7 @@ impl Mon {
         let move_slots = context.mon().move_slots.clone();
         move_slots
             .into_iter()
-            .map(|move_slot| {
-                let mov = context
-                    .battle()
-                    .dex
-                    .moves
-                    .get_by_id(&move_slot.id)
-                    .into_result()?;
-                // Some moves may have a special target for non-Ghost types.
-                let target = if let Some(non_ghost_target) = mov.data.non_ghost_target {
-                    if !Self::has_type(context, Type::Ghost)? {
-                        non_ghost_target
-                    } else {
-                        move_slot.target
-                    }
-                } else {
-                    move_slot.target
-                };
-                let mut disabled = move_slot.disabled;
-                if move_slot.pp == 0 {
-                    disabled = true;
-                }
-                Ok(MonMoveSlotData {
-                    name: move_slot.name,
-                    id: move_slot.id,
-                    pp: move_slot.pp,
-                    max_pp: move_slot.max_pp,
-                    target: Some(target),
-                    disabled,
-                })
-            })
+            .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
             .collect()
     }
 
@@ -1102,7 +1165,7 @@ impl Mon {
         }
         let ability_priority = context.battle_mut().next_ability_priority();
         let mon = context.mon_mut();
-        mon.ability.priority = ability_priority
+        mon.ability.priority = ability_priority;
     }
 
     /// Sets the active move.
@@ -1302,6 +1365,26 @@ impl Mon {
             None => (),
         }
         Ok(())
+    }
+
+    pub fn set_ability(context: &mut MonContext, ability_id: &Id) -> Result<bool, Error> {
+        // TODO: Lots of event and ability stuff here.
+        let ability_priority = context.battle_mut().next_ability_priority();
+
+        let ability = context
+            .battle()
+            .dex
+            .abilities
+            .get_by_id(ability_id)
+            .into_result()?;
+        let ability = AbilitySlot {
+            id: ability.id().clone(),
+            name: ability.data.name.clone(),
+            priority: ability_priority,
+        };
+
+        context.mon_mut().ability = ability;
+        Ok(true)
     }
 }
 

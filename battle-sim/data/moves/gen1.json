@@ -2077,7 +2077,12 @@
       "FailMimic",
       "NoAssist",
       "NoMetronome"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["return func_call(transform_into: $source $target)"]
+      }
+    }
   },
   "bubble": {
     "name": "Bubble",
