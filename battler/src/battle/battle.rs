@@ -1,6 +1,7 @@
 use crate::{
     battle::{
         BattleOptions,
+        PlayerRequestData,
         Request,
     },
     common::Error,
@@ -172,6 +173,12 @@ where
     /// [`Self::ready_to_continue`] should return `Ok(true)` before this method
     /// is called.
     fn continue_battle(&mut self) -> Result<(), Error>;
+
+    /// Returns the player data for the battle by player ID.
+    ///
+    /// Individual requests to players also contain this data, but this method can be useful for
+    /// viewing for the player's team at other points in the battle and even after the battle ends.
+    fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error>;
     /// Returns all active requests for the battle, indexed by player ID.
     fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b;
     /// Returns the active request for the player ID.

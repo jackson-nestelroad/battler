@@ -156,7 +156,7 @@ mod transform_test {
                             "mons": [
                                 {
                                     "name": "Ditto",
-                                    "species_name": "Ditto",
+                                    "species_name": "Charizard",
                                     "level": 50,
                                     "gender": "Male",
                                     "shiny": false,

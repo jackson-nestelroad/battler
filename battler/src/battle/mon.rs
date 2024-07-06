@@ -262,6 +262,7 @@ pub struct Mon {
     pub side: usize,
 
     pub name: String,
+    pub base_species: String,
     pub species: String,
 
     /// `true` if the Mon is in an active position.
@@ -336,7 +337,7 @@ impl Mon {
     /// Creates a new [`Mon`] instance from [`MonData`].
     pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self, Error> {
         let name = data.name;
-        let species_name = data.species;
+        let species = data.species;
         let ivs = data.ivs;
         let evs = data.evs;
         let level = data.level;
@@ -382,7 +383,8 @@ impl Mon {
             side: usize::MAX,
 
             name,
-            species: species_name,
+            base_species: species.clone(),
+            species,
 
             active: false,
             active_turns: 0,
@@ -982,7 +984,7 @@ impl Mon {
         context.mon_mut().move_slots = context.mon().base_move_slots.clone();
         context.mon_mut().volatiles.clear();
 
-        let species = context.mon().species.clone();
+        let species = context.mon().base_species.clone();
         Self::set_species(context, species, false)?;
         Ok(())
     }
@@ -1002,6 +1004,7 @@ impl Mon {
         // SAFETY: Nothing we do below will invalidate any data.
         let species: ElementRef<Species> = unsafe { mem::transmute(species) };
 
+        context.mon_mut().species = species.data.name.clone();
         context.mon_mut().types = Vec::with_capacity(4);
         context.mon_mut().types.push(species.data.primary_type);
         if let Some(secondary_type) = species.data.secondary_type {

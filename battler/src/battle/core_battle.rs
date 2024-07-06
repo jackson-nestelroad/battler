@@ -34,6 +34,7 @@ use crate::{
         MonHandle,
         MoveHandle,
         Player,
+        PlayerRequestData,
         Request,
         RequestType,
         Side,
@@ -155,6 +156,10 @@ impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
 
     fn continue_battle(&mut self) -> Result<(), Error> {
         self.internal.continue_battle()
+    }
+
+    fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error> {
+        self.internal.player_data(player)
     }
 
     fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
@@ -482,6 +487,11 @@ impl<'d> CoreBattle<'d> {
             return Err(battler_error!("battle is not ready to continue"));
         }
         Self::continue_battle_internal(&mut self.context())
+    }
+
+    fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error> {
+        let player = self.player_index_by_id(player)?;
+        Player::request_data(&mut self.context().player_context(player)?)
     }
 
     fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
