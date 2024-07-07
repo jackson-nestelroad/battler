@@ -4,7 +4,7 @@
 
 ## Motivation
 
-Pokémon battles are complex. Many things can impact many different parts of a battle: moves, abilities, items, statuses, volatile statuses (which can stack), weather, field effects, and more. Furthermore, many different things can be impacted by these different effects, from calculations (e.g., damage, type effectiveness, accuracy, etc.) to other effects themselves (such as those on a field, side, or individual Mon). This high complexity makes supporting 900+ moves and 180+ abilities practically impossible in the core logic of a battle engine.
+Pokémon battles are complex. Many things can impact many parts of a battle: moves, abilities, items, statuses, volatile statuses (which can stack), weather, field effects, and more. Furthermore, many things can be impacted by these different effects, from calculations (e.g., damage, type effectiveness, accuracy, etc.) to other effects themselves (such as those on a field, side, or individual Mon). This high complexity makes supporting 900+ moves and 180+ abilities practically impossible in the core logic of a battle engine.
 
 Thus, there is a need for making battle effects easy to program for different battle events and conditions.
 
@@ -30,7 +30,7 @@ An obvious solution would be to just write different event callbacks for each ef
 
 Another solution is to create a large set of data fields that the battle library can understand to run the effect correctly. This solution is simple for most effects (for example, most effects deal damage, and most secondary effects are simple stat changes or status effects). Unfortunately, it is practically impossible to generalize all 1000+ battle effects into a set of scalar fields without many strange outliers (for example, random values cannot easily be represented in this format). Complex moves will always require some custom programming.
 
-The solution we opt for is an interpreted language that can be expressed direclty in JSON for different event callbacks. An interpreted language can be compatible with any programming language, extended for new behavior, and developed by external users with less knowledge of the internals of the battle engine itself (the interpreted language can hide away some complexities).
+The solution we opt for is an interpreted language that can be expressed directly in JSON for different event callbacks. An interpreted language can be compatible with any programming language, extended for new behavior, and developed by external users with less knowledge of the internals of the battle engine itself (the interpreted language can hide away some complexities).
 
 ## Design
 
@@ -73,7 +73,7 @@ First, values can be defined directly in the program as literals.
 
 - Boolean literals are expressed as `true` or `false`.
 - Number literals are expressed as integers or fractions. For example, `10`, `-25`, `1/10` are all valid number literals.
-- String literals are a string of characters, optionally wrapped in single quotes. For example, `brn` and `'hello world'` are valid strings. Single quotes are required when there is whitespace or non-alphanumeric characters in the string. Single quotes are used to avoid needing to escape all string literals, since JSON strictly uses double quoted.
+- String literals are a string of characters, optionally wrapped in single quotes. For example, `brn` and `'hello world'` are valid strings. Single quotes are required when there is whitespace or non-alphanumeric characters in the string. Single quotes are used to avoid needing to escape all string literals, since JSON strictly uses double quotes.
 
 Values can also be defined dynamically using variables. All variables are prefixed with a `$`. For example, `$status`, `$target`, and `$mon_12` are all valid variables.
 
@@ -95,7 +95,7 @@ Battle-specific types also have a set of predefined immutable and mutable member
 ##### Notes on Variables
 
 1. All variables have program-wide scoping. In other words, variables are not scoped by block. A variable defined in an inner block is accessible in an outer block.
-1. Invalid member accesses (such as accessing a member that does not exist) will error out the whole program. Some optional members will produce an "undefined" value that will fail on use rather, than fail on access.
+1. Invalid member accesses (such as accessing a member that does not exist) will error out the whole program. Some optional members will produce an "undefined" value that will fail on use rather than fail on access.
 1. Variables cannot be unassigned for the life of the program.
 1. There are some variables that are defined before the program starts based on the callback's evaluation context, such as `$target`, `$move`, or `$effect_state`. This will be explored more in the evaluation section.
 
@@ -130,7 +130,7 @@ A very important part of the battle engine is logging. The battle log represents
 - `log_cant: Flinch` - Logs that the target of the effect's callback cannot move due to the "Flinch" effect.
 - `log_status: Burn with_effect` - Logs that the target of the effect's callback has the "Burn" status, with the source effect added to the log. Note that `with_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
 
-Note that nearly all of the logging functions such as the ones above use the context of the event callback to add information to the logs. For instance, `log_activate` on its own (with no arguments) will include the applying effect that the event callback is attached to.
+Note that nearly all the logging functions such as the ones above use the context of the event callback to add information to the logs. For instance, `log_activate` on its own (with no arguments) will include the applying effect that the event callback is attached to.
 
 Battle logs consist of a series of key-value properties. Logs often need to be generated dynamically based on the target of the effect (for instance, the Mon in the log must be based on the target of the effect). To support dynamic logs, fxlang has a string formatting built-in, `str`.
 
@@ -156,7 +156,7 @@ An "if" statement executes a following block based on a condition (a.k.a., boole
 
 In the above code, 50% of the time the block below the "if" statement will execute. The other 50% of the time, the block below the "else" statement will execute.
 
-If statements can also be chained togehter with "else if" statements, which will run only a single branch of the group.
+If statements can also be chained together with "else if" statements, which will run only a single branch of the group.
 
 ```json
 [
@@ -184,7 +184,7 @@ The simplest expression is simply a value. `$mon.base_max_hp` is an expression t
 Expressions can be chained together using operators. The following list describes all operators:
 
 1. `!a` - Negates `a` (`true` becomes `false`, and vice versa).
-1. `a * b` - Multples `a` and `b`.
+1. `a * b` - Multiplies `a` and `b`.
 1. `a / b` - Divides `a` and `b`. Note that if both `a` and `b` are number literals, the result is coerced into a fraction at parsing time.
 1. `a % b` - Returns the remainder of `a` divided by `b`.
 1. `a + b` - Adds `a` and `b`.
@@ -223,10 +223,10 @@ Operator precedence can be manually broken by using parenthesis. For example, `(
 
 #### Expression Values
 
-It is often desired to use the result of an expression like a value, for function calls or variable asignment. Just like the `func_call` built-in wraps a function call statement into a value, the `expr` built-in wraps an expression into a value.
+It is often desired to use the result of an expression like a value, for function calls or variable assignment. Just like the `func_call` built-in wraps a function call statement into a value, the `expr` built-in wraps an expression into a value.
 
 - `$damage = expr($damage / 2)` - Divides `$damage` by 2.
-- `damage: expr($target.base_max_hp / 16)` - Applies damage to the target of the effet equal to 1/16 of their base maximum HP.
+- `damage: expr($target.base_max_hp / 16)` - Applies damage to the target of the effect equal to 1/16 of their base maximum HP.
 - `$something = func_call(max: expr($target.hp / 2), 1)` - Takes the maximum of `$target.hp / 2` and `1`, and assigns the result to `$something`.
 
 #### Returning Values
@@ -290,7 +290,7 @@ Below is another example for the move "Haze":
 
 Over the course of a battle, the callbacks for an effect may need to be evaluated numerous times. For example, many conditions apply themselves for multiple turns.
 
-It would be inefficient to parse a program every time one of its event callbacks must be executed. Instead, all of the event callbacks for an effect are parsed at the same time at the effect's first appearance in the battle. The collection of parsed callbacks are then cached in the battle. The effect cache is implemented as an LRU (least-recently-used) cache that discards effects that were least-recently used when the cache size exceeds some threshold. Today, the maximum number of parsed callbacks in memory at a time per battle is `6 * 4 * 2 + 16`.
+It would be inefficient to parse a program every time one of its event callbacks must be executed. Instead, all the event callbacks for an effect are parsed at the same time at the effect's first appearance in the battle. The collection of parsed callbacks are then cached in the battle. The effect cache is implemented as an LRU (least-recently-used) cache that discards effects that were least-recently used when the cache size exceeds some threshold. Today, the maximum number of parsed callbacks in memory at a time per battle is `6 * 4 * 2 + 16`.
 
 - 6 Mons per team.
 - 4 moves per Mon.
@@ -305,13 +305,13 @@ fxlang programs are interpreted dynamically. JSON programs are parsed into a lis
 
 The first important concept about fxlang program evaluation is the evaluation context.
 
-In the core battle engine, a `Context` object is a proxy object for getting references to battle data. For safety, Rust does not allow an object to be mutably borrowed multiple times. Rather than storing mutable references for as long as they are needed (so that mutable borrows will certianly overlap), references must be grabbed dynamically as they are needed. Context objects make this dynamic borrowing easy and safe to do.
+In the core battle engine, a `Context` object is a proxy object for getting references to battle data. For safety, Rust does not allow an object to be mutably borrowed multiple times. Rather than storing mutable references for as long as they are needed (so that mutable borrows will certainly overlap), references must be grabbed dynamically as they are needed. Context objects make this dynamic borrowing easy and safe to do.
 
 Context objects are critical to the battle engine. Even something simple like calculating a Mon's attack stat cannot be done without a context. When we calculate a Mon's attack stat, we must also run a `ModifyAtk` event for effects active in the battle, since some effects can directly modify a Mon's attack stat. This requires access to the entire battle state, which can then cause mutations on different things across the battle and even the Mon itself. Thus, a simple stat calculation method requires the entire battle to get right (hopefully calculating the attack stat does not actually modify much globally, but the point still stands).
 
 As a consequence, very few operations in the core battle engine are implemented as methods. Almost every important operation is implemented as a function that takes in a context. Contexts do act as "this" objects, since they can be scoped to things like Mons (`MonContext`), active moves (`ActiveMoveContext`), and effects (`EffectContext`).
 
-Since event callbacks run in the context of a battle, the fxlang evaluator runs under some evaluation context that holds all of the battle state. Internally, during evaluation, the following state is kept on the context:
+Since event callbacks run in the context of a battle, the fxlang evaluator runs under some evaluation context that holds all the battle state. Internally, during evaluation, the following state is kept on the context:
 
 1. **Effect** - The effect whose event callback is being evaluated.
 1. **Source Effect** (optional) - The effect that triggered this event callback.
@@ -633,7 +633,7 @@ Burn applies residual damage and also halves damage dealt by physical moves.
 
 #### Freeze
 
-Freeze completley immobilizes the target until it is thawed at the beginning of a turn (20% chance). A Mon can also be thawed by a Fire type move or a thawing move (either by the user or target).
+Freeze completely immobilizes the target until it is thawed at the beginning of a turn (20% chance). A Mon can also be thawed by a Fire type move or a thawing move (either by the user or target).
 
 ```json
 {
@@ -885,7 +885,7 @@ Bide stores up damage applied to the user for several turns. On the third turn, 
 
 To unleash the damage, Bide actually uses a custom version of itself that applies the stored damage to the target. The custom version of Bide is stored in the conditions `local_data`, which is a place where custom data can be defined for use by event callbacks.
 
-The benefit here is that the modified move can be written statically in the condition code, rather than dynamically inside of the event callback (pretty much every field would need to be overwritten). Furthermore, this customized version of Bide can actually have its _own_ event callbacks. In this case, the `TryUseMove` callback fails the move if no damage would be applied. And by setting `no_random_target`, the move also fails if the Bide volatile condition did not have any target for the move. Thus, the two ways of failing the move are covered directly in the core battle engine rather than in the dynamic event callback code.
+The benefit here is that the modified move can be written statically in the condition code, rather than dynamically inside the event callback (pretty much every field would need to be overwritten). Furthermore, this customized version of Bide can actually have its _own_ event callbacks. In this case, the `TryUseMove` callback fails the move if no damage would be applied. And by setting `no_random_target`, the move also fails if the Bide volatile condition did not have any target for the move. Thus, the two ways of failing the move are covered directly in the core battle engine rather than in the dynamic event callback code.
 
 ```json
 {
