@@ -1,6 +1,5 @@
 use ahash::HashMapExt;
 
-use super::ValueType;
 use crate::{
     battle::MonHandle,
     battler_error,
@@ -11,7 +10,10 @@ use crate::{
         WrapResultError,
     },
     effect::{
-        fxlang::Value,
+        fxlang::{
+            Value,
+            ValueType,
+        },
         EffectHandle,
     },
 };
