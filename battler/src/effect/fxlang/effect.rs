@@ -251,7 +251,7 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "ChargeMove"]
     ChargeMove,
-    /// Runs when a move's damage is beign calculated for a target.
+    /// Runs when a move's damage is being calculated for a target.
     ///
     /// Used to override damage calculations.
     ///
