@@ -1,5 +1,9 @@
 # battler
 
-**battler** is battle engine and simulator based on the Pokémon games. It is written in Rust.
+**battler** is battle engine and simulator based on the Pokémon games, written in Rust.
 
-This repository is a work in progress. It aims to provide a robust and customizable battle engine for battle servers.
+This repository features three crates:
+
+1. [`battler`](./battler/) - The core battle engine.
+1. [`battle-sim`](./battle-sim/) - The battle simulator client (built on `battler`).
+1. [`battler-test-utils`](./battler-test-utils/) - Test utilities for `battler`.
