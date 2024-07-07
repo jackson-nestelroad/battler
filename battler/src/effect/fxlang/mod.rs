@@ -13,10 +13,12 @@ pub use effect::{
     BattleEvent,
     Callback,
     CallbackFlag,
+    CallbackInput,
     Callbacks,
     Condition,
     Effect,
     Program,
+    ProgramWithPriority,
 };
 pub use effect_state::EffectState;
 pub use eval::{

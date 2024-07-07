@@ -3,9 +3,8 @@ mod switch_after_faint_test {
     use assert_matches::assert_matches;
     use battler::{
         battle::{
-            Battle,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
             Request,
         },
@@ -71,7 +70,7 @@ mod switch_after_faint_test {
             .with_battle_type(BattleType::Doubles)
             .with_seed(0)
             .with_team_validation(false)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
     }

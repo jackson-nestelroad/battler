@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-/// Calculates a Mon's actual stats from a base stat table and [`MonData`].
+/// Calculates a Mon's actual stats.
 pub fn calculate_mon_stats(
     base_stats: &StatTable,
     ivs: &StatTable,

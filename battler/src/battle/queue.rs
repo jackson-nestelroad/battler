@@ -7,16 +7,16 @@ use crate::{
     battle::{
         speed_sort,
         Action,
-        BattleEngineSpeedSortTieResolution,
         Context,
         CoreBattle,
+        CoreBattleEngineSpeedSortTieResolution,
         MonHandle,
     },
     common::Error,
     rng::PseudoRandomNumberGenerator,
 };
 
-/// A queue of [`Action`]s to be run in a [`Battle`][`crate::battle::Battle`].
+/// A queue of [`Action`]s to be run in a [`CoreBattle`][`crate::battle::CoreBattle`].
 ///
 /// Actions are ordered in complex ways, so this queue type encapsulates all ordering logic.
 #[derive(Clone)]
@@ -72,6 +72,10 @@ impl BattleQueue {
         Ok(())
     }
 
+    /// Pushes a new [`Action`] to the queue.
+    ///
+    /// In general, [`Self::add_action`] should be preferred, since it will split actions into
+    /// sub-actions as applicable.
     pub fn push(&mut self, action: Action) {
         self.actions.push_back(action);
     }
@@ -108,7 +112,7 @@ impl BattleQueue {
     fn sort_internal(
         &mut self,
         prng: &mut dyn PseudoRandomNumberGenerator,
-        tie_resolution: BattleEngineSpeedSortTieResolution,
+        tie_resolution: CoreBattleEngineSpeedSortTieResolution,
     ) {
         let actions = self.actions.make_contiguous();
         speed_sort(actions, prng, tie_resolution);
@@ -128,8 +132,8 @@ mod queue_tests {
     use crate::{
         battle::{
             Action,
-            BattleEngineSpeedSortTieResolution,
             BattleQueue,
+            CoreBattleEngineSpeedSortTieResolution,
             MonAction,
             MonHandle,
             MoveAction,
@@ -182,7 +186,7 @@ mod queue_tests {
     fn sort(queue: &mut BattleQueue, seed: Option<u64>) {
         let mut prng = RealPseudoRandomNumberGenerator::new(seed);
         queue.actions.make_contiguous();
-        queue.sort_internal(&mut prng, BattleEngineSpeedSortTieResolution::Random);
+        queue.sort_internal(&mut prng, CoreBattleEngineSpeedSortTieResolution::Random);
     }
 
     fn battle_queue_actions_to_string_for_test(queue: &BattleQueue) -> Vec<String> {

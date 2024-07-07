@@ -146,6 +146,9 @@ impl MoveChoice {
     }
 }
 
+/// Request data for a single player.
+///
+/// Contains all information for a player in a battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PlayerRequestData {
     pub name: String,
@@ -174,7 +177,7 @@ pub struct Player {
 
 // Construction and initialization logic.
 impl Player {
-    /// Creates a new [`Player`]` instance from [`PlayerData`].
+    /// Creates a new player.
     pub fn new(
         data: PlayerData,
         side: usize,
@@ -222,7 +225,7 @@ impl Player {
 
 // Basic getters.
 impl Player {
-    /// Returns the active request for the player.
+    /// The active request for the player.
     pub fn active_request(&self) -> Option<Request> {
         if !self.choice.fulfilled {
             self.request.clone()
@@ -231,10 +234,12 @@ impl Player {
         }
     }
 
+    /// The active request type for the player.
     pub fn request_type(&self) -> Option<RequestType> {
         self.request.as_ref().map(|req| req.request_type()).clone()
     }
 
+    /// The active [`MonHandle`] for the player's position.
     pub fn active_mon_handle(context: &PlayerContext, position: usize) -> Option<MonHandle> {
         match context.player().active.get(position) {
             Some(&Some(mon_handle)) => Some(mon_handle),
@@ -242,6 +247,7 @@ impl Player {
         }
     }
 
+    /// Creates an iterator over all active Mon's owned by the player.
     pub fn active_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
@@ -252,6 +258,7 @@ impl Player {
             .filter_map(|mon_handle| mon_handle.as_ref())
     }
 
+    /// Creates an iterator over all positions used by the player.
     pub fn field_positions<'p>(
         context: &'p PlayerContext,
     ) -> impl Iterator<Item = (usize, Option<&'p MonHandle>)> {
@@ -263,6 +270,7 @@ impl Player {
             .map(|(i, slot)| (i, slot.as_ref()))
     }
 
+    /// Creates an iterator over all positions used by the player with an active Mon.
     pub fn field_positions_with_active_mon<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = (usize, &'p MonHandle)> + Captures<'d> + Captures<'b> + Captures<'c>
@@ -270,6 +278,7 @@ impl Player {
         Self::field_positions(context).filter_map(|(i, slot)| slot.and_then(|slot| Some((i, slot))))
     }
 
+    /// Creates an iterator over all inactive Mons.
     pub fn inactive_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
@@ -281,12 +290,14 @@ impl Player {
         })
     }
 
+    /// Creates an iterator over all Mons.
     pub fn mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + 'p {
         context.player().mons.iter()
     }
 
+    /// Creates an iterator over all Mons that can be switched in.
     pub fn switchable_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
@@ -294,6 +305,7 @@ impl Player {
             .filter(|mon_handle| context.mon(**mon_handle).is_ok_and(|mon| !mon.fainted))
     }
 
+    /// Request data for the player.
     pub fn request_data(context: &mut PlayerContext) -> Result<PlayerRequestData, Error> {
         let mon_handles = Self::mon_handles(context).cloned().collect::<Vec<_>>();
         Ok(PlayerRequestData {
@@ -543,6 +555,7 @@ impl Player {
         Ok(())
     }
 
+    /// Modifies the player for the start of the battle.
     pub fn start_battle(&mut self) {
         self.mons_left = self.mons.len();
     }
@@ -842,6 +855,7 @@ impl Player {
         Ok(())
     }
 
+    /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
         for mon in Self::active_mon_handles(&context) {
             if context.mon(*mon)?.needs_switch.is_some() {
@@ -851,6 +865,7 @@ impl Player {
         Ok(false)
     }
 
+    /// Checks if the player can switch.
     pub fn can_switch(context: &PlayerContext) -> bool {
         Self::switchable_mon_handles(context).count() > 0
     }

@@ -2,9 +2,8 @@
 mod must_recharge_test {
     use battler::{
         battle::{
-            Battle,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
             Request,
         },
@@ -71,7 +70,7 @@ mod must_recharge_test {
             .with_seed(1087134089137400)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)

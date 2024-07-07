@@ -25,11 +25,13 @@ use serde::{
 pub struct Id(Cow<'static, str>);
 
 impl Id {
+    /// Creates an ID from a string that is known to already be a valid ID.
     pub(crate) fn from_known(value: &'static str) -> Self {
         Self(Cow::Borrowed(value))
     }
 
-    pub fn as_id_ref(&self) -> IdRef {
+    #[allow(dead_code)]
+    fn as_id_ref(&self) -> IdRef {
         IdRef(self.0.as_ref())
     }
 
@@ -43,7 +45,8 @@ impl Id {
 /// This type is primarily for optimization purposes. Some code needs IDs but doesn't necessarily
 /// need to own them. Thus, this type provides ID comparisons for unowned strings.
 #[derive(Clone, Debug, Hash)]
-pub struct IdRef<'s>(&'s str);
+#[allow(dead_code)]
+struct IdRef<'s>(&'s str);
 
 impl<'s> IdRef<'s> {
     fn considered_chars(s: &'s str) -> impl Iterator<Item = char> + 's {

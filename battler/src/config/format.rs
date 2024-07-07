@@ -32,7 +32,7 @@ pub struct Format {
 }
 
 impl Format {
-    /// Creates a new [`Format`] from [`FormatData`].
+    /// Creates a new format.
     pub fn new(data: FormatData, dex: &Dex) -> Result<Self, Error> {
         let rules = RuleSet::new(data.rules, &data.battle_type, dex)?;
         Ok(Self {

@@ -14,7 +14,7 @@ An **effect** is anything that impacts some part of a battle, such as a move, ab
 
 An **event** is something that happens in a battle that triggers effects to activate. Some easy examples are when a move is used, when a Mon takes damage, or when a Mon switches in.
 
-An **event callback** is logic that runs for an individual effect on the firing of some event. One effect can have multiple event callbacks to run to activate logic on different events.
+An **event callback** is logic that runs for an individual effect on the firing of some event. One effect can have multiple event callbacks to run logic on different events.
 
 Our goal is to allow a multitude of _effects_ to define a set of _event callbacks_ that will be triggered by battle _events_.
 
@@ -28,9 +28,9 @@ We are looking for a solution that:
 
 An obvious solution would be to just write different event callbacks for each effect directly in Rust. However, this solution is inflexible and is not straightforward to use, because new effects must be written directly in Rust and built directly into the binary. Furthermore, the battle library represents data in JSON, so effect callbacks and data would be completely separate.
 
-Another solution is to create a large set of data fields that the battle library can understand to run the effect correctly. This solution is simple for most effects (for example, most effects deal damage, and most secondary effects are simple stat changes or status effects). Unfortunately, it is practically impossible to generalize all 1000+ battle effects into a set of scalar fields without many strange outliers and semantics (for example, random values cannot easily be represented in this format).
+Another solution is to create a large set of data fields that the battle library can understand to run the effect correctly. This solution is simple for most effects (for example, most effects deal damage, and most secondary effects are simple stat changes or status effects). Unfortunately, it is practically impossible to generalize all 1000+ battle effects into a set of scalar fields without many strange outliers (for example, random values cannot easily be represented in this format). Complex moves will always require some custom programming.
 
-The solution we opt for is an interpreted language that can be expressed direclty in JSON for different event callbacks. An interpreted language can be compatible with any programming language, extended for new behavior, and developed by external users with little knowledge of the battle engine itself.
+The solution we opt for is an interpreted language that can be expressed direclty in JSON for different event callbacks. An interpreted language can be compatible with any programming language, extended for new behavior, and developed by external users with less knowledge of the internals of the battle engine itself (the interpreted language can hide away some complexities).
 
 ## Design
 
@@ -40,7 +40,7 @@ The solution we opt for is an interpreted language that can be expressed direclt
 
 Like all other data, callbacks are defined directly in JSON, allowing callbacks to be defined in the same object as their owning effect.
 
-Every event callback is implemented as an fxlang program. An fxlang program is made up of any statements and blocks. A statement is a simple JSON string. Statements can be blocked together in an array.
+Every event callback is implemented as an fxlang program. An fxlang program is made up of many statements and blocks. A statement is a simple JSON string. Statements can be blocked together in an array.
 
 Defined formally:
 
@@ -65,7 +65,7 @@ This structure allows a program to be arbitrarily nested, similar to any other p
 
 Each line in an fxlang program must be a valid statement. The grammar is defined directly in the [abstract syntax tree representation](./battler/src/effect/fxlang/tree.rs).
 
-The language is designed to be as simple to parse as possible. Minimal context is required to parse a string of tokens into a valid statement. The statement parser is implemented as a predictive recursive descent parser. It does not require backtracking because each rule looks at the next token and predicts the correct rule to use.
+The language is designed to be as simple to parse as possible. Minimal context is required to parse a string of tokens into a valid statement. The statement parser is implemented as a predictive recursive descent parser. It does not require backtracking because the next rule can always be inferred from the next token.
 
 #### Values
 
@@ -95,7 +95,7 @@ Battle-specific types also have a set of predefined immutable and mutable member
 ##### Notes on Variables
 
 1. All variables have program-wide scoping. In other words, variables are not scoped by block. A variable defined in an inner block is accessible in an outer block.
-1. Invalid member accesses (such as accessing a member that does not exist) will error out the whole program.
+1. Invalid member accesses (such as accessing a member that does not exist) will error out the whole program. Some optional members will produce an "undefined" value that will fail on use rather, than fail on access.
 1. Variables cannot be unassigned for the life of the program.
 1. There are some variables that are defined before the program starts based on the callback's evaluation context, such as `$target`, `$move`, or `$effect_state`. This will be explored more in the evaluation section.
 
@@ -106,7 +106,7 @@ The simplest statement is a function call. Functions are defined directly in the
 - `set_status: $target brn` - Calls the `set_status` function with two arguments. This applies the burn status to the target Mon.
 - `random: 1 10` - Calls the `random` function with one argument. This generates a random number in the range `[1, 10)`.
 - `chance: 2` - Calls the `chance` function with one argument. This returns a boolean indicating a 1/2 chance.
-- `log_activate` - Calls the `log_activate` function with one argument. Logs that the applying effect has activated.
+- `log_activate` - Calls the `log_activate` function with no arguments. Logs that the applying effect has activated, using the context of the callback.
 
 #### Assignment
 
@@ -128,7 +128,9 @@ A very important part of the battle engine is logging. The battle log represents
 - `log: mustrecharge turn:2 reason:Unknown` - Adds the log `mustrecharge|turn:2|reason:Unknown` to the battle log.
 - `log_activate` - Logs the "activate" event for the applying effect.
 - `log_cant: Flinch` - Logs that the target of the effect's callback cannot move due to the "Flinch" effect.
-- `log_status: Burn with_effect` - Logs that the target of the effect's callback has "Burn" status, with the source effect added to the log. Note that `with_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
+- `log_status: Burn with_effect` - Logs that the target of the effect's callback has the "Burn" status, with the source effect added to the log. Note that `with_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
+
+Note that nearly all of the logging functions such as the ones above use the context of the event callback to add information to the logs. For instance, `log_activate` on its own (with no arguments) will include the applying effect that the event callback is attached to.
 
 Battle logs consist of a series of key-value properties. Logs often need to be generated dynamically based on the target of the effect (for instance, the Mon in the log must be based on the target of the effect). To support dynamic logs, fxlang has a string formatting built-in, `str`.
 
@@ -144,7 +146,7 @@ It's now easy to piece together dynamic logs:
 
 #### Branching
 
-A key requirement of dynamic battle effects is branching. For instance, `$chance = func_call(chance: 2)` emulates a coin flip, but how do we specialize behavior based on the result of this function call?
+A key requirement of dynamic battle effects is branching. For instance, `$chance = func_call(chance: 2)` emulates a coin flip, but how do we specialize behavior based on the result of this coin flip?
 
 An "if" statement executes a following block based on a condition (a.k.a., boolean expression).
 
@@ -173,7 +175,7 @@ The program above conditionally sets the `$status` variable based on a random nu
 
 #### Expressions
 
-Notice above that the if statements above allowed branching based on expressions that produced boolean results. The examples above are only a small subset of allowable expressions in fxlang.
+Notice that the if statements above allowed branching based on expressions that produced boolean results. The examples above are only a small subset of allowable expressions in fxlang.
 
 Defined formally, an **expression** is a syntactic entity that always produces a value based on one or more values and operations.
 
@@ -200,7 +202,7 @@ Expressions can be chained together using operators. The following list describe
 
 ##### Operator Precedence
 
-In expressions where operators are arbitrarily written, certain grouping will be preferred to be evaluated before others. For example, `a + b * c` will unambiguously evaluate `b * c` before adding the result to `a`.
+In expressions where operators are arbitrarily written, certain groupings will be preferred to be evaluated before others. For example, `a + b * c` will unambiguously evaluate `b * c` before adding the result to `a`.
 
 1. `!`
 1. `*`, `/`, `%`
@@ -215,9 +217,9 @@ Operator precedence can be manually broken by using parenthesis. For example, `(
 ##### Notes on Operators
 
 1. The `and` and `or` operators implement short-circuiting. If the left-hand side of an `and` expression is false, the right-hand side will not be evaluated. If the left-hand side of an `or` expression is true, the right-hand side will not be evaluated.
-1. Comparison operators, such as `<`, `>=`, or `==`, always produce a boolean value. Thus, it is invalid to chain comparisons like `a < b < c`, since this will effectively evaluate to `true < c`, whic is an illegal statement. The correct form is `a < b and b < c`.
+1. Comparison operators, such as `<`, `>=`, or `==`, always produce a boolean value. Thus, it is invalid to chain comparisons like `a < b < c`, since this will effectively evaluate to `true < c`, which is an illegal statement. The correct form is `a < b and b < c`.
 1. Numeric operations will pick the best type possible for the result. For example, a fraction multiplied by an integer will always produce a fraction. This should never be noticeable unless the numbers you are working with are approaching the reasonable limits of 32-bit integers (2147483647). If integer overflow occurs in either direction, the entire program will fail.
-1. The negation (`!`) operator does not implement type coercion. For example, `!$a` where `$a` contains a number is invalid.
+1. The negation (`!`) operator does allow for type coercion. For example, `!$a` is false for all defined variables (except `false` and `0`). This, along with short-circuiting, makes the negation operator perfect for verifying a variable is defined prior to using it: `if !$a or !$a.is_move:`.
 
 #### Expression Values
 
@@ -278,14 +280,20 @@ A "for each" statement iterates over a list (in order). Each value is assigned t
 
 The above program loops through all of a Mon's move slots, disabling moves with the "sound" flag. This program implements the condition applied by the move "Throat Chop."
 
+Below is another example for the move "Haze":
+
+```json
+["foreach $mon in func_call(all_active_mons):", ["clear_boosts: $mon"]]
+```
+
 ### Parsing
 
-Over the course of a battle, the callbacks for an effect may need to be valuated numerous times. For example, many conditions apply themselves for multiple turns.
+Over the course of a battle, the callbacks for an effect may need to be evaluated numerous times. For example, many conditions apply themselves for multiple turns.
 
-It would be inefficientto parse a program every time one of its event callbacks must be executed. Instead, all of the event callbacks for an effect are parsed at the same time at the effect's first appearance in the battle. The collection of parsed callbacks are then cached in the battle. The effect cache is implemented as an LRU (least-recently-used) cache, that discards effects that were least-recently used when the cache size exceeds some thresholds. Today, the maximum number of parsed callbacks in memory at a time per battle is `6 * 4 * 2 + 16`.
+It would be inefficient to parse a program every time one of its event callbacks must be executed. Instead, all of the event callbacks for an effect are parsed at the same time at the effect's first appearance in the battle. The collection of parsed callbacks are then cached in the battle. The effect cache is implemented as an LRU (least-recently-used) cache that discards effects that were least-recently used when the cache size exceeds some threshold. Today, the maximum number of parsed callbacks in memory at a time per battle is `6 * 4 * 2 + 16`.
 
 - 6 Mons per team.
-- 4 movs per Mon.
+- 4 moves per Mon.
 - 2 teams per battle.
 - Buffer of 16.
 
@@ -297,23 +305,26 @@ fxlang programs are interpreted dynamically. JSON programs are parsed into a lis
 
 The first important concept about fxlang program evaluation is the evaluation context.
 
-In the core battle engine, a `Context` object is a proxy object for getting references to battle data. For safety, Rust does not allow an object to mutably borrowed multiple times. Rather than storing mutable references for as long as they are needed, references must be grabbed dynamically as they are needed. Context objects make this dynamic borrowing easy and safe to do.
+In the core battle engine, a `Context` object is a proxy object for getting references to battle data. For safety, Rust does not allow an object to be mutably borrowed multiple times. Rather than storing mutable references for as long as they are needed (so that mutable borrows will certianly overlap), references must be grabbed dynamically as they are needed. Context objects make this dynamic borrowing easy and safe to do.
 
-Context objects are critical to the battle engine. Even something simple like calculating a Mon's attack stat cannot be done without a context. When we calcualte a Mon's attack stat, we must also run a `ModifyAtk` event for effects active in the battle, since some effects can directly modify a Mon's attack stat. This requires access to the entire battle state, which can then cause mutations on the different things across the battle and even the Mon itself. Thus, a simple stat calculation method requires the entire battle to get right.
+Context objects are critical to the battle engine. Even something simple like calculating a Mon's attack stat cannot be done without a context. When we calculate a Mon's attack stat, we must also run a `ModifyAtk` event for effects active in the battle, since some effects can directly modify a Mon's attack stat. This requires access to the entire battle state, which can then cause mutations on different things across the battle and even the Mon itself. Thus, a simple stat calculation method requires the entire battle to get right (hopefully calculating the attack stat does not actually modify much globally, but the point still stands).
 
 As a consequence, very few operations in the core battle engine are implemented as methods. Almost every important operation is implemented as a function that takes in a context. Contexts do act as "this" objects, since they can be scoped to things like Mons (`MonContext`), active moves (`ActiveMoveContext`), and effects (`EffectContext`).
 
 Since event callbacks run in the context of a battle, the fxlang evaluator runs under some evaluation context that holds all of the battle state. Internally, during evaluation, the following state is kept on the context:
 
 1. **Effect** - The effect whose event callback is being evaluated.
-1. **Source Effect** (optional) - The effect that is triggered this event callback.
+1. **Source Effect** (optional) - The effect that triggered this event callback.
 1. **Target** (optional) - The target Mon of the source effect.
+1. **Target Side** (optional) - The target side of the source effect.
 1. **Source** (optional) - The source Mon that triggered the source effect.
 
 In the code, this means we can evaluate event callbacks under the following contexts:
 
 - `EffectContext` - The program runs under the context of an effect (which owns the event callback) and an optional source effect (that triggered the event).
-- `ApplyingEffectContext` - The program runs under the context of an applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target Mon (that the source effect is being applied to), and an optional source Mon (who triggered the source effect).
+- `ApplyingEffectContext` - The program runs under the context of an applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target Mon (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
+- `SideEffectContext` - The program runs under the context of a side-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target side (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
+- `FieldEffectContext` - The program runs under the context of a field-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), and an optional source Mon (that triggered the source effect).
 
 #### Context Variables
 
@@ -325,7 +336,7 @@ The context variables to be set are defined directly by the type of event. For e
 - The `Hit`, `DamagingHit`, and `AfterMoveSecondaryEffects` events set the `$target` (Mon), `$move` (active move), and `$source` (Mon) variables. These events run under the context of an active move towards a target.
 - The `MoveFailed`, `ModifyDamage`, and `UseMove` events set the `$user` (Mon) and `$move` (active move) variables. These events run under the context of an active move towards a user.
 
-You can find all event definitions, including their context variable flags, in the [code](./battler/src/effect/fxlang/effect.rs). Choosing the correct event will be discussed later in the event section.
+You can find all event definitions, including their context variable flags, in the [code](./battler/src/effect/fxlang/effect.rs).
 
 It's important to remember the context under which a program is evaluating, as it determines which variables are directly available when the program starts.
 
@@ -361,7 +372,7 @@ Overall there are a handful of event callback categories:
    - `$source` The source (user) of the move.
    - `$move` - The active move that is triggering the callback.
    - `$this` - This effect that the event callback is running on.
-1. **Active Move** - Callback that runs in the context of an active move, focused on hitting the field.
+1. **Field-Focused Active Move** - Callback that runs in the context of an active move, focused on hitting the field.
    - `$source` The source (user) of the move.
    - `$move` - The active move that is triggering the callback.
    - `$this` - This effect that the event callback is running on.
@@ -371,7 +382,7 @@ Overall there are a handful of event callback categories:
 
 ##### Program Input
 
-Event callbacks may also take in special input values, depending on the intention of the event. For example, an `AddVolatile` event callback provides a special `$volatile` input variable that contains the volatile status being added. A `ModifyDamage` event callback provides a `$damage` variable to be able to returned a modified value. A `TryBoost` event callback provides a `$boosts` variable to view and modify boosts that are going to be applied to a Mon.
+Event callbacks may also take in special input values, depending on the goal of the event. For example, an `AddVolatile` event callback provides a special `$volatile` input variable that contains the volatile status being added. A `ModifyDamage` event callback provides a `$damage` variable that can be modified and returned. A `TryBoost` event callback provides a `$boosts` variable to view and modify boosts that are going to be applied to a Mon.
 
 ##### Persistent State
 
@@ -433,7 +444,7 @@ Most often, an event needs to trigger globally and run all associated event call
 
 1. All active effects for the scope of the event (i.e., target of the applying effect, which can be a Mon, side, or the whole battle field) are collected.
 1. The active effects are filtered based on whether or not they have a callback for the triggering event.
-1. The event callbacks are speed sorted (lower order first, then higher priority first, then lower sub-order first). This involes using RNG to break ties.
+1. The event callbacks are speed sorted (lower order first, then higher priority first, then lower sub-order first). This involves using RNG to break ties.
 1. Callbacks are run under the evaluation context for the triggered event (i.e., a single Mon or an applying effect (which can also be an active move)).
 
 Event callbacks are evaluated in order based on the order, priority, and sub-order defined in their definitions. Callbacks are evaluated as follows:
@@ -446,11 +457,11 @@ Event callbacks are evaluated in order based on the order, priority, and sub-ord
 1. Repeat for the next callback.
 1. If all callbacks finish, return the first input variable as the result of the evaluation (this is the output of the last callback).
 
-The above process effectively relays the input between callbacks and allows callbacks to prevent future callbacks from running. The most typical example of an early exit is a callback that returns `false`. For example, let's say that many active effects have a callback for the `BeforeMove` event. If the Mon flinched this turn, the Flinch `BeforeMove` callback can `return false` to signal that the Mon cannot move. In this case, there is no need to run any more callbacks.
+The above process effectively relays the input between callbacks and allows callbacks to prevent future callbacks from running. The most typical example of an early exit is a callback that returns `false`. For example, let's say that many active effects have a callback for the `BeforeMove` event. If the Mon flinched this turn, the Flinch `BeforeMove` callback can `return false` to signal that the Mon cannot move. In this case, there is no need to run any more callbacks. You can then define the order and priority of different `BeforeMove` callbacks to cause a Mon to flinch before or after other move-cancelling effects (such as being frozen solid or paralyzed).
 
 Relaying values is extremely important for events like `ModifyDamage`, which continuously receives `$damage` as input and outputs a new number representing the modified damage.
 
-For global events, returning no value (i.e., returning with just `return`) means that the callback was transparent and has no effect on the output of the event. If no value is returned, the relayed input is not overwritten. This effectively allows a `ModifyDamage` callback to only return a value when it's actually modified the damage value.
+For global events, returning no value (i.e., returning with just `return`, or just ending the program with no return) means that the callback was transparent and has no effect on the output of the event. If no value is returned, the relayed input is not overwritten. This effectively allows a `ModifyDamage` callback to only return a value when it's actually modified the damage value.
 
 Scope matters a lot here for context variables. For example:
 
@@ -513,11 +524,15 @@ Psywave has its own custom damage calculation formula:
 
 If Jump Kick fails, the user keeps going, crashes, and loses 50% of its HP.
 
+`$this.condition` is attached as the source of the damage to force the battle engine to log the reason for the crash damage (since the move condition is different from the active move itself).
+
 ```json
 {
   "effect": {
     "callbacks": {
-      "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this"]
+      "on_move_failed": [
+        "damage: $user expr($user.base_max_hp / 2) $this.condition"
+      ]
     }
   }
 }
@@ -596,7 +611,7 @@ Burn applies residual damage and also halves damage dealt by physical moves.
     "callbacks": {
       "on_start": [
         "if $source_effect.is_ability:",
-        ["log_status: $this.name with_effect"],
+        ["log_status: $this.name with_source_effect"],
         "else:",
         ["log_status: $this.name"]
       ],
@@ -626,7 +641,7 @@ Freeze completley immobilizes the target until it is thawed at the beginning of 
     "callbacks": {
       "on_start": [
         "if $source_effect.is_ability:",
-        ["log_status: $this.name with_effect"],
+        ["log_status: $this.name with_source_effect"],
         "else:",
         ["log_status: $this.name"]
       ],
@@ -677,7 +692,7 @@ We use a custom time state variable because confusion does not wear off at the e
         ["log_start"],
         "$effect_state.time = func_call(random: 2 6)"
       ],
-      "on_end": ["log_end: $this.name"],
+      "on_end": ["log_end"],
       "on_before_move": {
         "priority": 3,
         "program": [
@@ -713,7 +728,7 @@ Moves like Thrash or Outrage lock the user into a move for 2-3 turns and confuse
         "else if $effect_state.duration == 1:",
         ["remove_volatile: $user $this.id"]
       ],
-      "on_move_aborted": ["remove_volatile: $user $this.id true"],
+      "on_move_aborted": ["remove_volatile: $user $this.id no_events"],
       "on_end": ["add_volatile: $target confusion"],
       "on_lock_move": ["return $effect_state.move"]
     }
@@ -738,7 +753,7 @@ Mist protects all Mons on the user's side from stat drops from opposing Mons.
       "on_try_boost": [
         "if $effect.infiltrates and !func_call(is_ally: $target $source):",
         ["return"],
-        "if !func_call(is_defined: $source) or $source == $target:",
+        "if !$source or $source == $target:",
         ["return"],
         "$activated = false",
         "foreach $stat in func_call(boostable_stats):",
@@ -753,8 +768,8 @@ Mist protects all Mons on the user's side from stat drops from opposing Mons.
         ["log_activate: str('mon:{}', $target.position_details)"],
         "return $boosts"
       ],
-      "on_side_start": ["log_side_start: $this.name"],
-      "on_side_end": ["log_side_end: $this.name"]
+      "on_side_start": ["log_side_start"],
+      "on_side_end": ["log_side_end"]
     }
   }
 }
@@ -782,6 +797,15 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
         "# Still run events associated with the user preparing to hit the target, since they are locked into this move.",
         "run_event: PrepareHit"
       ],
+      "on_set_last_move": ["if $effect_state.duration > 1:", ["return false"]],
+      "on_deduct_pp": {
+        "order": 999,
+        "program": [
+          "# Run last, to ensure no PP is deducted while charging.",
+          "if $effect_state.duration > 1:",
+          ["return 0"]
+        ]
+      },
       "on_lock_move": ["return $effect_state.move"],
       "on_move_aborted": ["remove_volatile: $target $effect_state.move"],
       "on_end": ["remove_volatile: $target $effect_state.move"]
@@ -835,6 +859,94 @@ Finally, a Mon in the "flying" state has some special invulnerability and damage
 
 The `Invulnerability` callback grants the Mon using fly invulnerability from most moves except for an exception list. The `SourceModifyDamage` callback runs when the Mon is the target of a Mon modify damaging against it (in other words, this Mon is the source of the `ModifyDamage` event). The moves "Gust" and "Twister" are powered up against Mons in the air.
 
+#### Metronome
+
+Metronome executes a random move. This is actually simpler than you might think, and only requires fetching all potential moves and sampling one out using RNG (thus producing a consistent, replayable result).
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_hit": [
+        "$moves = func_call(get_all_moves: without_flag:nometronome)",
+        "$random_move = func_call(sample: $moves)",
+        "if !$random_move:",
+        ["return false"],
+        "use_move: $source $random_move.id"
+      ]
+    }
+  }
+}
+```
+
+#### Bide
+
+Bide stores up damage applied to the user for several turns. On the third turn, the user attacks the Mon that last damaged it with twice the stored damage. When Bide is first used, it applies the "bide" volatile status to the user, which implements all damage-storing event callbacks.
+
+To unleash the damage, Bide actually uses a custom version of itself that applies the stored damage to the target. The custom version of Bide is stored in the conditions `local_data`, which is a place where custom data can be defined for use by event callbacks.
+
+The benefit here is that the modified move can be written statically in the condition code, rather than dynamically inside of the event callback (pretty much every field would need to be overwritten). Furthermore, this customized version of Bide can actually have its _own_ event callbacks. In this case, the `TryUseMove` callback fails the move if no damage would be applied. And by setting `no_random_target`, the move also fails if the Bide volatile condition did not have any target for the move. Thus, the two ways of failing the move are covered directly in the core battle engine rather than in the dynamic event callback code.
+
+```json
+{
+  "hit_effect": { "volatile_status": "bide" },
+  "condition": {
+    "duration": 3,
+    "callbacks": {
+      "on_start": ["$effect_state.total_damage = 0", "log_start"],
+      "on_restart": ["return true"],
+      "on_lock_move": ["return $this.id"],
+      "on_damage_received": [
+        "if func_call(is_defined: $source) and $source != $target:",
+        ["$effect_state.last_damage_source = $source"],
+        "$effect_state.total_damage = $effect_state.total_damage + $damage"
+      ],
+      "on_before_move": [
+        "# This callback runs when the user is storing energy.",
+        "if $effect_state.duration > 1:",
+        ["log_activate: str('mon:{}', $user.position_details)", "return"],
+        "# Bide is ending this turn, so this use of the move unleashes the energy.",
+        "log_end",
+        "$target = $effect_state.last_damage_source",
+        "# Create a new active move that deals the damage to the target, and use it directly.",
+        "$move = func_call(new_active_move_from_local_data: $this.id)",
+        "$move.damage = expr($effect_state.total_damage * 2)",
+        "# Remove this volatile effect before using the new move, or else this callback gets triggered endlessly.",
+        "remove_volatile: $user $this.id",
+        "use_active_move: $user $move $target",
+        "# Since we used the local Bide, we can exit this move early.",
+        "return false"
+      ],
+      "on_move_aborted": ["remove_volatile: $user $this.id"]
+    },
+    "local_data": {
+      "moves": {
+        "bide": {
+          "name": "Bide",
+          "category": "Physical",
+          "primary_type": "Normal",
+          "accuracy": "exempt",
+          "priority": 1,
+          "target": "Scripted",
+          "flags": ["Contact", "Protect"],
+          "ignore_immunity": true,
+          "no_random_target": true,
+          "effect": {
+            "callbacks": {
+              "on_try_use_move": [
+                "# Fail if no direct damage was received.",
+                "if $move.damage == 0:",
+                ["return false"]
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 #### Substitute
 
 Substitute is a bit of an exception, since it does things unlike any other move in the battle engine. Substitute takes a quarter of the user's HP and applies it to a substitute. That substitute has the same amount of HP and will absorb all hit effects (damage, stat boosts/drops, statuses, volatiles). Once the substitute runs out of HP, it will disappear, and the Mon will be hittable again.
@@ -863,10 +975,7 @@ Here is the code in all of its glory:
         "log_start",
         "$effect_state.hp = func_call(floor: expr($target.max_hp / 4))",
         "if func_call(has_volatile: $target partiallytrapped):",
-        [
-          "log_end: partiallytrapped silent",
-          "remove_volatile: $target partiallytrapped"
-        ]
+        ["remove_volatile: $target partiallytrapped"]
       ],
       "on_try_primary_hit": [
         "# Some moves can hit through substitute.",
@@ -887,7 +996,7 @@ Here is the code in all of its glory:
           "remove_volatile: $target substitute"
         ],
         "else:",
-        ["log_activate: str('move:{}', $this.name) damage"],
+        ["log_activate: damage"],
         "# Some move effects still apply.",
         "apply_recoil_damage: $damage",
         "apply_drain: $source $target $damage",

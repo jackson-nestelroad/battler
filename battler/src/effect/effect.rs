@@ -86,18 +86,28 @@ pub enum EffectType {
 }
 
 /// An [`Effect`] handle.
+///
+/// A stable way to identify an [`Effect`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EffectHandle {
+    /// An active move, which is being used or was recently used by a Mon.
     ActiveMove(MoveHandle, MoveHitEffectType),
+    /// A condition induced by a move.
     MoveCondition(Id),
+    /// An inactive move, which is the move itself without reference to any individual use.
     InactiveMove(Id),
+    /// An ability on a Mon.
     Ability(Id),
+    /// A condition on a Mon.
     Condition(Id),
+    /// An item held by a Mon.
     Item(Id),
+    /// Any effect that is applied to some part of the battle that does not really exist.
     NonExistent(Id),
 }
 
 impl EffectHandle {
+    /// Is the effect handle an ability?
     pub fn is_ability(&self) -> bool {
         match self {
             Self::Ability(_) => true,
@@ -105,6 +115,7 @@ impl EffectHandle {
         }
     }
 
+    /// Is the effect handle an active move?
     pub fn is_active_move(&self) -> bool {
         match self {
             Self::ActiveMove(_, _) => true,
@@ -112,6 +123,7 @@ impl EffectHandle {
         }
     }
 
+    /// Returns the ID associated with the effect handle, if any.
     pub fn try_id(&self) -> Option<&Id> {
         match self {
             Self::ActiveMove(_, _) => None,
@@ -124,15 +136,22 @@ impl EffectHandle {
         }
     }
 
+    /// Constructs the stable effect handle for this effect handle.
+    ///
+    /// Every effect handle is stable except for active moves, since active moves can be destroyed
+    /// after a few turns. Active move handles will reference their inactive version.
     pub fn stable_effect_handle(&self, context: &Context) -> Result<EffectHandle, Error> {
         match self {
-            Self::ActiveMove(active_move_handle, _) => Ok(EffectHandle::MoveCondition(
+            Self::ActiveMove(active_move_handle, _) => Ok(EffectHandle::InactiveMove(
                 context.active_move(*active_move_handle)?.id().clone(),
             )),
             val @ _ => Ok(val.clone()),
         }
     }
 
+    /// Returns the associated condition handle.
+    ///
+    /// Only applicable for active moves.
     pub fn condition_handle(&self, context: &Context) -> Result<Option<EffectHandle>, Error> {
         match self {
             Self::ActiveMove(active_move_handle, _) => Ok(Some(EffectHandle::MoveCondition(
@@ -142,6 +161,12 @@ impl EffectHandle {
         }
     }
 
+    /// The internal ID for the effect for unlinked effects.
+    ///
+    /// Only applicable for active moves that use local data with modified effect callbacks. For
+    /// example, the move "Bide" executes a special version of the move with custom effect
+    /// callbacks. To avoid the cached "Bide" move effects from being used, this ID forces the
+    /// evaluation of the custom effects.
     pub fn unlinked_internal_fxlang_id(&self) -> Option<String> {
         match self {
             Self::ActiveMove(active_move_handle, _) => {
@@ -153,6 +178,8 @@ impl EffectHandle {
 }
 
 /// A battle effect.
+///
+/// Contains the borrowed data for the effect.
 pub enum Effect<'borrow> {
     /// A move currently being used by a Mon.
     ActiveMove(&'borrow mut Move, MoveHitEffectType),
@@ -171,6 +198,7 @@ pub enum Effect<'borrow> {
 }
 
 impl<'borrow> Effect<'borrow> {
+    /// Creates a new effect for the active move.
     pub fn for_active_move(
         active_move: &'borrow mut Move,
         hit_effect_type: MoveHitEffectType,
@@ -178,30 +206,37 @@ impl<'borrow> Effect<'borrow> {
         Self::ActiveMove(active_move, hit_effect_type)
     }
 
+    /// Creates a new effect for the ability.
     pub fn for_ability(ability: ElementRef<'borrow, Ability>) -> Self {
         Self::Ability(ability)
     }
 
+    /// Creates a new effect for the condition.
     pub fn for_condition(condition: ElementRef<'borrow, Condition>) -> Self {
         Self::Condition(condition)
     }
 
+    /// Creates a new effect for the move condition.
     pub fn for_move_condition(mov: ElementRef<'borrow, Move>) -> Self {
         Self::MoveCondition(mov)
     }
 
+    /// Creates a new effect for the item.
     pub fn for_item(item: ElementRef<'borrow, Item>) -> Self {
         Self::Item(item)
     }
 
+    /// Creates a new effect for the move.
     pub fn for_inactive_move(mov: ElementRef<'borrow, Move>) -> Self {
         Self::InactiveMove(mov)
     }
 
+    /// Creates a new effect for some non-existent effect.
     pub fn for_non_existent(id: Id) -> Self {
         Self::NonExistent(id)
     }
 
+    /// The name of the effect.
     pub fn name(&self) -> &str {
         match self {
             Self::ActiveMove(active_move, _) => &active_move.data.name,
@@ -214,6 +249,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The type of the effect.
     pub fn effect_type(&self) -> EffectType {
         match self {
             Self::ActiveMove(_, _) => EffectType::Move,
@@ -238,6 +274,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The full name of the effect, which is prefixed by its type.
     pub fn full_name(&self) -> String {
         match self.effect_type_name() {
             "" => self.name().to_owned(),
@@ -260,6 +297,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The internal ID of the effect, used for caching fxlang effect callbacks.
     pub fn internal_fxlang_id(&self) -> String {
         match self.internal_effect_type_name().as_str() {
             "" => format!("{}", self.id()),
@@ -267,6 +305,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The underlying move, if any.
     pub fn move_effect<'effect>(&'effect self) -> Option<&'effect Move> {
         match self {
             Self::ActiveMove(active_move, _) => Some(active_move.deref()),
@@ -275,6 +314,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The underlying condition, if any.
     pub fn condition<'effect>(&'effect self) -> Option<&'effect Condition> {
         match self {
             Self::Condition(condition) => Some(condition.deref()),
@@ -282,6 +322,10 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The source effect handle, if any.
+    ///
+    /// This is only applicable for active moves, since only active moves manually keep track of
+    /// their source effect.
     pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
         match self {
             Self::ActiveMove(active_move, _) => active_move.source_effect.as_ref(),
@@ -289,6 +333,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The associated [`fxlang::Effect`].
     pub fn fxlang_effect<'effect>(&'effect self) -> Option<&'effect fxlang::Effect> {
         match self {
             Self::ActiveMove(active_move, hit_effect_type) => {
@@ -303,6 +348,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// The associated [`fxlang::Condition`].
     pub fn fxlang_condition<'effect>(&'effect self) -> Option<&'effect fxlang::Condition> {
         match self {
             Self::Condition(condition) => Some(&condition.data.condition),
@@ -311,6 +357,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// Whether the effect is marked as infiltrating other side and field effects.
     pub fn infiltrates(&self) -> bool {
         match self {
             Self::ActiveMove(active_move, _) => active_move.infiltrates,
@@ -318,6 +365,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
+    /// Whether the effect is marked as unlinked from its static data.
     pub fn unlinked(&self) -> bool {
         match self {
             Self::ActiveMove(active_move, _) => active_move.unlinked,

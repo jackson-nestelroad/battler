@@ -68,13 +68,12 @@ impl TryFrom<Stat> for Boost {
     }
 }
 
+/// Trait for getting a boosted stat from a container.
 pub trait ContainsOptionalBoosts<T> {
     fn get_boost(&self, boost: Boost) -> Option<(Boost, T)>;
 }
 
 /// A full boost table.
-///
-/// Similar to [`PartialBoostTable`], but all values must be defined.
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BoostTable {
     #[serde(default)]
@@ -132,9 +131,10 @@ impl BoostTable {
 
     /// Creates an iterator over all entries in the table.
     pub fn iter<'a>(&'a self) -> impl Iterator<Item = (Boost, i8)> + 'a {
-        BoostMapInOrderIterator::new(self)
+        BoostTableEntries::new(self)
     }
 
+    /// Creates an iterator over all non-zero entries in the table.
     pub fn non_zero_iter<'a>(&'a self) -> impl Iterator<Item = (Boost, i8)> + 'a {
         self.iter().filter(|(_, val)| *val != 0)
     }
@@ -161,32 +161,22 @@ impl ContainsOptionalBoosts<i8> for BoostTable {
     }
 }
 
-/// Iterator type for iterating over boosts in a [`BoostMap`] in a stable order.
-pub struct BoostMapInOrderIterator<'m, B, T>
-where
-    B: ContainsOptionalBoosts<T>,
-    T: Copy,
-{
-    table: &'m B,
+/// Iterator type for iterating over [`Boost`]s in a consistent order.
+pub struct BoostOrderIterator {
     next: Option<Boost>,
-    _phantom: PhantomData<T>,
 }
 
-impl<'m, B, T> BoostMapInOrderIterator<'m, B, T>
-where
-    B: ContainsOptionalBoosts<T>,
-    T: Copy,
-{
-    pub fn new(table: &'m B) -> Self {
+impl BoostOrderIterator {
+    /// Creates a new boost iterator.
+    pub fn new() -> Self {
         Self {
-            table,
             next: Some(Boost::Atk),
-            _phantom: PhantomData,
         }
     }
 
-    fn next_entry(&self, current: &Option<Boost>) -> (Option<(Boost, T)>, Option<Boost>) {
-        let next = match current {
+    fn next_internal(&mut self) -> Option<Boost> {
+        let out = self.next;
+        self.next = match self.next {
             Some(Boost::Atk) => Some(Boost::Def),
             Some(Boost::Def) => Some(Boost::SpAtk),
             Some(Boost::SpAtk) => Some(Boost::SpDef),
@@ -195,16 +185,46 @@ where
             Some(Boost::Accuracy) => Some(Boost::Evasion),
             None | Some(Boost::Evasion) => None,
         };
-        (
-            current.map(|boost| self.table.get_boost(boost)).flatten(),
-            next,
-        )
+        out
+    }
+}
+
+impl Iterator for BoostOrderIterator {
+    type Item = Boost;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_internal()
+    }
+}
+
+/// Iterator type for iterating over non-zero boosts in a [`BoostTable`] (or similar container) in a
+/// stable order.
+pub struct BoostTableEntries<'m, B, T>
+where
+    B: ContainsOptionalBoosts<T>,
+    T: Copy,
+{
+    table: &'m B,
+    boost_iter: BoostOrderIterator,
+    _phantom: PhantomData<T>,
+}
+
+impl<'m, B, T> BoostTableEntries<'m, B, T>
+where
+    B: ContainsOptionalBoosts<T>,
+    T: Copy,
+{
+    /// Creates a new iterator over a boost table.
+    pub fn new(table: &'m B) -> Self {
+        Self {
+            table,
+            boost_iter: BoostOrderIterator::new(),
+            _phantom: PhantomData,
+        }
     }
 
     fn next_non_zero_entry(&mut self) -> Option<(Boost, T)> {
-        while self.next.is_some() {
-            let (entry, next) = self.next_entry(&self.next);
-            self.next = next;
+        while let Some(boost) = self.boost_iter.next() {
+            let entry = self.table.get_boost(boost);
             if entry.is_some() {
                 return entry;
             }
@@ -213,7 +233,7 @@ where
     }
 }
 
-impl<'m, B, T> Iterator for BoostMapInOrderIterator<'m, B, T>
+impl<'m, B, T> Iterator for BoostTableEntries<'m, B, T>
 where
     B: ContainsOptionalBoosts<T>,
     T: Copy,

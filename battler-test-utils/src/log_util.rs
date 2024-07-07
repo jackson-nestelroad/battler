@@ -4,11 +4,7 @@ use std::{
     io,
 };
 
-use battler::battle::{
-    Battle,
-    BattleOptions,
-    PublicCoreBattle,
-};
+use battler::battle::PublicCoreBattle;
 use itertools::Itertools;
 use serde::Deserialize;
 
@@ -55,11 +51,7 @@ impl PartialEq<&str> for LogMatch {
 
 /// Asserts that new logs in the battle are equal to the given logs.
 #[track_caller]
-pub fn assert_new_logs_eq<'d, B, O>(battle: &mut B, want: &[LogMatch])
-where
-    B: Battle<'d, O>,
-    O: BattleOptions,
-{
+pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
     let got = battle.new_logs().collect::<Vec<&str>>();
     let want = want.into_iter().collect::<Vec<_>>();
     pretty_assertions::assert_eq!(want, got)
@@ -67,11 +59,7 @@ where
 
 /// Asserts that new logs in the battle are equal to the given logs.
 #[track_caller]
-pub fn assert_turn_logs_eq<'d, B, O>(battle: &mut B, turn: usize, want: &[LogMatch])
-where
-    B: Battle<'d, O>,
-    O: BattleOptions,
-{
+pub fn assert_turn_logs_eq(battle: &mut PublicCoreBattle, turn: usize, want: &[LogMatch]) {
     let got = battle.all_logs().collect::<Vec<_>>();
     let turn_log = format!("turn|turn:{turn}");
     let next_turn_log = format!("turn|turn:{}", turn + 1);

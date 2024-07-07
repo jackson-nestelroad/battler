@@ -12,6 +12,7 @@ use crate::common::FastHashMap;
 
 /// Trait for objects that can be added directly to the event log.
 pub trait EventLoggable {
+    /// Logs the object into the event.
     fn log(&self, event: &mut Event);
 }
 
@@ -53,6 +54,7 @@ impl Event {
         }
     }
 
+    /// Adds the given value to the event.
     pub fn extend<T>(&mut self, value: &T)
     where
         T: EventLoggable,
@@ -150,6 +152,7 @@ pub enum EventLogEntry<'e> {
 }
 
 impl EventLogEntry<'_> {
+    /// Is the log entry committed to the battle?
     pub fn committed(&self) -> bool {
         match self {
             Self::Committed(_) => true,

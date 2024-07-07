@@ -5,14 +5,12 @@ use serde::{
 
 use crate::{
     battle::{
-        BattleEngineOptions,
         BattleOptions,
+        CoreBattleEngineOptions,
         CoreBattleOptions,
         PlayerData,
         PublicCoreBattle,
         SideData,
-        TimedBattleOptions,
-        TimerOptions,
     },
     battler_error,
     common::{
@@ -89,9 +87,6 @@ pub struct BattleBuilderOptions {
     pub side_1: BattleBuilderSideData,
     /// The other side of the battle.
     pub side_2: BattleBuilderSideData,
-    /// Timer settings that control the overall game timer.
-    #[serde(default)]
-    pub timer: TimerOptions,
 }
 
 /// Object for dynamically building a battle prior to starting it.
@@ -103,7 +98,7 @@ pub struct BattleBuilderOptions {
 pub struct BattleBuilder<'d> {
     dex: Dex<'d>,
     format: Format,
-    options: TimedBattleOptions,
+    options: CoreBattleOptions,
 
     player_ids: FastHashMap<String, (usize, usize)>,
 }
@@ -113,16 +108,13 @@ impl<'d> BattleBuilder<'d> {
     pub fn new(options: BattleBuilderOptions, data: &'d dyn DataStore) -> Result<Self, Error> {
         let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
-        let options = TimedBattleOptions {
-            core: CoreBattleOptions {
-                seed: options.seed,
-                format: None,
-                side_1: options.side_1.into(),
-                side_2: options.side_2.into(),
-            },
-            timer: TimerOptions::default(),
+        let options = CoreBattleOptions {
+            seed: options.seed,
+            format: None,
+            side_1: options.side_1.into(),
+            side_2: options.side_2.into(),
         };
-        let sides = [&options.core.side_1, &options.core.side_2];
+        let sides = [&options.side_1, &options.side_2];
         let player_ids = sides
             .iter()
             .enumerate()
@@ -147,11 +139,11 @@ impl<'d> BattleBuilder<'d> {
     /// Builds a new battle instance using data from the builder.
     pub fn build(
         mut self,
-        engine_options: BattleEngineOptions,
+        engine_options: CoreBattleEngineOptions,
     ) -> Result<PublicCoreBattle<'d>, Error> {
         self.validate_battle_options()?;
         self.options.validate_with_format(&self.format.data())?;
-        PublicCoreBattle::from_builder(self.options.core, self.dex, self.format, engine_options)
+        PublicCoreBattle::from_builder(self.options, self.dex, self.format, engine_options)
     }
 
     fn validate_battle_options(&mut self) -> Result<(), Error> {
@@ -161,7 +153,7 @@ impl<'d> BattleBuilder<'d> {
 
     fn validate_core_battle_options(&mut self) -> Result<(), Error> {
         for clause in self.format.rules.clauses(&self.dex) {
-            clause.on_validate_core_battle_options(&self.format.rules, &mut self.options.core)?;
+            clause.on_validate_core_battle_options(&self.format.rules, &mut self.options)?;
         }
         Ok(())
     }
@@ -177,8 +169,8 @@ impl<'d> BattleBuilder<'d> {
 
     fn side_mut(&mut self, side: usize) -> Result<&mut SideData, Error> {
         match side {
-            0 => Ok(&mut self.options.core.side_1),
-            1 => Ok(&mut self.options.core.side_2),
+            0 => Ok(&mut self.options.side_1),
+            1 => Ok(&mut self.options.side_2),
             _ => Err(battler_error!("side {side} is invalid")),
         }
     }
@@ -213,7 +205,7 @@ mod battle_builder_tests {
         battle::{
             BattleBuilder,
             BattleBuilderOptions,
-            BattleEngineOptions,
+            CoreBattleEngineOptions,
         },
         common::{
             read_test_cases,
@@ -261,7 +253,7 @@ mod battle_builder_tests {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let builder = BattleBuilder::new(battle_builder_options(), &data).unwrap();
         assert!(builder
-            .build(BattleEngineOptions::default())
+            .build(CoreBattleEngineOptions::default())
             .err()
             .unwrap()
             .to_string()
@@ -275,7 +267,7 @@ mod battle_builder_tests {
         options.side_1.players.clear();
         let builder = BattleBuilder::new(options, &data).unwrap();
         assert!(builder
-            .build(BattleEngineOptions::default())
+            .build(CoreBattleEngineOptions::default())
             .err()
             .unwrap()
             .to_string()
@@ -345,13 +337,13 @@ mod battle_builder_tests {
         // Update both teams so that we should be able to build a valid battle.
         assert!(builder.update_team("1", team.clone()).is_ok());
         assert!(builder.update_team("2", team).is_ok());
-        assert!(iter::once(&builder.options.core.side_1)
-            .chain(iter::once(&builder.options.core.side_2))
+        assert!(iter::once(&builder.options.side_1)
+            .chain(iter::once(&builder.options.side_2))
             .all(|side| side
                 .players
                 .iter()
                 .all(|player| player.team.members.len() == 4)));
-        assert!(builder.build(BattleEngineOptions::default()).is_ok());
+        assert!(builder.build(CoreBattleEngineOptions::default()).is_ok());
     }
 
     #[derive(Deserialize)]
@@ -373,7 +365,7 @@ mod battle_builder_tests {
             for (player_id, team) in test_case.teams {
                 assert!(builder.update_team(&player_id, team).is_ok());
             }
-            let result = builder.build(BattleEngineOptions::default());
+            let result = builder.build(CoreBattleEngineOptions::default());
             assert_eq!(
                 result.is_ok(),
                 test_case.ok,

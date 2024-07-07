@@ -3,9 +3,8 @@ mod move_pp_tests {
     use assert_matches::assert_matches;
     use battler::{
         battle::{
-            Battle,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
             Request,
         },
@@ -84,7 +83,7 @@ mod move_pp_tests {
             .with_actual_health(true)
             .with_pass_allowed(true)
             .with_team_validation(false)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("test-player", "Test Player")
             .add_player_to_side_2("foe", "Foe")
             .with_team("test-player", team(pp_boosts.clone())?)

@@ -2,9 +2,8 @@
 mod move_bad_input_tests {
     use battler::{
         battle::{
-            Battle,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
             Request,
         },
@@ -52,7 +51,7 @@ mod move_bad_input_tests {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .with_auto_continue(false)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", singles_team()?)
@@ -84,7 +83,7 @@ mod move_bad_input_tests {
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .with_auto_continue(false)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", singles_team_no_moves()?)

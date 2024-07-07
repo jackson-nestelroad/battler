@@ -2,7 +2,6 @@
 mod team_preview_tests {
     use battler::{
         battle::{
-            Battle,
             BattleType,
             PublicCoreBattle,
         },

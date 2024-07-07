@@ -10,12 +10,11 @@ use battler::{
         BattleBuilderOptions,
         BattleBuilderPlayerData,
         BattleBuilderSideData,
-        BattleEngineOptions,
-        BattleEngineRandomizeBaseDamage,
-        BattleEngineSpeedSortTieResolution,
         BattleType,
+        CoreBattleEngineOptions,
+        CoreBattleEngineRandomizeBaseDamage,
+        CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
-        TimerOptions,
     },
     battler_error,
     common::{
@@ -36,7 +35,7 @@ use crate::ControlledRandomNumberGenerator;
 /// [`BattleBuilder`] object for integration tests.
 pub struct TestBattleBuilder {
     options: BattleBuilderOptions,
-    engine_options: BattleEngineOptions,
+    engine_options: CoreBattleEngineOptions,
     teams: FastHashMap<String, TeamData>,
     validate_team: bool,
     controlled_rng: bool,
@@ -60,9 +59,8 @@ impl TestBattleBuilder {
                     name: "Side 2".to_string(),
                     players: Vec::new(),
                 },
-                timer: TimerOptions::default(),
             },
-            engine_options: BattleEngineOptions::default(),
+            engine_options: CoreBattleEngineOptions::default(),
             teams: FastHashMap::new(),
             validate_team: true,
             controlled_rng: false,
@@ -116,7 +114,7 @@ impl TestBattleBuilder {
 
     pub fn with_base_damage_randomization(
         mut self,
-        randomize: BattleEngineRandomizeBaseDamage,
+        randomize: CoreBattleEngineRandomizeBaseDamage,
     ) -> Self {
         self.engine_options.randomize_base_damage = randomize;
         self
@@ -124,7 +122,7 @@ impl TestBattleBuilder {
 
     pub fn with_speed_sort_tie_resolution(
         mut self,
-        tie_resolution: BattleEngineSpeedSortTieResolution,
+        tie_resolution: CoreBattleEngineSpeedSortTieResolution,
     ) -> Self {
         self.engine_options.speed_sort_tie_resolution = tie_resolution;
         self

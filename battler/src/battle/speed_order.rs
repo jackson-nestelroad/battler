@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use crate::{
-    battle::BattleEngineSpeedSortTieResolution,
+    battle::CoreBattleEngineSpeedSortTieResolution,
     rng::{
         rand_util,
         PseudoRandomNumberGenerator,
@@ -10,9 +10,13 @@ use crate::{
 
 /// An object that can be ordered by speed.
 pub trait SpeedOrderable {
+    /// Order. Lowest order goes first.
     fn order(&self) -> u32;
+    /// Priority. Highest priority goes first.
     fn priority(&self) -> i32;
+    /// Speed. Highest speed goes first.
     fn speed(&self) -> u32;
+    /// Sub-order. Lowest order goes first.
     fn sub_order(&self) -> u32;
 }
 
@@ -61,7 +65,7 @@ fn sort_with_random_ties<T, C>(
     items: &mut [T],
     comp: C,
     prng: &mut dyn PseudoRandomNumberGenerator,
-    tie_resolution: BattleEngineSpeedSortTieResolution,
+    tie_resolution: CoreBattleEngineSpeedSortTieResolution,
 ) where
     C: Fn(&T, &T) -> Ordering,
 {
@@ -87,11 +91,11 @@ fn sort_with_random_ties<T, C>(
         // Shuffle ties.
         if ties > 1 {
             match tie_resolution {
-                BattleEngineSpeedSortTieResolution::Random => {
+                CoreBattleEngineSpeedSortTieResolution::Random => {
                     shuffler(&mut items[sorted..(sorted + ties)])
                 }
-                BattleEngineSpeedSortTieResolution::Keep => (),
-                BattleEngineSpeedSortTieResolution::Reverse => {
+                CoreBattleEngineSpeedSortTieResolution::Keep => (),
+                CoreBattleEngineSpeedSortTieResolution::Reverse => {
                     items[sorted..(sorted + ties)].reverse()
                 }
             }
@@ -105,7 +109,7 @@ fn sort_with_random_ties<T, C>(
 pub fn speed_sort<T>(
     items: &mut [T],
     prng: &mut dyn PseudoRandomNumberGenerator,
-    tie_resolution: BattleEngineSpeedSortTieResolution,
+    tie_resolution: CoreBattleEngineSpeedSortTieResolution,
 ) where
     for<'a> &'a T: SpeedOrderable,
 {

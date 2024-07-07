@@ -11,6 +11,7 @@ use crate::{
         core_battle_effects,
         core_battle_logs,
         Boost,
+        BoostOrderIterator,
         BoostTable,
         CoreBattle,
         Mon,
@@ -895,16 +896,7 @@ fn is_ally(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result
 
 fn boostable_stats() -> Value {
     Value::List(Vec::from_iter(
-        [
-            Boost::Atk,
-            Boost::Def,
-            Boost::SpAtk,
-            Boost::SpDef,
-            Boost::Spe,
-            Boost::Accuracy,
-            Boost::Evasion,
-        ]
-        .map(|boost| Value::Boost(boost)),
+        BoostOrderIterator::new().map(|boost| Value::Boost(boost)),
     ))
 }
 

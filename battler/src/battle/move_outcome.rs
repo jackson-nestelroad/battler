@@ -8,10 +8,13 @@ use serde_string_enum::{
     Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum MoveOutcome {
+    /// The move was skipped. In other words, it neither succeeded or failed.
     #[string = "Skipped"]
     Skipped,
+    /// THe move failed completely.
     #[string = "Failed"]
     Failed,
+    /// The move succeeded. This can also mean partially succeeded.
     #[string = "Success"]
     Success,
 }
@@ -48,15 +51,21 @@ impl From<bool> for MoveOutcome {
 /// rather than the outcome of the use of the move as a whole.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum MoveOutcomeOnTarget {
+    /// It is unknown how the move affected the target.
     #[default]
     Unknown,
+    /// The move failed to do anything to the target.
     Failure,
+    /// The move hit a Substitute.
     HitSubstitute,
+    /// The move successfully hit the target.
     Success,
+    /// The move successfully dealt damage to the target.
     Damage(u16),
 }
 
 impl MoveOutcomeOnTarget {
+    /// Did the move hit anything (including a Substitute)?
     pub fn hit(&self) -> bool {
         match self {
             Self::Failure => false,
@@ -64,6 +73,7 @@ impl MoveOutcomeOnTarget {
         }
     }
 
+    /// Did the move hit the target as intended?
     pub fn hit_target(&self) -> bool {
         match self {
             Self::Failure | Self::HitSubstitute => false,
@@ -71,6 +81,7 @@ impl MoveOutcomeOnTarget {
         }
     }
 
+    /// Did the move fail?
     pub fn failed(&self) -> bool {
         match self {
             Self::Failure => true,
@@ -78,6 +89,7 @@ impl MoveOutcomeOnTarget {
         }
     }
 
+    /// How much damage the move dealt to the target.
     pub fn damage(&self) -> u16 {
         match self {
             Self::Damage(damage) => *damage,
@@ -85,6 +97,10 @@ impl MoveOutcomeOnTarget {
         }
     }
 
+    /// Combines two move outcomes into one.
+    ///
+    /// Important when moves do multiple things and we must determine the outcome on the target as a
+    /// whole.
     pub fn combine(&self, other: Self) -> Self {
         match (*self, other) {
             (Self::Unknown, right @ _) => right,
@@ -124,6 +140,7 @@ pub enum MoveEventResult {
 }
 
 impl MoveEventResult {
+    /// Keep executing the move?
     pub fn advance(&self) -> bool {
         match self {
             Self::Advance => true,
@@ -131,6 +148,7 @@ impl MoveEventResult {
         }
     }
 
+    /// Fail the move immediately?
     pub fn failed(&self) -> bool {
         match self {
             Self::Fail => true,
@@ -138,6 +156,7 @@ impl MoveEventResult {
         }
     }
 
+    /// Combines two results into one.
     pub fn combine(&self, other: Self) -> Self {
         match (*self, other) {
             (Self::Fail, _) => Self::Fail,

@@ -101,7 +101,7 @@ pub struct Clause {
 }
 
 impl Clause {
-    /// Creates a new [`Clause`] instance from [`ClauseData`].
+    /// Creates a new clause.
     pub fn new(id: Id, data: ClauseData) -> Self {
         let hooks = clause_hooks(&id);
         Self { id, data, hooks }

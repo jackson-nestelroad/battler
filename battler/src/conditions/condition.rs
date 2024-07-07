@@ -67,10 +67,12 @@ pub struct Condition {
 }
 
 impl Condition {
+    /// Creates a new condtion.
     pub fn new(id: Id, data: ConditionData) -> Self {
         Self { id, data }
     }
 
+    /// The name of the condition type, for logging.
     pub fn condition_type_name(&self) -> &str {
         match self.data.condition_type {
             ConditionType::BuiltIn => "",
@@ -82,6 +84,8 @@ impl Condition {
         }
     }
 
+    /// Similar to [`Self::condition_type_name`], except `"condition"` is used if the type name is
+    /// empty.
     pub fn non_empty_condition_type_name(&self) -> &str {
         let type_name = self.condition_type_name();
         if type_name.is_empty() {

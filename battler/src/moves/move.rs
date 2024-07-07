@@ -226,6 +226,9 @@ pub struct MoveData {
 }
 
 impl MoveData {
+    /// Does the move ignore immunity?
+    ///
+    /// The default value of this depends on the [`MoveCategory`].
     pub fn ignore_immunity(&self) -> bool {
         self.ignore_immunity
             .unwrap_or(self.category == MoveCategory::Status)
@@ -258,6 +261,7 @@ pub enum MoveHitEffectType {
 }
 
 impl MoveHitEffectType {
+    /// The index of the secondary effect, if any.
     pub fn secondary_index(&self) -> Option<usize> {
         match self {
             Self::PrimaryEffect => None,
@@ -310,7 +314,7 @@ pub struct Move {
 }
 
 impl Move {
-    /// Creates a new [`Move`] instance from [`MoveData`].
+    /// Creates a new active move, which can be modified for the use of the move.
     pub fn new(id: Id, data: MoveData) -> Self {
         Self {
             id,
@@ -330,7 +334,7 @@ impl Move {
         }
     }
 
-    /// Creates a new [`Move`] instance from [`MoveData`], with unlinked effect callbacks.
+    /// Creates a new active move, with unlinked effect callbacks.
     pub fn new_unlinked(id: Id, data: MoveData) -> Self {
         Self {
             id,
@@ -350,14 +354,17 @@ impl Move {
         }
     }
 
+    /// Returns the hit data for the target.
     pub fn hit_data(&mut self, target: MonHandle) -> &mut MoveHitData {
         self.hit_data.entry(target).or_insert(MoveHitData::new())
     }
 
+    /// Returns the hit data for the target, if any.
     pub fn maybe_hit_data(&self, target: MonHandle) -> Option<&MoveHitData> {
         self.hit_data.get(&target)
     }
 
+    /// Returns a reference to the hit effect.
     pub fn target_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.hit_effect.as_ref(),
@@ -370,6 +377,7 @@ impl Move {
         }
     }
 
+    /// Returns a mutable reference to the hit effect.
     pub fn target_hit_effect_mut(
         &mut self,
         hit_effect_type: MoveHitEffectType,
@@ -385,6 +393,7 @@ impl Move {
         }
     }
 
+    /// Returns a reference to the hit effect on the user.
     pub fn user_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.user_effect.as_ref(),
@@ -397,6 +406,7 @@ impl Move {
         }
     }
 
+    /// Returns a mutable reference to the hit effect on the user.
     pub fn user_hit_effect_mut(
         &mut self,
         hit_effect_type: MoveHitEffectType,
@@ -412,6 +422,7 @@ impl Move {
         }
     }
 
+    /// Returns the corresponding fxlang effect for the hit effect.
     pub fn fxlang_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&fxlang::Effect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => Some(&self.data.effect),

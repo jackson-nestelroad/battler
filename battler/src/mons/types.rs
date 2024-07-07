@@ -67,6 +67,7 @@ pub enum Type {
 }
 
 impl Type {
+    /// The ID of the type, for effect callbacks.
     pub fn id(&self) -> Id {
         Id::from(format!("{}type", self.to_string()))
     }

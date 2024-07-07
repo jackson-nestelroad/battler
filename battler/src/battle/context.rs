@@ -51,12 +51,12 @@ use crate::{
 /// - [`ActiveTargetContext`] - Every target Mon is associated with an active move.
 /// - [`EffectContext`] - Every effect occurs in a battle.
 /// - [`ApplyingEffectContext`] - Every applying effect has an associated effect.
+/// - [`SideEffectContext`] - Every side-applying effect has an associated effect.
+/// - [`FieldEffectContext`] - Every field-applying effect has an associated effect.
 pub struct Context<'battle, 'data>
 where
     'data: 'battle,
 {
-    // We store the battle as a pointer so that we can freely dereference it. Its lifetime is 'b.
-    //
     // Here are some implementation notes:
     //  1. Constructing a new context requires a mutable borrow of the battle object. This assures
     //     a mutable reference of the original battle object cannot be obtained at the same time.
@@ -77,9 +77,6 @@ where
     // child object to also reference its parent object through the context object.
     battle: &'battle mut CoreBattle<'data>,
     // Cache of resources borrowed by the context chain.
-    //
-    // SAFETY: To create a new context, the entire parent context must be borrowed mutably, which
-    // means it cannot be used while the child context exists.
     cache: ContextCache<'battle>,
 }
 

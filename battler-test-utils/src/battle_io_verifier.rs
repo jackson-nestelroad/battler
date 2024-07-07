@@ -7,8 +7,7 @@ use std::{
 use ahash::HashMap;
 use battler::{
     battle::{
-        Battle,
-        BattleOptions,
+        PublicCoreBattle,
         Request,
     },
     common::{
@@ -71,11 +70,7 @@ impl BattleIoVerifier {
     }
 
     #[track_caller]
-    pub fn verify_next_request_set<'d, B, O>(&mut self, battle: &mut B)
-    where
-        B: Battle<'d, O>,
-        O: BattleOptions,
-    {
+    pub fn verify_next_request_set(&mut self, battle: &mut PublicCoreBattle) {
         match self.next_expected_requests() {
             None => assert!(false, "battle io verifier has no more expected requests"),
             Some(requests) => pretty_assertions_sorted::assert_eq_sorted!(
@@ -94,11 +89,7 @@ impl BattleIoVerifier {
     }
 
     #[track_caller]
-    pub fn verify_new_logs<'d, B, O>(&mut self, battle: &mut B)
-    where
-        B: Battle<'d, O>,
-        O: BattleOptions,
-    {
+    pub fn verify_new_logs(&mut self, battle: &mut PublicCoreBattle) {
         match self.next_expected_logs() {
             None => assert!(false, "battle io verifier has no more expected logs"),
             Some(logs) => assert_new_logs_eq(battle, logs.as_slice()),

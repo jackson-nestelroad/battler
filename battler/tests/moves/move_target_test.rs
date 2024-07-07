@@ -2,9 +2,8 @@
 mod move_target_tests {
     use battler::{
         battle::{
-            Battle,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
         },
         common::{
@@ -80,7 +79,7 @@ mod move_target_tests {
             .with_battle_type(BattleType::Doubles)
             .with_pass_allowed(true)
             .with_team_validation(false)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("test-player", "Test Player")
             .add_player_to_side_2("foe", "Foe")
             .with_team("test-player", team()?)

@@ -1,5 +1,4 @@
 mod action;
-mod battle;
 mod battle_builder;
 mod battle_options;
 mod battle_type;
@@ -20,7 +19,6 @@ mod registry;
 mod request;
 mod side;
 mod speed_order;
-mod timer;
 
 pub use action::{
     Action,
@@ -32,12 +30,6 @@ pub use action::{
     TeamAction,
     TeamActionInput,
 };
-pub use battle::{
-    Battle,
-    BattleEngineOptions,
-    BattleEngineRandomizeBaseDamage,
-    BattleEngineSpeedSortTieResolution,
-};
 pub use battle_builder::{
     BattleBuilder,
     BattleBuilderOptions,
@@ -46,14 +38,17 @@ pub use battle_builder::{
 };
 pub use battle_options::{
     BattleOptions,
+    CoreBattleEngineOptions,
+    CoreBattleEngineRandomizeBaseDamage,
+    CoreBattleEngineSpeedSortTieResolution,
     CoreBattleOptions,
-    TimedBattleOptions,
 };
 pub use battle_type::BattleType;
 pub use boosts::{
     Boost,
-    BoostMapInOrderIterator,
+    BoostOrderIterator,
     BoostTable,
+    BoostTableEntries,
     ContainsOptionalBoosts,
 };
 pub use calculations::{
@@ -125,4 +120,3 @@ pub use speed_order::{
     speed_sort,
     SpeedOrderable,
 };
-pub use timer::TimerOptions;

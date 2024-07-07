@@ -2,7 +2,6 @@
 mod action_priority_tests {
     use battler::{
         battle::{
-            Battle,
             BattleType,
             PublicCoreBattle,
         },

@@ -77,7 +77,7 @@ pub struct Item {
 }
 
 impl Item {
-    /// Constructs a new [`Item`] instance from [`ItemData`].
+    /// Constructs a new item.
     pub fn new(id: Id, data: ItemData) -> Self {
         Self { id, data }
     }

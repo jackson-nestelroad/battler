@@ -30,16 +30,13 @@ use crate::{
 ///
 /// Borrowing resources at the root of the chain allows multiple contexts to borrow the same
 /// resource at different parts in the chain.
-///
-/// SAFETY: Never remove elements from these containers. We could use a
-/// [`KeyedRegistry`][`zone_alloc::KeyedRegistry`] to help make this guarantee, but that is slightly
-/// overkill.
 pub struct ContextCache<'borrow> {
     mons: UnsafeCell<FastHashMap<MonHandle, ElementRefMut<'borrow, Mon>>>,
     active_moves: UnsafeCell<FastHashMap<MoveHandle, ElementRefMut<'borrow, Move>>>,
 }
 
 impl<'borrow> ContextCache<'borrow> {
+    /// Creates a new context cache.
     pub fn new() -> Self {
         Self {
             mons: UnsafeCell::new(FastHashMap::new()),
@@ -47,11 +44,13 @@ impl<'borrow> ContextCache<'borrow> {
         }
     }
 
+    /// Clears all borrowed references.
     pub fn clear(&mut self) {
         self.mons.get_mut().clear();
         self.active_moves.get_mut().clear();
     }
 
+    /// Borrows a new [`Mon`] by handle.
     pub fn mon(&self, battle: &CoreBattle, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
         // SAFETY: This is the only method that accesses this map.
         let mons = unsafe { &mut *self.mons.get() };
@@ -80,6 +79,7 @@ impl<'borrow> ContextCache<'borrow> {
         Ok(mon.as_mut())
     }
 
+    /// Borrows a new [`Move`] by handle.
     pub fn active_move(
         &self,
         battle: &CoreBattle,

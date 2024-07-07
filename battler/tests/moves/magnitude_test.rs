@@ -2,10 +2,9 @@
 mod magnitude_test {
     use battler::{
         battle::{
-            Battle,
-            BattleEngineRandomizeBaseDamage,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineRandomizeBaseDamage,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
         },
         common::{
@@ -53,8 +52,8 @@ mod magnitude_test {
             .with_battle_type(BattleType::Singles)
             .with_seed(204759285930)
             .with_team_validation(false)
-            .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Max)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", sandslash()?)

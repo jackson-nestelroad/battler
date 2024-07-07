@@ -19,7 +19,7 @@ use crate::{
     common::Error,
 };
 
-/// How the user self destructs afte ra move.
+/// How the user self destructs after a move.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SelfDestructType {
     /// The user always self destructs.

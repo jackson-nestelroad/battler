@@ -36,6 +36,7 @@ impl EffectManager {
     const MAX_SAVED_EFFECTS: usize = 6 * 4 * 2 + 16;
     const MAX_STACK_SIZE: u8 = 10;
 
+    /// Creates a new effect manager.
     pub fn new() -> Self {
         Self {
             callbacks: LruCache::new(Self::MAX_SAVED_EFFECTS),
@@ -43,6 +44,7 @@ impl EffectManager {
         }
     }
 
+    /// Evaluates the event callback for the given effect.
     pub fn evaluate(
         context: &mut EvaluationContext,
         effect_handle: &EffectHandle,

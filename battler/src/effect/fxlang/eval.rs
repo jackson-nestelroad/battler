@@ -60,7 +60,7 @@ use crate::{
     },
 };
 
-/// The [`Context`][`crate::battle::Context`] for which an fxlang program is evaluated.
+/// The [`Context`][`crate::battle::Context`] in which an fxlang program is evaluated.
 pub enum EvaluationContext<'effect, 'context, 'battle, 'data>
 where
     'data: 'battle,
@@ -1025,6 +1025,7 @@ pub struct Evaluator {
 }
 
 impl Evaluator {
+    /// Creates a new evaluator.
     pub fn new() -> Self {
         Self {
             statement: 0,
@@ -1163,6 +1164,7 @@ impl Evaluator {
         Ok(())
     }
 
+    /// Evaluates the given program.
     pub fn evaluate_program(
         &mut self,
         context: &mut EvaluationContext,

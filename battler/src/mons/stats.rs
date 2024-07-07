@@ -25,7 +25,6 @@ use crate::{
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
-
 pub enum Stat {
     #[string = "hp"]
     HP,
@@ -51,6 +50,7 @@ pub enum Stat {
 }
 
 impl Stat {
+    /// The corresponding event for modifying the stat.
     pub fn modify_event(&self) -> Option<fxlang::BattleEvent> {
         match self {
             Self::HP => None,

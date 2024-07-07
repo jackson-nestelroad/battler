@@ -34,6 +34,7 @@ pub use stats::{
     PartialStatTable,
     Stat,
     StatTable,
+    StatTableEntries,
 };
 pub use types::{
     Type,

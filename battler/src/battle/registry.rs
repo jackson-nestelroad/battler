@@ -45,15 +45,15 @@ impl Display for MoveHandle {
 }
 
 /// A [`Mon`] registry, which is a main memory allocation area for [`Mon`]s in a single
-/// [`Battle`][`crate::battle::Battle`].
+/// [`CoreBattle`][`crate::battle::CoreBattle`].
 pub type MonRegistry = StrongRegistry<MonHandle, Mon>;
 
 /// A [`Move`] registry, which is used for storing all move objects for a single turn of a
-/// [`Battle`][`crate::battle::Battle`].
+/// [`CoreBattle`][`crate::battle::CoreBattle`].
 pub type MoveRegistry = KeyedRegistry<MoveHandle, Move>;
 
 /// A centralized place for objects that must be accessed by reference all across the different
-/// modules of a [`Battle`][`crate::battle::Battle`].
+/// modules of a [`CoreBattle`][`crate::battle::CoreBattle`].
 ///
 /// [`Mon`]s are guaranteed to live as long as the battle itself.
 ///

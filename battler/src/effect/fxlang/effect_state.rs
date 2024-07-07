@@ -40,6 +40,7 @@ impl EffectState {
     const SOURCE_SIDE: &'static str = "source_side";
     const SOURCE_POSITION: &'static str = "source_position";
 
+    /// Creates a new, default instance.
     pub fn new() -> Self {
         Self {
             values: FastHashMap::new(),
@@ -53,6 +54,7 @@ impl EffectState {
         }
     }
 
+    /// Creates a new state object from the values in the given hash map.
     pub fn from_hash_map(values: FastHashMap<String, Value>) -> Result<Self, Error> {
         let duration = match values.get(Self::DURATION) {
             Some(value) => Some(
@@ -147,28 +149,34 @@ impl EffectState {
         })
     }
 
+    /// The duration of the effect.
     pub fn duration(&self) -> Option<u8> {
         self.duration
     }
 
+    /// Sets the duration of the effect.
     pub fn set_duration(&mut self, duration: u8) {
         self.values
             .insert(Self::DURATION.to_owned(), Value::U64(duration as u64));
         self.duration = Some(duration);
     }
 
+    /// The move ID of the effect.
     pub fn move_id(&self) -> Option<&Id> {
         self.move_id.as_ref()
     }
 
+    /// The target location of the effect.
     pub fn target_location(&self) -> Option<isize> {
         self.target_location
     }
 
+    /// The source effect of the effect.
     pub fn source_effect(&self) -> Option<EffectHandle> {
         self.source_effect.clone()
     }
 
+    /// Sets the source effect of the effect.
     pub fn set_source_effect(&mut self, source_effect: EffectHandle) {
         self.values.insert(
             Self::SOURCE_EFFECT.to_owned(),
@@ -177,30 +185,36 @@ impl EffectState {
         self.source_effect = Some(source_effect);
     }
 
+    /// The source of the effect.
     pub fn source(&self) -> Option<MonHandle> {
         self.source
     }
 
+    /// Sets the source of the effect.
     pub fn set_source(&mut self, source: MonHandle) {
         self.values
             .insert(Self::SOURCE.to_owned(), Value::Mon(source));
         self.source = Some(source);
     }
 
+    /// The source side of the effect.
     pub fn source_side(&self) -> Option<usize> {
         self.source_side
     }
 
+    /// Sets the source side of the effect.
     pub fn set_source_side(&mut self, source_side: usize) {
         self.values
             .insert(Self::SOURCE_SIDE.to_owned(), Value::Side(source_side));
         self.source_side = Some(source_side);
     }
 
+    /// The source position of the effect.
     pub fn source_position(&self) -> Option<usize> {
         self.source_position
     }
 
+    /// Sets the source position of the effect.
     pub fn set_source_position(&mut self, source_position: usize) {
         self.values.insert(
             Self::SOURCE_POSITION.to_owned(),

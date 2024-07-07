@@ -6,12 +6,12 @@ use serde_string_enum::{
 /// The acceptable target(s) of a move.
 ///
 /// In this enum, the following terms are used:
-///     - "Adjacent" = A reachable Mon.
-///     - "Ally" - A Mon on the same side.
-///     - "Foe" - A Mon on the opposite side.
-///     - "Side" - The side of a battle, not any particular Mon on that side.
-///     - "Team" - All unfainted Mons on a team.
-///     - "User" - The user of a move.
+/// - "Adjacent" = A reachable Mon.
+/// - "Ally" - A Mon on the same side.
+/// - "Foe" - A Mon on the opposite side.
+/// - "Side" - The side of a battle, not any particular Mon on that side.
+/// - "Team" - All unfainted Mons on a team.
+/// - "User" - The user of a move.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
@@ -164,6 +164,7 @@ impl MoveTarget {
         }
     }
 
+    /// Validates the relative target position.
     pub fn valid_target(&self, relative_target: isize) -> bool {
         let is_self = relative_target == 0;
         let is_foe = relative_target > 0;

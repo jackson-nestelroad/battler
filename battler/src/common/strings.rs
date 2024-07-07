@@ -1,7 +1,9 @@
 use std::str::pattern::Pattern;
 
-/// Splits the string on the first occurrence of the specified delimiter. If found, returns the same
-/// result as `str::split_once`. If not found, returns the input string unchanged.
+/// Splits the string on the first occurrence of the specified delimiter.
+///
+/// If found, returns the same result as [`str::split_once`]. If not found, returns the input string
+/// unchanged.
 pub fn split_once_optional<'a, P>(input: &'a str, delimiter: P) -> (&'a str, Option<&'a str>)
 where
     P: Pattern<'a>,

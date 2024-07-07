@@ -2,10 +2,9 @@
 mod damage_calculation_tests {
     use battler::{
         battle::{
-            Battle,
-            BattleEngineRandomizeBaseDamage,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineRandomizeBaseDamage,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
         },
         common::{
@@ -143,7 +142,7 @@ mod damage_calculation_tests {
             .with_battle_type(BattleType::Singles)
             .with_pass_allowed(true)
             .with_team_validation(false)
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -158,7 +157,7 @@ mod damage_calculation_tests {
         test_battle_builder(team_1, team_2)
             .with_seed(0)
             .with_controlled_rng(true)
-            .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Max)
+            .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
             .build(data)
     }
 
@@ -170,7 +169,7 @@ mod damage_calculation_tests {
         test_battle_builder(team_1, team_2)
             .with_seed(0)
             .with_controlled_rng(true)
-            .with_base_damage_randomization(BattleEngineRandomizeBaseDamage::Min)
+            .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Min)
             .build(data)
     }
 

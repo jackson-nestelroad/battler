@@ -261,14 +261,24 @@ fn run_effect_event_by_handle(
     }
 }
 
+/// The target of a move for effect callbacks that run directly on an active move.
 pub enum MoveTargetForEvent {
+    /// The effect runs with no target.
     None,
+    /// The effect runs with respect to the user of the move.
+    ///
+    /// This does not mean the target of the move is the user.
     User,
+    /// The effect runs with respect to a single target of the move.
     Mon(MonHandle),
+    /// The effect runs with respect to the target side of the move.
     Side(usize),
+    /// The effect runs with respect to the field as a whole.
     Field,
 }
 
+/// The origin of an effect, which is important for reading and writing the
+/// [`EffectState`][`fxlang::EffectState`] of the effect.
 enum EffectOrigin {
     None,
     MonStatus(MonHandle),
@@ -1133,8 +1143,6 @@ fn run_event_for_no_target_internal(context: &mut Context, event: fxlang::Battle
 }
 
 /// Runs an event on an active [`Move`][`crate::moves::Move`].
-///
-/// Expects no input or output. Any output is ignored.
 pub fn run_active_move_event_expecting_void(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
@@ -1208,17 +1216,6 @@ pub fn run_mon_status_event_expecting_u8(
         .ok()
 }
 
-/// Runs an event on the target [`Mon`]'s volatile status.
-///
-/// Expects no input or output. Any output is ignored.
-pub fn run_mon_volatile_event(
-    context: &mut ApplyingEffectContext,
-    event: fxlang::BattleEvent,
-    status: &Id,
-) {
-    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status);
-}
-
 /// Runs an event on the target [`Mon`]'s current status.
 ///
 /// Expects a [`bool`].
@@ -1229,6 +1226,15 @@ pub fn run_mon_status_event_expecting_bool(
     run_mon_status_event_internal(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
+}
+
+/// Runs an event on the target [`Mon`]'s volatile status.
+pub fn run_mon_volatile_event(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    status: &Id,
+) {
+    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status);
 }
 
 /// Runs an event on the target [`Mon`]'s volatile status.
@@ -1258,8 +1264,6 @@ pub fn run_mon_volatile_event_expecting_u8(
 }
 
 /// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
-///
-/// Expects no input or output. Any output is ignored.
 pub fn run_side_condition_event(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
@@ -1295,16 +1299,11 @@ pub fn run_side_condition_event_expecting_u8(
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
-///
-/// Expects no input or output. Any output is ignored.
-pub fn run_applying_effect_event_expecting_void(
-    context: &mut ApplyingEffectContext,
-    event: fxlang::BattleEvent,
-) {
+pub fn run_applying_effect_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
     run_applying_effect_event_internal(context, event, fxlang::VariableInput::default());
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
 pub fn run_event_for_applying_effect(
@@ -1318,10 +1317,10 @@ pub fn run_event_for_applying_effect(
         .unwrap_or(true)
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
-/// Expects a [`bool`].
-pub fn run_event_for_applying_effect_expecting_bool(
+/// Expects a [`bool`]. Returns the value of the first callback that returns a value.
+pub fn run_event_for_applying_effect_expecting_bool_quick_return(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
@@ -1329,13 +1328,15 @@ pub fn run_event_for_applying_effect_expecting_bool(
         context,
         event,
         fxlang::VariableInput::default(),
-        &RunCallbacksOptions::default(),
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
     )?
     .boolean()
     .ok()
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Expects an integer that can fit in a [`u32`].
 pub fn run_event_for_applying_effect_expecting_u32(
@@ -1354,7 +1355,7 @@ pub fn run_event_for_applying_effect_expecting_u32(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Expects an integer that can fit in a [`u8`].
 pub fn run_event_for_applying_effect_expecting_u8(
@@ -1373,7 +1374,7 @@ pub fn run_event_for_applying_effect_expecting_u8(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Expects a [`MoveOutcomeOnTarget`].
 pub fn run_event_for_applying_effect_expecting_move_outcome_on_target(
@@ -1390,7 +1391,7 @@ pub fn run_event_for_applying_effect_expecting_move_outcome_on_target(
     .ok()
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Expects a [`BoostTable`].
 pub fn run_event_for_applying_effect_expecting_boost_table(
@@ -1409,18 +1410,17 @@ pub fn run_event_for_applying_effect_expecting_boost_table(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Expects a [`MoveEventResult`].
 pub fn run_event_for_applying_effect_expecting_move_event_result(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
-    input: fxlang::VariableInput,
 ) -> MoveEventResult {
     match run_event_for_applying_effect_internal(
         context,
         event,
-        input,
+        fxlang::VariableInput::default(),
         &RunCallbacksOptions::default(),
     ) {
         Some(result) => result.move_result().unwrap_or(MoveEventResult::Advance),
@@ -1428,7 +1428,7 @@ pub fn run_event_for_applying_effect_expecting_move_event_result(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for an applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for an applying effect.
 ///
 /// Exepcts a [`MonHandle`]. Returns the value of the first callback that returns a value.
 pub fn run_event_for_applying_effect_expecting_mon_quick_return(
@@ -1557,15 +1557,13 @@ pub fn run_event_for_mon_expecting_types(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for the residual effect, which occurs
-/// at the end of every turn.
-///
-/// Expects no input or output.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for the residual effect, which
+/// occurs at the end of every turn.
 pub fn run_event_for_no_target(context: &mut Context, event: fxlang::BattleEvent) {
     run_event_for_no_target_internal(context, event)
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a side-applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for a side-applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
 pub fn run_event_for_side_effect(
@@ -1579,7 +1577,7 @@ pub fn run_event_for_side_effect(
         .unwrap_or(true)
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a side-applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for a side-applying effect.
 ///
 /// Expects a [`MoveEventResult`].
 pub fn run_event_for_side_effect_expecting_move_event_result(
@@ -1594,7 +1592,7 @@ pub fn run_event_for_side_effect_expecting_move_event_result(
     }
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a field-applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for a field-applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
 pub fn run_event_for_field_effect(
@@ -1608,7 +1606,7 @@ pub fn run_event_for_field_effect(
         .unwrap_or(true)
 }
 
-/// Runs an event on the [`Battle`][`crate::battle::Battle`] for a field-applying effect.
+/// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for a field-applying effect.
 ///
 /// Expects a [`MoveEventResult`].
 pub fn run_event_for_field_effect_expecting_move_event_result(

@@ -20,13 +20,12 @@ use crate::{
         core_battle_effects,
         core_battle_logs,
         Action,
-        Battle,
-        BattleEngineOptions,
-        BattleEngineRandomizeBaseDamage,
         BattleOptions,
         BattleQueue,
         BattleRegistry,
         Context,
+        CoreBattleEngineOptions,
+        CoreBattleEngineRandomizeBaseDamage,
         CoreBattleOptions,
         Field,
         Mon,
@@ -98,79 +97,98 @@ impl<'d> PublicCoreBattle<'d> {
         options: CoreBattleOptions,
         dex: Dex<'d>,
         format: Format,
-        engine_options: BattleEngineOptions,
+        engine_options: CoreBattleEngineOptions,
     ) -> Result<Self, Error> {
         let internal = CoreBattle::from_builder(options, dex, format, engine_options)?;
         Ok(Self { internal })
     }
-}
 
-impl<'d> Battle<'d, CoreBattleOptions> for PublicCoreBattle<'d> {
-    fn new(
+    /// Creates a new battle.
+    pub fn new(
         options: CoreBattleOptions,
         data: &'d dyn DataStore,
-        engine_options: BattleEngineOptions,
+        engine_options: CoreBattleEngineOptions,
     ) -> Result<Self, Error> {
         let internal = CoreBattle::new(options, data, engine_options)?;
         Ok(Self { internal })
     }
 
-    fn started(&self) -> bool {
+    /// Has the battle started?
+    pub fn started(&self) -> bool {
         self.internal.started
     }
 
-    fn ended(&self) -> bool {
+    /// Has the battle ended?
+    pub fn ended(&self) -> bool {
         self.internal.ended
     }
 
-    fn has_new_logs(&self) -> bool {
+    /// Does the battle have new battle logs since the last call to [`Self::new_logs`]?
+    pub fn has_new_logs(&self) -> bool {
         self.internal.has_new_logs()
     }
 
-    fn all_logs(&self) -> impl Iterator<Item = &str> {
+    /// Returns all battle logs.
+    pub fn all_logs(&self) -> impl Iterator<Item = &str> {
         self.internal.all_logs()
     }
 
-    fn new_logs(&mut self) -> impl Iterator<Item = &str> {
+    /// Returns new battle logs since the last call to [`Self::new_logs`].
+    pub fn new_logs(&mut self) -> impl Iterator<Item = &str> {
         self.internal.new_logs()
     }
 
-    fn log(&mut self, event: Event) {
+    /// Logs a new battle event to the battle log.
+    pub fn log(&mut self, event: Event) {
         self.internal.log(event)
     }
 
-    fn log_many<I>(&mut self, events: I)
+    /// Logs many battle events to the battle log.
+    pub fn log_many<I>(&mut self, events: I)
     where
         I: IntoIterator<Item = Event>,
     {
         self.internal.log_many(events)
     }
 
-    fn start(&mut self) -> Result<(), Error> {
+    /// Starts the battle.
+    pub fn start(&mut self) -> Result<(), Error> {
         self.internal.start()
     }
 
-    fn ready_to_continue(&mut self) -> Result<bool, Error> {
+    /// Is the battle ready to continue?
+    pub fn ready_to_continue(&mut self) -> Result<bool, Error> {
         self.internal.ready_to_continue()
     }
 
-    fn continue_battle(&mut self) -> Result<(), Error> {
+    /// Continues the battle.
+    ///
+    /// [`Self::ready_to_continue`] should return `Ok(true)` before this method
+    /// is called.
+    pub fn continue_battle(&mut self) -> Result<(), Error> {
         self.internal.continue_battle()
     }
 
-    fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error> {
+    /// Returns the player data for the battle by player ID.
+    ///
+    /// Individual requests to players also contain this data, but this method can be useful for
+    /// viewing for the player's team at other points in the battle and even after the battle ends.
+    pub fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error> {
         self.internal.player_data(player)
     }
 
-    fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
+    /// Returns all active requests for the battle, indexed by player ID.
+    pub fn active_requests<'b>(&'b self) -> impl Iterator<Item = (String, Request)> + 'b {
         self.internal.active_requests()
     }
 
-    fn request_for_player(&self, player: &str) -> Option<Request> {
+    /// Returns the active request for the player ID.
+    pub fn request_for_player(&self, player: &str) -> Option<Request> {
         self.internal.request_for_player(player)
     }
 
-    fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
+    /// Sets the player's choice for their active request.
+    pub fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
         self.internal.set_player_choice(player_id, input)
     }
 }
@@ -182,9 +200,16 @@ pub struct FaintEntry {
     pub effect: Option<EffectHandle>,
 }
 
-/// The core implementation of a [`Battle`].
+/// An instance of a battle.
 ///
-/// All battle logic lives here.
+/// A battle has the following properties:
+/// - Takes place on a single [`Field`][`crate::battle::Field`].
+/// - Takes place between two [`Side`][`crate::battle::Side`]s.
+/// - Receives input for a single [`Player`][`crate::battle::Player`].
+/// - Features [`Mon`][`crate::battle::Mon`]s attacking one another in a turn-based manner.
+/// - Adheres to a [`Format`][`crate::config::Format`].
+///
+/// All of the core battle logic runs through this object.
 pub struct CoreBattle<'d> {
     log: EventLog,
 
@@ -196,7 +221,7 @@ pub struct CoreBattle<'d> {
     pub dex: Dex<'d>,
     pub queue: BattleQueue,
     pub faint_queue: VecDeque<FaintEntry>,
-    pub engine_options: BattleEngineOptions,
+    pub engine_options: CoreBattleEngineOptions,
     pub format: Format,
     pub field: Field,
     pub sides: [Side; 2],
@@ -226,7 +251,7 @@ impl<'d> CoreBattle<'d> {
     fn new(
         mut options: CoreBattleOptions,
         data: &'d dyn DataStore,
-        engine_options: BattleEngineOptions,
+        engine_options: CoreBattleEngineOptions,
     ) -> Result<Self, Error> {
         options
             .validate()
@@ -244,7 +269,7 @@ impl<'d> CoreBattle<'d> {
         options: CoreBattleOptions,
         dex: Dex<'d>,
         format: Format,
-        engine_options: BattleEngineOptions,
+        engine_options: CoreBattleEngineOptions,
     ) -> Result<Self, Error> {
         let prng = (engine_options.rng_factory)(options.seed);
         let log = EventLog::new();
@@ -968,7 +993,7 @@ impl<'d> CoreBattle<'d> {
                 if !context.mon().active || context.mon().fainted {
                     return Ok(());
                 }
-                core_battle_effects::run_applying_effect_event_expecting_void(
+                core_battle_effects::run_applying_effect_event(
                     &mut context.applying_effect_context(
                         EffectHandle::InactiveMove(action.id.clone()),
                         None,
@@ -1192,6 +1217,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Resolves the given action by calculating its priority in the context of the battle.
     pub fn resolve_action(context: &mut Context, action: &mut Action) -> Result<(), Error> {
         if let Action::Move(action) = action {
             let mut context = context.mon_context(action.mon_action.mon)?;
@@ -1203,6 +1229,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Selects a random switchable Mon from the player.
     pub fn random_switchable(
         context: &mut Context,
         player: usize,
@@ -1217,6 +1244,7 @@ impl<'d> CoreBattle<'d> {
         .cloned())
     }
 
+    /// Selects a random target for the move.
     pub fn random_target(
         context: &mut Context,
         mon: MonHandle,
@@ -1262,6 +1290,7 @@ impl<'d> CoreBattle<'d> {
         )
     }
 
+    /// Gets the selected target of the move.
     pub fn get_target(
         context: &mut Context,
         mon: MonHandle,
@@ -1327,6 +1356,7 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
+    /// Checks if the selected target position is valid for the move.
     pub fn valid_target(
         context: &mut MonContext,
         move_target: MoveTarget,
@@ -1352,10 +1382,12 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
+    /// Registers a new active move, returning its handle.
     pub fn register_move(&mut self, mov: Move) -> MoveHandle {
         self.registry.register_move(mov)
     }
 
+    /// Clears all active moves for all Mons.
     pub fn clear_all_active_moves(context: &mut Context) -> Result<(), Error> {
         for mon in context
             .battle()
@@ -1368,6 +1400,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Updates the speed of all Mons.
     pub fn update_speed(context: &mut Context) -> Result<(), Error> {
         for mon_handle in context
             .battle()
@@ -1379,6 +1412,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Checks type immunity for several defensive types against an offensive type.
     pub fn check_type_immunity(&self, offense: Type, defense: &[Type]) -> bool {
         defense
             .iter()
@@ -1393,6 +1427,7 @@ impl<'d> CoreBattle<'d> {
             .any(|effectiveness| effectiveness == &TypeEffectiveness::None)
     }
 
+    /// Checks the type effectiveness of an offensive type against a defensive type.
     pub fn check_type_effectiveness(&self, offense: Type, defense: Type) -> i8 {
         match self
             .dex
@@ -1408,17 +1443,21 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
+    /// Randomizes damage, as part of the damage calculation formula.
     pub fn randomize_base_damage(&mut self, base_damage: u32) -> u32 {
         let random_factor = match self.engine_options.randomize_base_damage {
-            BattleEngineRandomizeBaseDamage::Randomize => {
+            CoreBattleEngineRandomizeBaseDamage::Randomize => {
                 rand_util::range(self.prng.as_mut(), 0, 16) as u32
             }
-            BattleEngineRandomizeBaseDamage::Max => 0,
-            BattleEngineRandomizeBaseDamage::Min => 15,
+            CoreBattleEngineRandomizeBaseDamage::Max => 0,
+            CoreBattleEngineRandomizeBaseDamage::Min => 15,
         };
         base_damage * (100 - random_factor) / 100
     }
 
+    /// Logs all faint messages.
+    ///
+    /// A Mon is considered truly fainted only after this method runs.
     pub fn faint_messages(context: &mut Context) -> Result<(), Error> {
         if context.battle().ended {
             return Ok(());
@@ -1448,6 +1487,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Checks if anyone has won the battle.
     pub fn check_win(context: &mut Context) -> Result<(), Error> {
         let mut winner = None;
         for side in context.battle().side_indices() {
@@ -1463,10 +1503,16 @@ impl<'d> CoreBattle<'d> {
         Self::win(context, winner)
     }
 
+    /// Gets an [`EffectHandle`] by name.
     pub fn get_effect_handle(&mut self, name: &str) -> Result<&EffectHandle, Error> {
         self.get_effect_handle_by_id(&Id::from(name))
     }
 
+    /// Gets an [`EffectHandle`] by ID.
+    ///
+    /// An [`Effect`] has many variants. An ID is not enough on its own to lookup a generic effect.
+    /// For the duration of a battle, an ID will map to a single [`EffectHandle`]. This method
+    /// handles the caching of this translation.
     pub fn get_effect_handle_by_id(&mut self, id: &Id) -> Result<&EffectHandle, Error> {
         if self.effect_handle_cache.contains_key(id) {
             return self.effect_handle_cache.get(id).wrap_error_with_message(
@@ -1497,6 +1543,9 @@ impl<'d> CoreBattle<'d> {
         EffectHandle::NonExistent(id)
     }
 
+    /// Gets an [`Effect`] by handle.
+    ///
+    /// [`EffectHandle`] is considered a stable way to look up any effect in the dex.
     pub fn get_effect_by_handle<'context>(
         context: &'context Context,
         effect_handle: &EffectHandle,
@@ -1532,6 +1581,7 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
+    /// Gets an [`Effect`] by ID.
     pub fn get_effect_by_id<'context>(
         context: &'context mut Context,
         id: &Id,

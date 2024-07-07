@@ -1035,6 +1035,12 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         battler_error!("cannot {operation} {lhs} and {rhs}")
     }
 
+    /// Implements negation.
+    ///
+    /// For boolean coercion, all values coerce to `true` except for:
+    /// - `undefined`
+    /// - `false`
+    /// - `0`
     pub fn negate(self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match self {
             Self::Undefined => MaybeReferenceValue::Boolean(true),
@@ -1047,6 +1053,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements multiplication.
     pub fn multiply(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match Self::sort_for_commutative_operation(self, rhs) {
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs.wrapping_mul(rhs)),
@@ -1101,6 +1108,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements division.
     pub fn divide(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs / rhs),
@@ -1178,6 +1186,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements modulo.
     pub fn modulo(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs % rhs),
@@ -1199,6 +1208,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements addition.
     pub fn add(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match Self::sort_for_commutative_operation(self, rhs) {
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs.wrapping_add(rhs)),
@@ -1253,6 +1263,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements subtraction.
     pub fn subtract(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::U64(lhs), Self::U64(rhs)) => MaybeReferenceValue::U64(lhs.wrapping_sub(rhs)),
@@ -1434,24 +1445,28 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         result.wrap_error_with_message("comparison yielded no result")
     }
 
+    /// Implements less than comparison.
     pub fn less_than(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_lt(),
         ))
     }
 
+    /// Implements greater than comparison.
     pub fn greater_than(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_gt(),
         ))
     }
 
+    /// Implements less than or equal to comparison.
     pub fn less_than_or_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_le(),
         ))
     }
 
+    /// Implements greater than or equal to comparison.
     pub fn greater_than_or_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_ge(),
@@ -1580,10 +1595,12 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements equality.
     pub fn equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         Ok(MaybeReferenceValue::Boolean(self.equal_ref(&rhs)?))
     }
 
+    /// Implements inequality.
     pub fn not_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         Ok(MaybeReferenceValue::Boolean(!self.equal_ref(&rhs)?))
     }
@@ -1597,6 +1614,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             .any(|lhs| lhs.equal_ref(&rhs).is_ok_and(|eq| eq))
     }
 
+    /// Implements list lookup.
     pub fn has(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::List(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
@@ -1621,6 +1639,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             .any(|lhs| MaybeReferenceValueForOperation::list_has_value(rhs, lhs))
     }
 
+    /// Implements list subset check.
     pub fn has_any(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::List(lhs), Self::List(rhs)) => Self::list_has_any_value(lhs, rhs),
@@ -1641,6 +1660,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(MaybeReferenceValue::Boolean(result))
     }
 
+    /// Implements boolean conjunction.
     pub fn and(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs && rhs,
@@ -1655,6 +1675,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(MaybeReferenceValue::Boolean(result))
     }
 
+    /// Implements boolean disjunction.
     pub fn or(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs || rhs,

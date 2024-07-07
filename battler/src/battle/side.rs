@@ -51,7 +51,7 @@ pub struct Side {
 
 // Construction and initialization logic.
 impl Side {
-    /// Creates a new [`Side`] from [`SideData`].
+    /// Creates a new side.
     pub fn new(
         data: SideData,
         index: usize,
@@ -78,6 +78,7 @@ impl Side {
 
 // Basic getters.
 impl Side {
+    /// Converts a player position to the player index.
     pub fn player_position_to_index(context: &SideContext, position: usize) -> Option<usize> {
         context
             .battle()
@@ -86,6 +87,7 @@ impl Side {
             .map(|player| player.index)
     }
 
+    /// Looks up the Mon in the given position on the side.
     pub fn mon_in_position(
         context: &mut SideContext,
         position: usize,
@@ -99,6 +101,7 @@ impl Side {
         Ok(Player::active_mon_handle(&player_context, position))
     }
 
+    /// Counts the number of Mons left on the side.
     pub fn mons_left(context: &SideContext) -> usize {
         context
             .battle()

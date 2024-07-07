@@ -2,9 +2,8 @@
 mod move_usage_tests {
     use battler::{
         battle::{
-            Battle,
-            BattleEngineSpeedSortTieResolution,
             BattleType,
+            CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
         },
         common::{
@@ -69,7 +68,7 @@ mod move_usage_tests {
             .with_seed(0)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
-            .with_speed_sort_tie_resolution(BattleEngineSpeedSortTieResolution::Keep)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .with_team("player-1", team_1()?)
             .with_team("player-2", team_2()?)
             .build(data)

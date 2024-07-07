@@ -41,6 +41,18 @@ pub mod CallbackFlag {
 }
 
 /// Common types of [`Callback`]s, defined for convenience.
+///
+/// - `ApplyingEffect` - An effect being applied to a target Mon, potentially from a source Mon. The
+///   focus is on the applying effect itself.
+/// - `Effect` - Same as `ApplyingEffect`, but the applying effect is considered to be the "source
+///   effect."
+/// - `SourceMove` - An active move being used by a Mon, potentially with a target.
+/// - `Move` - An active move being used by a Mon against a target.
+/// - `Mon` - A callback on the Mon itself, with no associated effect.
+/// - `Side` - A callback on the side itself, with no associated effect, potentially with a source
+///   Mon.
+/// - `MoveSide` - An active move being used by a Mon against a side.
+/// - `MoveField` - An active move being used by a Mon against the field.
 #[repr(u32)]
 enum CommonCallbackType {
     ApplyingEffectModifier = CallbackFlag::TakesTargetMon
@@ -531,7 +543,7 @@ pub enum BattleEvent {
 }
 
 impl BattleEvent {
-    /// Maps the event to the [`CallbackType`] flags.
+    /// Maps the event to the [`CallbackFlag`] flags.
     pub fn callback_type_flags(&self) -> u32 {
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
@@ -596,7 +608,7 @@ impl BattleEvent {
         }
     }
 
-    /// Checks if the event has the given [`CallbackType`] flag set.
+    /// Checks if the event has the given [`CallbackFlag`] flag set.
     pub fn has_flag(&self, flag: u32) -> bool {
         self.callback_type_flags() & flag != 0
     }
@@ -690,17 +702,19 @@ pub enum Program {
     Branch(Vec<Program>),
 }
 
+/// An fxlang program with priority information for ordering.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct ProgramWithPriority {
+pub struct ProgramWithPriority {
     pub program: Program,
     pub order: Option<u32>,
     pub priority: Option<i32>,
     pub sub_order: Option<u32>,
 }
 
+/// The input to the [`Callback`] type.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-enum CallbackInput {
+pub enum CallbackInput {
     Regular(Program),
     WithPriority(ProgramWithPriority),
 }
