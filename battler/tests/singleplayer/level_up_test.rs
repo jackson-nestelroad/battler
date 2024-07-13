@@ -94,7 +94,7 @@ mod level_up_test {
             .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
             .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_protagonist_to_side_1("player-1", "Red")
-            .add_player_to_side_2("player-2", "Wild")
+            .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
             .with_team("player-2", team_2)
             .build(data)
@@ -211,7 +211,7 @@ mod level_up_test {
                 "side|id:0|name:Side 1",
                 "side|id:1|name:Side 2",
                 "player|id:player-1|name:Red|side:0|position:0",
-                "player|id:player-2|name:Wild|side:1|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
                 ["time"],
                 "teamsize|player:player-1|size:1",
                 "teamsize|player:player-2|size:2",
