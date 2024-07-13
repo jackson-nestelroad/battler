@@ -1,7 +1,6 @@
 use std::ops::Deref;
 
 use lazy_static::lazy_static;
-use num::integer::Roots;
 
 use crate::{
     battle::{
@@ -107,9 +106,7 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
         // TODO: Ability End event.
     }
 
-    context.mon_mut().active = false;
-    context.mon_mut().needs_switch = None;
-
+    Mon::switch_out(context)?;
     Ok(true)
 }
 
@@ -128,22 +125,14 @@ pub fn switch_in(
         return Ok(false);
     }
 
-    let active_len = context.player().active.len();
+    let active_len = context.player().total_active_positions();
     if position >= active_len {
         return Err(battler_error!(
             "invalid switch position {position} / {active_len}"
         ));
     }
 
-    let previous_mon = context
-        .player()
-        .active
-        .get(position)
-        .cloned()
-        .wrap_error_with_format(format_args!(
-            "expected {position} to be a valid index to active Mons"
-        ))?;
-    if let Some(previous_mon) = previous_mon {
+    if let Some(previous_mon) = context.player().active_mon_handle(position) {
         let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
         if context.mon().hp > 0 {
             if let Some(previous_mon_switch_type) = context.mon().needs_switch {
@@ -162,8 +151,7 @@ pub fn switch_in(
         }
     }
 
-    Mon::switch_in(context, position);
-    context.player_mut().active[position] = Some(context.mon_handle());
+    Mon::switch_in(context, position)?;
 
     core_battle_logs::switch(context, is_drag)?;
 
@@ -1754,7 +1742,7 @@ pub fn heal(
 
 /// Drags a random Mon into a player's position.
 pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Error> {
-    let old = Player::active_mon_handle(context, position);
+    let old = context.player().active_mon_handle(position);
 
     let old_context = match old {
         None => return Err(battler_error!("nothing to drag out")),
@@ -2955,7 +2943,9 @@ pub fn try_escape(context: &mut MonContext) -> Result<(), Error> {
     }
 
     context.player_mut().escaped = true;
-    for mon in Player::active_mon_handles(context.as_player_context())
+    for mon in context
+        .player()
+        .active_mon_handles()
         .cloned()
         .collect::<Vec<_>>()
     {
@@ -2965,7 +2955,6 @@ pub fn try_escape(context: &mut MonContext) -> Result<(), Error> {
         )?;
     }
     context.player_mut().mons_left = 0;
-    context.player_mut().active.fill(None);
 
     core_battle_logs::escaped(context.as_player_context_mut())?;
 

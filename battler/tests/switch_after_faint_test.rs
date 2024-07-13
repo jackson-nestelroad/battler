@@ -153,7 +153,7 @@ mod switch_after_faint_test {
         );
         assert_error_message(
             battle.set_player_choice("player-2", "switch 1"),
-            "cannot switch: you cannot switch to an active Mon",
+            "cannot switch: you cannot switch to a fainted Mon",
         );
         assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
 
@@ -289,11 +289,11 @@ mod switch_after_faint_test {
         );
         assert_error_message(
             battle.set_player_choice("player-2", "switch 1"),
-            "cannot switch: you cannot switch to an active Mon",
+            "cannot switch: you cannot switch to a fainted Mon",
         );
         assert_error_message(
             battle.set_player_choice("player-2", "switch 0;switch 2"),
-            "cannot switch: you cannot switch to an active Mon",
+            "cannot switch: you cannot switch to a fainted Mon",
         );
         assert_error_message(
             battle.set_player_choice("player-2", "switch 0;switch 0"),

@@ -317,7 +317,8 @@ pub struct Mon {
     pub active: bool,
     pub active_turns: u32,
     pub active_move_actions: u32,
-    pub active_position: usize,
+    pub active_position: Option<usize>,
+    pub old_active_position: Option<usize>,
     pub team_position: usize,
 
     pub base_stored_stats: StatTable,
@@ -446,7 +447,8 @@ impl Mon {
             active: false,
             active_turns: 0,
             active_move_actions: 0,
-            active_position: usize::MAX,
+            active_position: None,
+            old_active_position: None,
             team_position,
 
             base_stored_stats: StatTable::default(),
@@ -668,11 +670,10 @@ impl Mon {
     /// `players_on_side * active_per_player`.
     pub fn position_on_side(context: &MonContext) -> Result<usize, Error> {
         let mon = context.mon();
-        let active_position = if mon.active_position == usize::MAX {
-            return Err(battler_error!("mon has no active position"));
-        } else {
-            mon.active_position
-        };
+        let active_position = mon
+            .active_position
+            .or(mon.old_active_position)
+            .wrap_error_with_message("mon has no active position")?;
         let player = context.player();
         let position = active_position
             + player.position * context.battle().format.battle_type.active_per_player();
@@ -995,11 +996,6 @@ impl Mon {
 
     /// Generates battle request data.
     pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleRequestData, Error> {
-        let player_active_position = if context.mon().active {
-            Some(context.mon().active_position)
-        } else {
-            None
-        };
         let side_position = if context.mon().active {
             Some(Self::position_on_side(context)?)
         } else {
@@ -1017,7 +1013,7 @@ impl Mon {
                 .map(|id| id.to_string())
                 .unwrap_or(String::default()),
             active: context.mon().active,
-            player_active_position,
+            player_active_position: context.mon().active_position,
             side_position,
             stats: context.mon().stats.without_hp(),
             moves: context
@@ -1348,18 +1344,37 @@ impl Mon {
     }
 
     /// Switches the Mon into the given position for the player.
-    pub fn switch_in(context: &mut MonContext, position: usize) {
-        let mon = context.mon_mut();
-        mon.active = true;
-        mon.active_turns = 0;
-        mon.active_move_actions = 0;
-        mon.active_position = position;
-        for move_slot in &mut mon.move_slots {
+    pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error> {
+        context.mon_mut().active = true;
+        context.mon_mut().active_turns = 0;
+        context.mon_mut().active_move_actions = 0;
+        context.mon_mut().active_position = Some(position);
+
+        let mon_handle = context.mon_handle();
+        context
+            .player_mut()
+            .set_active_position(position, Some(mon_handle))?;
+
+        for move_slot in &mut context.mon_mut().move_slots {
             move_slot.used = false;
         }
         let ability_priority = context.battle_mut().next_ability_priority();
-        let mon = context.mon_mut();
-        mon.ability.priority = ability_priority;
+        context.mon_mut().ability.priority = ability_priority;
+        Ok(())
+    }
+
+    /// Switches the Mon out of its active position.
+    pub fn switch_out(context: &mut MonContext) -> Result<(), Error> {
+        context.mon_mut().active = false;
+        context.mon_mut().needs_switch = None;
+        context.mon_mut().old_active_position = context.mon().active_position;
+        if let Some(old_active_position) = context.mon().old_active_position {
+            context
+                .player_mut()
+                .set_active_position(old_active_position, None)?;
+        }
+        context.mon_mut().active_position = None;
+        Ok(())
     }
 
     /// Sets the active move.
@@ -1489,8 +1504,9 @@ impl Mon {
     /// Clears the Mon's state when it faints.
     pub fn clear_state_on_faint(context: &mut MonContext) -> Result<(), Error> {
         // TODO: End event for ability.
-        Mon::clear_volatile(context, false)?;
+        Self::clear_volatile(context, false)?;
         context.mon_mut().fainted = true;
+        Self::switch_out(context)?;
         Ok(())
     }
 
@@ -1527,6 +1543,7 @@ impl Mon {
 
     /// Resets the Mon's state for the next turn.
     pub fn reset_state_for_next_turn(context: &mut MonContext) {
+        context.mon_mut().old_active_position = None;
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().hurt_this_turn = 0;
         context.mon_mut().stats_raised_this_turn = false;

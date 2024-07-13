@@ -72,7 +72,7 @@ impl Default for WildPlayerOptions {
 /// The type of the [`Player`], which controls some of the operations that can be done in the
 /// battle.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
+#[serde(tag = "type")]
 pub enum PlayerType {
     /// A trainer in a competitive battle.
     #[default]
@@ -292,7 +292,11 @@ pub struct Player {
     pub mons_left: usize,
 
     pub mons: Vec<MonHandle>,
-    pub active: Vec<Option<MonHandle>>,
+    active: Vec<Option<MonHandle>>,
+    /// A mirror of the above list, but fainted Mons are not unset.
+    ///
+    /// This is helpful for locating and switching out fainted Mons.
+    active_or_fainted: Vec<Option<MonHandle>>,
 
     pub escape_attempts: u16,
     pub escaped: bool,
@@ -328,7 +332,8 @@ impl Player {
             index: usize::MAX,
             mons,
             choice: ChoiceState::new(),
-            active,
+            active: active.clone(),
+            active_or_fainted: active,
             request: None,
             mons_left: 0,
             escape_attempts: 0,
@@ -365,43 +370,81 @@ impl Player {
         self.request.as_ref().map(|req| req.request_type()).clone()
     }
 
-    /// The active [`MonHandle`] for the player's position.
-    pub fn active_mon_handle(context: &PlayerContext, position: usize) -> Option<MonHandle> {
-        match context.player().active.get(position) {
-            Some(&Some(mon_handle)) => Some(mon_handle),
-            _ => None,
-        }
+    /// The total number of active positions for the player.
+    pub fn total_active_positions(&self) -> usize {
+        self.active.len()
     }
 
-    /// Creates an iterator over all active Mon's owned by the player.
-    pub fn active_mon_handles<'p, 'c, 'b, 'd>(
-        context: &'p PlayerContext<'_, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
-        context
-            .player()
+    /// Sets the active position.
+    pub fn set_active_position(
+        &mut self,
+        position: usize,
+        mon: Option<MonHandle>,
+    ) -> Result<(), Error> {
+        *self
             .active
+            .get_mut(position)
+            .wrap_error_with_format(format_args!(
+                "mon cannot be in active position {position}"
+            ))? = mon;
+        if mon.is_some() {
+            // Keep track of fainted Mons for switching.
+            *self
+                .active_or_fainted
+                .get_mut(position)
+                .wrap_error_with_format(format_args!(
+                    "mon cannot be in active position {position}"
+                ))? = mon;
+        }
+        Ok(())
+    }
+
+    /// The active [`MonHandle`] for the player's position.
+    pub fn active_mon_handle(&self, position: usize) -> Option<MonHandle> {
+        self.active.get(position).cloned().flatten()
+    }
+
+    /// Creates an iterator over all active Mons owned by the player.
+    ///
+    /// All Mons are guaranteed to be active and non-fainted. Their HP may be 0 if they have not
+    /// fainted yet.
+    pub fn active_mon_handles(&self) -> impl Iterator<Item = &MonHandle> {
+        self.active
+            .iter()
+            .filter_map(|mon_handle| mon_handle.as_ref())
+    }
+
+    /// Creates an iterator over all active or fainted Mons owned by the player.
+    ///
+    /// Fainted Mons will continue to be associated with the active position until switched out.
+    pub fn active_or_fainted_mon_handles(&self) -> impl Iterator<Item = &MonHandle> {
+        self.active_or_fainted
             .iter()
             .filter_map(|mon_handle| mon_handle.as_ref())
     }
 
     /// Creates an iterator over all positions used by the player.
-    pub fn field_positions<'p>(
-        context: &'p PlayerContext,
-    ) -> impl Iterator<Item = (usize, Option<&'p MonHandle>)> {
-        context
-            .player()
-            .active
+    pub fn field_positions(&self) -> impl Iterator<Item = (usize, Option<&MonHandle>)> {
+        self.active
             .iter()
             .enumerate()
             .map(|(i, slot)| (i, slot.as_ref()))
     }
 
-    /// Creates an iterator over all positions used by the player with an active Mon.
-    pub fn field_positions_with_active_mon<'p, 'c, 'b, 'd>(
-        context: &'p PlayerContext<'_, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = (usize, &'p MonHandle)> + Captures<'d> + Captures<'b> + Captures<'c>
-    {
-        Self::field_positions(context).filter_map(|(i, slot)| slot.and_then(|slot| Some((i, slot))))
+    /// Creates an iterator over all positions used by the player with an active or fainted Mon. See
+    /// [`active_or_fainted_mon_handles`][`Self::active_or_fainted_mon_handles`].
+    pub fn field_positions_with_active_or_fainted_mon(
+        &self,
+    ) -> impl Iterator<Item = (usize, &MonHandle)> {
+        self.active_or_fainted
+            .iter()
+            .enumerate()
+            .filter_map(|(i, slot)| slot.as_ref().and_then(|slot| Some((i, slot))))
+    }
+
+    /// Creates an iterator over all Mons.
+    pub fn mon_handles(&self) -> impl Iterator<Item = &MonHandle> {
+        self.mons.iter()
     }
 
     /// Creates an iterator over all inactive Mons.
@@ -415,14 +458,6 @@ impl Player {
                 .then_some(mon_handle)
         })
     }
-
-    /// Creates an iterator over all Mons.
-    pub fn mon_handles<'p, 'c, 'b, 'd>(
-        context: &'p PlayerContext<'_, 'c, 'b, 'd>,
-    ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> + 'p {
-        context.player().mons.iter()
-    }
-
     /// Creates an iterator over all Mons that can be switched in.
     pub fn switchable_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
@@ -433,7 +468,7 @@ impl Player {
 
     /// Request data for the player in a battle.
     pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleRequestData, Error> {
-        let mon_handles = Self::mon_handles(context).cloned().collect::<Vec<_>>();
+        let mon_handles = context.player().mon_handles().cloned().collect::<Vec<_>>();
         Ok(PlayerBattleRequestData {
             name: context.player().name.clone(),
             id: context.player().id.clone(),
@@ -482,7 +517,9 @@ impl Player {
 
     /// Counts the number of Mons that must switch out.
     pub fn count_must_switch_out(context: &mut PlayerContext) -> usize {
-        Self::active_mon_handles(context)
+        context
+            .player()
+            .active_or_fainted_mon_handles()
             .filter(|mon_handle| {
                 context
                     .mon(**mon_handle)
@@ -721,12 +758,20 @@ impl Player {
                 _ => Err(battler_error!("you sent more choices than active Mons")),
             };
         }
-        let active_mon_handle = Self::active_mon_handle(context, active_position)
+        let active_mon_handle = context
+            .player()
+            .active_or_fainted
+            .get(active_position)
+            .cloned()
+            .flatten()
             .wrap_error_with_format(format_args!(
                 "expected player to have active Mon in position {active_position}"
             ))?;
         let active_mon = context.mon(active_mon_handle)?;
-        let active_mon_position = active_mon.active_position;
+        let active_mon_position = active_mon
+            .active_position
+            .or(active_mon.old_active_position)
+            .wrap_error_with_message("mon to switch out is not in an active position")?;
         let data = data.wrap_error_with_message("you must select a Mon to switch in")?;
         let slot = data
             .parse::<usize>()
@@ -808,14 +853,19 @@ impl Player {
                     }
                 }
                 Some(RequestType::Switch) => {
-                    while context.player().active.get(next_mon).is_some_and(|mon| {
-                        mon.is_none()
-                            || mon.is_some_and(|mon| {
-                                context
-                                    .mon(mon)
-                                    .is_ok_and(|mon| !mon.needs_switch.is_some())
-                            })
-                    }) {
+                    while context
+                        .player()
+                        .active_or_fainted
+                        .get(next_mon)
+                        .is_some_and(|mon| {
+                            mon.is_none()
+                                || mon.is_some_and(|mon| {
+                                    context
+                                        .mon(mon)
+                                        .is_ok_and(|mon| !mon.needs_switch.is_some())
+                                })
+                        })
+                    {
                         Self::choose_pass(context)?;
                         next_mon += 1;
                     }
@@ -838,7 +888,7 @@ impl Player {
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
         let active_index = Self::get_position_for_next_choice(context, true)?;
-        match Self::active_mon_handle(context, active_index) {
+        match context.player().active_mon_handle(active_index) {
             None => (),
             Some(active_mon_handle) => {
                 let mon = context.mon(active_mon_handle)?;
@@ -887,9 +937,12 @@ impl Player {
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
         }
-        let mon_handle = Self::active_mon_handle(context, active_position).wrap_error_with_format(
-            format_args!("expected an active Mon in position {active_position}"),
-        )?;
+        let mon_handle = context
+            .player()
+            .active_mon_handle(active_position)
+            .wrap_error_with_format(format_args!(
+                "expected an active Mon in position {active_position}"
+            ))?;
 
         // This becomes our new context for the rest of the choice.
         let mut context = context
@@ -1029,7 +1082,9 @@ impl Player {
         if team_position >= context.player().mons.len() {
             return Err(battler_error!("you sent more choices than Mons"));
         }
-        let mon_handle = Self::active_mon_handle(context, team_position)
+        let mon_handle = context
+            .player()
+            .active_mon_handle(team_position)
             .wrap_error_with_format(format_args!("expected a Mon in position {team_position}"))?;
         context
             .player_mut()
@@ -1043,7 +1098,9 @@ impl Player {
     }
 
     fn all_mons_can_escape(context: &mut PlayerContext) -> Result<bool, Error> {
-        for mon in Self::active_mon_handles(context)
+        for mon in context
+            .player()
+            .active_mon_handles()
             .cloned()
             .collect::<Vec<_>>()
         {
@@ -1067,9 +1124,12 @@ impl Player {
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
         }
-        let mon_handle = Self::active_mon_handle(context, active_position).wrap_error_with_format(
-            format_args!("expected an active Mon in position {active_position}"),
-        )?;
+        let mon_handle = context
+            .player()
+            .active_mon_handle(active_position)
+            .wrap_error_with_format(format_args!(
+                "expected an active Mon in position {active_position}"
+            ))?;
 
         let can_escape = Self::can_escape(context) && Self::all_mons_can_escape(context)?;
         if !can_escape {
@@ -1089,7 +1149,7 @@ impl Player {
 
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
-        for mon in Self::active_mon_handles(&context) {
+        for mon in context.player().active_or_fainted_mon_handles() {
             if context.mon(*mon)?.needs_switch.is_some() {
                 return Ok(true);
             }
@@ -1171,5 +1231,51 @@ mod move_choice_tests {
     #[test]
     fn fails_empty_string() {
         assert_error_message_contains(MoveChoice::new(""), "invalid move slot");
+    }
+}
+
+#[cfg(test)]
+mod player_type_tests {
+    use crate::battle::{
+        PlayerType,
+        WildPlayerOptions,
+    };
+
+    #[test]
+    fn deserializes() {
+        assert_eq!(
+            serde_json::from_str::<PlayerType>(
+                r#"{
+                    "type": "wild",
+                    "catchable": true,
+                    "escapable": false,
+                    "can_escape": false
+                }"#
+            )
+            .unwrap(),
+            PlayerType::Wild(WildPlayerOptions {
+                catchable: true,
+                escapable: false,
+                can_escape: false
+            })
+        );
+        assert_eq!(
+            serde_json::from_str::<PlayerType>(
+                r#"{
+                    "type": "trainer"
+                }"#
+            )
+            .unwrap(),
+            PlayerType::Trainer
+        );
+        assert_eq!(
+            serde_json::from_str::<PlayerType>(
+                r#"{
+                    "type": "protagonist"
+                }"#
+            )
+            .unwrap(),
+            PlayerType::Protagonist
+        );
     }
 }
