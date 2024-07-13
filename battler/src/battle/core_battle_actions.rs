@@ -2829,6 +2829,7 @@ pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> 
 
     if new_level > context.mon().level {
         let mon_handle = context.mon_handle();
+        // TODO: If Mon is not active in battle, level up directly to the target level.
         for _ in context.mon().level..=new_level {
             BattleQueue::insert_action_into_sorted_position(
                 context.as_battle_context_mut(),
@@ -2913,33 +2914,39 @@ pub fn give_out_experience(
 }
 
 /// Attempts to escape the battle, using the speed of the given Mon.
-pub fn try_escape(context: &mut MonContext) -> Result<(), Error> {
+pub fn try_escape(context: &mut MonContext, force: bool) -> Result<(), Error> {
     if context.player().escaped {
         return Ok(());
     }
 
     context.player_mut().escape_attempts += 1;
 
-    let speed = context.mon().speed;
+    let escaped = Player::can_escape(context.as_player_context());
+    let mut escaped = escaped && force || Mon::can_escape(context)?;
+    if escaped && !context.player().player_type.wild() && !force {
+        let speed = context.mon().speed;
 
-    // Take the average of the speed of all foes.
-    let mut foe_speed = 0;
-    let mut foe_count = 0;
-    for foe in context
-        .battle()
-        .active_mon_handles_on_side(context.foe_side().index)
-    {
-        foe_speed += context.as_battle_context().mon(foe)?.speed;
-        foe_count += 1;
+        // Take the average of the speed of all foes.
+        let mut foe_speed = 0;
+        let mut foe_count = 0;
+        for foe in context
+            .battle()
+            .active_mon_handles_on_side(context.foe_side().index)
+        {
+            foe_speed += context.as_battle_context().mon(foe)?.speed;
+            foe_count += 1;
+        }
+        let foe_speed = foe_speed / foe_count;
+
+        let odds = Fraction::from(speed * 32);
+        let odds = odds / Fraction::new(foe_speed, 4);
+        let odds = odds.floor() + 30 * context.player().escape_attempts;
+        escaped = rand_util::chance(context.battle_mut().prng.as_mut(), odds as u64, 256);
     }
-    let foe_speed = foe_speed / foe_count;
 
-    let odds = Fraction::from(speed * 32);
-    let odds = odds / Fraction::new(foe_speed, 4);
-    let odds = odds.floor() + 30 * context.player().escape_attempts;
-    let escaped = rand_util::chance(context.battle_mut().prng.as_mut(), odds as u64, 256);
     if !escaped {
         core_battle_logs::cannot_escape(context.as_player_context_mut())?;
+        return Ok(());
     }
 
     context.player_mut().escaped = true;

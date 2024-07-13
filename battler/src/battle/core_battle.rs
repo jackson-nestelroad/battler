@@ -668,6 +668,43 @@ impl<'d> CoreBattle<'d> {
             .collect::<Vec<_>>();
         context.battle_mut().log_many(side_logs);
 
+        if context.battle().format.battle_type.can_have_uneven_sides() {
+            let event = log_event!(
+                "maxsidelength",
+                ("length", context.battle().max_side_length())
+            );
+            context.battle_mut().log(event);
+        }
+
+        // Before reporting player positions, shift players to try and center them as appropriate.
+        for side in context.battle().side_indices() {
+            let mut context = context.side_context(side)?;
+            let players_on_side = context
+                .battle()
+                .players_on_side(context.side().index)
+                .count();
+            let players_on_foe_side = context
+                .battle()
+                .players_on_side(context.foe_side().index)
+                .count();
+            if players_on_foe_side > players_on_side {
+                let shift_players_right_by = (players_on_foe_side - players_on_side) / 2;
+                if shift_players_right_by > 0 {
+                    for player in context
+                        .battle()
+                        .player_indices_on_side(context.side().index)
+                        .collect::<Vec<_>>()
+                    {
+                        context
+                            .as_battle_context_mut()
+                            .player_context(player)?
+                            .player_mut()
+                            .position += shift_players_right_by;
+                    }
+                }
+            }
+        }
+
         let player_logs = context
             .battle()
             .players()
@@ -1093,7 +1130,10 @@ impl<'d> CoreBattle<'d> {
                 Mon::learn_move(&mut context, &request.id, action.forget_move_slot)?;
             }
             Action::Escape(action) => {
-                core_battle_actions::try_escape(&mut context.mon_context(action.mon_action.mon)?)?;
+                core_battle_actions::try_escape(
+                    &mut context.mon_context(action.mon_action.mon)?,
+                    false,
+                )?;
             }
         }
 

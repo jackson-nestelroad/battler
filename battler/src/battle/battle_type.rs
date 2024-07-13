@@ -45,6 +45,14 @@ impl BattleType {
             Self::Triples => 6,
         }
     }
+
+    /// Returns true if the battle type supports uneven sides.
+    pub fn can_have_uneven_sides(&self) -> bool {
+        match self {
+            Self::Multi => true,
+            _ => false,
+        }
+    }
 }
 
 #[cfg(test)]

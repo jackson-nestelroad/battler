@@ -1695,6 +1695,13 @@ impl Mon {
 
         Ok(())
     }
+
+    /// Checks if the Mon can escape from battle.
+    pub fn can_escape(context: &mut MonContext) -> Result<bool, Error> {
+        let cannot_escape = context.mon().trapped && !context.mon().trapped_by_locked_move;
+        // TODO: CanEscape event that quick returns a value, with the above being the default.
+        Ok(!cannot_escape)
+    }
 }
 
 #[cfg(test)]

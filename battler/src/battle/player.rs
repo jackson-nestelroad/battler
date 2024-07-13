@@ -492,6 +492,9 @@ impl Player {
                 Ok(context.player().choice.actions.len() >= context.player().mons.len())
             }
             _ => {
+                if context.player().escaped || context.player().mons_left == 0 {
+                    return Ok(true);
+                }
                 if context.player().choice.forced_switches_left > 0 {
                     return Ok(false);
                 }
@@ -831,6 +834,7 @@ impl Player {
             })));
         Ok(())
     }
+
     fn get_position_for_next_choice(
         context: &mut PlayerContext,
         pass: bool,
@@ -1104,10 +1108,8 @@ impl Player {
             .cloned()
             .collect::<Vec<_>>()
         {
-            let context = context.mon_context(mon)?;
-            let cannot_escape = context.mon().trapped && !context.mon().trapped_by_locked_move;
-            // TODO: CanEscape event that quick returns a value, with the above being the default.
-            if cannot_escape {
+            let can_escape = Mon::can_escape(&mut context.mon_context(mon)?)?;
+            if !can_escape {
                 return Ok(false);
             }
         }
@@ -1162,7 +1164,7 @@ impl Player {
         Self::switchable_mon_handles(context).count() > 0
     }
 
-    /// Checks if the player can escape.
+    /// Checks if the player can escape, irrespective of individual Mons.
     pub fn can_escape(context: &PlayerContext) -> bool {
         context.player().player_type.can_escape()
             && (context.player().player_type.wild()
