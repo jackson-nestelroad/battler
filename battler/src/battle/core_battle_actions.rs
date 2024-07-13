@@ -2936,9 +2936,9 @@ pub fn give_out_experience(
 }
 
 /// Attempts to escape the battle, using the speed of the given Mon.
-pub fn try_escape(context: &mut MonContext, force: bool) -> Result<(), Error> {
+pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> {
     if context.player().escaped {
-        return Ok(());
+        return Ok(true);
     }
 
     context.player_mut().escape_attempts += 1;
@@ -2968,7 +2968,7 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<(), Error> {
 
     if !escaped {
         core_battle_logs::cannot_escape(context.as_player_context_mut())?;
-        return Ok(());
+        return Ok(false);
     }
 
     context.player_mut().escaped = true;
@@ -2987,5 +2987,5 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<(), Error> {
 
     core_battle_logs::escaped(context.as_player_context_mut())?;
 
-    Ok(())
+    Ok(true)
 }

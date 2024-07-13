@@ -23,6 +23,7 @@ use crate::{
         MonContext,
         MonHandle,
         MoveHandle,
+        Player,
         SideEffectContext,
     },
     battler_error,
@@ -781,6 +782,13 @@ where
                     "type" => {
                         ValueRef::Type(context.active_move(active_move_handle)?.data.primary_type)
                     }
+                    _ => return Err(Self::bad_member_access(member, value_type)),
+                }
+            } else if let ValueRef::Player(player) = value {
+                value = match *member {
+                    "can_escape" => ValueRef::Boolean(Player::can_escape(
+                        &context.battle_context_mut().player_context(player)?,
+                    )),
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let ValueRef::MoveSlot(move_slot) = value {

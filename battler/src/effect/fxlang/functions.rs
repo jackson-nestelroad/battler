@@ -69,6 +69,7 @@ pub fn run_function(
         "calculate_confusion_damage" => {
             calculate_confusion_damage(context, args).map(|val| Some(val))
         }
+        "can_escape" => can_escape(context, args).map(|val| Some(val)),
         "can_switch" => can_switch(context, args).map(|val| Some(val)),
         "chance" => chance(context, args).map(|val| Some(val)),
         "clear_boosts" => clear_boosts(context, args).map(|()| None),
@@ -78,6 +79,7 @@ pub fn run_function(
         "direct_damage" => direct_damage(context, args).map(|()| None),
         "disable_move" => disable_move(context, args).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
+        "escape" => escape(context, args).map(|val| Some(val)),
         "floor" => floor(args).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context, args).map(|val| Some(val)),
         "get_boost" => get_boost(args).map(|val| Some(val)),
@@ -1480,4 +1482,23 @@ fn transform_into(
         source_effect.as_ref(),
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn can_escape(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    Mon::can_escape(&mut context.mon_context(mon_handle)?).map(|val| Value::Boolean(val))
+}
+
+fn escape(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_actions::try_escape(&mut context.mon_context(mon_handle)?, true)
+        .map(|val| Value::Boolean(val))
 }

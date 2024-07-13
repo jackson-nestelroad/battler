@@ -33,7 +33,8 @@ mod escape_test {
                         "species": "Jolteon",
                         "ability": "No Ability",
                         "moves": [
-                            "Tackle"
+                            "Tackle",
+                            "Bind"
                         ],
                         "nature": "Hardy",
                         "gender": "M",
@@ -78,6 +79,28 @@ mod escape_test {
                         "ability": "No Ability",
                         "moves": [
                             "Tackle"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 5
+                    }
+                ]
+            }"#,
+        )
+        .wrap_error()
+    }
+
+    fn ralts() -> Result<TeamData, Error> {
+        serde_json::from_str(
+            r#"{
+                "members": [
+                    {
+                        "name": "Ralts",
+                        "species": "Ralts",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Teleport"
                         ],
                         "nature": "Hardy",
                         "gender": "M",
@@ -378,6 +401,107 @@ mod escape_test {
                 ["time"],
                 "escaped|player:wild-2",
                 "win|side:0"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
+    fn teleport_escapes_wild_battle() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_wild_singles_battle(
+            &data,
+            40920948098,
+            ralts().unwrap(),
+            primeape().unwrap(),
+            WildPlayerOptions::default(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:protagonist|name:Protagonist|side:0|position:0",
+                "player|id:wild|name:Wild|side:1|position:0",
+                "time|value:1720904718274",
+                "teamsize|player:protagonist|size:1",
+                "start",
+                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
+                "switch|player:protagonist|position:1|name:Ralts|health:100/100|species:Ralts|level:5|gender:M",
+                "turn|turn:1",
+                "time|value:1720904718275",
+                "move|mon:Ralts,protagonist,1|name:Teleport|target:Ralts,protagonist,1",
+                "escaped|player:protagonist",
+                "win|side:1"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
+    fn cannot_escape_partially_trapping_move() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_wild_singles_battle(
+            &data,
+            0,
+            jolteon().unwrap(),
+            primeape().unwrap(),
+            WildPlayerOptions::default(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+        assert_error_message_contains(
+            battle.set_player_choice("wild", "escape"),
+            "you cannot escape",
+        );
+        assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:protagonist|name:Protagonist|side:0|position:0",
+                "player|id:wild|name:Wild|side:1|position:0",
+                ["time"],
+                "teamsize|player:protagonist|size:1",
+                "start",
+                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
+                "switch|player:protagonist|position:1|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Jolteon,protagonist,1|name:Bind|target:Primeape,wild,1",
+                "split|side:1",
+                "damage|mon:Primeape,wild,1|health:117/125",
+                "damage|mon:Primeape,wild,1|health:94/100",
+                "activate|mon:Primeape,wild,1|move:Bind|of:Jolteon,protagonist,1",
+                "split|side:1",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:102/125",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:82/100",
+                "residual",
+                "turn|turn:2",
+                ["time"],
+                "move|mon:Primeape,wild,1|name:Tackle|target:Jolteon,protagonist,1",
+                "split|side:0",
+                "damage|mon:Jolteon,protagonist,1|health:97/125",
+                "damage|mon:Jolteon,protagonist,1|health:78/100",
+                "split|side:1",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:87/125",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:70/100",
+                "residual",
+                "turn|turn:3"
             ]"#,
         )
         .unwrap();

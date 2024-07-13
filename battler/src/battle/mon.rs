@@ -356,7 +356,6 @@ pub struct Mon {
     pub skip_before_switch_out: bool,
     pub being_called_back: bool,
     pub trapped: bool,
-    pub trapped_by_locked_move: bool,
     pub can_mega_evo: bool,
     pub transformed: bool,
 
@@ -486,7 +485,6 @@ impl Mon {
             skip_before_switch_out: false,
             being_called_back: false,
             trapped: false,
-            trapped_by_locked_move: false,
             can_mega_evo: false,
             transformed: false,
 
@@ -636,7 +634,6 @@ impl Mon {
         if locked_move.is_some() {
             // A Mon with a locked move is trapped.
             context.mon_mut().trapped = true;
-            context.mon_mut().trapped_by_locked_move = true;
         }
         Ok(locked_move)
     }
@@ -1569,7 +1566,6 @@ impl Mon {
         // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
-        context.mon_mut().trapped_by_locked_move = false;
         core_battle_effects::run_event_for_mon(
             context,
             fxlang::BattleEvent::TrapMon,
@@ -1705,7 +1701,7 @@ impl Mon {
 
     /// Checks if the Mon can escape from battle.
     pub fn can_escape(context: &mut MonContext) -> Result<bool, Error> {
-        let cannot_escape = context.mon().trapped && !context.mon().trapped_by_locked_move;
+        let cannot_escape = context.mon().trapped;
         // TODO: CanEscape event that quick returns a value, with the above being the default.
         Ok(!cannot_escape)
     }
