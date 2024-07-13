@@ -2753,23 +2753,28 @@ fn calculate_exp_gain(
     Ok(exp)
 }
 
-/// Levels up a Mon to the next level.
-pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
-    let new_level = context.mon().level + 1;
-
-    context.mon_mut().level = new_level;
-
-    context.mon_mut().happiness += match context.mon().happiness {
-        0..=99 => 3,
-        100..=199 => 2,
-        200..=254 => 1,
-        255 => 0,
-    };
+/// Levels up a Mon directly to the given level.
+pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<(), Error> {
+    let old_level = context.mon().level;
+    context.mon_mut().level = target_level;
 
     Mon::recalculate_stats(context)?;
     Mon::recalculate_base_stats(context)?;
     core_battle_logs::level_up(context)?;
 
+    for level in old_level..target_level {
+        context.mon_mut().happiness += match context.mon().happiness {
+            0..=99 => 3,
+            100..=199 => 2,
+            200..=254 => 1,
+            255 => 0,
+        };
+        learn_moves_at_level(context, level + 1)?;
+    }
+    return Ok(());
+}
+
+fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<(), Error> {
     let mut learnable_moves_at_level = context
         .battle()
         .dex
@@ -2781,7 +2786,7 @@ pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
         .iter()
         .filter_map(|(id, methods)| {
             methods
-                .contains(&MoveSource::Level(new_level))
+                .contains(&MoveSource::Level(level))
                 .then_some(Id::from(id.as_str()))
         })
         .collect::<Vec<_>>();
@@ -2814,6 +2819,10 @@ pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
 ///
 /// Experience is calculated by [`give_out_experience`].
 pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
+    if context.mon().level == 100 {
+        return Ok(());
+    }
+
     core_battle_logs::experience(context, exp)?;
     context.mon_mut().experience += exp;
 
@@ -2829,12 +2838,25 @@ pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> 
 
     if new_level > context.mon().level {
         let mon_handle = context.mon_handle();
-        // TODO: If Mon is not active in battle, level up directly to the target level.
-        for _ in context.mon().level..=new_level {
+        // If Mon is not active in battle, level up directly to the target level.
+        if !context.mon().active {
             BattleQueue::insert_action_into_sorted_position(
                 context.as_battle_context_mut(),
-                Action::LevelUp(LevelUpAction { mon: mon_handle }),
+                Action::LevelUp(LevelUpAction {
+                    mon: mon_handle,
+                    level: Some(new_level),
+                }),
             )?;
+        } else {
+            for _ in context.mon().level..new_level {
+                BattleQueue::insert_action_into_sorted_position(
+                    context.as_battle_context_mut(),
+                    Action::LevelUp(LevelUpAction {
+                        mon: mon_handle,
+                        level: None,
+                    }),
+                )?;
+            }
         }
     }
 

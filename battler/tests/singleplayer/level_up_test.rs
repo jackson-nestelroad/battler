@@ -23,7 +23,7 @@ mod level_up_test {
         TestBattleBuilder,
     };
 
-    fn level_5_gastly() -> Result<TeamData, Error> {
+    fn level_5_gastly_and_gengar() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
                 "members": [
@@ -38,6 +38,18 @@ mod level_up_test {
                         "gender": "M",
                         "ball": "Normal",
                         "experience": 140
+                    },
+                    {
+                        "name": "Gengar",
+                        "species": "Gengar",
+                        "ability": "No Ability",
+                        "moves": [
+                            "Dark Pulse"
+                        ],
+                        "nature": "Hardy",
+                        "gender": "M",
+                        "ball": "Normal",
+                        "level": 100
                     }
                 ]
             }"#,
@@ -104,7 +116,7 @@ mod level_up_test {
         let mut battle = make_battle(
             &data,
             0,
-            level_5_gastly().unwrap(),
+            level_5_gastly_and_gengar().unwrap(),
             level_100_blissey_and_pikachu().unwrap(),
         )
         .unwrap();
@@ -211,7 +223,7 @@ mod level_up_test {
                 "player|id:player-1|name:Red|side:0|position:0",
                 "player|id:player-2|name:Player 2|side:1|position:0",
                 ["time"],
-                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-1|size:2",
                 "teamsize|player:player-2|size:2",
                 "start",
                 "switch|player:player-1|position:1|name:Gastly|health:100/100|species:Gastly|level:5|gender:M",
@@ -274,11 +286,109 @@ mod level_up_test {
                 "levelup|mon:Gastly,player-1,1|level:40|hp:74|atk:33|def:29|spa:85|spd:33|spe:69",
                 ["time"],
                 "didnotlearnmove|mon:Gastly,player-1,1|move:Destiny Bond",
-                "levelup|mon:Gastly,player-1,1|level:41|hp:75|atk:33|def:29|spa:87|spd:33|spe:70",
                 "residual",
                 ["time"],
                 "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
                 "turn|turn:2",
+                ["time"],
+                "move|mon:Gastly,player-1,1|name:Shadow Ball|target:Pikachu,player-2,1",
+                "split|side:1",
+                "damage|mon:Pikachu,player-2,1|health:0",
+                "damage|mon:Pikachu,player-2,1|health:0",
+                "faint|mon:Pikachu,player-2,1",
+                "exp|mon:Gastly,player-1,1|exp:9",
+                "win|side:0"
+            ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
+    fn inactive_mon_levels_up_directly_to_level() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(
+            &data,
+            0,
+            level_5_gastly_and_gengar().unwrap(),
+            level_100_blissey_and_pikachu().unwrap(),
+        )
+        .unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 2"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+        assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
+            assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
+                "Shadow Ball".to_owned(),
+                "Dream Eater".to_owned(),
+                "Confuse Ray".to_owned(),
+                "Night Shade".to_owned(),
+            ]));
+        });
+
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Red|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:2",
+                "teamsize|player:player-2|size:2",
+                "start",
+                "switch|player:player-1|position:1|name:Gastly|health:100/100|species:Gastly|level:5|gender:M",
+                "switch|player:player-2|position:1|name:Blissey|health:100/100|species:Blissey|level:100|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "switch|player:player-1|position:1|name:Gengar|health:100/100|species:Gengar|level:100|gender:M",
+                "move|mon:Blissey,player-2,1|name:Self-Destruct|noanim",
+                "immune|mon:Gengar,player-1,1",
+                "faint|mon:Blissey,player-2,1",
+                "exp|mon:Gastly,player-1,1|exp:59290",
+                "levelup|mon:Gastly,player-1,1|level:40|hp:74|atk:33|def:29|spa:85|spd:33|spe:69",
+                "learnedmove|mon:Gastly,player-1,1|move:Mean Look",
+                "learnedmove|mon:Gastly,player-1,1|move:Curse",
+                "learnedmove|mon:Gastly,player-1,1|move:Night Shade",
+                ["time"],
+                "learnedmove|mon:Gastly,player-1,1|move:Confuse Ray|forgot:Curse",
+                ["time"],
+                "learnedmove|mon:Gastly,player-1,1|move:Dark Pulse|forgot:Lick",
+                ["time"],
+                "didnotlearnmove|mon:Gastly,player-1,1|move:Destiny Bond",
+                ["time"],
+                "learnedmove|mon:Gastly,player-1,1|move:Dream Eater|forgot:Mean Look",
+                ["time"],
+                "didnotlearnmove|mon:Gastly,player-1,1|move:Payback",
+                ["time"],
+                "learnedmove|mon:Gastly,player-1,1|move:Shadow Ball|forgot:Dark Pulse",
+                ["time"],
+                "didnotlearnmove|mon:Gastly,player-1,1|move:Sucker Punch",
+                "residual",
+                ["time"],
+                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
+                "turn|turn:2",
+                ["time"],
+                "switch|player:player-1|position:1|name:Gastly|health:100/100|species:Gastly|level:40|gender:M",
+                "residual",
+                "turn|turn:3",
                 ["time"],
                 "move|mon:Gastly,player-1,1|name:Shadow Ball|target:Pikachu,player-2,1",
                 "split|side:1",

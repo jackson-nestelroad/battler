@@ -1122,7 +1122,9 @@ impl<'d> CoreBattle<'d> {
                 )?;
             }
             Action::LevelUp(action) => {
-                core_battle_actions::level_up(&mut context.mon_context(action.mon)?)?;
+                let mut context = context.mon_context(action.mon)?;
+                let target_level = action.level.unwrap_or(context.mon().level + 1);
+                core_battle_actions::level_up(&mut context, target_level)?;
             }
             Action::LearnMove(action) => {
                 let mut context = context.mon_context(action.mon)?;

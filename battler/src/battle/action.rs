@@ -126,6 +126,7 @@ pub struct ExperienceAction {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LevelUpAction {
     pub mon: MonHandle,
+    pub level: Option<u8>,
 }
 
 /// A learn move action.

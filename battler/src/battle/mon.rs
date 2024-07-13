@@ -1163,7 +1163,14 @@ impl Mon {
             stats.hp = max_hp;
         }
 
+        let current_health = if context.mon().max_hp > 0 {
+            Fraction::new(context.mon().hp, context.mon().max_hp)
+        } else {
+            Fraction::from(1)
+        };
         context.mon_mut().max_hp = stats.hp;
+        context.mon_mut().hp = (current_health * context.mon().max_hp).floor();
+
         context.mon_mut().base_max_hp = stats.hp;
         context.mon_mut().base_stored_stats = stats.clone();
 

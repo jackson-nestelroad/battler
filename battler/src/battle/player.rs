@@ -489,6 +489,7 @@ impl Player {
                 Ok(context.player().choice.actions.len() >= Self::picked_team_size(context))
             }
             Some(RequestType::LearnMove) => {
+                Self::get_position_for_next_choice(context, false)?;
                 Ok(context.player().choice.actions.len() >= context.player().mons.len())
             }
             _ => {
@@ -891,39 +892,40 @@ impl Player {
     }
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
-        let active_index = Self::get_position_for_next_choice(context, true)?;
-        match context.player().active_mon_handle(active_index) {
-            None => (),
-            Some(active_mon_handle) => {
-                let mon = context.mon(active_mon_handle)?;
-                match context.player().request_type() {
-                    Some(RequestType::Switch) => {
-                        if mon.needs_switch.is_some() {
-                            if context.player().choice.forced_passes_left == 0 {
-                                return Err(battler_error!(
-                                    "cannot pass: you must select a Mon to replace {}",
-                                    mon.name
-                                ));
-                            }
-                            context.player_mut().choice.forced_passes_left -= 1;
-                        }
-                    }
-                    Some(RequestType::Turn) => {
-                        if !mon.fainted
-                            && !context.battle().engine_options.allow_pass_for_unfainted_mon
-                        {
+        let position = Self::get_position_for_next_choice(context, true)?;
+        match context.player().request_type() {
+            Some(RequestType::Switch) => {
+                if let Some(mon) = context.player().active_mon_handle(position) {
+                    let mut context = context.mon_context(mon)?;
+                    if context.mon().needs_switch.is_some() {
+                        if context.player().choice.forced_passes_left == 0 {
                             return Err(battler_error!(
-                                "cannot pass: your {} must make a move or switch",
-                                mon.name
+                                "cannot pass: you must select a Mon to replace {}",
+                                context.mon().name,
                             ));
-                        };
-                    }
-                    _ => {
-                        return Err(battler_error!(
-                            "cannot pass: only a move or switch can be passed"
-                        ));
+                        }
+                        context.player_mut().choice.forced_passes_left -= 1;
                     }
                 }
+            }
+            Some(RequestType::Turn) => {
+                if let Some(mon) = context.player().active_mon_handle(position) {
+                    let context = context.mon_context(mon)?;
+                    if !context.mon().fainted
+                        && !context.battle().engine_options.allow_pass_for_unfainted_mon
+                    {
+                        return Err(battler_error!(
+                            "cannot pass: your {} must make a move or switch",
+                            context.mon().name,
+                        ));
+                    };
+                }
+            }
+            Some(RequestType::LearnMove) => (),
+            _ => {
+                return Err(battler_error!(
+                    "cannot pass: only a move or switch can be passed"
+                ));
             }
         }
 
@@ -1088,8 +1090,10 @@ impl Player {
         }
         let mon_handle = context
             .player()
-            .active_mon_handle(team_position)
-            .wrap_error_with_format(format_args!("expected a Mon in position {team_position}"))?;
+            .mons
+            .get(team_position)
+            .wrap_error_with_format(format_args!("expected a Mon in position {team_position}"))?
+            .clone();
         context
             .player_mut()
             .choice

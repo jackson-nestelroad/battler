@@ -4338,6 +4338,7 @@
       "info|rule:Sleep Clause: Limit one foe put to sleep",
       "side|id:0|name:Side 1",
       "side|id:1|name:Side 2",
+      "maxsidelength|length:2",
       "player|id:player-1|name:Player 1|side:0|position:0",
       "player|id:player-2|name:Player 2|side:0|position:1",
       "player|id:player-3|name:Player 3|side:1|position:0",
