@@ -3,7 +3,6 @@ mod level_up_test {
     use battler::{
         battle::{
             BattleType,
-            CoreBattleEngineRandomizeBaseDamage,
             CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
             Request,
@@ -91,7 +90,6 @@ mod level_up_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
             .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_protagonist_to_side_1("player-1", "Red")
             .add_player_to_side_2("player-2", "Player 2")

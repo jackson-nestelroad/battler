@@ -16,6 +16,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PlayerType,
         PublicCoreBattle,
+        WildPlayerOptions,
     },
     battler_error,
     common::{
@@ -182,11 +183,16 @@ impl TestBattleBuilder {
         self
     }
 
-    pub fn add_wild_mon_to_side_2(mut self, id: &str, name: &str) -> Self {
+    pub fn add_wild_mon_to_side_2(
+        mut self,
+        id: &str,
+        name: &str,
+        options: WildPlayerOptions,
+    ) -> Self {
         self.options.side_2.players.push(BattleBuilderPlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
-            player_type: PlayerType::Wild,
+            player_type: PlayerType::Wild(options),
         });
         self
     }

@@ -318,7 +318,6 @@ pub struct Mon {
     pub active_turns: u32,
     pub active_move_actions: u32,
     pub active_position: usize,
-    pub old_active_position: usize,
     pub team_position: usize,
 
     pub base_stored_stats: StatTable,
@@ -356,6 +355,7 @@ pub struct Mon {
     pub skip_before_switch_out: bool,
     pub being_called_back: bool,
     pub trapped: bool,
+    pub trapped_by_locked_move: bool,
     pub can_mega_evo: bool,
     pub transformed: bool,
 
@@ -447,7 +447,6 @@ impl Mon {
             active_turns: 0,
             active_move_actions: 0,
             active_position: usize::MAX,
-            old_active_position: usize::MAX,
             team_position,
 
             base_stored_stats: StatTable::default(),
@@ -485,6 +484,7 @@ impl Mon {
             skip_before_switch_out: false,
             being_called_back: false,
             trapped: false,
+            trapped_by_locked_move: false,
             can_mega_evo: false,
             transformed: false,
 
@@ -634,6 +634,7 @@ impl Mon {
         if locked_move.is_some() {
             // A Mon with a locked move is trapped.
             context.mon_mut().trapped = true;
+            context.mon_mut().trapped_by_locked_move = true;
         }
         Ok(locked_move)
     }
@@ -668,11 +669,7 @@ impl Mon {
     pub fn position_on_side(context: &MonContext) -> Result<usize, Error> {
         let mon = context.mon();
         let active_position = if mon.active_position == usize::MAX {
-            if mon.old_active_position == usize::MAX {
-                return Err(battler_error!("mon has no active position"));
-            } else {
-                mon.old_active_position
-            }
+            return Err(battler_error!("mon has no active position"));
         } else {
             mon.active_position
         };
@@ -1548,6 +1545,7 @@ impl Mon {
         // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
+        context.mon_mut().trapped_by_locked_move = false;
         core_battle_effects::run_event_for_mon(
             context,
             fxlang::BattleEvent::TrapMon,

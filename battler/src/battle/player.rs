@@ -8,10 +8,6 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use serde_string_enum::{
-    DeserializeLabeledStringEnum,
-    SerializeLabeledStringEnum,
-};
 
 use crate::{
     battle::{
@@ -19,6 +15,8 @@ use crate::{
         BattleRegistry,
         BattleType,
         CoreBattle,
+        EscapeAction,
+        EscapeActionInput,
         LearnMoveAction,
         Mon,
         MonBattleRequestData,
@@ -46,31 +44,52 @@ use crate::{
     teams::TeamData,
 };
 
+/// Options for a wild [`Player`].
+///
+/// For use on [`PlayerType`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WildPlayerOptions {
+    /// Are the Mons catchable?
+    pub catchable: bool,
+    /// Can other players escape?
+    pub escapable: bool,
+    /// Can this player escape?
+    ///
+    /// Important for scripted battles, where escaping moves (like Teleport) should not succeed.
+    pub can_escape: bool,
+}
+
+impl Default for WildPlayerOptions {
+    fn default() -> Self {
+        Self {
+            catchable: true,
+            escapable: true,
+            can_escape: true,
+        }
+    }
+}
+
 /// The type of the [`Player`], which controls some of the operations that can be done in the
 /// battle.
-#[derive(
-    Debug,
-    Default,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    SerializeLabeledStringEnum,
-    DeserializeLabeledStringEnum,
-)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum PlayerType {
     /// A trainer in a competitive battle.
     #[default]
-    #[string = "Trainer"]
+    #[serde(rename = "trainer")]
     Trainer,
-    /// A wild Mon that can be caught.
-    #[string = "Wild"]
-    Wild,
+    /// A wild Mon.
+    ///
+    /// If this type is used, each player should have exactly one Mon to emulate wild battles
+    /// (where each wild Mon can escape separately). If a "wild" player has multiple Mons,
+    /// switch-ins can occur (logged as "appearances").
+    #[serde(rename = "wild")]
+    Wild(WildPlayerOptions),
     /// The protagonist, who can gain experience.
     ///
     /// Only use this type when you intend to simulate single-player battles, where the player can
     /// gain experience. When you do not wish to simulate experience, simply use `Trainer`.
-    #[string = "Protagonist"]
+    #[serde(rename = "protagonist")]
     Protagonist,
 }
 
@@ -83,17 +102,40 @@ impl PlayerType {
         }
     }
 
-    /// Is the player's Mons wild?
+    /// Are the player's Mons wild?
     pub fn wild(&self) -> bool {
         match self {
-            Self::Wild => true,
+            Self::Wild(_) => true,
             _ => false,
         }
     }
 
-    /// Is the player's Mons catchable?
+    /// Are the player's Mons catchable?
     pub fn catchable(&self) -> bool {
-        self.wild()
+        match self {
+            Self::Wild(wild) => wild.catchable,
+            _ => false,
+        }
+    }
+
+    /// Can other players escape from this player?
+    pub fn escapable(&self) -> bool {
+        match self {
+            Self::Wild(wild) => wild.escapable,
+            _ => false,
+        }
+    }
+
+    /// Can this player escape?
+    ///
+    /// If true, other checks are performed before an escape succeeds. For instance, all foe players
+    /// must be [`escapable`][`Self::escapable`].
+    pub fn can_escape(&self) -> bool {
+        match self {
+            Self::Wild(wild) => wild.can_escape,
+            Self::Protagonist => true,
+            _ => false,
+        }
     }
 }
 
@@ -251,6 +293,9 @@ pub struct Player {
 
     pub mons: Vec<MonHandle>,
     pub active: Vec<Option<MonHandle>>,
+
+    pub escape_attempts: u16,
+    pub escaped: bool,
 }
 
 // Construction and initialization logic.
@@ -286,6 +331,8 @@ impl Player {
             active,
             request: None,
             mons_left: 0,
+            escape_attempts: 0,
+            escaped: false,
         })
     }
 
@@ -626,6 +673,15 @@ impl Player {
                     }
                     _ => (),
                 },
+                "escape" => match Self::choose_escape(context) {
+                    Err(error) => {
+                        return Self::emit_choice_error(
+                            context,
+                            Error::wrap("cannot escape", error),
+                        );
+                    }
+                    _ => (),
+                },
                 _ => {
                     return Self::emit_choice_error(
                         context,
@@ -734,6 +790,10 @@ impl Player {
         context: &mut PlayerContext,
         pass: bool,
     ) -> Result<usize, Error> {
+        if context.player().escaped {
+            return Err(battler_error!("you escaped from the battle"));
+        }
+
         // Choices generate a single action, so there should be once choice for each active Mon.
         let mut next_mon = context.player().choice.actions.len();
         if !pass {
@@ -982,6 +1042,51 @@ impl Player {
         Ok(())
     }
 
+    fn all_mons_can_escape(context: &mut PlayerContext) -> Result<bool, Error> {
+        for mon in Self::active_mon_handles(context)
+            .cloned()
+            .collect::<Vec<_>>()
+        {
+            let context = context.mon_context(mon)?;
+            let cannot_escape = context.mon().trapped && !context.mon().trapped_by_locked_move;
+            // TODO: CanEscape event that quick returns a value, with the above being the default.
+            if cannot_escape {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+
+    fn choose_escape(context: &mut PlayerContext) -> Result<(), Error> {
+        match context.player().request_type() {
+            Some(RequestType::Turn) => (),
+            _ => return Err(battler_error!("you cannot escape out of turn")),
+        }
+
+        let active_position = Self::get_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
+            return Err(battler_error!("you sent more choices than active Mons"));
+        }
+        let mon_handle = Self::active_mon_handle(context, active_position).wrap_error_with_format(
+            format_args!("expected an active Mon in position {active_position}"),
+        )?;
+
+        let can_escape = Self::can_escape(context) && Self::all_mons_can_escape(context)?;
+        if !can_escape {
+            return Err(battler_error!("you cannot escape"));
+        }
+
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::Escape(EscapeAction::new(EscapeActionInput {
+                mon: mon_handle,
+            })));
+
+        Ok(())
+    }
+
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
         for mon in Self::active_mon_handles(&context) {
@@ -995,6 +1100,16 @@ impl Player {
     /// Checks if the player can switch.
     pub fn can_switch(context: &PlayerContext) -> bool {
         Self::switchable_mon_handles(context).count() > 0
+    }
+
+    /// Checks if the player can escape.
+    pub fn can_escape(context: &PlayerContext) -> bool {
+        context.player().player_type.can_escape()
+            && (context.player().player_type.wild()
+                || context
+                    .battle()
+                    .players_on_side(context.foe_side().index)
+                    .all(|foe| foe.player_type.escapable()))
     }
 }
 

@@ -448,7 +448,7 @@ impl<'d> CoreBattle<'d> {
             .cloned()
     }
 
-    pub fn active_positions_on_side<'b>(
+    fn active_positions_on_side<'b>(
         &'b self,
         side: usize,
     ) -> impl Iterator<Item = Option<MonHandle>> + 'b {
@@ -1085,6 +1085,9 @@ impl<'d> CoreBattle<'d> {
                 let request = Mon::learn_move_request(&mut context)?.wrap_error_with_format(format_args!("mon {} has no move to learn, even though we allowed the player to choose to learn a move", action.mon))?;
                 Mon::learn_move(&mut context, &request.id, action.forget_move_slot)?;
             }
+            Action::Escape(action) => {
+                core_battle_actions::try_escape(&mut context.mon_context(action.mon_action.mon)?)?;
+            }
         }
 
         Self::after_action(context)?;
@@ -1558,10 +1561,6 @@ impl<'d> CoreBattle<'d> {
     /// A Mon is considered truly fainted only after this method runs.
     pub fn faint_messages(context: &mut Context) -> Result<(), Error> {
         if context.battle().ending {
-            return Ok(());
-        }
-
-        if context.battle().faint_queue.is_empty() {
             return Ok(());
         }
 

@@ -302,6 +302,7 @@ mod queue_tests {
                 Action::Experience(action) => format!("experience {}", action.mon),
                 Action::LevelUp(action) => format!("levelup {}", action.mon),
                 Action::LearnMove(action) => format!("learnmove {}", action.mon),
+                Action::Escape(action) => format!("escape {}", action.mon_action.mon),
             })
             .collect()
     }

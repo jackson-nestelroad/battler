@@ -9,7 +9,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
-        PlayerType,
+        PlayerContext,
         SideEffectContext,
     },
     common::Error,
@@ -28,7 +28,7 @@ use crate::{
 pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<(), Error> {
     let title = if is_drag {
         "drag"
-    } else if context.player().player_type == PlayerType::Wild {
+    } else if context.player().player_type.wild() {
         "appear"
     } else {
         "switch"
@@ -455,6 +455,18 @@ pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
         ("spd", context.mon().stats.get(Stat::SpDef)),
         ("spe", context.mon().stats.get(Stat::Spe)),
     );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn cannot_escape(context: &mut PlayerContext) -> Result<(), Error> {
+    let event = log_event!("cannotescape", ("player", &context.player().id));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
+    let event = log_event!("escaped", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }

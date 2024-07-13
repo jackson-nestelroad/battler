@@ -141,6 +141,26 @@ pub struct EndAction {
     pub winning_side: Option<usize>,
 }
 
+/// An escape action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EscapeActionInput {
+    pub mon: MonHandle,
+}
+
+/// An escape action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EscapeAction {
+    pub mon_action: MonAction,
+}
+
+impl EscapeAction {
+    pub fn new(input: EscapeActionInput) -> Self {
+        Self {
+            mon_action: MonAction::new(input.mon),
+        }
+    }
+}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -161,6 +181,7 @@ pub enum Action {
     Experience(ExperienceAction),
     LevelUp(LevelUpAction),
     LearnMove(LearnMoveAction),
+    Escape(EscapeAction),
 }
 
 impl Action {
@@ -170,6 +191,7 @@ impl Action {
             Self::Switch(action) => Some(&mut action.mon_action),
             Self::Move(action) => Some(&mut action.mon_action),
             Self::MegaEvo(action) => Some(action),
+            Self::Escape(action) => Some(&mut action.mon_action),
             _ => None,
         }
     }
@@ -193,6 +215,7 @@ impl SpeedOrderable for Action {
             Self::End(_) => 7,
             Self::BeforeTurn => 8,
             Self::BeforeTurnMove(_) => 9,
+            Self::Escape(_) => 101,
             Self::MegaEvo(_) => 102,
             Self::Move(_) => 200,
             Self::Pass => 200,

@@ -23,6 +23,8 @@ mod speed_order;
 pub use action::{
     Action,
     EndAction,
+    EscapeAction,
+    EscapeActionInput,
     ExperienceAction,
     LearnMoveAction,
     LevelUpAction,
@@ -103,6 +105,7 @@ pub use player::{
     PlayerBattleRequestData,
     PlayerData,
     PlayerType,
+    WildPlayerOptions,
 };
 pub use queue::BattleQueue;
 pub use registry::{

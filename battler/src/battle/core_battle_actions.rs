@@ -85,6 +85,34 @@ where
         .collect()
 }
 
+fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<bool, Error> {
+    if context.mon().hp > 0 {
+        Mon::clear_volatile(context, true)?;
+
+        if run_switch_out_events {
+            if !context.mon().skip_before_switch_out {
+                // TODO: BeforeSwitchOut event.
+                // TODO: Update event.
+            }
+            context.mon_mut().skip_before_switch_out = false;
+
+            // TODO: SwitchOut event.
+
+            // The Mon could faint here, which cancels the switch (Pursuit).
+            if context.mon().hp == 0 {
+                return Ok(false);
+            }
+        }
+
+        // TODO: Ability End event.
+    }
+
+    context.mon_mut().active = false;
+    context.mon_mut().needs_switch = None;
+
+    Ok(true)
+}
+
 /// Switches a Mon into the given position.
 pub fn switch_in(
     context: &mut MonContext,
@@ -124,32 +152,14 @@ pub fn switch_in(
 
             context.mon_mut().being_called_back = true;
 
-            if !context.mon().skip_before_switch_out {
-                // TODO: BeforeSwitchOut event.
-                // TODO: Update event.
-            }
-            context.mon_mut().skip_before_switch_out = false;
-
-            // TODO: SwitchOut event.
-
-            // The Mon could faint here, which cancels the switch (Pursuit).
-            if context.mon().hp == 0 {
+            if !switch_out(&mut context, true)? {
                 return Ok(false);
             }
-
-            // TODO: Ability End event.
 
             if let Some(SwitchType::CopyVolatile) = switch_type {
                 // TODO: Copy volatiles to the new Mon.
             }
-
-            Mon::clear_volatile(&mut context, true)?;
         }
-
-        context.mon_mut().active = false;
-        context.mon_mut().needs_switch = None;
-        context.mon_mut().stats_raised_this_turn = false;
-        context.mon_mut().stats_lowered_this_turn = false;
     }
 
     Mon::switch_in(context, position);
@@ -2854,7 +2864,7 @@ pub fn give_out_experience(
         .collect::<Vec<_>>()
     {
         let mut context = context.mon_context(foe_handle)?;
-        if !context.player().player_type.gains_experience() {
+        if !context.player().player_type.gains_experience() || context.mon().fainted {
             continue;
         }
 
@@ -2910,6 +2920,54 @@ pub fn give_out_experience(
             }),
         )?;
     }
+
+    Ok(())
+}
+
+/// Attempts to escape the battle, using the speed of the given Mon.
+pub fn try_escape(context: &mut MonContext) -> Result<(), Error> {
+    if context.player().escaped {
+        return Ok(());
+    }
+
+    context.player_mut().escape_attempts += 1;
+
+    let speed = context.mon().speed;
+
+    // Take the average of the speed of all foes.
+    let mut foe_speed = 0;
+    let mut foe_count = 0;
+    for foe in context
+        .battle()
+        .active_mon_handles_on_side(context.foe_side().index)
+    {
+        foe_speed += context.as_battle_context().mon(foe)?.speed;
+        foe_count += 1;
+    }
+    let foe_speed = foe_speed / foe_count;
+
+    let odds = Fraction::from(speed * 32);
+    let odds = odds / Fraction::new(foe_speed, 4);
+    let odds = odds.floor() + 30 * context.player().escape_attempts;
+    let escaped = rand_util::chance(context.battle_mut().prng.as_mut(), odds as u64, 256);
+    if !escaped {
+        core_battle_logs::cannot_escape(context.as_player_context_mut())?;
+    }
+
+    context.player_mut().escaped = true;
+    for mon in Player::active_mon_handles(context.as_player_context())
+        .cloned()
+        .collect::<Vec<_>>()
+    {
+        switch_out(
+            &mut context.as_battle_context_mut().mon_context(mon)?,
+            false,
+        )?;
+    }
+    context.player_mut().mons_left = 0;
+    context.player_mut().active.fill(None);
+
+    core_battle_logs::escaped(context.as_player_context_mut())?;
 
     Ok(())
 }
