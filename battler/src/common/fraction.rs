@@ -15,6 +15,7 @@ use std::{
 };
 
 use num::{
+    integer::Roots,
     traits::{
         WrappingAdd,
         WrappingMul,
@@ -208,6 +209,15 @@ where
             self.denominator().wrapping_mul(&rhs.denominator()),
         )
         .simplify()
+    }
+}
+
+impl<I> Fraction<I>
+where
+    I: FractionInteger + Roots,
+{
+    pub fn sqrt(&self) -> Self {
+        Self::new(self.numerator().sqrt(), self.denominator().sqrt()).simplify()
     }
 }
 

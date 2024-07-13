@@ -22,6 +22,10 @@ mod speed_order;
 
 pub use action::{
     Action,
+    EndAction,
+    ExperienceAction,
+    LearnMoveAction,
+    LevelUpAction,
     MonAction,
     MoveAction,
     MoveActionInput,
@@ -79,10 +83,13 @@ pub use mon::{
     AbilitySlot,
     ActiveMonDetails,
     Mon,
+    MonBaseRequestData,
+    MonBattleRequestData,
+    MonLearnMoveRequest,
     MonMoveRequest,
     MonMoveSlotData,
     MonPositionDetails,
-    MonTeamRequestData,
+    MonSummaryRequestData,
     MoveSlot,
     PublicMonDetails,
 };
@@ -93,8 +100,9 @@ pub use move_outcome::{
 };
 pub use player::{
     Player,
+    PlayerBattleRequestData,
     PlayerData,
-    PlayerRequestData,
+    PlayerType,
 };
 pub use queue::BattleQueue;
 pub use registry::{
@@ -105,6 +113,7 @@ pub use registry::{
     MoveRegistry,
 };
 pub use request::{
+    LearnMoveRequest,
     Request,
     RequestType,
     SwitchRequest,

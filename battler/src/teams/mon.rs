@@ -49,8 +49,15 @@ pub struct MonData {
     #[serde(default)]
     pub ivs: StatTable,
     /// Level, typically between 1 and 100.
+    ///
+    /// If unset, the level will be inferred from the experience points.
     #[serde(default)]
     pub level: u8,
+    /// Experience points.
+    ///
+    /// Only applicable for single player battle simulations, where Mons can gain experience.
+    #[serde(default)]
+    pub experience: u32,
     /// Shiny?
     #[serde(default)]
     pub shiny: bool,

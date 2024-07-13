@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use crate::{
     battle::{
         MonHandle,
@@ -114,6 +112,35 @@ impl MoveAction {
     }
 }
 
+/// An experience action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExperienceAction {
+    pub mon: MonHandle,
+    pub player_index: usize,
+    pub mon_index: usize,
+    pub active: bool,
+    pub exp: u32,
+}
+
+/// A level up action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LevelUpAction {
+    pub mon: MonHandle,
+}
+
+/// A learn move action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LearnMoveAction {
+    pub mon: MonHandle,
+    pub forget_move_slot: usize,
+}
+
+/// An end action, which ends the battle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EndAction {
+    pub winning_side: Option<usize>,
+}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -122,6 +149,7 @@ impl MoveAction {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     Start,
+    End(EndAction),
     Pass,
     BeforeTurn,
     BeforeTurnMove(MoveAction),
@@ -130,6 +158,9 @@ pub enum Action {
     Switch(SwitchAction),
     Move(MoveAction),
     MegaEvo(MonAction),
+    Experience(ExperienceAction),
+    LevelUp(LevelUpAction),
+    LearnMove(LearnMoveAction),
 }
 
 impl Action {
@@ -149,15 +180,19 @@ impl SpeedOrderable for Action {
         match self {
             Self::Team(_) => 1,
             Self::Start => 2,
+            Self::LearnMove(_) => 3,
+            Self::LevelUp(_) => 4,
+            Self::Experience(_) => 5,
             Self::Switch(action) => {
                 if action.instant {
-                    3
+                    6
                 } else {
                     100
                 }
             }
-            Self::BeforeTurn => 4,
-            Self::BeforeTurnMove(_) => 5,
+            Self::End(_) => 7,
+            Self::BeforeTurn => 8,
+            Self::BeforeTurnMove(_) => 9,
             Self::MegaEvo(_) => 102,
             Self::Move(_) => 200,
             Self::Pass => 200,
@@ -169,6 +204,7 @@ impl SpeedOrderable for Action {
         match self {
             Self::Team(action) => action.priority,
             Self::Move(action) => action.priority,
+            Self::Experience(action) => action.player_index as i32,
             _ => 0,
         }
     }
@@ -186,30 +222,15 @@ impl SpeedOrderable for Action {
     fn sub_order(&self) -> u32 {
         match self {
             Self::Move(action) => action.sub_priority,
+            Self::Experience(action) => {
+                // Active Mons should get experience before inactive Mons.
+                if action.active {
+                    action.mon_index as u32
+                } else {
+                    action.mon_index as u32 + 65535
+                }
+            }
             _ => 0,
         }
-    }
-}
-
-impl PartialOrd for Action {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Action {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // Lower order first.
-        self.order().cmp(&other.order()).then_with(|| {
-            // Higher priority first.
-            other.priority().cmp(&self.priority()).then_with(|| {
-                // Higher speed first.
-                other
-                    .speed()
-                    .cmp(&self.speed())
-                    // Lower sub order first.
-                    .then_with(|| self.sub_order().cmp(&other.sub_order()))
-            })
-        })
     }
 }

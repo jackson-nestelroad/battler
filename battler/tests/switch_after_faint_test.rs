@@ -169,13 +169,13 @@ mod switch_after_faint_test {
 
         assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
             assert_eq!(request.active.len(), 2);
-            assert_eq!(request.player.mons[request.active[0].team_position].name, "Bulbasaur");
-            assert_eq!(request.player.mons[request.active[1].team_position].name, "Charmander");
+            assert_eq!(request.player.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
+            assert_eq!(request.player.mons[request.active[1].team_position].base_data.name, "Charmander");
         });
         assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
             assert_eq!(request.active.len(), 2);
-            assert_eq!(request.player.mons[request.active[0].team_position].name, "Bulbasaur");
-            assert_eq!(request.player.mons[request.active[1].team_position].name, "Squirtle");
+            assert_eq!(request.player.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
+            assert_eq!(request.player.mons[request.active[1].team_position].base_data.name, "Squirtle");
         });
 
         assert_eq!(
@@ -212,12 +212,12 @@ mod switch_after_faint_test {
 
         assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
             assert_eq!(request.active.len(), 2);
-            assert_eq!(request.player.mons[request.active[0].team_position].name, "Bulbasaur");
-            assert_eq!(request.player.mons[request.active[1].team_position].name, "Charmander");
+            assert_eq!(request.player.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
+            assert_eq!(request.player.mons[request.active[1].team_position].base_data.name, "Charmander");
         });
         assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
             assert_eq!(request.active.len(), 1);
-            assert_eq!(request.player.mons[request.active[0].team_position].name, "Bulbasaur");
+            assert_eq!(request.player.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
         });
     }
 
@@ -327,12 +327,12 @@ mod switch_after_faint_test {
 
         assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
             assert_eq!(request.active.len(), 2);
-            assert_eq!(request.player.mons[request.active[0].team_position].name, "Bulbasaur");
-            assert_eq!(request.player.mons[request.active[1].team_position].name, "Charmander");
+            assert_eq!(request.player.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
+            assert_eq!(request.player.mons[request.active[1].team_position].base_data.name, "Charmander");
         });
         assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
             assert_eq!(request.active.len(), 1);
-            assert_eq!(request.player.mons[request.active[0].team_position].name, "Bulbasaur");
+            assert_eq!(request.player.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
         });
     }
 }

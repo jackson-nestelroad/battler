@@ -1,12 +1,17 @@
 use std::{
-    fmt,
-    fmt::Display,
+    fmt::{
+        self,
+        Display,
+    },
     iter,
     mem,
     ops::Mul,
 };
 
-use ahash::HashMapExt;
+use ahash::{
+    HashMapExt,
+    HashSetExt,
+};
 use lazy_static::lazy_static;
 use serde::{
     Deserialize,
@@ -36,6 +41,7 @@ use crate::{
     common::{
         Error,
         FastHashMap,
+        FastHashSet,
         Fraction,
         Id,
         Identifiable,
@@ -50,6 +56,7 @@ use crate::{
         Event,
         EventLoggable,
     },
+    log_event,
     mons::{
         Gender,
         Nature,
@@ -60,6 +67,7 @@ use crate::{
         Type,
     },
     moves::{
+        Move,
         MoveTarget,
         SwitchType,
     },
@@ -130,6 +138,7 @@ pub struct MoveSlot {
     pub name: String,
     pub pp: u8,
     pub max_pp: u8,
+    pub pp_boosts: u8,
     pub target: MoveTarget,
     pub disabled: bool,
     pub used: bool,
@@ -138,12 +147,20 @@ pub struct MoveSlot {
 
 impl MoveSlot {
     /// Creates a new move slot.
-    pub fn new(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget) -> Self {
+    pub fn new(
+        id: Id,
+        name: String,
+        pp: u8,
+        max_pp: u8,
+        pp_boosts: u8,
+        target: MoveTarget,
+    ) -> Self {
         Self {
             id,
             name,
             pp,
             max_pp,
+            pp_boosts,
             target,
             disabled: false,
             used: false,
@@ -158,6 +175,7 @@ impl MoveSlot {
             name,
             pp,
             max_pp,
+            pp_boosts: 0,
             target,
             disabled: false,
             used: false,
@@ -189,12 +207,7 @@ pub struct MonMoveSlotData {
 
 impl MonMoveSlotData {
     pub fn from(context: &mut MonContext, move_slot: &MoveSlot) -> Result<Self, Error> {
-        let mov = context
-            .battle()
-            .dex
-            .moves
-            .get_by_id(&move_slot.id)
-            .into_result()?;
+        let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
         // Some moves may have a special target for non-Ghost types.
@@ -222,14 +235,24 @@ impl MonMoveSlotData {
     }
 }
 
-/// Data for a single [`Mon`] when a player is requested an action on their entire team.
+/// Data about a single [`Mon`], shared across [`MonBattleRequestData`] and
+/// [`MonSummaryRequestData`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonTeamRequestData {
+pub struct MonBaseRequestData {
     pub name: String,
-    pub species_name: String,
     pub level: u8,
     pub gender: Gender,
     pub shiny: bool,
+    pub ball: String,
+}
+
+/// Data about a single [`Mon`]'s battle state when a player is requested an action on their entire
+/// team.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MonBattleRequestData {
+    #[serde(flatten)]
+    pub base_data: MonBaseRequestData,
+    pub species_name: String,
     pub health: String,
     pub types: Vec<Type>,
     pub status: String,
@@ -240,7 +263,24 @@ pub struct MonTeamRequestData {
     pub moves: Vec<MonMoveSlotData>,
     pub ability: String,
     pub item: Option<String>,
-    pub ball: String,
+}
+
+/// Data about a single [`Mon`]'s base, unmodified state when a player is requested an action that
+/// acts on base state (such as learning a move) or requests a summary of their team.
+///
+/// Very similar to [`MonBattleRequestData`], but some fields related to battle state are removed.
+///
+/// In most cases, clients should have their own external view of Mons in a battle. However, since
+/// we make requests for things like learning moves that can alter that external state, we also
+/// supply our own simple view of this type of data for convenience.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MonSummaryRequestData {
+    #[serde(flatten)]
+    pub base_data: MonBaseRequestData,
+    pub species_name: String,
+    pub stats: StatTable,
+    pub moves: Vec<MonMoveSlotData>,
+    pub ability: String,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -254,7 +294,15 @@ pub struct MonMoveRequest {
     pub can_mega_evo: bool,
 }
 
-/// A [`Mon`] in a battle, which battles against other Mons.
+/// Request for a single [`Mon`] to learn one or more moves.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MonLearnMoveRequest {
+    pub team_position: usize,
+    pub id: Id,
+    pub name: String,
+}
+
+/// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
     pub side: usize,
@@ -279,6 +327,8 @@ pub struct Mon {
     pub ivs: StatTable,
     pub evs: StatTable,
     pub level: u8,
+    pub experience: u32,
+    pub happiness: u8,
     pub nature: Nature,
     pub gender: Gender,
     pub shiny: bool,
@@ -324,10 +374,13 @@ pub struct Mon {
     pub hurt_this_turn: u16,
     pub stats_raised_this_turn: bool,
     pub stats_lowered_this_turn: bool,
+    pub foes_fought_while_active: FastHashSet<MonHandle>,
 
     pub status: Option<Id>,
     pub status_state: fxlang::EffectState,
     pub volatiles: FastHashMap<Id, fxlang::EffectState>,
+
+    pub learnable_moves: Vec<Id>,
 }
 
 // Construction and initialization logic.
@@ -339,6 +392,8 @@ impl Mon {
         let ivs = data.ivs;
         let evs = data.evs;
         let level = data.level;
+        let experience = data.experience;
+        let happiness = data.happiness;
         let nature = data.nature;
         let gender = data.gender;
         let shiny = data.shiny;
@@ -347,25 +402,29 @@ impl Mon {
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {
-            let mov = dex.moves.get(move_name).into_result()?;
-            let max_pp = if mov.data.no_pp_boosts {
-                mov.data.pp
+            let mov = dex.moves.get(move_name)?;
+            let (max_pp, pp_boosts) = if mov.data.no_pp_boosts {
+                (mov.data.pp, 0)
             } else {
-                let boosts = *data.pp_boosts.get(i).unwrap_or(&0).min(&3) as u32;
-                ((mov.data.pp as u32) * (boosts + 5) / 5) as u8
+                let pp_boosts = data.pp_boosts.get(i).cloned().unwrap_or(0).min(3);
+                (
+                    ((mov.data.pp as u32) * (pp_boosts as u32 + 5) / 5) as u8,
+                    pp_boosts,
+                )
             };
             base_move_slots.push(MoveSlot::new(
                 mov.id().clone(),
                 mov.data.name.clone(),
                 max_pp,
                 max_pp,
+                pp_boosts,
                 mov.data.target.clone(),
             ));
         }
 
         let move_slots = base_move_slots.clone();
 
-        let ability = dex.abilities.get(&data.ability).into_result()?;
+        let ability = dex.abilities.get(&data.ability)?;
         let ability = AbilitySlot {
             id: ability.id().clone(),
             name: ability.data.name.clone(),
@@ -397,6 +456,8 @@ impl Mon {
             ivs,
             evs,
             level,
+            experience,
+            happiness,
             nature,
             gender,
             shiny,
@@ -437,10 +498,13 @@ impl Mon {
             hurt_this_turn: 0,
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
+            foes_fought_while_active: FastHashSet::new(),
 
             status: None,
             status_state: fxlang::EffectState::new(),
             volatiles: FastHashMap::new(),
+
+            learnable_moves: Vec::new(),
         })
     }
 
@@ -450,8 +514,18 @@ impl Mon {
     /// the Mon, such as its stats.
     pub fn initialize(context: &mut MonContext) -> Result<(), Error> {
         Self::clear_volatile(context, true)?;
-        let mon = context.mon_mut();
-        mon.hp = mon.max_hp;
+        Self::recalculate_base_stats(context)?;
+
+        // Generate level from experience points if needed.
+        if context.mon().level == u8::default() {
+            let species = context.battle().dex.species.get(&context.mon().species)?;
+            context.mon_mut().level = species
+                .data
+                .leveling_rate
+                .level_from_exp(context.mon().experience);
+        }
+
+        context.mon_mut().hp = context.mon().max_hp;
         Ok(())
     }
 }
@@ -912,8 +986,18 @@ impl Mon {
 
 // Request getters.
 impl Mon {
-    /// Generates request data for Team Preview.
-    pub fn team_request_data(context: &mut MonContext) -> Result<MonTeamRequestData, Error> {
+    fn base_request_data(&self) -> MonBaseRequestData {
+        MonBaseRequestData {
+            name: self.name.clone(),
+            level: self.level,
+            gender: self.gender.clone(),
+            shiny: self.shiny,
+            ball: self.ball.clone(),
+        }
+    }
+
+    /// Generates battle request data.
+    pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleRequestData, Error> {
         let player_active_position = if context.mon().active {
             Some(context.mon().active_position)
         } else {
@@ -924,12 +1008,9 @@ impl Mon {
         } else {
             None
         };
-        Ok(MonTeamRequestData {
-            name: context.mon().name.clone(),
+        Ok(MonBattleRequestData {
+            base_data: context.mon().base_request_data(),
             species_name: context.mon().species.clone(),
-            level: context.mon().level,
-            gender: context.mon().gender.clone(),
-            shiny: context.mon().shiny,
             health: context.mon().actual_health(),
             types: context.mon().types.clone(),
             status: context
@@ -951,7 +1032,25 @@ impl Mon {
                 .collect::<Result<Vec<_>, Error>>()?,
             ability: context.mon().ability.name.clone(),
             item: context.mon().item.clone(),
-            ball: context.mon().ball.clone(),
+        })
+    }
+
+    /// Generates summary request data.
+    pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryRequestData, Error> {
+        let mut stats = context.mon().base_stored_stats.clone();
+        stats.hp = context.mon().base_max_hp;
+        Ok(MonSummaryRequestData {
+            base_data: context.mon().base_request_data(),
+            species_name: context.mon().base_species.clone(),
+            stats,
+            moves: context
+                .mon()
+                .base_move_slots
+                .clone()
+                .into_iter()
+                .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
+                .collect::<Result<Vec<_>, Error>>()?,
+            ability: context.mon().ability.name.clone(),
         })
     }
 
@@ -989,6 +1088,39 @@ impl Mon {
 
         Ok(request)
     }
+
+    /// Generates request data for learnable moves.
+    pub fn learn_move_request(
+        context: &mut MonContext,
+    ) -> Result<Option<MonLearnMoveRequest>, Error> {
+        // Stable sort the moves that can be learned for consistency.
+        context.mon_mut().learnable_moves.sort_by(|a, b| a.cmp(&b));
+
+        // Moves must be learned one at a time.
+        match context.mon().learnable_moves.first() {
+            Some(learnable_move) => {
+                let name = context
+                    .battle()
+                    .dex
+                    .moves
+                    .get_by_id(learnable_move)
+                    .into_result()
+                    .wrap_error_with_format(format_args!(
+                        "move id {} was not found in the move dex for learning a move",
+                        learnable_move,
+                    ))?
+                    .data
+                    .name
+                    .clone();
+                Ok(Some(MonLearnMoveRequest {
+                    team_position: context.mon().team_position,
+                    id: learnable_move.clone(),
+                    name,
+                }))
+            }
+            None => Ok(None),
+        }
+    }
 }
 
 impl Mon {
@@ -1002,6 +1134,7 @@ impl Mon {
         context.mon_mut().last_move = None;
         context.mon_mut().last_move_target_location = None;
         context.mon_mut().last_move_used = None;
+        context.mon_mut().foes_fought_while_active.clear();
 
         context.mon_mut().clear_boosts();
 
@@ -1011,31 +1144,19 @@ impl Mon {
         context.mon_mut().volatiles.clear();
 
         let species = context.mon().base_species.clone();
-        Self::set_species(context, species, false)?;
+        Self::set_species(context, species)?;
         Ok(())
     }
 
-    fn set_species(
-        context: &mut MonContext,
-        species: String,
-        transform: bool,
-    ) -> Result<(), Error> {
+    /// Recalculates a Mon's base stats.
+    ///
+    /// Should only be used when a Mon levels up.
+    pub fn recalculate_base_stats(context: &mut MonContext) -> Result<(), Error> {
         let species = context
             .battle()
             .dex
             .species
-            .get(species.as_str())
-            .into_result()?;
-
-        // SAFETY: Nothing we do below will invalidate any data.
-        let species: ElementRef<Species> = unsafe { mem::transmute(species) };
-
-        context.mon_mut().species = species.data.name.clone();
-        context.mon_mut().types = Vec::with_capacity(4);
-        context.mon_mut().types.push(species.data.primary_type);
-        if let Some(secondary_type) = species.data.secondary_type {
-            context.mon_mut().types.push(secondary_type);
-        }
+            .get(context.mon().base_species.as_str())?;
 
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
@@ -1049,17 +1170,40 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        // Max HP has not yet been set (beginning of the battle).
-        if context.mon().max_hp == 0 {
-            context.mon_mut().max_hp = stats.hp;
+        context.mon_mut().max_hp = stats.hp;
+        context.mon_mut().base_max_hp = stats.hp;
+        context.mon_mut().base_stored_stats = stats.clone();
+
+        context.mon_mut().base_stored_stats = context
+            .mon()
+            .stats
+            .entries()
+            .map(|(stat, _)| (stat, stats.get(stat)))
+            .collect();
+
+        Ok(())
+    }
+
+    /// Recalculates a Mon's stats.
+    pub fn recalculate_stats(context: &mut MonContext) -> Result<(), Error> {
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get(context.mon().species.as_str())?;
+
+        let mut stats = calculate_mon_stats(
+            &species.data.base_stats,
+            &context.mon().ivs,
+            &context.mon().evs,
+            context.mon().level,
+            context.mon().nature,
+        );
+        // Forced max HP always overrides stat calculations.
+        if let Some(max_hp) = species.data.max_hp {
+            stats.hp = max_hp;
         }
-        if context.mon().base_max_hp == 0 {
-            context.mon_mut().base_max_hp = stats.hp;
-        }
-        // Transformations should keep the original "base" stats for the Mon.
-        if !transform {
-            context.mon_mut().base_stored_stats = stats.clone();
-        }
+
         context.mon_mut().stats = context
             .mon()
             .stats
@@ -1067,6 +1211,24 @@ impl Mon {
             .map(|(stat, _)| (stat, stats.get(stat)))
             .collect();
         context.mon_mut().speed = context.mon().stats.spe;
+
+        Ok(())
+    }
+
+    fn set_species(context: &mut MonContext, species: String) -> Result<(), Error> {
+        let species = context.battle().dex.species.get(species.as_str())?;
+
+        // SAFETY: Nothing we do below will invalidate any data.
+        let species: ElementRef<Species> = unsafe { mem::transmute(species) };
+
+        context.mon_mut().species = species.data.name.clone();
+        context.mon_mut().types = Vec::with_capacity(4);
+        context.mon_mut().types.push(species.data.primary_type);
+        if let Some(secondary_type) = species.data.secondary_type {
+            context.mon_mut().types.push(secondary_type);
+        }
+
+        Self::recalculate_stats(context)?;
         context.mon_mut().weight = species.data.weight;
         Ok(())
     }
@@ -1106,7 +1268,8 @@ impl Mon {
 
         // Set the species first, for the baseline transformation.
         let species = target_context.mon().species.clone();
-        Self::set_species(context, species, true)?;
+        context.mon_mut().transformed = true;
+        Self::set_species(context, species)?;
 
         // Then, manually set everything else.
         context.mon_mut().weight = weight;
@@ -1408,12 +1571,7 @@ impl Mon {
         // TODO: Lots of event and ability stuff here.
         let ability_priority = context.battle_mut().next_ability_priority();
 
-        let ability = context
-            .battle()
-            .dex
-            .abilities
-            .get_by_id(ability_id)
-            .into_result()?;
+        let ability = context.battle().dex.abilities.get_by_id(ability_id)?;
         let ability = AbilitySlot {
             id: ability.id().clone(),
             name: ability.data.name.clone(),
@@ -1422,6 +1580,105 @@ impl Mon {
 
         context.mon_mut().ability = ability;
         Ok(true)
+    }
+
+    fn remove_move_from_learnable_moves(&mut self, move_id: &Id) {
+        self.learnable_moves
+            .retain(|learn_move| learn_move != move_id);
+    }
+
+    /// Checks if the Mon can learn the move.
+    pub fn can_learn_move(context: &mut MonContext, move_id: &Id) -> bool {
+        context
+            .mon()
+            .base_move_slots
+            .iter()
+            .all(|move_slot| &move_slot.id != move_id)
+    }
+
+    /// Learns a move, overwriting the given move slot.
+    ///
+    /// If the move slot is invalid for the base move slots on the Mon, but the battle format allows
+    /// for a move in this slot, the move will be added to the Mon's base move slots. If not, the
+    /// move is not learned.
+    pub fn learn_move(
+        context: &mut MonContext,
+        move_id: &Id,
+        forget_move_slot: usize,
+    ) -> Result<(), Error> {
+        let mov = context.battle().dex.moves.get_by_id(move_id)?;
+        // SAFETY: The move is borrowed with reference counting, so no mutable reference can be
+        // taken without causing an error elsewhere.
+        let mov: ElementRef<Move> = unsafe { mem::transmute(mov) };
+        let (forget_move_slot, forget_move_slot_index) =
+            match context.mon_mut().base_move_slots.get_mut(forget_move_slot) {
+                None => {
+                    if forget_move_slot
+                        >= context.battle().format.rules.numeric_rules.max_move_count as usize
+                    {
+                        let event = log_event!(
+                            "didnotlearnmove",
+                            ("mon", Self::position_details(context)?),
+                            ("move", mov.data.name.clone())
+                        );
+                        context.battle_mut().log(event);
+                        context.mon_mut().remove_move_from_learnable_moves(move_id);
+                        return Ok(());
+                    }
+                    context.mon_mut().base_move_slots.push(MoveSlot::new(
+                        Id::from_known("placeholder"),
+                        String::new(),
+                        0,
+                        0,
+                        0,
+                        MoveTarget::Normal,
+                    ));
+                    let index = context.mon().base_move_slots.len() - 1;
+                    (
+                        // SAFETY: We insert this element directly above.
+                        context.mon_mut().base_move_slots.last_mut().unwrap(),
+                        index,
+                    )
+                }
+                Some(move_slot) => (move_slot, forget_move_slot),
+            };
+
+        let new_move_slot = MoveSlot::new(
+            mov.id().clone(),
+            mov.data.name.clone(),
+            mov.data.pp,
+            mov.data.pp,
+            0,
+            mov.data.target.clone(),
+        );
+
+        let old_name = forget_move_slot.name.clone();
+        *forget_move_slot = new_move_slot.clone();
+
+        // We also need to overwrite the Mon's move for the battle.
+        if !context.mon().transformed {
+            match context.mon_mut().move_slots.get_mut(forget_move_slot_index) {
+                Some(move_slot) => {
+                    *move_slot = new_move_slot;
+                }
+                None => {
+                    context.mon_mut().move_slots.push(new_move_slot);
+                }
+            }
+        }
+
+        let mut event = log_event!(
+            "learnedmove",
+            ("mon", Self::position_details(context)?),
+            ("move", mov.data.name.clone()),
+        );
+        if !old_name.is_empty() {
+            event.set("forgot", old_name);
+        }
+        context.battle_mut().log(event);
+        context.mon_mut().remove_move_from_learnable_moves(move_id);
+
+        Ok(())
     }
 }
 

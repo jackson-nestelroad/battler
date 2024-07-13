@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     battle::{
+        compare_priority,
         speed_sort,
         Action,
         Context,
@@ -13,7 +14,10 @@ use crate::{
         MonHandle,
     },
     common::Error,
-    rng::PseudoRandomNumberGenerator,
+    rng::{
+        rand_util,
+        PseudoRandomNumberGenerator,
+    },
 };
 
 /// A queue of [`Action`]s to be run in a [`CoreBattle`][`crate::battle::CoreBattle`].
@@ -34,7 +38,9 @@ impl BattleQueue {
 
     /// Adds a new [`Action`] to the queue.
     pub fn add_action(context: &mut Context, action: Action) -> Result<(), Error> {
-        Self::add_sub_actions(context, action)
+        let actions = Self::resolve_action(context, action)?;
+        context.battle_mut().queue.actions.extend(actions);
+        Ok(())
     }
 
     /// Adds multiple [`Action`]s to the queue.
@@ -43,33 +49,34 @@ impl BattleQueue {
         I: Iterator<Item = Action>,
     {
         for action in actions {
-            Self::add_sub_actions(context, action)?;
+            Self::add_action(context, action)?;
         }
         Ok(())
     }
 
-    fn add_sub_actions(context: &mut Context, mut action: Action) -> Result<(), Error> {
-        if let Action::Pass = action {
-            return Ok(());
+    fn sub_actions(action: &Action) -> Vec<Action> {
+        match action {
+            Action::Move(action) => {
+                let mut actions = Vec::from_iter([Action::BeforeTurnMove(action.clone())]);
+                if action.mega {
+                    actions.push(Action::MegaEvo(action.mon_action.clone()));
+                }
+                actions
+            }
+            _ => Vec::new(),
         }
+    }
 
-        if let Action::Move(action) = &action {
-            context
-                .battle_mut()
-                .queue
-                .push(Action::BeforeTurnMove(action.clone()));
-            if action.mega {
-                context
-                    .battle_mut()
-                    .queue
-                    .push(Action::MegaEvo(action.mon_action.clone()))
+    fn resolve_action(context: &mut Context, mut action: Action) -> Result<Vec<Action>, Error> {
+        match action {
+            Action::Pass => Ok(Vec::new()),
+            _ => {
+                let mut actions = Self::sub_actions(&action);
+                CoreBattle::resolve_action(context, &mut action)?;
+                actions.push(action);
+                Ok(actions)
             }
         }
-
-        CoreBattle::resolve_action(context, &mut action)?;
-
-        context.battle_mut().queue.push(action);
-        Ok(())
     }
 
     /// Pushes a new [`Action`] to the queue.
@@ -124,6 +131,79 @@ impl BattleQueue {
             Action::Move(move_action) => move_action.mon_action.mon == mon,
             _ => false,
         })
+    }
+
+    /// Inserts an [`Action`] into the queue into the position it would have been had it been sorted
+    /// originally.
+    ///
+    /// Assumes the queue is already sorted.
+    pub fn insert_action_into_sorted_position(
+        context: &mut Context,
+        action: Action,
+    ) -> Result<(), Error> {
+        for action in Self::resolve_action(context, action)? {
+            Self::insert_resolved_action_into_sorted_position(context, action)?;
+        }
+        Ok(())
+    }
+
+    fn insert_resolved_action_into_sorted_position(
+        context: &mut Context,
+        action: Action,
+    ) -> Result<(), Error> {
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG and battle queue are completely disjoint.
+        let prng = unsafe { mem::transmute(prng) };
+        let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
+        context
+            .battle_mut()
+            .queue
+            .insert_resolved_action_into_sorted_position_internal(action, prng, tie_resolution);
+        Ok(())
+    }
+
+    fn insert_resolved_action_into_sorted_position_internal(
+        &mut self,
+        action: Action,
+        prng: &mut dyn PseudoRandomNumberGenerator,
+        tie_resolution: CoreBattleEngineSpeedSortTieResolution,
+    ) {
+        let mut min = None;
+        let mut max = None;
+        for (i, existing) in self.actions.iter().enumerate() {
+            let order = compare_priority(&action, existing);
+            if order.is_le() && min.is_none() {
+                min = Some(i);
+            }
+            if order.is_lt() && max.is_none() {
+                max = Some(i);
+                break;
+            }
+        }
+        match min {
+            Some(min) => {
+                let max = max.unwrap_or(self.actions.len());
+                if min == max {
+                    self.actions.insert(min, action);
+                } else {
+                    match tie_resolution {
+                        CoreBattleEngineSpeedSortTieResolution::Keep => {
+                            self.actions.insert(min, action)
+                        }
+                        CoreBattleEngineSpeedSortTieResolution::Reverse => {
+                            self.actions.insert(max, action)
+                        }
+                        CoreBattleEngineSpeedSortTieResolution::Random => self.actions.insert(
+                            rand_util::range(prng, min as u64, max as u64 + 1) as usize,
+                            action,
+                        ),
+                    }
+                }
+            }
+            None => {
+                self.actions.push_back(action);
+            }
+        }
     }
 }
 
@@ -189,12 +269,26 @@ mod queue_tests {
         queue.sort_internal(&mut prng, CoreBattleEngineSpeedSortTieResolution::Random);
     }
 
+    fn insert_resolved_action_into_sorted_position(
+        queue: &mut BattleQueue,
+        action: Action,
+        seed: Option<u64>,
+    ) {
+        let mut prng = RealPseudoRandomNumberGenerator::new(seed);
+        queue.insert_resolved_action_into_sorted_position_internal(
+            action,
+            &mut prng,
+            CoreBattleEngineSpeedSortTieResolution::Random,
+        );
+    }
+
     fn battle_queue_actions_to_string_for_test(queue: &BattleQueue) -> Vec<String> {
         queue
             .actions
             .iter()
             .map(|action| match action {
                 Action::Start => "start".to_owned(),
+                Action::End(_) => "end".to_owned(),
                 Action::Pass => "pass".to_owned(),
                 Action::BeforeTurn => "beforeturn".to_owned(),
                 Action::BeforeTurnMove(action) => {
@@ -205,6 +299,9 @@ mod queue_tests {
                 Action::Switch(action) => format!("switch {}", action.mon_action.mon),
                 Action::Move(action) => format!("move {}", action.id),
                 Action::MegaEvo(action) => format!("megaevo {}", action.mon),
+                Action::Experience(action) => format!("experience {}", action.mon),
+                Action::LevelUp(action) => format!("levelup {}", action.mon),
+                Action::LearnMove(action) => format!("learnmove {}", action.mon),
             })
             .collect()
     }
@@ -353,6 +450,162 @@ mod queue_tests {
                 "move m3",
                 "move m2",
                 "move m1",
+                "move m7",
+                "move m6",
+            ]
+        );
+    }
+
+    #[test]
+    fn inserts_action_into_sorted_position_with_random_ties() {
+        let mut source_queue = BattleQueue::new();
+        source_queue.push(move_action(Id::from("m1"), 0, 100, 0));
+        source_queue.push(move_action(Id::from("m2"), 0, 100, 0));
+        source_queue.push(move_action(Id::from("m3"), 0, 100, 0));
+        source_queue.push(move_action(Id::from("m4"), 1, 100, 0));
+        source_queue.push(move_action(Id::from("m5"), 1, 100, 0));
+        source_queue.push(move_action(Id::from("m6"), -1, 100, 0));
+        source_queue.push(move_action(Id::from("m7"), -1, 100, 0));
+
+        source_queue.push(switch_action(MonHandle::from(1), false, 10));
+        source_queue.push(switch_action(MonHandle::from(2), false, 10));
+
+        source_queue.push(mega_evo_action(MonHandle::from(3), 10));
+        source_queue.push(mega_evo_action(MonHandle::from(4), 10));
+
+        sort(&mut source_queue, Some(0));
+        pretty_assertions::assert_eq!(
+            battle_queue_actions_to_string_for_test(&source_queue),
+            vec![
+                "switch 1",
+                "switch 2",
+                "megaevo 3",
+                "megaevo 4",
+                "move m4",
+                "move m5",
+                "move m1",
+                "move m2",
+                "move m3",
+                "move m7",
+                "move m6",
+            ]
+        );
+
+        let mut queue = source_queue.clone();
+        insert_resolved_action_into_sorted_position(
+            &mut queue,
+            move_action(Id::from("m8"), 0, 200, 0),
+            None,
+        );
+        pretty_assertions::assert_eq!(
+            battle_queue_actions_to_string_for_test(&queue),
+            vec![
+                "switch 1",
+                "switch 2",
+                "megaevo 3",
+                "megaevo 4",
+                "move m4",
+                "move m5",
+                "move m8",
+                "move m1",
+                "move m2",
+                "move m3",
+                "move m7",
+                "move m6",
+            ]
+        );
+
+        queue = source_queue.clone();
+        insert_resolved_action_into_sorted_position(
+            &mut queue,
+            move_action(Id::from("m8"), 0, 100, 0),
+            Some(0),
+        );
+        pretty_assertions::assert_eq!(
+            battle_queue_actions_to_string_for_test(&queue),
+            vec![
+                "switch 1",
+                "switch 2",
+                "megaevo 3",
+                "megaevo 4",
+                "move m4",
+                "move m5",
+                "move m8",
+                "move m1",
+                "move m2",
+                "move m3",
+                "move m7",
+                "move m6",
+            ]
+        );
+
+        queue = source_queue.clone();
+        insert_resolved_action_into_sorted_position(
+            &mut queue,
+            move_action(Id::from("m8"), 0, 100, 0),
+            Some(1),
+        );
+        pretty_assertions::assert_eq!(
+            battle_queue_actions_to_string_for_test(&queue),
+            vec![
+                "switch 1",
+                "switch 2",
+                "megaevo 3",
+                "megaevo 4",
+                "move m4",
+                "move m5",
+                "move m1",
+                "move m8",
+                "move m2",
+                "move m3",
+                "move m7",
+                "move m6",
+            ]
+        );
+
+        queue = source_queue.clone();
+        insert_resolved_action_into_sorted_position(
+            &mut queue,
+            move_action(Id::from("m8"), 0, 100, 0),
+            Some(2),
+        );
+        pretty_assertions::assert_eq!(
+            battle_queue_actions_to_string_for_test(&queue),
+            vec![
+                "switch 1",
+                "switch 2",
+                "megaevo 3",
+                "megaevo 4",
+                "move m4",
+                "move m5",
+                "move m1",
+                "move m2",
+                "move m8",
+                "move m3",
+                "move m7",
+                "move m6",
+            ]
+        );
+
+        queue = source_queue.clone();
+        insert_resolved_action_into_sorted_position(
+            &mut queue,
+            move_action(Id::from("m8"), 0, 100, 0),
+            Some(5),
+        );
+        pretty_assertions::assert_eq!(
+            battle_queue_actions_to_string_for_test(&queue),
+            vec![
+                "switch 1",
+                "switch 2",
+                "megaevo 3",
+                "megaevo 4",
+                "move m4",
+                "move m5",
+                "move m1",
+                "move m2",
+                "move m3",
+                "move m8",
                 "move m7",
                 "move m6",
             ]

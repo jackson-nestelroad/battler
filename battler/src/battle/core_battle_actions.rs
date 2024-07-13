@@ -1,20 +1,25 @@
 use std::ops::Deref;
 
 use lazy_static::lazy_static;
+use num::integer::Roots;
 
 use crate::{
     battle::{
         core_battle_effects,
         core_battle_logs,
         modify_32,
+        Action,
         ActiveMoveContext,
         ActiveTargetContext,
         ApplyingEffectContext,
+        BattleQueue,
         BoostTable,
         BoostTableEntries,
         Context,
         CoreBattle,
         EffectContext,
+        ExperienceAction,
+        LevelUpAction,
         Mon,
         MonContext,
         MonHandle,
@@ -42,6 +47,7 @@ use crate::{
         EffectType,
     },
     mons::{
+        MoveSource,
         Stat,
         Type,
     },
@@ -84,6 +90,7 @@ pub fn switch_in(
     context: &mut MonContext,
     position: usize,
     mut switch_type: Option<SwitchType>,
+    is_drag: bool,
 ) -> Result<bool, Error> {
     if context.mon_mut().active {
         core_battle_logs::hint(
@@ -148,7 +155,7 @@ pub fn switch_in(
     Mon::switch_in(context, position);
     context.player_mut().active[position] = Some(context.mon_handle());
 
-    core_battle_logs::switch(context)?;
+    core_battle_logs::switch(context, is_drag)?;
 
     run_switch_in_events(context)
 }
@@ -1758,7 +1765,7 @@ pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Err
         return Ok(false);
     }
     let switch_type = context.mon().force_switch.unwrap_or_default();
-    switch_in(&mut context, position, Some(switch_type))?;
+    switch_in(&mut context, position, Some(switch_type), true)?;
     Ok(true)
 }
 
@@ -2706,4 +2713,203 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
     let types = unsafe { types.unsafely_detach_borrow() };
     core_battle_logs::type_change(&mut context, types, source, source_effect.as_ref())?;
     Ok(true)
+}
+
+/// Calculates the experience gained for the Mon for the given Mon fainting.
+fn calculate_exp_gain(
+    context: &mut MonContext,
+    fainted_mon_handle: MonHandle,
+) -> Result<u32, Error> {
+    let mon_handle = context.mon_handle();
+    let mon_level = context.mon().level as u32;
+    let mon_happiness = context.mon().happiness;
+    let fainted_mon = context.as_battle_context_mut().mon(fainted_mon_handle)?;
+    let species = fainted_mon.base_species.clone();
+    let target_level = fainted_mon.level as u32;
+    let participated = fainted_mon.foes_fought_while_active.contains(&mon_handle);
+    let base_exp_yield = context
+        .battle()
+        .dex
+        .species
+        .get(&species)
+        .into_result()?
+        .data
+        .base_exp_yield;
+    let exp = ((base_exp_yield as u32) * (target_level as u32)) / 5;
+    let exp = if participated { exp } else { exp / 2 };
+    let dynamic_scaling = Fraction::new(2 * target_level + 10, target_level + mon_level + 10);
+    let dynamic_scaling = dynamic_scaling * dynamic_scaling * dynamic_scaling.sqrt();
+    let exp = dynamic_scaling * exp;
+    let exp = exp.floor() + 1;
+    let exp = if mon_happiness > 220 {
+        exp * 6 / 5
+    } else {
+        exp
+    };
+
+    // TODO: x1.5 for different owner.
+    // TODO: Item modifiers (Lucky Egg).
+    // TODO: Custom experience modifiers set on the battle itself, to simulate outside effects (like
+    // Exp Charm).
+
+    Ok(exp)
+}
+
+/// Levels up a Mon to the next level.
+pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
+    let new_level = context.mon().level + 1;
+
+    context.mon_mut().level = new_level;
+
+    context.mon_mut().happiness += match context.mon().happiness {
+        0..=99 => 3,
+        100..=199 => 2,
+        200..=254 => 1,
+        255 => 0,
+    };
+
+    Mon::recalculate_stats(context)?;
+    Mon::recalculate_base_stats(context)?;
+    core_battle_logs::level_up(context)?;
+
+    let mut learnable_moves_at_level = context
+        .battle()
+        .dex
+        .species
+        .get(&context.mon().species)
+        .into_result()?
+        .data
+        .learnset
+        .iter()
+        .filter_map(|(id, methods)| {
+            methods
+                .contains(&MoveSource::Level(new_level))
+                .then_some(Id::from(id.as_str()))
+        })
+        .collect::<Vec<_>>();
+    // Sort for consistency.
+    learnable_moves_at_level.sort();
+
+    let max_move_count = context.battle().format.rules.numeric_rules.max_move_count as usize;
+    let current_move_count = context.mon().base_move_slots.len();
+    let instant_learn_count = (current_move_count < max_move_count)
+        .then(|| (max_move_count - current_move_count).min(learnable_moves_at_level.len()))
+        .unwrap_or(0);
+    let (instant_learn, learn_request) = learnable_moves_at_level.split_at(instant_learn_count);
+    for (move_slot_index, move_id) in instant_learn.iter().enumerate() {
+        Mon::learn_move(
+            context,
+            move_id,
+            context.mon().base_move_slots.len() + move_slot_index,
+        )?;
+    }
+
+    context
+        .mon_mut()
+        .learnable_moves
+        .extend(learn_request.iter().cloned());
+
+    Ok(())
+}
+
+/// Gives experience to a single Mon.
+///
+/// Experience is calculated by [`give_out_experience`].
+pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
+    core_battle_logs::experience(context, exp)?;
+    context.mon_mut().experience += exp;
+
+    let leveling_rate = context
+        .battle()
+        .dex
+        .species
+        .get(&context.mon().species)
+        .into_result()?
+        .data
+        .leveling_rate;
+    let new_level = leveling_rate.level_from_exp(context.mon().experience);
+
+    if new_level > context.mon().level {
+        let mon_handle = context.mon_handle();
+        for _ in context.mon().level..=new_level {
+            BattleQueue::insert_action_into_sorted_position(
+                context.as_battle_context_mut(),
+                Action::LevelUp(LevelUpAction { mon: mon_handle }),
+            )?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Schedules actions for giving out experience to all foe Mons after a Mon faints.
+pub fn give_out_experience(
+    context: &mut Context,
+    fainted_mon_handle: MonHandle,
+) -> Result<(), Error> {
+    let foe_side = context.mon_context(fainted_mon_handle)?.foe_side().index;
+    for foe_handle in context
+        .battle()
+        .all_mon_handles_on_side(foe_side)
+        .collect::<Vec<_>>()
+    {
+        let mut context = context.mon_context(foe_handle)?;
+        if !context.player().player_type.gains_experience() {
+            continue;
+        }
+
+        let participated = context
+            .as_battle_context()
+            .mon(fainted_mon_handle)?
+            .foes_fought_while_active
+            .contains(&foe_handle);
+
+        // TODO: If Exp Share is activated, all Mons get experience.
+        if !participated {
+            return Ok(());
+        }
+
+        // Update EVs now and recalculate stats.
+        let species = context
+            .as_battle_context()
+            .mon(fainted_mon_handle)?
+            .base_species
+            .clone();
+        let ev_yield = context
+            .battle()
+            .dex
+            .species
+            .get(&species)?
+            .data
+            .ev_yield
+            .clone();
+        for (stat, value) in ev_yield.entries() {
+            let current_ev_sum = context.mon().evs.sum();
+            let ev_limit = context.battle().format.rules.numeric_rules.ev_limit;
+            let new_ev_value = context.mon().evs.get(stat)
+                + (current_ev_sum < ev_limit)
+                    .then(|| value.min((ev_limit - current_ev_sum) as u16))
+                    .unwrap_or(0);
+            context.mon_mut().evs.set(stat, new_ev_value);
+        }
+        Mon::recalculate_stats(&mut context)?;
+        Mon::recalculate_base_stats(&mut context)?;
+
+        let exp = calculate_exp_gain(&mut context, fainted_mon_handle)?;
+        let player_index = context.player().index;
+        let mon_index = context.mon().team_position;
+        let active = context.mon().active;
+        BattleQueue::insert_action_into_sorted_position(
+            context.as_battle_context_mut(),
+            Action::Experience(ExperienceAction {
+                mon: foe_handle,
+                player_index,
+                mon_index,
+                active,
+                exp,
+            }),
+        )?;
+    }
+
+    Ok(())
 }

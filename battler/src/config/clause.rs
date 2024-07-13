@@ -218,6 +218,7 @@ mod clause_tests {
             BattleType,
             CoreBattleOptions,
             PlayerData,
+            PlayerType,
             SideData,
         },
         battler_error,
@@ -563,6 +564,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        player_type: PlayerType::Trainer,
                     },
                     PlayerData {
                         id: "player-2".to_owned(),
@@ -570,6 +572,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        player_type: PlayerType::Trainer,
                     },
                 ]),
             },
@@ -582,6 +585,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        player_type: PlayerType::Trainer,
                     },
                     PlayerData {
                         id: "player-4".to_owned(),
@@ -589,6 +593,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        player_type: PlayerType::Trainer,
                     },
                 ]),
             },

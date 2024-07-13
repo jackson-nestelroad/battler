@@ -9,6 +9,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        PlayerType,
         SideEffectContext,
     },
     common::Error,
@@ -18,11 +19,21 @@ use crate::{
         EffectType,
     },
     log_event,
-    mons::Type,
+    mons::{
+        Stat,
+        Type,
+    },
 };
 
-pub fn switch(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!("switch", Mon::active_details(context)?);
+pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<(), Error> {
+    let title = if is_drag {
+        "drag"
+    } else if context.player().player_type == PlayerType::Wild {
+        "appear"
+    } else {
+        "switch"
+    };
+    let event = log_event!(title, Mon::active_details(context)?);
     context.battle_mut().log(event);
     Ok(())
 }
@@ -418,6 +429,32 @@ pub fn transform(
         event.set("from", effect_context.effect().full_name());
     }
 
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
+    let event = log_event!(
+        "exp",
+        ("mon", Mon::position_details(context)?),
+        ("exp", exp)
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
+    let event = log_event!(
+        "levelup",
+        ("mon", Mon::position_details(context)?),
+        ("level", context.mon().level),
+        ("hp", context.mon().base_max_hp),
+        ("atk", context.mon().stats.get(Stat::Atk)),
+        ("def", context.mon().stats.get(Stat::Def)),
+        ("spa", context.mon().stats.get(Stat::SpAtk)),
+        ("spd", context.mon().stats.get(Stat::SpDef)),
+        ("spe", context.mon().stats.get(Stat::Spe)),
+    );
     context.battle_mut().log(event);
     Ok(())
 }

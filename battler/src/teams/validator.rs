@@ -280,7 +280,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
         // Level validation.
         if mon.level == u8::default() {
-            mon.level = self.format.rules.numeric_rules.default_level as u8;
+            if mon.experience > 0 {
+                mon.level = species.data.leveling_rate.level_from_exp(mon.experience);
+            } else {
+                mon.level = self.format.rules.numeric_rules.default_level as u8;
+            }
         }
         if let Some(force_level) = self.format.rules.numeric_rules.force_level {
             mon.level = force_level as u8;

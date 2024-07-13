@@ -875,7 +875,7 @@ fn run_residual_callbacks_with_errors(
     callbacks: Vec<CallbackHandle>,
 ) -> Result<(), Error> {
     for callback_handle in callbacks {
-        if context.battle().ended() {
+        if context.battle().ending() {
             break;
         }
 

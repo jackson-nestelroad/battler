@@ -55,6 +55,10 @@ mod side {
     mod mist_test;
 }
 
+mod singleplayer {
+    mod level_up_test;
+}
+
 mod status {
     mod burn_test;
     mod confusion_test;

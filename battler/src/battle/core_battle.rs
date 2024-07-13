@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     collections::VecDeque,
     marker::PhantomPinned,
     mem,
@@ -9,6 +10,7 @@ use std::{
 };
 
 use ahash::HashMapExt;
+use itertools::Itertools;
 use zone_alloc::{
     ElementRef,
     ElementRefMut,
@@ -27,13 +29,15 @@ use crate::{
         CoreBattleEngineOptions,
         CoreBattleEngineRandomizeBaseDamage,
         CoreBattleOptions,
+        EndAction,
         Field,
+        LearnMoveRequest,
         Mon,
         MonContext,
         MonHandle,
         MoveHandle,
         Player,
-        PlayerRequestData,
+        PlayerBattleRequestData,
         Request,
         RequestType,
         Side,
@@ -173,7 +177,7 @@ impl<'d> PublicCoreBattle<'d> {
     ///
     /// Individual requests to players also contain this data, but this method can be useful for
     /// viewing for the player's team at other points in the battle and even after the battle ends.
-    pub fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error> {
+    pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleRequestData, Error> {
         self.internal.player_data(player)
     }
 
@@ -236,6 +240,7 @@ pub struct CoreBattle<'d> {
     request: Option<RequestType>,
     mid_turn: bool,
     started: bool,
+    ending: bool,
     ended: bool,
     next_ability_priority: u32,
     last_move_log: Option<usize>,
@@ -316,6 +321,7 @@ impl<'d> CoreBattle<'d> {
             request: None,
             mid_turn: false,
             started: false,
+            ending: false,
             ended: false,
             next_ability_priority: 0,
             last_move_log: None,
@@ -514,7 +520,7 @@ impl<'d> CoreBattle<'d> {
         Self::continue_battle_internal(&mut self.context())
     }
 
-    fn player_data(&mut self, player: &str) -> Result<PlayerRequestData, Error> {
+    fn player_data(&mut self, player: &str) -> Result<PlayerBattleRequestData, Error> {
         let player = self.player_index_by_id(player)?;
         Player::request_data(&mut self.context().player_context(player)?)
     }
@@ -589,6 +595,10 @@ impl<'d> CoreBattle<'d> {
 
     pub fn started(&self) -> bool {
         self.started
+    }
+
+    pub fn ending(&self) -> bool {
+        self.ending
     }
 
     pub fn ended(&self) -> bool {
@@ -702,6 +712,7 @@ impl<'d> CoreBattle<'d> {
     fn log_team_sizes(&mut self) {
         let team_size_events = self
             .players()
+            .filter(|player| !player.player_type.wild())
             .map(|player| {
                 log_event!(
                     "teamsize",
@@ -812,6 +823,24 @@ impl<'d> CoreBattle<'d> {
                     })))
                 } else {
                     Ok(None)
+                }
+            }
+            RequestType::LearnMove => {
+                let mut context = context.player_context(player)?;
+                let mut learn_move_request = None;
+                for mon in Player::mon_handles(&context).cloned().collect::<Vec<_>>() {
+                    if let Some(request) = Mon::learn_move_request(&mut context.mon_context(mon)?)?
+                    {
+                        learn_move_request = Some((mon, request));
+                        break;
+                    }
+                }
+                match learn_move_request {
+                    Some((mon, request)) => Ok(Some(Request::LearnMove(LearnMoveRequest {
+                        can_learn_move: request,
+                        mon_summary: Mon::summary_request_data(&mut context.mon_context(mon)?)?,
+                    }))),
+                    None => Ok(None),
                 }
             }
         }
@@ -932,6 +961,11 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn run_action(context: &mut Context, action: Action) -> Result<(), Error> {
+        // Actions don't matter anymore if the battle ended.
+        if context.battle().ended {
+            return Ok(());
+        }
+
         match &action {
             Action::Start => {
                 context.battle_mut().log_team_sizes();
@@ -949,6 +983,11 @@ impl<'d> CoreBattle<'d> {
                         .battle()
                         .players()
                         .filter(|player| player.mons_left > 0)
+                        .sorted_by(|a, b| match (a.player_type.wild(), b.player_type.wild()) {
+                            (true, false) => Ordering::Less,
+                            (false, true) => Ordering::Greater,
+                            _ => Ordering::Equal,
+                        })
                         .flat_map(|player| {
                             player.active.iter().enumerate().filter_map(|(i, _)| {
                                 player.mons.get(i).cloned().map(|mon| (i, mon))
@@ -957,9 +996,12 @@ impl<'d> CoreBattle<'d> {
                         .collect::<Vec<_>>();
                 for (position, mon) in switch_ins {
                     let mut context = context.mon_context(mon)?;
-                    core_battle_actions::switch_in(&mut context, position, None)?;
+                    core_battle_actions::switch_in(&mut context, position, None, false)?;
                 }
                 context.battle_mut().mid_turn = true;
+            }
+            Action::End(action) => {
+                Self::win(context, action.winning_side)?;
             }
             Action::Team(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
@@ -971,7 +1013,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::Switch(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                core_battle_actions::switch_in(&mut context, action.position, None)?;
+                core_battle_actions::switch_in(&mut context, action.position, None, false)?;
             }
             Action::Move(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
@@ -987,7 +1029,25 @@ impl<'d> CoreBattle<'d> {
             }
             Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
             Action::Pass => (),
-            Action::BeforeTurn => (),
+            Action::BeforeTurn => {
+                for mon_handle in context
+                    .battle()
+                    .all_active_mon_handles()
+                    .collect::<Vec<_>>()
+                {
+                    let foe_side = context.mon_context(mon_handle)?.foe_side().index;
+                    for foe_handle in context
+                        .battle()
+                        .active_mon_handles_on_side(foe_side)
+                        .collect::<Vec<_>>()
+                    {
+                        context
+                            .mon_mut(foe_handle)?
+                            .foes_fought_while_active
+                            .insert(mon_handle);
+                    }
+                }
+            }
             Action::BeforeTurnMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
                 if !context.mon().active || context.mon().fainted {
@@ -1011,6 +1071,20 @@ impl<'d> CoreBattle<'d> {
                 );
                 context.battle_mut().log(log_event!("residual"));
             }
+            Action::Experience(action) => {
+                core_battle_actions::gain_experience(
+                    &mut context.mon_context(action.mon)?,
+                    action.exp,
+                )?;
+            }
+            Action::LevelUp(action) => {
+                core_battle_actions::level_up(&mut context.mon_context(action.mon)?)?;
+            }
+            Action::LearnMove(action) => {
+                let mut context = context.mon_context(action.mon)?;
+                let request = Mon::learn_move_request(&mut context)?.wrap_error_with_format(format_args!("mon {} has no move to learn, even though we allowed the player to choose to learn a move", action.mon))?;
+                Mon::learn_move(&mut context, &request.id, action.forget_move_slot)?;
+            }
         }
 
         Self::after_action(context)?;
@@ -1019,7 +1093,22 @@ impl<'d> CoreBattle<'d> {
 
     fn after_action(context: &mut Context) -> Result<(), Error> {
         Self::faint_messages(context)?;
-        if context.battle().ended {
+
+        let mut some_move_can_be_learned = false;
+        for mon in context.battle().all_mon_handles().collect::<Vec<_>>() {
+            let mon = context.mon(mon)?;
+            if !mon.learnable_moves.is_empty() {
+                some_move_can_be_learned = true;
+                break;
+            }
+        }
+        if some_move_can_be_learned {
+            Self::make_request(context, RequestType::LearnMove)?;
+            return Ok(());
+        }
+
+        // Everything after this point does not matter if the battle is ending.
+        if context.battle().ending {
             return Ok(());
         }
 
@@ -1049,6 +1138,8 @@ impl<'d> CoreBattle<'d> {
             }
         }
 
+        // TODO: Update speed dynamically, if we wish to support it like gen 8 does.
+
         // TODO: Update event for everything on the field.
 
         let mut some_switch_needed = false;
@@ -1074,7 +1165,6 @@ impl<'d> CoreBattle<'d> {
                     for mon in Player::active_mon_handles(&context)
                         .cloned()
                         .collect::<Vec<_>>()
-                        .into_iter()
                     {
                         let mut context = context.mon_context(mon)?;
                         if context.mon().needs_switch.is_some() {
@@ -1082,7 +1172,7 @@ impl<'d> CoreBattle<'d> {
                             context.mon_mut().skip_before_switch_out = true;
                             // Mon may have fainted here.
                             Self::faint_messages(context.as_battle_context_mut())?;
-                            if context.battle().ended {
+                            if context.battle().ending {
                                 return Ok(());
                             }
                         }
@@ -1097,9 +1187,8 @@ impl<'d> CoreBattle<'d> {
 
         if some_switch_needed {
             Self::make_request(context, RequestType::Switch)?;
+            return Ok(());
         }
-
-        // TODO: Update speed dynamically, if we wish to support it like gen 8 does.
 
         Ok(())
     }
@@ -1127,7 +1216,7 @@ impl<'d> CoreBattle<'d> {
                 "message",
                 ("message", "It is turn 1000. You have hit the turn limit!"),
             ));
-            Self::tie(context)?;
+            Self::schedule_tie(context)?;
             return Ok(());
         }
 
@@ -1164,31 +1253,40 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn tie(context: &mut Context) -> Result<(), Error> {
-        Self::win(context, None)
+    fn schedule_tie(context: &mut Context) -> Result<(), Error> {
+        Self::schedule_win(context, None)
     }
 
-    fn win(context: &mut Context, side: Option<usize>) -> Result<(), Error> {
-        if context.battle().ended {
+    fn schedule_win(context: &mut Context, mut side: Option<usize>) -> Result<(), Error> {
+        if context.battle().ending {
             return Ok(());
         }
 
-        match side {
+        if side.is_none() {
             // Resolve ties, if possible, using the last Mon that fainted.
-            None => match &context.battle().last_fainted {
-                None => context.battle_mut().log(log_event!("tie")),
-                Some(last_fainted) => {
-                    let mon = context.mon(last_fainted.target)?;
-                    let side = mon.side;
-                    return Self::win(context, Some(side));
-                }
-            },
-            Some(side) => {
-                let win_event = log_event!("win", ("side", side));
-                context.battle_mut().log(win_event);
+            if let Some(last_fainted) = &context.battle().last_fainted {
+                let mon = context.mon(last_fainted.target)?;
+                side = Some(mon.side);
             }
         }
+        BattleQueue::insert_action_into_sorted_position(
+            context,
+            Action::End(EndAction { winning_side: side }),
+        )?;
 
+        context.battle_mut().ending = true;
+        Ok(())
+    }
+
+    fn win(context: &mut Context, side: Option<usize>) -> Result<(), Error> {
+        match side {
+            Some(side) => {
+                context.battle_mut().log(log_event!("win", ("side", side)));
+            }
+            None => {
+                context.battle_mut().log(log_event!("tie"));
+            }
+        }
         context.battle_mut().ended = true;
         context.battle_mut().log.commit();
         Self::clear_requests(context)?;
@@ -1459,7 +1557,7 @@ impl<'d> CoreBattle<'d> {
     ///
     /// A Mon is considered truly fainted only after this method runs.
     pub fn faint_messages(context: &mut Context) -> Result<(), Error> {
-        if context.battle().ended {
+        if context.battle().ending {
             return Ok(());
         }
 
@@ -1472,12 +1570,18 @@ impl<'d> CoreBattle<'d> {
             if context.mon().fainted {
                 continue;
             }
+
             // TODO: BeforeFaint event.
             core_battle_logs::faint(&mut context)?;
             if context.player().mons_left > 0 {
                 context.player_mut().mons_left -= 1;
             }
+
+            let mon_handle = context.mon_handle();
+            core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
+
             // TODO: Faint event.
+
             Mon::clear_state_on_faint(&mut context)?;
             context.battle_mut().last_fainted = Some(entry);
         }
@@ -1500,7 +1604,7 @@ impl<'d> CoreBattle<'d> {
                 winner = Some(side);
             }
         }
-        Self::win(context, winner)
+        Self::schedule_win(context, winner)
     }
 
     /// Gets an [`EffectHandle`] by name.

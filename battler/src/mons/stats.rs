@@ -110,7 +110,7 @@ impl<'s> Iterator for StatTableEntries<'s> {
 /// A full stat table.
 ///
 /// Similar to [`PartialStatTable`], but all values must be defined.
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StatTable {
     #[serde(default)]
     pub hp: u16,

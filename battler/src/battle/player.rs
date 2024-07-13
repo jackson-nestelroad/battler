@@ -8,6 +8,10 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_string_enum::{
+    DeserializeLabeledStringEnum,
+    SerializeLabeledStringEnum,
+};
 
 use crate::{
     battle::{
@@ -15,9 +19,10 @@ use crate::{
         BattleRegistry,
         BattleType,
         CoreBattle,
+        LearnMoveAction,
         Mon,
+        MonBattleRequestData,
         MonHandle,
-        MonTeamRequestData,
         MoveAction,
         MoveActionInput,
         PlayerContext,
@@ -41,6 +46,57 @@ use crate::{
     teams::TeamData,
 };
 
+/// The type of the [`Player`], which controls some of the operations that can be done in the
+/// battle.
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
+)]
+pub enum PlayerType {
+    /// A trainer in a competitive battle.
+    #[default]
+    #[string = "Trainer"]
+    Trainer,
+    /// A wild Mon that can be caught.
+    #[string = "Wild"]
+    Wild,
+    /// The protagonist, who can gain experience.
+    ///
+    /// Only use this type when you intend to simulate single-player battles, where the player can
+    /// gain experience. When you do not wish to simulate experience, simply use `Trainer`.
+    #[string = "Protagonist"]
+    Protagonist,
+}
+
+impl PlayerType {
+    /// Does the player gain experience points?
+    pub fn gains_experience(&self) -> bool {
+        match self {
+            Self::Protagonist => true,
+            _ => false,
+        }
+    }
+
+    /// Is the player's Mons wild?
+    pub fn wild(&self) -> bool {
+        match self {
+            Self::Wild => true,
+            _ => false,
+        }
+    }
+
+    /// Is the player's Mons catchable?
+    pub fn catchable(&self) -> bool {
+        self.wild()
+    }
+}
+
 /// Data for a single player of a battle.
 ///
 /// A player is exactly what it sounds like: a single participant in a battle. A player brings their
@@ -53,6 +109,9 @@ pub struct PlayerData {
     pub name: String,
     /// Team.
     pub team: TeamData,
+    /// Player type.
+    #[serde(default)]
+    pub player_type: PlayerType,
 }
 
 /// What the player has chosen to happen in the current turn.
@@ -146,16 +205,34 @@ impl MoveChoice {
     }
 }
 
-/// Request data for a single player.
+/// A choice to learn a move for a single Mon.
+#[derive(Debug, PartialEq, Eq)]
+struct LearnMoveChoice {
+    pub forget_move_slot: usize,
+}
+
+impl LearnMoveChoice {
+    pub fn new(data: &str) -> Result<LearnMoveChoice, Error> {
+        let move_slot = data
+            .trim()
+            .parse()
+            .wrap_error_with_message("invalid move slot")?;
+        Ok(Self {
+            forget_move_slot: move_slot,
+        })
+    }
+}
+
+/// Request data for a single player in a battle.
 ///
 /// Contains all information for a player in a battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PlayerRequestData {
+pub struct PlayerBattleRequestData {
     pub name: String,
     pub id: String,
     pub side: usize,
     pub position: usize,
-    pub mons: Vec<MonTeamRequestData>,
+    pub mons: Vec<MonBattleRequestData>,
 }
 
 /// A single player of a battle.
@@ -164,6 +241,7 @@ pub struct PlayerRequestData {
 pub struct Player {
     pub id: String,
     pub name: String,
+    pub player_type: PlayerType,
     pub side: usize,
     pub position: usize,
     pub index: usize,
@@ -199,6 +277,7 @@ impl Player {
         Ok(Self {
             id: data.id,
             name: data.name,
+            player_type: data.player_type,
             side,
             position,
             index: usize::MAX,
@@ -305,17 +384,17 @@ impl Player {
             .filter(|mon_handle| context.mon(**mon_handle).is_ok_and(|mon| !mon.fainted))
     }
 
-    /// Request data for the player.
-    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerRequestData, Error> {
+    /// Request data for the player in a battle.
+    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleRequestData, Error> {
         let mon_handles = Self::mon_handles(context).cloned().collect::<Vec<_>>();
-        Ok(PlayerRequestData {
+        Ok(PlayerBattleRequestData {
             name: context.player().name.clone(),
             id: context.player().id.clone(),
             side: context.player().side,
             position: context.player().position,
             mons: mon_handles
                 .into_iter()
-                .map(|mon_handle| Mon::team_request_data(&mut context.mon_context(mon_handle)?))
+                .map(|mon_handle| Mon::battle_request_data(&mut context.mon_context(mon_handle)?))
                 .collect::<Result<_, _>>()?,
         })
     }
@@ -327,12 +406,15 @@ impl Player {
             Some(RequestType::TeamPreview) => {
                 Ok(context.player().choice.actions.len() >= Self::picked_team_size(context))
             }
+            Some(RequestType::LearnMove) => {
+                Ok(context.player().choice.actions.len() >= context.player().mons.len())
+            }
             _ => {
                 if context.player().choice.forced_switches_left > 0 {
                     return Ok(false);
                 }
                 // Choose passes for as many Mons as we can.
-                Self::get_active_position_for_next_choice(context, false)?;
+                Self::get_position_for_next_choice(context, false)?;
                 Ok(context.player().choice.actions.len() >= context.player().active.len())
             }
         }
@@ -535,6 +617,15 @@ impl Player {
                     }
                     _ => (),
                 },
+                "learnmove" => match Self::choose_learn_move(context, data) {
+                    Err(error) => {
+                        return Self::emit_choice_error(
+                            context,
+                            Error::wrap("cannot learn move", error),
+                        )
+                    }
+                    _ => (),
+                },
                 _ => {
                     return Self::emit_choice_error(
                         context,
@@ -565,7 +656,7 @@ impl Player {
             Some(RequestType::Turn | RequestType::Switch) => (),
             _ => return Err(battler_error!("you cannot switch out of turn")),
         };
-        let active_position = Self::get_active_position_for_next_choice(context, false)?;
+        let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return match context.player().request_type() {
                 Some(RequestType::Switch) => Err(battler_error!(
@@ -639,8 +730,7 @@ impl Player {
             })));
         Ok(())
     }
-
-    fn get_active_position_for_next_choice(
+    fn get_position_for_next_choice(
         context: &mut PlayerContext,
         pass: bool,
     ) -> Result<usize, Error> {
@@ -670,6 +760,16 @@ impl Player {
                         next_mon += 1;
                     }
                 }
+                Some(RequestType::LearnMove) => {
+                    while context.player().mons.get(next_mon).is_some_and(|mon| {
+                        context
+                            .mon(*mon)
+                            .is_ok_and(|mon| mon.learnable_moves.is_empty())
+                    }) {
+                        Self::choose_pass(context)?;
+                        next_mon += 1;
+                    }
+                }
                 _ => (),
             }
         }
@@ -677,7 +777,7 @@ impl Player {
     }
 
     fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
-        let active_index = Self::get_active_position_for_next_choice(context, true)?;
+        let active_index = Self::get_position_for_next_choice(context, true)?;
         match Self::active_mon_handle(context, active_index) {
             None => (),
             Some(active_mon_handle) => {
@@ -723,7 +823,7 @@ impl Player {
             _ => return Err(battler_error!("you cannot move out of turn")),
         }
         let mut choice = MoveChoice::new(data.wrap_error_with_message("missing move choice")?)?;
-        let active_position = Self::get_active_position_for_next_choice(context, false)?;
+        let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
         }
@@ -852,6 +952,33 @@ impl Player {
             context.player_mut().choice.mega = true;
         }
 
+        Ok(())
+    }
+
+    fn choose_learn_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+        match context.player().request_type() {
+            Some(RequestType::LearnMove) => (),
+            _ => return Err(battler_error!("you cannot learn move out of turn")),
+        }
+
+        // TODO: Only one learn move choice at a time.
+
+        let choice =
+            LearnMoveChoice::new(data.wrap_error_with_message("missing learn move choice")?)?;
+        let team_position = Self::get_position_for_next_choice(context, false)?;
+        if team_position >= context.player().mons.len() {
+            return Err(battler_error!("you sent more choices than Mons"));
+        }
+        let mon_handle = Self::active_mon_handle(context, team_position)
+            .wrap_error_with_format(format_args!("expected a Mon in position {team_position}"))?;
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::LearnMove(LearnMoveAction {
+                mon: mon_handle,
+                forget_move_slot: choice.forget_move_slot,
+            }));
         Ok(())
     }
 

@@ -14,6 +14,7 @@ use battler::{
         CoreBattleEngineOptions,
         CoreBattleEngineRandomizeBaseDamage,
         CoreBattleEngineSpeedSortTieResolution,
+        PlayerType,
         PublicCoreBattle,
     },
     battler_error,
@@ -158,6 +159,16 @@ impl TestBattleBuilder {
         self.options.side_1.players.push(BattleBuilderPlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
+            player_type: PlayerType::Trainer,
+        });
+        self
+    }
+
+    pub fn add_protagonist_to_side_1(mut self, id: &str, name: &str) -> Self {
+        self.options.side_1.players.push(BattleBuilderPlayerData {
+            id: id.to_owned(),
+            name: name.to_owned(),
+            player_type: PlayerType::Protagonist,
         });
         self
     }
@@ -166,6 +177,16 @@ impl TestBattleBuilder {
         self.options.side_2.players.push(BattleBuilderPlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
+            player_type: PlayerType::Trainer,
+        });
+        self
+    }
+
+    pub fn add_wild_mon_to_side_2(mut self, id: &str, name: &str) -> Self {
+        self.options.side_2.players.push(BattleBuilderPlayerData {
+            id: id.to_owned(),
+            name: name.to_owned(),
+            player_type: PlayerType::Wild,
         });
         self
     }
