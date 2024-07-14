@@ -9,6 +9,9 @@ use serde_string_enum::{
     Debug, Clone, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum AbilityFlags {
+    /// The ability can be broken by Mold Breaker.
+    #[string = "Breakable"]
+    Breakable,
     /// Raises the user's evasion.
     #[string = "EvasionRaising"]
     EvasionRaising,

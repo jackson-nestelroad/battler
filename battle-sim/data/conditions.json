@@ -468,5 +468,32 @@
         "on_lock_move": ["return recharge"]
       }
     }
+  },
+  "rainweather": {
+    "name": "Rain",
+    "condition_type": "Weather",
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_source_weather_modify_damage": [
+          "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
+          "if $move.type == water:",
+          ["return $damage * 3/2"],
+          "if $move.type == fire:",
+          ["return $damage * 1/2"]
+        ],
+        "on_field_start": [
+          "if $source_effect.is_ability:",
+          ["log_weather: $this.name with_source_effect"],
+          "else:",
+          ["log_weather: $this.name"]
+        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": ["log_weather: $this.name residual", "run_event: Weather"]
+        },
+        "on_field_end": ["log_weather"]
+      }
+    }
   }
 }

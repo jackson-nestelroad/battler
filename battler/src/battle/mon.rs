@@ -190,6 +190,7 @@ pub struct AbilitySlot {
     pub id: Id,
     pub name: String,
     pub priority: u32,
+    pub effect_state: fxlang::EffectState,
 }
 
 /// Data for a single move on a [`Mon`].
@@ -429,6 +430,7 @@ impl Mon {
             id: ability.id().clone(),
             name: ability.data.name.clone(),
             priority: 0,
+            effect_state: fxlang::EffectState::new(),
         };
 
         let hidden_power_type = data
@@ -1601,6 +1603,7 @@ impl Mon {
             id: ability.id().clone(),
             name: ability.data.name.clone(),
             priority: ability_priority,
+            effect_state: fxlang::EffectState::new(),
         };
 
         context.mon_mut().ability = ability;

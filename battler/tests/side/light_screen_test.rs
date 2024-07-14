@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod mist_test {
+mod light_screen_test {
     use battler::{
         battle::{
             BattleType,

@@ -29,12 +29,12 @@ use crate::{
 /// Module for managing fxlang effect programs and their evaluation.
 pub struct EffectManager {
     callbacks: LruCache<String, Rc<ParsedCallbacks>>,
-    stack: u8,
+    stack: usize,
 }
 
 impl EffectManager {
     const MAX_SAVED_EFFECTS: usize = 6 * 4 * 2 + 16;
-    const MAX_STACK_SIZE: u8 = 10;
+    const MAX_STACK_SIZE: usize = 10;
 
     /// Creates a new effect manager.
     pub fn new() -> Self {

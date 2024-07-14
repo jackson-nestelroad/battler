@@ -74,5 +74,15 @@
   "whitesmoke": { "name": "White Smoke", "flags": [] },
   "purepower": { "name": "Pure Power", "flags": [] },
   "shellarmor": { "name": "Shell Armor", "flags": [] },
-  "airlock": { "name": "Air Lock", "flags": [] }
+  "airlock": {
+    "name": "Air Lock",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "suppress_field_weather": ["return true"],
+        "on_switch_in": "$effect_state.switching_in = true",
+        "on_start": ["if $effect_state.switching_in:", ["log_ability"]]
+      }
+    }
+  }
 }

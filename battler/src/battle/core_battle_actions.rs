@@ -18,6 +18,7 @@ use crate::{
         CoreBattle,
         EffectContext,
         ExperienceAction,
+        FieldEffectContext,
         LevelUpAction,
         Mon,
         MonContext,
@@ -1092,7 +1093,12 @@ fn modify_damage(
         base_damage = modify_32(base_damage, spread_modifier);
     }
 
-    // TODO: WeatherModifyDamage event.
+    // Weather modifiers.
+    base_damage = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+        &mut context.user_applying_effect_context()?,
+        fxlang::BattleEvent::WeatherModifyDamage,
+        base_damage,
+    );
 
     // Critical hit.
     let target_mon_handle = context.target_mon_handle();
@@ -1408,9 +1414,7 @@ mod direct_move_step {
             if core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
                 &mut context.applying_effect_context()?,
                 fxlang::BattleEvent::AccuracyExempt,
-            )
-            .is_some_and(|val| val)
-            {
+            ) {
                 accuracy = Accuracy::Exempt;
             }
         }
@@ -1879,7 +1883,14 @@ fn apply_move_effects(
                 }
 
                 if let Some(weather) = hit_effect.weather {
-                    // TODO: Set weather.
+                    let set_weather_success = set_weather(
+                        &mut target_context
+                            .applying_effect_context()?
+                            .field_effect_context()?,
+                        &Id::from(weather),
+                    )?;
+                    let outcome = MoveOutcomeOnTarget::from(set_weather_success);
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if let Some(terrain) = hit_effect.terrain {
@@ -2332,6 +2343,7 @@ pub fn try_set_status(
     {
         context.target_mut().status = previous_status;
         context.target_mut().status_state = previous_status_state;
+        return Ok(ApplyMoveEffectResult::Failed);
     }
 
     if !core_battle_effects::run_event_for_applying_effect(
@@ -2646,6 +2658,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
     .is_some_and(|result| !result)
     {
         context.side_mut().conditions.remove(&condition);
+        return Ok(false);
     }
 
     let side_condition_name =
@@ -3001,5 +3014,99 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> 
 
     core_battle_logs::escaped(context.as_player_context_mut())?;
 
+    Ok(true)
+}
+
+/// Sets the weather on the field.
+pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<bool, Error> {
+    let weather_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(weather)?
+        .clone();
+    let weather = weather_handle
+        .try_id()
+        .wrap_error_with_message("volatile must have an id")?
+        .clone();
+
+    if context
+        .battle()
+        .field
+        .weather
+        .as_ref()
+        .is_some_and(|existing| existing == &weather)
+    {
+        // By default, weather can be restarted.
+        if core_battle_effects::run_weather_event_expecting_bool(
+            context,
+            fxlang::BattleEvent::FieldRestart,
+            &weather,
+        )
+        .is_some_and(|val| !val)
+        {
+            return Ok(false);
+        }
+    }
+
+    // TODO: SetWeather event.
+
+    let previous_weather = context.battle().field.weather.clone();
+    let previous_weather_state = context.battle().field.weather_state.clone();
+
+    context.battle_mut().field.weather = Some(weather.clone());
+    context.battle_mut().field.weather_state =
+        initial_effect_state(context.as_effect_context_mut(), None)?;
+
+    if let Some(weather_condition) =
+        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
+            .fxlang_condition()
+    {
+        if let Some(duration) = weather_condition.duration {
+            context
+                .battle_mut()
+                .field
+                .weather_state
+                .set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_weather_event_expecting_u8(
+            context,
+            fxlang::BattleEvent::Duration,
+            &weather,
+        ) {
+            context
+                .battle_mut()
+                .field
+                .weather_state
+                .set_duration(duration);
+        }
+    }
+
+    if core_battle_effects::run_weather_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::FieldStart,
+        &weather,
+    )
+    .is_some_and(|result| !result)
+    {
+        context.battle_mut().field.weather = previous_weather;
+        context.battle_mut().field.weather_state = previous_weather_state;
+        return Ok(false);
+    }
+
+    // TODO: WeatherChange event.
+
+    Ok(true)
+}
+
+/// Clears the weather on the field.
+pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
+    let weather = match context.battle().field.weather.clone() {
+        Some(weather) => weather,
+        _ => return Ok(false),
+    };
+    core_battle_effects::run_weather_event(context, fxlang::BattleEvent::FieldEnd, &weather);
+    context.battle_mut().field.weather = None;
+    context.battle_mut().field.weather_state = fxlang::EffectState::new();
+    // TODO: WeatherChange event.
     Ok(true)
 }

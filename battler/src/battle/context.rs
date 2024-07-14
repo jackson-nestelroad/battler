@@ -1543,6 +1543,14 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         SideEffectContext::new(self.into(), side, source_handle)
     }
 
+    /// Creates a new [`FieldEffectContext`], scoped to the lifetime of this context.
+    pub fn field_effect_context<'effect>(
+        &'effect mut self,
+        source_handle: Option<MonHandle>,
+    ) -> Result<FieldEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+        FieldEffectContext::new(self.into(), source_handle)
+    }
+
     /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
     ///
     /// Fails if the effect is not an active move.
@@ -1836,6 +1844,15 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
         let source_handle = self.source_handle;
         self.as_effect_context_mut()
             .side_effect_context(target_side, source_handle)
+    }
+
+    /// Creates a new [`FieldEffectContext`] for the effect, scoped to the lifetime of this context.
+    pub fn field_effect_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<FieldEffectContext<'applying_effect, 'context, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle;
+        self.as_effect_context_mut()
+            .field_effect_context(source_handle)
     }
 
     /// Returns a reference to the [`CoreBattle`].

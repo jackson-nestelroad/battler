@@ -1109,10 +1109,7 @@ impl<'d> CoreBattle<'d> {
             Action::Residual => {
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
-                core_battle_effects::run_event_for_no_target(
-                    context,
-                    fxlang::BattleEvent::Residual,
-                );
+                core_battle_effects::run_event_for_residual(context, fxlang::BattleEvent::Residual);
                 context.battle_mut().log(log_event!("residual"));
             }
             Action::Experience(action) => {

@@ -796,7 +796,10 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "weather": "rainweather"
+    }
   },
   "sunnyday": {
     "name": "Sunny Day",

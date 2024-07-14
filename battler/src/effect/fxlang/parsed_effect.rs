@@ -58,6 +58,10 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::DisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FieldEnd, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FieldRestart, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FieldResidual, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SideStart, callbacks)?;
             parsed.parse_and_save(BattleEvent::Flinch, callbacks)?;
             parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitField, callbacks)?;
@@ -86,7 +90,10 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SideResidual, callbacks)?;
             parsed.parse_and_save(BattleEvent::SideStart, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SuppressFieldWeather, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SuppressMonWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;
@@ -99,6 +106,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Types, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::WeatherModifyDamage, callbacks)?;
         }
         Ok(parsed)
     }

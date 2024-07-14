@@ -86,6 +86,8 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceEffect
         | CallbackFlag::ReturnsVoid,
 
+    NoContextResult = CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
+
     SourceMoveModifier = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
@@ -169,6 +171,10 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
+
+    FieldVoid = CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsVoid,
+    FieldResult =
+        CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
 }
 
 /// A battle event that can trigger a [`Callback`].
@@ -292,6 +298,26 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "End"]
     End,
+    /// Runs when a field condition ends.
+    ///
+    /// Runs in the context of the field condition itself.
+    #[string = "FieldEnd"]
+    FieldEnd,
+    /// Runs at the end of every turn to apply residual effects on the field.
+    ///
+    /// Runs in the context of the field condition itself.
+    #[string = "FieldResidual"]
+    FieldResidual,
+    /// Runs when a field condition restarts.
+    ///
+    /// Runs in the context of the field condition itself.
+    #[string = "FieldRestart"]
+    FieldRestart,
+    /// Runs when a field condition starts.
+    ///
+    /// Runs in the context of the field condition itself.
+    #[string = "FieldStart"]
+    FieldStart,
     /// Runs when a Mon flinches.
     ///
     /// Runs in the context of the target Mon.
@@ -456,11 +482,17 @@ pub enum BattleEvent {
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
-    /// Used to modify damage calculations impacted by effets on the target Mon.
+    /// Used to modify damage calculations impacted by effects on the target Mon.
     ///
     /// Runs in the context of an active move from the user.
     #[string = "SourceModifyDamage"]
     SourceModifyDamage,
+    /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
+    /// apply against it).
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "WeatherModifyDamage"]
+    SourceWeatherModifyDamage,
     /// Runs when an effect starts.
     ///
     /// Used to set up state.
@@ -468,6 +500,16 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Start"]
     Start,
+    /// Runs when determining if weather on the field is suppressed, for some other active effect.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "SuppressFieldWeather"]
+    SuppressFieldWeather,
+    /// Runs when determining if weather on the Mon is suppressed, for some other active effect.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "SuppressMonWeather"]
+    SuppressMonWeather,
     /// Runs when a Mon switches in.
     ///
     /// Runs in the context of the target Mon.
@@ -545,6 +587,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "UseMoveMessage"]
     UseMoveMessage,
+    /// Runs when calculating the damage applied to a Mon.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "WeatherModifyDamage"]
+    WeatherModifyDamage,
 }
 
 impl BattleEvent {
@@ -569,6 +616,10 @@ impl BattleEvent {
             Self::DeductPp => CommonCallbackType::MonModifier as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
+            Self::FieldResidual => CommonCallbackType::FieldVoid as u32,
+            Self::FieldRestart => CommonCallbackType::FieldResult as u32,
+            Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
@@ -598,7 +649,10 @@ impl BattleEvent {
             Self::SideRestart => CommonCallbackType::SideResult as u32,
             Self::SideStart => CommonCallbackType::SideResult as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
+            Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
+            Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
+            Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TrapMon => CommonCallbackType::MonVoid as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
@@ -611,6 +665,7 @@ impl BattleEvent {
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
+            Self::WeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
         }
     }
 
@@ -628,7 +683,10 @@ impl BattleEvent {
             Self::DamagingHit => &[("damage", ValueType::U64)],
             Self::ModifyAtk => &[("atk", ValueType::U64)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::U64)],
-            Self::ModifyDamage | Self::SourceModifyDamage => &[("damage", ValueType::U64)],
+            Self::ModifyDamage
+            | Self::SourceModifyDamage
+            | Self::SourceWeatherModifyDamage
+            | Self::WeatherModifyDamage => &[("damage", ValueType::U64)],
             Self::ModifyDef => &[("def", ValueType::U64)],
             Self::ModifySpA => &[("spa", ValueType::U64)],
             Self::ModifySpD => &[("spd", ValueType::U64)],
@@ -662,6 +720,56 @@ impl BattleEvent {
         }
     }
 
+    /// Returns true if the event is used for callback lookup.
+    ///
+    /// In this case, the callback type can be ignored when running this event to prevent
+    /// unnecessary and infinite recursion.
+    ///
+    /// An example of infinite recursion:
+    /// - The battle engine runs the `Immunity` event for some Mon.
+    /// - The Mon's types are included in the set of effects that could have a callback for this
+    ///   event.
+    /// - To determine the Mon's types, the battle engine runs the `Types` event.
+    /// - The Mon's types are included in the set of effects that could have a callback for this
+    ///   event.
+    /// - The `Types` event leads to infinite recursion.
+    ///
+    /// An example of unnecessary recursion:
+    /// - The battle engine runs the `Immunity` event for some Mon.
+    /// - The Mon's types are included in the set of effects that could have a callback for this
+    ///   event.
+    /// - To determine the Mon's types, the callback lookup code runs the `Types` event.
+    /// - The Mon's effective weather is included in the set of effects that could have a callback
+    ///   for this event.
+    /// - To determine the Mon's effective weather, the battle engine runs the `SuppressMonWeather`
+    ///   event.
+    /// - If the weather is not suppressed, the effective weather is based on the field's effective
+    ///   weather.
+    /// - To determine the field's effective weather, the battle engine runs the
+    ///   `SuppressFieldWeather` event.
+    /// - After those two events run, the effective weather for the `Types` event has been
+    ///   determined.
+    /// - All callbacks run to determine the Mon's types.
+    /// - Then, the `SuppressMonWeather` and `SuppressFieldWeather` events are run *again* for the
+    ///   `Immunity` event.
+    /// - The weather events are run twice. If weather does not ever impact the Mon's types, we do
+    ///   not need to run the weather events in the `Types` event.
+    ///
+    /// The last point above highlights a key point about this: events used for callback lookup
+    /// cannot affect other events that are used for callback lookup. This should be a very small
+    /// subset of foundational events, so the number of limitations this creates are very small. For
+    /// example, the weather on the field cannot affect the types of any individual Mon. Such a
+    /// scenario is basically impossible from a game mechanics perspective (weather is applied to
+    /// the whole field, not an individual Mon), so the limitation is acceptable. Furthermore, there
+    /// are workarounds (apply a volatile condition to each Mon, use pseudo-weather, or use a
+    /// terrain).
+    pub fn is_used_for_callback_lookup(&self) -> bool {
+        match self {
+            Self::Types | Self::SuppressFieldWeather | Self::SuppressMonWeather => true,
+            _ => false,
+        }
+    }
+
     /// Returns the associated ally event.
     pub fn ally_event(&self) -> Option<BattleEvent> {
         match self {
@@ -681,6 +789,7 @@ impl BattleEvent {
     pub fn source_event(&self) -> Option<BattleEvent> {
         match self {
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
+            Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
             _ => None,
         }
     }
@@ -688,6 +797,22 @@ impl BattleEvent {
     /// Returns the associated any event.
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
+            _ => None,
+        }
+    }
+
+    /// Returns the associated field event.
+    pub fn field_event(&self) -> Option<BattleEvent> {
+        match self {
+            Self::Residual => Some(Self::FieldResidual),
+            _ => None,
+        }
+    }
+
+    /// Returns the associated side event.
+    pub fn side_event(&self) -> Option<BattleEvent> {
+        match self {
+            Self::Residual => Some(Self::SideResidual),
             _ => None,
         }
     }
@@ -796,6 +921,10 @@ pub struct Callbacks {
     pub on_deduct_pp: Callback,
     pub on_duration: Callback,
     pub on_end: Callback,
+    pub on_field_end: Callback,
+    pub on_field_residual: Callback,
+    pub on_field_restart: Callback,
+    pub on_field_start: Callback,
     pub on_flinch: Callback,
     pub on_hit: Callback,
     pub on_hit_field: Callback,
@@ -824,6 +953,7 @@ pub struct Callbacks {
     pub on_side_restart: Callback,
     pub on_side_start: Callback,
     pub on_source_modify_damage: Callback,
+    pub on_source_weather_modify_damage: Callback,
     pub on_start: Callback,
     pub on_switch_in: Callback,
     pub on_trap_mon: Callback,
@@ -837,6 +967,9 @@ pub struct Callbacks {
     pub on_types: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
+    pub on_weather_modify_damage: Callback,
+    pub suppress_field_weather: Callback,
+    pub suppress_mon_weather: Callback,
 }
 
 impl Callbacks {
@@ -860,6 +993,10 @@ impl Callbacks {
             BattleEvent::DisableMove => Some(&self.on_disable_move),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::End => Some(&self.on_end),
+            BattleEvent::FieldEnd => Some(&self.on_field_end),
+            BattleEvent::FieldResidual => Some(&self.on_field_residual),
+            BattleEvent::FieldRestart => Some(&self.on_field_restart),
+            BattleEvent::FieldStart => Some(&self.on_field_start),
             BattleEvent::Flinch => Some(&self.on_flinch),
             BattleEvent::Hit => Some(&self.on_hit),
             BattleEvent::HitField => Some(&self.on_hit_field),
@@ -889,7 +1026,10 @@ impl Callbacks {
             BattleEvent::SideRestart => Some(&self.on_side_restart),
             BattleEvent::SideStart => Some(&self.on_side_start),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
+            BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
+            BattleEvent::SuppressFieldWeather => Some(&self.suppress_field_weather),
+            BattleEvent::SuppressMonWeather => Some(&self.suppress_mon_weather),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
             BattleEvent::TryBoost => Some(&self.on_try_boost),
@@ -902,6 +1042,7 @@ impl Callbacks {
             BattleEvent::Types => Some(&self.on_types),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
+            BattleEvent::WeatherModifyDamage => Some(&self.on_weather_modify_damage),
         }
     }
 }
