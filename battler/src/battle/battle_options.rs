@@ -96,7 +96,7 @@ pub struct CoreBattleEngineOptions {
     /// calculator to discover the minimum and maximum damage values.
     pub randomize_base_damage: CoreBattleEngineRandomizeBaseDamage,
 
-    /// Desribse how ties should be resolved when sorting elements by speed.
+    /// Describes how ties should be resolved when sorting elements by speed.
     ///
     /// By default, speed ties are resolved randomly. However, many tests involve a lot of speed
     /// ties, complicating test results when RNG shifts slightly. This property can be used to

@@ -1531,11 +1531,15 @@ impl<'d> CoreBattle<'d> {
         };
         let target_position = target_position.abs() as usize;
         let target_position = target_position - 1;
-        if !Mon::relative_location_of_target(&context, target_side, target_position)
-            .map_or(false, |relative_location| {
-                move_target.valid_target(relative_location)
-            })
-        {
+        if !Mon::relative_location_of_target(&context, target_side, target_position).map_or(
+            false,
+            |relative_location| {
+                move_target.valid_target(
+                    relative_location,
+                    context.battle().format.options.adjacency_reach,
+                )
+            },
+        ) {
             return Ok(false);
         }
         Ok(true)

@@ -104,6 +104,14 @@ impl BattleQueue {
         self.actions.is_empty()
     }
 
+    /// Returns a mutable reference to an [`Action`] already in the queue.
+    pub fn find_action_mut<F>(&mut self, matcher: F) -> Option<&mut Action>
+    where
+        F: Fn(&Action) -> bool,
+    {
+        self.actions.iter_mut().find(|action| matcher(action))
+    }
+
     /// Sorts all [`Action`]s in the queue.
     pub fn sort(context: &mut Context) {
         let prng = context.battle_mut().prng.as_mut();
@@ -214,6 +222,7 @@ mod queue_tests {
             Action,
             BattleQueue,
             CoreBattleEngineSpeedSortTieResolution,
+            ExperienceAction,
             MonAction,
             MonHandle,
             MoveAction,
@@ -261,6 +270,16 @@ mod queue_tests {
 
     fn mega_evo_action(mon: MonHandle, speed: u32) -> Action {
         Action::MegaEvo(MonAction { mon, speed })
+    }
+
+    fn experience_action(mon: MonHandle, exp: u32) -> Action {
+        Action::Experience(ExperienceAction {
+            mon,
+            player_index: 0,
+            mon_index: 0,
+            active: true,
+            exp,
+        })
     }
 
     fn sort(queue: &mut BattleQueue, seed: Option<u64>) {
@@ -611,5 +630,32 @@ mod queue_tests {
                 "move m6",
             ]
         );
+    }
+
+    #[test]
+    fn finds_existing_action() {
+        let mut queue = BattleQueue::new();
+        queue.push(move_action(Id::from("m1"), 0, 100, 0));
+        queue.push(move_action(Id::from("m2"), 0, 100, 0));
+        queue.push(experience_action(MonHandle::from(0), 100));
+        queue.push(experience_action(MonHandle::from(1), 100));
+
+        sort(&mut queue, Some(0));
+
+        match queue.find_action_mut(|action| match action {
+            Action::Experience(action) => action.mon == MonHandle::from(0),
+            _ => false,
+        }) {
+            Some(Action::Experience(action)) => action.exp += 200,
+            _ => assert!(
+                false,
+                "find_action_mut did not produce the correct experience action"
+            ),
+        }
+
+        assert_matches::assert_matches!(queue.find_action_mut(|action| match action {
+            Action::Experience(action) => action.mon == MonHandle::from(0),
+            _ => false,
+        }),  Some(Action::Experience(action)) => assert_eq!(action.exp, 300));
     }
 }

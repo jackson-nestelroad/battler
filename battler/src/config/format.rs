@@ -13,6 +13,39 @@ use crate::{
     dex::Dex,
 };
 
+/// Customizable options for any format.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormatOptions {
+    /// The number of steps away from a Mon that is counted as being adjacent to it for
+    /// adjacent-targeting attacks.
+    ///
+    /// By default, moves that target adjacent Mons can reach any Mon two steps away from it.
+    /// However, some battles (such as Horde Battles) require one Mon to be able to fight five Mons
+    /// at once. This requires an `adjacency_reach` of 3, since the Mons on the edges will be three
+    /// steps away from the center.
+    ///
+    /// For visualization, the following battle:
+    ///
+    /// ```no_run
+    /// 5  4  3  2  1
+    ///       1
+    /// ```
+    ///
+    /// maps to the following adjacency counts, relative to the single Mon on the bottom side
+    ///
+    /// ```no_run
+    /// 3  2  1  2  3
+    ///       0
+    /// ```
+    pub adjacency_reach: u8,
+}
+
+impl Default for FormatOptions {
+    fn default() -> Self {
+        Self { adjacency_reach: 2 }
+    }
+}
+
 /// Data for the format of a battle, which describes how a battle is configured.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormatData {
@@ -20,6 +53,9 @@ pub struct FormatData {
     pub battle_type: BattleType,
     /// The rules in place that must be validated before and during the battle.
     pub rules: SerializedRuleSet,
+    /// Options for the format.
+    #[serde(default)]
+    pub options: FormatOptions,
 }
 
 /// The format of a battle, which describes how a battle is configured.
@@ -29,6 +65,8 @@ pub struct Format {
     pub battle_type: BattleType,
     /// The rules in place that must be validated before and during the battle.
     pub rules: RuleSet,
+    /// Options for the format.
+    pub options: FormatOptions,
 }
 
 impl Format {
@@ -38,6 +76,7 @@ impl Format {
         Ok(Self {
             battle_type: data.battle_type,
             rules,
+            options: data.options,
         })
     }
 
@@ -46,6 +85,7 @@ impl Format {
         FormatData {
             battle_type: self.battle_type.clone(),
             rules: self.rules.serialized(),
+            options: self.options.clone(),
         }
     }
 }

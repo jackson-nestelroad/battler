@@ -2917,19 +2917,33 @@ pub fn give_out_experience(
         Mon::recalculate_base_stats(&mut context)?;
 
         let exp = calculate_exp_gain(&mut context, fainted_mon_handle)?;
-        let player_index = context.player().index;
-        let mon_index = context.mon().team_position;
-        let active = context.mon().active;
-        BattleQueue::insert_action_into_sorted_position(
-            context.as_battle_context_mut(),
-            Action::Experience(ExperienceAction {
-                mon: foe_handle,
-                player_index,
-                mon_index,
-                active,
-                exp,
-            }),
-        )?;
+        let mon_handle = context.mon_handle();
+        match context
+            .battle_mut()
+            .queue
+            .find_action_mut(|action| match action {
+                Action::Experience(action) => action.mon == mon_handle,
+                _ => false,
+            }) {
+            Some(Action::Experience(action)) => {
+                action.exp += exp;
+            }
+            _ => {
+                let player_index = context.player().index;
+                let mon_index = context.mon().team_position;
+                let active = context.mon().active;
+                BattleQueue::insert_action_into_sorted_position(
+                    context.as_battle_context_mut(),
+                    Action::Experience(ExperienceAction {
+                        mon: foe_handle,
+                        player_index,
+                        mon_index,
+                        active,
+                        exp,
+                    }),
+                )?;
+            }
+        }
     }
 
     Ok(())

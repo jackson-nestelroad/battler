@@ -57,6 +57,7 @@ mod side {
 
 mod singleplayer {
     mod escape_test;
+    mod horde_test;
     mod level_up_test;
 }
 

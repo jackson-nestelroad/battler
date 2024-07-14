@@ -779,13 +779,18 @@ impl Mon {
     ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
         let position = Mon::position_on_side(context)?;
         let context = context.as_side_context_mut();
-        let left = if position > 0 {
-            Side::mon_in_position(context, position - 1)?
+        let reach = context.battle().format.options.adjacency_reach as usize - 1;
+        let min = if reach > position {
+            0
         } else {
-            None
+            position - reach
         };
-        let right = Side::mon_in_position(context, position + 1)?;
-        Ok(iter::once(left).chain(iter::once(right)))
+        let max = position + reach;
+        Ok((min..=max)
+            .filter(|pos| *pos != position)
+            .map(|pos| Side::mon_in_position(context, pos))
+            .collect::<Result<Vec<_>, Error>>()?
+            .into_iter())
     }
 
     /// Creates an iterator over all adjacent allies and this Mon.
@@ -813,20 +818,22 @@ impl Mon {
         let position = Mon::position_on_side(context)?;
         let mons_per_side = context.battle().max_side_length();
         if position >= mons_per_side {
-            return Err(battler_error!("Mon position {position} is out of bounds"));
+            return Err(battler_error!("mon position {position} is out of bounds"));
         }
         let flipped_position = mons_per_side - position - 1;
+
         let mut context = context.foe_side_context()?;
-        let left = if flipped_position > 0 {
-            Side::mon_in_position(&mut context, flipped_position - 1)?
+        let reach = context.battle().format.options.adjacency_reach as usize - 1;
+        let min = if reach > flipped_position {
+            0
         } else {
-            None
+            flipped_position - reach
         };
-        let center = Side::mon_in_position(&mut context, flipped_position)?;
-        let right = Side::mon_in_position(&mut context, flipped_position + 1)?;
-        Ok(iter::once(left)
-            .chain(iter::once(center))
-            .chain(iter::once(right)))
+        let max = flipped_position + reach;
+        Ok((min..=max)
+            .map(|pos| Side::mon_in_position(&mut context, pos))
+            .collect::<Result<Vec<_>, Error>>()?
+            .into_iter())
     }
 
     fn calculate_stat_internal(

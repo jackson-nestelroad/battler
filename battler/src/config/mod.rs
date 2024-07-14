@@ -12,6 +12,7 @@ pub use clause::{
 pub use format::{
     Format,
     FormatData,
+    FormatOptions,
 };
 pub use ruleset::{
     ResourceCheck,

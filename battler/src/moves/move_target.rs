@@ -165,15 +165,15 @@ impl MoveTarget {
     }
 
     /// Validates the relative target position.
-    pub fn valid_target(&self, relative_target: isize) -> bool {
+    pub fn valid_target(&self, relative_target: isize, adjacency_reach: u8) -> bool {
         let is_self = relative_target == 0;
         let is_foe = relative_target > 0;
         let is_adjacent = if relative_target > 0 {
             // Foe side, at most two steps away.
-            relative_target <= 2
+            relative_target <= adjacency_reach as isize
         } else {
             // Same side, at most one step away.
-            relative_target == -1
+            relative_target == -(adjacency_reach as isize) + 1
         };
 
         match self {
@@ -226,73 +226,89 @@ mod move_target_tests {
 
     #[test]
     fn valid_target_any_adjacent() {
-        assert!(MoveTarget::RandomNormal.valid_target(1));
-        assert!(MoveTarget::Scripted.valid_target(1));
-        assert!(MoveTarget::Normal.valid_target(1));
-        assert!(MoveTarget::RandomNormal.valid_target(2));
-        assert!(MoveTarget::Scripted.valid_target(2));
-        assert!(MoveTarget::Normal.valid_target(2));
-        assert!(MoveTarget::RandomNormal.valid_target(-1));
-        assert!(MoveTarget::Scripted.valid_target(-1));
-        assert!(MoveTarget::Normal.valid_target(-1));
+        assert!(MoveTarget::RandomNormal.valid_target(1, 2));
+        assert!(MoveTarget::Scripted.valid_target(1, 2));
+        assert!(MoveTarget::Normal.valid_target(1, 2));
+        assert!(MoveTarget::RandomNormal.valid_target(2, 2));
+        assert!(MoveTarget::Scripted.valid_target(2, 2));
+        assert!(MoveTarget::Normal.valid_target(2, 2));
+        assert!(MoveTarget::RandomNormal.valid_target(-1, 2));
+        assert!(MoveTarget::Scripted.valid_target(-1, 2));
+        assert!(MoveTarget::Normal.valid_target(-1, 2));
 
-        assert!(!MoveTarget::Normal.valid_target(0));
-        assert!(!MoveTarget::Normal.valid_target(3));
-        assert!(!MoveTarget::Normal.valid_target(-2));
+        assert!(!MoveTarget::Normal.valid_target(0, 2));
+        assert!(!MoveTarget::Normal.valid_target(3, 2));
+        assert!(!MoveTarget::Normal.valid_target(-2, 2));
+
+        assert!(MoveTarget::Normal.valid_target(3, 3));
+        assert!(MoveTarget::Normal.valid_target(-2, 3));
+        assert!(!MoveTarget::Normal.valid_target(4, 3));
+        assert!(!MoveTarget::Normal.valid_target(-3, 3));
     }
 
     #[test]
     fn valid_target_adjacent_ally() {
-        assert!(MoveTarget::AdjacentAlly.valid_target(-1));
+        assert!(MoveTarget::AdjacentAlly.valid_target(-1, 2));
 
-        assert!(!MoveTarget::AdjacentAlly.valid_target(0));
-        assert!(!MoveTarget::AdjacentAlly.valid_target(1));
-        assert!(!MoveTarget::AdjacentAlly.valid_target(2));
-        assert!(!MoveTarget::AdjacentAlly.valid_target(3));
-        assert!(!MoveTarget::AdjacentAlly.valid_target(-2));
+        assert!(!MoveTarget::AdjacentAlly.valid_target(0, 2));
+        assert!(!MoveTarget::AdjacentAlly.valid_target(1, 2));
+        assert!(!MoveTarget::AdjacentAlly.valid_target(2, 2));
+        assert!(!MoveTarget::AdjacentAlly.valid_target(3, 2));
+        assert!(!MoveTarget::AdjacentAlly.valid_target(-2, 2));
+
+        assert!(MoveTarget::AdjacentAlly.valid_target(-2, 3));
+        assert!(!MoveTarget::AdjacentAlly.valid_target(-3, 3));
     }
 
     #[test]
     fn valid_target_adjacent_ally_or_user() {
-        assert!(MoveTarget::AdjacentAllyOrUser.valid_target(-1));
-        assert!(MoveTarget::AdjacentAllyOrUser.valid_target(0));
+        assert!(MoveTarget::AdjacentAllyOrUser.valid_target(-1, 2));
+        assert!(MoveTarget::AdjacentAllyOrUser.valid_target(0, 2));
 
-        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(1));
-        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(2));
-        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(3));
-        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(-2));
+        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(1, 2));
+        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(2, 2));
+        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(3, 2));
+        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(-2, 2));
+
+        assert!(MoveTarget::AdjacentAllyOrUser.valid_target(-2, 3));
+        assert!(!MoveTarget::AdjacentAllyOrUser.valid_target(-3, 3));
     }
 
     #[test]
     fn valid_target_adjacent_foe() {
-        assert!(MoveTarget::AdjacentFoe.valid_target(1));
-        assert!(MoveTarget::AdjacentFoe.valid_target(2));
+        assert!(MoveTarget::AdjacentFoe.valid_target(1, 2));
+        assert!(MoveTarget::AdjacentFoe.valid_target(2, 2));
 
-        assert!(!MoveTarget::AdjacentFoe.valid_target(0));
-        assert!(!MoveTarget::AdjacentFoe.valid_target(3));
-        assert!(!MoveTarget::AdjacentFoe.valid_target(-1));
-        assert!(!MoveTarget::AdjacentFoe.valid_target(-2));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(0, 2));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(3, 2));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(-1, 2));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(-2, 2));
+
+        assert!(MoveTarget::AdjacentFoe.valid_target(3, 3));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(-2, 3));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(4, 3));
+        assert!(!MoveTarget::AdjacentFoe.valid_target(-3, 3));
     }
 
     #[test]
     fn valid_target_any_but_user() {
-        assert!(MoveTarget::Any.valid_target(1));
-        assert!(MoveTarget::Any.valid_target(2));
-        assert!(MoveTarget::Any.valid_target(3));
-        assert!(MoveTarget::Any.valid_target(-1));
-        assert!(MoveTarget::Any.valid_target(-2));
+        assert!(MoveTarget::Any.valid_target(1, 2));
+        assert!(MoveTarget::Any.valid_target(2, 2));
+        assert!(MoveTarget::Any.valid_target(3, 2));
+        assert!(MoveTarget::Any.valid_target(-1, 2));
+        assert!(MoveTarget::Any.valid_target(-2, 2));
 
-        assert!(!MoveTarget::Any.valid_target(0));
+        assert!(!MoveTarget::Any.valid_target(0, 2));
     }
 
     #[test]
     fn valid_target_user() {
-        assert!(MoveTarget::User.valid_target(0));
+        assert!(MoveTarget::User.valid_target(0, 2));
 
-        assert!(!MoveTarget::User.valid_target(1));
-        assert!(!MoveTarget::User.valid_target(2));
-        assert!(!MoveTarget::User.valid_target(3));
-        assert!(!MoveTarget::User.valid_target(-1));
-        assert!(!MoveTarget::User.valid_target(-2));
+        assert!(!MoveTarget::User.valid_target(1, 2));
+        assert!(!MoveTarget::User.valid_target(2, 2));
+        assert!(!MoveTarget::User.valid_target(3, 2));
+        assert!(!MoveTarget::User.valid_target(-1, 2));
+        assert!(!MoveTarget::User.valid_target(-2, 2));
     }
 }

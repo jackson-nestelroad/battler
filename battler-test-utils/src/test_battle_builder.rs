@@ -25,6 +25,7 @@ use battler::{
     },
     config::{
         FormatData,
+        FormatOptions,
         Rule,
         SerializedRuleSet,
     },
@@ -52,6 +53,7 @@ impl TestBattleBuilder {
                 format: FormatData {
                     battle_type: BattleType::Singles,
                     rules: SerializedRuleSet::new(),
+                    options: FormatOptions::default(),
                 },
                 side_1: BattleBuilderSideData {
                     name: "Side 1".to_string(),
@@ -199,6 +201,11 @@ impl TestBattleBuilder {
 
     pub fn with_team(mut self, player_id: &str, team: TeamData) -> Self {
         self.teams.insert(player_id.to_owned(), team);
+        self
+    }
+
+    pub fn with_adjacenecy_reach(mut self, adjacenecy_reach: u8) -> Self {
+        self.options.format.options.adjacency_reach = adjacenecy_reach;
         self
     }
 }
