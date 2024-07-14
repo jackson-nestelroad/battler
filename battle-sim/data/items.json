@@ -2412,7 +2412,12 @@
   "utilityumbrella": {
     "name": "Utility Umbrella",
     "fling": { "power": 60 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "suppress_mon_weather": ["return true"]
+      }
+    }
   },
   "expcandyxs": { "name": "Exp. Candy XS", "flags": [] },
   "expcandys": { "name": "Exp. Candy S", "flags": [] },

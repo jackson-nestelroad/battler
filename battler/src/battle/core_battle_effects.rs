@@ -284,6 +284,7 @@ pub enum MoveTargetForEvent {
 enum EffectOrigin {
     None,
     MonAbility(MonHandle),
+    MonItem(MonHandle),
     MonStatus(MonHandle),
     MonType(MonHandle),
     MonVolatileStatus(MonHandle),
@@ -319,6 +320,11 @@ impl CallbackHandle {
             EffectOrigin::MonAbility(mon) => {
                 Ok(Some(&mut context.mon_mut(mon)?.ability.effect_state))
             }
+            EffectOrigin::MonItem(mon) => Ok(context
+                .mon_mut(mon)?
+                .item
+                .as_mut()
+                .map(|item| &mut item.effect_state)),
             EffectOrigin::MonStatus(mon) => Ok(Some(&mut context.mon_mut(mon)?.status_state)),
             EffectOrigin::MonType(_) => Ok(None),
             EffectOrigin::MonVolatileStatus(mon) => match self.effect_handle.try_id() {
@@ -536,7 +542,6 @@ fn find_callbacks_on_mon(
         ));
     }
 
-    // TODO: Ability.
     if let Some(ability) = mon_states::effective_ability(&mut context) {
         callbacks.push(CallbackHandle::new(
             EffectHandle::Ability(ability),
@@ -544,7 +549,15 @@ fn find_callbacks_on_mon(
             EffectOrigin::MonAbility(mon),
         ));
     }
-    // TODO: Item.
+
+    if let Some(item) = mon_states::effective_item(&mut context) {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Item(item),
+            event,
+            EffectOrigin::MonItem(mon),
+        ));
+    }
+
     // TODO: Species.
     // TODO: Slot conditions on the side.
 
@@ -986,6 +999,14 @@ fn run_residual_callbacks_with_errors(
                 )?;
             }
             EffectOrigin::MonAbility(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
+            }
+            EffectOrigin::MonItem(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),

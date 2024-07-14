@@ -193,6 +193,14 @@ pub struct AbilitySlot {
     pub effect_state: fxlang::EffectState,
 }
 
+/// A single item slot for a Mon.
+#[derive(Clone)]
+pub struct ItemSlot {
+    pub id: Id,
+    pub name: String,
+    pub effect_state: fxlang::EffectState,
+}
+
 /// Data for a single move on a [`Mon`].
 ///
 /// Makes a copy of underlying data so that it can be stored on move requests.
@@ -344,7 +352,7 @@ pub struct Mon {
     pub types: Vec<Type>,
     pub hidden_power_type: Type,
 
-    pub item: Option<String>,
+    pub item: Option<ItemSlot>,
 
     pub hp: u16,
     pub base_max_hp: u16,
@@ -399,7 +407,6 @@ impl Mon {
         let gender = data.gender;
         let shiny = data.shiny;
         let ball = data.ball;
-        let item = data.item;
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {
@@ -431,6 +438,18 @@ impl Mon {
             name: ability.data.name.clone(),
             priority: 0,
             effect_state: fxlang::EffectState::new(),
+        };
+
+        let item = match data.item {
+            Some(item) => {
+                let item = dex.items.get(&item)?;
+                Some(ItemSlot {
+                    id: item.id().clone(),
+                    name: item.data.name.clone(),
+                    effect_state: fxlang::EffectState::new(),
+                })
+            }
+            None => None,
         };
 
         let hidden_power_type = data
@@ -1030,7 +1049,7 @@ impl Mon {
                 .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
                 .collect::<Result<Vec<_>, Error>>()?,
             ability: context.mon().ability.name.clone(),
-            item: context.mon().item.clone(),
+            item: context.mon().item.as_ref().map(|item| item.name.clone()),
         })
     }
 

@@ -613,13 +613,6 @@ where
                     "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                         &mut context.mon_context(mon_handle)?,
                     )),
-                    "item" => ValueRef::TempString(
-                        context
-                            .mon(mon_handle)?
-                            .item
-                            .clone()
-                            .unwrap_or("".to_owned()),
-                    ),
                     "last_move" => match context.mon(mon_handle)?.last_move {
                         Some(last_move) => ValueRef::ActiveMove(last_move),
                         _ => ValueRef::Undefined,
@@ -872,9 +865,6 @@ where
                 ValueRefMut::Mon(ref mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
-                        "item" => {
-                            ValueRefMut::OptionalString(&mut context.mon_mut(**mon_handle)?.item)
-                        }
                         "last_target_location" => ValueRefMut::OptionalISize(
                             &mut context.mon_mut(**mon_handle)?.last_move_target_location,
                         ),
@@ -1813,9 +1803,6 @@ impl Evaluator {
             }
             (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
                 *var = val;
-            }
-            (ValueRefMut::OptionalString(var), Value::String(val)) => {
-                *var = if val.is_empty() { None } else { Some(val) };
             }
             (ValueRefMut::String(var), Value::String(val)) => {
                 *var = val;

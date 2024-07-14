@@ -33,7 +33,7 @@ pub fn effective_weather(context: &mut MonContext) -> Option<Id> {
 ///
 /// Abilities can be suppressed by other effects and abilities.
 pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
-    // TODO: SupressAbility event.
+    // TODO: SuppressAbility event.
     //  - First, check if ability is breakable (flag).
     //  - If so, run the event.
     //      - Mold Breaker suppresses during move execution of the ability holder.
@@ -41,4 +41,12 @@ pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
     //          - AfterMove => unsuppress
     //      - Ability Shield unsuppresses (higher priority than Mold Breaker).
     Some(context.mon().ability.id.clone())
+}
+
+/// The effective item of the [`Mon`][`crate::battle::Mon`].
+///
+/// Items can be suppressed by other effects and abilities.
+pub fn effective_item(context: &mut MonContext) -> Option<Id> {
+    // TODO: SuppressItem event, similar to SuppressAbility.
+    context.mon().item.as_ref().map(|item| item.id.clone())
 }
