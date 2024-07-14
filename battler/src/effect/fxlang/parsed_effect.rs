@@ -64,6 +64,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::HitSide, callbacks)?;
             parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
             parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyCritRatio, callbacks)?;

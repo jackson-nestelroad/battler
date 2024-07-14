@@ -12,6 +12,7 @@ pub mod core_battle_effects;
 pub mod core_battle_logs;
 mod field;
 mod mon;
+pub mod mon_states;
 mod move_outcome;
 mod player;
 mod queue;

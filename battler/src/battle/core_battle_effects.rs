@@ -1557,6 +1557,26 @@ pub fn run_event_for_mon_expecting_types(
     }
 }
 
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`bool`]. Returns the value of the first callback that returns a value.
+pub fn run_event_for_mon_expecting_bool_quick_return(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+) -> bool {
+    run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )
+    .map(|value| value.boolean().ok())
+    .flatten()
+    .unwrap_or(false)
+}
+
 /// Runs an event on the [`CoreBattle`][`crate::battle::CoreBattle`] for the residual effect, which
 /// occurs at the end of every turn.
 pub fn run_event_for_no_target(context: &mut Context, event: fxlang::BattleEvent) {

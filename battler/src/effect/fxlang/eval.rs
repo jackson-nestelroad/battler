@@ -13,6 +13,7 @@ use zone_alloc::{
 
 use crate::{
     battle::{
+        mon_states,
         ActiveMoveContext,
         ApplyingEffectContext,
         Context,
@@ -609,6 +610,9 @@ where
                     "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
                     "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
                     "hp" => ValueRef::U64(context.mon(mon_handle)?.hp as u64),
+                    "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
+                        &mut context.mon_context(mon_handle)?,
+                    )),
                     "item" => ValueRef::TempString(
                         context
                             .mon(mon_handle)?

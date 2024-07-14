@@ -333,6 +333,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "Invulnerability"]
     Invulnerability,
+    /// Runs when determining if a Mon is asleep.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsAsleep"]
+    IsAsleep,
     /// Runs when determining if a Mon is locked into a move.
     ///
     /// Runs in the context of the target Mon.
@@ -570,6 +575,7 @@ impl BattleEvent {
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
+            Self::IsAsleep => CommonCallbackType::MonResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
@@ -771,6 +777,7 @@ impl SpeedOrderable for Callback {
 /// All possible callbacks for an effect should be defined here.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
+    pub is_asleep: Callback,
     pub on_accuracy_exempt: Callback,
     pub on_add_volatile: Callback,
     pub on_after_move: Callback,
@@ -859,6 +866,7 @@ impl Callbacks {
             BattleEvent::HitSide => Some(&self.on_hit_side),
             BattleEvent::Immunity => Some(&self.on_immunity),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
+            BattleEvent::IsAsleep => Some(&self.is_asleep),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyCritRatio => Some(&self.on_modify_crit_ratio),

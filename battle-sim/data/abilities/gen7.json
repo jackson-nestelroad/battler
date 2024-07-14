@@ -1,1 +1,52 @@
-{"stamina":{"name":"Stamina","flags":[]},"wimpout":{"name":"Wimp Out","flags":[]},"emergencyexit":{"name":"Emergency Exit","flags":[]},"watercompaction":{"name":"Water Compaction","flags":[]},"merciless":{"name":"Merciless","flags":[]},"shieldsdown":{"name":"Shields Down","flags":[]},"stakeout":{"name":"Stakeout","flags":[]},"waterbubble":{"name":"Water Bubble","flags":[]},"steelworker":{"name":"Steelworker","flags":[]},"berserk":{"name":"Berserk","flags":[]},"slushrush":{"name":"Slush Rush","flags":[]},"longreach":{"name":"Long Reach","flags":[]},"liquidvoice":{"name":"Liquid Voice","flags":[]},"triage":{"name":"Triage","flags":[]},"galvanize":{"name":"Galvanize","flags":[]},"surgesurfer":{"name":"Surge Surfer","flags":[]},"schooling":{"name":"Schooling","flags":[]},"disguise":{"name":"Disguise","flags":[]},"battlebond":{"name":"Battle Bond","flags":[]},"powerconstruct":{"name":"Power Construct","flags":[]},"corrosion":{"name":"Corrosion","flags":[]},"comatose":{"name":"Comatose","flags":[]},"queenlymajesty":{"name":"Queenly Majesty","flags":[]},"innardsout":{"name":"Innards Out","flags":[]},"dancer":{"name":"Dancer","flags":[]},"battery":{"name":"Battery","flags":[]},"fluffy":{"name":"Fluffy","flags":[]},"dazzling":{"name":"Dazzling","flags":[]},"soulheart":{"name":"Soul-Heart","flags":[]},"tanglinghair":{"name":"Tangling Hair","flags":[]},"receiver":{"name":"Receiver","flags":[]},"powerofalchemy":{"name":"Power of Alchemy","flags":[]},"beastboost":{"name":"Beast Boost","flags":[]},"rkssystem":{"name":"RKS System","flags":[]},"electricsurge":{"name":"Electric Surge","flags":[]},"psychicsurge":{"name":"Psychic Surge","flags":[]},"mistysurge":{"name":"Misty Surge","flags":[]},"grassysurge":{"name":"Grassy Surge","flags":[]},"fullmetalbody":{"name":"Full Metal Body","flags":[]},"shadowshield":{"name":"Shadow Shield","flags":[]},"prismarmor":{"name":"Prism Armor","flags":[]},"neuroforce":{"name":"Neuroforce","flags":[]}}
+{
+  "stamina": { "name": "Stamina", "flags": [] },
+  "wimpout": { "name": "Wimp Out", "flags": [] },
+  "emergencyexit": { "name": "Emergency Exit", "flags": [] },
+  "watercompaction": { "name": "Water Compaction", "flags": [] },
+  "merciless": { "name": "Merciless", "flags": [] },
+  "shieldsdown": { "name": "Shields Down", "flags": [] },
+  "stakeout": { "name": "Stakeout", "flags": [] },
+  "waterbubble": { "name": "Water Bubble", "flags": [] },
+  "steelworker": { "name": "Steelworker", "flags": [] },
+  "berserk": { "name": "Berserk", "flags": [] },
+  "slushrush": { "name": "Slush Rush", "flags": [] },
+  "longreach": { "name": "Long Reach", "flags": [] },
+  "liquidvoice": { "name": "Liquid Voice", "flags": [] },
+  "triage": { "name": "Triage", "flags": [] },
+  "galvanize": { "name": "Galvanize", "flags": [] },
+  "surgesurfer": { "name": "Surge Surfer", "flags": [] },
+  "schooling": { "name": "Schooling", "flags": [] },
+  "disguise": { "name": "Disguise", "flags": [] },
+  "battlebond": { "name": "Battle Bond", "flags": [] },
+  "powerconstruct": { "name": "Power Construct", "flags": [] },
+  "corrosion": { "name": "Corrosion", "flags": [] },
+  "comatose": {
+    "name": "Comatose",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "is_asleep": ["return true"]
+      }
+    }
+  },
+  "queenlymajesty": { "name": "Queenly Majesty", "flags": [] },
+  "innardsout": { "name": "Innards Out", "flags": [] },
+  "dancer": { "name": "Dancer", "flags": [] },
+  "battery": { "name": "Battery", "flags": [] },
+  "fluffy": { "name": "Fluffy", "flags": [] },
+  "dazzling": { "name": "Dazzling", "flags": [] },
+  "soulheart": { "name": "Soul-Heart", "flags": [] },
+  "tanglinghair": { "name": "Tangling Hair", "flags": [] },
+  "receiver": { "name": "Receiver", "flags": [] },
+  "powerofalchemy": { "name": "Power of Alchemy", "flags": [] },
+  "beastboost": { "name": "Beast Boost", "flags": [] },
+  "rkssystem": { "name": "RKS System", "flags": [] },
+  "electricsurge": { "name": "Electric Surge", "flags": [] },
+  "psychicsurge": { "name": "Psychic Surge", "flags": [] },
+  "mistysurge": { "name": "Misty Surge", "flags": [] },
+  "grassysurge": { "name": "Grassy Surge", "flags": [] },
+  "fullmetalbody": { "name": "Full Metal Body", "flags": [] },
+  "shadowshield": { "name": "Shadow Shield", "flags": [] },
+  "prismarmor": { "name": "Prism Armor", "flags": [] },
+  "neuroforce": { "name": "Neuroforce", "flags": [] }
+}

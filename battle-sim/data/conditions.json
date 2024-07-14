@@ -191,6 +191,7 @@
     "condition_type": "Status",
     "condition": {
       "callbacks": {
+        "is_asleep": ["return true"],
         "on_start": [
           "if $source_effect.is_ability or $source_effect.is_move:",
           ["log_status: $this.name with_source_effect"],
