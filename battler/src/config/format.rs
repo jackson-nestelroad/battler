@@ -26,14 +26,14 @@ pub struct FormatOptions {
     ///
     /// For visualization, the following battle:
     ///
-    /// ```no_run
+    /// ```ignore
     /// 5  4  3  2  1
     ///       1
     /// ```
     ///
     /// maps to the following adjacency counts, relative to the single Mon on the bottom side
     ///
-    /// ```no_run
+    /// ```ignore
     /// 3  2  1  2  3
     ///       0
     /// ```
