@@ -106,6 +106,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Types, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Weather, callbacks)?;
             parsed.parse_and_save(BattleEvent::WeatherModifyDamage, callbacks)?;
         }
         Ok(parsed)

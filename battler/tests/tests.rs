@@ -74,3 +74,7 @@ mod status {
     mod sleep_test;
     mod toxic_test;
 }
+
+mod weather {
+    mod rain_test;
+}

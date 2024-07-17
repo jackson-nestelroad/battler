@@ -3035,16 +3035,7 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         .as_ref()
         .is_some_and(|existing| existing == &weather)
     {
-        // By default, weather can be restarted.
-        if core_battle_effects::run_weather_event_expecting_bool(
-            context,
-            fxlang::BattleEvent::FieldRestart,
-            &weather,
-        )
-        .is_some_and(|val| !val)
-        {
-            return Ok(false);
-        }
+        return Ok(false);
     }
 
     // TODO: SetWeather event.

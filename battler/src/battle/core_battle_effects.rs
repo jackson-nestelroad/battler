@@ -510,6 +510,7 @@ fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     mon: MonHandle,
+    include_applied_field_effects: bool,
 ) -> Result<Vec<CallbackHandle>, Error> {
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
@@ -561,14 +562,16 @@ fn find_callbacks_on_mon(
     // TODO: Species.
     // TODO: Slot conditions on the side.
 
-    if !event.is_used_for_callback_lookup() {
-        if let Some(weather) = mon_states::effective_weather(&mut context) {
-            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-            callbacks.push(CallbackHandle::new(
-                weather_handle.clone(),
-                event,
-                EffectOrigin::Weather,
-            ));
+    if include_applied_field_effects {
+        if !event.is_used_for_callback_lookup() {
+            if let Some(weather) = mon_states::effective_weather(&mut context) {
+                let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
+                callbacks.push(CallbackHandle::new(
+                    weather_handle.clone(),
+                    event,
+                    EffectOrigin::Weather,
+                ));
+            }
         }
     }
 
@@ -638,7 +641,7 @@ fn find_all_callbacks(
 
     match target {
         AllEffectsTarget::Mon(mon) => {
-            callbacks.extend(find_callbacks_on_mon(context, event, mon)?);
+            callbacks.extend(find_callbacks_on_mon(context, event, mon, true)?);
             let mut context = context.mon_context(mon)?;
             for mon in Mon::active_allies_and_self(&mut context).collect::<Vec<_>>() {
                 if let Some(ally_event) = event.ally_event() {
@@ -646,6 +649,7 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         ally_event,
                         mon,
+                        true,
                     )?);
                 }
                 if let Some(any_event) = event.any_event() {
@@ -653,6 +657,7 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         any_event,
                         mon,
+                        true,
                     )?);
                 }
             }
@@ -662,6 +667,7 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         foe_event,
                         mon,
+                        true,
                     )?);
                 }
                 if let Some(any_event) = event.any_event() {
@@ -669,6 +675,7 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         any_event,
                         mon,
+                        true,
                     )?);
                 }
             }
@@ -686,6 +693,11 @@ fn find_all_callbacks(
                     foe_side,
                 )?);
             }
+
+            callbacks.extend(find_callbacks_on_field(
+                context.as_battle_context_mut(),
+                event,
+            )?);
         }
         AllEffectsTarget::Side(side) => {
             callbacks.extend(find_callbacks_on_side(context, event, side)?);
@@ -698,6 +710,11 @@ fn find_all_callbacks(
                     foe_side,
                 )?);
             }
+
+            callbacks.extend(find_callbacks_on_field(
+                context.as_battle_context_mut(),
+                event,
+            )?);
         }
         AllEffectsTarget::Field => {
             for mon in context
@@ -705,11 +722,12 @@ fn find_all_callbacks(
                 .all_active_mon_handles()
                 .collect::<Vec<_>>()
             {
-                callbacks.extend(find_callbacks_on_mon(context, event, mon)?);
+                callbacks.extend(find_callbacks_on_mon(context, event, mon, true)?);
             }
             for side in context.battle().side_indices() {
                 callbacks.extend(find_callbacks_on_side(context, event, side)?);
             }
+            callbacks.extend(find_callbacks_on_field(context, event)?);
         }
         AllEffectsTarget::Residual => {
             for mon in context
@@ -717,7 +735,7 @@ fn find_all_callbacks(
                 .all_active_mon_handles()
                 .collect::<Vec<_>>()
             {
-                callbacks.extend(find_callbacks_on_mon(context, event, mon)?);
+                callbacks.extend(find_callbacks_on_mon(context, event, mon, false)?);
             }
             for side in context.battle().side_indices() {
                 if let Some(side_event) = event.side_event() {
@@ -732,13 +750,11 @@ fn find_all_callbacks(
 
     if let Some(source) = source {
         if let Some(source_event) = event.source_event() {
-            callbacks.extend(find_callbacks_on_mon(context, source_event, source)?);
+            callbacks.extend(find_callbacks_on_mon(context, source_event, source, true)?);
             let side = context.mon(source)?.side;
             callbacks.extend(find_callbacks_on_side(context, source_event, side)?);
         }
     }
-
-    callbacks.extend(find_callbacks_on_field(context, event)?);
 
     Ok(callbacks)
 }

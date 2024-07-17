@@ -478,9 +478,9 @@
         "on_source_weather_modify_damage": [
           "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
           "if $move.type == water:",
-          ["return $damage * 3/2"],
+          ["return expr($damage * 3/2)"],
           "if $move.type == fire:",
-          ["return $damage * 1/2"]
+          ["return expr($damage * 1/2)"]
         ],
         "on_field_start": [
           "if $source_effect.is_ability:",

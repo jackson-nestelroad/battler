@@ -217,29 +217,6 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
-    pub fn maybe_side_applying_effect_context<'eval>(
-        &'eval mut self,
-        use_source: bool,
-    ) -> Result<MaybeOwnedMut<'eval, SideEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
-        match self {
-            Self::SideEffect(context) => {
-                if use_source {
-                    Ok(context
-                        .source_side_effect_context()?
-                        .wrap_error_with_message("context has no source effect")?
-                        .into())
-                } else {
-                    // SAFETY: We are shortening the lifetimes of this context to the lifetime of
-                    // this object.
-                    let context: &'eval mut SideEffectContext<'eval, 'eval, 'battle, 'data> =
-                        unsafe { mem::transmute(context) };
-                    Ok(context.into())
-                }
-            }
-            _ => Err(battler_error!("context is not a side-applying effect")),
-        }
-    }
-
     pub fn field_effect_context<'eval>(
         &'eval self,
     ) -> Result<&'eval FieldEffectContext<'effect, 'context, 'battle, 'data>, Error> {
@@ -267,26 +244,23 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
-    pub fn maybe_field_applying_effect_context<'eval>(
+    pub fn forward_underlying_effect_context<'eval>(
         &'eval mut self,
-        use_source: bool,
-    ) -> Result<MaybeOwnedMut<'eval, FieldEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+        effect_handle: EffectHandle,
+    ) -> Result<EvaluationContext<'eval, 'eval, 'battle, 'data>, Error> {
         match self {
-            Self::FieldEffect(context) => {
-                if use_source {
-                    Ok(context
-                        .source_field_effect_context()?
-                        .wrap_error_with_message("context has no source effect")?
-                        .into())
-                } else {
-                    // SAFETY: We are shortening the lifetimes of this context to the lifetime of
-                    // this object.
-                    let context: &'eval mut FieldEffectContext<'eval, 'eval, 'battle, 'data> =
-                        unsafe { mem::transmute(context) };
-                    Ok(context.into())
-                }
-            }
-            _ => Err(battler_error!("context is not a field-applying effect")),
+            Self::ApplyingEffect(context) => Ok(EvaluationContext::ApplyingEffect(
+                context.forward_applying_effect_context(effect_handle)?,
+            )),
+            Self::Effect(context) => Ok(EvaluationContext::Effect(
+                context.forward_effect_context(effect_handle)?,
+            )),
+            Self::SideEffect(context) => Ok(EvaluationContext::SideEffect(
+                context.forward_side_effect_context(effect_handle)?,
+            )),
+            Self::FieldEffect(context) => Ok(EvaluationContext::FieldEffect(
+                context.forward_field_effect_context(effect_handle)?,
+            )),
         }
     }
 

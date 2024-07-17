@@ -104,6 +104,7 @@ pub fn run_function(
         "log_side_start" => log_side_start(context, args).map(|()| None),
         "log_start" => log_start(context, args).map(|()| None),
         "log_status" => log_status(context, args).map(|()| None),
+        "log_weather" => log_weather(context, args).map(|()| None),
         "max" => max(args).map(|val| Some(val)),
         "mon_at_target_location" => mon_at_target_location(context, args),
         "mon_in_position" => mon_in_position(context, args),
@@ -373,6 +374,40 @@ fn log_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
             }
         }
     }
+    context.battle_context_mut().battle_mut().log(event);
+    Ok(())
+}
+
+fn log_weather(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let weather = match args.pop_front() {
+        Some(value) => value.string().wrap_error_with_message("invalid weather")?,
+        None => "Clear".to_owned(),
+    };
+
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+    let residual = has_special_string_flag(&mut args, "residual");
+
+    let mut event = log_event!("weather", ("weather", weather));
+    if with_source_effect {
+        event.set(
+            "from",
+            context
+                .source_effect_context()?
+                .wrap_error_with_message("effect has no source effect")?
+                .effect()
+                .full_name(),
+        );
+        if context.effect_handle().is_ability() {
+            if let Some(source_context) = context.source_context()? {
+                event.set("of", Mon::position_details(&source_context)?);
+            }
+        }
+    }
+
+    if residual {
+        event.add_flag("residual");
+    }
+
     context.battle_context_mut().battle_mut().log(event);
     Ok(())
 }
@@ -662,15 +697,33 @@ fn run_event(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
-    let mut context =
-        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
-    Ok(Value::Boolean(
-        core_battle_effects::run_event_for_applying_effect(
-            context.as_mut(),
-            event,
-            VariableInput::default(),
-        ),
-    ))
+
+    match context {
+        EvaluationContext::ApplyingEffect(context) => Ok(Value::Boolean(
+            core_battle_effects::run_event_for_applying_effect(
+                context,
+                event,
+                VariableInput::default(),
+            ),
+        )),
+        EvaluationContext::SideEffect(context) => Ok(Value::Boolean(
+            core_battle_effects::run_event_for_side_effect(
+                context,
+                event,
+                VariableInput::default(),
+            ),
+        )),
+        EvaluationContext::FieldEffect(context) => Ok(Value::Boolean(
+            core_battle_effects::run_event_for_field_effect(
+                context,
+                event,
+                VariableInput::default(),
+            ),
+        )),
+        EvaluationContext::Effect(_) => {
+            Err(battler_error!("effect must have a target to run an event"))
+        }
+    }
 }
 
 fn run_event_on_move(

@@ -175,6 +175,14 @@ enum CommonCallbackType {
     FieldVoid = CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsVoid,
     FieldResult =
         CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
+
+    SideEffectVoid = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsVoid,
+
+    FieldEffectVoid =
+        CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
 }
 
 /// A battle event that can trigger a [`Callback`].
@@ -491,7 +499,7 @@ pub enum BattleEvent {
     /// apply against it).
     ///
     /// Runs in the context of an active move from the user.
-    #[string = "WeatherModifyDamage"]
+    #[string = "SourceWeatherModifyDamage"]
     SourceWeatherModifyDamage,
     /// Runs when an effect starts.
     ///
@@ -587,6 +595,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "UseMoveMessage"]
     UseMoveMessage,
+    /// Runs when weather is activated at the end of each turn.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "Weather"]
+    Weather,
     /// Runs when calculating the damage applied to a Mon.
     ///
     /// Runs in the context of an active move from the user.
@@ -665,6 +678,7 @@ impl BattleEvent {
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
+            Self::Weather => CommonCallbackType::FieldEffectVoid as u32,
             Self::WeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
         }
     }
@@ -967,6 +981,7 @@ pub struct Callbacks {
     pub on_types: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
+    pub on_weather: Callback,
     pub on_weather_modify_damage: Callback,
     pub suppress_field_weather: Callback,
     pub suppress_mon_weather: Callback,
@@ -1042,6 +1057,7 @@ impl Callbacks {
             BattleEvent::Types => Some(&self.on_types),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
+            BattleEvent::Weather => Some(&self.on_weather),
             BattleEvent::WeatherModifyDamage => Some(&self.on_weather_modify_damage),
         }
     }
