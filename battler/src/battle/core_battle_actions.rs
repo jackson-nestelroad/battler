@@ -90,8 +90,6 @@ where
 
 fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<bool, Error> {
     if context.mon().hp > 0 {
-        Mon::clear_volatile(context, true)?;
-
         if run_switch_out_events {
             if !context.mon().skip_before_switch_out {
                 // TODO: BeforeSwitchOut event.
@@ -107,7 +105,16 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
             }
         }
 
-        // TODO: Ability End event.
+        core_battle_effects::run_mon_ability_event(
+            &mut context.applying_effect_context(
+                EffectHandle::Condition(Id::from_known("switchout")),
+                None,
+                None,
+            )?,
+            fxlang::BattleEvent::End,
+        );
+
+        Mon::clear_volatile(context, true)?;
     }
 
     Mon::switch_out(context)?;
@@ -192,7 +199,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
         core_battle_effects::run_mon_ability_event(
             &mut context.applying_effect_context(
                 EffectHandle::Condition(Id::from_known("switchin")),
-                Some(context.mon_handle()),
+                None,
                 None,
             )?,
             fxlang::BattleEvent::Start,
@@ -200,7 +207,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
         core_battle_effects::run_mon_item_event(
             &mut context.applying_effect_context(
                 EffectHandle::Condition(Id::from_known("switchin")),
-                Some(context.mon_handle()),
+                None,
                 None,
             )?,
             fxlang::BattleEvent::Start,
@@ -468,7 +475,20 @@ fn use_active_move_internal(
     }
 
     // TODO: Targeted event.
-    // TODO: TryMove event.
+
+    let try_move_result =
+        core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
+            &mut context.user_applying_effect_context(target)?,
+            fxlang::BattleEvent::TryMove,
+        );
+    if !try_move_result.advance() {
+        if try_move_result.failed() {
+            core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+            core_battle_logs::fail(context.as_mon_context_mut())?;
+        }
+        return Ok(MoveOutcome::Failed);
+    }
+
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::UseMoveMessage,
@@ -3077,7 +3097,13 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         return Ok(false);
     }
 
-    // TODO: SetWeather event.
+    if !core_battle_effects::run_event_for_field_effect(
+        context,
+        fxlang::BattleEvent::SetWeather,
+        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(weather_handle.clone()))]),
+    ) {
+        return Ok(false);
+    }
 
     let previous_weather = context.battle().field.weather.clone();
     let previous_weather_state = context.battle().field.weather_state.clone();
@@ -3128,6 +3154,13 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
 
 /// Clears the weather on the field.
 pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
+    if !core_battle_effects::run_event_for_field_effect(
+        context,
+        fxlang::BattleEvent::ClearWeather,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
     core_battle_effects::run_weather_event(context, fxlang::BattleEvent::FieldEnd);
     context.battle_mut().field.weather = None;
     context.battle_mut().field.weather_state = fxlang::EffectState::new();

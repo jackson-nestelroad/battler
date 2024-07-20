@@ -6,6 +6,7 @@ use crate::{
         ApplyingEffectContext,
         Boost,
         Context,
+        CoreBattle,
         Mon,
         MonContext,
         MonHandle,
@@ -106,6 +107,17 @@ where
 
 pub fn fail(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!("fail", ("mon", Mon::position_details(context)?));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn fail_from_effect(context: &mut MonContext, effect: &EffectHandle) -> Result<(), Error> {
+    let effect = CoreBattle::get_effect_by_handle(context.as_battle_context(), effect)?.full_name();
+    let event = log_event!(
+        "fail",
+        ("mon", Mon::position_details(context)?),
+        ("from", effect)
+    );
     context.battle_mut().log(event);
     Ok(())
 }

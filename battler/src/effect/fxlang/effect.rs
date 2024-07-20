@@ -190,6 +190,10 @@ enum CommonCallbackType {
 
     FieldEffectVoid =
         CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
+    FieldEffectResult = CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
 }
 
 /// A battle event that can trigger a [`Callback`].
@@ -272,6 +276,13 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "ChargeMove"]
     ChargeMove,
+    /// Runs when the field's weather is being cleared.
+    ///
+    /// Runs before the weather effect is cleared. Can be used to fail the clear.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "ClearWeather"]
+    ClearWeather,
     /// Runs when a move's damage is being calculated for a target.
     ///
     /// Used to override damage calculations.
@@ -479,6 +490,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "SetStatus"]
     SetStatus,
+    /// Runs when the field's weather is being set.
+    ///
+    /// Runs before the weather effect is applied. Can be used to fail the weather.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "SetWeather"]
+    SetWeather,
     /// Runs when a side condition starts successfully.
     ///
     /// Runs in the context of an applying effect on the side.
@@ -583,6 +601,13 @@ pub enum BattleEvent {
     /// Runs in the context of the active move itself.
     #[string = "TryImmunity"]
     TryImmunity,
+    /// Runs when trying to use a move.
+    ///
+    /// Can fail the move.
+    ///
+    /// Runs in the context of an applying effect from the user.
+    #[string = "TryMove"]
+    TryMove,
     /// Runs when a move's primary hit is being applied to a target.
     ///
     /// Used to override the core battle engine logic. Can fail the move or return an amount of
@@ -644,6 +669,7 @@ impl BattleEvent {
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
+            Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::Damage => CommonCallbackType::MoveModifier as u32,
             Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
@@ -680,6 +706,7 @@ impl BattleEvent {
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::SetWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::SideConditionStart => CommonCallbackType::SideVoid as u32,
             Self::SideEnd => CommonCallbackType::SideVoid as u32,
             Self::SideResidual => CommonCallbackType::SideVoid as u32,
@@ -698,6 +725,7 @@ impl BattleEvent {
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
             Self::TryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
             Self::TryImmunity => CommonCallbackType::MoveResult as u32,
+            Self::TryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
@@ -734,6 +762,7 @@ impl BattleEvent {
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
+            Self::SetWeather => &[("weather", ValueType::Effect, true)],
             Self::SideConditionStart => &[("condition", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::Types => &[("types", ValueType::List, true)],
@@ -962,6 +991,7 @@ pub struct Callbacks {
     pub on_before_move: Callback,
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
+    pub on_clear_weather: Callback,
     pub on_damage: Callback,
     pub on_damage_received: Callback,
     pub on_damaging_hit: Callback,
@@ -995,6 +1025,7 @@ pub struct Callbacks {
     pub on_restart: Callback,
     pub on_set_last_move: Callback,
     pub on_set_status: Callback,
+    pub on_set_weather: Callback,
     pub on_side_condition_start: Callback,
     pub on_side_end: Callback,
     pub on_side_residual: Callback,
@@ -1010,6 +1041,7 @@ pub struct Callbacks {
     pub on_try_hit_field: Callback,
     pub on_try_hit_side: Callback,
     pub on_try_immunity: Callback,
+    pub on_try_move: Callback,
     pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
     pub on_types: Callback,
@@ -1035,6 +1067,7 @@ impl Callbacks {
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
+            BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamageReceived => Some(&self.on_damage_received),
@@ -1072,6 +1105,7 @@ impl Callbacks {
             BattleEvent::Restart => Some(&self.on_restart),
             BattleEvent::SetLastMove => Some(&self.on_set_last_move),
             BattleEvent::SetStatus => Some(&self.on_set_status),
+            BattleEvent::SetWeather => Some(&self.on_set_weather),
             BattleEvent::SideConditionStart => Some(&self.on_side_condition_start),
             BattleEvent::SideEnd => Some(&self.on_side_end),
             BattleEvent::SideResidual => Some(&self.on_side_residual),
@@ -1090,6 +1124,7 @@ impl Callbacks {
             BattleEvent::TryHitField => Some(&self.on_try_hit_field),
             BattleEvent::TryHitSide => Some(&self.on_try_hit_side),
             BattleEvent::TryImmunity => Some(&self.on_try_immunity),
+            BattleEvent::TryMove => Some(&self.on_try_move),
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::Types => Some(&self.on_types),

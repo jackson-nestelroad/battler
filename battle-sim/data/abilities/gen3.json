@@ -5,7 +5,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": ["set_weather: rainweather"]
+        "on_start": ["set_weather: rainweather use_target_as_source"]
       }
     }
   },

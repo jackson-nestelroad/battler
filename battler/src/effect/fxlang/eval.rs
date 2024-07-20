@@ -20,6 +20,7 @@ use crate::{
         Context,
         CoreBattle,
         EffectContext,
+        Field,
         FieldEffectContext,
         Mon,
         MonContext,
@@ -183,8 +184,13 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn forward_effect_to_field_effect<'eval>(
         &'eval mut self,
+        use_target_as_source: bool,
     ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = self.source_handle();
+        let source_handle = if use_target_as_source {
+            self.target_handle()
+        } else {
+            self.source_handle()
+        };
         let context: FieldEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .field_effect_context(source_handle)?;
@@ -571,17 +577,6 @@ where
                 value = match *member {
                     "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
                     "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
-                    "effective_item" => {
-                        match mon_states::effective_item(&mut context.mon_context(mon_handle)?) {
-                            Some(weather) => ValueRef::Effect(
-                                context
-                                    .battle_context_mut()
-                                    .battle_mut()
-                                    .get_effect_handle_by_id(&weather)?,
-                            ),
-                            None => ValueRef::Undefined,
-                        }
-                    }
                     "effective_weather" => {
                         match mon_states::effective_weather(&mut context.mon_context(mon_handle)?) {
                             Some(weather) => ValueRef::Effect(
@@ -786,6 +781,31 @@ where
                 value = match *member {
                     "id" => ValueRef::Str(move_slot.id.as_ref()),
                     "pp" => ValueRef::U64(move_slot.pp as u64),
+                    _ => return Err(Self::bad_member_access(member, value_type)),
+                }
+            } else if let ValueRef::Field = value {
+                let context = unsafe { context.unsafely_detach_borrow_mut() };
+                value = match *member {
+                    "effective_weather" => {
+                        match Field::effective_weather(context.battle_context_mut()) {
+                            Some(weather) => ValueRef::Effect(
+                                context
+                                    .battle_context_mut()
+                                    .battle_mut()
+                                    .get_effect_handle_by_id(&weather)?,
+                            ),
+                            None => ValueRef::Undefined,
+                        }
+                    }
+                    "weather" => match context.battle_context().battle().field.weather.clone() {
+                        Some(weather) => ValueRef::Effect(
+                            context
+                                .battle_context_mut()
+                                .battle_mut()
+                                .get_effect_handle_by_id(&weather)?,
+                        ),
+                        None => ValueRef::Undefined,
+                    },
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let ValueRef::Object(object) = value {
@@ -1045,6 +1065,7 @@ impl Evaluator {
 
         self.vars
             .set("this", Value::Effect(context.effect_handle().clone()))?;
+        self.vars.set("field", Value::Field)?;
 
         if event.has_flag(CallbackFlag::TakesGeneralMon) {
             self.vars.set(

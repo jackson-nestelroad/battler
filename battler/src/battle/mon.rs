@@ -19,6 +19,7 @@ use serde::{
 };
 use zone_alloc::ElementRef;
 
+use super::mon_states;
 use crate::{
     battle::{
         calculate_hidden_power_type,
@@ -1513,14 +1514,18 @@ impl Mon {
     }
 
     /// Checks if the Mon has an ability.
-    pub fn has_ability(context: &mut MonContext, id: &Id) -> Result<bool, Error> {
-        // TODO: Consider ability suppression.
-        Ok(&context.mon().ability.id == id)
+    pub fn has_ability(context: &mut MonContext, id: &Id) -> bool {
+        mon_states::effective_ability(context).is_some_and(|ability| ability == *id)
+    }
+
+    /// Checks if the Mon has an item.
+    pub fn has_item(context: &mut MonContext, id: &Id) -> bool {
+        mon_states::effective_item(context).is_some_and(|item| item == *id)
     }
 
     /// Checks if the Mon has a volatile effect.
-    pub fn has_volatile(context: &mut MonContext, id: &Id) -> Result<bool, Error> {
-        Ok(context.mon().volatiles.contains_key(id))
+    pub fn has_volatile(context: &mut MonContext, id: &Id) -> bool {
+        context.mon().volatiles.contains_key(id)
     }
 
     /// Resets the Mon's state for the next turn.

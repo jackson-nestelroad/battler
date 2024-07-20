@@ -3,6 +3,10 @@
     "name": "Switch In",
     "condition_type": "Built-in"
   },
+  "switchout": {
+    "name": "Switch Out",
+    "condition_type": "Built-in"
+  },
   "drain": {
     "name": "Drain",
     "condition_type": "Built-in"
@@ -480,7 +484,10 @@
       "duration": 5,
       "callbacks": {
         "is_raining": ["return true"],
-        "on_duration": ["if $source.effective_item == damprock:", ["return 8"]],
+        "on_duration": [
+          "if func_call(has_item: $source damprock):",
+          ["return 8"]
+        ],
         "on_source_weather_modify_damage": [
           "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
           "if $move.type == water:",
@@ -498,6 +505,33 @@
           "order": 1,
           "program": ["log_weather: $this.name residual", "run_event: Weather"]
         },
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "heavyrainweather": {
+    "name": "Heavy Rain",
+    "condition_type": "Weather",
+    "condition": {
+      "callbacks": {
+        "is_raining": ["return true"],
+        "on_try_move": [
+          "if $move.type == fire and $move.category != status:",
+          [
+            "log_fail: $user from_effect",
+            "do_not_animate_last_move",
+            "return stop"
+          ]
+        ],
+        "on_weather_modify_damage": [
+          "if $move.type == water:",
+          ["return expr($damage * 3/2)"]
+        ],
+        "on_field_start": ["log_weather: $this.name with_source_effect"],
+        "on_field_residual": [
+          "log_weather: $this.name residual",
+          "run_event: Weather"
+        ],
         "on_field_end": ["log_weather"]
       }
     }

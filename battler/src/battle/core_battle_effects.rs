@@ -1074,7 +1074,7 @@ fn run_residual_callbacks_with_errors(
             callback_handle.effect_state_mut(context.as_battle_context_mut())?
         {
             if let Some(duration) = effect_state.duration() {
-                let duration = duration - 1;
+                let duration = if duration > 0 { duration - 1 } else { duration };
                 effect_state.set_duration(duration);
                 if duration == 0 {
                     ended = true;

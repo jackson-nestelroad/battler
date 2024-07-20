@@ -73,6 +73,7 @@ pub fn run_function(
         "can_switch" => can_switch(context, args).map(|val| Some(val)),
         "chance" => chance(context, args).map(|val| Some(val)),
         "clear_boosts" => clear_boosts(context, args).map(|()| None),
+        "clear_weather" => clear_weather(context, args).map(|val| Some(val)),
         "cure_status" => cure_status(context, args).map(|()| None),
         "damage" => damage(context, args).map(|val| Some(val)),
         "debug_log" => debug_log(context, args).map(|()| None),
@@ -85,6 +86,7 @@ pub fn run_function(
         "get_boost" => get_boost(args).map(|val| Some(val)),
         "get_move" => get_move(context, args).map(|val| Some(val)),
         "has_ability" => has_ability(context, args).map(|val| Some(val)),
+        "has_item" => has_item(context, args).map(|val| Some(val)),
         "has_move" => has_move(context, args).map(|val| Some(val)),
         "has_type" => has_type(context, args).map(|val| Some(val)),
         "has_volatile" => has_volatile(context, args).map(|val| Some(val)),
@@ -156,6 +158,10 @@ fn has_special_string_flag(args: &mut VecDeque<Value>, flag: &str) -> bool {
 
 fn should_use_source_effect(args: &mut VecDeque<Value>) -> bool {
     has_special_string_flag(args, "use_source")
+}
+
+fn should_use_target_as_source(args: &mut VecDeque<Value>) -> bool {
+    has_special_string_flag(args, "use_target_as_source")
 }
 
 fn debug_log(context: &mut EvaluationContext, args: VecDeque<Value>) -> Result<(), Error> {
@@ -421,7 +427,13 @@ fn log_fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_logs::fail(&mut context.mon_context(mon_handle)?)
+    let from_effect = has_special_string_flag(&mut args, "from_effect");
+    if from_effect {
+        let effect_handle = context.effect_handle().clone();
+        core_battle_logs::fail_from_effect(&mut context.mon_context(mon_handle)?, &effect_handle)
+    } else {
+        core_battle_logs::fail(&mut context.mon_context(mon_handle)?)
+    }
 }
 
 fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -583,7 +595,28 @@ fn has_ability(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
         .string()
         .map(|ability| Id::from(ability))
         .wrap_error_with_message("invalid ability id")?;
-    Mon::has_ability(&mut context.mon_context(mon_handle)?, &ability).map(|val| Value::Boolean(val))
+    Ok(Value::Boolean(Mon::has_ability(
+        &mut context.mon_context(mon_handle)?,
+        &ability,
+    )))
+}
+
+fn has_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let ability = args
+        .pop_front()
+        .wrap_error_with_message("missing item id")?
+        .string()
+        .map(|ability| Id::from(ability))
+        .wrap_error_with_message("invalid item id")?;
+    Ok(Value::Boolean(Mon::has_item(
+        &mut context.mon_context(mon_handle)?,
+        &ability,
+    )))
 }
 
 fn has_volatile(
@@ -601,8 +634,10 @@ fn has_volatile(
         .string()
         .map(|ability| Id::from(ability))
         .wrap_error_with_message("invalid volatile id")?;
-    Mon::has_volatile(&mut context.mon_context(mon_handle)?, &volatile)
-        .map(|val| Value::Boolean(val))
+    Ok(Value::Boolean(Mon::has_volatile(
+        &mut context.mon_context(mon_handle)?,
+        &volatile,
+    )))
 }
 
 fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -1541,8 +1576,23 @@ fn set_weather(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
         .string()
         .wrap_error_with_message("invalid weather")?;
     let weather = Id::from(weather);
-    core_battle_actions::set_weather(&mut context.forward_effect_to_field_effect()?, &weather)
-        .map(Value::Boolean)
+    let use_target_as_source = should_use_target_as_source(&mut args);
+    core_battle_actions::set_weather(
+        &mut context.forward_effect_to_field_effect(use_target_as_source)?,
+        &weather,
+    )
+    .map(Value::Boolean)
+}
+
+fn clear_weather(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let use_target_as_source = should_use_target_as_source(&mut args);
+    core_battle_actions::clear_weather(
+        &mut context.forward_effect_to_field_effect(use_target_as_source)?,
+    )
+    .map(Value::Boolean)
 }
 
 fn transform_into(
