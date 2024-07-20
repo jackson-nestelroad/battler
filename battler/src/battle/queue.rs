@@ -316,6 +316,7 @@ mod queue_tests {
                 Action::Residual => "residual".to_owned(),
                 Action::Team(action) => format!("team {}", action.mon_action.mon),
                 Action::Switch(action) => format!("switch {}", action.mon_action.mon),
+                Action::SwitchEvents(action) => format!("switchevents {}", action.mon_action.mon),
                 Action::Move(action) => format!("move {}", action.id),
                 Action::MegaEvo(action) => format!("megaevo {}", action.mon),
                 Action::Experience(action) => format!("experience {}", action.mon),

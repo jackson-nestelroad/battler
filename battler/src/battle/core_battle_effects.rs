@@ -382,6 +382,20 @@ fn run_callback_under_applying_effect(
     .flatten()
 }
 
+fn run_callback_under_effect(
+    context: &mut EffectContext,
+    input: fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Option<fxlang::Value> {
+    run_callback_with_errors(
+        UpcomingEvaluationContext::Effect(context.into()),
+        input,
+        callback_handle,
+    )
+    .ok()
+    .flatten()
+}
+
 fn run_callback_under_side_effect(
     context: &mut SideEffectContext,
     input: fxlang::VariableInput,
@@ -452,6 +466,48 @@ fn run_mon_volatile_event_internal(
     )
 }
 
+fn run_mon_ability_event_internal(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let ability = context.target().ability.id.clone();
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&ability)
+        .ok()?
+        .clone();
+    let target_handle = context.target_handle();
+    run_callback_under_applying_effect(
+        context,
+        input,
+        CallbackHandle::new(
+            effect_handle,
+            event,
+            EffectOrigin::MonAbility(target_handle),
+        ),
+    )
+}
+
+fn run_mon_item_event_internal(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let item = context.target().item.as_ref().map(|item| item.id.clone())?;
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item)
+        .ok()?
+        .clone();
+    let target_handle = context.target_handle();
+    run_callback_under_applying_effect(
+        context,
+        input,
+        CallbackHandle::new(effect_handle, event, EffectOrigin::MonItem(target_handle)),
+    )
+}
+
 fn run_side_condition_event_internal(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
@@ -479,11 +535,11 @@ fn run_weather_event_internal(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-    weather: &Id,
 ) -> Option<fxlang::Value> {
+    let weather = context.battle().field.weather.clone()?;
     let effect_handle = context
         .battle_mut()
-        .get_effect_handle_by_id(weather)
+        .get_effect_handle_by_id(&weather)
         .ok()?
         .clone();
     run_callback_under_field_effect(
@@ -506,6 +562,19 @@ fn run_applying_effect_event_internal(
     )
 }
 
+fn run_effect_event_internal(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let effect_handle = context.effect_handle().clone();
+    run_callback_under_effect(
+        context,
+        input,
+        CallbackHandle::new(effect_handle, event, EffectOrigin::None),
+    )
+}
+
 fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
@@ -515,7 +584,7 @@ fn find_callbacks_on_mon(
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
 
-    if !event.is_used_for_callback_lookup() {
+    if event.callback_lookup_layer() > fxlang::BattleEvent::Types.callback_lookup_layer() {
         let types = Mon::types(&mut context)?;
         for typ in types {
             callbacks.push(CallbackHandle::new(
@@ -551,19 +620,24 @@ fn find_callbacks_on_mon(
         ));
     }
 
-    if let Some(item) = mon_states::effective_item(&mut context) {
-        callbacks.push(CallbackHandle::new(
-            EffectHandle::Item(item),
-            event,
-            EffectOrigin::MonItem(mon),
-        ));
+    if event.callback_lookup_layer() > fxlang::BattleEvent::SuppressMonItem.callback_lookup_layer()
+    {
+        if let Some(item) = mon_states::effective_item(&mut context) {
+            callbacks.push(CallbackHandle::new(
+                EffectHandle::Item(item),
+                event,
+                EffectOrigin::MonItem(mon),
+            ));
+        }
     }
 
     // TODO: Species.
     // TODO: Slot conditions on the side.
 
     if include_applied_field_effects {
-        if !event.is_used_for_callback_lookup() {
+        if event.callback_lookup_layer()
+            > fxlang::BattleEvent::SuppressMonWeather.callback_lookup_layer()
+        {
             if let Some(weather) = mon_states::effective_weather(&mut context) {
                 let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
                 callbacks.push(CallbackHandle::new(
@@ -606,7 +680,9 @@ fn find_callbacks_on_field(
 ) -> Result<Vec<CallbackHandle>, Error> {
     let mut callbacks = Vec::new();
 
-    if !event.is_used_for_callback_lookup() {
+    if event.callback_lookup_layer()
+        > fxlang::BattleEvent::SuppressFieldWeather.callback_lookup_layer()
+    {
         if let Some(weather) = Field::effective_weather(context) {
             let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
             callbacks.push(CallbackHandle::new(
@@ -1310,8 +1386,9 @@ pub fn run_active_move_event_expecting_void(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
     target: MoveTargetForEvent,
+    input: fxlang::VariableInput,
 ) {
-    run_active_move_event(context, event, target, fxlang::VariableInput::default());
+    run_active_move_event(context, event, target, input);
 }
 
 /// Runs an event on an active [`Move`][`crate::moves::Move`].
@@ -1426,6 +1503,16 @@ pub fn run_mon_volatile_event_expecting_u8(
         .ok()
 }
 
+/// Runs an event on the target [`Mon`]'s current ability.
+pub fn run_mon_ability_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
+    run_mon_ability_event_internal(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event on the target [`Mon`]'s current itemt.
+pub fn run_mon_item_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
+    run_mon_item_event_internal(context, event, fxlang::VariableInput::default());
+}
+
 /// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
 pub fn run_side_condition_event(
     context: &mut SideEffectContext,
@@ -1461,13 +1548,9 @@ pub fn run_side_condition_event_expecting_u8(
         .ok()
 }
 
-/// Runs an event on the [`Field`][`crate::battle::Field`]'s weather.
-pub fn run_weather_event(
-    context: &mut FieldEffectContext,
-    event: fxlang::BattleEvent,
-    weather: &Id,
-) {
-    run_weather_event_internal(context, event, fxlang::VariableInput::default(), weather);
+/// Runs an event on the [`Field`][`crate::battle::Field`]'s current weather.
+pub fn run_weather_event(context: &mut FieldEffectContext, event: fxlang::BattleEvent) {
+    run_weather_event_internal(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the [`Field`][`crate::battle::Field`]'s weather.
@@ -1476,9 +1559,8 @@ pub fn run_weather_event(
 pub fn run_weather_event_expecting_bool(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
-    weather: &Id,
 ) -> Option<bool> {
-    run_weather_event_internal(context, event, fxlang::VariableInput::default(), weather)?
+    run_weather_event_internal(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
@@ -1489,9 +1571,8 @@ pub fn run_weather_event_expecting_bool(
 pub fn run_weather_event_expecting_u8(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
-    weather: &Id,
 ) -> Option<u8> {
-    run_weather_event_internal(context, event, fxlang::VariableInput::default(), weather)?
+    run_weather_event_internal(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
 }
@@ -1499,6 +1580,18 @@ pub fn run_weather_event_expecting_u8(
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
 pub fn run_applying_effect_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
     run_applying_effect_event_internal(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event on the [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`bool`].
+pub fn run_effect_event_expecting_bool(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_effect_event_internal(context, event, fxlang::VariableInput::default())?
+        .boolean()
+        .ok()
 }
 
 /// Runs an event on the [`CoreBattle`] for an applying effect.

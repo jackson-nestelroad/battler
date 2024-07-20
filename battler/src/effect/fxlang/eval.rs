@@ -14,6 +14,7 @@ use zone_alloc::{
 use crate::{
     battle::{
         mon_states,
+        weather_states,
         ActiveMoveContext,
         ApplyingEffectContext,
         Context,
@@ -33,7 +34,6 @@ use crate::{
         Fraction,
         Identifiable,
         MaybeOwnedMut,
-        UnsafelyDetachBorrow,
         UnsafelyDetachBorrowMut,
         WrapResultError,
     },
@@ -57,6 +57,7 @@ use crate::{
         EffectHandle,
     },
     moves::{
+        Accuracy,
         Move,
         MoveTarget,
     },
@@ -424,6 +425,24 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
+    pub fn effect_context_for_handle<'eval>(
+        &'eval mut self,
+        effect_handle: &EffectHandle,
+    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>, Error> {
+        if self.effect_handle() == effect_handle {
+            let context = self.effect_context_mut();
+            // SAFETY: We are shortening the lifetimes of this context to the lifetime of this
+            // object.
+            let context: &'eval mut EffectContext<'eval, 'battle, 'data> =
+                unsafe { mem::transmute(context) };
+            return Ok(context.into());
+        }
+        Ok(self
+            .battle_context_mut()
+            .effect_context(effect_handle.clone(), None)?
+            .into())
+    }
+
     pub fn active_move<'eval>(
         &'eval self,
         active_move_handle: MoveHandle,
@@ -582,6 +601,28 @@ where
                 value = match *member {
                     "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
                     "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
+                    "effective_item" => {
+                        match mon_states::effective_item(&mut context.mon_context(mon_handle)?) {
+                            Some(weather) => ValueRef::Effect(
+                                context
+                                    .battle_context_mut()
+                                    .battle_mut()
+                                    .get_effect_handle_by_id(&weather)?,
+                            ),
+                            None => ValueRef::Undefined,
+                        }
+                    }
+                    "effective_weather" => {
+                        match mon_states::effective_weather(&mut context.mon_context(mon_handle)?) {
+                            Some(weather) => ValueRef::Effect(
+                                context
+                                    .battle_context_mut()
+                                    .battle_mut()
+                                    .get_effect_handle_by_id(&weather)?,
+                            ),
+                            None => ValueRef::Undefined,
+                        }
+                    }
                     "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
                     "hp" => ValueRef::U64(context.mon(mon_handle)?.hp as u64),
                     "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
@@ -655,7 +696,7 @@ where
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let Some(effect_handle) = value.effect_handle() {
-                let context = unsafe { context.unsafely_detach_borrow() };
+                let context = unsafe { context.unsafely_detach_borrow_mut() };
                 value = match *member {
                     "condition" => ValueRef::TempEffect(
                         effect_handle
@@ -679,6 +720,12 @@ where
                     ),
                     "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
                     "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
+                    "is_raining" => ValueRef::Boolean(weather_states::is_raining(
+                        context.effect_context_for_handle(effect_handle)?.as_mut(),
+                    )),
+                    "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
+                        context.effect_context_for_handle(effect_handle)?.as_mut(),
+                    )),
                     "move_target" => ValueRef::MoveTarget(
                         CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
                             .move_effect()
@@ -703,6 +750,9 @@ where
             } else if let Some(active_move_handle) = value.active_move_handle() {
                 let context = unsafe { context.unsafely_detach_borrow_mut() };
                 value = match *member {
+                    "accuracy" => {
+                        ValueRef::Accuracy(context.active_move(active_move_handle)?.data.accuracy)
+                    }
                     "base_power" => ValueRef::U64(
                         context.active_move(active_move_handle)?.data.base_power as u64,
                     ),
@@ -853,6 +903,9 @@ where
                 ValueRefMut::ActiveMove(ref active_move_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
+                        "accuracy" => ValueRefMut::Accuracy(
+                            &mut context.active_move_mut(**active_move_handle)?.data.accuracy,
+                        ),
                         "base_power" => ValueRefMut::U32(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
@@ -1034,14 +1087,10 @@ impl Evaluator {
             )?;
         }
         if event.has_flag(CallbackFlag::TakesTargetMon) {
-            self.vars.set(
-                "target",
-                Value::Mon(
-                    context
-                        .target_handle()
-                        .wrap_error_with_message("context has no target")?,
-                ),
-            )?;
+            match context.target_handle() {
+                Some(target_handle) => self.vars.set("target", Value::Mon(target_handle))?,
+                None => (),
+            }
         }
         if event.has_flag(CallbackFlag::TakesSourceMon) {
             match context.source_handle() {
@@ -1112,13 +1161,15 @@ impl Evaluator {
 
         // Reverse the input so we can efficiently pop elements out of it.
         input.values.reverse();
-        for (i, (name, value_type)) in event.input_vars().iter().enumerate() {
+        for (i, (name, value_type, required)) in event.input_vars().iter().enumerate() {
             match input.values.pop() {
-                None => {
-                    return Err(battler_error!(
-                        "missing {value_type} input at position {} for variable {name}",
-                        i + 1
-                    ))
+                None | Some(Value::Undefined) => {
+                    if *required {
+                        return Err(battler_error!(
+                            "missing {value_type} input at position {} for variable {name}",
+                            i + 1
+                        ));
+                    }
                 }
                 Some(value) => {
                     let real_value_type = value.value_type();
@@ -1812,6 +1863,37 @@ impl Evaluator {
                 *var = val;
             }
             (ValueRefMut::MoveSlot(var), Value::MoveSlot(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Player(var), Value::Player(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::Accuracy(var), Value::U64(val)) => {
+                *var = Accuracy::from(
+                    TryInto::<u8>::try_into(val).wrap_error_with_message("invalid accuracy")?,
+                );
+            }
+            (ValueRefMut::Accuracy(var), Value::I64(val)) => {
+                *var = Accuracy::from(
+                    TryInto::<u8>::try_into(val).wrap_error_with_message("invalid accuracy")?,
+                );
+            }
+            (ValueRefMut::Accuracy(var), Value::Fraction(val)) => {
+                *var = Accuracy::from(
+                    TryInto::<u8>::try_into((val * 100).floor())
+                        .wrap_error_with_message("invalid accuracy")?,
+                );
+            }
+            (ValueRefMut::Accuracy(var), Value::UFraction(val)) => {
+                *var = Accuracy::from(
+                    TryInto::<u8>::try_into((val * 100).floor())
+                        .wrap_error_with_message("invalid accuracy")?,
+                );
+            }
+            (ValueRefMut::Accuracy(var), Value::String(val)) => {
+                *var = Accuracy::from_str(&val).wrap_error_with_message("invalid accuracy")?;
+            }
+            (ValueRefMut::Accuracy(var), Value::Accuracy(val)) => {
                 *var = val;
             }
             (ValueRefMut::List(var), Value::List(val)) => {

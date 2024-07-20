@@ -822,13 +822,17 @@ impl Player {
             _ => (),
         }
 
-        let player = context.player_mut();
-        player.choice.switch_ins.insert(slot);
-        player
+        context.player_mut().choice.switch_ins.insert(slot);
+        let instant = context
+            .player()
+            .request_type()
+            .is_some_and(|request_type| request_type == RequestType::Switch);
+        context
+            .player_mut()
             .choice
             .actions
             .push(Action::Switch(SwitchAction::new(SwitchActionInput {
-                instant: false,
+                instant,
                 mon: target_mon_handle,
                 switching_out: active_mon_handle,
                 position: active_mon_position,

@@ -24,6 +24,15 @@ pub enum Accuracy {
     Exempt,
 }
 
+impl Accuracy {
+    pub fn percentage(&self) -> Option<u8> {
+        match self {
+            Self::Chance(n) => Some(*n),
+            Self::Exempt => None,
+        }
+    }
+}
+
 impl From<u8> for Accuracy {
     fn from(value: u8) -> Self {
         Self::Chance(value)

@@ -11,7 +11,7 @@ use crate::battle::{
 };
 
 /// Type type of [`Request`] that should be requested from a player.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestType {
     /// A request for a team order to be chosen during team preview.
     TeamPreview,

@@ -162,6 +162,21 @@ impl EscapeAction {
     }
 }
 
+/// A switch events action.
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SwitchEventsAction {
+    pub mon_action: MonAction,
+}
+
+impl SwitchEventsAction {
+    pub fn new(mon_handle: MonHandle) -> Self {
+        Self {
+            mon_action: MonAction::new(mon_handle),
+        }
+    }
+}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -177,6 +192,7 @@ pub enum Action {
     Residual,
     Team(TeamAction),
     Switch(SwitchAction),
+    SwitchEvents(SwitchEventsAction),
     Move(MoveAction),
     MegaEvo(MonAction),
     Experience(ExperienceAction),
@@ -190,6 +206,7 @@ impl Action {
         match self {
             Self::Team(action) => Some(&mut action.mon_action),
             Self::Switch(action) => Some(&mut action.mon_action),
+            Self::SwitchEvents(action) => Some(&mut action.mon_action),
             Self::Move(action) => Some(&mut action.mon_action),
             Self::MegaEvo(action) => Some(action),
             Self::Escape(action) => Some(&mut action.mon_action),
@@ -217,7 +234,8 @@ impl SpeedOrderable for Action {
             Self::BeforeTurn => 8,
             Self::BeforeTurnMove(_) => 9,
             Self::Escape(_) => 101,
-            Self::MegaEvo(_) => 102,
+            Self::SwitchEvents(_) => 102,
+            Self::MegaEvo(_) => 103,
             Self::Move(_) => 200,
             Self::Pass => 200,
             Self::Residual => 300,

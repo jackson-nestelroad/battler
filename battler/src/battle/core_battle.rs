@@ -1059,6 +1059,10 @@ impl<'d> CoreBattle<'d> {
                 let mut context = context.mon_context(action.mon_action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position, None, false)?;
             }
+            Action::SwitchEvents(action) => {
+                let mut context = context.mon_context(action.mon_action.mon)?;
+                core_battle_actions::run_switch_in_events(&mut context)?;
+            }
             Action::Move(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
                 if !context.mon().active || context.mon().fainted {

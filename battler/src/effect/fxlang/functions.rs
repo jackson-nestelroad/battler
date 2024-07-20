@@ -94,6 +94,7 @@ pub fn run_function(
         "is_defined" => is_defined(args).map(|val| Some(val)),
         "is_undefined" => is_undefined(args).map(|val| Some(val)),
         "log" => log(context, args).map(|()| None),
+        "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
         "log_end" => log_end(context, args).map(|()| None),
@@ -122,6 +123,7 @@ pub fn run_function(
         "random_target" => random_target(context, args),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
+        "run_event_on_mon_item" => run_event_on_mon_item(context, args).map(|()| None),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
         "sample" => sample(context, args),
@@ -213,6 +215,10 @@ fn add_effect_to_args(
         _ => (),
     }
     Ok(())
+}
+
+fn log_ability(context: &mut EvaluationContext) -> Result<(), Error> {
+    core_battle_logs::ability(&mut context.target_context()?)
 }
 
 fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -726,6 +732,20 @@ fn run_event(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
     }
 }
 
+fn run_event_on_mon_item(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let event = args
+        .pop_front()
+        .wrap_error_with_message("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    core_battle_effects::run_mon_item_event(context.applying_effect_context_mut()?, event);
+    Ok(())
+}
+
 fn run_event_on_move(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
@@ -748,7 +768,12 @@ fn run_event_on_move(
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
-    core_battle_effects::run_active_move_event_expecting_void(&mut context, event, target);
+    core_battle_effects::run_active_move_event_expecting_void(
+        &mut context,
+        event,
+        target,
+        VariableInput::default(),
+    );
     Ok(())
 }
 
@@ -1525,14 +1550,12 @@ fn transform_into(
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
 
-    let source_effect = with_source_effect
-        .then(|| context.source_effect_handle().cloned())
-        .flatten();
-
-    Mon::transform_into(
-        &mut context.mon_context(mon_handle)?,
+    core_battle_actions::transform_into(
+        &mut context
+            .applying_effect_context_mut()?
+            .change_target_context(mon_handle)?,
         target_handle,
-        source_effect.as_ref(),
+        with_source_effect,
     )
     .map(|val| Value::Boolean(val))
 }

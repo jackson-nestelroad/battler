@@ -61,7 +61,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::FieldEnd, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldRestart, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldResidual, callbacks)?;
-            parsed.parse_and_save(BattleEvent::SideStart, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FieldStart, callbacks)?;
             parsed.parse_and_save(BattleEvent::Flinch, callbacks)?;
             parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitField, callbacks)?;
@@ -69,6 +69,8 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;
             parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyCritRatio, callbacks)?;
@@ -93,6 +95,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressFieldWeather, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SuppressMonItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;

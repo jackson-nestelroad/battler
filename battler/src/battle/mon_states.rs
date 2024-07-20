@@ -47,6 +47,11 @@ pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
 ///
 /// Items can be suppressed by other effects and abilities.
 pub fn effective_item(context: &mut MonContext) -> Option<Id> {
-    // TODO: SuppressItem event, similar to SuppressAbility.
+    if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::SuppressMonItem,
+    ) {
+        return None;
+    }
     context.mon().item.as_ref().map(|item| item.id.clone())
 }

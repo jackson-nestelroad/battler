@@ -1240,7 +1240,8 @@ impl Mon {
         Ok(())
     }
 
-    fn set_species(context: &mut MonContext, species: String) -> Result<(), Error> {
+    pub fn set_species(context: &mut MonContext, species: String) -> Result<(), Error> {
+        // TODO: ModifySpecies event.
         let species = context.battle().dex.species.get(species.as_str())?;
 
         // SAFETY: Nothing we do below will invalidate any data.
@@ -1256,57 +1257,6 @@ impl Mon {
         Self::recalculate_stats(context)?;
         context.mon_mut().weight = species.data.weight;
         Ok(())
-    }
-
-    /// Transforms the Mon into the target Mon.
-    ///
-    /// Used to implement the move "Transform."
-    pub fn transform_into(
-        context: &mut MonContext,
-        target: MonHandle,
-        effect: Option<&EffectHandle>,
-    ) -> Result<bool, Error> {
-        if context.mon().transformed {
-            return Ok(false);
-        }
-
-        let target_context = context.as_battle_context_mut().mon_context(target)?;
-        if target_context.mon().fainted || target_context.mon().transformed {
-            return Ok(false);
-        }
-
-        // Collect all data specific to the target Mon that should be set after changing the
-        // species.
-        let weight = target_context.mon().weight;
-        let types = target_context.mon().types.clone();
-        let stats = target_context.mon().stats.clone();
-        let boosts = target_context.mon().boosts.clone();
-        let ability_id = target_context.mon().ability.id.clone();
-        let mut move_slots = target_context.mon().move_slots.clone();
-        for move_slot in &mut move_slots {
-            move_slot.pp = move_slot.max_pp.min(5);
-            move_slot.max_pp = move_slot.max_pp.min(5);
-            move_slot.disabled = false;
-            move_slot.used = false;
-            move_slot.simulated = true;
-        }
-
-        // Set the species first, for the baseline transformation.
-        let species = target_context.mon().species.clone();
-        context.mon_mut().transformed = true;
-        Self::set_species(context, species)?;
-
-        // Then, manually set everything else.
-        context.mon_mut().weight = weight;
-        context.mon_mut().types = types;
-        context.mon_mut().stats = stats;
-        context.mon_mut().boosts = boosts;
-        Self::set_ability(context, &ability_id)?;
-        context.mon_mut().move_slots = move_slots;
-
-        core_battle_logs::transform(context, target, effect)?;
-
-        Ok(true)
     }
 
     /// Overwrites the move slot at the given index.
@@ -1610,23 +1560,6 @@ impl Mon {
             None => (),
         }
         Ok(())
-    }
-
-    /// Sets the Mon's ability.
-    pub fn set_ability(context: &mut MonContext, ability_id: &Id) -> Result<bool, Error> {
-        // TODO: Lots of event and ability stuff here.
-        let ability_priority = context.battle_mut().next_ability_priority();
-
-        let ability = context.battle().dex.abilities.get_by_id(ability_id)?;
-        let ability = AbilitySlot {
-            id: ability.id().clone(),
-            name: ability.data.name.clone(),
-            priority: ability_priority,
-            effect_state: fxlang::EffectState::new(),
-        };
-
-        context.mon_mut().ability = ability;
-        Ok(true)
     }
 
     fn remove_move_from_learnable_moves(&mut self, move_id: &Id) {

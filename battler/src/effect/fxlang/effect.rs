@@ -144,9 +144,13 @@ enum CommonCallbackType {
     MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
     MonTypes = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes,
 
-    SideVoid = CallbackFlag::TakesSide | CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsVoid,
+    SideVoid = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesSourceEffect
+        | CallbackFlag::ReturnsVoid,
     SideResult = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesSourceEffect
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
@@ -172,9 +176,12 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
-    FieldVoid = CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsVoid,
-    FieldResult =
-        CallbackFlag::TakesSourceMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
+    FieldVoid =
+        CallbackFlag::TakesSourceMon | CallbackFlag::TakesSourceEffect | CallbackFlag::ReturnsVoid,
+    FieldResult = CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesSourceEffect
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
 
     SideEffectVoid = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
@@ -372,6 +379,16 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "IsAsleep"]
     IsAsleep,
+    /// Runs when determining if a weather includes raining.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "IsRaining"]
+    IsRaining,
+    /// Runs when determining if a weather includes sunny weather.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "IsSunny"]
+    IsSunny,
     /// Runs when determining if a Mon is locked into a move.
     ///
     /// Runs in the context of the target Mon.
@@ -513,6 +530,11 @@ pub enum BattleEvent {
     /// Runs on the effect itslf.
     #[string = "SuppressFieldWeather"]
     SuppressFieldWeather,
+    /// Runs when determining if the item on the Mon is suppressed, for some other active effect.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "SuppressMonItem"]
+    SuppressMonItem,
     /// Runs when determining if weather on the Mon is suppressed, for some other active effect.
     ///
     /// Runs on the effect itslf.
@@ -640,6 +662,8 @@ impl BattleEvent {
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
+            Self::IsRaining => CommonCallbackType::NoContextResult as u32,
+            Self::IsSunny => CommonCallbackType::NoContextResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
@@ -665,6 +689,7 @@ impl BattleEvent {
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
+            Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TrapMon => CommonCallbackType::MonVoid as u32,
@@ -689,29 +714,30 @@ impl BattleEvent {
     }
 
     /// The name of the input variable by index.
-    pub fn input_vars(&self) -> &[(&str, ValueType)] {
+    pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
-            Self::AddVolatile => &[("volatile", ValueType::Effect)],
-            Self::DeductPp => &[("pp", ValueType::U64)],
-            Self::DamageReceived => &[("damage", ValueType::U64)],
-            Self::DamagingHit => &[("damage", ValueType::U64)],
-            Self::ModifyAtk => &[("atk", ValueType::U64)],
-            Self::ModifyCritRatio => &[("crit_ratio", ValueType::U64)],
+            Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::DeductPp => &[("pp", ValueType::U64, true)],
+            Self::DamageReceived => &[("damage", ValueType::U64, true)],
+            Self::DamagingHit => &[("damage", ValueType::U64, true)],
+            Self::ModifyAtk => &[("atk", ValueType::U64, true)],
+            Self::ModifyCritRatio => &[("crit_ratio", ValueType::U64, true)],
             Self::ModifyDamage
             | Self::SourceModifyDamage
             | Self::SourceWeatherModifyDamage
-            | Self::WeatherModifyDamage => &[("damage", ValueType::U64)],
-            Self::ModifyDef => &[("def", ValueType::U64)],
-            Self::ModifySpA => &[("spa", ValueType::U64)],
-            Self::ModifySpD => &[("spd", ValueType::U64)],
-            Self::ModifySpe => &[("spe", ValueType::U64)],
-            Self::RedirectTarget => &[("target", ValueType::Mon)],
+            | Self::WeatherModifyDamage => &[("damage", ValueType::U64, true)],
+            Self::ModifyDef => &[("def", ValueType::U64, true)],
+            Self::ModifySpA => &[("spa", ValueType::U64, true)],
+            Self::ModifySpD => &[("spd", ValueType::U64, true)],
+            Self::ModifySpe => &[("spe", ValueType::U64, true)],
+            Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
-                &[("status", ValueType::Effect)]
+                &[("status", ValueType::Effect, true)]
             }
-            Self::SideConditionStart => &[("condition", ValueType::Effect)],
-            Self::TryBoost => &[("boosts", ValueType::BoostTable)],
-            Self::Types => &[("types", ValueType::List)],
+            Self::SideConditionStart => &[("condition", ValueType::Effect, true)],
+            Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
+            Self::Types => &[("types", ValueType::List, true)],
+            Self::UseMove => &[("selected_target", ValueType::Mon, false)],
             _ => &[],
         }
     }
@@ -734,10 +760,22 @@ impl BattleEvent {
         }
     }
 
-    /// Returns true if the event is used for callback lookup.
+    /// The layer that the event is used for callback lookup.
     ///
-    /// In this case, the callback type can be ignored when running this event to prevent
-    /// unnecessary and infinite recursion.
+    /// Some events can be used during callback lookup, which can cause unnecessary and even
+    /// infinite recursion. To combat this, we give events used for callback lookup a layer number.
+    /// When looking up the callbacks for event A, do not run callback lookup event B if `A.layer <=
+    /// B.layer` (if A is below or at the same layer as B).
+    ///
+    /// For example, `Types` is in layer 0 and `SuppressFieldWeather` is in layer 1. Since
+    /// `SuppressFieldWeather` is used for determining a Mon's effective weather, the Mon's
+    /// effective weather should not be used as a callback for the `Types` event. In other words,
+    /// the weather on the field cannot impact a Mon's types directly.
+    ///
+    /// This creates some limitations that must be carefully considered. These are very niche edge
+    /// cases (such as the one described above), and there is almost always a workaround (in the
+    /// above case, weather can apply a volatile condition to Mons for the duration of the weather
+    /// that changes each Mon's type).
     ///
     /// An example of infinite recursion:
     /// - The battle engine runs the `Immunity` event for some Mon.
@@ -768,19 +806,13 @@ impl BattleEvent {
     ///   `Immunity` event.
     /// - The weather events are run twice. If weather does not ever impact the Mon's types, we do
     ///   not need to run the weather events in the `Types` event.
-    ///
-    /// The last point above highlights a key point about this: events used for callback lookup
-    /// cannot affect other events that are used for callback lookup. This should be a very small
-    /// subset of foundational events, so the number of limitations this creates are very small. For
-    /// example, the weather on the field cannot affect the types of any individual Mon. Such a
-    /// scenario is basically impossible from a game mechanics perspective (weather is applied to
-    /// the whole field, not an individual Mon), so the limitation is acceptable. Furthermore, there
-    /// are workarounds (apply a volatile condition to each Mon, use pseudo-weather, or use a
-    /// terrain).
-    pub fn is_used_for_callback_lookup(&self) -> bool {
+    pub fn callback_lookup_layer(&self) -> usize {
         match self {
-            Self::Types | Self::SuppressFieldWeather | Self::SuppressMonWeather => true,
-            _ => false,
+            Self::Types => 0,
+            Self::SuppressMonItem => 1,
+            Self::SuppressFieldWeather => 2,
+            Self::SuppressMonWeather => 3,
+            _ => usize::MAX,
         }
     }
 
@@ -917,6 +949,8 @@ impl SpeedOrderable for Callback {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
     pub is_asleep: Callback,
+    pub is_raining: Callback,
+    pub is_sunny: Callback,
     pub on_accuracy_exempt: Callback,
     pub on_add_volatile: Callback,
     pub on_after_move: Callback,
@@ -984,6 +1018,7 @@ pub struct Callbacks {
     pub on_weather: Callback,
     pub on_weather_modify_damage: Callback,
     pub suppress_field_weather: Callback,
+    pub suppress_mon_item: Callback,
     pub suppress_mon_weather: Callback,
 }
 
@@ -1019,6 +1054,8 @@ impl Callbacks {
             BattleEvent::Immunity => Some(&self.on_immunity),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::IsAsleep => Some(&self.is_asleep),
+            BattleEvent::IsRaining => Some(&self.is_raining),
+            BattleEvent::IsSunny => Some(&self.is_sunny),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyCritRatio => Some(&self.on_modify_crit_ratio),
@@ -1044,6 +1081,7 @@ impl Callbacks {
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::SuppressFieldWeather => Some(&self.suppress_field_weather),
+            BattleEvent::SuppressMonItem => Some(&self.suppress_mon_item),
             BattleEvent::SuppressMonWeather => Some(&self.suppress_mon_weather),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),

@@ -20,6 +20,7 @@ mod registry;
 mod request;
 mod side;
 mod speed_order;
+pub mod weather_states;
 
 pub use action::{
     Action,
@@ -34,6 +35,7 @@ pub use action::{
     MoveActionInput,
     SwitchAction,
     SwitchActionInput,
+    SwitchEventsAction,
     TeamAction,
     TeamActionInput,
 };
@@ -85,6 +87,7 @@ pub use field::Field;
 pub use mon::{
     AbilitySlot,
     ActiveMonDetails,
+    ItemSlot,
     Mon,
     MonBaseRequestData,
     MonBattleRequestData,

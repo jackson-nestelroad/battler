@@ -7,6 +7,7 @@ use crate::{
         core_battle_effects,
         core_battle_logs,
         modify_32,
+        AbilitySlot,
         Action,
         ActiveMoveContext,
         ActiveTargetContext,
@@ -19,6 +20,7 @@ use crate::{
         EffectContext,
         ExperienceAction,
         FieldEffectContext,
+        ItemSlot,
         LevelUpAction,
         Mon,
         MonContext,
@@ -31,6 +33,7 @@ use crate::{
         PlayerContext,
         Side,
         SideEffectContext,
+        SwitchEventsAction,
     },
     battler_error,
     common::{
@@ -156,10 +159,24 @@ pub fn switch_in(
 
     core_battle_logs::switch(context, is_drag)?;
 
-    run_switch_in_events(context)
+    if is_drag {
+        // The Mon was dragged in, so all events run immediately, potentially in the context of a
+        // running move.
+        run_switch_in_events(context)?;
+    } else {
+        // Otherwise, run events later, as a separate part of the battle.
+        let mon_handle = context.mon_handle();
+        BattleQueue::insert_action_into_sorted_position(
+            context.as_battle_context_mut(),
+            Action::SwitchEvents(SwitchEventsAction::new(mon_handle)),
+        )?;
+    }
+
+    Ok(true)
 }
 
-fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
+/// Runs events corresponding to a Mon switching into battle.
+pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
     core_battle_effects::run_event_for_mon(
         context,
         fxlang::BattleEvent::SwitchIn,
@@ -172,8 +189,22 @@ fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
         return Ok(false);
     }
     if !context.mon().fainted {
-        // TODO: Ability Start event.
-        // TODO: Item Start event.
+        core_battle_effects::run_mon_ability_event(
+            &mut context.applying_effect_context(
+                EffectHandle::Condition(Id::from_known("switchin")),
+                None,
+                None,
+            )?,
+            fxlang::BattleEvent::Start,
+        );
+        core_battle_effects::run_mon_item_event(
+            &mut context.applying_effect_context(
+                EffectHandle::Condition(Id::from_known("switchin")),
+                None,
+                None,
+            )?,
+            fxlang::BattleEvent::Start,
+        );
     }
 
     Ok(true)
@@ -324,6 +355,7 @@ fn do_move_internal(
         &mut context,
         fxlang::BattleEvent::AfterMove,
         core_battle_effects::MoveTargetForEvent::User,
+        fxlang::VariableInput::default(),
     );
     core_battle_effects::run_event_for_applying_effect(
         &mut context.user_applying_effect_context(None)?,
@@ -398,17 +430,21 @@ fn use_active_move_internal(
     context.mon_mut().last_move_used = Some(context.active_move_handle());
 
     // TODO: ModifyType on the move.
+    let use_move_input = fxlang::VariableInput::from_iter([target
+        .map(fxlang::Value::Mon)
+        .unwrap_or(fxlang::Value::Undefined)]);
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::UseMove,
         core_battle_effects::MoveTargetForEvent::User,
+        use_move_input.clone(),
     );
 
     // TODO: ModifyType events on the Mon.
     core_battle_effects::run_event_for_applying_effect(
         &mut context.user_applying_effect_context(None)?,
         fxlang::BattleEvent::UseMove,
-        fxlang::VariableInput::default(),
+        use_move_input,
     );
 
     // Mon fainted before this move could be made.
@@ -437,6 +473,7 @@ fn use_active_move_internal(
         context,
         fxlang::BattleEvent::UseMoveMessage,
         core_battle_effects::MoveTargetForEvent::User,
+        fxlang::VariableInput::default(),
     );
 
     if context.active_move().data.self_destruct == Some(SelfDestructType::Always) {
@@ -477,6 +514,7 @@ fn use_active_move_internal(
             context,
             fxlang::BattleEvent::MoveFailed,
             core_battle_effects::MoveTargetForEvent::User,
+            fxlang::VariableInput::default(),
         );
     }
 
@@ -1591,6 +1629,7 @@ mod direct_move_step {
                 context,
                 fxlang::BattleEvent::AfterMoveSecondaryEffects,
                 core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                fxlang::VariableInput::default(),
             );
             core_battle_effects::run_event_for_applying_effect(
                 &mut context.applying_effect_context_for_target(target.handle)?,
@@ -3025,7 +3064,7 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         .clone();
     let weather = weather_handle
         .try_id()
-        .wrap_error_with_message("volatile must have an id")?
+        .wrap_error_with_message("weather must have an id")?
         .clone();
 
     if context
@@ -3062,7 +3101,6 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         if let Some(duration) = core_battle_effects::run_weather_event_expecting_u8(
             context,
             fxlang::BattleEvent::Duration,
-            &weather,
         ) {
             context
                 .battle_mut()
@@ -3075,7 +3113,6 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
     if core_battle_effects::run_weather_event_expecting_bool(
         context,
         fxlang::BattleEvent::FieldStart,
-        &weather,
     )
     .is_some_and(|result| !result)
     {
@@ -3091,13 +3128,111 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
 
 /// Clears the weather on the field.
 pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
-    let weather = match context.battle().field.weather.clone() {
-        Some(weather) => weather,
-        _ => return Ok(false),
-    };
-    core_battle_effects::run_weather_event(context, fxlang::BattleEvent::FieldEnd, &weather);
+    core_battle_effects::run_weather_event(context, fxlang::BattleEvent::FieldEnd);
     context.battle_mut().field.weather = None;
     context.battle_mut().field.weather_state = fxlang::EffectState::new();
     // TODO: WeatherChange event.
+    Ok(true)
+}
+
+/// Sets the target Mon's ability.
+pub fn set_ability(
+    context: &mut ApplyingEffectContext,
+    ability: &Id,
+    from_forme_change: bool,
+) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    // TODO: SetAbility event, which can cancel this completely.
+
+    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::End);
+    if !from_forme_change {
+        core_battle_logs::end_ability(context)?;
+    }
+
+    let ability_priority = context.battle_mut().next_ability_priority();
+    let ability = context.battle().dex.abilities.get_by_id(ability)?;
+    context.target_mut().ability = AbilitySlot {
+        id: ability.id().clone(),
+        name: ability.data.name.clone(),
+        priority: ability_priority,
+        effect_state: fxlang::EffectState::new(),
+    };
+
+    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::Start);
+
+    Ok(true)
+}
+
+/// Transforms the Mon into the target Mon.
+///
+/// Used to implement the move "Transform."
+pub fn transform_into(
+    context: &mut ApplyingEffectContext,
+    target: MonHandle,
+    log_effect: bool,
+) -> Result<bool, Error> {
+    if context.target().transformed {
+        return Ok(false);
+    }
+
+    let target_context = context.as_battle_context_mut().mon_context(target)?;
+    if target_context.mon().fainted || target_context.mon().transformed {
+        return Ok(false);
+    }
+
+    // Collect all data specific to the target Mon that should be set after changing the
+    // species.
+    let weight = target_context.mon().weight;
+    let types = target_context.mon().types.clone();
+    let stats = target_context.mon().stats.clone();
+    let boosts = target_context.mon().boosts.clone();
+    let ability_id = target_context.mon().ability.id.clone();
+    let mut move_slots = target_context.mon().move_slots.clone();
+    for move_slot in &mut move_slots {
+        move_slot.pp = move_slot.max_pp.min(5);
+        move_slot.max_pp = move_slot.max_pp.min(5);
+        move_slot.disabled = false;
+        move_slot.used = false;
+        move_slot.simulated = true;
+    }
+
+    // Set the species first, for the baseline transformation.
+    let species = target_context.mon().species.clone();
+    context.target_mut().transformed = true;
+    Mon::set_species(&mut context.target_context()?, species)?;
+
+    // Then, manually set everything else.
+    context.target_mut().weight = weight;
+    context.target_mut().types = types;
+    context.target_mut().stats = stats;
+    context.target_mut().boosts = boosts;
+    set_ability(context, &ability_id, true)?;
+    context.target_mut().move_slots = move_slots;
+
+    core_battle_logs::transform(context, target, log_effect)?;
+
+    Ok(true)
+}
+
+/// Sets the target Mon's item.
+pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, Error> {
+    if context.target().hp == 0 || !context.target().active {
+        return Ok(false);
+    }
+
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
+
+    let item = context.battle().dex.items.get_by_id(item)?;
+    context.target_mut().item = Some(ItemSlot {
+        id: item.id().clone(),
+        name: item.data.name.clone(),
+        effect_state: fxlang::EffectState::new(),
+    });
+
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
+
     Ok(true)
 }

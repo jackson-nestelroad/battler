@@ -409,24 +409,24 @@ pub fn type_change(
 }
 
 pub fn transform(
-    context: &mut MonContext,
+    context: &mut ApplyingEffectContext,
     target: MonHandle,
-    effect: Option<&EffectHandle>,
+    log_effect: bool,
 ) -> Result<(), Error> {
     let mut event = log_event!(
         "transform",
-        ("mon", Mon::position_details(context)?),
+        (
+            "mon",
+            Mon::position_details(&mut context.target_context()?)?
+        ),
         (
             "into",
             Mon::position_details(&mut context.as_battle_context_mut().mon_context(target)?)?
         )
     );
 
-    if let Some(effect) = effect {
-        let effect_context = context
-            .as_battle_context_mut()
-            .effect_context(effect.clone(), None)?;
-        event.set("from", effect_context.effect().full_name());
+    if log_effect {
+        event.set("from", context.effect().full_name());
     }
 
     context.battle_mut().log(event);
@@ -467,6 +467,30 @@ pub fn cannot_escape(context: &mut PlayerContext) -> Result<(), Error> {
 
 pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
     let event = log_event!("escaped", ("player", &context.player().id));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn ability(context: &mut MonContext) -> Result<(), Error> {
+    let event = log_event!(
+        "ability",
+        ("mon", Mon::position_details(context)?),
+        ("ability", context.mon().ability.name.clone())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+    let mut event = log_event!("endability");
+    {
+        let context = context.target_context()?;
+        event.set("mon", Mon::position_details(&context)?);
+        event.set("ability", context.mon().ability.name.clone());
+    }
+    if context.effect().effect_type() == EffectType::Move {
+        event.set("from", context.effect().full_name());
+    }
     context.battle_mut().log(event);
     Ok(())
 }

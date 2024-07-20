@@ -1193,7 +1193,15 @@
     "secondary_effects": [{ "chance": "30%", "target": { "status": "par" } }],
     "effect": {
       "callbacks": {
-        "on_use_move": ["# TODO: Accuracy is changed by the weather."]
+        "on_use_move": [
+          "$weather = $selected_target.effective_weather",
+          "if !$weather:",
+          ["return"],
+          "if $weather.is_raining:",
+          ["$move.accuracy = exempt"],
+          "else if $weather.is_sunny:",
+          ["$move.accuracy = 50"]
+        ]
       }
     }
   },

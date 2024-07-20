@@ -34,6 +34,7 @@ use crate::{
     },
     mons::Type,
     moves::{
+        Accuracy,
         MoveCategory,
         MoveTarget,
     },
@@ -60,6 +61,7 @@ pub enum ValueType {
     Side,
     MoveSlot,
     Player,
+    Accuracy,
     List,
     Object,
 
@@ -103,6 +105,7 @@ pub enum Value {
     Side(usize),
     MoveSlot(MoveSlot),
     Player(usize),
+    Accuracy(Accuracy),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
 }
@@ -129,6 +132,7 @@ impl Value {
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::Player(_) => ValueType::Player,
+            Self::Accuracy(_) => ValueType::Accuracy,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -367,6 +371,7 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`Vec<Type>`].
     pub fn types_list(self) -> Result<Vec<Type>, Error> {
         self.list()?.into_iter().map(|val| val.mon_type()).collect()
     }
@@ -397,6 +402,7 @@ pub enum MaybeReferenceValue<'eval> {
     Side(usize),
     MoveSlot(MoveSlot),
     Player(usize),
+    Accuracy(Accuracy),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
@@ -424,6 +430,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::Player(_) => ValueType::Player,
+            Self::Accuracy(_) => ValueType::Accuracy,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -451,6 +458,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Side(val) => Value::Side(*val),
             Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
             Self::Player(val) => Value::Player(*val),
+            Self::Accuracy(val) => Value::Accuracy(*val),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
@@ -532,6 +540,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::Side(val) => Self::Side(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::Player(val) => Self::Player(val),
+            Value::Accuracy(val) => Self::Accuracy(val),
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -576,6 +585,7 @@ pub enum ValueRef<'eval> {
     Side(usize),
     MoveSlot(&'eval MoveSlot),
     Player(usize),
+    Accuracy(Accuracy),
     List(&'eval Vec<Value>),
     TempList(Vec<ValueRefToStoredValue<'eval>>),
     Object(&'eval FastHashMap<String, Value>),
@@ -606,6 +616,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::Player(_) => ValueType::Player,
+            Self::Accuracy(_) => ValueType::Accuracy,
             Self::List(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
@@ -636,6 +647,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Side(val) => Value::Side(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::Player(val) => Value::Player(*val),
+            Self::Accuracy(val) => Value::Accuracy(*val),
             Self::List(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object((*val).clone()),
@@ -734,6 +746,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::Side(val) => Self::Side(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::Player(val) => Self::Player(*val),
+            Value::Accuracy(val) => Self::Accuracy(*val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -806,6 +819,7 @@ pub enum ValueRefMut<'eval> {
     Side(&'eval mut usize),
     MoveSlot(&'eval mut MoveSlot),
     Player(&'eval mut usize),
+    Accuracy(&'eval mut Accuracy),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -837,6 +851,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::Player(_) => ValueType::Player,
+            Self::Accuracy(_) => ValueType::Accuracy,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -864,6 +879,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Side(val) => Self::Side(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::Player(val) => Self::Player(val),
+            Value::Accuracy(val) => Self::Accuracy(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -903,6 +919,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     Side(usize),
     MoveSlot(&'eval MoveSlot),
     Player(usize),
+    Accuracy(Accuracy),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
     TempList(Vec<MaybeReferenceValue<'eval>>),
@@ -935,6 +952,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Side(_) => ValueType::Side,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::Player(_) => ValueType::Player,
+            Self::Accuracy(_) => ValueType::Accuracy,
             Self::List(_) => ValueType::List,
             Self::StoredList(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
@@ -967,6 +985,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Side(val) => Value::Side(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::Player(val) => Value::Player(*val),
+            Self::Accuracy(val) => Value::Accuracy(*val),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::StoredList(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
@@ -1002,6 +1021,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Side(_) => 109,
             Self::MoveSlot(_) => 110,
             Self::Player(_) => 111,
+            Self::Accuracy(_) => 112,
             Self::List(_) => 200,
             Self::StoredList(_) => 201,
             Self::TempList(_) => 202,
@@ -1522,9 +1542,25 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             | (lhs @ Self::Fraction(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::Fraction(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::UFraction(_), rhs @ Self::UFraction(_)) => lhs.compare_ref(rhs)?.is_eq(),
+            (Self::U64(lhs), Self::Accuracy(rhs)) => {
+                rhs.percentage().is_some_and(|rhs| lhs.eq(&(rhs as u64)))
+            }
+            (Self::I64(lhs), Self::Accuracy(rhs)) => {
+                rhs.percentage().is_some_and(|rhs| lhs.eq(&(rhs as i64)))
+            }
+            (Self::Fraction(lhs), Self::Accuracy(rhs)) => rhs
+                .percentage()
+                .is_some_and(|rhs| lhs.eq(&Fraction::from(rhs as i32))),
+            (Self::UFraction(lhs), Self::Accuracy(rhs)) => rhs
+                .percentage()
+                .is_some_and(|rhs| lhs.eq(&Fraction::from(rhs as u32))),
             (Self::String(lhs), Self::String(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::String(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
+            (Self::String(lhs), Self::Effect(rhs)) => rhs
+                .try_id()
+                .map(|id| id.as_ref() == lhs.as_str())
+                .unwrap_or(false),
             (Self::String(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -1537,8 +1573,14 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Boost(rhs)) => {
                 Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::Accuracy(rhs)) => {
+                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
+            (Self::Str(lhs), Self::Effect(rhs)) => {
+                rhs.try_id().map(|id| id.as_ref() == *lhs).unwrap_or(false)
+            }
             (Self::Str(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -1547,7 +1589,14 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
             (Self::Str(lhs), Self::Boost(rhs)) => Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::Accuracy(rhs)) => {
+                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
+            (Self::TempString(lhs), Self::Effect(rhs)) => rhs
+                .try_id()
+                .map(|id| id.as_ref() == lhs.as_str())
+                .unwrap_or(false),
             (Self::TempString(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -1559,6 +1608,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::TempString(lhs), Self::Boost(rhs)) => {
                 Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::Accuracy(rhs)) => {
+                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Mon(lhs), Self::Mon(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
@@ -1737,6 +1789,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::Side(val) => Self::Side(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::Player(val) => Self::Player(*val),
+            Value::Accuracy(val) => Self::Accuracy(*val),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -1764,6 +1817,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::Side(val) => Self::Side(*val),
             MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
             MaybeReferenceValue::Player(val) => Self::Player(*val),
+            MaybeReferenceValue::Accuracy(val) => Self::Accuracy(*val),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
             MaybeReferenceValue::Reference(val) => Self::from(val),
@@ -1795,6 +1849,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::Side(val) => Self::Side(val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::Player(val) => Self::Player(val),
+            ValueRef::Accuracy(val) => Self::Accuracy(val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 val.into_iter()
@@ -1830,6 +1885,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::Side(val) => Self::Side(*val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::Player(val) => Self::Player(*val),
+            ValueRef::Accuracy(val) => Self::Accuracy(*val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 (0..val.len())

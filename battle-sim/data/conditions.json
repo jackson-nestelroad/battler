@@ -1,4 +1,8 @@
 {
+  "switchin": {
+    "name": "Switch In",
+    "condition_type": "Built-in"
+  },
   "drain": {
     "name": "Drain",
     "condition_type": "Built-in"
@@ -475,6 +479,8 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "is_raining": ["return true"],
+        "on_duration": ["if $source.effective_item == damprock:", ["return 8"]],
         "on_source_weather_modify_damage": [
           "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
           "if $move.type == water:",

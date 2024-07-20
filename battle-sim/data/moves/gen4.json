@@ -181,7 +181,18 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "embargo"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "suppress_mon_item": ["return true"],
+        "on_start": ["log_start", "run_event_on_mon_item: End"],
+        "on_end": ["log_end"]
+      }
+    }
   },
   "fling": {
     "name": "Fling",
