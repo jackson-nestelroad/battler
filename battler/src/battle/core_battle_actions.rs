@@ -192,7 +192,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
         core_battle_effects::run_mon_ability_event(
             &mut context.applying_effect_context(
                 EffectHandle::Condition(Id::from_known("switchin")),
-                None,
+                Some(context.mon_handle()),
                 None,
             )?,
             fxlang::BattleEvent::Start,
@@ -200,7 +200,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
         core_battle_effects::run_mon_item_event(
             &mut context.applying_effect_context(
                 EffectHandle::Condition(Id::from_known("switchin")),
-                None,
+                Some(context.mon_handle()),
                 None,
             )?,
             fxlang::BattleEvent::Start,

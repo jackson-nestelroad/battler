@@ -1,6 +1,14 @@
 {
   "stench": { "name": "Stench", "flags": [] },
-  "drizzle": { "name": "Drizzle", "flags": [] },
+  "drizzle": {
+    "name": "Drizzle",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["set_weather: rainweather"]
+      }
+    }
+  },
   "speedboost": { "name": "Speed Boost", "flags": [] },
   "battlearmor": { "name": "Battle Armor", "flags": [] },
   "sturdy": { "name": "Sturdy", "flags": [] },

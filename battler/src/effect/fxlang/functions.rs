@@ -130,6 +130,7 @@ pub fn run_function(
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
         "set_types" => set_types(context, args).map(|val| Some(val)),
+        "set_weather" => set_weather(context, args).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
         "transform_into" => transform_into(context, args).map(|val| Some(val)),
         "use_active_move" => use_active_move(context, args).map(|val| Some(val)),
@@ -395,15 +396,11 @@ fn log_weather(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
 
     let mut event = log_event!("weather", ("weather", weather));
     if with_source_effect {
-        event.set(
-            "from",
-            context
-                .source_effect_context()?
-                .wrap_error_with_message("effect has no source effect")?
-                .effect()
-                .full_name(),
-        );
-        if context.effect_handle().is_ability() {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
+        event.set("from", source_effect_context.effect().full_name());
+        if source_effect_context.effect_handle().is_ability() {
             if let Some(source_context) = context.source_context()? {
                 event.set("of", Mon::position_details(&source_context)?);
             }
@@ -615,9 +612,11 @@ fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let log_effect = has_special_string_flag(&mut args, "log_effect");
-    let mut context =
-        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
-    let mut context = context.change_target_context(mon_handle)?;
+    let mut context = if should_use_source_effect(&mut args) {
+        context.forward_source_effect_to_applying_effect(mon_handle)?
+    } else {
+        context.forward_effect_to_applying_effect(mon_handle)?
+    };
     core_battle_actions::cure_status(&mut context, log_effect)?;
     Ok(())
 }
@@ -665,9 +664,11 @@ fn add_volatile(
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
-    let mut context =
-        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
-    let mut context = context.change_target_context(mon_handle)?;
+    let mut context = if should_use_source_effect(&mut args) {
+        context.forward_source_effect_to_applying_effect(mon_handle)?
+    } else {
+        context.forward_effect_to_applying_effect(mon_handle)?
+    };
     core_battle_actions::try_add_volatile(&mut context, &volatile, false)
         .map(|val| Value::Boolean(val))
 }
@@ -689,9 +690,11 @@ fn remove_volatile(
 
     let no_events = has_special_string_flag(&mut args, "no_events");
     let volatile = Id::from(volatile);
-    let mut context =
-        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
-    let mut context = context.change_target_context(mon_handle)?;
+    let mut context = if should_use_source_effect(&mut args) {
+        context.forward_source_effect_to_applying_effect(mon_handle)?
+    } else {
+        context.forward_effect_to_applying_effect(mon_handle)?
+    };
     core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
         .map(|val| Value::Boolean(val))
 }
@@ -949,11 +952,13 @@ fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
         .string()
         .wrap_error_with_message("invalid status")?;
     let status = Id::from(status);
-    let mut context =
-        context.maybe_source_applying_effect_context(should_use_source_effect(&mut args))?;
-    let mut context = context.change_target_context(mon_handle)?;
+    let mut context = if should_use_source_effect(&mut args) {
+        context.forward_source_effect_to_applying_effect(mon_handle)?
+    } else {
+        context.forward_effect_to_applying_effect(mon_handle)?
+    };
     core_battle_actions::try_set_status(&mut context, Some(status), false)
-        .map(|val| Value::Boolean(val.success()))
+        .map(move |val| Value::Boolean(val.success()))
 }
 
 fn is_ally(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1524,13 +1529,20 @@ fn set_types(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
         .wrap_error_with_message("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
-    core_battle_actions::set_types(
-        &mut context
-            .applying_effect_context_mut()?
-            .change_target_context(mon_handle)?,
-        Vec::from_iter([typ]),
-    )
-    .map(|val| Value::Boolean(val))
+    let mut context = context.forward_effect_to_applying_effect(mon_handle)?;
+    core_battle_actions::set_types(&mut context, Vec::from_iter([typ]))
+        .map(|val| Value::Boolean(val))
+}
+
+fn set_weather(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let weather = args
+        .pop_front()
+        .wrap_error_with_message("missing weather")?
+        .string()
+        .wrap_error_with_message("invalid weather")?;
+    let weather = Id::from(weather);
+    core_battle_actions::set_weather(&mut context.forward_effect_to_field_effect()?, &weather)
+        .map(Value::Boolean)
 }
 
 fn transform_into(
@@ -1550,14 +1562,9 @@ fn transform_into(
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
 
-    core_battle_actions::transform_into(
-        &mut context
-            .applying_effect_context_mut()?
-            .change_target_context(mon_handle)?,
-        target_handle,
-        with_source_effect,
-    )
-    .map(|val| Value::Boolean(val))
+    let mut context = context.forward_effect_to_applying_effect(mon_handle)?;
+    core_battle_actions::transform_into(&mut context, target_handle, with_source_effect)
+        .map(|val| Value::Boolean(val))
 }
 
 fn can_escape(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {

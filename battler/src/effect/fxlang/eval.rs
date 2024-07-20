@@ -121,23 +121,90 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         self.effect_context_mut().source_effect_context()
     }
 
-    pub fn maybe_source_effect_context<'eval>(
+    pub fn forward_effect_to_applying_effect<'eval>(
         &'eval mut self,
-        use_source: bool,
-    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>, Error> {
-        if use_source {
-            Ok(self
-                .source_effect_context()?
-                .wrap_error_with_message("context has no source effect")?
-                .into())
-        } else {
-            // SAFETY: We are shortening the lifetimes of this context to the lifetime of
-            // this object.
-            let context = self.effect_context_mut();
-            let context: &'eval mut EffectContext<'eval, 'battle, 'data> =
-                unsafe { mem::transmute(context) };
-            Ok(context.into())
-        }
+        target_handle: MonHandle,
+    ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle();
+        let context: ApplyingEffectContext<'eval, 'context, 'battle, 'data> = self
+            .effect_context_mut()
+            .applying_effect_context(source_handle, target_handle)?;
+        // SAFETY: 'context lives longer than 'eval, so we are shortening the lifetime of this
+        // context.
+        let context: ApplyingEffectContext<'eval, 'eval, 'battle, 'data> =
+            unsafe { mem::transmute(context) };
+        Ok(context)
+    }
+
+    pub fn forward_source_effect_to_applying_effect<'eval>(
+        &'eval mut self,
+        target_handle: MonHandle,
+    ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle();
+        let source_effect = self
+            .source_effect_handle()
+            .wrap_error_with_message("context has no source effect")?
+            .clone();
+        self.battle_context_mut().applying_effect_context(
+            source_effect,
+            source_handle,
+            target_handle,
+            None,
+        )
+    }
+
+    pub fn forward_effect_to_side_effect<'eval>(
+        &'eval mut self,
+        side: usize,
+    ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle();
+        let context: SideEffectContext<'eval, 'context, 'battle, 'data> = self
+            .effect_context_mut()
+            .side_effect_context(side, source_handle)?;
+        // SAFETY: 'context lives longer than 'eval, so we are shortening the lifetime of this
+        // context.
+        let context: SideEffectContext<'eval, 'eval, 'battle, 'data> =
+            unsafe { mem::transmute(context) };
+        Ok(context)
+    }
+
+    pub fn forward_source_effect_to_side_effect<'eval>(
+        &'eval mut self,
+        side: usize,
+    ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle();
+        let source_effect = self
+            .source_effect_handle()
+            .wrap_error_with_message("context has no source effect")?
+            .clone();
+        self.battle_context_mut()
+            .side_effect_context(source_effect, side, source_handle, None)
+    }
+
+    pub fn forward_effect_to_field_effect<'eval>(
+        &'eval mut self,
+    ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle();
+        let context: FieldEffectContext<'eval, 'context, 'battle, 'data> = self
+            .effect_context_mut()
+            .field_effect_context(source_handle)?;
+        // SAFETY: 'context lives longer than 'eval, so we are shortening the lifetime of this
+        // context.
+        let context: FieldEffectContext<'eval, 'eval, 'battle, 'data> =
+            unsafe { mem::transmute(context) };
+        Ok(context)
+    }
+
+    pub fn forward_source_effect_to_field_effect<'eval>(
+        &'eval mut self,
+    ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+        let source_handle = self.source_handle();
+        let source_effect = self
+            .source_effect_handle()
+            .wrap_error_with_message("context has no source effect")?
+            .clone();
+        self.battle_context_mut()
+            .field_effect_context(source_effect, source_handle, None)
     }
 
     pub fn applying_effect_context<'eval>(
@@ -167,104 +234,6 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
-    pub fn maybe_source_applying_effect_context<'eval>(
-        &'eval mut self,
-        use_source: bool,
-    ) -> Result<MaybeOwnedMut<'eval, ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error>
-    {
-        match self {
-            Self::ApplyingEffect(context) => {
-                if use_source {
-                    Ok(context
-                        .source_applying_effect_context()?
-                        .wrap_error_with_message("context has no source effect")?
-                        .into())
-                } else {
-                    // SAFETY: We are shortening the lifetimes of this context to the lifetime of
-                    // this object.
-                    let context: &'eval mut ApplyingEffectContext<'eval, 'eval, 'battle, 'data> =
-                        unsafe { mem::transmute(context) };
-                    Ok(context.into())
-                }
-            }
-            _ => Err(battler_error!("context is not an applying effect")),
-        }
-    }
-
-    pub fn side_effect_context<'eval>(
-        &'eval self,
-    ) -> Result<&'eval SideEffectContext<'effect, 'context, 'battle, 'data>, Error> {
-        match self {
-            Self::SideEffect(context) => Ok(context),
-            _ => Err(battler_error!("context is not a side-applying effect")),
-        }
-    }
-
-    pub fn side_effect_context_mut<'eval>(
-        &'eval mut self,
-    ) -> Result<&'eval mut SideEffectContext<'effect, 'context, 'battle, 'data>, Error> {
-        match self {
-            Self::SideEffect(context) => Ok(context),
-            _ => Err(battler_error!("context is not a side-applying effect")),
-        }
-    }
-
-    pub fn source_side_effect_context<'eval>(
-        &'eval mut self,
-    ) -> Result<Option<SideEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
-        match self {
-            Self::SideEffect(context) => context.source_side_effect_context(),
-            _ => Err(battler_error!("context is not a side-applying effect")),
-        }
-    }
-
-    pub fn field_effect_context<'eval>(
-        &'eval self,
-    ) -> Result<&'eval FieldEffectContext<'effect, 'context, 'battle, 'data>, Error> {
-        match self {
-            Self::FieldEffect(context) => Ok(context),
-            _ => Err(battler_error!("context is not a field-applying effect")),
-        }
-    }
-
-    pub fn field_effect_context_mut<'eval>(
-        &'eval mut self,
-    ) -> Result<&'eval mut FieldEffectContext<'effect, 'context, 'battle, 'data>, Error> {
-        match self {
-            Self::FieldEffect(context) => Ok(context),
-            _ => Err(battler_error!("context is not a field-applying effect")),
-        }
-    }
-
-    pub fn source_field_effect_context<'eval>(
-        &'eval mut self,
-    ) -> Result<Option<FieldEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
-        match self {
-            Self::FieldEffect(context) => context.source_field_effect_context(),
-            _ => Err(battler_error!("context is not a field-applying effect")),
-        }
-    }
-
-    pub fn forward_underlying_effect_context<'eval>(
-        &'eval mut self,
-        effect_handle: EffectHandle,
-    ) -> Result<EvaluationContext<'eval, 'eval, 'battle, 'data>, Error> {
-        match self {
-            Self::ApplyingEffect(context) => Ok(EvaluationContext::ApplyingEffect(
-                context.forward_applying_effect_context(effect_handle)?,
-            )),
-            Self::Effect(context) => Ok(EvaluationContext::Effect(
-                context.forward_effect_context(effect_handle)?,
-            )),
-            Self::SideEffect(context) => Ok(EvaluationContext::SideEffect(
-                context.forward_side_effect_context(effect_handle)?,
-            )),
-            Self::FieldEffect(context) => Ok(EvaluationContext::FieldEffect(
-                context.forward_field_effect_context(effect_handle)?,
-            )),
-        }
-    }
-
     pub fn source_active_move_context<'eval>(
         &'eval mut self,
     ) -> Result<Option<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
@@ -286,6 +255,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.source_context(),
             Self::SideEffect(context) => context.source_context(),
+            Self::FieldEffect(context) => context.source_context(),
             _ => Err(battler_error!("effect cannot have a source")),
         }
     }
