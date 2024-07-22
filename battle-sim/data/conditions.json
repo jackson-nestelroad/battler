@@ -503,7 +503,10 @@
         ],
         "on_field_residual": {
           "order": 1,
-          "program": ["log_weather: $this.name residual", "run_event: Weather"]
+          "program": [
+            "log_weather: $this.name residual",
+            "run_event_for_each_active_mon: Weather"
+          ]
         },
         "on_field_end": ["log_weather"]
       }
@@ -523,14 +526,79 @@
             "return stop"
           ]
         ],
-        "on_weather_modify_damage": [
+        "on_source_weather_modify_damage": [
           "if $move.type == water:",
           ["return expr($damage * 3/2)"]
         ],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": [
           "log_weather: $this.name residual",
-          "run_event: Weather"
+          "run_event_for_each_active_mon: Weather"
+        ],
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "harshsunlight": {
+    "name": "Harsh Sunlight",
+    "condition_type": "Weather",
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "is_sunny": ["return true"],
+        "on_duration": [
+          "if func_call(has_item: $source heatrock):",
+          ["return 8"]
+        ],
+        "on_source_weather_modify_damage": [
+          "if $move.id == hydrosteam:",
+          ["return expr($damage * 3/2)"],
+          "if $move.type == fire:",
+          ["return expr($damage * 3/2)"],
+          "if $move.type == water:",
+          ["return expr($damage * 1/2)"]
+        ],
+        "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_field_start": [
+          "if $source_effect.is_ability:",
+          ["log_weather: $this.name with_source_effect"],
+          "else:",
+          ["log_weather: $this.name"]
+        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": [
+            "log_weather: $this.name residual",
+            "run_event_for_each_active_mon: Weather"
+          ]
+        },
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "extremelyharshsunlight": {
+    "name": "Extremely Harsh Sunlight",
+    "condition_type": "Weather",
+    "condition": {
+      "callbacks": {
+        "is_sunny": ["return true"],
+        "on_try_move": [
+          "if $move.type == water and $move.category != status:",
+          [
+            "log_fail: $user from_effect",
+            "do_not_animate_last_move",
+            "return stop"
+          ]
+        ],
+        "on_source_weather_modify_damage": [
+          "if $move.type == fire:",
+          ["return expr($damage * 3/2)"]
+        ],
+        "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_field_start": ["log_weather: $this.name with_source_effect"],
+        "on_field_residual": [
+          "log_weather: $this.name residual",
+          "run_event_for_each_active_mon: Weather"
         ],
         "on_field_end": ["log_weather"]
       }

@@ -21,6 +21,7 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
+        speed_sort,
         Action,
         BattleOptions,
         BattleQueue,
@@ -41,6 +42,7 @@ use crate::{
         Request,
         RequestType,
         Side,
+        SpeedOrderable,
         SwitchRequest,
         TeamPreviewRequest,
         TurnRequest,
@@ -471,6 +473,24 @@ impl<'d> CoreBattle<'d> {
         self.side_indices()
             .map(|side| self.active_mon_handles_on_side(side))
             .flatten()
+    }
+
+    pub fn all_active_mon_handles_in_speed_order(
+        context: &mut Context,
+    ) -> Result<Vec<MonHandle>, Error> {
+        let active_mons = context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>();
+        let mut active_mons_with_speed = Vec::with_capacity(active_mons.len());
+        for mon in active_mons {
+            active_mons_with_speed.push(Mon::speed_orderable(&context.mon_context(mon)?));
+        }
+        Self::speed_sort(context, active_mons_with_speed.as_mut_slice());
+        Ok(active_mons_with_speed
+            .into_iter()
+            .map(|mon| mon.mon_handle)
+            .collect())
     }
 
     pub fn next_ability_priority(&mut self) -> u32 {
@@ -1758,5 +1778,17 @@ impl<'d> CoreBattle<'d> {
     ) -> Result<Effect<'context>, Error> {
         let effect_handle = context.battle_mut().get_effect_handle_by_id(id)?.clone();
         Self::get_effect_by_handle(context, &effect_handle)
+    }
+
+    /// Sorts the given items by speed.
+    pub fn speed_sort<T>(context: &mut Context, items: &mut [T])
+    where
+        for<'a> &'a T: SpeedOrderable,
+    {
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG and sorting are completely disjoint.
+        let prng = unsafe { mem::transmute(prng) };
+        let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
+        speed_sort(items, prng, tie_resolution);
     }
 }

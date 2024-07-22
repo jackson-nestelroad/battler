@@ -5,7 +5,6 @@ use std::{
 
 use ahash::HashSetExt;
 
-use super::EffectStateConnector;
 use crate::{
     battle::{
         core_battle_actions,
@@ -33,6 +32,7 @@ use crate::{
     effect::{
         fxlang::{
             BattleEvent,
+            EffectStateConnector,
             EvaluationContext,
             MaybeReferenceValueForOperation,
             Value,
@@ -100,6 +100,7 @@ pub fn run_function(
         "log" => log(context, args).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
+        "log_animate_move" => log_animate_move(context, args).map(|()| None),
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
         "log_end" => log_end(context, args).map(|()| None),
         "log_fail" => log_fail(context, args).map(|()| None),
@@ -127,6 +128,9 @@ pub fn run_function(
         "random_target" => random_target(context, args),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
+        "run_event_for_each_active_mon" => {
+            run_event_for_each_active_mon(context, args).map(|()| None)
+        }
         "run_event_on_mon_item" => run_event_on_mon_item(context, args).map(|()| None),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "trap" => trap_mon(context, args).map(|()| None),
@@ -257,6 +261,36 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
     }
 
     log_internal(context, "activate".to_owned(), args)
+}
+
+fn log_animate_move(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let user_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
+    let move_name = args
+        .pop_front()
+        .wrap_error_with_message("missing move name")?
+        .string()
+        .wrap_error_with_message("invalid move name")?;
+    let target_handle = match args.pop_front() {
+        Some(Value::Undefined) | None => None,
+        Some(value) => Some(
+            value
+                .mon_handle()
+                .wrap_error_with_message("invalid target")?,
+        ),
+    };
+    core_battle_logs::use_move(
+        &mut context.mon_context(user_handle)?,
+        &move_name,
+        target_handle,
+        true,
+    )
 }
 
 fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -770,6 +804,19 @@ fn run_event(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
             Err(battler_error!("effect must have a target to run an event"))
         }
     }
+}
+
+fn run_event_for_each_active_mon(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let event = args
+        .pop_front()
+        .wrap_error_with_message("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    core_battle_effects::run_event_for_each_active_mon(context.effect_context_mut(), event)
 }
 
 fn run_event_on_mon_item(

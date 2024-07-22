@@ -808,7 +808,10 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "weather": "harshsunlight"
+    }
   },
   "crunch": {
     "name": "Crunch",

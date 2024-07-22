@@ -19,15 +19,14 @@ use serde::{
 };
 use zone_alloc::ElementRef;
 
-use super::mon_states;
 use crate::{
     battle::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         core_battle::FaintEntry,
         core_battle_effects,
-        core_battle_logs,
         modify_32,
+        mon_states,
         Boost,
         BoostTable,
         CoreBattle,
@@ -37,6 +36,7 @@ use crate::{
         MoveOutcome,
         Player,
         Side,
+        SpeedOrderable,
     },
     battler_error,
     common::{
@@ -310,6 +310,30 @@ pub struct MonLearnMoveRequest {
     pub team_position: usize,
     pub id: Id,
     pub name: String,
+}
+
+/// An interface that implements [`SpeedOrderable`][`crate::battle::SpeedOrderable`] for [`Mon`]s.
+pub struct SpeedOrderableMon {
+    pub mon_handle: MonHandle,
+    pub speed: u32,
+}
+
+impl SpeedOrderable for SpeedOrderableMon {
+    fn order(&self) -> u32 {
+        0
+    }
+
+    fn priority(&self) -> i32 {
+        0
+    }
+
+    fn speed(&self) -> u32 {
+        self.speed
+    }
+
+    fn sub_order(&self) -> u32 {
+        0
+    }
 }
 
 /// A Mon in a battle, which battles against other Mons.
@@ -1005,6 +1029,14 @@ impl Mon {
     pub fn get_weight(context: &mut MonContext) -> u32 {
         // TODO: ModifyWeight event.
         context.mon().weight
+    }
+
+    /// Creates a speed-orderable object for the Mon.
+    pub fn speed_orderable(context: &MonContext) -> SpeedOrderableMon {
+        SpeedOrderableMon {
+            mon_handle: context.mon_handle(),
+            speed: context.mon().speed as u32,
+        }
     }
 }
 

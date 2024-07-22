@@ -61,7 +61,7 @@ where
 }
 
 // Selection sort implementation that shuffles tied elements.
-fn sort_with_random_ties<T, C>(
+pub fn sort_with_random_ties<T, C>(
     items: &mut [T],
     comp: C,
     prng: &mut dyn PseudoRandomNumberGenerator,

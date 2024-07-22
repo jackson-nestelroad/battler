@@ -76,7 +76,15 @@
   "torrent": { "name": "Torrent", "flags": [] },
   "swarm": { "name": "Swarm", "flags": [] },
   "rockhead": { "name": "Rock Head", "flags": [] },
-  "drought": { "name": "Drought", "flags": [] },
+  "drought": {
+    "name": "Drought",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["set_weather: harshsunlight use_target_as_source"]
+      }
+    }
+  },
   "arenatrap": { "name": "Arena Trap", "flags": [] },
   "vitalspirit": { "name": "Vital Spirit", "flags": [] },
   "whitesmoke": { "name": "White Smoke", "flags": [] },

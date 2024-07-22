@@ -62,9 +62,9 @@ pub fn use_move(
     context: &mut MonContext,
     move_name: &str,
     target: Option<MonHandle>,
-    multihit: bool,
+    animate_only: bool,
 ) -> Result<(), Error> {
-    let title = if multihit { "animatemove" } else { "move" };
+    let title = if animate_only { "animatemove" } else { "move" };
     let mut event = log_event!(
         title,
         ("mon", Mon::position_details(context)?),

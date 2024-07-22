@@ -47,6 +47,29 @@
       }
     }
   },
-  "desolateland": { "name": "Desolate Land", "flags": [] },
+  "desolateland": {
+    "name": "Desolate Land",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "$effect_state.active = true",
+          "set_weather: extremelyharshsunlight use_target_as_source"
+        ],
+        "on_set_weather": [
+          "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
+          "if $field.weather == extremelyharshsunlight and !($strong_weathers has $weather):",
+          ["return false"]
+        ],
+        "on_clear_weather": ["if $effect_state.active:", ["return false"]],
+        "on_end": [
+          "if $field.weather != extremelyharshsunlight:",
+          ["return"],
+          "$effect_state.active = false",
+          "clear_weather"
+        ]
+      }
+    }
+  },
   "deltastream": { "name": "Delta Stream", "flags": [] }
 }

@@ -76,6 +76,8 @@ mod status {
 }
 
 mod weather {
+    mod extremely_harsh_sunlight_test;
+    mod harsh_sunlight_test;
     mod heavy_rain_test;
     mod rain_test;
 }

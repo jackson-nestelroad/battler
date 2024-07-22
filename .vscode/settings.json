@@ -20,4 +20,7 @@
         "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected"
     },
     "rust-analyzer.showUnlinkedFileNotification": false,
+    "rust-analyzer.cargo.extraArgs": [
+        "-Z unstable-options"
+    ]
 }

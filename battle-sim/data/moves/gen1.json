@@ -1066,7 +1066,13 @@
           "if func_call(remove_volatile: $user $this.id):",
           ["return"],
           "log_prepare_move",
-          "# TODO: Do not need to charge in the sun.",
+          "$weather = $user.effective_weather",
+          "if func_call(is_defined: $weather) and $weather.is_sunny:",
+          [
+            "do_not_animate_last_move",
+            "log_animate_move: $user $this.name $target",
+            "return"
+          ],
           "if !func_call(run_event: ChargeMove):",
           ["return"],
           "add_volatile: $user twoturnmove",

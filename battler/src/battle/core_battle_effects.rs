@@ -3,7 +3,6 @@ use crate::{
         core_battle_actions,
         core_battle_logs,
         mon_states,
-        speed_sort,
         ActiveMoveContext,
         ApplyingEffectContext,
         BoostTable,
@@ -908,12 +907,7 @@ fn get_ordered_effects_for_event(
         }
     }
 
-    let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
-    speed_sort(
-        speed_orderable_handles.as_mut_slice(),
-        context.battle_mut().prng.as_mut(),
-        tie_resolution,
-    );
+    CoreBattle::speed_sort(context, speed_orderable_handles.as_mut_slice());
     Ok(speed_orderable_handles
         .into_iter()
         .map(|handle| handle.callback_handle)
@@ -1955,4 +1949,23 @@ pub fn run_event_for_battle_expecting_bool_quick_return(
     .map(|value| value.boolean().ok())
     .flatten()
     .unwrap_or(false)
+}
+
+/// Runs an event on the [`CoreBattle`] for each active [`Mon`].
+///
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_each_active_mon(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+) -> Result<(), Error> {
+    for mon_handle in
+        CoreBattle::all_active_mon_handles_in_speed_order(context.as_battle_context_mut())?
+    {
+        run_event_for_applying_effect(
+            &mut context.applying_effect_context(None, mon_handle)?,
+            event,
+            fxlang::VariableInput::default(),
+        );
+    }
+    Ok(())
 }
