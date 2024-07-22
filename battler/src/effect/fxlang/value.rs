@@ -29,7 +29,10 @@ use crate::{
         WrapResultError,
     },
     effect::{
-        fxlang::EvaluationContext,
+        fxlang::{
+            DynamicEffectStateConnector,
+            EvaluationContext,
+        },
         EffectHandle,
     },
     mons::Type,
@@ -63,6 +66,7 @@ pub enum ValueType {
     Player,
     Accuracy,
     Field,
+    EffectState,
     List,
     Object,
 
@@ -108,6 +112,7 @@ pub enum Value {
     Player(usize),
     Accuracy(Accuracy),
     Field,
+    EffectState(DynamicEffectStateConnector),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
 }
@@ -136,6 +141,7 @@ impl Value {
             Self::Player(_) => ValueType::Player,
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Field => ValueType::Field,
+            Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -407,6 +413,7 @@ pub enum MaybeReferenceValue<'eval> {
     Player(usize),
     Accuracy(Accuracy),
     Field,
+    EffectState(DynamicEffectStateConnector),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
@@ -436,6 +443,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Player(_) => ValueType::Player,
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Field => ValueType::Field,
+            Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -465,6 +473,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Player(val) => Value::Player(*val),
             Self::Accuracy(val) => Value::Accuracy(*val),
             Self::Field => Value::Field,
+            Self::EffectState(val) => Value::EffectState(val.clone()),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
@@ -548,6 +557,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::Player(val) => Self::Player(val),
             Value::Accuracy(val) => Self::Accuracy(val),
             Value::Field => Self::Field,
+            Value::EffectState(val) => Self::EffectState(val),
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -594,6 +604,7 @@ pub enum ValueRef<'eval> {
     Player(usize),
     Accuracy(Accuracy),
     Field,
+    EffectState(DynamicEffectStateConnector),
     List(&'eval Vec<Value>),
     TempList(Vec<ValueRefToStoredValue<'eval>>),
     Object(&'eval FastHashMap<String, Value>),
@@ -626,6 +637,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Player(_) => ValueType::Player,
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Field => ValueType::Field,
+            Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
@@ -658,6 +670,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Player(val) => Value::Player(*val),
             Self::Accuracy(val) => Value::Accuracy(*val),
             Self::Field => Value::Field,
+            Self::EffectState(val) => Value::EffectState(val.clone()),
             Self::List(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object((*val).clone()),
@@ -757,6 +770,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::Player(val) => Self::Player(*val),
             Value::Field => Self::Field,
+            Value::EffectState(val) => Self::EffectState(val.clone()),
             Value::Accuracy(val) => Self::Accuracy(*val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
@@ -832,6 +846,7 @@ pub enum ValueRefMut<'eval> {
     Player(&'eval mut usize),
     Accuracy(&'eval mut Accuracy),
     Field,
+    EffectState(&'eval mut DynamicEffectStateConnector),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -865,6 +880,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Player(_) => ValueType::Player,
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Field => ValueType::Field,
+            Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -894,6 +910,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Player(val) => Self::Player(val),
             Value::Accuracy(val) => Self::Accuracy(val),
             Value::Field => Self::Field,
+            Value::EffectState(val) => Self::EffectState(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -935,6 +952,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     Player(usize),
     Accuracy(Accuracy),
     Field,
+    EffectState(DynamicEffectStateConnector),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
     TempList(Vec<MaybeReferenceValue<'eval>>),
@@ -969,6 +987,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Player(_) => ValueType::Player,
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Field => ValueType::Field,
+            Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::StoredList(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
@@ -1003,6 +1022,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Player(val) => Value::Player(*val),
             Self::Accuracy(val) => Value::Accuracy(*val),
             Self::Field => Value::Field,
+            Self::EffectState(val) => Value::EffectState(val.clone()),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::StoredList(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
@@ -1040,6 +1060,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Player(_) => 111,
             Self::Accuracy(_) => 112,
             Self::Field => 113,
+            Self::EffectState(_) => 114,
             Self::List(_) => 200,
             Self::StoredList(_) => 201,
             Self::TempList(_) => 202,
@@ -1811,6 +1832,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::Player(val) => Self::Player(*val),
             Value::Accuracy(val) => Self::Accuracy(*val),
             Value::Field => Self::Field,
+            Value::EffectState(val) => Self::EffectState(val.clone()),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -1840,6 +1862,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::Player(val) => Self::Player(*val),
             MaybeReferenceValue::Accuracy(val) => Self::Accuracy(*val),
             MaybeReferenceValue::Field => Self::Field,
+            MaybeReferenceValue::EffectState(val) => Self::EffectState(val.clone()),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
             MaybeReferenceValue::Reference(val) => Self::from(val),
@@ -1873,6 +1896,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::Player(val) => Self::Player(val),
             ValueRef::Accuracy(val) => Self::Accuracy(val),
             ValueRef::Field => Self::Field,
+            ValueRef::EffectState(val) => Self::EffectState(val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 val.into_iter()
@@ -1910,6 +1934,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::Player(val) => Self::Player(*val),
             ValueRef::Accuracy(val) => Self::Accuracy(*val),
             ValueRef::Field => Self::Field,
+            ValueRef::EffectState(val) => Self::EffectState(val.clone()),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 (0..val.len())

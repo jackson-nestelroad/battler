@@ -14,7 +14,7 @@ use crate::{
     effect::{
         fxlang::{
             BattleEvent,
-            EffectState,
+            DynamicEffectStateConnector,
             EvaluationContext,
             Evaluator,
             ParsedCallbacks,
@@ -50,7 +50,7 @@ impl EffectManager {
         effect_handle: &EffectHandle,
         event: BattleEvent,
         input: VariableInput,
-        effect_state: Option<EffectState>,
+        effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult, Error> {
         let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect_handle)
         {
@@ -81,8 +81,14 @@ impl EffectManager {
             ));
         }
 
-        let result =
-            Self::evaluate_internal(context, effect_handle, &effect, event, input, effect_state);
+        let result = Self::evaluate_internal(
+            context,
+            effect_handle,
+            &effect,
+            event,
+            input,
+            effect_state_connector,
+        );
 
         context
             .battle_context_mut()
@@ -132,7 +138,7 @@ impl EffectManager {
         effect: &Effect,
         event: BattleEvent,
         input: VariableInput,
-        effect_state: Option<EffectState>,
+        effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult, Error> {
         let mut evaluator = Evaluator::new();
         let callbacks = context
@@ -142,9 +148,9 @@ impl EffectManager {
             .get_parsed_effect(&effect_handle, effect)?;
         match callbacks.event(event) {
             Some(program) => {
-                evaluator.evaluate_program(context, event, input, effect_state, program)
+                evaluator.evaluate_program(context, event, input, program, effect_state_connector)
             }
-            None => Ok(ProgramEvalResult::new(None, effect_state)),
+            None => Ok(ProgramEvalResult::new(None)),
         }
     }
 }

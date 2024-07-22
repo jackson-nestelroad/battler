@@ -5,6 +5,7 @@ use std::{
 
 use ahash::HashSetExt;
 
+use super::EffectStateConnector;
 use crate::{
     battle::{
         core_battle_actions,
@@ -39,6 +40,7 @@ use crate::{
         },
         Effect,
         EffectHandle,
+        MonVolatileStatusEffectStateConnector,
     },
     log::Event,
     log_event,
@@ -1123,8 +1125,12 @@ fn volatile_effect_state(
         .mon_context(mon_handle)?
         .mon()
         .volatiles
-        .get(&volatile_id)
-        .map(|effect_state| Value::from(effect_state.clone())))
+        .contains_key(&volatile_id)
+        .then(|| {
+            Value::EffectState(
+                MonVolatileStatusEffectStateConnector::new(mon_handle, volatile_id).make_dynamic(),
+            )
+        }))
 }
 
 struct StatBoost(Boost, i8);

@@ -29,9 +29,19 @@ use crate::{
         WrapResultError,
     },
     effect::{
-        fxlang,
+        fxlang::{
+            self,
+            EffectStateConnector,
+        },
+        ActiveMoveEffectStateConnector,
         EffectHandle,
         EffectManager,
+        MonAbilityEffectStateConnector,
+        MonItemEffectStateConnector,
+        MonStatusEffectStateConnector,
+        MonVolatileStatusEffectStateConnector,
+        SideConditionEffectStateConnector,
+        WeatherEffectStateConnector,
     },
     mons::Type,
 };
@@ -126,7 +136,7 @@ fn run_effect_event_with_errors(
     effect_handle: &EffectHandle,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-    effect_state: Option<fxlang::EffectState>,
+    effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
 ) -> Result<fxlang::ProgramEvalResult, Error> {
     let mut context = match context {
         UpcomingEvaluationContext::ApplyingEffect(context) => {
@@ -153,7 +163,13 @@ fn run_effect_event_with_errors(
             context.field_effect_context(effect_handle.clone(), None, None)?,
         ),
     };
-    EffectManager::evaluate(&mut context, effect_handle, event, input, effect_state)
+    EffectManager::evaluate(
+        &mut context,
+        effect_handle,
+        event,
+        input,
+        effect_state_connector,
+    )
 }
 
 fn run_active_move_event_with_errors(
@@ -162,7 +178,8 @@ fn run_active_move_event_with_errors(
     target: MoveTargetForEvent,
     input: fxlang::VariableInput,
 ) -> Result<Option<fxlang::Value>, Error> {
-    let effect_state = context.active_move().effect_state.clone();
+    let effect_state_connector =
+        ActiveMoveEffectStateConnector::new(context.active_move_handle()).make_dynamic();
     let effect_handle = context.effect_handle().clone();
 
     let result = match target {
@@ -173,21 +190,21 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
-            Some(effect_state),
+            Some(effect_state_connector),
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::SideEffect(context.side_effect_context(side)?.into()),
             &effect_handle,
             event,
             input,
-            Some(effect_state),
+            Some(effect_state_connector),
         )?,
         MoveTargetForEvent::Field => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::FieldEffect(context.field_effect_context()?.into()),
             &effect_handle,
             event,
             input,
-            Some(effect_state),
+            Some(effect_state_connector),
         )?,
         MoveTargetForEvent::User => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::ApplyingEffect(
@@ -196,20 +213,16 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
-            Some(effect_state),
+            Some(effect_state_connector),
         )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::Effect(context.effect_context()?.into()),
             &effect_handle,
             event,
             input,
-            Some(effect_state),
+            Some(effect_state_connector),
         )?,
     };
-
-    context.active_move_mut().effect_state = result
-        .effect_state
-        .wrap_error_with_format(format_args!("effect_state missing from output of {event}"))?;
 
     Ok(result.value)
 }
@@ -242,9 +255,9 @@ fn run_effect_event_by_handle(
     effect: &EffectHandle,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-    effect_state: Option<fxlang::EffectState>,
+    effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
 ) -> fxlang::ProgramEvalResult {
-    match run_effect_event_with_errors(context, &effect, event, input, effect_state) {
+    match run_effect_event_with_errors(context, &effect, event, input, effect_state_connector) {
         Ok(result) => result,
         Err(error) => {
             let effect_name =
@@ -281,6 +294,7 @@ pub enum MoveTargetForEvent {
 
 /// The origin of an effect, which is important for reading and writing the
 /// [`EffectState`][`fxlang::EffectState`] of the effect.
+#[derive(Debug, Clone, Copy)]
 enum EffectOrigin {
     None,
     MonAbility(MonHandle),
@@ -292,6 +306,7 @@ enum EffectOrigin {
     Weather,
 }
 
+#[derive(Debug, Clone)]
 struct CallbackHandle {
     pub effect_handle: EffectHandle,
     pub event: fxlang::BattleEvent,
@@ -311,31 +326,28 @@ impl CallbackHandle {
         }
     }
 
-    pub fn effect_state_mut<'context, 'battle, 'data>(
-        &self,
-        context: &'context mut Context<'battle, 'data>,
-    ) -> Result<Option<&'context mut fxlang::EffectState>, Error> {
+    /// Creates a dynamic connector for retrieving the effect state of the callback.
+    pub fn effect_state_connector(&self) -> Option<fxlang::DynamicEffectStateConnector> {
         match self.origin {
-            EffectOrigin::None => Ok(None),
+            EffectOrigin::None => None,
             EffectOrigin::MonAbility(mon) => {
-                Ok(Some(&mut context.mon_mut(mon)?.ability.effect_state))
+                Some(MonAbilityEffectStateConnector::new(mon).make_dynamic())
             }
-            EffectOrigin::MonItem(mon) => Ok(context
-                .mon_mut(mon)?
-                .item
-                .as_mut()
-                .map(|item| &mut item.effect_state)),
-            EffectOrigin::MonStatus(mon) => Ok(Some(&mut context.mon_mut(mon)?.status_state)),
-            EffectOrigin::MonType(_) => Ok(None),
-            EffectOrigin::MonVolatileStatus(mon) => match self.effect_handle.try_id() {
-                None => Ok(None),
-                Some(id) => Ok(context.mon_mut(mon)?.volatiles.get_mut(id)),
-            },
-            EffectOrigin::SideCondition(side) => match self.effect_handle.try_id() {
-                None => Ok(None),
-                Some(id) => Ok(context.battle_mut().side_mut(side)?.conditions.get_mut(id)),
-            },
-            EffectOrigin::Weather => Ok(Some(&mut context.battle_mut().field.weather_state)),
+            EffectOrigin::MonItem(mon) => {
+                Some(MonItemEffectStateConnector::new(mon).make_dynamic())
+            }
+            EffectOrigin::MonStatus(mon) => {
+                Some(MonStatusEffectStateConnector::new(mon).make_dynamic())
+            }
+            EffectOrigin::MonType(_) => None,
+            EffectOrigin::MonVolatileStatus(mon) => self.effect_handle.try_id().map(|id| {
+                MonVolatileStatusEffectStateConnector::new(mon, id.clone()).make_dynamic()
+            }),
+            EffectOrigin::SideCondition(side) => self
+                .effect_handle
+                .try_id()
+                .map(|id| SideConditionEffectStateConnector::new(side, id.clone()).make_dynamic()),
+            EffectOrigin::Weather => Some(WeatherEffectStateConnector::new().make_dynamic()),
         }
     }
 }
@@ -345,25 +357,14 @@ fn run_callback_with_errors(
     input: fxlang::VariableInput,
     callback_handle: CallbackHandle,
 ) -> Result<Option<fxlang::Value>, Error> {
-    let effect_state = callback_handle
-        .effect_state_mut(context.battle_context_mut())?
-        .cloned();
-
     // Run the event callback for the event.
     let result = run_effect_event_by_handle(
         &mut context,
         &callback_handle.effect_handle,
         callback_handle.event,
         input.clone(),
-        effect_state,
+        callback_handle.effect_state_connector(),
     );
-
-    // Save the new effect state if applicable.
-    if let Some(effect_state) = callback_handle.effect_state_mut(context.battle_context_mut())? {
-        if let Some(new_effect_state) = result.effect_state {
-            *effect_state = new_effect_state;
-        }
-    }
 
     Ok(result.value)
 }
@@ -1070,9 +1071,8 @@ fn run_residual_callbacks_with_errors(
         let mut context = context.effect_context(callback_handle.effect_handle.clone(), None)?;
 
         let mut ended = false;
-        if let Some(effect_state) =
-            callback_handle.effect_state_mut(context.as_battle_context_mut())?
-        {
+        if let Some(effect_state_connector) = callback_handle.effect_state_connector() {
+            let effect_state = effect_state_connector.get_mut(context.as_battle_context_mut())?;
             if let Some(duration) = effect_state.duration() {
                 let duration = if duration > 0 { duration - 1 } else { duration };
                 effect_state.set_duration(duration);

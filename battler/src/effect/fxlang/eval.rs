@@ -44,7 +44,7 @@ use crate::{
             tree,
             BattleEvent,
             CallbackFlag,
-            EffectState,
+            DynamicEffectStateConnector,
             MaybeReferenceValue,
             MaybeReferenceValueForOperation,
             ParsedProgram,
@@ -808,6 +808,13 @@ where
                     },
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
+            } else if let ValueRef::EffectState(connector) = value {
+                let context = unsafe { context.unsafely_detach_borrow_mut() };
+                value = connector
+                    .get_mut(context.battle_context_mut())?
+                    .get(*member)
+                    .map(ValueRef::from)
+                    .unwrap_or(ValueRef::Undefined);
             } else if let ValueRef::Object(object) = value {
                 value = match object.get(*member) {
                     Some(value) => ValueRef::from(value),
@@ -922,6 +929,14 @@ where
                         }
                     }
                 }
+                ValueRefMut::EffectState(connector) => {
+                    let context = unsafe { context.unsafely_detach_borrow_mut() };
+                    value = ValueRefMut::from(
+                        connector
+                            .get_mut(context.battle_context_mut())?
+                            .get_mut(*member),
+                    );
+                }
                 ValueRefMut::Object(ref mut object) => {
                     // SAFETY: Mutably borrowing the object requires mutably borrowing this entire
                     // variable, so this can only happen once. If an object contains other objects,
@@ -1022,15 +1037,11 @@ enum ProgramStatementEvalResult<'program> {
 #[derive(Default)]
 pub struct ProgramEvalResult {
     pub value: Option<Value>,
-    pub effect_state: Option<EffectState>,
 }
 
 impl ProgramEvalResult {
-    pub fn new(value: Option<Value>, effect_state: Option<EffectState>) -> Self {
-        Self {
-            value,
-            effect_state,
-        }
+    pub fn new(value: Option<Value>) -> Self {
+        Self { value }
     }
 }
 
@@ -1057,10 +1068,13 @@ impl Evaluator {
         context: &mut EvaluationContext,
         event: BattleEvent,
         mut input: VariableInput,
-        effect_state: Option<EffectState>,
+        effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<(), Error> {
-        if let Some(effect_state) = effect_state {
-            self.vars.set("effect_state", Value::from(effect_state))?;
+        if let Some(effect_state_connector) = effect_state_connector {
+            if effect_state_connector.exists(context.battle_context_mut())? {
+                self.vars
+                    .set("effect_state", Value::EffectState(effect_state_connector))?;
+            }
         }
 
         self.vars
@@ -1188,11 +1202,10 @@ impl Evaluator {
         context: &mut EvaluationContext,
         event: BattleEvent,
         input: VariableInput,
-        effect_state: Option<EffectState>,
         program: &ParsedProgram,
+        effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult, Error> {
-        let has_effect_state = effect_state.is_some();
-        self.initialize_vars(context, event, input, effect_state)?;
+        self.initialize_vars(context, event, input, effect_state_connector)?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
             .evaluate_program_block(context, &program.block, &root_state)
@@ -1212,19 +1225,7 @@ impl Evaluator {
                 None => return Err(battler_error!("{event:?} must return a value")),
             }
         }
-        let effect_state = if has_effect_state {
-            Some(EffectState::try_from(
-                self.vars
-                    .get("effect_state")?
-                    .wrap_error_with_message(
-                        "effect_state variable missing after program evaluation",
-                    )?
-                    .as_ref(),
-            )?)
-        } else {
-            None
-        };
-        Ok(ProgramEvalResult::new(value, effect_state))
+        Ok(ProgramEvalResult::new(value))
     }
 
     fn evaluate_program_block<'eval, 'program>(
@@ -1885,6 +1886,9 @@ impl Evaluator {
                 *var = Accuracy::from_str(&val).wrap_error_with_message("invalid accuracy")?;
             }
             (ValueRefMut::Accuracy(var), Value::Accuracy(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::EffectState(var), Value::EffectState(val)) => {
                 *var = val;
             }
             (ValueRefMut::List(var), Value::List(val)) => {

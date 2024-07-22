@@ -406,8 +406,8 @@
             "$source = $effect_state.source",
             "if !$source.active or $source.hp == 0:",
             [
-              "remove_volatile: $target $this.id no_events",
               "log_end: no_effect str('move:{}', $effect_state.source_effect.name) silent",
+              "remove_volatile: $target $this.id no_events",
               "return"
             ],
             "damage: expr($target.base_max_hp / $effect_state.divisor) $effect_state.source_effect"

@@ -20,7 +20,11 @@ pub use effect::{
     Program,
     ProgramWithPriority,
 };
-pub use effect_state::EffectState;
+pub use effect_state::{
+    DynamicEffectStateConnector,
+    EffectState,
+    EffectStateConnector,
+};
 pub use eval::{
     EvaluationContext,
     Evaluator,
