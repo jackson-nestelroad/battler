@@ -51,7 +51,15 @@
   "magnetpull": { "name": "Magnet Pull", "flags": [] },
   "soundproof": { "name": "Soundproof", "flags": [] },
   "raindish": { "name": "Rain Dish", "flags": [] },
-  "sandstream": { "name": "Sand Stream", "flags": [] },
+  "sandstream": {
+    "name": "Sand Stream",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["set_weather: sandstormweather use_target_as_source"]
+      }
+    }
+  },
   "pressure": { "name": "Pressure", "flags": [] },
   "thickfat": { "name": "Thick Fat", "flags": [] },
   "earlybird": { "name": "Early Bird", "flags": [] },

@@ -1078,7 +1078,11 @@
           "add_volatile: $user twoturnmove",
           "return stop"
         ],
-        "on_base_power": ["# TODO: Weak to several weathers."]
+        "on_base_power": [
+          "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
+          "if $weak_weathers has $source.effective_weather:",
+          ["return expr($base_power * 1/2)"]
+        ]
       }
     }
   },
@@ -1274,7 +1278,10 @@
     "condition": {
       "duration": 2,
       "callbacks": {
-        "on_immunity": ["# TODO: Immune to weather damage."],
+        "on_immunity": [
+          "if $effect.id == sandstormweather or $effect.id == hailweather:",
+          ["return false"]
+        ],
         "on_invulnerability": [
           "if [earthquake, magnitude] has $move.id:",
           ["return"],

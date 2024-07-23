@@ -183,13 +183,6 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
-    SideEffectVoid = CallbackFlag::TakesSide
-        | CallbackFlag::TakesSourceMon
-        | CallbackFlag::TakesEffect
-        | CallbackFlag::ReturnsVoid,
-
-    FieldEffectVoid =
-        CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
     FieldEffectResult = CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsBoolean
@@ -287,7 +280,7 @@ pub enum BattleEvent {
     ///
     /// Used to override damage calculations.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move itself and in the context of an applying effect on the target.
     #[string = "Damage"]
     Damage,
     /// Runs after a Mon receives damage, regardless of the source.
@@ -644,7 +637,7 @@ pub enum BattleEvent {
     UseMoveMessage,
     /// Runs when weather is activated at the end of each turn.
     ///
-    /// Runs in the context of an applying effect on the field.
+    /// Runs in the context of an applying effect on the target.
     #[string = "Weather"]
     Weather,
     /// Runs when calculating the damage applied to a Mon.
@@ -731,7 +724,7 @@ impl BattleEvent {
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
-            Self::Weather => CommonCallbackType::FieldEffectVoid as u32,
+            Self::Weather => CommonCallbackType::ApplyingEffectResult as u32,
             Self::WeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
         }
     }
@@ -745,6 +738,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::BasePower => &[("base_power", ValueType::U64, true)],
             Self::DeductPp => &[("pp", ValueType::U64, true)],
             Self::DamageReceived => &[("damage", ValueType::U64, true)],
             Self::DamagingHit => &[("damage", ValueType::U64, true)],

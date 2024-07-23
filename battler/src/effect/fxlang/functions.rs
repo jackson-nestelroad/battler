@@ -104,6 +104,7 @@ pub fn run_function(
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
         "log_end" => log_end(context, args).map(|()| None),
         "log_fail" => log_fail(context, args).map(|()| None),
+        "log_field_activate" => log_field_activate(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
         "log_side_end" => log_side_end(context, args).map(|()| None),
@@ -261,6 +262,31 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
     }
 
     log_internal(context, "activate".to_owned(), args)
+}
+
+fn log_field_activate(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let with_source = has_special_string_flag(&mut args, "with_source");
+
+    let no_effect = has_special_string_flag(&mut args, "no_effect");
+    if !no_effect {
+        add_effect_to_args(context, &mut args)?;
+    }
+
+    if with_source {
+        args.push_back(Value::String(format!(
+            "of:{}",
+            Mon::position_details(
+                &context
+                    .source_context()?
+                    .wrap_error_with_message("effect has no source")?
+            )?
+        )));
+    }
+
+    log_internal(context, "fieldactivate".to_owned(), args)
 }
 
 fn log_animate_move(

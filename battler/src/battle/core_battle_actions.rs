@@ -44,6 +44,7 @@ use crate::{
         UnsafelyDetachBorrow,
         WrapResultError,
     },
+    conditions::ConditionType,
     effect::{
         fxlang,
         EffectHandle,
@@ -1042,6 +1043,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::BasePower,
         core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+        fxlang::VariableInput::from_iter([fxlang::Value::U64(base_power as u64)]),
     ) {
         base_power = dynamic_base_power;
     }
@@ -1725,9 +1727,25 @@ fn apply_spread_damage(
             target.outcome = MoveOutcomeOnTarget::Failure;
             continue;
         }
-        // TODO: Struggle recoil should not be affected by effects.
-        // TODO: Check weather immunity.
-        // TODO: Run Damage event, which can cause damage to fail.
+
+        if context.effect().id() != &Id::from("strugglerecoil") {
+            if let Some(condition) = context.effect().condition() {
+                if condition.data.condition_type == ConditionType::Weather {
+                    if check_immunity(&mut context)? {
+                        *damage = 0;
+                        continue;
+                    }
+                }
+            }
+            *damage = core_battle_effects::run_event_for_applying_effect_expecting_u16(
+                &mut context,
+                fxlang::BattleEvent::Damage,
+                *damage,
+            );
+            if *damage == 0 {
+                continue;
+            }
+        }
 
         let source_handle = context.source_handle();
         let effect_handle = context.effect_handle().clone();

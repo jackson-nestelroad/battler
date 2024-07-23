@@ -383,7 +383,10 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Wind"]
+    "flags": ["Wind"],
+    "hit_effect": {
+      "weather": "sandstormweather"
+    }
   },
   "gigadrain": {
     "name": "Giga Drain",

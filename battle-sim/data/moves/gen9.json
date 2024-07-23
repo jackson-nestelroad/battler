@@ -333,9 +333,11 @@
     "primary_type": "Ice",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 0,
     "target": "All",
-    "flags": ["NoMetronome"]
+    "flags": ["NoMetronome"],
+    "hit_effect": {
+      "weather": "snowweather"
+    }
   },
   "pounce": {
     "name": "Pounce",

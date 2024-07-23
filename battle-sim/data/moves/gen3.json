@@ -71,7 +71,10 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "weather": "hailweather"
+    }
   },
   "torment": {
     "name": "Torment",

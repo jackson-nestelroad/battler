@@ -932,7 +932,6 @@ impl Mon {
                     value,
                 );
             }
-            // TODO: ModifyStat event (individual per stat).
             let modifier = modifier.unwrap_or(Fraction::from(1));
             value = modify_32(value as u32, modifier.convert()) as u16;
         }

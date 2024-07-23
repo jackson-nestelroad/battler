@@ -2415,7 +2415,17 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "suppress_mon_weather": ["return true"]
+        "suppress_mon_weather": [
+          "if func_call(is_defined: $field.weather) and ($field.weather.is_raining or $field.weather.is_sunny):",
+          ["return true"]
+        ],
+        "on_weather": {
+          "order": 1,
+          "program": [
+            "if func_call(is_defined: $field.weather) and ($field.weather.is_raining or $field.weather.is_sunny):",
+            ["return false"]
+          ]
+        }
       }
     }
   },

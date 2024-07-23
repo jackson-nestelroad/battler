@@ -1,3 +1,5 @@
+use ahash::HashSetExt;
+
 use crate::{
     battle::{
         core_battle_actions,
@@ -22,6 +24,7 @@ use crate::{
     },
     common::{
         Error,
+        FastHashSet,
         Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
@@ -293,7 +296,7 @@ pub enum MoveTargetForEvent {
 
 /// The origin of an effect, which is important for reading and writing the
 /// [`EffectState`][`fxlang::EffectState`] of the effect.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum EffectOrigin {
     None,
     MonAbility(MonHandle),
@@ -305,7 +308,7 @@ enum EffectOrigin {
     Weather,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct CallbackHandle {
     pub effect_handle: EffectHandle,
     pub event: fxlang::BattleEvent,
@@ -580,24 +583,24 @@ fn find_callbacks_on_mon(
     event: fxlang::BattleEvent,
     mon: MonHandle,
     include_applied_field_effects: bool,
-) -> Result<Vec<CallbackHandle>, Error> {
-    let mut callbacks = Vec::new();
+) -> Result<FastHashSet<CallbackHandle>, Error> {
+    let mut callbacks = FastHashSet::new();
     let mut context = context.mon_context(mon)?;
 
     if event.callback_lookup_layer() > fxlang::BattleEvent::Types.callback_lookup_layer() {
         let types = Mon::types(&mut context)?;
         for typ in types {
-            callbacks.push(CallbackHandle::new(
+            callbacks.insert(CallbackHandle::new(
                 EffectHandle::Condition(typ.id()),
                 event,
                 EffectOrigin::MonType(mon),
-            ))
+            ));
         }
     }
 
     if let Some(status) = context.mon().status.clone() {
         let status_effect_handle = context.battle_mut().get_effect_handle_by_id(&status)?;
-        callbacks.push(CallbackHandle::new(
+        callbacks.insert(CallbackHandle::new(
             status_effect_handle.clone(),
             event,
             EffectOrigin::MonStatus(mon),
@@ -605,7 +608,7 @@ fn find_callbacks_on_mon(
     }
     for volatile in context.mon().volatiles.clone().keys() {
         let status_effect_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
-        callbacks.push(CallbackHandle::new(
+        callbacks.insert(CallbackHandle::new(
             status_effect_handle.clone(),
             event,
             EffectOrigin::MonVolatileStatus(mon),
@@ -613,7 +616,7 @@ fn find_callbacks_on_mon(
     }
 
     if let Some(ability) = mon_states::effective_ability(&mut context) {
-        callbacks.push(CallbackHandle::new(
+        callbacks.insert(CallbackHandle::new(
             EffectHandle::Ability(ability),
             event,
             EffectOrigin::MonAbility(mon),
@@ -623,7 +626,7 @@ fn find_callbacks_on_mon(
     if event.callback_lookup_layer() > fxlang::BattleEvent::SuppressMonItem.callback_lookup_layer()
     {
         if let Some(item) = mon_states::effective_item(&mut context) {
-            callbacks.push(CallbackHandle::new(
+            callbacks.insert(CallbackHandle::new(
                 EffectHandle::Item(item),
                 event,
                 EffectOrigin::MonItem(mon),
@@ -640,7 +643,7 @@ fn find_callbacks_on_mon(
         {
             if let Some(weather) = mon_states::effective_weather(&mut context) {
                 let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-                callbacks.push(CallbackHandle::new(
+                callbacks.insert(CallbackHandle::new(
                     weather_handle.clone(),
                     event,
                     EffectOrigin::Weather,
@@ -656,15 +659,15 @@ fn find_callbacks_on_side(
     context: &mut Context,
     event: fxlang::BattleEvent,
     side: usize,
-) -> Result<Vec<CallbackHandle>, Error> {
-    let mut callbacks = Vec::new();
+) -> Result<FastHashSet<CallbackHandle>, Error> {
+    let mut callbacks = FastHashSet::new();
     let mut context = context.side_context(side)?;
 
     for side_condition in context.side().conditions.clone().keys() {
         let side_condition_handle = context
             .battle_mut()
             .get_effect_handle_by_id(&side_condition)?;
-        callbacks.push(CallbackHandle::new(
+        callbacks.insert(CallbackHandle::new(
             side_condition_handle.clone(),
             event,
             EffectOrigin::SideCondition(side),
@@ -677,15 +680,15 @@ fn find_callbacks_on_side(
 fn find_callbacks_on_field(
     context: &mut Context,
     event: fxlang::BattleEvent,
-) -> Result<Vec<CallbackHandle>, Error> {
-    let mut callbacks = Vec::new();
+) -> Result<FastHashSet<CallbackHandle>, Error> {
+    let mut callbacks = FastHashSet::new();
 
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressFieldWeather.callback_lookup_layer()
     {
         if let Some(weather) = Field::effective_weather(context) {
             let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-            callbacks.push(CallbackHandle::new(
+            callbacks.insert(CallbackHandle::new(
                 weather_handle.clone(),
                 event,
                 EffectOrigin::Weather,
@@ -712,8 +715,8 @@ fn find_all_callbacks(
     event: fxlang::BattleEvent,
     target: AllEffectsTarget,
     source: Option<MonHandle>,
-) -> Result<Vec<CallbackHandle>, Error> {
-    let mut callbacks = Vec::new();
+) -> Result<FastHashSet<CallbackHandle>, Error> {
+    let mut callbacks = FastHashSet::new();
 
     match target {
         AllEffectsTarget::Mon(mon) => {
@@ -1184,6 +1187,7 @@ fn run_event_with_errors(
     options: &RunCallbacksOptions,
 ) -> Result<Option<fxlang::Value>, Error> {
     let callbacks = find_all_callbacks(context, event, target, source)?;
+    let callbacks = Vec::from_iter(callbacks.into_iter());
     let callbacks = get_ordered_effects_for_event(context, callbacks)?;
 
     match target {
@@ -1405,8 +1409,9 @@ pub fn run_active_move_event_expecting_u32(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
     target: MoveTargetForEvent,
+    input: fxlang::VariableInput,
 ) -> Option<u32> {
-    run_active_move_event(context, event, target, fxlang::VariableInput::default())?
+    run_active_move_event(context, event, target, input)?
         .integer_u32()
         .ok()
 }
@@ -1656,6 +1661,25 @@ pub fn run_event_for_applying_effect_expecting_u8(
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u8().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects an integer that can fit in a [`u16`].
+pub fn run_event_for_applying_effect_expecting_u16(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: u16,
+) -> u16 {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u16().unwrap_or(input),
         None => input,
     }
 }

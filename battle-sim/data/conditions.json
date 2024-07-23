@@ -62,7 +62,10 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [frz, hail] has $effect.id:", ["return false"]]
+        "on_immunity": [
+          "if [frz, hailweather] has $effect.id:",
+          ["return false"]
+        ]
       }
     }
   },
@@ -84,7 +87,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstorm:", ["return false"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
       }
     }
   },
@@ -105,7 +108,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstorm:", ["return false"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
       }
     }
   },
@@ -595,6 +598,124 @@
           ["return expr($damage * 3/2)"]
         ],
         "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_field_start": ["log_weather: $this.name with_source_effect"],
+        "on_field_residual": [
+          "log_weather: $this.name residual",
+          "run_event_for_each_active_mon: Weather"
+        ],
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "sandstormweather": {
+    "name": "Sandstorm",
+    "condition_type": "Weather",
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source smoothrock):",
+          ["return 8"]
+        ],
+        "on_modify_spd": {
+          "priority": 10,
+          "program": [
+            "if func_call(has_type: $mon rock):",
+            ["return expr($spd * 3/2)"]
+          ]
+        },
+        "on_field_start": [
+          "if $source_effect.is_ability:",
+          ["log_weather: $this.name with_source_effect"],
+          "else:",
+          ["log_weather: $this.name"]
+        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": [
+            "log_weather: $this.name residual",
+            "run_event_for_each_active_mon: Weather"
+          ]
+        },
+        "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "hailweather": {
+    "name": "Hail",
+    "condition_type": "Weather",
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source icyrock):",
+          ["return 8"]
+        ],
+        "on_field_start": [
+          "if $source_effect.is_ability:",
+          ["log_weather: $this.name with_source_effect"],
+          "else:",
+          ["log_weather: $this.name"]
+        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": [
+            "log_weather: $this.name residual",
+            "run_event_for_each_active_mon: Weather"
+          ]
+        },
+        "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "snowweather": {
+    "name": "Snow",
+    "condition_type": "Weather",
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source icyrock):",
+          ["return 8"]
+        ],
+        "on_modify_def": {
+          "priority": 10,
+          "program": [
+            "if func_call(has_type: $mon ice):",
+            ["return expr($def * 3/2)"]
+          ]
+        },
+        "on_field_start": [
+          "if $source_effect.is_ability:",
+          ["log_weather: $this.name with_source_effect"],
+          "else:",
+          ["log_weather: $this.name"]
+        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": [
+            "log_weather: $this.name residual",
+            "run_event_for_each_active_mon: Weather"
+          ]
+        },
+        "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "strongwinds": {
+    "name": "Strong Winds",
+    "condition_type": "Weather",
+    "condition": {
+      "callbacks": {
+        "on_effectiveness": {
+          "priority": -1,
+          "program": [
+            "if $move.category != status and $type == flying and $modifier > 0:",
+            ["log_field_activate", "return 0"]
+          ]
+        },
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": [
           "log_weather: $this.name residual",

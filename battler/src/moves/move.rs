@@ -254,7 +254,7 @@ impl MoveHitData {
 }
 
 /// The current type of [`HitEffect`] being applied on an active [`Move`].
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum MoveHitEffectType {
     PrimaryEffect,
     SecondaryEffect(usize),

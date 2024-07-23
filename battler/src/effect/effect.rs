@@ -88,7 +88,7 @@ pub enum EffectType {
 /// An [`Effect`] handle.
 ///
 /// A stable way to identify an [`Effect`].
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum EffectHandle {
     /// An active move, which is being used or was recently used by a Mon.
     ActiveMove(MoveHandle, MoveHitEffectType),
