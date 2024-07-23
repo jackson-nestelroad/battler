@@ -12,15 +12,12 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "rust-analyzer.linkedProjects": [
-        "./Cargo.toml"
+        "${workspaceFolder}/Cargo.toml"
     ],
     "rust-analyzer.runnables.extraEnv": {
         "DATA_DIR": "${workspaceFolder}/battle-sim/data",
         "TEST_CASE_DIR": "${workspaceFolder}/battler/test_cases",
         "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected"
     },
-    "rust-analyzer.showUnlinkedFileNotification": false,
-    "rust-analyzer.cargo.extraArgs": [
-        "-Z unstable-options"
-    ]
+    "rust-analyzer.showUnlinkedFileNotification": false
 }
