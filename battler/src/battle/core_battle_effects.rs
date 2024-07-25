@@ -946,6 +946,8 @@ fn run_callbacks_with_forwarding_input_with_errors(
         // Pass the output to the next effect.
         if let Some(forward_input) = input.get_mut(0) {
             *forward_input = value;
+        } else {
+            *input = fxlang::VariableInput::from_iter([value]);
         }
     }
 
