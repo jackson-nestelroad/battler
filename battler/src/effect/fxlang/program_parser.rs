@@ -256,10 +256,10 @@ mod program_parser_tests {
                                     function: tree::Identifier("rand".to_owned()),
                                     args: tree::Values(vec![
                                         tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                            Fraction::from(0)
+                                            0u64.into()
                                         )),
                                         tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                            Fraction::from(1)
+                                            1u64.into()
                                         )),
                                     ])
                                 })
@@ -267,7 +267,7 @@ mod program_parser_tests {
                             rhs: vec![tree::BinaryExprRhs {
                                 op: tree::Operator::Equal,
                                 expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                                    tree::NumberLiteral::Unsigned(Fraction::from(0))
+                                    tree::NumberLiteral::Unsigned(0u64.into())
                                 )))
                             }]
                         })
@@ -279,7 +279,7 @@ mod program_parser_tests {
                                 member_access: vec![],
                             },
                             rhs: tree::Expr::Value(tree::Value::NumberLiteral(
-                                tree::NumberLiteral::Unsigned(Fraction::from(20))
+                                tree::NumberLiteral::Unsigned(20u64.into())
                             )),
                         })
                     )]),
@@ -293,7 +293,7 @@ mod program_parser_tests {
                                 member_access: vec![],
                             },
                             rhs: tree::Expr::Value(tree::Value::NumberLiteral(
-                                tree::NumberLiteral::Unsigned(Fraction::from(40))
+                                tree::NumberLiteral::Unsigned(40u64.into())
                             )),
                         })
                     )]),
@@ -377,7 +377,7 @@ mod program_parser_tests {
                                 ParsedProgramBlock::Branch(vec![ParsedProgramBlock::Leaf(
                                     tree::Statement::ReturnStatement(tree::ReturnStatement(Some(
                                         tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                            Fraction::from(2)
+                                            2u64.into()
                                         ))
                                     )))
                                 )])

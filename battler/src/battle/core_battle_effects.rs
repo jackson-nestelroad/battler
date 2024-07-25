@@ -1,3 +1,5 @@
+use std::iter;
+
 use ahash::HashSetExt;
 
 use crate::{
@@ -942,7 +944,9 @@ fn run_callbacks_with_forwarding_input_with_errors(
             return Ok(Some(value));
         }
         // Pass the output to the next effect.
-        *input = fxlang::VariableInput::from_iter([value]);
+        if let Some(forward_input) = input.get_mut(0) {
+            *forward_input = value;
+        }
     }
 
     Ok(None)
@@ -1069,12 +1073,15 @@ fn run_residual_callbacks_with_errors(
 
         let mut ended = false;
         if let Some(effect_state_connector) = callback_handle.effect_state_connector() {
-            let effect_state = effect_state_connector.get_mut(context.as_battle_context_mut())?;
-            if let Some(duration) = effect_state.duration() {
-                let duration = if duration > 0 { duration - 1 } else { duration };
-                effect_state.set_duration(duration);
-                if duration == 0 {
-                    ended = true;
+            if effect_state_connector.exists(context.as_battle_context_mut())? {
+                let effect_state =
+                    effect_state_connector.get_mut(context.as_battle_context_mut())?;
+                if let Some(duration) = effect_state.duration() {
+                    let duration = if duration > 0 { duration - 1 } else { duration };
+                    effect_state.set_duration(duration);
+                    if duration == 0 {
+                        ended = true;
+                    }
                 }
             }
         }
@@ -1418,6 +1425,20 @@ pub fn run_active_move_event_expecting_u32(
 
 /// Runs an event on an active [`Move`][`crate::moves::Move`].
 ///
+/// Expects an integer that can fit in a [`i8`].
+pub fn run_active_move_event_expecting_i8(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+    target: MoveTargetForEvent,
+    input: fxlang::VariableInput,
+) -> Option<i8> {
+    run_active_move_event(context, event, target, input)?
+        .integer_i8()
+        .ok()
+}
+
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
 /// Expects a [`bool`].
 pub fn run_active_move_event_expecting_bool(
     context: &mut ActiveMoveContext,
@@ -1638,7 +1659,7 @@ pub fn run_event_for_applying_effect_expecting_u32(
     match run_event_for_applying_effect_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u32().unwrap_or(input),
@@ -1657,10 +1678,32 @@ pub fn run_event_for_applying_effect_expecting_u8(
     match run_event_for_applying_effect_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u8().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects an integer that can fit in a [`i8`].
+pub fn run_event_for_applying_effect_expecting_i8(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: i8,
+    other_input: fxlang::VariableInput,
+) -> i8 {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter(
+            iter::once(fxlang::Value::Fraction(input.into())).chain(other_input.into_iter()),
+        ),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_i8().unwrap_or(input),
         None => input,
     }
 }
@@ -1676,7 +1719,7 @@ pub fn run_event_for_applying_effect_expecting_u16(
     match run_event_for_applying_effect_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),
@@ -1783,7 +1826,7 @@ pub fn run_event_for_mon_expecting_u16(
     match run_event_for_mon_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),
@@ -1802,7 +1845,7 @@ pub fn run_event_for_mon_expecting_u8(
     match run_event_for_mon_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::U64(input as u64)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u8().unwrap_or(input),

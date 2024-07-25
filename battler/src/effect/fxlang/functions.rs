@@ -524,7 +524,7 @@ fn random(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         ),
         _ => return Err(battler_error!("invalid random arguments")),
     };
-    Ok(Value::U64(val))
+    Ok(Value::UFraction(val.into()))
 }
 
 fn chance(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -603,7 +603,7 @@ fn damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         )?,
         amount,
     )
-    .map(|damage| Value::U64(damage as u64))
+    .map(|damage| Value::UFraction(damage.into()))
 }
 
 fn direct_damage(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -917,8 +917,10 @@ fn calculate_damage(
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     match core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)? {
-        MoveOutcomeOnTarget::Damage(damage) => Ok(Value::U64(damage as u64)),
-        MoveOutcomeOnTarget::Success | MoveOutcomeOnTarget::Unknown => Ok(Value::U64(0)),
+        MoveOutcomeOnTarget::Damage(damage) => Ok(Value::UFraction(damage.into())),
+        MoveOutcomeOnTarget::Success | MoveOutcomeOnTarget::Unknown => {
+            Ok(Value::UFraction(0u64.into()))
+        }
         _ => Ok(Value::Boolean(false)),
     }
 }
@@ -941,7 +943,7 @@ fn calculate_confusion_damage(
         &mut context.mon_context(mon_handle)?,
         base_power,
     )
-    .map(|value| Value::U64(value as u64))
+    .map(|value| Value::UFraction(value.into()))
 }
 
 fn max(mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -966,7 +968,7 @@ fn floor(mut args: VecDeque<Value>) -> Result<Value, Error> {
         .wrap_error_with_message("missing number")?
         .integer_u64()
         .wrap_error_with_message("invalid number")?;
-    Ok(Value::U64(number))
+    Ok(Value::UFraction(number.into()))
 }
 
 fn heal(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
@@ -1106,7 +1108,7 @@ fn get_boost(mut args: VecDeque<Value>) -> Result<Value, Error> {
         .wrap_error_with_message("missing boost")?
         .boost()
         .wrap_error_with_message("invalid boost")?;
-    Ok(Value::I64(boosts.get(boost) as i64))
+    Ok(Value::Fraction(boosts.get(boost).into()))
 }
 
 fn set_boost(mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1293,10 +1295,10 @@ fn move_slot_index(
         .string()
         .wrap_error_with_message("invalid move")?;
     match context.mon(mon_handle)?.move_slot_index(&Id::from(move_id)) {
-        Some(index) => Ok(Some(Value::U64(
-            index
-                .try_into()
-                .wrap_error_with_message("integer overflow")?,
+        Some(index) => Ok(Some(Value::UFraction(
+            TryInto::<u64>::try_into(index)
+                .wrap_error_with_message("integer overflow")?
+                .into(),
         ))),
         None => Ok(None),
     }
@@ -1346,13 +1348,10 @@ fn overwrite_move_slot(
 }
 
 fn mons_per_side(context: &mut EvaluationContext) -> Result<Value, Error> {
-    Ok(Value::U64(
-        context
-            .battle_context()
-            .battle()
-            .max_side_length()
-            .try_into()
-            .wrap_error_with_message("integer overflow")?,
+    Ok(Value::UFraction(
+        TryInto::<u64>::try_into(context.battle_context().battle().max_side_length())
+            .wrap_error_with_message("integer overflow")?
+            .into(),
     ))
 }
 
@@ -1556,10 +1555,13 @@ fn target_location_of_mon(
         .wrap_error_with_message("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
-    Ok(Value::I64(
-        Mon::get_target_location(&mut context.mon_context(mon_handle)?, target_handle)?
-            .try_into()
-            .wrap_error_with_message("integer overflow")?,
+    Ok(Value::Fraction(
+        TryInto::<i64>::try_into(Mon::get_target_location(
+            &mut context.mon_context(mon_handle)?,
+            target_handle,
+        )?)
+        .wrap_error_with_message("integer overflow")?
+        .into(),
     ))
 }
 

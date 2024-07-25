@@ -865,7 +865,7 @@ impl<'s> StatementParser<'s> {
             Some(Token::Integer) => self
                 .token_parser
                 .consume_lexeme()
-                .parse::<i32>()
+                .parse::<i64>()
                 .wrap_error_with_format(format_args!(
                     "number token \"{}\" could not parsed to integer",
                     self.token_parser.lexeme()
@@ -880,7 +880,7 @@ impl<'s> StatementParser<'s> {
                     Some(Token::Integer) => self
                         .token_parser
                         .consume_lexeme()
-                        .parse::<i32>()
+                        .parse::<i64>()
                         .wrap_error_with_format(format_args!(
                             "number token \"{}\" could not parsed to integer",
                             self.token_parser.lexeme()
@@ -901,7 +901,7 @@ impl<'s> StatementParser<'s> {
             ))
         } else {
             Ok(tree::NumberLiteral::Unsigned(
-                Fraction::new(numerator as u32, denominator as u32).simplify(),
+                Fraction::new(numerator as u64, denominator as u64).simplify(),
             ))
         }
     }
@@ -1330,15 +1330,13 @@ mod statement_parser_tests {
             Ok(tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("test".to_owned()),
                 args: tree::Values(vec![
-                    tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::from(1))),
-                    tree::Value::NumberLiteral(tree::NumberLiteral::Signed(Fraction::from(-3))),
+                    tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(1u64.into())),
+                    tree::Value::NumberLiteral(tree::NumberLiteral::Signed((-3i64).into())),
                     tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::new(
                         11, 20
                     ))),
                     tree::Value::NumberLiteral(tree::NumberLiteral::Signed(Fraction::new(-1, 2))),
-                    tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::from(
-                        23456542
-                    ))),
+                    tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(23456542u64.into())),
                     tree::Value::NumberLiteral(tree::NumberLiteral::Signed(Fraction::new(-1, 3))),
                 ])
             }))
@@ -1391,15 +1389,9 @@ mod statement_parser_tests {
                         tree::NumberLiteral::Unsigned(Fraction::new(1, 40))
                     )]))),
                     tree::Value::List(tree::List(tree::Values(vec![
-                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::from(
-                            1
-                        ))),
-                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::from(
-                            2
-                        ))),
-                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::from(
-                            3
-                        ))),
+                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(1u64.into())),
+                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(2u64.into())),
+                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(3u64.into())),
                     ]))),
                     tree::Value::List(tree::List(tree::Values(vec![
                         tree::Value::StringLiteral(tree::StringLiteral("a".to_owned())),
@@ -1466,12 +1458,8 @@ mod statement_parser_tests {
                     tree::Value::ValueFunctionCall(tree::ValueFunctionCall(tree::FunctionCall {
                         function: tree::Identifier("rand".to_owned()),
                         args: tree::Values(vec![
-                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                Fraction::from(1)
-                            )),
-                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                Fraction::from(5)
-                            )),
+                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(1u64.into())),
+                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(5u64.into())),
                         ]),
                     })),
                     tree::Value::Var(tree::Var {
@@ -1508,12 +1496,12 @@ mod statement_parser_tests {
                     tree::Value::ValueExpr(tree::ValueExpr(Box::new(tree::Expr::BinaryExpr(
                         tree::BinaryExpr {
                             lhs: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                                tree::NumberLiteral::Unsigned(Fraction::from(1)),
+                                tree::NumberLiteral::Unsigned(1u64.into()),
                             ))),
                             rhs: vec![tree::BinaryExprRhs {
                                 op: tree::Operator::Add,
                                 expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                                    tree::NumberLiteral::Unsigned(Fraction::from(1)),
+                                    tree::NumberLiteral::Unsigned(1u64.into()),
                                 ))),
                             }],
                         }
@@ -1801,7 +1789,7 @@ mod statement_parser_tests {
                 },
                 rhs: tree::Expr::BinaryExpr(tree::BinaryExpr {
                     lhs: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                        tree::NumberLiteral::Unsigned(Fraction::from(2))
+                        tree::NumberLiteral::Unsigned(2u64.into())
                     ))),
                     rhs: vec![tree::BinaryExprRhs {
                         op: tree::Operator::Multiply,
@@ -1810,10 +1798,10 @@ mod statement_parser_tests {
                                 function: tree::Identifier("rand".to_owned()),
                                 args: tree::Values(vec![
                                     tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                        Fraction::from(1)
+                                        1u64.into()
                                     )),
                                     tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                        Fraction::from(5)
+                                        5u64.into()
                                     )),
                                 ])
                             })
@@ -1837,7 +1825,7 @@ mod statement_parser_tests {
                     rhs: vec![tree::BinaryExprRhs {
                         op: tree::Operator::Equal,
                         expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                            tree::NumberLiteral::Unsigned(Fraction::from(2))
+                            tree::NumberLiteral::Unsigned(2u64.into())
                         )))
                     }]
                 })
@@ -1869,7 +1857,7 @@ mod statement_parser_tests {
                         rhs: vec![tree::BinaryExprRhs {
                             op: tree::Operator::LessThan,
                             expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                                tree::NumberLiteral::Unsigned(Fraction::from(10))
+                                tree::NumberLiteral::Unsigned(10u64.into())
                             )))
                         }]
                     }
@@ -1926,15 +1914,9 @@ mod statement_parser_tests {
                     tree::FunctionCall {
                         function: tree::Identifier("range".to_owned()),
                         args: tree::Values(vec![
-                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                Fraction::from(0)
-                            )),
-                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                Fraction::from(10)
-                            )),
-                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                Fraction::from(2)
-                            )),
+                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(0u64.into())),
+                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(10u64.into())),
+                            tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(2u64.into())),
                         ])
                     }
                 )),
@@ -1964,9 +1946,7 @@ mod statement_parser_tests {
                         tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::new(
                             1, 10
                         ))),
-                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(Fraction::from(
-                            5
-                        ))),
+                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(5u64.into())),
                     ])
                 })])
             }))

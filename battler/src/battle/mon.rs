@@ -932,7 +932,7 @@ impl Mon {
                     value,
                 );
             }
-            let modifier = modifier.unwrap_or(Fraction::from(1));
+            let modifier = modifier.unwrap_or(Fraction::from(1u16));
             value = modify_32(value as u32, modifier.convert()) as u16;
         }
 
@@ -1223,7 +1223,7 @@ impl Mon {
         let current_health = if context.mon().max_hp > 0 {
             Fraction::new(context.mon().hp, context.mon().max_hp)
         } else {
-            Fraction::from(1)
+            Fraction::from(1u16)
         };
         context.mon_mut().max_hp = stats.hp;
         context.mon_mut().hp = (current_health * context.mon().max_hp).floor();
@@ -1451,17 +1451,6 @@ impl Mon {
         let immune = context.battle().check_type_immunity(typ, &types);
 
         Ok(immune)
-    }
-
-    /// Checks the type effectiveness of a type against this Mon.
-    pub fn type_effectiveness(context: &mut MonContext, typ: Type) -> Result<i8, Error> {
-        let mut total = 0;
-        for defense in Mon::types(context)? {
-            let modifier = context.battle().check_type_effectiveness(typ, defense);
-            // TODO: Effectiveness event.
-            total += modifier;
-        }
-        Ok(total)
     }
 
     /// Applies damage to the Mon.

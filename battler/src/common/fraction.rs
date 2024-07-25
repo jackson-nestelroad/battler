@@ -234,12 +234,13 @@ where
     }
 }
 
-impl<I> From<I> for Fraction<I>
+impl<I, J> From<I> for Fraction<J>
 where
     I: FractionInteger,
+    J: FractionInteger + From<I>,
 {
     fn from(value: I) -> Self {
-        Self::new(value, I::one())
+        Self::new(J::from(value), J::from(I::one()))
     }
 }
 

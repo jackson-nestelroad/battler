@@ -58,6 +58,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::DeductPp, callbacks)?;
             parsed.parse_and_save(BattleEvent::DisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Effectiveness, callbacks)?;
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldEnd, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldRestart, callbacks)?;

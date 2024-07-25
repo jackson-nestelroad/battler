@@ -13,8 +13,8 @@ pub struct BoolLiteral(pub bool);
 /// Number -> [0-9]+('/'[0-9]+)?
 #[derive(Debug, PartialEq, Eq)]
 pub enum NumberLiteral {
-    Unsigned(Fraction<u32>),
-    Signed(Fraction<i32>),
+    Unsigned(Fraction<u64>),
+    Signed(Fraction<i64>),
 }
 
 /// String -> "'" (QuotedChar)* "'" | UnquotedString

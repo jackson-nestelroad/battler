@@ -312,6 +312,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Duration"]
     Duration,
+    /// Runs when determining the type effectiveness of a move.
+    ///
+    /// Runs on the active move itself and in the context of an active move on the target.
+    #[string = "Effectiveness"]
+    Effectiveness,
     /// Runs when an effect ends.
     ///
     /// Runs on the effect itself.
@@ -669,6 +674,7 @@ impl BattleEvent {
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
             Self::DeductPp => CommonCallbackType::MonModifier as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
+            Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
             Self::FieldResidual => CommonCallbackType::FieldVoid as u32,
@@ -738,20 +744,24 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
-            Self::BasePower => &[("base_power", ValueType::U64, true)],
-            Self::DeductPp => &[("pp", ValueType::U64, true)],
-            Self::DamageReceived => &[("damage", ValueType::U64, true)],
-            Self::DamagingHit => &[("damage", ValueType::U64, true)],
-            Self::ModifyAtk => &[("atk", ValueType::U64, true)],
-            Self::ModifyCritRatio => &[("crit_ratio", ValueType::U64, true)],
+            Self::BasePower => &[("base_power", ValueType::UFraction, true)],
+            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
+            Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
+            Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
+            Self::Effectiveness => &[
+                ("modifier", ValueType::Fraction, true),
+                ("type", ValueType::Type, true),
+            ],
+            Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
+            Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
             Self::ModifyDamage
             | Self::SourceModifyDamage
             | Self::SourceWeatherModifyDamage
-            | Self::WeatherModifyDamage => &[("damage", ValueType::U64, true)],
-            Self::ModifyDef => &[("def", ValueType::U64, true)],
-            Self::ModifySpA => &[("spa", ValueType::U64, true)],
-            Self::ModifySpD => &[("spd", ValueType::U64, true)],
-            Self::ModifySpe => &[("spe", ValueType::U64, true)],
+            | Self::WeatherModifyDamage => &[("damage", ValueType::UFraction, true)],
+            Self::ModifyDef => &[("def", ValueType::UFraction, true)],
+            Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
+            Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
+            Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
                 &[("status", ValueType::Effect, true)]
@@ -992,6 +1002,7 @@ pub struct Callbacks {
     pub on_disable_move: Callback,
     pub on_deduct_pp: Callback,
     pub on_duration: Callback,
+    pub on_effectiveness: Callback,
     pub on_end: Callback,
     pub on_field_end: Callback,
     pub on_field_residual: Callback,
@@ -1069,6 +1080,7 @@ impl Callbacks {
             BattleEvent::DeductPp => Some(&self.on_deduct_pp),
             BattleEvent::DisableMove => Some(&self.on_disable_move),
             BattleEvent::Duration => Some(&self.on_duration),
+            BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::FieldEnd => Some(&self.on_field_end),
             BattleEvent::FieldResidual => Some(&self.on_field_residual),

@@ -83,4 +83,5 @@ mod weather {
     mod rain_test;
     mod sandstorm_test;
     mod snow_test;
+    mod strong_winds_test;
 }

@@ -576,7 +576,9 @@ where
                 let context = unsafe { context.unsafely_detach_borrow_mut() };
                 value = match *member {
                     "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
-                    "base_max_hp" => ValueRef::U64(context.mon(mon_handle)?.base_max_hp as u64),
+                    "base_max_hp" => {
+                        ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
+                    }
                     "effective_weather" => {
                         match mon_states::effective_weather(&mut context.mon_context(mon_handle)?) {
                             Some(weather) => ValueRef::Effect(
@@ -589,7 +591,7 @@ where
                         }
                     }
                     "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
-                    "hp" => ValueRef::U64(context.mon(mon_handle)?.hp as u64),
+                    "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
                     "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                         &mut context.mon_context(mon_handle)?,
                     )),
@@ -599,16 +601,16 @@ where
                     },
                     "last_target_location" => {
                         match context.mon(mon_handle)?.last_move_target_location {
-                            Some(last_target_location) => ValueRef::I64(
-                                last_target_location
-                                    .try_into()
-                                    .wrap_error_with_message("integer overflow")?,
+                            Some(last_target_location) => ValueRef::Fraction(
+                                TryInto::<i32>::try_into(last_target_location)
+                                    .wrap_error_with_message("integer overflow")?
+                                    .into(),
                             ),
                             None => ValueRef::Undefined,
                         }
                     }
-                    "level" => ValueRef::U64(context.mon(mon_handle)?.level as u64),
-                    "max_hp" => ValueRef::U64(context.mon(mon_handle)?.max_hp as u64),
+                    "level" => ValueRef::UFraction(context.mon(mon_handle)?.level.into()),
+                    "max_hp" => ValueRef::UFraction(context.mon(mon_handle)?.max_hp.into()),
                     "move_slots" => ValueRef::TempList(
                         context
                             .mon(mon_handle)?
@@ -630,10 +632,12 @@ where
                             .unwrap_or(false),
                     ),
                     "player" => ValueRef::Player(context.mon(mon_handle)?.player),
-                    "position" => ValueRef::U64(
-                        Mon::position_on_side(&context.mon_context(mon_handle)?)?
-                            .try_into()
-                            .wrap_error_with_message("integer overflow")?,
+                    "position" => ValueRef::UFraction(
+                        TryInto::<u32>::try_into(Mon::position_on_side(
+                            &context.mon_context(mon_handle)?,
+                        )?)
+                        .wrap_error_with_message("integer overflow")?
+                        .into(),
                     ),
                     "position_details" => ValueRef::TempString(format!(
                         "{}",
@@ -648,9 +652,9 @@ where
                             .map(|id| id.as_ref().to_owned())
                             .unwrap_or(String::new()),
                     ),
-                    "weight" => {
-                        ValueRef::U64(Mon::get_weight(&mut context.mon_context(mon_handle)?) as u64)
-                    }
+                    "weight" => ValueRef::UFraction(
+                        Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
+                    ),
                     "will_move_this_turn" => ValueRef::Boolean(
                         context
                             .battle_context()
@@ -718,14 +722,18 @@ where
                     "accuracy" => {
                         ValueRef::Accuracy(context.active_move(active_move_handle)?.data.accuracy)
                     }
-                    "base_power" => ValueRef::U64(
-                        context.active_move(active_move_handle)?.data.base_power as u64,
+                    "base_power" => ValueRef::UFraction(
+                        context
+                            .active_move(active_move_handle)?
+                            .data
+                            .base_power
+                            .into(),
                     ),
                     "category" => ValueRef::MoveCategory(
                         context.active_move(active_move_handle)?.data.category,
                     ),
                     "damage" => match context.active_move(active_move_handle)?.data.damage {
-                        Some(damage) => ValueRef::U64(damage as u64),
+                        Some(damage) => ValueRef::UFraction(damage.into()),
                         None => ValueRef::Undefined,
                     },
                     "drain_percent" => ValueRef::UFraction(
@@ -733,10 +741,12 @@ where
                             .active_move(active_move_handle)?
                             .data
                             .drain_percent
-                            .unwrap_or(Fraction::from(0))
+                            .unwrap_or(Fraction::from(0u16))
                             .convert(),
                     ),
-                    "hit" => ValueRef::U64(context.active_move(active_move_handle)?.hit as u64),
+                    "hit" => {
+                        ValueRef::UFraction(context.active_move(active_move_handle)?.hit.into())
+                    }
                     "id" => ValueRef::Str(context.active_move(active_move_handle)?.id().as_ref()),
                     "infiltrates" => {
                         ValueRef::Boolean(context.active_move(active_move_handle)?.infiltrates)
@@ -756,7 +766,7 @@ where
                             .active_move(active_move_handle)?
                             .data
                             .recoil_percent
-                            .unwrap_or(Fraction::from(0))
+                            .unwrap_or(Fraction::from(0u16))
                             .convert(),
                     ),
                     "target" => {
@@ -780,7 +790,7 @@ where
             } else if let ValueRef::MoveSlot(move_slot) = value {
                 value = match *member {
                     "id" => ValueRef::Str(move_slot.id.as_ref()),
-                    "pp" => ValueRef::U64(move_slot.pp as u64),
+                    "pp" => ValueRef::UFraction(move_slot.pp.into()),
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let ValueRef::Field = value {
@@ -982,6 +992,10 @@ impl VariableInput {
     pub fn get(&self, index: usize) -> Option<&Value> {
         self.values.get(index)
     }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut Value> {
+        self.values.get_mut(index)
+    }
 }
 
 impl FromIterator<Value> for VariableInput {
@@ -989,6 +1003,14 @@ impl FromIterator<Value> for VariableInput {
         Self {
             values: iter.into_iter().collect(),
         }
+    }
+}
+
+impl IntoIterator for VariableInput {
+    type Item = Value;
+    type IntoIter = <Vec<Value> as IntoIterator>::IntoIter;
+    fn into_iter(self) -> Self::IntoIter {
+        self.values.into_iter()
     }
 }
 
@@ -1178,9 +1200,7 @@ impl Evaluator {
                 }
                 Some(value) => {
                     let real_value_type = value.value_type();
-                    if &real_value_type != value_type {
-                        return Err(battler_error!("input at position {} for variable {name} is of type {real_value_type}, expected {value_type}", i + 1));
-                    }
+                    let value = value.convert_to(*value_type).wrap_error_with_format(format_args!("input at position {} for variable {name} of type {real_value_type} cannot be converted to {value_type}", i + 1))?;
                     self.vars.set(name, value)?;
                 }
             }
@@ -1691,12 +1711,6 @@ impl Evaluator {
             (ValueRefMut::OptionalBoolean(var), Value::Boolean(val)) => {
                 *var = Some(val);
             }
-            (ValueRefMut::U16(var), Value::U64(val)) => {
-                *var = val.try_into().wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::U16(var), Value::I64(val)) => {
-                *var = val.try_into().wrap_error_with_message("integer overflow")?;
-            }
             (ValueRefMut::U16(var), Value::Fraction(val)) => {
                 *var = val
                     .round()
@@ -1709,23 +1723,11 @@ impl Evaluator {
                     .try_into()
                     .wrap_error_with_message("integer overflow")?;
             }
-            (ValueRefMut::U32(var), Value::U64(val)) => {
-                *var = val.try_into().wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::U32(var), Value::I64(val)) => {
-                *var = val.try_into().wrap_error_with_message("integer overflow")?;
-            }
             (ValueRefMut::U32(var), Value::Fraction(val)) => {
                 *var = val.round() as u32;
             }
             (ValueRefMut::U32(var), Value::UFraction(val)) => {
-                *var = val.round();
-            }
-            (ValueRefMut::U64(var), Value::U64(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::U64(var), Value::I64(val)) => {
-                *var = val as u64;
+                *var = val.round() as u32;
             }
             (ValueRefMut::U64(var), Value::Fraction(val)) => {
                 *var = val.round() as u64;
@@ -1733,23 +1735,11 @@ impl Evaluator {
             (ValueRefMut::U64(var), Value::UFraction(val)) => {
                 *var = val.round() as u64;
             }
-            (ValueRefMut::I64(var), Value::U64(val)) => {
-                *var = val.try_into().wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::I64(var), Value::I64(val)) => {
-                *var = val;
-            }
             (ValueRefMut::I64(var), Value::Fraction(val)) => {
                 *var = val.round() as i64;
             }
             (ValueRefMut::I64(var), Value::UFraction(val)) => {
                 *var = val.round() as i64;
-            }
-            (ValueRefMut::OptionalISize(var), Value::U64(val)) => {
-                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
-            }
-            (ValueRefMut::OptionalISize(var), Value::I64(val)) => {
-                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
             }
             (ValueRefMut::OptionalISize(var), Value::Fraction(val)) => {
                 *var = Some(
@@ -1765,12 +1755,6 @@ impl Evaluator {
                         .wrap_error_with_message("integer overflow")?,
                 );
             }
-            (ValueRefMut::OptionalU16(var), Value::U64(val)) => {
-                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
-            }
-            (ValueRefMut::OptionalU16(var), Value::I64(val)) => {
-                *var = Some(val.try_into().wrap_error_with_message("integer overflow")?);
-            }
             (ValueRefMut::OptionalU16(var), Value::Fraction(val)) => {
                 *var = Some(
                     val.round()
@@ -1785,16 +1769,6 @@ impl Evaluator {
                         .wrap_error_with_message("integer overflow")?,
                 );
             }
-            (ValueRefMut::Fraction(var), Value::U64(val)) => {
-                *var = Fraction::from(
-                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
-                );
-            }
-            (ValueRefMut::Fraction(var), Value::I64(val)) => {
-                *var = Fraction::from(
-                    TryInto::<i32>::try_into(val).wrap_error_with_message("integer overflow")?,
-                );
-            }
             (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
                 *var = val;
             }
@@ -1802,16 +1776,6 @@ impl Evaluator {
                 *var = val
                     .try_convert()
                     .wrap_error_with_message("integer overflow")?;
-            }
-            (ValueRefMut::UFraction(var), Value::U64(val)) => {
-                *var = Fraction::from(
-                    TryInto::<u32>::try_into(val).wrap_error_with_message("integer overflow")?,
-                );
-            }
-            (ValueRefMut::UFraction(var), Value::I64(val)) => {
-                *var = Fraction::from(
-                    TryInto::<u32>::try_into(val).wrap_error_with_message("integer overflow")?,
-                );
             }
             (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
                 *var = val
@@ -1859,16 +1823,6 @@ impl Evaluator {
             }
             (ValueRefMut::Player(var), Value::Player(val)) => {
                 *var = val;
-            }
-            (ValueRefMut::Accuracy(var), Value::U64(val)) => {
-                *var = Accuracy::from(
-                    TryInto::<u8>::try_into(val).wrap_error_with_message("invalid accuracy")?,
-                );
-            }
-            (ValueRefMut::Accuracy(var), Value::I64(val)) => {
-                *var = Accuracy::from(
-                    TryInto::<u8>::try_into(val).wrap_error_with_message("invalid accuracy")?,
-                );
             }
             (ValueRefMut::Accuracy(var), Value::Fraction(val)) => {
                 *var = Accuracy::from(

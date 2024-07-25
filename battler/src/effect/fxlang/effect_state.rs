@@ -10,6 +10,7 @@ use crate::{
     common::{
         Error,
         FastHashMap,
+        Fraction,
         WrapResultError,
     },
     effect::{
@@ -72,7 +73,7 @@ impl EffectState {
     /// Sets the duration of the effect.
     pub fn set_duration(&mut self, duration: u8) {
         self.values
-            .insert(Self::DURATION.to_owned(), Value::U64(duration as u64));
+            .insert(Self::DURATION.to_owned(), Value::UFraction(duration.into()));
         self.duration = Some(duration);
     }
 
@@ -115,12 +116,16 @@ impl EffectState {
     }
 
     /// Sets the source position of the effect.
-    pub fn set_source_position(&mut self, source_position: usize) {
+    pub fn set_source_position(&mut self, source_position: usize) -> Result<(), Error> {
         self.values.insert(
             Self::SOURCE_POSITION.to_owned(),
-            Value::U64(source_position as u64),
+            Value::UFraction(Fraction::from(
+                TryInto::<u32>::try_into(source_position)
+                    .wrap_error_with_message("integer overflow")?,
+            )),
         );
         self.source_position = Some(source_position);
+        Ok(())
     }
 }
 

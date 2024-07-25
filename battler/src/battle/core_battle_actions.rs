@@ -955,7 +955,9 @@ fn hit_targets(
         core_battle_effects::run_event_for_applying_effect(
             &mut context.applying_effect_context_for_target(target.handle)?,
             fxlang::BattleEvent::DamagingHit,
-            fxlang::VariableInput::from_iter([fxlang::Value::U64(target.outcome.damage() as u64)]),
+            fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
+                target.outcome.damage().into(),
+            )]),
         );
     }
 
@@ -1043,7 +1045,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::BasePower,
         core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-        fxlang::VariableInput::from_iter([fxlang::Value::U64(base_power as u64)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(base_power.into())]),
     ) {
         base_power = dynamic_base_power;
     }
@@ -1120,7 +1122,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         &mut context.attacker_context()?,
         attack_stat,
         attack_boosts,
-        Fraction::from(1),
+        Fraction::from(1u16),
         move_user,
         move_target,
     )?;
@@ -1128,7 +1130,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         &mut context.defender_context()?,
         defense_stat,
         defense_boosts,
-        Fraction::from(1),
+        Fraction::from(1u16),
         move_target,
         move_user,
     )?;
@@ -1140,6 +1142,39 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
 
     // Damage modifiers.
     modify_damage(context, base_damage)
+}
+
+fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8, Error> {
+    if context.active_move().data.typeless {
+        return Ok(0);
+    }
+
+    let move_type = context.active_move().data.primary_type;
+    let target_handle = context.target_mon_handle();
+    let mut total = 0;
+    for defense in Mon::types(&mut context.target_mon_context()?)? {
+        let modifier = context
+            .battle()
+            .check_type_effectiveness(move_type, defense);
+        let modifier = core_battle_effects::run_active_move_event_expecting_i8(
+            context.as_active_move_context_mut(),
+            fxlang::BattleEvent::Effectiveness,
+            core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+            fxlang::VariableInput::from_iter([
+                fxlang::Value::Fraction(modifier.into()),
+                fxlang::Value::Type(defense),
+            ]),
+        )
+        .unwrap_or(modifier);
+        let modifier = core_battle_effects::run_event_for_applying_effect_expecting_i8(
+            &mut context.applying_effect_context()?,
+            fxlang::BattleEvent::Effectiveness,
+            modifier,
+            fxlang::VariableInput::from_iter([fxlang::Value::Type(defense)]),
+        );
+        total += modifier;
+    }
+    Ok(total)
 }
 
 /// Modifies the damage dealt against a target.
@@ -1185,11 +1220,7 @@ fn modify_damage(
     }
 
     // Type effectiveness.
-    let type_modifier = if context.active_move().data.typeless {
-        0
-    } else {
-        Mon::type_effectiveness(&mut context.target_mon_context()?, move_type)?
-    };
+    let type_modifier = type_effectiveness(context)?;
     let type_modifier = type_modifier.max(-6).min(6);
     context
         .active_move_mut()
@@ -1760,7 +1791,7 @@ fn apply_spread_damage(
         core_battle_effects::run_event_for_applying_effect(
             &mut context,
             fxlang::BattleEvent::DamageReceived,
-            fxlang::VariableInput::from_iter([fxlang::Value::U64(*damage as u64)]),
+            fxlang::VariableInput::from_iter([fxlang::Value::UFraction((*damage).into())]),
         );
 
         core_battle_logs::damage(
@@ -2206,7 +2237,7 @@ fn apply_user_effect(
                     .active_move()
                     .data
                     .user_effect_chance
-                    .unwrap_or(Fraction::from(1));
+                    .unwrap_or(Fraction::from(1u16));
                 let user_effect_roll = rand_util::chance(
                     context.battle_mut().prng.as_mut(),
                     chance.numerator() as u64,
@@ -2251,7 +2282,7 @@ fn apply_secondary_effects(
                 None => break,
                 Some(secondary_effect) => secondary_effect,
             };
-            let chance = secondary_effect.chance.unwrap_or(Fraction::from(1));
+            let chance = secondary_effect.chance.unwrap_or(Fraction::from(1u16));
             let secondary_roll = rand_util::chance(
                 context.battle_mut().prng.as_mut(),
                 chance.numerator() as u64,
@@ -2310,7 +2341,7 @@ fn initial_effect_state(
         let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
         effect_state.set_source_side(context.mon().side);
         if let Ok(source_position) = Mon::position_on_side(&mut context) {
-            effect_state.set_source_position(source_position);
+            effect_state.set_source_position(source_position)?;
         }
     }
     Ok(effect_state)
@@ -2649,7 +2680,7 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
         context,
         attack_stat,
         attack_boosts,
-        Fraction::from(1),
+        Fraction::from(1u16),
         context.mon_handle(),
         context.mon_handle(),
     )?;
@@ -2657,7 +2688,7 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
         context,
         defense_stat,
         defense_boosts,
-        Fraction::from(1),
+        Fraction::from(1u16),
         context.mon_handle(),
         context.mon_handle(),
     )?;
