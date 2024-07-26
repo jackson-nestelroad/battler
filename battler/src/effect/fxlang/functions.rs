@@ -45,6 +45,7 @@ use crate::{
     log::Event,
     log_event,
     moves::{
+        HitEffect,
         Move,
         MoveFlags,
         MoveTarget,
@@ -66,6 +67,7 @@ pub fn run_function(
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
         "boost" => boost(context, args).map(|val| Some(val)),
+        "boost_table" => boost_table(args).map(|val| Some(val)),
         "boostable_stats" => Ok(Some(boostable_stats())),
         "calculate_damage" => calculate_damage(context, args).map(|val| Some(val)),
         "calculate_confusion_damage" => {
@@ -93,6 +95,7 @@ pub fn run_function(
         "has_type" => has_type(context, args).map(|val| Some(val)),
         "has_volatile" => has_volatile(context, args).map(|val| Some(val)),
         "heal" => heal(context, args).map(|()| None),
+        "hit_effect" => hit_effect().map(|val| Some(val)),
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
         "is_defined" => is_defined(args).map(|val| Some(val)),
@@ -1250,6 +1253,10 @@ fn boost(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<V
     .map(|val| Value::Boolean(val))
 }
 
+fn boost_table(args: VecDeque<Value>) -> Result<Value, Error> {
+    Ok(Value::BoostTable(boosts_from_rest_of_args(args)?))
+}
+
 fn can_switch(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let player_index = args
         .pop_front()
@@ -1715,4 +1722,8 @@ fn escape(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::try_escape(&mut context.mon_context(mon_handle)?, true)
         .map(|val| Value::Boolean(val))
+}
+
+fn hit_effect() -> Result<Value, Error> {
+    Ok(Value::HitEffect(HitEffect::default()))
 }

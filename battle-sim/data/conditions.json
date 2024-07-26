@@ -648,6 +648,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "is_snowing": ["return true"],
         "on_duration": [
           "if func_call(has_item: $source icyrock):",
           ["return 8"]
@@ -676,6 +677,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "is_snowing": ["return true"],
         "on_duration": [
           "if func_call(has_item: $source icyrock):",
           ["return 8"]

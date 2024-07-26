@@ -74,7 +74,7 @@ pub trait ContainsOptionalBoosts<T> {
 }
 
 /// A full boost table.
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BoostTable {
     #[serde(default)]
     pub atk: i8,

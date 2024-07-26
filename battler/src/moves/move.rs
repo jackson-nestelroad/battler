@@ -38,7 +38,7 @@ use crate::{
 };
 
 /// The effect of being hit by a move.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HitEffect {
     /// Stat boosts.
     pub boosts: Option<BoostTable>,

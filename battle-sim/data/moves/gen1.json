@@ -783,7 +783,9 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "# TODO: Exempt from accuracy if weather is hail or snow."
+          "$weather = $user.effective_weather",
+          "if func_call(is_defined: $weather) and $weather.is_snowing:",
+          ["$move.accuracy = exempt"]
         ]
       }
     }
@@ -1034,8 +1036,9 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "# TODO: +1 for both boosts in the sun.",
-          "# TODO: $move.boosts = func_call(boost_table: atk:2 spa:2)"
+          "$weather = $user.effective_weather",
+          "if func_call(is_defined: $weather) and $weather.is_sunny:",
+          ["$move.hit_effect.boosts = func_call(boost_table: atk:2 spa:2)"]
         ]
       }
     }
@@ -1562,7 +1565,13 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "def": 1 } }
+    "hit_effect": { "boosts": { "def": 1 }, "volatile_status": "defensecurl" },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_restart": ["return true"]
+      }
+    }
   },
   "barrier": {
     "name": "Barrier",
@@ -2014,7 +2023,12 @@
     "base_power": 100,
     "target": "Normal",
     "flags": ["Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "effect": {
+      "callbacks": {
+        "on_try_immunity": ["return !$target.is_asleep"]
+      }
+    }
   },
   "poisongas": {
     "name": "Poison Gas",

@@ -33,7 +33,8 @@ mod harsh_sunlight_test {
                         "moves": [
                             "Sunny Day",
                             "Flamethrower",
-                            "Solar Beam"
+                            "Solar Beam",
+                            "Growth"
                         ],
                         "nature": "Hardy",
                         "gender": "M",
@@ -586,6 +587,58 @@ mod harsh_sunlight_test {
                 "residual",
                 "turn|turn:5"
             ]"#,
+        )
+        .unwrap();
+        assert_new_logs_eq(&mut battle, &expected_logs);
+    }
+
+    #[test]
+    fn harsh_sunlight_increases_growth_boost() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+        assert_eq!(battle.start(), Ok(()));
+
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+        let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+            r#"[
+                "info|battletype:Singles",
+                "side|id:0|name:Side 1",
+                "side|id:1|name:Side 2",
+                "player|id:player-1|name:Player 1|side:0|position:0",
+                "player|id:player-2|name:Player 2|side:1|position:0",
+                ["time"],
+                "teamsize|player:player-1|size:1",
+                "teamsize|player:player-2|size:1",
+                "start",
+                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
+                "turn|turn:1",
+                ["time"],
+                "move|mon:Charizard,player-1,1|name:Growth|target:Charizard,player-1,1",
+                "boost|mon:Charizard,player-1,1|stat:atk|by:1",
+                "boost|mon:Charizard,player-1,1|stat:spa|by:1",
+                "residual",
+                "turn|turn:2",
+                ["time"],
+                "move|mon:Charizard,player-1,1|name:Sunny Day",
+                "weather|weather:Harsh Sunlight",
+                "weather|weather:Harsh Sunlight|residual",
+                "residual",
+                "turn|turn:3",
+                ["time"],
+                "move|mon:Charizard,player-1,1|name:Growth|target:Charizard,player-1,1",
+                "boost|mon:Charizard,player-1,1|stat:atk|by:2",
+                "boost|mon:Charizard,player-1,1|stat:spa|by:2",
+                "weather|weather:Harsh Sunlight|residual",
+                "residual",
+                "turn|turn:4"
+            ]"#
         )
         .unwrap();
         assert_new_logs_eq(&mut battle, &expected_logs);

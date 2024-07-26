@@ -747,6 +747,13 @@ where
                     "hit" => {
                         ValueRef::UFraction(context.active_move(active_move_handle)?.hit.into())
                     }
+                    "hit_effect" => context
+                        .active_move(active_move_handle)?
+                        .data
+                        .hit_effect
+                        .as_ref()
+                        .map(ValueRef::HitEffect)
+                        .unwrap_or(ValueRef::Undefined),
                     "id" => ValueRef::Str(context.active_move(active_move_handle)?.id().as_ref()),
                     "infiltrates" => {
                         ValueRef::Boolean(context.active_move(active_move_handle)?.infiltrates)
@@ -818,6 +825,15 @@ where
                     },
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
+            } else if let ValueRef::HitEffect(hit_effect) = value {
+                value = match *member {
+                    "boosts" => hit_effect
+                        .boosts
+                        .as_ref()
+                        .map(ValueRef::BoostTable)
+                        .unwrap_or(ValueRef::Undefined),
+                    _ => return Err(Self::bad_member_access(member, value_type)),
+                }
             } else if let ValueRef::EffectState(connector) = value {
                 let context = unsafe { context.unsafely_detach_borrow_mut() };
                 value = connector
@@ -882,7 +898,10 @@ where
         context: &'eval mut EvaluationContext,
     ) -> Result<ValueRefMut<'var>, Error> {
         let mut value = ValueRefMut::from(self.stored.as_mut());
+
         for member in &self.member_access {
+            let value_type = value.value_type();
+
             // SAFETY: For changing the lifetime of context: the mutable reference inside of
             // `value_ref` is only mutated at the very end of this method. Thus, this entire for
             // loop is actually immutable. Furthermore, since we only hold one
@@ -899,12 +918,7 @@ where
                         "last_target_location" => ValueRefMut::OptionalISize(
                             &mut context.mon_mut(**mon_handle)?.last_move_target_location,
                         ),
-                        _ => {
-                            return Err(Self::bad_member_or_mutable_access(
-                                member,
-                                value.value_type(),
-                            ))
-                        }
+                        _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
                 ValueRefMut::ActiveMove(ref active_move_handle) => {
@@ -922,6 +936,12 @@ where
                         "damage" => ValueRefMut::OptionalU16(
                             &mut context.active_move_mut(**active_move_handle)?.data.damage,
                         ),
+                        "hit_effect" => ValueRefMut::OptionalHitEffect(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .hit_effect,
+                        ),
                         "ignore_immunity" => ValueRefMut::OptionalBoolean(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
@@ -931,12 +951,14 @@ where
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
                         ),
-                        _ => {
-                            return Err(Self::bad_member_or_mutable_access(
-                                member,
-                                value.value_type(),
-                            ))
-                        }
+                        _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
+                    }
+                }
+                ValueRefMut::HitEffect(hit_effect)
+                | ValueRefMut::OptionalHitEffect(Some(hit_effect)) => {
+                    value = match *member {
+                        "boosts" => ValueRefMut::OptionalBoostTable(&mut hit_effect.boosts),
+                        _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
                 ValueRefMut::EffectState(connector) => {
@@ -961,12 +983,7 @@ where
                         .or_insert(Value::Undefined);
                     value = ValueRefMut::from(entry);
                 }
-                _ => {
-                    return Err(Self::bad_member_or_mutable_access(
-                        member,
-                        value.value_type(),
-                    ))
-                }
+                _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
             }
         }
         Ok(value)
@@ -1815,6 +1832,9 @@ impl Evaluator {
             (ValueRefMut::BoostTable(var), Value::BoostTable(val)) => {
                 *var = val;
             }
+            (ValueRefMut::OptionalBoostTable(var), Value::BoostTable(val)) => {
+                *var = Some(val);
+            }
             (ValueRefMut::Side(var), Value::Side(val)) => {
                 *var = val;
             }
@@ -1841,6 +1861,12 @@ impl Evaluator {
             }
             (ValueRefMut::Accuracy(var), Value::Accuracy(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::HitEffect(var), Value::HitEffect(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::OptionalHitEffect(var), Value::HitEffect(val)) => {
+                *var = Some(val);
             }
             (ValueRefMut::EffectState(var), Value::EffectState(val)) => {
                 *var = val;
