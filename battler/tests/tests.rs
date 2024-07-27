@@ -76,6 +76,7 @@ mod status {
     mod poison_test;
     mod sleep_test;
     mod toxic_test;
+    mod trapped_test;
 }
 
 mod weather {

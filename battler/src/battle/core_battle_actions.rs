@@ -116,6 +116,12 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
         );
 
         Mon::clear_volatile(context, true)?;
+
+        core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::Exit,
+            fxlang::VariableInput::default(),
+        );
     }
 
     Mon::switch_out(context)?;
@@ -2328,6 +2334,7 @@ fn force_switch(
 
 fn initial_effect_state(
     context: &mut EffectContext,
+    target: Option<MonHandle>,
     source: Option<MonHandle>,
 ) -> Result<fxlang::EffectState, Error> {
     let mut effect_state = fxlang::EffectState::new();
@@ -2336,6 +2343,9 @@ fn initial_effect_state(
             .effect_handle()
             .stable_effect_handle(context.as_battle_context())?,
     );
+    if let Some(target_handle) = target {
+        effect_state.set_target(target_handle);
+    }
     if let Some(source_handle) = source {
         effect_state.set_source(source_handle);
         let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
@@ -2426,9 +2436,13 @@ pub fn try_set_status(
     // Set the status so that the following effects can use it.
     context.target_mut().status = Some(status);
 
+    let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().status_state =
-        initial_effect_state(context.as_effect_context_mut(), source_handle)?;
+    context.target_mut().status_state = initial_effect_state(
+        context.as_effect_context_mut(),
+        Some(target_handle),
+        source_handle,
+    )?;
 
     if let Some(condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &status_effect_handle)?
@@ -2560,8 +2574,13 @@ pub fn try_add_volatile(
         return Ok(false);
     }
 
+    let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    let effect_state = initial_effect_state(context.as_effect_context_mut(), source_handle)?;
+    let effect_state = initial_effect_state(
+        context.as_effect_context_mut(),
+        Some(target_handle),
+        source_handle,
+    )?;
     context
         .target_mut()
         .volatiles
@@ -2725,7 +2744,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         );
     }
 
-    let effect_state = initial_effect_state(context.as_effect_context_mut(), None)?;
+    let effect_state = initial_effect_state(context.as_effect_context_mut(), None, None)?;
     context
         .side_mut()
         .conditions
@@ -3159,7 +3178,7 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
 
     context.battle_mut().field.weather = Some(weather.clone());
     context.battle_mut().field.weather_state =
-        initial_effect_state(context.as_effect_context_mut(), None)?;
+        initial_effect_state(context.as_effect_context_mut(), None, None)?;
 
     if let Some(weather_condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?

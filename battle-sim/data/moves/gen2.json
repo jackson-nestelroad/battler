@@ -73,7 +73,10 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "trapped"
+    }
   },
   "mindreader": {
     "name": "Mind Reader",
@@ -804,7 +807,10 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Reflectable"]
+    "flags": ["Mirror", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "trapped"
+    }
   },
   "attract": {
     "name": "Attract",

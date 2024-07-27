@@ -47,6 +47,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterSubstituteDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::AllySetStatus, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
@@ -60,6 +61,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
             parsed.parse_and_save(BattleEvent::Effectiveness, callbacks)?;
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Exit, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldEnd, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldRestart, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldResidual, callbacks)?;

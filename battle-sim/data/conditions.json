@@ -480,6 +480,21 @@
       }
     }
   },
+  "trapped": {
+    "name": "Trapped",
+    "condition_type": "Volatile",
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_trap_mon": ["return false"],
+        "on_start": ["log_activate: with_target"],
+        "on_any_exit": [
+          "if $mon == $effect_state.source:",
+          ["remove_volatile: $effect_state.target $this.id"]
+        ]
+      }
+    }
+  },
   "rainweather": {
     "name": "Rain",
     "condition_type": "Weather",

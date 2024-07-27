@@ -25,15 +25,11 @@ use crate::{
 #[derive(Clone)]
 pub struct EffectState {
     values: FastHashMap<String, Value>,
-    duration: Option<u8>,
-    source_effect: Option<EffectHandle>,
-    source: Option<MonHandle>,
-    source_side: Option<usize>,
-    source_position: Option<usize>,
 }
 
 impl EffectState {
     const DURATION: &'static str = "duration";
+    const TARGET: &'static str = "target";
     const SOURCE_EFFECT: &'static str = "source_effect";
     const SOURCE: &'static str = "source";
     const SOURCE_SIDE: &'static str = "source_side";
@@ -43,11 +39,6 @@ impl EffectState {
     pub fn new() -> Self {
         Self {
             values: FastHashMap::new(),
-            duration: None,
-            source_effect: None,
-            source: None,
-            source_side: None,
-            source_position: None,
         }
     }
 
@@ -67,14 +58,24 @@ impl EffectState {
 
     /// The duration of the effect.
     pub fn duration(&self) -> Option<u8> {
-        self.duration
+        self.get(Self::DURATION)?.clone().integer_u8().ok()
     }
 
     /// Sets the duration of the effect.
     pub fn set_duration(&mut self, duration: u8) {
         self.values
             .insert(Self::DURATION.to_owned(), Value::UFraction(duration.into()));
-        self.duration = Some(duration);
+    }
+
+    /// The target of the effect.
+    pub fn target(&self) -> Option<MonHandle> {
+        self.get(Self::TARGET)?.clone().mon_handle().ok()
+    }
+
+    /// Sets the target of the effect.
+    pub fn set_target(&mut self, target: MonHandle) {
+        self.values
+            .insert(Self::TARGET.to_owned(), Value::Mon(target));
     }
 
     /// Sets the source effect of the effect.
@@ -83,36 +84,36 @@ impl EffectState {
             Self::SOURCE_EFFECT.to_owned(),
             Value::Effect(source_effect.clone()),
         );
-        self.source_effect = Some(source_effect);
     }
 
     /// The source of the effect.
     pub fn source(&self) -> Option<MonHandle> {
-        self.source
+        self.get(Self::SOURCE)?.clone().mon_handle().ok()
     }
 
     /// Sets the source of the effect.
     pub fn set_source(&mut self, source: MonHandle) {
         self.values
             .insert(Self::SOURCE.to_owned(), Value::Mon(source));
-        self.source = Some(source);
     }
 
     /// The source side of the effect.
     pub fn source_side(&self) -> Option<usize> {
-        self.source_side
+        self.get(Self::SOURCE_SIDE)?.clone().side_index().ok()
     }
 
     /// Sets the source side of the effect.
     pub fn set_source_side(&mut self, source_side: usize) {
         self.values
             .insert(Self::SOURCE_SIDE.to_owned(), Value::Side(source_side));
-        self.source_side = Some(source_side);
     }
 
     /// The source position of the effect.
     pub fn source_position(&self) -> Option<usize> {
-        self.source_position
+        self.get(Self::SOURCE_POSITION)?
+            .clone()
+            .integer_usize()
+            .ok()
     }
 
     /// Sets the source position of the effect.
@@ -124,7 +125,6 @@ impl EffectState {
                     .wrap_error_with_message("integer overflow")?,
             )),
         );
-        self.source_position = Some(source_position);
         Ok(())
     }
 }

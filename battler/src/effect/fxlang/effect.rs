@@ -245,6 +245,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect.
     #[string = "AllySetStatus"]
     AllySetStatus,
+    /// Runs when any Mon exits the battle (is no longer active).
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "AnyExit"]
+    AnyExit,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
@@ -322,6 +327,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "End"]
     End,
+    /// Runs when a Mon exits the battle (is no longer active).
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "Exit"]
+    Exit,
     /// Runs when a field condition ends.
     ///
     /// Runs in the context of the field condition itself.
@@ -668,6 +678,7 @@ impl BattleEvent {
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AnyExit => CommonCallbackType::MonVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -681,6 +692,7 @@ impl BattleEvent {
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::Exit => CommonCallbackType::MonVoid as u32,
             Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
             Self::FieldResidual => CommonCallbackType::FieldVoid as u32,
             Self::FieldRestart => CommonCallbackType::FieldResult as u32,
@@ -882,6 +894,7 @@ impl BattleEvent {
     /// Returns the associated any event.
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::Exit => Some(Self::AnyExit),
             _ => None,
         }
     }
@@ -998,6 +1011,7 @@ pub struct Callbacks {
     pub on_after_set_status: Callback,
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
+    pub on_any_exit: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
     pub on_before_turn: Callback,
@@ -1011,6 +1025,7 @@ pub struct Callbacks {
     pub on_duration: Callback,
     pub on_effectiveness: Callback,
     pub on_end: Callback,
+    pub on_exit: Callback,
     pub on_field_end: Callback,
     pub on_field_residual: Callback,
     pub on_field_restart: Callback,
@@ -1076,6 +1091,7 @@ impl Callbacks {
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
+            BattleEvent::AnyExit => Some(&self.on_any_exit),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
@@ -1089,6 +1105,7 @@ impl Callbacks {
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
+            BattleEvent::Exit => Some(&self.on_exit),
             BattleEvent::FieldEnd => Some(&self.on_field_end),
             BattleEvent::FieldResidual => Some(&self.on_field_residual),
             BattleEvent::FieldRestart => Some(&self.on_field_restart),

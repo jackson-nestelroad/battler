@@ -1666,6 +1666,12 @@ impl<'d> CoreBattle<'d> {
 
             Mon::clear_state_on_faint(&mut context)?;
             context.battle_mut().last_fainted = Some(entry);
+
+            core_battle_effects::run_event_for_mon(
+                &mut context,
+                fxlang::BattleEvent::Exit,
+                fxlang::VariableInput::default(),
+            );
         }
 
         Self::check_win(context)?;
