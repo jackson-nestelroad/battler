@@ -396,7 +396,7 @@ pub enum BattleEvent {
     /// Runs when determining if a weather includes snowing.
     ///
     /// Runs on the effect itslf.
-    #[string = "IsRaining"]
+    #[string = "IsSnowing"]
     IsSnowing,
     /// Runs when determining if a weather includes sunny weather.
     ///
