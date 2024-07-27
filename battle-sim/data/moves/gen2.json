@@ -27,7 +27,7 @@
           "if func_call(move_has_flag: $last_move nosketch):",
           ["return false"],
           "$sketch_index = func_call(move_slot_index: $source $this.id)",
-          "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move)",
+          "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move) override_base_slot",
           "log_activate: str('newmove:{}', $last_move.id)"
         ]
       }
