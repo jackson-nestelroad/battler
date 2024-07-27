@@ -48,17 +48,17 @@ The battle engine is designed off of a few principles:
 - Status conditions (burn, paralysis, sleep, freeze, poison, bad poison).
 - Volatile conditions (e.g., confusion, partially-trapped, flinch, recharge).
 - Side conditions.
-
-### Roadmap
-
+- Weather.
 - Single-player mechanics.
   - Experience.
   - Level up and move learning.
   - EVs.
-  - Catch mechanics.
   - Fleeing.
 - Horde battle support.
-- Weather.
+
+### Roadmap
+
+- Catch mechanics.
 - Common Mon effects (e.g., "asleep", "semi-invulnerable", "grounded", etc.).
 - Abilities.
 - Field effects.
