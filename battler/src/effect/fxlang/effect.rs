@@ -724,7 +724,7 @@ impl BattleEvent {
             Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
-            Self::TrapMon => CommonCallbackType::MonVoid as u32,
+            Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,

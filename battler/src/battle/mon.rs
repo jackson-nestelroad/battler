@@ -24,6 +24,7 @@ use crate::{
         calculate_hidden_power_type,
         calculate_mon_stats,
         core_battle::FaintEntry,
+        core_battle_actions,
         core_battle_effects,
         modify_32,
         mon_states,
@@ -1549,7 +1550,7 @@ impl Mon {
     }
 
     /// Resets the Mon's state for the next turn.
-    pub fn reset_state_for_next_turn(context: &mut MonContext) {
+    pub fn reset_state_for_next_turn(context: &mut MonContext) -> Result<(), Error> {
         context.mon_mut().old_active_position = None;
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().hurt_this_turn = 0;
@@ -1569,11 +1570,15 @@ impl Mon {
         // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
-        core_battle_effects::run_event_for_mon(
+        if !core_battle_effects::run_event_for_mon(
             context,
             fxlang::BattleEvent::TrapMon,
             fxlang::VariableInput::default(),
-        );
+        ) {
+            core_battle_actions::trap_mon(context)?;
+        }
+
+        Ok(())
     }
 
     /// Disables the given move.

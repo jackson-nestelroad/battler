@@ -419,7 +419,7 @@
         "on_end": [
           "log_end: no_effect str('move:{}', $effect_state.source_effect.name)"
         ],
-        "on_trap_mon": ["trap: $mon"]
+        "on_trap_mon": ["return false"]
       }
     }
   },

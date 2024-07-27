@@ -1308,7 +1308,7 @@ impl<'d> CoreBattle<'d> {
             .collect::<Vec<_>>()
         {
             let mut context = context.mon_context(mon_handle)?;
-            Mon::reset_state_for_next_turn(&mut context);
+            Mon::reset_state_for_next_turn(&mut context)?;
 
             if let Some(last_move) = context.mon().last_move {
                 context

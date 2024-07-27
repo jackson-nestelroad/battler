@@ -138,7 +138,6 @@ pub fn run_function(
         }
         "run_event_on_mon_item" => run_event_on_mon_item(context, args).map(|()| None),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
-        "trap" => trap_mon(context, args).map(|()| None),
         "sample" => sample(context, args),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
@@ -921,15 +920,6 @@ fn run_event_on_move(
 fn do_not_animate_last_move(context: &mut EvaluationContext) -> Result<(), Error> {
     core_battle_logs::do_not_animate_last_move(context.battle_context_mut());
     Ok(())
-}
-
-fn trap_mon(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let mon_handle = args
-        .pop_front()
-        .wrap_error_with_message("mising mon")?
-        .mon_handle()
-        .wrap_error_with_message("invalid mon")?;
-    core_battle_actions::trap_mon(&mut context.mon_context(mon_handle)?)
 }
 
 fn calculate_damage(
