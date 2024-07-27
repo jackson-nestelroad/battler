@@ -13,6 +13,7 @@ mod moves {
     mod disable_test;
     mod doubles_damage_calculation_test;
     mod drain_test;
+    mod dream_eater_test;
     mod focus_energy_test;
     mod heal_test;
     mod immunity_test;

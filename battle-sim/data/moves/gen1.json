@@ -2026,7 +2026,7 @@
     "drain_percent": "1/2",
     "effect": {
       "callbacks": {
-        "on_try_immunity": ["return expr(!$target.is_asleep)"]
+        "on_try_immunity": ["return expr($target.is_asleep)"]
       }
     }
   },

@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod rest_test {
+mod dream_eater_test {
     use battler::{
         battle::{
             BattleType,
@@ -22,39 +22,18 @@ mod rest_test {
         TestBattleBuilder,
     };
 
-    fn charizard() -> Result<TeamData, Error> {
+    fn gengar() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
                 "members": [
                     {
-                        "name": "Charizard",
-                        "species": "Charizard",
+                        "name": "Gengar",
+                        "species": "Gengar",
                         "ability": "No Ability",
                         "moves": [
-                            "Rest",
-                            "Tackle"
-                        ],
-                        "nature": "Hardy",
-                        "gender": "M",
-                        "ball": "Normal",
-                        "level": 50
-                    }
-                ]
-            }"#,
-        )
-        .wrap_error()
-    }
-
-    fn blastoise() -> Result<TeamData, Error> {
-        serde_json::from_str(
-            r#"{
-                "members": [
-                    {
-                        "name": "Blastoise",
-                        "species": "Blastoise",
-                        "ability": "No Ability",
-                        "moves": [
-                            "Surf"
+                            "Dream Eater",
+                            "Sleep Powder",
+                            "Flamethrower"
                         ],
                         "nature": "Hardy",
                         "gender": "M",
@@ -87,22 +66,18 @@ mod rest_test {
     }
 
     #[test]
-    fn rest_heals_and_causes_sleep_for_three_turns() {
+    fn dream_eater_drains_damage_of_sleeping_foe() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+        let mut battle = make_battle(&data, 0, gengar().unwrap(), gengar().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
-        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -116,46 +91,37 @@ mod rest_test {
                 "teamsize|player:player-1|size:1",
                 "teamsize|player:player-2|size:1",
                 "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
+                "switch|player:player-1|position:1|name:Gengar|health:100/100|species:Gengar|level:50|gender:M",
+                "switch|player:player-2|position:1|name:Gengar|health:100/100|species:Gengar|level:50|gender:M",
                 "turn|turn:1",
                 ["time"],
-                "move|mon:Charizard,player-1,1|name:Rest|target:Charizard,player-1,1",
-                "fail|mon:Charizard,player-1,1|what:heal",
+                "move|mon:Gengar,player-2,1|name:Flamethrower|target:Gengar,player-1,1",
+                "split|side:0",
+                "damage|mon:Gengar,player-1,1|health:55/120",
+                "damage|mon:Gengar,player-1,1|health:46/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Blastoise,player-2,1|name:Surf",
-                "supereffective|mon:Charizard,player-1,1",
-                "split|side:0",
-                "damage|mon:Charizard,player-1,1|health:22/138",
-                "damage|mon:Charizard,player-1,1|health:16/100",
+                "move|mon:Gengar,player-1,1|name:Dream Eater|noanim",
+                "immune|mon:Gengar,player-2,1",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Charizard,player-1,1|name:Rest|target:Charizard,player-1,1",
-                "status|mon:Charizard,player-1,1|status:Sleep|from:move:Rest",
-                "split|side:0",
-                "heal|mon:Charizard,player-1,1|health:138/138",
-                "heal|mon:Charizard,player-1,1|health:100/100",
+                "move|mon:Gengar,player-1,1|name:Sleep Powder|target:Gengar,player-2,1",
+                "status|mon:Gengar,player-2,1|status:Sleep|from:move:Sleep Powder",
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "cant|mon:Charizard,player-1,1|reason:Sleep",
-                "residual",
-                "turn|turn:5",
-                ["time"],
-                "cant|mon:Charizard,player-1,1|reason:Sleep",
-                "residual",
-                "turn|turn:6",
-                ["time"],
-                "curestatus|mon:Charizard,player-1,1|status:Sleep",
-                "move|mon:Charizard,player-1,1|name:Tackle|target:Blastoise,player-2,1",
+                "move|mon:Gengar,player-1,1|name:Dream Eater|target:Gengar,player-2,1",
+                "supereffective|mon:Gengar,player-2,1",
                 "split|side:1",
-                "damage|mon:Blastoise,player-2,1|health:125/139",
-                "damage|mon:Blastoise,player-2,1|health:90/100",
-                "residual",
-                "turn|turn:7"
+                "damage|mon:Gengar,player-2,1|health:0",
+                "damage|mon:Gengar,player-2,1|health:0",
+                "split|side:0",
+                "heal|mon:Gengar,player-1,1|from:Drain|of:Gengar,player-2,1|health:115/120",
+                "heal|mon:Gengar,player-1,1|from:Drain|of:Gengar,player-2,1|health:96/100",
+                "faint|mon:Gengar,player-2,1",
+                "win|side:0"
             ]"#,
         )
         .unwrap();
