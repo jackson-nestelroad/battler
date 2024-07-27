@@ -163,7 +163,7 @@ mod sketch_test {
                 "turn|turn:2",
                 ["time"],
                 "move|mon:Smeargle,player-2,1|name:Sketch|target:Smeargle,player-1,1",
-                "activate|move:Sketch|newmove:flamethrower",
+                "activate|move:Sketch|newmove:Flamethrower",
                 "move|mon:Smeargle,player-1,1|name:Sketch|noanim",
                 "fail|mon:Smeargle,player-1,1",
                 "residual",
