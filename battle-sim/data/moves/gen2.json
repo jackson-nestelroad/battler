@@ -17,7 +17,21 @@
       "NoSketch",
       "NoSleepTalk"
     ],
-    "no_pp_boosts": true
+    "no_pp_boosts": true,
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$last_move = $target.last_move",
+          "if !$last_move or $source.transformed or func_call(has_move: $source $last_move.id):",
+          ["return false"],
+          "if func_call(move_has_flag: $last_move nosketch):",
+          ["return false"],
+          "$sketch_index = func_call(move_slot_index: $source $this.id)",
+          "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move)",
+          "log_activate: str('newmove:{}', $last_move.id)"
+        ]
+      }
+    }
   },
   "triplekick": {
     "name": "Triple Kick",

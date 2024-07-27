@@ -657,6 +657,7 @@ where
                     "status_state" => ValueRef::EffectState(
                         MonStatusEffectStateConnector::new(mon_handle).make_dynamic(),
                     ),
+                    "transformed" => ValueRef::Boolean(context.mon(mon_handle)?.transformed),
                     "weight" => ValueRef::UFraction(
                         Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
                     ),

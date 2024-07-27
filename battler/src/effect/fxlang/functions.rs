@@ -1363,10 +1363,12 @@ fn overwrite_move_slot(
         .move_slot()
         .wrap_error_with_message("invalid move slot")?;
 
+    let override_base_slot = has_special_string_flag(&mut args, "override_base_slot");
+
     context
         .mon_context(mon_handle)?
         .mon_mut()
-        .overwrite_move_slot(index, move_slot)
+        .overwrite_move_slot(index, move_slot, override_base_slot)
 }
 
 fn mons_per_side(context: &mut EvaluationContext) -> Result<Value, Error> {

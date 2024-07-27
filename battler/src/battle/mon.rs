@@ -1297,7 +1297,15 @@ impl Mon {
         &mut self,
         index: usize,
         new_move_slot: MoveSlot,
+        override_base_slot: bool,
     ) -> Result<(), Error> {
+        if override_base_slot {
+            *self
+                .base_move_slots
+                .get_mut(index)
+                .wrap_error_with_format(format_args!("no move slot in index {index}"))? =
+                new_move_slot.clone();
+        }
         *self
             .move_slots
             .get_mut(index)

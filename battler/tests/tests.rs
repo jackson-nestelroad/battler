@@ -37,6 +37,7 @@ mod moves {
     mod secondary_effect_callback_test;
     mod self_destruct_test;
     mod singles_damage_calculation_test;
+    mod sketch_test;
     mod splash_test;
     mod stab_test;
     mod stat_boost_drop_test;

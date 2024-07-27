@@ -1012,10 +1012,10 @@ impl Player {
         } else {
             // Make sure the selected move is not disabled.
             let move_slot = moves
-                .iter()
-                .find(|mov| mov.id == move_id)
+                .get(choice.move_slot)
                 .wrap_error_with_format(format_args!(
-                    "expected move {move_id} to be in Mon's moveset"
+                    "expected move in slot {}",
+                    choice.move_slot,
                 ))?;
             if move_slot.disabled {
                 return Err(battler_error!(
