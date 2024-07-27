@@ -2026,7 +2026,7 @@
     "drain_percent": "1/2",
     "effect": {
       "callbacks": {
-        "on_try_immunity": ["return !$target.is_asleep"]
+        "on_try_immunity": ["return expr(!$target.is_asleep)"]
       }
     }
   },
@@ -2260,7 +2260,24 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if $user.is_asleep:",
+          ["return false"],
+          "if $user.hp == $user.max_hp:",
+          ["log_fail_heal: $user", "return stop"]
+        ],
+        "on_hit": [
+          "if !func_call(set_status: $target slp):",
+          ["return false"],
+          "$target.status_state.total_time = 3",
+          "$target.status_state.time = 3",
+          "heal: $target $target.max_hp"
+        ]
+      }
+    }
   },
   "rockslide": {
     "name": "Rock Slide",

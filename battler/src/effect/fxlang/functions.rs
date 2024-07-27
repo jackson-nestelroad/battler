@@ -107,6 +107,7 @@ pub fn run_function(
         "log_cant" => log_cant(&mut context.target_context()?, args).map(|()| None),
         "log_end" => log_end(context, args).map(|()| None),
         "log_fail" => log_fail(context, args).map(|()| None),
+        "log_fail_heal" => log_fail_heal(context, args).map(|()| None),
         "log_field_activate" => log_field_activate(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
@@ -501,6 +502,15 @@ fn log_fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     }
 }
 
+fn log_fail_heal(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_logs::fail_heal(&mut context.mon_context(mon_handle)?)
+}
+
 fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mon_handle = args
         .pop_front()
@@ -654,16 +664,31 @@ fn has_ability(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let ability = args
+
+    let abilities = args
         .pop_front()
-        .wrap_error_with_message("missing ability id")?
-        .string()
-        .map(|ability| Id::from(ability))
-        .wrap_error_with_message("invalid ability id")?;
-    Ok(Value::Boolean(Mon::has_ability(
-        &mut context.mon_context(mon_handle)?,
-        &ability,
-    )))
+        .wrap_error_with_message("missing ability or abilities")?;
+    let abilities = if abilities.is_list() {
+        abilities
+            .list()
+            .wrap_error_with_message("invalid ability list")?
+            .into_iter()
+            .map(|val| Ok(Id::from(val.string()?)))
+            .collect::<Result<Vec<_>, Error>>()
+            .wrap_error_with_message("invalid ability list")?
+    } else {
+        Vec::from_iter([Id::from(
+            abilities
+                .string()
+                .wrap_error_with_message("invalid ability")?,
+        )])
+    };
+    let mut context = context.mon_context(mon_handle)?;
+    Ok(Value::Boolean(
+        abilities
+            .into_iter()
+            .any(|ability| Mon::has_ability(&mut context, &ability)),
+    ))
 }
 
 fn has_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {

@@ -45,6 +45,7 @@ use crate::{
             BattleEvent,
             CallbackFlag,
             DynamicEffectStateConnector,
+            EffectStateConnector,
             MaybeReferenceValue,
             MaybeReferenceValueForOperation,
             ParsedProgram,
@@ -56,6 +57,7 @@ use crate::{
             ValueType,
         },
         EffectHandle,
+        MonStatusEffectStateConnector,
     },
     moves::{
         Accuracy,
@@ -652,6 +654,9 @@ where
                             .map(|id| id.as_ref().to_owned())
                             .unwrap_or(String::new()),
                     ),
+                    "status_state" => ValueRef::EffectState(
+                        MonStatusEffectStateConnector::new(mon_handle).make_dynamic(),
+                    ),
                     "weight" => ValueRef::UFraction(
                         Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
                     ),
@@ -918,6 +923,9 @@ where
                         "last_target_location" => ValueRefMut::OptionalISize(
                             &mut context.mon_mut(**mon_handle)?.last_move_target_location,
                         ),
+                        "status_state" => ValueRefMut::TempEffectState(
+                            MonStatusEffectStateConnector::new(**mon_handle).make_dynamic(),
+                        ),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
@@ -962,6 +970,14 @@ where
                     }
                 }
                 ValueRefMut::EffectState(connector) => {
+                    let context = unsafe { context.unsafely_detach_borrow_mut() };
+                    value = ValueRefMut::from(
+                        connector
+                            .get_mut(context.battle_context_mut())?
+                            .get_mut(*member),
+                    );
+                }
+                ValueRefMut::TempEffectState(connector) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = ValueRefMut::from(
                         connector

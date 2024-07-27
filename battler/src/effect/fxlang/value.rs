@@ -405,6 +405,14 @@ impl Value {
         }
     }
 
+    /// Checks if the value is a list.
+    pub fn is_list(&self) -> bool {
+        match self {
+            Self::List(_) => true,
+            _ => false,
+        }
+    }
+
     /// Consumes the value into a [`Vec<Value>`].
     pub fn list(self) -> Result<Vec<Value>, Error> {
         match self {
@@ -883,6 +891,7 @@ pub enum ValueRefMut<'eval> {
     HitEffect(&'eval mut HitEffect),
     OptionalHitEffect(&'eval mut Option<HitEffect>),
     EffectState(&'eval mut DynamicEffectStateConnector),
+    TempEffectState(DynamicEffectStateConnector),
     List(&'eval mut Vec<Value>),
     Object(&'eval mut FastHashMap<String, Value>),
 }
@@ -920,6 +929,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::OptionalHitEffect(_) => ValueType::HitEffect,
             Self::EffectState(_) => ValueType::EffectState,
+            Self::TempEffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
