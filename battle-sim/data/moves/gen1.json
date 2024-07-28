@@ -2436,7 +2436,7 @@
             "remove_volatile: $target substitute"
           ],
           "else:",
-          ["log_activate: damage"],
+          ["log_activate: with_target damage"],
           "# Some move effects still apply.",
           "apply_recoil_damage: $damage",
           "apply_drain: $source $target $damage",

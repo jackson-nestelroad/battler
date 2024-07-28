@@ -17,7 +17,7 @@ mod bide_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -109,21 +109,6 @@ mod bide_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Blissey|health:100/100|species:Blissey|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Eevee|health:100/100|species:Eevee|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blissey|health:100/100|species:Blissey|level:50|gender:M",
-                "switch|player:player-2|position:2|name:Eevee|health:100/100|species:Eevee|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blissey,player-1,1|name:Bide|target:Blissey,player-1,1",
                 "start|mon:Blissey,player-1,1|move:Bide",
                 "move|mon:Eevee,player-2,2|name:Quick Attack|target:Blissey,player-1,1",
@@ -164,7 +149,7 @@ mod bide_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -189,19 +174,6 @@ mod bide_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Blissey|health:100/100|species:Blissey|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blissey|health:100/100|species:Blissey|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blissey,player-1,1|name:Bide|target:Blissey,player-1,1",
                 "start|mon:Blissey,player-1,1|move:Bide",
                 "move|mon:Blissey,player-2,1|name:Toxic|target:Blissey,player-1,1",
@@ -231,6 +203,6 @@ mod bide_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

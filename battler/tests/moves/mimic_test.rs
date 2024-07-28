@@ -21,7 +21,7 @@ mod mimic_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -230,21 +230,6 @@ mod mimic_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Wigglytuff|health:100/100|species:Wigglytuff|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Flareon|health:100/100|species:Flareon|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Wigglytuff|health:100/100|species:Wigglytuff|level:50|gender:M",
-                "switch|player:player-2|position:2|name:Flareon|health:100/100|species:Flareon|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Wigglytuff,player-1,1|name:Mimic|noanim",
                 "fail|mon:Wigglytuff,player-1,1",
                 "residual",
@@ -270,7 +255,7 @@ mod mimic_test {
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "switch|player:player-1|position:1|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
+                ["switch", "player-1", "Jolteon"],
                 "move|mon:Flareon,player-2,2|name:Flamethrower|target:Jolteon,player-1,1",
                 "split|side:0",
                 "damage|mon:Jolteon,player-1,1|health:70/125",
@@ -278,7 +263,7 @@ mod mimic_test {
                 "residual",
                 "turn|turn:5",
                 ["time"],
-                "switch|player:player-1|position:1|name:Wigglytuff|health:55/100|species:Wigglytuff|level:50|gender:M",
+                ["switch", "player-1", "Wigglytuff"],
                 "residual",
                 "turn|turn:6",
                 ["time"],
@@ -297,7 +282,7 @@ mod mimic_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -329,22 +314,7 @@ mod mimic_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Wigglytuff|health:100/100|species:Wigglytuff|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Flareon|health:100/100|species:Flareon|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Wigglytuff|health:100/100|species:Wigglytuff|level:50|gender:M",
-                "switch|player:player-2|position:2|name:Flareon|health:100/100|species:Flareon|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
-                "switch|player:player-2|position:2|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
+                ["switch", "player-2", "Jolteon"],
                 "move|mon:Flareon,player-1,2|name:Flamethrower|target:Wigglytuff,player-2,1",
                 "split|side:1",
                 "damage|mon:Wigglytuff,player-2,1|health:94/200",
@@ -373,6 +343,6 @@ mod mimic_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

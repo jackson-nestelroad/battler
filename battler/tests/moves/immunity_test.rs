@@ -14,7 +14,7 @@ mod immunity_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -81,25 +81,14 @@ mod immunity_test {
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pidgey|health:100/100|species:Pidgey|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-1,1|name:Sand Attack|target:Pidgey,player-2,1",
                 "unboost|mon:Pidgey,player-2,1|stat:acc|by:1",
                 "residual",
                 "turn|turn:2"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -147,24 +136,13 @@ mod immunity_test {
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Sandshrew|health:100/100|species:Sandshrew|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-1,1|name:Thunder Wave|noanim",
                 "immune|mon:Sandshrew,player-2,1",
                 "residual",
                 "turn|turn:2"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

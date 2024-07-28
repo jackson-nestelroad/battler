@@ -14,7 +14,7 @@ mod crit_ratio_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -66,19 +66,6 @@ mod crit_ratio_test {
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-2,1|name:Razor Leaf",
                 "resisted|mon:Bulbasaur,player-1,1",
                 "split|side:0",
@@ -92,8 +79,10 @@ mod crit_ratio_test {
                 "damage|mon:Bulbasaur,player-2,1|health:87/100",
                 "residual",
                 "turn|turn:2"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -124,19 +113,6 @@ mod crit_ratio_test {
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-2,1|name:Frost Breath|target:Bulbasaur,player-1,1",
                 "supereffective|mon:Bulbasaur,player-1,1",
                 "crit|mon:Bulbasaur,player-1,1",
@@ -151,8 +127,10 @@ mod crit_ratio_test {
                 "damage|mon:Bulbasaur,player-2,1|health:22/100",
                 "residual",
                 "turn|turn:2"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -195,19 +173,6 @@ mod crit_ratio_test {
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-1,1|name:Frost Breath|target:Bulbasaur,player-2,1",
                 "supereffective|mon:Bulbasaur,player-2,1",
                 "crit|mon:Bulbasaur,player-2,1",
@@ -250,7 +215,9 @@ mod crit_ratio_test {
                 "damage|mon:Bulbasaur,player-2,1|health:0",
                 "faint|mon:Bulbasaur,player-2,1",
                 "win|side:0"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

@@ -15,7 +15,7 @@ mod switch_after_move_test {
     };
     use battler_test_utils::{
         assert_error_message_contains,
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -94,19 +94,6 @@ mod switch_after_move_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "split|side:0",
                 "damage|mon:Bulbasaur,player-1,1|health:89/105",
@@ -143,7 +130,7 @@ mod switch_after_move_test {
                 "residual",
                 "turn|turn:5"
             ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -202,19 +189,6 @@ mod switch_after_move_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "split|side:0",
                 "damage|mon:Bulbasaur,player-1,1|health:89/105",
@@ -228,6 +202,6 @@ mod switch_after_move_test {
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

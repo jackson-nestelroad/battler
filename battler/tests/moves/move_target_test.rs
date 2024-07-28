@@ -19,7 +19,7 @@ mod move_target_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
         TestDataStore,
@@ -105,21 +105,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,test-player,2",
                 "split|side:0",
                 "damage|mon:Venusaur,test-player,2|health:139/140",
@@ -129,7 +114,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -150,21 +135,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,test-player,1",
                 "split|side:0",
                 "damage|mon:Venusaur,test-player,1|health:139/140",
@@ -174,7 +144,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -195,21 +165,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,foe,2",
                 "split|side:1",
                 "damage|mon:Venusaur,foe,2|health:139/140",
@@ -219,7 +174,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -240,21 +195,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|spread:Venusaur,test-player,2;Venusaur,foe,1;Venusaur,foe,2",
                 "split|side:0",
                 "damage|mon:Venusaur,test-player,2|health:139/140",
@@ -270,7 +210,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -291,21 +231,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|spread:Venusaur,foe,1;Venusaur,foe,2",
                 "split|side:1",
                 "damage|mon:Venusaur,foe,1|health:139/140",
@@ -318,7 +243,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -339,21 +264,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|spread:Venusaur,test-player,2;Venusaur,test-player,1",
                 "split|side:0",
                 "damage|mon:Venusaur,test-player,2|health:139/140",
@@ -366,7 +276,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -384,21 +294,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,foe,1",
                 "split|side:1",
                 "damage|mon:Venusaur,foe,1|health:139/140",
@@ -408,7 +303,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -429,21 +324,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,foe,2",
                 "split|side:1",
                 "damage|mon:Venusaur,foe,2|health:139/140",
@@ -453,7 +333,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -474,21 +354,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,foe,1",
                 "split|side:1",
                 "damage|mon:Venusaur,foe,1|health:138/140",
@@ -498,7 +363,7 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -516,21 +381,6 @@ mod move_target_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:test-player|name:Test Player|side:0|position:0",
-                "player|id:foe|name:Foe|side:1|position:0",
-                ["time"],
-                "teamsize|player:test-player|size:2",
-                "teamsize|player:foe|size:2",
-                "start",
-                "switch|player:test-player|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:test-player|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:foe|position:2|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,test-player,1|name:Test Move|target:Venusaur,test-player,1",
                 "split|side:0",
                 "damage|mon:Venusaur,test-player,1|health:139/140",
@@ -540,6 +390,6 @@ mod move_target_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

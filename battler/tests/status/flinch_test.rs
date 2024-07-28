@@ -17,7 +17,7 @@ mod flinch_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         get_controlled_rng_for_battle,
         LogMatch,
         TestBattleBuilder,
@@ -78,19 +78,6 @@ mod flinch_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Rapidash|health:100/100|species:Rapidash|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Rapidash|health:100/100|species:Rapidash|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Rapidash,player-2,1|name:Stomp|target:Rapidash,player-1,1",
                 "split|side:0",
                 "damage|mon:Rapidash,player-1,1|health:85/125",
@@ -101,6 +88,6 @@ mod flinch_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

@@ -17,7 +17,7 @@ mod no_target_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -94,21 +94,6 @@ mod no_target_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Charmander|health:100/100|species:Charmander|level:5|gender:F",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Charmander|health:100/100|species:Charmander|level:5|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,2",
                 "split|side:1",
                 "damage|mon:Charmander,player-2,2|health:0",
@@ -122,7 +107,7 @@ mod no_target_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&mut battle, 1, &expected_logs);
     }
 
     #[test]
@@ -144,22 +129,7 @@ mod no_target_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Charmander|health:100/100|species:Charmander|level:5|gender:F",
-                "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Charmander|health:100/100|species:Charmander|level:5|gender:F",
-                "turn|turn:1",
-                ["time"],
-                "switch|player:player-2|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:F",
+                ["switch", "player-2", "Squirtle"],
                 "residual",
                 "turn|turn:2",
                 ["time"],
@@ -179,6 +149,6 @@ mod no_target_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

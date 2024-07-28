@@ -17,7 +17,8 @@ mod harsh_sunlight_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_start_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -179,19 +180,6 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-1,1|name:Sunny Day",
                 "weather|weather:Harsh Sunlight",
                 "weather|weather:Harsh Sunlight|residual",
@@ -218,7 +206,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -252,19 +240,6 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-1,1|name:Sunny Day",
                 "weather|weather:Harsh Sunlight",
                 "weather|weather:Harsh Sunlight|residual",
@@ -303,7 +278,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -321,19 +296,6 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-1,1|name:Flamethrower|target:Blastoise,player-2,1",
                 "resisted|mon:Blastoise,player-2,1",
                 "split|side:1",
@@ -359,7 +321,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -377,19 +339,6 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blastoise,player-2,1|name:Water Gun|target:Charizard,player-1,1",
                 "supereffective|mon:Charizard,player-1,1",
                 "split|side:0",
@@ -415,7 +364,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -431,19 +380,6 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-1,1|name:Sunny Day",
                 "weather|weather:Harsh Sunlight",
                 "weather|weather:Harsh Sunlight|residual",
@@ -463,7 +399,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -491,17 +427,8 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
+                ["switch"],
+                ["switch"],
                 "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-1,1",
                 "turn|turn:1",
                 ["time"],
@@ -527,7 +454,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_start_eq(&battle, &expected_logs);
     }
 
     #[test]
@@ -547,17 +474,8 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Rayquaza|health:100/100|species:Rayquaza|level:50|gender:M",
+                ["switch"],
+                ["switch"],
                 "ability|mon:Rayquaza,player-2,1|ability:Air Lock",
                 "turn|turn:1",
                 ["time"],
@@ -589,7 +507,7 @@ mod harsh_sunlight_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_start_eq(&battle, &expected_logs);
     }
 
     #[test]
@@ -607,19 +525,6 @@ mod harsh_sunlight_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-1,1|name:Growth|target:Charizard,player-1,1",
                 "boost|mon:Charizard,player-1,1|stat:atk|by:1",
                 "boost|mon:Charizard,player-1,1|stat:spa|by:1",
@@ -638,9 +543,9 @@ mod harsh_sunlight_test {
                 "weather|weather:Harsh Sunlight|residual",
                 "residual",
                 "turn|turn:4"
-            ]"#
+            ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

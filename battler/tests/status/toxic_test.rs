@@ -17,7 +17,7 @@ mod toxic_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -159,19 +159,6 @@ mod toxic_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,player-1,1|name:Toxic|target:Charizard,player-2,1",
                 "status|mon:Charizard,player-2,1|status:Bad Poison",
                 "split|side:1",
@@ -215,7 +202,7 @@ mod toxic_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -229,19 +216,6 @@ mod toxic_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-2,1|name:Toxic|noanim",
                 "immune|mon:Venusaur,player-1,1",
                 "residual",
@@ -249,7 +223,7 @@ mod toxic_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -263,19 +237,6 @@ mod toxic_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Steelix|health:100/100|species:Steelix|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-2,1|name:Toxic|noanim",
                 "immune|mon:Steelix,player-1,1",
                 "residual",
@@ -283,7 +244,7 @@ mod toxic_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -311,20 +272,7 @@ mod toxic_test {
         assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "info|battletype:Singles",
-            "side|id:0|name:Side 1",
-            "side|id:1|name:Side 2",
-            "player|id:player-1|name:Player 1|side:0|position:0",
-            "player|id:player-2|name:Player 2|side:1|position:0",
-            ["time"],
-            "teamsize|player:player-1|size:1",
-            "teamsize|player:player-2|size:2",
-            "start",
-            "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:M",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-            "turn|turn:1",
-            ["time"],
+            r#"[
             "move|mon:Venusaur,player-1,1|name:Toxic|target:Charizard,player-2,1",
             "status|mon:Charizard,player-2,1|status:Bad Poison",
             "split|side:1",
@@ -351,11 +299,11 @@ mod toxic_test {
             "residual",
             "turn|turn:5",
             ["time"],
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
+            ["switch"],
             "residual",
             "turn|turn:6",
             ["time"],
-            "switch|player:player-2|position:1|name:Charizard|health:40/100|status:Bad Poison|species:Charizard|level:50|gender:M",
+            ["switch"],
             "split|side:1",
             "damage|mon:Charizard,player-2,1|from:status:Bad Poison|health:46/138",
             "damage|mon:Charizard,player-2,1|from:status:Bad Poison|health:34/100",
@@ -374,8 +322,8 @@ mod toxic_test {
             "residual",
             "turn|turn:9"
         ]"#,
-    )
-    .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

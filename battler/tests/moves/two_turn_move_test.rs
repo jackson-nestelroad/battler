@@ -19,7 +19,7 @@ mod two_turn_move_test {
     };
     use battler_test_utils::{
         assert_error_message,
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -179,19 +179,6 @@ mod two_turn_move_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pidgeot,player-1,1|name:Razor Wind|noanim",
                 "prepare|mon:Pidgeot,player-1,1|move:Razor Wind",
                 "addvolatile|mon:Pidgeot,player-1,1|volatile:Razor Wind|from:Two Turn Move",
@@ -210,7 +197,7 @@ mod two_turn_move_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -291,19 +278,6 @@ mod two_turn_move_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pidgeot,player-1,1|name:Fly|noanim",
                 "prepare|mon:Pidgeot,player-1,1|move:Fly",
                 "addvolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Two Turn Move",
@@ -344,7 +318,7 @@ mod two_turn_move_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -403,21 +377,6 @@ mod two_turn_move_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "switch|player:player-2|position:2|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pidgeot,player-1,1|name:Fly|noanim",
                 "prepare|mon:Pidgeot,player-1,1|move:Fly",
                 "addvolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Two Turn Move",
@@ -436,7 +395,7 @@ mod two_turn_move_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -460,19 +419,6 @@ mod two_turn_move_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blastoise,player-1,1|name:Skull Bash|noanim",
                 "prepare|mon:Blastoise,player-1,1|move:Skull Bash",
                 "boost|mon:Blastoise,player-1,1|stat:def|by:1",
@@ -492,6 +438,6 @@ mod two_turn_move_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

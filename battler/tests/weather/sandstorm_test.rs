@@ -17,7 +17,8 @@ mod sandstorm_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_start_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -214,19 +215,6 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Golem,player-1,1|name:Sandstorm",
                 "weather|weather:Sandstorm",
                 "weather|weather:Sandstorm|residual",
@@ -265,7 +253,7 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -299,19 +287,6 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Golem,player-1,1|name:Sandstorm",
                 "weather|weather:Sandstorm",
                 "weather|weather:Sandstorm|residual",
@@ -371,7 +346,7 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -389,19 +364,6 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blastoise,player-2,1|name:Confusion|target:Golem,player-1,1",
                 "split|side:0",
                 "damage|mon:Golem,player-1,1|health:111/140",
@@ -439,7 +401,7 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -453,19 +415,6 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Steelix|health:100/100|species:Steelix|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Golem,player-1,1|name:Sandstorm",
                 "weather|weather:Sandstorm",
                 "weather|weather:Sandstorm|residual",
@@ -474,7 +423,7 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -491,23 +440,14 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
+                ["switch"],
+                ["switch"],
                 "weather|weather:Sandstorm|from:ability:Sand Stream|of:Golem,player-1,1",
                 "turn|turn:1"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_start_eq(&battle, &expected_logs);
     }
 
     #[test]
@@ -521,17 +461,8 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Rayquaza|health:100/100|species:Rayquaza|level:50|gender:M",
+                ["switch"],
+                ["switch"],
                 "ability|mon:Rayquaza,player-2,1|ability:Air Lock",
                 "turn|turn:1",
                 ["time"],
@@ -542,7 +473,7 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_start_eq(&battle, &expected_logs);
     }
 
     #[test]
@@ -562,19 +493,6 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Golem,player-1,1|name:Sandstorm",
                 "weather|weather:Sandstorm",
                 "weather|weather:Sandstorm|residual",
@@ -586,7 +504,7 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -602,19 +520,6 @@ mod sandstorm_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Golem|health:100/100|species:Golem|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blastoise,player-2,1|name:Dig|noanim",
                 "prepare|mon:Blastoise,player-2,1|move:Dig",
                 "move|mon:Golem,player-1,1|name:Sandstorm",
@@ -637,6 +542,6 @@ mod sandstorm_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

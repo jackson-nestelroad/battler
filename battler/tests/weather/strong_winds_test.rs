@@ -17,7 +17,7 @@ mod strong_winds_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_start_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -106,18 +106,9 @@ mod strong_winds_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Rayquaza|health:100/100|species:Rayquaza|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
+                ["switch"],
+                ["switch"],
+                ["switch"],
                 "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
                 "turn|turn:1",
                 ["time"],
@@ -132,6 +123,6 @@ mod strong_winds_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_start_eq(&battle, &expected_logs);
     }
 }

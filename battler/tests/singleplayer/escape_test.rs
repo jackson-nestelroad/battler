@@ -19,7 +19,7 @@ mod escape_test {
     };
     use battler_test_utils::{
         assert_error_message_contains,
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -196,24 +196,12 @@ mod escape_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:protagonist|name:Protagonist|side:0|position:0",
-                "player|id:wild|name:Wild|side:1|position:0",
-                ["time"],
-                "teamsize|player:protagonist|size:1",
-                "start",
-                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
-                "switch|player:protagonist|position:1|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "escaped|player:protagonist",
                 "win|side:1"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -234,24 +222,12 @@ mod escape_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:protagonist|name:Protagonist|side:0|position:0",
-                "player|id:wild|name:Wild|side:1|position:0",
-                ["time"],
-                "teamsize|player:protagonist|size:1",
-                "start",
-                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
-                "switch|player:protagonist|position:1|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "escaped|player:wild",
                 "win|side:0"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -280,18 +256,6 @@ mod escape_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:protagonist|name:Protagonist|side:0|position:0",
-                "player|id:wild|name:Wild|side:1|position:0",
-                ["time"],
-                "teamsize|player:protagonist|size:1",
-                "start",
-                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
-                "switch|player:protagonist|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "cannotescape|player:protagonist",
                 "residual",
                 "turn|turn:2",
@@ -313,7 +277,7 @@ mod escape_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -361,23 +325,6 @@ mod escape_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Multi",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "maxsidelength|length:3",
-                "player|id:protagonist|name:Protagonist|side:0|position:1",
-                "player|id:wild-0|name:Wild|side:1|position:0",
-                "player|id:wild-1|name:Wild|side:1|position:1",
-                "player|id:wild-2|name:Wild|side:1|position:2",
-                ["time"],
-                "teamsize|player:protagonist|size:1",
-                "start",
-                "appear|player:wild-0|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
-                "appear|player:wild-1|position:2|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
-                "appear|player:wild-2|position:3|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
-                "switch|player:protagonist|position:2|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "escaped|player:wild-0",
                 "move|mon:Jolteon,protagonist,2|name:Tackle|target:Pikachu,wild-1,2",
                 "split|side:1",
@@ -404,7 +351,7 @@ mod escape_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -425,25 +372,13 @@ mod escape_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:protagonist|name:Protagonist|side:0|position:0",
-                "player|id:wild|name:Wild|side:1|position:0",
-                ["time"],
-                "teamsize|player:protagonist|size:1",
-                "start",
-                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
-                "switch|player:protagonist|position:1|name:Ralts|health:100/100|species:Ralts|level:5|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Ralts,protagonist,1|name:Teleport|target:Ralts,protagonist,1",
                 "escaped|player:protagonist",
                 "win|side:1"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -470,18 +405,6 @@ mod escape_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:protagonist|name:Protagonist|side:0|position:0",
-                "player|id:wild|name:Wild|side:1|position:0",
-                ["time"],
-                "teamsize|player:protagonist|size:1",
-                "start",
-                "appear|player:wild|position:1|name:Primeape|health:100/100|species:Primeape|level:50|gender:M",
-                "switch|player:protagonist|position:1|name:Jolteon|health:100/100|species:Jolteon|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Jolteon,protagonist,1|name:Bind|target:Primeape,wild,1",
                 "split|side:1",
                 "damage|mon:Primeape,wild,1|health:117/125",
@@ -505,6 +428,6 @@ mod escape_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

@@ -19,7 +19,7 @@ mod disable_test {
     };
     use battler_test_utils::{
         assert_error_message,
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -122,20 +122,7 @@ mod disable_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Alakazam|health:100/100|species:Alakazam|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Alakazam|health:100/100|species:Alakazam|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
-                "switch|player:player-2|position:1|name:Aerodactyl|health:100/100|species:Aerodactyl|level:50|gender:M",
+                ["switch", "player-2", "Aerodactyl"],
                 "move|mon:Alakazam,player-1,1|name:Disable|noanim",
                 "fail|mon:Alakazam,player-1,1",
                 "residual",
@@ -185,7 +172,7 @@ mod disable_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -219,20 +206,7 @@ mod disable_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Alakazam|health:100/100|species:Alakazam|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Alakazam|health:100/100|species:Alakazam|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
-                "switch|player:player-2|position:1|name:Slowbro|health:100/100|species:Slowbro|level:50|gender:M",
+                ["switch", "player-2", "Slowbro"],
                 "move|mon:Alakazam,player-1,1|name:Disable|noanim",
                 "fail|mon:Alakazam,player-1,1",
                 "residual",
@@ -267,6 +241,6 @@ mod disable_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

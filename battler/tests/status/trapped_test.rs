@@ -18,7 +18,7 @@ mod trapped_test {
     };
     use battler_test_utils::{
         assert_error_message,
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -129,35 +129,22 @@ mod trapped_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Gengar|health:100/100|species:Gengar|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Gengar,player-1,1|name:Mean Look|target:Pikachu,player-2,1",
                 "activate|mon:Pikachu,player-2,1|condition:Trapped",
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "switch|player:player-1|position:1|name:Cyndaquil|health:100/100|species:Cyndaquil|level:50|gender:M",
+                ["switch", "player-1", "Cyndaquil"],
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "switch|player:player-2|position:1|name:Totodile|health:100/100|species:Totodile|level:50|gender:M",
+                ["switch", "player-2", "Totodile"],
                 "residual",
                 "turn|turn:4"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -173,31 +160,18 @@ mod trapped_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Gengar|health:100/100|species:Gengar|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Mean Look|noanim",
                 "immune|mon:Gengar,player-1,1",
                 "fail|mon:Pikachu,player-2,1",
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "switch|player:player-1|position:1|name:Cyndaquil|health:100/100|species:Cyndaquil|level:50|gender:M",
+                ["switch", "player-1", "Cyndaquil"],
                 "residual",
                 "turn|turn:3"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

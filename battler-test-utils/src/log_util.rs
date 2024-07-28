@@ -57,7 +57,32 @@ pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
     pretty_assertions::assert_eq!(want, got)
 }
 
-/// Asserts that new logs in the battle are equal to the given logs.
+/// Asserts that logs since the given turn in the battle are equal to the given logs.
+#[track_caller]
+pub fn assert_logs_since_start_eq(battle: &PublicCoreBattle, want: &[LogMatch]) {
+    let got = battle.all_logs().collect::<Vec<&str>>();
+    let start_log = "start";
+    let start_log_index = got.iter().position(|log| log == &start_log).unwrap();
+    let start_log_index = start_log_index + 1;
+    let got = &got[start_log_index..];
+    let want = want.into_iter().collect::<Vec<_>>();
+    pretty_assertions::assert_eq!(want, got)
+}
+
+/// Asserts that logs since the given turn in the battle are equal to the given logs.
+#[track_caller]
+pub fn assert_logs_since_turn_eq(battle: &PublicCoreBattle, turn: usize, want: &[LogMatch]) {
+    let got = battle.all_logs().collect::<Vec<&str>>();
+    let turn_log = format!("turn|turn:{turn}");
+    let turn_log_index = got.iter().position(|log| log == &&turn_log).unwrap();
+    // Skip turn logs that are always present.
+    let turn_log_index = turn_log_index + 2;
+    let got = &got[turn_log_index..];
+    let want = want.into_iter().collect::<Vec<_>>();
+    pretty_assertions::assert_eq!(want, got)
+}
+
+/// Asserts that logs for the given turn in the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_turn_logs_eq(battle: &mut PublicCoreBattle, turn: usize, want: &[LogMatch]) {
     let got = battle.all_logs().collect::<Vec<_>>();

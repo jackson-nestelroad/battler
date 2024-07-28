@@ -14,7 +14,7 @@ mod stat_boost_drop_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         get_controlled_rng_for_battle,
         LogMatch,
         TestBattleBuilder,
@@ -101,19 +101,6 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
                 "boost|mon:Pikachu,player-1,1|stat:eva|by:1",
                 "residual",
@@ -149,8 +136,10 @@ mod stat_boost_drop_test {
                 "fail|mon:Pikachu,player-1,1",
                 "residual",
                 "turn|turn:8"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -195,19 +184,6 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
                 "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
                 "residual",
@@ -243,8 +219,10 @@ mod stat_boost_drop_test {
                 "fail|mon:Pikachu,player-1,1",
                 "residual",
                 "turn|turn:8"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -288,19 +266,6 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Cotton Spore",
                 "unboost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "move|mon:Pikachu,player-1,1|name:Agility|target:Pikachu,player-1,1",
@@ -342,8 +307,10 @@ mod stat_boost_drop_test {
                 "boost|mon:Pikachu,player-1,1|stat:spe|by:2",
                 "residual",
                 "turn|turn:7"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -376,26 +343,15 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-1,1|name:Growth|target:Pikachu,player-1,1",
                 "boost|mon:Pikachu,player-1,1|stat:atk|by:1",
                 "boost|mon:Pikachu,player-1,1|stat:spa|by:1",
                 "residual",
                 "turn|turn:2"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -431,19 +387,6 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Ancient Power|target:Pikachu,player-1,1",
                 "split|side:0",
                 "damage|mon:Pikachu,player-1,1|health:68/95",
@@ -459,8 +402,10 @@ mod stat_boost_drop_test {
                 "damage|mon:Pikachu,player-2,1|health:83/100",
                 "residual",
                 "turn|turn:2"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -505,21 +450,6 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:2|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Tail Whip|spread:Pikachu,player-1,1;Pikachu,player-1,2",
                 "unboost|mon:Pikachu,player-1,1|stat:def|by:1",
                 "unboost|mon:Pikachu,player-1,2|stat:def|by:1",
@@ -529,7 +459,7 @@ mod stat_boost_drop_test {
                 "residual",
                 "turn|turn:2"
             ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -589,19 +519,7 @@ mod stat_boost_drop_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
+
                 "move|mon:Pikachu,player-2,1|name:Tackle|target:Pikachu,player-1,1",
                 "split|side:0",
                 "damage|mon:Pikachu,player-1,1|health:73/95",
@@ -643,7 +561,9 @@ mod stat_boost_drop_test {
                 "damage|mon:Pikachu,player-1,1|health:13/100",
                 "residual",
                 "turn|turn:5"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

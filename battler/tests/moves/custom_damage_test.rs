@@ -17,7 +17,7 @@ mod custom_damage_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         assert_turn_logs_eq,
         LogMatch,
         TestBattleBuilder,
@@ -104,19 +104,6 @@ mod custom_damage_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-1,1|name:Seismic Toss|target:Pikachu,player-2,1",
                 "split|side:1",
                 "damage|mon:Pikachu,player-2,1|health:45/95",
@@ -126,7 +113,7 @@ mod custom_damage_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
         let mut team = pikachu().unwrap();
         team.members[0].level = 75;
@@ -138,19 +125,6 @@ mod custom_damage_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:75|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-1,1|name:Seismic Toss|target:Pikachu,player-2,1",
                 "split|side:1",
                 "damage|mon:Pikachu,player-2,1|health:20/95",
@@ -160,7 +134,7 @@ mod custom_damage_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     // Between 25 and 75 for level 50.

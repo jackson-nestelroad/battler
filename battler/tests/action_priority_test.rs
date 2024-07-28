@@ -15,7 +15,7 @@ mod action_priority_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
         TestDataStore,
@@ -145,21 +145,6 @@ mod action_priority_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "switch|player:player-1|position:2|name:Extra|health:100/100|species:Venusaur|level:50|gender:F",
                 "move|mon:Fast,player-2,1|name:High Priority|target:Extra,player-1,2",
                 "residual",
@@ -167,7 +152,7 @@ mod action_priority_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -188,21 +173,6 @@ mod action_priority_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "switch|player:player-2|position:1|name:Extra|health:100/100|species:Venusaur|level:50|gender:F",
                 "switch|player:player-1|position:2|name:Extra|health:100/100|species:Venusaur|level:50|gender:F",
                 "residual",
@@ -210,7 +180,7 @@ mod action_priority_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -231,21 +201,6 @@ mod action_priority_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
                 "move|mon:Slow,player-1,2|name:Normal Priority|target:Fast,player-2,1",
                 "residual",
@@ -253,7 +208,7 @@ mod action_priority_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -274,21 +229,6 @@ mod action_priority_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Slow,player-1,2|name:High Priority|target:Fast,player-2,1",
                 "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
                 "move|mon:Slow,player-2,2|name:Normal Priority|target:Fast,player-1,1",
@@ -298,7 +238,7 @@ mod action_priority_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle, Error> {
@@ -341,21 +281,6 @@ mod action_priority_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:3",
-                "teamsize|player:player-2|size:3",
-                "start",
-                "switch|player:player-1|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-1|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Fast|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Slow|health:100/100|species:Venusaur|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
                 "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
                 "residual",
@@ -373,6 +298,6 @@ mod action_priority_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

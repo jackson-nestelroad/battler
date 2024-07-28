@@ -106,6 +106,7 @@ impl MoveOutcomeOnTarget {
             (Self::Unknown, right @ _) => right,
             (Self::Failure, Self::Unknown) => Self::Failure,
             (Self::Failure, right @ _) => right,
+            (Self::HitSubstitute, Self::Unknown) => Self::HitSubstitute,
             (Self::HitSubstitute, right @ _) => right,
             (Self::Success, Self::Damage(right)) => Self::Damage(right),
             (Self::Success, _) => Self::Success,

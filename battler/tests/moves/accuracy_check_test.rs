@@ -17,7 +17,7 @@ mod accuracy_check_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -138,19 +138,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
                 "resisted|mon:Pikachu,player-1,1",
                 "split|side:0",
@@ -177,7 +164,7 @@ mod accuracy_check_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -204,19 +191,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
                 "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
                 "move|mon:Pikachu,player-1,1|name:Sand Attack|noanim",
@@ -257,7 +231,7 @@ mod accuracy_check_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -283,19 +257,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
                 "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
@@ -336,7 +297,7 @@ mod accuracy_check_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -357,21 +318,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:2",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-1|position:2|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:2|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,2|name:Double Team|target:Pikachu,player-2,2",
                 "boost|mon:Pikachu,player-2,2|stat:eva|by:1",
                 "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
@@ -384,12 +330,13 @@ mod accuracy_check_tests {
                 "split|side:1",
                 "damage|mon:Pikachu,player-2,2|health:78/95",
                 "damage|mon:Pikachu,player-2,2|health:83/100",
+                "unboost|mon:Pikachu,player-2,2|stat:spe|by:1",
                 "residual",
                 "turn|turn:3"
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -419,19 +366,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
                 "residual",
@@ -502,7 +436,7 @@ mod accuracy_check_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -528,19 +462,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
                 "residual",
@@ -596,7 +517,7 @@ mod accuracy_check_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -631,19 +552,6 @@ mod accuracy_check_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
                 "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
                 "residual",
@@ -692,6 +600,6 @@ mod accuracy_check_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

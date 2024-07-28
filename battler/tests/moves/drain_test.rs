@@ -14,7 +14,7 @@ mod drain_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -89,19 +89,6 @@ mod drain_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Venusaur|health:100/100|species:Venusaur|level:100|gender:M",
-                "switch|player:player-2|position:1|name:Machamp|health:100/100|species:Machamp|level:100|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Venusaur,player-1,1|name:Mega Drain|target:Machamp,player-2,1",
                 "split|side:1",
                 "damage|mon:Machamp,player-2,1|health:232/290",
@@ -128,7 +115,9 @@ mod drain_test {
                 "damage|mon:Venusaur,player-1,1|health:69/100",
                 "residual",
                 "turn|turn:3"
-            ]"#).unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+            ]"#,
+        )
+        .unwrap();
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

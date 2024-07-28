@@ -18,7 +18,7 @@ mod doubles_damage_calculation_tests {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -182,20 +182,7 @@ mod doubles_damage_calculation_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Charizard|health:100/100|species:Charizard|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
+
                 "move|mon:Blastoise,player-1,1|name:Surf|spread:Venusaur,player-2,1;Charizard,player-2,2",
                 "resisted|mon:Venusaur,player-2,1",
                 "supereffective|mon:Charizard,player-2,2",
@@ -231,7 +218,7 @@ mod doubles_damage_calculation_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
         let mut battle =
             make_battle_with_min_damage(&data, blastoise().unwrap(), venusaur_charizard().unwrap())
@@ -249,20 +236,6 @@ mod doubles_damage_calculation_tests {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Doubles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:2",
-                "start",
-                "switch|player:player-1|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:F",
-                "switch|player:player-2|position:1|name:Venusaur|health:100/100|species:Venusaur|level:50|gender:F",
-                "switch|player:player-2|position:2|name:Charizard|health:100/100|species:Charizard|level:50|gender:F",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Blastoise,player-1,1|name:Surf|spread:Venusaur,player-2,1;Charizard,player-2,2",
                 "resisted|mon:Venusaur,player-2,1",
                 "supereffective|mon:Charizard,player-2,2",
@@ -302,6 +275,6 @@ mod doubles_damage_calculation_tests {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }

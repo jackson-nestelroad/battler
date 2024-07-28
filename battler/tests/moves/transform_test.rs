@@ -20,7 +20,7 @@ mod transform_test {
         teams::TeamData,
     };
     use battler_test_utils::{
-        assert_new_logs_eq,
+        assert_logs_since_turn_eq,
         LogMatch,
         TestBattleBuilder,
     };
@@ -222,19 +222,6 @@ mod transform_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Ditto|health:100/100|species:Ditto|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Ditto,player-1,1|name:Transform|target:Charizard,player-2,1",
                 "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1",
                 "residual",
@@ -253,7 +240,7 @@ mod transform_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -273,19 +260,6 @@ mod transform_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Ditto|health:100/100|species:Ditto|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-2,1|name:Growth|target:Charizard,player-2,1",
                 "boost|mon:Charizard,player-2,1|stat:atk|by:1",
                 "boost|mon:Charizard,player-2,1|stat:spa|by:1",
@@ -310,7 +284,7 @@ mod transform_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 
     #[test]
@@ -344,19 +318,6 @@ mod transform_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "info|battletype:Singles",
-                "side|id:0|name:Side 1",
-                "side|id:1|name:Side 2",
-                "player|id:player-1|name:Player 1|side:0|position:0",
-                "player|id:player-2|name:Player 2|side:1|position:0",
-                ["time"],
-                "teamsize|player:player-1|size:1",
-                "teamsize|player:player-2|size:1",
-                "start",
-                "switch|player:player-1|position:1|name:Ditto|health:100/100|species:Ditto|level:50|gender:M",
-                "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:M",
-                "turn|turn:1",
-                ["time"],
                 "move|mon:Charizard,player-2,1|name:Conversion|target:Charizard,player-2,1",
                 "typechange|mon:Charizard,player-2,1|types:Normal",
                 "residual",
@@ -380,6 +341,6 @@ mod transform_test {
             ]"#,
         )
         .unwrap();
-        assert_new_logs_eq(&mut battle, &expected_logs);
+        assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     }
 }
