@@ -6,7 +6,7 @@ use std::str::pattern::Pattern;
 /// unchanged.
 pub fn split_once_optional<'a, P>(input: &'a str, delimiter: P) -> (&'a str, Option<&'a str>)
 where
-    P: Pattern<'a>,
+    P: Pattern,
 {
     match input.split_once(delimiter) {
         None => (input, None),
