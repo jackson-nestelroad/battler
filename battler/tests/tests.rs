@@ -18,6 +18,7 @@ mod moves {
     mod heal_test;
     mod immunity_test;
     mod leech_seed_test;
+    mod lock_on_test;
     mod magnitude_test;
     mod metronome_test;
     mod mimic_test;

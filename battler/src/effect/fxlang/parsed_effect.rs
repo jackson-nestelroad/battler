@@ -98,6 +98,8 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SideRestart, callbacks)?;
             parsed.parse_and_save(BattleEvent::SideResidual, callbacks)?;
             parsed.parse_and_save(BattleEvent::SideStart, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceAccuracyExempt, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceInvulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;

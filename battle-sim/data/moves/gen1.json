@@ -245,7 +245,7 @@
         "on_invulnerability": [
           "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
           ["return"],
-          "return false"
+          "return true"
         ],
         "on_source_modify_damage": [
           "if [gust, twister] has $move.id:",
@@ -1283,12 +1283,12 @@
       "callbacks": {
         "on_immunity": [
           "if $effect.id == sandstormweather or $effect.id == hailweather:",
-          ["return false"]
+          ["return true"]
         ],
         "on_invulnerability": [
           "if [earthquake, magnitude] has $move.id:",
           ["return"],
-          "return false"
+          "return true"
         ],
         "on_source_modify_damage": [
           "if [earthquake, magnitude] has $move.id:",

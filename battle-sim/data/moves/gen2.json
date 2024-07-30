@@ -85,7 +85,15 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "# Add the volatile status to the user.",
+          "add_volatile: $source lockon $target"
+        ]
+      }
+    }
   },
   "nightmare": {
     "name": "Nightmare",
@@ -579,7 +587,27 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "# Add the volatile status to the user.",
+          "add_volatile: $source $this.id $target"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["log_activate: with_target with_source"],
+        "on_source_invulnerability": {
+          "priority": 1,
+          "program": ["return false"]
+        },
+        "on_source_accuracy_exempt": ["return true"]
+      }
+    }
   },
   "outrage": {
     "name": "Outrage",

@@ -535,6 +535,19 @@ pub enum BattleEvent {
     /// Runs in the context of the side condition itself.
     #[string = "SideStart"]
     SideStart,
+    /// Runs when the accuracy of a move used by a Mon is being determined.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "SourceAccuracyExempt"]
+    SourceAccuracyExempt,
+    /// Runs when a Mon is the source of determining if another Mon is invulnerable to targeting
+    /// moves.
+    ///
+    /// Runs as the very first step in a move.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "SourceInvulnerability"]
+    SourceInvulnerability,
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
@@ -729,6 +742,8 @@ impl BattleEvent {
             Self::SideResidual => CommonCallbackType::SideVoid as u32,
             Self::SideRestart => CommonCallbackType::SideResult as u32,
             Self::SideStart => CommonCallbackType::SideResult as u32,
+            Self::SourceAccuracyExempt => CommonCallbackType::MoveResult as u32,
+            Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
@@ -885,6 +900,8 @@ impl BattleEvent {
     /// Returns the associated source event.
     pub fn source_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::AccuracyExempt => Some(Self::SourceAccuracyExempt),
+            Self::Invulnerability => Some(Self::SourceInvulnerability),
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
             Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
             _ => None,
@@ -1058,6 +1075,8 @@ pub struct Callbacks {
     pub on_side_residual: Callback,
     pub on_side_restart: Callback,
     pub on_side_start: Callback,
+    pub on_source_accuracy_exempt: Callback,
+    pub on_source_invulnerability: Callback,
     pub on_source_modify_damage: Callback,
     pub on_source_weather_modify_damage: Callback,
     pub on_start: Callback,
@@ -1142,6 +1161,8 @@ impl Callbacks {
             BattleEvent::SideResidual => Some(&self.on_side_residual),
             BattleEvent::SideRestart => Some(&self.on_side_restart),
             BattleEvent::SideStart => Some(&self.on_side_start),
+            BattleEvent::SourceAccuracyExempt => Some(&self.on_source_accuracy_exempt),
+            BattleEvent::SourceInvulnerability => Some(&self.on_source_invulnerability),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),

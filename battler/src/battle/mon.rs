@@ -1578,10 +1578,9 @@ impl Mon {
         // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
-        if !core_battle_effects::run_event_for_mon(
+        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
             context,
             fxlang::BattleEvent::TrapMon,
-            fxlang::VariableInput::default(),
         ) {
             core_battle_actions::trap_mon(context)?;
         }

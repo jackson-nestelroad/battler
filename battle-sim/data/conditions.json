@@ -28,7 +28,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == brn:", ["return false"]]
+        "on_immunity": ["if $effect.id == brn:", ["return true"]]
       }
     }
   },
@@ -41,7 +41,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == par:", ["return false"]]
+        "on_immunity": ["if $effect.id == par:", ["return true"]]
       }
     }
   },
@@ -52,7 +52,7 @@
       "callbacks": {
         "on_immunity": [
           "if $effect.is_move and func_call(move_has_flag: $effect powder):",
-          ["return false"]
+          ["return true"]
         ]
       }
     }
@@ -64,7 +64,7 @@
       "callbacks": {
         "on_immunity": [
           "if [frz, hailweather] has $effect.id:",
-          ["return false"]
+          ["return true"]
         ]
       }
     }
@@ -78,7 +78,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
+        "on_immunity": ["if [psn, tox] has $effect.id:", ["return true"]]
       }
     }
   },
@@ -87,7 +87,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]]
       }
     }
   },
@@ -108,7 +108,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]]
       }
     }
   },
@@ -117,7 +117,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == trapped:", ["return false"]]
+        "on_immunity": ["if $effect.id == trapped:", ["return true"]]
       }
     }
   },
@@ -139,7 +139,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
+        "on_immunity": ["if [psn, tox] has $effect.id:", ["return true"]]
       }
     }
   },
@@ -419,7 +419,7 @@
         "on_end": [
           "log_end: no_effect str('move:{}', $effect_state.source_effect.name)"
         ],
-        "on_trap_mon": ["return false"]
+        "on_trap_mon": ["return true"]
       }
     }
   },
@@ -486,7 +486,7 @@
     "condition": {
       "no_copy": true,
       "callbacks": {
-        "on_trap_mon": ["return false"],
+        "on_trap_mon": ["return true"],
         "on_start": ["log_activate: with_target"],
         "on_any_exit": [
           "if $mon == $effect_state.source:",
@@ -576,7 +576,7 @@
           "if $move.type == water:",
           ["return expr($damage * 1/2)"]
         ],
-        "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_immunity": ["if $effect == frz:", ["return true"]],
         "on_field_start": [
           "if $source_effect.is_ability:",
           ["log_weather: $this.name with_source_effect"],
@@ -612,7 +612,7 @@
           "if $move.type == fire:",
           ["return expr($damage * 3/2)"]
         ],
-        "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_immunity": ["if $effect == frz:", ["return true"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": [
           "log_weather: $this.name residual",

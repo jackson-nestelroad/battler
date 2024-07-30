@@ -1355,10 +1355,9 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            if !core_battle_effects::run_event_for_applying_effect(
+            if core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
-                fxlang::VariableInput::default(),
             ) {
                 target.outcome = MoveOutcome::Failed;
                 core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
@@ -2485,15 +2484,12 @@ fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         return Ok(true);
     }
 
-    if !core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::Immunity,
-        fxlang::VariableInput::default(),
-    ) {
-        return Ok(true);
-    }
-
-    Ok(false)
+    Ok(
+        core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+            context,
+            fxlang::BattleEvent::Immunity,
+        ),
+    )
 }
 
 /// Clears the status of a Mon.

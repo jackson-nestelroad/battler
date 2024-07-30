@@ -788,13 +788,25 @@ fn add_volatile(
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
-    let mut context = if should_use_source_effect(&mut args) {
-        context.forward_source_effect_to_applying_effect(mon_handle)?
-    } else {
-        context.forward_effect_to_applying_effect(mon_handle)?
+    let source_handle = match args.pop_front() {
+        Some(value) => Some(value.mon_handle().wrap_error_with_message("invalid mon")?),
+        None => context.source_handle(),
     };
-    core_battle_actions::try_add_volatile(&mut context, &volatile, false)
-        .map(|val| Value::Boolean(val))
+
+    let value = if should_use_source_effect(&mut args) {
+        let mut context = context
+            .source_effect_context()?
+            .wrap_error_with_message("context has no source effect")?;
+        let mut context = context.applying_effect_context(source_handle, mon_handle)?;
+        core_battle_actions::try_add_volatile(&mut context, &volatile, false)
+    } else {
+        let mut context = context
+            .effect_context_mut()
+            .applying_effect_context(source_handle, mon_handle)?;
+        core_battle_actions::try_add_volatile(&mut context, &volatile, false)
+    };
+
+    value.map(|val| Value::Boolean(val))
 }
 
 fn remove_volatile(
