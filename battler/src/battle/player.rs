@@ -1004,7 +1004,7 @@ impl Player {
         //
         // We could find away around this if we're clever, but this keeps things simple for now.
         let move_name = mov.data.name.clone();
-        let move_target = mov.data.target.clone();
+        let move_target = move_slot.target.unwrap_or(mov.data.target);
 
         if moves.is_empty() {
             // No moves, the Mon must use Struggle.

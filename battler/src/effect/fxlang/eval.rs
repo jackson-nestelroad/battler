@@ -767,6 +767,15 @@ where
                     "name" => {
                         ValueRef::Str(context.active_move(active_move_handle)?.data.name.as_ref())
                     }
+                    "non_ghost_target" => {
+                        let active_move = context.active_move(active_move_handle)?;
+                        ValueRef::MoveTarget(
+                            active_move
+                                .data
+                                .non_ghost_target
+                                .unwrap_or(active_move.data.target),
+                        )
+                    }
                     "ohko" => ValueRef::Boolean(
                         context
                             .active_move(active_move_handle)?
@@ -791,6 +800,13 @@ where
                     "type" => {
                         ValueRef::Type(context.active_move(active_move_handle)?.data.primary_type)
                     }
+                    "user_effect" => context
+                        .active_move(active_move_handle)?
+                        .data
+                        .user_effect
+                        .as_ref()
+                        .map(ValueRef::HitEffect)
+                        .unwrap_or(ValueRef::Undefined),
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let ValueRef::Player(player) = value {
@@ -960,6 +976,12 @@ where
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
                         ),
+                        "user_effect" => ValueRefMut::OptionalHitEffect(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .user_effect,
+                        ),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
@@ -967,6 +989,9 @@ where
                 | ValueRefMut::OptionalHitEffect(Some(hit_effect)) => {
                     value = match *member {
                         "boosts" => ValueRefMut::OptionalBoostTable(&mut hit_effect.boosts),
+                        "volatile_status" => {
+                            ValueRefMut::OptionalString(&mut hit_effect.volatile_status)
+                        }
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
@@ -1821,6 +1846,9 @@ impl Evaluator {
             }
             (ValueRefMut::String(var), Value::String(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::OptionalString(var), Value::String(val)) => {
+                *var = Some(val);
             }
             (ValueRefMut::Mon(var), Value::Mon(val)) => {
                 *var = val;
