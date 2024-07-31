@@ -281,6 +281,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the field.
     #[string = "ClearWeather"]
     ClearWeather,
+    /// Runs when a Mon's current status is cured.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "CureStatus"]
+    CureStatus,
     /// Runs when a move's damage is being calculated for a target.
     ///
     /// Used to override damage calculations.
@@ -697,6 +702,7 @@ impl BattleEvent {
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
+            Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Damage => CommonCallbackType::MoveModifier as u32,
             Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
@@ -1034,6 +1040,7 @@ pub struct Callbacks {
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
     pub on_clear_weather: Callback,
+    pub on_cure_status: Callback,
     pub on_damage: Callback,
     pub on_damage_received: Callback,
     pub on_damaging_hit: Callback,
@@ -1116,6 +1123,7 @@ impl Callbacks {
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
+            BattleEvent::CureStatus => Some(&self.on_cure_status),
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamageReceived => Some(&self.on_damage_received),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),

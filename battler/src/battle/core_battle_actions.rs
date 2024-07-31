@@ -2397,6 +2397,11 @@ pub fn try_set_status(
     let status = match status {
         Some(status) => status,
         None => {
+            core_battle_effects::run_event_for_applying_effect(
+                context,
+                fxlang::BattleEvent::CureStatus,
+                fxlang::VariableInput::default(),
+            );
             context.target_mut().status = status;
             context.target_mut().status_state = fxlang::EffectState::new();
             return Ok(ApplyMoveEffectResult::Success);

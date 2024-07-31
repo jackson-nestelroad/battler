@@ -29,6 +29,7 @@ mod moves {
     mod move_target_test;
     mod move_usage_test;
     mod multihit_test;
+    mod nightmare_test;
     mod no_target_test;
     mod ohko_test;
     mod powder_test;
