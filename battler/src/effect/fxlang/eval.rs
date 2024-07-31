@@ -581,6 +581,7 @@ where
                     "base_max_hp" => {
                         ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                     }
+                    "boosts" => ValueRef::BoostTable(&context.mon(mon_handle)?.boosts),
                     "effective_weather" => {
                         match mon_states::effective_weather(&mut context.mon_context(mon_handle)?) {
                             Some(weather) => ValueRef::Effect(
@@ -854,6 +855,17 @@ where
                         .as_ref()
                         .map(ValueRef::BoostTable)
                         .unwrap_or(ValueRef::Undefined),
+                    _ => return Err(Self::bad_member_access(member, value_type)),
+                }
+            } else if let ValueRef::BoostTable(boosts) = value {
+                value = match *member {
+                    "acc" => ValueRef::Fraction(boosts.acc.into()),
+                    "atk" => ValueRef::Fraction(boosts.atk.into()),
+                    "def" => ValueRef::Fraction(boosts.def.into()),
+                    "eva" => ValueRef::Fraction(boosts.eva.into()),
+                    "spa" => ValueRef::Fraction(boosts.spa.into()),
+                    "spd" => ValueRef::Fraction(boosts.spd.into()),
+                    "spe" => ValueRef::Fraction(boosts.spe.into()),
                     _ => return Err(Self::bad_member_access(member, value_type)),
                 }
             } else if let ValueRef::EffectState(connector) = value {

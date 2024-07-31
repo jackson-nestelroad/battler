@@ -53,6 +53,7 @@ mod moves {
     }
 
     mod gen2 {
+        mod belly_drum_test;
         mod curse_test;
         mod flail_test;
         mod lock_on_test;
