@@ -66,6 +66,7 @@ pub fn run_function(
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
+        "any_mon_will_move_this_turn" => any_mon_will_move_this_turn(context).map(|val| Some(val)),
         "append" => append(args).map(|val| Some(val)),
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
@@ -117,6 +118,7 @@ pub fn run_function(
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
         "log_side_end" => log_side_end(context, args).map(|()| None),
         "log_side_start" => log_side_start(context, args).map(|()| None),
+        "log_single_turn" => log_single_turn(context, args).map(|()| None),
         "log_start" => log_start(context, args).map(|()| None),
         "log_status" => log_status(context, args).map(|()| None),
         "log_weather" => log_weather(context, args).map(|()| None),
@@ -140,6 +142,7 @@ pub fn run_function(
         "run_event_for_each_active_mon" => {
             run_event_for_each_active_mon(context, args).map(|()| None)
         }
+        "run_event_for_mon" => run_event_for_mon(context, args).map(|val| Some(val)),
         "run_event_on_mon_item" => run_event_on_mon_item(context, args).map(|()| None),
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "sample" => sample(context, args),
@@ -527,6 +530,32 @@ fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     core_battle_logs::ohko(&mut context.mon_context(mon_handle)?)
 }
 
+fn log_single_turn(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let with_source = has_special_string_flag(&mut args, "with_source");
+
+    add_effect_to_args(context, &mut args)?;
+    args.push_front(Value::String(format!(
+        "mon:{}",
+        Mon::position_details(&context.target_context()?)?
+    )));
+
+    if with_source {
+        args.push_back(Value::String(format!(
+            "of:{}",
+            Mon::position_details(
+                &context
+                    .source_context()?
+                    .wrap_error_with_message("effect has no source")?
+            )?
+        )));
+    }
+
+    log_internal(context, "singleturn".to_owned(), args)
+}
+
 fn random(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let a = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
     let b = args.pop_front().map(|val| val.integer_u64().ok()).flatten();
@@ -877,6 +906,23 @@ fn run_event(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
             Err(battler_error!("effect must have a target to run an event"))
         }
     }
+}
+
+fn run_event_for_mon(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let event = args
+        .pop_front()
+        .wrap_error_with_message("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    Ok(Value::Boolean(core_battle_effects::run_event_for_mon(
+        &mut context.target_context()?,
+        event,
+        VariableInput::default(),
+    )))
 }
 
 fn run_event_for_each_active_mon(
@@ -1860,4 +1906,10 @@ fn append(mut args: VecDeque<Value>) -> Result<Value, Error> {
     let value = args.pop_front().wrap_error_with_message("missing value")?;
     list.push(value);
     Ok(Value::List(list))
+}
+
+fn any_mon_will_move_this_turn(context: &mut EvaluationContext) -> Result<Value, Error> {
+    Ok(Value::Boolean(
+        context.battle_context().battle().queue.any_move_this_turn(),
+    ))
 }

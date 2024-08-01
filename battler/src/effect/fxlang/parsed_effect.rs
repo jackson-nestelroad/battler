@@ -104,6 +104,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
+            parsed.parse_and_save(BattleEvent::StallMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressFieldWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonWeather, callbacks)?;

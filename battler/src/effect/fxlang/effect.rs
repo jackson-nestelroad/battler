@@ -567,6 +567,13 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "SourceWeatherModifyDamage"]
     SourceWeatherModifyDamage,
+    /// Runs when a Mon attempts a stalling move (e.g., Protect).
+    ///
+    /// Can fail the stalling move (assuming the stalling move integrates with the event properly).
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "StallMove"]
+    StallMove,
     /// Runs when an effect starts.
     ///
     /// Used to set up state.
@@ -753,6 +760,7 @@ impl BattleEvent {
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
+            Self::StallMove => CommonCallbackType::MonResult as u32,
             Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
@@ -1087,6 +1095,7 @@ pub struct Callbacks {
     pub on_source_modify_damage: Callback,
     pub on_source_weather_modify_damage: Callback,
     pub on_start: Callback,
+    pub on_stall_move: Callback,
     pub on_switch_in: Callback,
     pub on_trap_mon: Callback,
     pub on_try_boost: Callback,
@@ -1174,6 +1183,7 @@ impl Callbacks {
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
+            BattleEvent::StallMove => Some(&self.on_stall_move),
             BattleEvent::SuppressFieldWeather => Some(&self.suppress_field_weather),
             BattleEvent::SuppressMonItem => Some(&self.suppress_mon_item),
             BattleEvent::SuppressMonWeather => Some(&self.suppress_mon_weather),

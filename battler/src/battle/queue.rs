@@ -133,6 +133,14 @@ impl BattleQueue {
         speed_sort(actions, prng, tie_resolution);
     }
 
+    /// Checks if there is any move scheduled for this turn.
+    pub fn any_move_this_turn(&self) -> bool {
+        self.actions.iter().any(|action| match action {
+            Action::Move(_) => true,
+            _ => false,
+        })
+    }
+
     /// Checks if the given Mon will move this turn.
     pub fn will_move_this_turn(&self, mon: MonHandle) -> bool {
         self.actions.iter().any(|action| match action {

@@ -60,6 +60,7 @@ mod moves {
         mod lock_on_test;
         mod magnitude_test;
         mod nightmare_test;
+        mod protect_test;
         mod sketch_test;
     }
 }

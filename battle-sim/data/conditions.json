@@ -431,7 +431,7 @@
         "on_duration": ["return func_call(random: 2 4)"],
         "on_start": ["$effect_state.move = $source_effect.id"],
         "on_after_move": [
-          "if $user.move_this_turn_failed:",
+          "if $user.move_this_turn_failed and $effect_state.duration > 1:",
           ["remove_volatile: $user $this.id no_events"],
           "else if $effect_state.duration == 1:",
           ["remove_volatile: $user $this.id"]
@@ -491,6 +491,27 @@
         "on_any_exit": [
           "if $mon == $effect_state.source:",
           ["remove_volatile: $effect_state.target $this.id"]
+        ]
+      }
+    }
+  },
+  "stall": {
+    "name": "Stall",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": ["$effect_state.counter = 3"],
+        "on_restart": [
+          "if $effect_state.counter < 729:",
+          ["$effect_state.counter = $effect_state.counter * 3"],
+          "$effect_state.duration = 2"
+        ],
+        "on_stall_move": [
+          "$success = func_call(chance: $effect_state.counter)",
+          "if !$success:",
+          ["remove_volatile: $mon $this.id"],
+          "return $success"
         ]
       }
     }

@@ -350,7 +350,33 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
+    "hit_effect": {
+      "volatile_status": "protect"
+    },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+        ],
+        "on_hit": ["add_volatile: $target stall"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["log_single_turn"],
+        "on_try_hit": {
+          "priority": 3,
+          "program": [
+            "if !func_call(move_has_flag: $move protect):",
+            ["return"],
+            "log_activate",
+            "return stop"
+          ]
+        }
+      }
+    }
   },
   "machpunch": {
     "name": "Mach Punch",
@@ -590,7 +616,18 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
+    "hit_effect": {
+      "volatile_status": "protect"
+    },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+        ],
+        "on_hit": ["add_volatile: $target stall"]
+      }
+    }
   },
   "bonerush": {
     "name": "Bone Rush",
