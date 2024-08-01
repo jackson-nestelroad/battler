@@ -23,6 +23,8 @@ use crate::common::{
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Hash,
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,

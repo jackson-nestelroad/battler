@@ -219,6 +219,10 @@ pub struct ForEachStatement {
 #[repr(transparent)]
 pub struct ReturnStatement(pub Option<Value>);
 
+/// ContinueStatement -> "continue"
+#[derive(Debug, PartialEq, Eq)]
+pub struct ContinueStatement;
+
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
 /// ForEachStatement | ReturnStatement
 #[derive(Debug, PartialEq, Eq)]
@@ -230,4 +234,5 @@ pub enum Statement {
     ElseIfStatement(ElseIfStatement),
     ForEachStatement(ForEachStatement),
     ReturnStatement(ReturnStatement),
+    Continue(ContinueStatement),
 }

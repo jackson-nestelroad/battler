@@ -53,6 +53,7 @@ pub(crate) enum Token {
     HasKeyword,
     HasAnyKeyword,
     StrKeyword,
+    ContinueKeyword,
 }
 
 mod byte {
@@ -477,6 +478,7 @@ mod token {
                 "has" => Token::HasKeyword,
                 "hasany" => Token::HasAnyKeyword,
                 "str" => Token::StrKeyword,
+                "continue" => Token::ContinueKeyword,
                 _ => match parse_result {
                     IdentifierParseResult::Identifier => Token::Identifier,
                     IdentifierParseResult::UnquotedString => Token::UnquotedString,
@@ -679,6 +681,9 @@ impl<'s> StatementParser<'s> {
             Some(Token::ReturnKeyword) => Ok(tree::Statement::ReturnStatement(
                 self.parse_return_statement()?,
             )),
+            Some(Token::ContinueKeyword) => {
+                Ok(tree::Statement::Continue(self.parse_continue_statement()?))
+            }
             _ => Err(self.unexpected_token_error()),
         }
     }
@@ -753,6 +758,11 @@ impl<'s> StatementParser<'s> {
             Some(value) => Some(value),
         };
         Ok(tree::ReturnStatement(value))
+    }
+
+    fn parse_continue_statement(&mut self) -> Result<tree::ContinueStatement, Error> {
+        self.token_parser.consume_lexeme();
+        Ok(tree::ContinueStatement)
     }
 
     fn parse_function_call(&mut self) -> Result<tree::FunctionCall, Error> {
@@ -1960,6 +1970,14 @@ mod statement_parser_tests {
             Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
                 None
             ))),
+        )
+    }
+
+    #[test]
+    fn parses_continue() {
+        assert_eq!(
+            StatementParser::new("continue").parse(),
+            Ok(tree::Statement::Continue(tree::ContinueStatement)),
         )
     }
 

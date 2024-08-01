@@ -602,6 +602,10 @@ where
                         Some(last_move) => ValueRef::ActiveMove(last_move),
                         _ => ValueRef::Undefined,
                     },
+                    "last_move_used" => match context.mon(mon_handle)?.last_move_used {
+                        Some(last_move_used) => ValueRef::ActiveMove(last_move_used),
+                        _ => ValueRef::Undefined,
+                    },
                     "last_target_location" => {
                         match context.mon(mon_handle)?.last_move_target_location {
                             Some(last_target_location) => ValueRef::Fraction(
@@ -1124,6 +1128,7 @@ enum ProgramStatementEvalResult<'program> {
     ElseIfStatement(bool),
     ForEachStatement(&'program str, &'program tree::Value),
     ReturnStatement(Option<Value>),
+    ContinueStatement,
 }
 
 /// The result of evaluating a [`ParsedProgram`].
@@ -1366,6 +1371,9 @@ impl Evaluator {
                                 // Early return.
                                 return Ok(result);
                             }
+                            ProgramStatementEvalResult::ContinueStatement => {
+                                continue;
+                            }
                             _ => (),
                         }
                     }
@@ -1389,7 +1397,8 @@ impl Evaluator {
         let mut state = ProgramBlockEvalState::new();
         for block in blocks {
             match self.evaluate_program_block(context, block, &state)? {
-                result @ ProgramStatementEvalResult::ReturnStatement(_) => {
+                result @ ProgramStatementEvalResult::ReturnStatement(_)
+                | result @ ProgramStatementEvalResult::ContinueStatement => {
                     // Early return.
                     return Ok(result);
                 }
@@ -1496,6 +1505,7 @@ impl Evaluator {
                     value.map(|value| value.to_owned()),
                 ))
             }
+            tree::Statement::Continue(_) => Ok(ProgramStatementEvalResult::ContinueStatement),
         }
     }
 

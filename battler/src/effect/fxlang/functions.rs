@@ -44,6 +44,7 @@ use crate::{
     },
     log::Event,
     log_event,
+    mons::TypeEffectiveness,
     moves::{
         HitEffect,
         Move,
@@ -64,6 +65,8 @@ pub fn run_function(
     match function_name {
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
+        "all_types" => all_types(context).map(|val| Some(val)),
+        "append" => append(args).map(|val| Some(val)),
         "apply_drain" => apply_drain(context, args).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context, args).map(|()| None),
         "boost" => boost(context, args).map(|val| Some(val)),
@@ -99,6 +102,7 @@ pub fn run_function(
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "is_boolean" => is_boolean(args).map(|val| Some(val)),
         "is_defined" => is_defined(args).map(|val| Some(val)),
+        "is_empty" => is_empty(args).map(|val| Some(val)),
         "is_undefined" => is_undefined(args).map(|val| Some(val)),
         "log" => log(context, args).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
@@ -145,6 +149,10 @@ pub fn run_function(
         "set_weather" => set_weather(context, args).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
         "transform_into" => transform_into(context, args).map(|val| Some(val)),
+        "type_has_no_effect_against" => {
+            type_has_no_effect_against(context, args).map(|val| Some(val))
+        }
+        "type_is_weak_against" => type_is_weak_against(context, args).map(|val| Some(val)),
         "use_active_move" => use_active_move(context, args).map(|val| Some(val)),
         "use_move" => use_move(context, args).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context, args),
@@ -1755,4 +1763,101 @@ fn escape(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
 
 fn hit_effect() -> Result<Value, Error> {
     Ok(Value::HitEffect(HitEffect::default()))
+}
+
+fn all_types(context: &mut EvaluationContext) -> Result<Value, Error> {
+    let mut types = context
+        .battle_context()
+        .battle()
+        .dex
+        .type_chart()
+        .types
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>();
+    types.sort();
+    let types = types.into_iter().map(|typ| Value::Type(typ)).collect();
+    Ok(Value::List(types))
+}
+
+fn type_is_weak_against(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let offense = args
+        .pop_front()
+        .wrap_error_with_message("missing offensive type")?
+        .mon_type()
+        .wrap_error_with_message("invalid offensive type")?;
+    let defense = args
+        .pop_front()
+        .wrap_error_with_message("missing defensive type")?
+        .mon_type()
+        .wrap_error_with_message("invalid defensive type")?;
+    Ok(Value::Boolean(
+        context
+            .battle_context()
+            .battle()
+            .dex
+            .type_chart()
+            .types
+            .get(&offense)
+            .map(|types| {
+                types
+                    .get(&defense)
+                    .is_some_and(|effectiveness| effectiveness == &TypeEffectiveness::Weak)
+            })
+            .unwrap_or(false),
+    ))
+}
+
+fn type_has_no_effect_against(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let offense = args
+        .pop_front()
+        .wrap_error_with_message("missing offensive type")?
+        .mon_type()
+        .wrap_error_with_message("invalid offensive type")?;
+    let defense = args
+        .pop_front()
+        .wrap_error_with_message("missing defensive type")?
+        .mon_type()
+        .wrap_error_with_message("invalid defensive type")?;
+    Ok(Value::Boolean(
+        context
+            .battle_context()
+            .battle()
+            .dex
+            .type_chart()
+            .types
+            .get(&offense)
+            .map(|types| {
+                types
+                    .get(&defense)
+                    .is_some_and(|effectiveness| effectiveness == &TypeEffectiveness::None)
+            })
+            .unwrap_or(false),
+    ))
+}
+
+fn is_empty(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let list = args
+        .pop_front()
+        .wrap_error_with_message("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    Ok(Value::Boolean(list.is_empty()))
+}
+
+fn append(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mut list = args
+        .pop_front()
+        .wrap_error_with_message("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    let value = args.pop_front().wrap_error_with_message("missing value")?;
+    list.push(value);
+    Ok(Value::List(list))
 }
