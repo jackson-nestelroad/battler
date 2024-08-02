@@ -13,6 +13,24 @@ pub fn is_asleep(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,
         fxlang::BattleEvent::IsAsleep,
+        false,
+    )
+}
+
+/// Checks if the [`Mon`][`crate::battle::Mon`] is grounded.
+pub fn is_grounded(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsGrounded,
+        true,
+    )
+}
+/// Checks if the [`Mon`][`crate::battle::Mon`] is immune to entry hazards.
+pub fn is_immune_to_entry_hazards(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsImmuneToEntryHazards,
+        false,
     )
 }
 
@@ -23,6 +41,7 @@ pub fn effective_weather(context: &mut MonContext) -> Option<Id> {
     if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,
         fxlang::BattleEvent::SuppressMonWeather,
+        false,
     ) {
         return None;
     }
@@ -50,6 +69,7 @@ pub fn effective_item(context: &mut MonContext) -> Option<Id> {
     if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,
         fxlang::BattleEvent::SuppressMonItem,
+        false,
     ) {
         return None;
     }

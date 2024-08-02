@@ -62,6 +62,11 @@ mod moves {
         mod nightmare_test;
         mod protect_test;
         mod sketch_test;
+        mod spikes_test;
+    }
+
+    mod gen4 {
+        mod toxic_spikes_test;
     }
 }
 

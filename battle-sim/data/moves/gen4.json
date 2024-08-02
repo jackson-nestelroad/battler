@@ -368,7 +368,38 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "FoeSide",
-    "flags": ["MustPressure", "Reflectable"]
+    "flags": ["MustPressure", "Reflectable"],
+    "hit_effect": {
+      "side_condition": "toxicspikes"
+    },
+    "condition": {
+      "callbacks": {
+        "on_side_start": ["log_side_start", "$effect_state.layers = 1"],
+        "on_side_restart": [
+          "if $effect_state.layers >= 2:",
+          ["return false"],
+          "log_side_start",
+          "$effect_state.layers = $effect_state.layers + 1",
+          "return true"
+        ],
+        "on_entry_hazard": [
+          "if !$mon.is_grounded:",
+          ["return"],
+          "if func_call(has_type: $mon poison):",
+          [
+            "log_side_end: str('of:{}', $mon.position_details)",
+            "remove_side_condition: $mon.side $this.id",
+            "return"
+          ],
+          "if $mon.is_immune_to_entry_hazards:",
+          ["return"],
+          "if $effect_state.layers >= 2:",
+          ["set_status: $mon tox"],
+          "else:",
+          ["set_status: $mon psn"]
+        ]
+      }
+    }
   },
   "heartswap": {
     "name": "Heart Swap",

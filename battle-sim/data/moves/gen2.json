@@ -515,10 +515,11 @@
           "if $effect_state.layers >= 3:",
           ["return false"],
           "log_side_start",
-          "$effect_state.layers = $effect_state.layers + 1"
+          "$effect_state.layers = $effect_state.layers + 1",
+          "return true"
         ],
         "on_entry_hazard": [
-          "if !$mon.is_grounded or mon.is_immune_to_entry_hazards:",
+          "if !$mon.is_grounded or $mon.is_immune_to_entry_hazards:",
           ["return"],
           "if $effect_state.layers == 1:",
           ["$den = 8"],

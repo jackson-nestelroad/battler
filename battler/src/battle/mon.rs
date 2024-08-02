@@ -1581,6 +1581,7 @@ impl Mon {
         if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
             context,
             fxlang::BattleEvent::TrapMon,
+            false,
         ) {
             core_battle_actions::trap_mon(context)?;
         }

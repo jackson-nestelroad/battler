@@ -332,6 +332,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "End"]
     End,
+    /// Runs when a Mon is affected by an entry hazard.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "EntryHazard"]
+    EntryHazard,
     /// Runs when a Mon exits the battle (is no longer active).
     ///
     /// Runs in the context of the target Mon.
@@ -403,6 +408,16 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "IsAsleep"]
     IsAsleep,
+    /// Runs when determining if a Mon is grounded.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsGrounded"]
+    IsGrounded,
+    /// Runs when determining if a Mon is immune to entry hazards.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsImmuneToEntryHazards"]
+    IsImmuneToEntryHazards,
     /// Runs when determining if a weather includes raining.
     ///
     /// Runs on the effect itslf.
@@ -718,6 +733,7 @@ impl BattleEvent {
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::EntryHazard => CommonCallbackType::MonVoid as u32,
             Self::Exit => CommonCallbackType::MonVoid as u32,
             Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
             Self::FieldResidual => CommonCallbackType::FieldVoid as u32,
@@ -730,6 +746,8 @@ impl BattleEvent {
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
+            Self::IsGrounded => CommonCallbackType::MonResult as u32,
+            Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
             Self::IsRaining => CommonCallbackType::NoContextResult as u32,
             Self::IsSnowing => CommonCallbackType::NoContextResult as u32,
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
@@ -1032,6 +1050,8 @@ impl SpeedOrderable for Callback {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
     pub is_asleep: Callback,
+    pub is_grounded: Callback,
+    pub is_immune_to_entry_hazards: Callback,
     pub is_raining: Callback,
     pub is_snowing: Callback,
     pub is_sunny: Callback,
@@ -1057,6 +1077,7 @@ pub struct Callbacks {
     pub on_duration: Callback,
     pub on_effectiveness: Callback,
     pub on_end: Callback,
+    pub on_entry_hazard: Callback,
     pub on_exit: Callback,
     pub on_field_end: Callback,
     pub on_field_residual: Callback,
@@ -1141,6 +1162,7 @@ impl Callbacks {
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
+            BattleEvent::EntryHazard => Some(&self.on_entry_hazard),
             BattleEvent::Exit => Some(&self.on_exit),
             BattleEvent::FieldEnd => Some(&self.on_field_end),
             BattleEvent::FieldResidual => Some(&self.on_field_residual),
@@ -1153,6 +1175,8 @@ impl Callbacks {
             BattleEvent::Immunity => Some(&self.on_immunity),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::IsAsleep => Some(&self.is_asleep),
+            BattleEvent::IsGrounded => Some(&self.is_grounded),
+            BattleEvent::IsImmuneToEntryHazards => Some(&self.is_immune_to_entry_hazards),
             BattleEvent::IsRaining => Some(&self.is_raining),
             BattleEvent::IsSnowing => Some(&self.is_snowing),
             BattleEvent::IsSunny => Some(&self.is_sunny),

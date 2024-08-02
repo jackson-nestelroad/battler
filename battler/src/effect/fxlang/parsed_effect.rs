@@ -62,6 +62,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
             parsed.parse_and_save(BattleEvent::Effectiveness, callbacks)?;
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
+            parsed.parse_and_save(BattleEvent::EntryHazard, callbacks)?;
             parsed.parse_and_save(BattleEvent::Exit, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldEnd, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldRestart, callbacks)?;
@@ -74,6 +75,8 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsGrounded, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsImmuneToEntryHazards, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSnowing, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;

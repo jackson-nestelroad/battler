@@ -2397,7 +2397,12 @@
   "heavydutyboots": {
     "name": "Heavy-Duty Boots",
     "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "is_immune_to_entry_hazards": ["return true"]
+      }
+    }
   },
   "blunderpolicy": {
     "name": "Blunder Policy",

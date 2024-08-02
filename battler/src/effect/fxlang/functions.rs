@@ -137,6 +137,7 @@ pub fn run_function(
         "overwrite_move_slot" => overwrite_move_slot(context, args).map(|()| None),
         "random" => random(context, args).map(|val| Some(val)),
         "random_target" => random_target(context, args),
+        "remove_side_condition" => remove_side_condition(context, args).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
         "run_event_for_each_active_mon" => {
@@ -1912,4 +1913,25 @@ fn any_mon_will_move_this_turn(context: &mut EvaluationContext) -> Result<Value,
     Ok(Value::Boolean(
         context.battle_context().battle().queue.any_move_this_turn(),
     ))
+}
+
+fn remove_side_condition(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let side = args
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let condition = args
+        .pop_front()
+        .wrap_error_with_message("missing side condition")?
+        .string()
+        .wrap_error_with_message("invalid side condition")?;
+    let condition = Id::from(condition);
+    Ok(Value::Boolean(core_battle_actions::remove_side_condition(
+        &mut context.forward_effect_to_side_effect(side)?,
+        &condition,
+    )?))
 }

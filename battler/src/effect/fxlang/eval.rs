@@ -598,6 +598,14 @@ where
                     "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                         &mut context.mon_context(mon_handle)?,
                     )),
+                    "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
+                        &mut context.mon_context(mon_handle)?,
+                    )),
+                    "is_immune_to_entry_hazards" => {
+                        ValueRef::Boolean(mon_states::is_immune_to_entry_hazards(
+                            &mut context.mon_context(mon_handle)?,
+                        ))
+                    }
                     "last_move" => match context.mon(mon_handle)?.last_move {
                         Some(last_move) => ValueRef::ActiveMove(last_move),
                         _ => ValueRef::Undefined,

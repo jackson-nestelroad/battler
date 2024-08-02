@@ -1918,6 +1918,7 @@ pub fn run_event_for_mon_expecting_types(
 pub fn run_event_for_mon_expecting_bool_quick_return(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
+    default: bool,
 ) -> bool {
     run_event_for_mon_internal(
         context,
@@ -1929,7 +1930,7 @@ pub fn run_event_for_mon_expecting_bool_quick_return(
     )
     .map(|value| value.boolean().ok())
     .flatten()
-    .unwrap_or(false)
+    .unwrap_or(default)
 }
 
 /// Runs an event on the [`CoreBattle`] for the residual effect, which

@@ -197,7 +197,11 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
         fxlang::VariableInput::default(),
     );
 
-    // TODO: EntryHazard event.
+    core_battle_effects::run_event_for_mon(
+        context,
+        fxlang::BattleEvent::EntryHazard,
+        fxlang::VariableInput::default(),
+    );
 
     if context.mon().hp == 0 {
         return Ok(false);

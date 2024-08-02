@@ -93,7 +93,12 @@
   },
   "flyingtype": {
     "name": "Flying",
-    "condition_type": "Type"
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "is_grounded": ["return false"]
+      }
+    }
   },
   "psychictype": {
     "name": "Psychic",
