@@ -28,6 +28,7 @@ pub mod CallbackFlag {
     pub const TakesSourceTargetMon: u32 = 1 << 7;
     pub const TakesSourceEffect: u32 = 1 << 8;
     pub const TakesSide: u32 = 1 << 9;
+    pub const TakesOptionalEffect: u32 = 1 << 10;
 
     pub const ReturnsTypes: u32 = 1 << 24;
     pub const ReturnsMon: u32 = 1 << 25;
@@ -72,6 +73,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsBoosts
+        | CallbackFlag::ReturnsVoid,
+
+    MaybeApplyingEffectVoid = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesOptionalEffect
         | CallbackFlag::ReturnsVoid,
 
     EffectResult = CallbackFlag::TakesTargetMon
@@ -342,6 +348,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Exit"]
     Exit,
+    /// Runs when a Mon faints.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "Faint"]
+    Faint,
     /// Runs when a field condition ends.
     ///
     /// Runs in the context of the field condition itself.
@@ -745,6 +756,7 @@ impl BattleEvent {
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::EntryHazard => CommonCallbackType::MonVoid as u32,
             Self::Exit => CommonCallbackType::MonVoid as u32,
+            Self::Faint => CommonCallbackType::MaybeApplyingEffectVoid as u32,
             Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
             Self::FieldResidual => CommonCallbackType::FieldVoid as u32,
             Self::FieldRestart => CommonCallbackType::FieldResult as u32,
@@ -1093,6 +1105,7 @@ pub struct Callbacks {
     pub on_end: Callback,
     pub on_entry_hazard: Callback,
     pub on_exit: Callback,
+    pub on_faint: Callback,
     pub on_field_end: Callback,
     pub on_field_residual: Callback,
     pub on_field_restart: Callback,
@@ -1180,6 +1193,7 @@ impl Callbacks {
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::EntryHazard => Some(&self.on_entry_hazard),
             BattleEvent::Exit => Some(&self.on_exit),
+            BattleEvent::Faint => Some(&self.on_faint),
             BattleEvent::FieldEnd => Some(&self.on_field_end),
             BattleEvent::FieldResidual => Some(&self.on_field_residual),
             BattleEvent::FieldRestart => Some(&self.on_field_restart),

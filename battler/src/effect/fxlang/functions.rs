@@ -89,6 +89,7 @@ pub fn run_function(
         "disable_move" => disable_move(context, args).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "escape" => escape(context, args).map(|val| Some(val)),
+        "faint" => faint(context, args).map(|()| None),
         "floor" => floor(args).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context, args).map(|val| Some(val)),
         "get_boost" => get_boost(args).map(|val| Some(val)),
@@ -118,6 +119,7 @@ pub fn run_function(
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
         "log_side_end" => log_side_end(context, args).map(|()| None),
         "log_side_start" => log_side_start(context, args).map(|()| None),
+        "log_single_move" => log_single_move(context, args).map(|()| None),
         "log_single_turn" => log_single_turn(context, args).map(|()| None),
         "log_start" => log_start(context, args).map(|()| None),
         "log_status" => log_status(context, args).map(|()| None),
@@ -555,6 +557,32 @@ fn log_single_turn(
     }
 
     log_internal(context, "singleturn".to_owned(), args)
+}
+
+fn log_single_move(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
+    let with_source = has_special_string_flag(&mut args, "with_source");
+
+    add_effect_to_args(context, &mut args)?;
+    args.push_front(Value::String(format!(
+        "mon:{}",
+        Mon::position_details(&context.target_context()?)?
+    )));
+
+    if with_source {
+        args.push_back(Value::String(format!(
+            "of:{}",
+            Mon::position_details(
+                &context
+                    .source_context()?
+                    .wrap_error_with_message("effect has no source")?
+            )?
+        )));
+    }
+
+    log_internal(context, "singlemove".to_owned(), args)
 }
 
 fn random(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1934,4 +1962,15 @@ fn remove_side_condition(
         &mut context.forward_effect_to_side_effect(side)?,
         &condition,
     )?))
+}
+
+fn faint(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let source = context.source_handle();
+    let effect = context.effect_handle().clone();
+    core_battle_actions::faint(&mut context.mon_context(mon_handle)?, source, Some(&effect))
 }

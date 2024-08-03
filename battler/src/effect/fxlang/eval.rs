@@ -1250,6 +1250,12 @@ impl Evaluator {
                 ),
             )?;
         }
+        if event.has_flag(CallbackFlag::TakesOptionalEffect) {
+            if let Some(source_effect_handle) = context.source_effect_handle().cloned() {
+                self.vars
+                    .set("effect", Value::Effect(source_effect_handle))?;
+            }
+        }
         if event.has_flag(CallbackFlag::TakesSourceEffect) {
             self.vars.set(
                 "source_effect",

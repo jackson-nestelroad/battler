@@ -1662,7 +1662,18 @@ impl<'d> CoreBattle<'d> {
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
-            // TODO: Faint event.
+            match entry.effect.clone() {
+                Some(effect) => core_battle_effects::run_event_for_applying_effect(
+                    &mut context.applying_effect_context(effect, entry.source, None)?,
+                    fxlang::BattleEvent::Faint,
+                    fxlang::VariableInput::default(),
+                ),
+                None => core_battle_effects::run_event_for_mon(
+                    &mut context,
+                    fxlang::BattleEvent::Faint,
+                    fxlang::VariableInput::default(),
+                ),
+            };
 
             Mon::clear_state_on_faint(&mut context)?;
             context.battle_mut().last_fainted = Some(entry);

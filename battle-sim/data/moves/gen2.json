@@ -575,7 +575,25 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"]
+    "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"],
+    "hit_effect": {
+      "volatile_status": "destinybond"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_single_move"],
+        "on_faint": [
+          "if !$source or !$effect or func_call(is_ally: $target $source):",
+          ["return"],
+          "if $effect.is_move and !func_call(move_has_flag: $effect future):",
+          ["log_activate: with_target", "faint: $source"]
+        ],
+        "on_before_move": {
+          "priority": 999,
+          "program": ["remove_volatile: $user $this.id"]
+        }
+      }
+    }
   },
   "perishsong": {
     "name": "Perish Song",

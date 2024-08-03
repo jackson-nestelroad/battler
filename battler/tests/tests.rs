@@ -56,6 +56,7 @@ mod moves {
         mod belly_drum_test;
         mod conversion_2_test;
         mod curse_test;
+        mod destiny_bond_test;
         mod flail_test;
         mod foresight_test;
         mod lock_on_test;

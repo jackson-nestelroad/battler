@@ -64,6 +64,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
             parsed.parse_and_save(BattleEvent::EntryHazard, callbacks)?;
             parsed.parse_and_save(BattleEvent::Exit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Faint, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldEnd, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldRestart, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldResidual, callbacks)?;
