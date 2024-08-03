@@ -1134,7 +1134,6 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         attack_boosts,
         Fraction::from(1u16),
         move_user,
-        move_target,
     )?;
     let defense = Mon::calculate_stat(
         &mut context.defender_context()?,
@@ -1142,7 +1141,6 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         defense_boosts,
         Fraction::from(1u16),
         move_target,
-        move_user,
     )?;
 
     let base_damage = 2 * (level as u32) / 5 + 2;
@@ -1488,14 +1486,22 @@ mod direct_move_step {
             if let Accuracy::Chance(accuracy) = &mut accuracy {
                 let mut boost = 0;
                 if !context.active_move().data.ignore_accuracy {
-                    // TODO: ModifyBoost event.
-                    boost = context.mon().boosts.acc.max(-6).min(6);
+                    let boosts = context.mon().boosts.clone();
+                    let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+                        context.as_mon_context_mut(),
+                        fxlang::BattleEvent::ModifyBoosts,
+                        boosts,
+                    );
+                    boost = boosts.acc.max(-6).min(6);
                 }
                 if !context.active_move().data.ignore_evasion {
-                    // TODO: ModifyBoost event.
-                    boost = (boost - context.target_mon_context()?.mon().boosts.eva)
-                        .max(-6)
-                        .min(6);
+                    let boosts = context.target_mon().boosts.clone();
+                    let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+                        &mut context.target_mon_context()?,
+                        fxlang::BattleEvent::ModifyBoosts,
+                        boosts,
+                    );
+                    boost = (boost - boosts.eva).max(-6).min(6);
                 }
                 let multiplier = if boost > 0 {
                     Fraction::new((3 + boost) as u16, 3)
@@ -2706,14 +2712,12 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
         attack_boosts,
         Fraction::from(1u16),
         context.mon_handle(),
-        context.mon_handle(),
     )?;
     let defense = Mon::calculate_stat(
         context,
         defense_stat,
         defense_boosts,
         Fraction::from(1u16),
-        context.mon_handle(),
         context.mon_handle(),
     )?;
     let level = context.mon().level as u32;

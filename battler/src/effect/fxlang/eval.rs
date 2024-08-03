@@ -1019,6 +1019,18 @@ where
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
+                ValueRefMut::BoostTable(boosts) => {
+                    value = match *member {
+                        "acc" => ValueRefMut::I8(&mut boosts.acc),
+                        "atk" => ValueRefMut::I8(&mut boosts.atk),
+                        "def" => ValueRefMut::I8(&mut boosts.def),
+                        "eva" => ValueRefMut::I8(&mut boosts.eva),
+                        "spa" => ValueRefMut::I8(&mut boosts.spa),
+                        "spd" => ValueRefMut::I8(&mut boosts.spd),
+                        "spe" => ValueRefMut::I8(&mut boosts.spe),
+                        _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
+                    }
+                }
                 ValueRefMut::EffectState(connector) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = ValueRefMut::from(
@@ -1799,6 +1811,18 @@ impl Evaluator {
             }
             (ValueRefMut::OptionalBoolean(var), Value::Boolean(val)) => {
                 *var = Some(val);
+            }
+            (ValueRefMut::I8(var), Value::Fraction(val)) => {
+                *var = val
+                    .round()
+                    .try_into()
+                    .wrap_error_with_message("integer overflow")?;
+            }
+            (ValueRefMut::I8(var), Value::UFraction(val)) => {
+                *var = val
+                    .round()
+                    .try_into()
+                    .wrap_error_with_message("integer overflow")?;
             }
             (ValueRefMut::U16(var), Value::Fraction(val)) => {
                 *var = val

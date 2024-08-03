@@ -57,6 +57,7 @@ mod moves {
         mod conversion_2_test;
         mod curse_test;
         mod flail_test;
+        mod foresight_test;
         mod lock_on_test;
         mod magnitude_test;
         mod nightmare_test;
@@ -66,6 +67,7 @@ mod moves {
     }
 
     mod gen4 {
+        mod miracle_eye_test;
         mod toxic_spikes_test;
     }
 }

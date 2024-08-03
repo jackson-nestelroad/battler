@@ -24,7 +24,21 @@
     "pp": 40,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "miracleeye"
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_negate_immunity": [
+          "if func_call(has_type: $mon dark) and $type == psychic:",
+          ["return false"]
+        ],
+        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"]]
+      }
+    }
   },
   "wakeupslap": {
     "name": "Wake-Up Slap",

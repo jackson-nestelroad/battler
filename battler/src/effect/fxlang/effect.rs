@@ -28,7 +28,6 @@ pub mod CallbackFlag {
     pub const TakesSourceTargetMon: u32 = 1 << 7;
     pub const TakesSourceEffect: u32 = 1 << 8;
     pub const TakesSide: u32 = 1 << 9;
-    pub const TakesBoosts: u32 = 1 << 10;
 
     pub const ReturnsTypes: u32 = 1 << 24;
     pub const ReturnsMon: u32 = 1 << 25;
@@ -72,7 +71,6 @@ enum CommonCallbackType {
     ApplyingEffectBoostModifier = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
-        | CallbackFlag::TakesBoosts
         | CallbackFlag::ReturnsBoosts
         | CallbackFlag::ReturnsVoid,
 
@@ -143,6 +141,8 @@ enum CommonCallbackType {
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
     MonTypes = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes,
+    MonBoostModifier =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoosts | CallbackFlag::ReturnsVoid,
 
     SideVoid = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
@@ -443,6 +443,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifyAtk"]
     ModifyAtk,
+    /// Runs when modifying a Mon's stat boosts used for stat calculations.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "ModifyBoosts"]
+    ModifyBoosts,
     /// Runs when calculating a move's critical hit ratio.
     ///
     /// Runs in the context of an active move from the user.
@@ -488,6 +493,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "MoveFailed"]
     MoveFailed,
+    /// Runs when determining if a Mon's immunity against a single type should be negated.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "NegateImmunity"]
+    NegateImmunity,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -753,6 +763,7 @@ impl BattleEvent {
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
+            Self::ModifyBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MonModifier as u32,
@@ -761,6 +772,7 @@ impl BattleEvent {
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
+            Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -818,6 +830,7 @@ impl BattleEvent {
                 ("type", ValueType::Type, true),
             ],
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
+            Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
             Self::ModifyDamage
             | Self::SourceModifyDamage
@@ -827,6 +840,7 @@ impl BattleEvent {
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
+            Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
                 &[("status", ValueType::Effect, true)]
@@ -1091,6 +1105,7 @@ pub struct Callbacks {
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_atk: Callback,
+    pub on_modify_boosts: Callback,
     pub on_modify_crit_ratio: Callback,
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
@@ -1099,6 +1114,7 @@ pub struct Callbacks {
     pub on_modify_spe: Callback,
     pub on_move_aborted: Callback,
     pub on_move_failed: Callback,
+    pub on_negate_immunity: Callback,
     pub on_prepare_hit: Callback,
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
@@ -1182,6 +1198,7 @@ impl Callbacks {
             BattleEvent::IsSunny => Some(&self.is_sunny),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
+            BattleEvent::ModifyBoosts => Some(&self.on_modify_boosts),
             BattleEvent::ModifyCritRatio => Some(&self.on_modify_crit_ratio),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
@@ -1190,6 +1207,7 @@ impl Callbacks {
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),
             BattleEvent::MoveAborted => Some(&self.on_move_aborted),
             BattleEvent::MoveFailed => Some(&self.on_move_failed),
+            BattleEvent::NegateImmunity => Some(&self.on_negate_immunity),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),

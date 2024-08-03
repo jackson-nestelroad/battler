@@ -87,7 +87,8 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]],
+        "on_negate_immunity": ["if !$mon.is_grounded:", ["return false"]]
       }
     }
   },

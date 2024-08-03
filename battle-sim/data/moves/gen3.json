@@ -683,7 +683,10 @@
     "pp": 40,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "foresight"
+    }
   },
   "rocktomb": {
     "name": "Rock Tomb",

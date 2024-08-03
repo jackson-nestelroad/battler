@@ -891,7 +891,6 @@ impl Mon {
         unmodified: bool,
         modifier: Option<Fraction<u16>>,
         stat_user: MonHandle,
-        stat_target: Option<MonHandle>,
     ) -> Result<u16, Error> {
         if stat == Stat::HP {
             return Err(battler_error!(
@@ -901,11 +900,16 @@ impl Mon {
 
         let mut value = context.mon().stats.get(stat);
         if !unboosted {
+            let boosts = context.mon().boosts.clone();
+            let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+                &mut context.as_battle_context_mut().mon_context(stat_user)?,
+                fxlang::BattleEvent::ModifyBoosts,
+                boosts,
+            );
             let boost = match boost {
                 Some(boost) => boost,
-                None => context.mon().boosts.get(stat.try_into()?),
+                None => boosts.get(stat.try_into()?),
             };
-            // TODO: ModifyBoost event. Should apply to stat_user.
             lazy_static! {
                 static ref BOOST_TABLE: [Fraction<u16>; 7] = [
                     Fraction::new(1, 1),
@@ -949,7 +953,6 @@ impl Mon {
         boost: i8,
         modifier: Fraction<u16>,
         stat_user: MonHandle,
-        stat_target: MonHandle,
     ) -> Result<u16, Error> {
         Self::calculate_stat_internal(
             context,
@@ -959,7 +962,6 @@ impl Mon {
             false,
             Some(modifier),
             stat_user,
-            Some(stat_target),
         )
     }
 
@@ -979,7 +981,6 @@ impl Mon {
             unmodified,
             None,
             context.mon_handle(),
-            None,
         )
     }
 
@@ -1455,8 +1456,13 @@ impl Mon {
         }
 
         let types = Self::types(context)?;
-        // TODO: NegateImmunity event.
-        // TODO: Handle immunity from being grounded and potentially other volatile conditions.
+        if !core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::NegateImmunity,
+            fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+        ) {
+            return Ok(false);
+        }
         let immune = context.battle().check_type_immunity(typ, &types);
 
         Ok(immune)

@@ -82,6 +82,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;
             parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyBoosts, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyCritRatio, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDef, callbacks)?;
@@ -90,6 +91,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveFailed, callbacks)?;
+            parsed.parse_and_save(BattleEvent::NegateImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::RedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;

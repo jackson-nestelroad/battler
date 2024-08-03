@@ -556,14 +556,6 @@
     "hit_effect": {
       "volatile_status": "foresight"
     },
-    "effect": {
-      "callbacks": {
-        "on_try_hit": [
-          "if func_call(has_volatile: $target miracleeye):",
-          ["return false"]
-        ]
-      }
-    },
     "condition": {
       "no_copy": true,
       "callbacks": {
