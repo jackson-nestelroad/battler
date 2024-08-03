@@ -784,7 +784,7 @@
       "callbacks": {
         "on_use_move": [
           "$weather = $user.effective_weather",
-          "if func_call(is_defined: $weather) and $weather.is_snowing:",
+          "if $weather.is_defined and $weather.is_snowing:",
           ["$move.accuracy = exempt"]
         ]
       }
@@ -919,7 +919,7 @@
         "on_before_turn": ["add_volatile: $target $this.id"],
         "on_try_use_move": [
           "$effect_state = func_call(volatile_effect_state: $user $this.id)",
-          "if !$effect_state or !$effect_state.target_side or func_call(is_undefined: $effect_state.target_position):",
+          "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
           ["return false"]
         ],
         "on_damage": [
@@ -938,7 +938,7 @@
         "on_redirect_target": [
           "if $move.id != counter:",
           ["return"],
-          "if !$effect_state.target_side or func_call(is_undefined: $effect_state.target_position):",
+          "if !$effect_state.target_side or $effect_state.target_position.is_undefined:",
           ["return"],
           "return func_call(mon_in_position: $effect_state.target_side $effect_state.target_position)"
         ],
@@ -1037,7 +1037,7 @@
       "callbacks": {
         "on_use_move": [
           "$weather = $user.effective_weather",
-          "if func_call(is_defined: $weather) and $weather.is_sunny:",
+          "if $weather.is_defined and $weather.is_sunny:",
           ["$move.hit_effect.boosts = func_call(boost_table: atk:2 spa:2)"]
         ]
       }
@@ -1070,7 +1070,7 @@
           ["return"],
           "log_prepare_move",
           "$weather = $user.effective_weather",
-          "if func_call(is_defined: $weather) and $weather.is_sunny:",
+          "if $weather.is_defined and $weather.is_sunny:",
           [
             "do_not_animate_last_move",
             "log_animate_move: $user $this.name $target",
@@ -1686,7 +1686,7 @@
         "on_restart": ["return true"],
         "on_lock_move": ["return $this.id"],
         "on_damage_received": [
-          "if func_call(is_defined: $source) and $source != $target:",
+          "if $source.is_defined and $source != $target:",
           ["$effect_state.last_damage_source = $source"],
           "$effect_state.total_damage = $effect_state.total_damage + $damage"
         ],
@@ -2423,7 +2423,7 @@
           ["return"],
           "# Calculate and apply damage.",
           "$damage = func_call(calculate_damage: $target)",
-          "if func_call(is_boolean: $damage) and !$damage:",
+          "if $damage.is_boolean and !$damage:",
           ["log_fail: $source", "do_not_animate_last_move", "return false"],
           "if $damage > $effect_state.hp:",
           ["$damage = $effect_state.hp"],

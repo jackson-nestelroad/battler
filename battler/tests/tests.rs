@@ -62,6 +62,7 @@ mod moves {
         mod lock_on_test;
         mod magnitude_test;
         mod nightmare_test;
+        mod perish_song_test;
         mod protect_test;
         mod sketch_test;
         mod spikes_test;

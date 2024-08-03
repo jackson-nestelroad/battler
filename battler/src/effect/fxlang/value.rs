@@ -426,6 +426,14 @@ impl Value {
         self.list()?.into_iter().map(|val| val.mon_type()).collect()
     }
 
+    /// Consumes the value into a [`Vec<MonHandle>`].
+    pub fn mons_list(self) -> Result<Vec<MonHandle>, Error> {
+        self.list()?
+            .into_iter()
+            .map(|val| val.mon_handle())
+            .collect()
+    }
+
     /// Consumes the value into a [`HitEffect`].
     pub fn hit_effect(self) -> Result<HitEffect, Error> {
         match self {
@@ -719,6 +727,22 @@ impl<'eval> ValueRef<'eval> {
         }
     }
 
+    /// Checks if the value is undefined.
+    pub fn is_undefined(&self) -> bool {
+        match self {
+            Self::Undefined => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if the value is a [`bool`].
+    pub fn is_boolean(&self) -> bool {
+        match self {
+            Self::Boolean(_) => true,
+            _ => false,
+        }
+    }
+
     /// Converts the value to a boolean, if possible.
     pub fn boolean(&self) -> Option<bool> {
         match self {
@@ -733,6 +757,16 @@ impl<'eval> ValueRef<'eval> {
             Self::List(_) => true,
             Self::TempList(_) => true,
             _ => false,
+        }
+    }
+
+    /// Returns if the container is empty.
+    ///
+    /// `false` by default.
+    pub fn is_empty(&self) -> bool {
+        match self.len() {
+            Some(len) => len == 0,
+            None => false,
         }
     }
 

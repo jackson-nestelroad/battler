@@ -102,10 +102,6 @@ pub fn run_function(
         "heal" => heal(context, args).map(|()| None),
         "hit_effect" => hit_effect().map(|val| Some(val)),
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
-        "is_boolean" => is_boolean(args).map(|val| Some(val)),
-        "is_defined" => is_defined(args).map(|val| Some(val)),
-        "is_empty" => is_empty(args).map(|val| Some(val)),
-        "is_undefined" => is_undefined(args).map(|val| Some(val)),
         "log" => log(context, args).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context, args).map(|()| None),
@@ -115,6 +111,7 @@ pub fn run_function(
         "log_fail" => log_fail(context, args).map(|()| None),
         "log_fail_heal" => log_fail_heal(context, args).map(|()| None),
         "log_field_activate" => log_field_activate(context, args).map(|()| None),
+        "log_immune" => log_immune(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
         "log_side_end" => log_side_end(context, args).map(|()| None),
@@ -137,6 +134,7 @@ pub fn run_function(
             new_active_move_from_local_data(context, args).map(|val| Some(val))
         }
         "overwrite_move_slot" => overwrite_move_slot(context, args).map(|()| None),
+        "prepare_direct_move" => prepare_direct_move(context, args).map(|val| Some(val)),
         "random" => random(context, args).map(|val| Some(val)),
         "random_target" => random_target(context, args),
         "remove_side_condition" => remove_side_condition(context, args).map(|val| Some(val)),
@@ -252,7 +250,11 @@ fn log_ability(context: &mut EvaluationContext) -> Result<(), Error> {
     core_battle_logs::ability(&mut context.target_context()?)
 }
 
-fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn log_effect_activation_base(
+    context: &mut EvaluationContext,
+    header: &str,
+    mut args: VecDeque<Value>,
+) -> Result<(), Error> {
     let with_target = has_special_string_flag(&mut args, "with_target");
     let with_source = has_special_string_flag(&mut args, "with_source");
 
@@ -278,32 +280,23 @@ fn log_activate(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
         )));
     }
 
-    log_internal(context, "activate".to_owned(), args)
+    log_internal(context, header.to_owned(), args)
 }
 
-fn log_field_activate(
-    context: &mut EvaluationContext,
-    mut args: VecDeque<Value>,
-) -> Result<(), Error> {
-    let with_source = has_special_string_flag(&mut args, "with_source");
+fn log_activate(context: &mut EvaluationContext, args: VecDeque<Value>) -> Result<(), Error> {
+    log_effect_activation_base(context, "activate", args)
+}
 
-    let no_effect = has_special_string_flag(&mut args, "no_effect");
-    if !no_effect {
-        add_effect_to_args(context, &mut args)?;
-    }
+fn log_field_activate(context: &mut EvaluationContext, args: VecDeque<Value>) -> Result<(), Error> {
+    log_effect_activation_base(context, "fieldactivate", args)
+}
 
-    if with_source {
-        args.push_back(Value::String(format!(
-            "of:{}",
-            Mon::position_details(
-                &context
-                    .source_context()?
-                    .wrap_error_with_message("effect has no source")?
-            )?
-        )));
-    }
+fn log_single_turn(context: &mut EvaluationContext, args: VecDeque<Value>) -> Result<(), Error> {
+    log_effect_activation_base(context, "singleturn", args)
+}
 
-    log_internal(context, "fieldactivate".to_owned(), args)
+fn log_single_move(context: &mut EvaluationContext, args: VecDeque<Value>) -> Result<(), Error> {
+    log_effect_activation_base(context, "singlemove", args)
 }
 
 fn log_animate_move(
@@ -515,6 +508,21 @@ fn log_fail(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     }
 }
 
+fn log_immune(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let from_effect = has_special_string_flag(&mut args, "from_effect");
+    if from_effect {
+        let effect_handle = context.effect_handle().clone();
+        core_battle_logs::immune_from_effect(&mut context.mon_context(mon_handle)?, &effect_handle)
+    } else {
+        core_battle_logs::immune(&mut context.mon_context(mon_handle)?)
+    }
+}
+
 fn log_fail_heal(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mon_handle = args
         .pop_front()
@@ -531,58 +539,6 @@ fn log_ohko(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_logs::ohko(&mut context.mon_context(mon_handle)?)
-}
-
-fn log_single_turn(
-    context: &mut EvaluationContext,
-    mut args: VecDeque<Value>,
-) -> Result<(), Error> {
-    let with_source = has_special_string_flag(&mut args, "with_source");
-
-    add_effect_to_args(context, &mut args)?;
-    args.push_front(Value::String(format!(
-        "mon:{}",
-        Mon::position_details(&context.target_context()?)?
-    )));
-
-    if with_source {
-        args.push_back(Value::String(format!(
-            "of:{}",
-            Mon::position_details(
-                &context
-                    .source_context()?
-                    .wrap_error_with_message("effect has no source")?
-            )?
-        )));
-    }
-
-    log_internal(context, "singleturn".to_owned(), args)
-}
-
-fn log_single_move(
-    context: &mut EvaluationContext,
-    mut args: VecDeque<Value>,
-) -> Result<(), Error> {
-    let with_source = has_special_string_flag(&mut args, "with_source");
-
-    add_effect_to_args(context, &mut args)?;
-    args.push_front(Value::String(format!(
-        "mon:{}",
-        Mon::position_details(&context.target_context()?)?
-    )));
-
-    if with_source {
-        args.push_back(Value::String(format!(
-            "of:{}",
-            Mon::position_details(
-                &context
-                    .source_context()?
-                    .wrap_error_with_message("effect has no source")?
-            )?
-        )));
-    }
-
-    log_internal(context, "singlemove".to_owned(), args)
 }
 
 fn random(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1148,21 +1104,6 @@ fn apply_recoil_damage(
         .integer_u64()
         .wrap_error_with_message("invalid damage")?;
     core_battle_actions::apply_recoil_damage(&mut context, damage)
-}
-
-fn is_boolean(mut args: VecDeque<Value>) -> Result<Value, Error> {
-    let value = args.pop_front().wrap_error_with_message("missing value")?;
-    Ok(Value::Boolean(value.boolean().is_ok()))
-}
-
-fn is_defined(mut args: VecDeque<Value>) -> Result<Value, Error> {
-    let value = args.pop_front().wrap_error_with_message("missing value")?;
-    Ok(Value::Boolean(!value.is_undefined()))
-}
-
-fn is_undefined(mut args: VecDeque<Value>) -> Result<Value, Error> {
-    let value = args.pop_front().wrap_error_with_message("missing value")?;
-    Ok(Value::Boolean(value.is_undefined()))
 }
 
 fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1917,15 +1858,6 @@ fn type_has_no_effect_against(
     ))
 }
 
-fn is_empty(mut args: VecDeque<Value>) -> Result<Value, Error> {
-    let list = args
-        .pop_front()
-        .wrap_error_with_message("missing list")?
-        .list()
-        .wrap_error_with_message("invalid list")?;
-    Ok(Value::Boolean(list.is_empty()))
-}
-
 fn append(mut args: VecDeque<Value>) -> Result<Value, Error> {
     let mut list = args
         .pop_front()
@@ -1973,4 +1905,25 @@ fn faint(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(
     let source = context.source_handle();
     let effect = context.effect_handle().clone();
     core_battle_actions::faint(&mut context.mon_context(mon_handle)?, source, Some(&effect))
+}
+
+fn prepare_direct_move(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let targets = args
+        .pop_front()
+        .wrap_error_with_message("missing targets list")?
+        .mons_list()
+        .wrap_error_with_message("invalid targets list")?;
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_error_with_message("context is not an active move")?;
+    let targets = core_battle_actions::prepare_direct_move(&mut context, &targets)?;
+    Ok(Value::List(
+        targets
+            .into_iter()
+            .map(|target| Value::Mon(target))
+            .collect(),
+    ))
 }

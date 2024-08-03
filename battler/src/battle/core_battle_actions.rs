@@ -765,15 +765,33 @@ fn try_indirect_move(
     move_hit_determine_success(context, &targets[0..1])
 }
 
-/// Tries to use a move directly against several target Mons.
-fn try_direct_move(
+struct MoveStepResult {
+    targets: Vec<direct_move_step::MoveStepTarget>,
+    at_least_one_failure: bool,
+}
+
+fn apply_move_step_against_targets(
+    context: &mut ActiveMoveContext,
+    mut result: MoveStepResult,
+    move_step: direct_move_step::DirectMoveStep,
+) -> Result<MoveStepResult, Error> {
+    move_step(context, result.targets.as_mut_slice())?;
+    let at_least_one_failure = result.targets.iter().any(|target| target.outcome.failed());
+    let targets = result
+        .targets
+        .into_iter()
+        .filter(|target| target.outcome.success())
+        .collect();
+    Ok(MoveStepResult {
+        targets,
+        at_least_one_failure: result.at_least_one_failure | at_least_one_failure,
+    })
+}
+
+fn prepare_direct_move_against_targets(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
-) -> Result<MoveOutcome, Error> {
-    if targets.len() > 1 && !context.active_move().data.smart_target {
-        context.active_move_mut().spread_hit = true;
-    }
-
+) -> Result<MoveStepResult, Error> {
     lazy_static! {
         static ref STEPS: Vec<direct_move_step::DirectMoveStep> = vec![
             direct_move_step::check_targets_invulnerability,
@@ -783,38 +801,64 @@ fn try_direct_move(
             direct_move_step::handle_accuracy,
             direct_move_step::break_protect,
             // TODO: Boost stealing would happen at this stage.
-            direct_move_step::move_hit_loop,
         ];
+    }
+
+    let mut result = MoveStepResult {
+        targets: targets
+            .iter()
+            .map(|target| direct_move_step::MoveStepTarget {
+                handle: *target,
+                outcome: MoveOutcome::Success,
+            })
+            .collect(),
+        at_least_one_failure: false,
+    };
+    for step in &*STEPS {
+        result = apply_move_step_against_targets(context, result, *step)?;
+        if result.targets.is_empty() {
+            break;
+        }
+    }
+
+    Ok(result)
+}
+
+/// Prepares to use a move directly against several target Mons.
+pub fn prepare_direct_move(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+) -> Result<Vec<MonHandle>, Error> {
+    let result = prepare_direct_move_against_targets(context, targets)?;
+    Ok(result
+        .targets
+        .into_iter()
+        .map(|target| target.handle)
+        .collect())
+}
+
+/// Tries to use a move directly against several target Mons.
+fn try_direct_move(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+) -> Result<MoveOutcome, Error> {
+    if targets.len() > 1 && !context.active_move().data.smart_target {
+        context.active_move_mut().spread_hit = true;
     }
 
     if let Some(try_use_move_outcome) = run_try_use_move_events(context)? {
         return Ok(try_use_move_outcome);
     }
 
-    let mut targets = targets
-        .iter()
-        .map(|target| direct_move_step::MoveStepTarget {
-            handle: *target,
-            outcome: MoveOutcome::Success,
-        })
-        .collect::<Vec<_>>();
-    // We can lose targets without explicit failures.
-    let mut at_least_one_failure = false;
-    for step in &*STEPS {
-        step(context, targets.as_mut_slice())?;
-        at_least_one_failure =
-            at_least_one_failure || targets.iter().any(|target| target.outcome.failed());
-        targets = targets
-            .into_iter()
-            .filter(|target| target.outcome.success())
-            .collect();
-        if targets.is_empty() {
-            break;
-        }
-    }
+    let prepare_result = prepare_direct_move_against_targets(context, targets)?;
+    let result = if !prepare_result.targets.is_empty() {
+        apply_move_step_against_targets(context, prepare_result, *&direct_move_step::move_hit_loop)?
+    } else {
+        prepare_result
+    };
 
-    let outcome = if targets.is_empty() {
-        if at_least_one_failure {
+    let outcome = if result.targets.is_empty() {
+        if result.at_least_one_failure {
             MoveOutcome::Failed
         } else {
             MoveOutcome::Skipped
@@ -826,7 +870,7 @@ fn try_direct_move(
     if context.active_move().spread_hit && !outcome.failed() {
         core_battle_logs::last_move_spread_targets(
             context.as_battle_context_mut(),
-            targets.into_iter().map(|target| target.handle),
+            result.targets.into_iter().map(|target| target.handle),
         )?;
     }
 

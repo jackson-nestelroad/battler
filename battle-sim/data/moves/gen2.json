@@ -244,7 +244,7 @@
             "if func_call(type_is_weak_against: $last_type $type) or func_call(type_has_no_effect_against: $last_type $type):",
             ["$types = func_call(append: $types $type)"]
           ],
-          "if func_call(is_empty: $types):",
+          "if $types.is_empty:",
           ["return false"],
           "$type = func_call(sample: $types)",
           "return func_call(set_types: $source $type)"
@@ -602,7 +602,35 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["BypassSubstitute", "Distance", "Sound"]
+    "flags": ["BypassSubstitute", "Distance", "Sound"],
+    "effect": {
+      "callbacks": {
+        "on_hit_field": [
+          "$success = false",
+          "$hit = false",
+          "$targets = func_call(all_active_mons)",
+          "if $targets.is_empty:",
+          ["return false"],
+          "foreach $target in func_call(prepare_direct_move: $targets):",
+          [
+            "$success = true",
+            "$hit_target = func_call(add_volatile: $target $this.id)",
+            "$hit = $hit or $hit_target"
+          ],
+          "if !$success:",
+          ["return false"],
+          "if $hit:",
+          ["log_field_activate"]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_residual": ["log_start: str('perish:{}', $effect_state.duration)"],
+        "on_end": ["log_start: perish:0", "faint: $target"]
+      }
+    }
   },
   "icywind": {
     "name": "Icy Wind",
@@ -753,7 +781,7 @@
       "callbacks": {
         "on_base_power": [
           "$rollout_state = func_call(volatile_effect_state: $source $this.id)",
-          "if func_call(is_defined: $rollout_state):",
+          "if $rollout_state.is_defined:",
           [
             "$base_power = $base_power * 2 ^ $rollout_state.hit_count",
             "# Update the hit count for the next use of the move.",
@@ -778,7 +806,7 @@
       "callbacks": {
         "on_start": ["$effect_state.hit_count = 0"],
         "on_residual": [
-          "if func_call(is_defined: $target.last_move) and $target.last_move.id == struggle:",
+          "if $target.last_move.is_defined and $target.last_move.id == struggle:",
           ["remove_volatile: $target $this.id"]
         ],
         "on_lock_move": ["return $this.id"]

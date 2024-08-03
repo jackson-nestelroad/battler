@@ -49,7 +49,18 @@
   "magmaarmor": { "name": "Magma Armor", "flags": [] },
   "waterveil": { "name": "Water Veil", "flags": [] },
   "magnetpull": { "name": "Magnet Pull", "flags": [] },
-  "soundproof": { "name": "Soundproof", "flags": [] },
+  "soundproof": {
+    "name": "Soundproof",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target != $source and func_call(move_has_flag: $move sound):",
+          ["log_immune: $target from_effect", "return false"]
+        ]
+      }
+    }
+  },
   "raindish": { "name": "Rain Dish", "flags": [] },
   "sandstream": {
     "name": "Sand Stream",

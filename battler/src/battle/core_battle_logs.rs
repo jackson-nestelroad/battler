@@ -138,6 +138,17 @@ pub fn immune(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
+pub fn immune_from_effect(context: &mut MonContext, effect: &EffectHandle) -> Result<(), Error> {
+    let effect = CoreBattle::get_effect_by_handle(context.as_battle_context(), effect)?.full_name();
+    let event = log_event!(
+        "immune",
+        ("mon", Mon::position_details(context)?),
+        ("from", effect)
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 fn move_event_on_target(context: &mut MonContext, event: &str) -> Result<(), Error> {
     let event = log_event!(event, ("mon", Mon::position_details(context)?));
     context.battle_mut().log(event);
