@@ -65,6 +65,7 @@ pub fn run_function(
     match function_name {
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
+        "all_mons_on_side" => all_mons_on_side(context, args).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
         "any_mon_will_move_this_turn" => any_mon_will_move_this_turn(context).map(|val| Some(val)),
         "append" => append(args).map(|val| Some(val)),
@@ -83,7 +84,7 @@ pub fn run_function(
         "clamp_number" => clamp_number(args).map(|val| Some(val)),
         "clear_boosts" => clear_boosts(context, args).map(|()| None),
         "clear_weather" => clear_weather(context, args).map(|val| Some(val)),
-        "cure_status" => cure_status(context, args).map(|()| None),
+        "cure_status" => cure_status(context, args).map(|val| Some(val)),
         "damage" => damage(context, args).map(|val| Some(val)),
         "debug_log" => debug_log(context, args).map(|()| None),
         "direct_damage" => direct_damage(context, args).map(|()| None),
@@ -748,7 +749,7 @@ fn has_volatile(
     )))
 }
 
-fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -760,8 +761,9 @@ fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
     } else {
         context.forward_effect_to_applying_effect(mon_handle)?
     };
-    core_battle_actions::cure_status(&mut context, log_effect)?;
-    Ok(())
+    Ok(Value::Boolean(
+        core_battle_actions::cure_status(&mut context, log_effect)?.success(),
+    ))
 }
 
 fn move_has_flag(
@@ -1477,6 +1479,25 @@ fn all_active_mons(context: &mut EvaluationContext) -> Result<Value, Error> {
             .battle_context()
             .battle()
             .all_active_mon_handles()
+            .map(|mon_handle| Value::Mon(mon_handle))
+            .collect(),
+    ))
+}
+
+fn all_mons_on_side(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let side = args
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    Ok(Value::List(
+        context
+            .battle_context()
+            .battle()
+            .all_mon_handles_on_side(side)
             .map(|mon_handle| Value::Mon(mon_handle))
             .collect(),
     ))

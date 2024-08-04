@@ -80,6 +80,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::IsImmuneToEntryHazards, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSnowing, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsSoundproof, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;
             parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;

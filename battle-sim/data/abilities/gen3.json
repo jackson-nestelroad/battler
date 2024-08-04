@@ -54,6 +54,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
+        "is_soundproof": ["return true"],
         "on_try_hit": [
           "if $target != $source and func_call(move_has_flag: $move sound):",
           ["log_immune: $target from_effect", "return false"]

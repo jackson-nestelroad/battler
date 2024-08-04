@@ -439,6 +439,11 @@ pub enum BattleEvent {
     /// Runs on the effect itslf.
     #[string = "IsSnowing"]
     IsSnowing,
+    /// Runs when determining if a Mon is soundproof.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsSoundproof"]
+    IsSoundproof,
     /// Runs when determining if a weather includes sunny weather.
     ///
     /// Runs on the effect itslf.
@@ -786,6 +791,7 @@ impl BattleEvent {
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
             Self::IsRaining => CommonCallbackType::NoContextResult as u32,
             Self::IsSnowing => CommonCallbackType::NoContextResult as u32,
+            Self::IsSoundproof => CommonCallbackType::MonResult as u32,
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
@@ -1105,6 +1111,7 @@ pub struct Callbacks {
     pub is_immune_to_entry_hazards: Callback,
     pub is_raining: Callback,
     pub is_snowing: Callback,
+    pub is_soundproof: Callback,
     pub is_sunny: Callback,
     pub on_accuracy_exempt: Callback,
     pub on_add_volatile: Callback,
@@ -1236,6 +1243,7 @@ impl Callbacks {
             BattleEvent::IsImmuneToEntryHazards => Some(&self.is_immune_to_entry_hazards),
             BattleEvent::IsRaining => Some(&self.is_raining),
             BattleEvent::IsSnowing => Some(&self.is_snowing),
+            BattleEvent::IsSoundproof => Some(&self.is_soundproof),
             BattleEvent::IsSunny => Some(&self.is_sunny),
             BattleEvent::LockMove => Some(&self.on_lock_move),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),

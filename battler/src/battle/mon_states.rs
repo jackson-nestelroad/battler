@@ -25,11 +25,21 @@ pub fn is_grounded(context: &mut MonContext) -> bool {
         true,
     )
 }
+
 /// Checks if the [`Mon`][`crate::battle::Mon`] is immune to entry hazards.
 pub fn is_immune_to_entry_hazards(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,
         fxlang::BattleEvent::IsImmuneToEntryHazards,
+        false,
+    )
+}
+
+/// Checks if the [`Mon`][`crate::battle::Mon`] is soundproof.
+pub fn is_soundproof(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsSoundproof,
         false,
     )
 }

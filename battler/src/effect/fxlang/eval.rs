@@ -628,6 +628,9 @@ where
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "is_soundproof" => ValueRef::Boolean(mon_states::is_soundproof(
+                                &mut context.mon_context(mon_handle)?,
+                            )),
                             "is_immune_to_entry_hazards" => {
                                 ValueRef::Boolean(mon_states::is_immune_to_entry_hazards(
                                     &mut context.mon_context(mon_handle)?,

@@ -1049,7 +1049,24 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AllyTeam",
-    "flags": ["BypassSubstitute", "Distance", "Snatch", "Sound"]
+    "flags": ["BypassSubstitute", "Distance", "Snatch", "Sound"],
+    "effect": {
+      "callbacks": {
+        "on_hit_side": [
+          "log_activate: with_source",
+          "$success = false",
+          "foreach $ally in func_call(all_mons_on_side: $source.side):",
+          [
+            "if $ally == $source or !$ally.is_soundproof:",
+            [
+              "$cured = func_call(cure_status: $ally)",
+              "$success = $success or $cured"
+            ]
+          ],
+          "return $success"
+        ]
+      }
+    }
   },
   "return": {
     "name": "Return",

@@ -63,6 +63,7 @@ mod moves {
         mod flail_test;
         mod foresight_test;
         mod fury_cutter_test;
+        mod heal_bell_test;
         mod lock_on_test;
         mod magnitude_test;
         mod nightmare_test;
