@@ -45,7 +45,7 @@
     "multiaccuracy": true,
     "multihit": 3,
     "effect": {
-      "callbacks": { "on_base_power": ["return expr(10 * $move.hit)"] }
+      "callbacks": { "on_move_base_power": ["return expr(10 * $move.hit)"] }
     }
   },
   "thief": {
@@ -204,7 +204,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "$ratio = expr(($target.hp * 10000) / $target.max_hp)",
           "$ratio = func_call(max: $ratio 1)",
           "if $ratio < 417:",
@@ -283,7 +283,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "$ratio = expr(($target.hp * 10000) / $target.max_hp)",
           "$ratio = func_call(max: $ratio 1)",
           "if $ratio < 417:",
@@ -805,7 +805,8 @@
     "flags": ["Contact", "FailInstruct", "Mirror", "NoParentalBond", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
+          "$base_power = $move.base_power",
           "$rollout_state = func_call(volatile_effect_state: $source $this.id)",
           "if $rollout_state.is_defined:",
           [
@@ -821,10 +822,7 @@
           ["$base_power = $base_power * 2"],
           "return $base_power"
         ],
-        "on_use_move": [
-          "if !func_call(has_volatile: $user $this.id):",
-          ["add_volatile: $mon $this.id"]
-        ]
+        "on_use_move": ["add_volatile: $user $this.id"]
       }
     },
     "condition": {
@@ -852,7 +850,10 @@
       "callbacks": {
         "on_damage": {
           "order": 999,
-          "program": ["if $damage >= $target.hp:", ["return $target.hp - 1"]]
+          "program": [
+            "if $damage >= $target.hp:",
+            ["return expr($target.hp - 1)"]
+          ]
         }
       }
     }
@@ -913,10 +914,10 @@
     "flags": ["Contact", "Mirror", "Protect", "Slicing"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "add_volatile: $source $this.id",
           "$volatile_state = func_call(volatile_effect_state: $source $this.id)",
-          "return func_call(clamp_number: expr($base_power * $volatile_state.multiplier) 1 160)"
+          "return func_call(clamp_number: expr($move.base_power * $volatile_state.multiplier) 1 160)"
         ]
       }
     },
@@ -1011,7 +1012,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "return func_call(max: 1 expr($source.happiness * 10 / 25))"
         ]
       }
@@ -1036,7 +1037,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "return func_call(max: 1 expr((255 - $source.happiness) * 10 / 25))"
         ]
       }

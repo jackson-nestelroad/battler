@@ -58,6 +58,7 @@ mod moves {
         mod curse_test;
         mod destiny_bond_test;
         mod endure_test;
+        mod false_swipe_test;
         mod flail_test;
         mod foresight_test;
         mod lock_on_test;
@@ -65,6 +66,7 @@ mod moves {
         mod nightmare_test;
         mod perish_song_test;
         mod protect_test;
+        mod rollout_test;
         mod sketch_test;
         mod spikes_test;
     }

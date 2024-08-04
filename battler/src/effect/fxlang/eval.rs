@@ -1654,6 +1654,7 @@ impl Evaluator {
         rhs: MaybeReferenceValueForOperation<'eval>,
     ) -> Result<MaybeReferenceValue<'eval>, Error> {
         match op {
+            tree::Operator::Exponent => lhs.pow(rhs),
             tree::Operator::Multiply => lhs.multiply(rhs),
             tree::Operator::Divide => lhs.divide(rhs),
             tree::Operator::Modulo => lhs.modulo(rhs),

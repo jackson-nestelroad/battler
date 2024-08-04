@@ -117,6 +117,8 @@ pub struct Assignment {
 pub enum Operator {
     Not,
 
+    Exponent,
+
     Multiply,
     Divide,
     Modulo,
@@ -143,6 +145,7 @@ impl From<Operator> for &str {
     fn from(value: Operator) -> Self {
         match value {
             Operator::Not => "!",
+            Operator::Exponent => "^",
             Operator::Multiply => "*",
             Operator::Divide => "/",
             Operator::Modulo => "%",

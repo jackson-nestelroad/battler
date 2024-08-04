@@ -268,13 +268,6 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "BeforeTurn"]
     BeforeTurn,
-    /// Runs when a move's base power is being calculated for a target.
-    ///
-    /// Used to apply dynamic base powers.
-    ///
-    /// Runs on the active move itself.
-    #[string = "BasePower"]
-    BasePower,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
     /// Runs in the context of an active move from the user.
@@ -496,6 +489,20 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "MoveAborted"]
     MoveAborted,
+    /// Runs when a move's base power is being calculated for a target.
+    ///
+    /// Used to apply dynamic base powers.
+    ///
+    /// Runs on the active move itself.
+    #[string = "MoveBasePower"]
+    MoveBasePower,
+    /// Runs when a move's damage is being calculated for a target.
+    ///
+    /// Used to override damage calculations.
+    ///
+    /// Runs on the active move itself.
+    #[string = "MoveDamage"]
+    MoveDamage,
     /// Runs when a move fails, only on the move itself.
     ///
     /// A move fails when it is successfully used by the user, but it does not hit or apply its
@@ -740,7 +747,6 @@ impl BattleEvent {
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
-            Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -783,6 +789,8 @@ impl BattleEvent {
             Self::ModifySpD => CommonCallbackType::MonModifier as u32,
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
+            Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
+            Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
@@ -833,8 +841,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
-            Self::BasePower => &[("base_power", ValueType::UFraction, true)],
-            Self::Damage => &[("damage", ValueType::UFraction, false)],
+            Self::Damage => &[("damage", ValueType::UFraction, true)],
             Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
@@ -938,6 +945,15 @@ impl BattleEvent {
             Self::SuppressFieldWeather => 2,
             Self::SuppressMonWeather => 3,
             _ => usize::MAX,
+        }
+    }
+
+    /// Whether or not to run the event callback on the source effect when running all callbacks for
+    /// an event.
+    pub fn run_callback_on_source_effect(&self) -> bool {
+        match self {
+            Self::Damage => true,
+            _ => false,
         }
     }
 
@@ -1090,7 +1106,6 @@ pub struct Callbacks {
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
     pub on_any_exit: Callback,
-    pub on_base_power: Callback,
     pub on_before_move: Callback,
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
@@ -1127,6 +1142,8 @@ pub struct Callbacks {
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
     pub on_move_aborted: Callback,
+    pub on_move_base_power: Callback,
+    pub on_move_damage: Callback,
     pub on_move_failed: Callback,
     pub on_negate_immunity: Callback,
     pub on_prepare_hit: Callback,
@@ -1178,7 +1195,6 @@ impl Callbacks {
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::AnyExit => Some(&self.on_any_exit),
-            BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
@@ -1221,6 +1237,8 @@ impl Callbacks {
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),
             BattleEvent::MoveAborted => Some(&self.on_move_aborted),
+            BattleEvent::MoveBasePower => Some(&self.on_move_base_power),
+            BattleEvent::MoveDamage => Some(&self.on_move_damage),
             BattleEvent::MoveFailed => Some(&self.on_move_failed),
             BattleEvent::NegateImmunity => Some(&self.on_negate_immunity),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),

@@ -37,6 +37,7 @@ pub(crate) enum Token {
     Asterisk,
     ForwardSlash,
     Percent,
+    Caret,
     Exclamation,
 
     TrueKeyword,
@@ -453,6 +454,10 @@ mod token {
                 Some(b'%') => {
                     self.next_byte();
                     Some(Token::Percent)
+                }
+                Some(b'^') => {
+                    self.next_byte();
+                    Some(Token::Caret)
                 }
                 _ => None,
             }
@@ -1023,7 +1028,34 @@ impl<'s> StatementParser<'s> {
     }
 
     fn parse_expr(&mut self) -> Result<tree::Expr, Error> {
-        self.parse_expr_prec_8()
+        self.parse_expr_prec_9()
+    }
+
+    fn parse_expr_prec_9(&mut self) -> Result<tree::Expr, Error> {
+        let lhs = self.parse_expr_prec_8()?;
+        let mut rhs = Vec::new();
+        loop {
+            let op = match self.token_parser.next_token(NextTokenContext::new())? {
+                Some(Token::OrKeyword) => {
+                    self.token_parser.consume_lexeme();
+                    tree::Operator::Or
+                }
+                _ => break,
+            };
+            let expr = self.parse_expr_prec_8()?;
+            rhs.push(tree::BinaryExprRhs {
+                op,
+                expr: Box::new(expr),
+            });
+        }
+        if rhs.is_empty() {
+            Ok(lhs)
+        } else {
+            Ok(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                lhs: Box::new(lhs),
+                rhs,
+            }))
+        }
     }
 
     fn parse_expr_prec_8(&mut self) -> Result<tree::Expr, Error> {
@@ -1031,9 +1063,9 @@ impl<'s> StatementParser<'s> {
         let mut rhs = Vec::new();
         loop {
             let op = match self.token_parser.next_token(NextTokenContext::new())? {
-                Some(Token::OrKeyword) => {
+                Some(Token::AndKeyword) => {
                     self.token_parser.consume_lexeme();
-                    tree::Operator::Or
+                    tree::Operator::And
                 }
                 _ => break,
             };
@@ -1058,9 +1090,13 @@ impl<'s> StatementParser<'s> {
         let mut rhs = Vec::new();
         loop {
             let op = match self.token_parser.next_token(NextTokenContext::new())? {
-                Some(Token::AndKeyword) => {
+                Some(Token::Equal) => {
                     self.token_parser.consume_lexeme();
-                    tree::Operator::And
+                    tree::Operator::Equal
+                }
+                Some(Token::NotEqual) => {
+                    self.token_parser.consume_lexeme();
+                    tree::Operator::NotEqual
                 }
                 _ => break,
             };
@@ -1082,37 +1118,6 @@ impl<'s> StatementParser<'s> {
 
     fn parse_expr_prec_6(&mut self) -> Result<tree::Expr, Error> {
         let lhs = self.parse_expr_prec_5()?;
-        let mut rhs = Vec::new();
-        loop {
-            let op = match self.token_parser.next_token(NextTokenContext::new())? {
-                Some(Token::Equal) => {
-                    self.token_parser.consume_lexeme();
-                    tree::Operator::Equal
-                }
-                Some(Token::NotEqual) => {
-                    self.token_parser.consume_lexeme();
-                    tree::Operator::NotEqual
-                }
-                _ => break,
-            };
-            let expr = self.parse_expr_prec_5()?;
-            rhs.push(tree::BinaryExprRhs {
-                op,
-                expr: Box::new(expr),
-            });
-        }
-        if rhs.is_empty() {
-            Ok(lhs)
-        } else {
-            Ok(tree::Expr::BinaryExpr(tree::BinaryExpr {
-                lhs: Box::new(lhs),
-                rhs,
-            }))
-        }
-    }
-
-    fn parse_expr_prec_5(&mut self) -> Result<tree::Expr, Error> {
-        let lhs = self.parse_expr_prec_4()?;
         let mut rhs = Vec::new();
         loop {
             let op = match self.token_parser.next_token(NextTokenContext::new())? {
@@ -1142,6 +1147,37 @@ impl<'s> StatementParser<'s> {
                 }
                 _ => break,
             };
+            let expr = self.parse_expr_prec_5()?;
+            rhs.push(tree::BinaryExprRhs {
+                op,
+                expr: Box::new(expr),
+            });
+        }
+        if rhs.is_empty() {
+            Ok(lhs)
+        } else {
+            Ok(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                lhs: Box::new(lhs),
+                rhs,
+            }))
+        }
+    }
+
+    fn parse_expr_prec_5(&mut self) -> Result<tree::Expr, Error> {
+        let lhs = self.parse_expr_prec_4()?;
+        let mut rhs = Vec::new();
+        loop {
+            let op = match self.token_parser.next_token(NextTokenContext::new())? {
+                Some(Token::Plus) => {
+                    self.token_parser.consume_lexeme();
+                    tree::Operator::Add
+                }
+                Some(Token::Minus) => {
+                    self.token_parser.consume_lexeme();
+                    tree::Operator::Subtract
+                }
+                _ => break,
+            };
             let expr = self.parse_expr_prec_4()?;
             rhs.push(tree::BinaryExprRhs {
                 op,
@@ -1163,13 +1199,17 @@ impl<'s> StatementParser<'s> {
         let mut rhs = Vec::new();
         loop {
             let op = match self.token_parser.next_token(NextTokenContext::new())? {
-                Some(Token::Plus) => {
+                Some(Token::Asterisk) => {
                     self.token_parser.consume_lexeme();
-                    tree::Operator::Add
+                    tree::Operator::Multiply
                 }
-                Some(Token::Minus) => {
+                Some(Token::ForwardSlash) => {
                     self.token_parser.consume_lexeme();
-                    tree::Operator::Subtract
+                    tree::Operator::Divide
+                }
+                Some(Token::Percent) => {
+                    self.token_parser.consume_lexeme();
+                    tree::Operator::Modulo
                 }
                 _ => break,
             };
@@ -1194,17 +1234,9 @@ impl<'s> StatementParser<'s> {
         let mut rhs = Vec::new();
         loop {
             let op = match self.token_parser.next_token(NextTokenContext::new())? {
-                Some(Token::Asterisk) => {
+                Some(Token::Caret) => {
                     self.token_parser.consume_lexeme();
-                    tree::Operator::Multiply
-                }
-                Some(Token::ForwardSlash) => {
-                    self.token_parser.consume_lexeme();
-                    tree::Operator::Divide
-                }
-                Some(Token::Percent) => {
-                    self.token_parser.consume_lexeme();
-                    tree::Operator::Modulo
+                    tree::Operator::Exponent
                 }
                 _ => break,
             };
@@ -1546,7 +1578,7 @@ mod statement_parser_tests {
     fn parses_exprs_with_operator_precedence() {
         assert_eq!(
             StatementParser::new(
-                "exprs: expr(!a * b / c % d + e - f < g <= h > i >= j has k hasany l == m != n and o or p or q and r != s == t hasany u has v >= w > x <= y < z - aa + ab % ac / ad * !ae)"
+                "exprs: expr(!a ^ af * b / c % d + e - f < g <= h > i >= j has k hasany l == m != n and o or p or q and r != s == t hasany u has v >= w > x <= y < z - aa + ab % ac / ad * ag ^ !ae)"
             )
             .parse(),
             Ok(tree::Statement::FunctionCall(tree::FunctionCall {
@@ -1558,12 +1590,20 @@ mod statement_parser_tests {
                                 lhs: Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
                                     lhs: Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
                                         lhs: Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
-                                            lhs: Box::new(tree::Expr::PrefixUnaryExpr(
-                                                tree::PrefixUnaryExpr {
-                                                    ops: vec![tree::Operator::Not],
-                                                    expr: Box::new(string_value_expr("a")),
-                                                }
-                                            )),
+                                            lhs: Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                                                lhs: Box::new(tree::Expr::PrefixUnaryExpr(
+                                                    tree::PrefixUnaryExpr {
+                                                        ops: vec![tree::Operator::Not],
+                                                        expr: Box::new(string_value_expr("a")),
+                                                    }
+                                                )),
+                                                rhs: vec![
+                                                    tree::BinaryExprRhs {
+                                                        op: tree::Operator::Exponent,
+                                                        expr: Box::new(string_value_expr("af"))
+                                                    }
+                                                ],
+                                            })),
                                             rhs: vec![
                                                 tree::BinaryExprRhs {
                                                     op: tree::Operator::Multiply,
@@ -1703,9 +1743,17 @@ mod statement_parser_tests {
                                                                                         },
                                                                                         tree::BinaryExprRhs {
                                                                                             op: tree::Operator::Multiply,
-                                                                                            expr: Box::new(tree::Expr::PrefixUnaryExpr(tree::PrefixUnaryExpr {
-                                                                                                ops: vec![tree::Operator::Not],
-                                                                                                expr: Box::new(string_value_expr("ae")),
+                                                                                            expr: Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                                                                                                lhs: Box::new(string_value_expr("ag")),
+                                                                                                rhs: vec![
+                                                                                                    tree::BinaryExprRhs {
+                                                                                                        op: tree::Operator::Exponent,
+                                                                                                        expr: Box::new(tree::Expr::PrefixUnaryExpr(tree::PrefixUnaryExpr {
+                                                                                                            ops: vec![tree::Operator::Not],
+                                                                                                            expr: Box::new(string_value_expr("ae")),
+                                                                                                        })),
+                                                                                                    }
+                                                                                                ]
                                                                                             })),
                                                                                         },
                                                                                     ],

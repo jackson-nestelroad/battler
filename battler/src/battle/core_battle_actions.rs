@@ -1083,7 +1083,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     let target_handle = context.target_mon_handle();
     if let Some(damage) = core_battle_effects::run_active_move_event_expecting_u16(
         context.as_active_move_context_mut(),
-        fxlang::BattleEvent::Damage,
+        fxlang::BattleEvent::MoveDamage,
         core_battle_effects::MoveTargetForEvent::Mon(target_handle),
     ) {
         return Ok(MoveOutcomeOnTarget::Damage(damage));
@@ -1097,9 +1097,8 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     let mut base_power = context.active_move().data.base_power;
     if let Some(dynamic_base_power) = core_battle_effects::run_active_move_event_expecting_u32(
         context.as_active_move_context_mut(),
-        fxlang::BattleEvent::BasePower,
+        fxlang::BattleEvent::MoveBasePower,
         core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(base_power.into())]),
     ) {
         base_power = dynamic_base_power;
     }

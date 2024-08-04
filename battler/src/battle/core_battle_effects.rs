@@ -1192,7 +1192,16 @@ fn run_event_with_errors(
     input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
 ) -> Result<Option<fxlang::Value>, Error> {
-    let callbacks = find_all_callbacks(context, event, target, source)?;
+    let mut callbacks = find_all_callbacks(context, event, target, source)?;
+    if event.run_callback_on_source_effect() {
+        if let Some(source_effect) = source_effect {
+            callbacks.push(CallbackHandle::new(
+                source_effect.clone(),
+                event,
+                EffectOrigin::None,
+            ));
+        }
+    }
     let mut callbacks = get_ordered_effects_for_event(context, callbacks)?;
     callbacks.dedup();
 
@@ -1415,9 +1424,8 @@ pub fn run_active_move_event_expecting_u32(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
     target: MoveTargetForEvent,
-    input: fxlang::VariableInput,
 ) -> Option<u32> {
-    run_active_move_event(context, event, target, input)?
+    run_active_move_event(context, event, target, fxlang::VariableInput::default())?
         .integer_u32()
         .ok()
 }

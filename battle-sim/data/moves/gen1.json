@@ -881,7 +881,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "$weight = $target.weight",
           "if $weight >= 2000:",
           ["return 120"],
@@ -922,7 +922,7 @@
           "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
           ["return false"]
         ],
-        "on_damage": [
+        "on_move_damage": [
           "$effect_state = func_call(volatile_effect_state: $source $this.id)",
           "if !$effect_state:",
           ["return 0"],
@@ -961,7 +961,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "effect": { "callbacks": { "on_damage": ["return $source.level"] } }
+    "effect": { "callbacks": { "on_move_damage": ["return $source.level"] } }
   },
   "strength": {
     "name": "Strength",
@@ -1081,10 +1081,10 @@
           "add_volatile: $user twoturnmove",
           "return stop"
         ],
-        "on_base_power": [
+        "on_move_base_power": [
           "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
           "if $weak_weathers has $source.effective_weather:",
-          ["return expr($base_power * 1/2)"]
+          ["return expr($move.base_power * 1/2)"]
         ]
       }
     }
@@ -2183,7 +2183,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_damage": [
+        "on_move_damage": [
           "return expr(func_call(random: 50 151) * $source.level / 100)"
         ]
       }
@@ -2376,7 +2376,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_damage": ["return func_call(max: expr($target.hp / 2), 1)"]
+        "on_move_damage": ["return func_call(max: expr($target.hp / 2), 1)"]
       }
     }
   },

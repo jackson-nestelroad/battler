@@ -16,6 +16,7 @@ use std::{
 
 use num::{
     integer::Roots,
+    pow::Pow,
     traits::{
         WrappingAdd,
         WrappingMul,
@@ -218,6 +219,27 @@ where
 {
     pub fn sqrt(&self) -> Self {
         Self::new(self.numerator().sqrt(), self.denominator().sqrt()).simplify()
+    }
+}
+
+impl<I> Fraction<I>
+where
+    I: FractionInteger + Roots,
+{
+    pub fn pow<J>(self, rhs: Fraction<J>) -> Result<Self, <J as TryInto<u32>>::Error>
+    where
+        I: Pow<J, Output = I> + TryInto<J>,
+        J: FractionInteger + TryInto<u32>,
+    {
+        let num = self
+            .numerator()
+            .pow(rhs.numerator())
+            .nth_root(rhs.denominator().try_into()?);
+        let den = self
+            .denominator()
+            .pow(rhs.numerator())
+            .nth_root(rhs.denominator().try_into()?);
+        Ok(Self::new(num, den))
     }
 }
 
@@ -748,6 +770,35 @@ mod percentage_tests {
         assert_eq!(
             Fraction::new(1, 4) / Fraction::new(2, 4),
             Fraction::new(1, 2)
+        );
+    }
+
+    #[test]
+    fn fraction_exponentiation() {
+        assert_eq!(
+            Fraction::from(12).pow::<u32>(Fraction::from(5u32)),
+            Ok(Fraction::new(248832, 1))
+        );
+        assert_eq!(
+            Fraction::from(-12).pow::<u32>(Fraction::from(5u32)),
+            Ok(Fraction::new(-248832, 1))
+        );
+        assert_eq!(
+            Fraction::new(25, 2).pow::<u32>(Fraction::from(4u32)),
+            Ok(Fraction::new(390625, 16))
+        );
+        assert_eq!(
+            Fraction::new(1, 2).pow(Fraction::new(4u32, 2u32)),
+            Ok(Fraction::new(1, 4))
+        );
+        // Due to rounding, we lose precision.
+        assert_eq!(
+            Fraction::new(1, 2).pow(Fraction::new(3u32, 2u32)),
+            Ok(Fraction::new(1, 2))
+        );
+        assert_eq!(
+            Fraction::new(33, 7).pow::<u32>(Fraction::new(4u32, 7u32)),
+            Ok(Fraction::new(7, 3))
         );
     }
 }

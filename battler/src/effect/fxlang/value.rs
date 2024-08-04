@@ -1192,6 +1192,48 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
+    /// Implements exponentiation.
+    pub fn pow(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+        let result = match (self, rhs) {
+            (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
+                lhs.pow(
+                    rhs.try_convert::<u32>()
+                        .wrap_error_with_message("integer overflow")?,
+                )
+                .wrap_error_with_message("integer overflow")?,
+            ),
+            (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
+                lhs.pow(
+                    rhs.try_convert::<u32>()
+                        .wrap_error_with_message("integer overflow")?,
+                )
+                .wrap_error_with_message("integer overflow")?,
+            ),
+            (Self::UFraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::UFraction(
+                lhs.pow(
+                    rhs.try_convert::<u32>()
+                        .wrap_error_with_message("integer overflow")?,
+                )
+                .wrap_error_with_message("integer overflow")?,
+            ),
+            (Self::UFraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
+                lhs.pow(
+                    rhs.try_convert::<u32>()
+                        .wrap_error_with_message("integer overflow")?,
+                )
+                .wrap_error_with_message("integer overflow")?,
+            ),
+            (lhs @ _, rhs @ _) => {
+                return Err(Self::invalid_binary_operation(
+                    "exponentiate",
+                    lhs.value_type(),
+                    rhs.value_type(),
+                ))
+            }
+        };
+        Ok(result)
+    }
+
     /// Implements multiplication.
     pub fn multiply(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match Self::sort_for_commutative_operation(self, rhs) {

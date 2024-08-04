@@ -762,7 +762,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_base_power": [
+        "on_move_base_power": [
           "return expr($move.base_power * $source.hp / $source.max_hp)"
         ]
       }
