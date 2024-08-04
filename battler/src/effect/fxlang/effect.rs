@@ -256,6 +256,13 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "AnyExit"]
     AnyExit,
+    /// Runs when a Mon becomes attracted to another Mon.
+    ///
+    /// Can fail the attraction.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "Attract"]
+    Attract,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
@@ -747,6 +754,7 @@ impl BattleEvent {
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
+            Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -1106,6 +1114,7 @@ pub struct Callbacks {
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
     pub on_any_exit: Callback,
+    pub on_attract: Callback,
     pub on_before_move: Callback,
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
@@ -1195,6 +1204,7 @@ impl Callbacks {
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::AnyExit => Some(&self.on_any_exit),
+            BattleEvent::Attract => Some(&self.on_attract),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),

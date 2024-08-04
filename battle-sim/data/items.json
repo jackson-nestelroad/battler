@@ -738,7 +738,16 @@
   "destinyknot": {
     "name": "Destiny Knot",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_attract": [
+          "if !$source or $source == $target:",
+          ["return"],
+          "add_volatile: $source attract $target"
+        ]
+      }
+    }
   },
   "blacksludge": {
     "name": "Black Sludge",

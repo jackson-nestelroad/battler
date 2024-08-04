@@ -620,6 +620,7 @@ where
                                 }
                             }
                             "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
+                            "gender" => ValueRef::Gender(context.mon(mon_handle)?.gender),
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
@@ -2034,6 +2035,9 @@ impl Evaluator {
             }
             (ValueRefMut::OptionalHitEffect(var), Value::HitEffect(val)) => {
                 *var = Some(val);
+            }
+            (ValueRefMut::Gender(var), Value::Gender(val)) => {
+                *var = val;
             }
             (ValueRefMut::EffectState(var), Value::EffectState(val)) => {
                 *var = val;

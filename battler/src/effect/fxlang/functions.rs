@@ -335,16 +335,15 @@ fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
     let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
 
     if with_source_effect {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
         args.push_back(Value::String(format!(
             "from:{}",
-            context
-                .source_effect_context()?
-                .wrap_error_with_message("effect has no source effect")?
-                .effect()
-                .full_name()
+            source_effect_context.effect().full_name()
         )));
 
-        if context.effect_handle().is_ability() {
+        if !source_effect_context.effect_handle().is_active_move() {
             if let Some(source_context) = context.source_context()? {
                 args.push_back(Value::String(format!(
                     "of:{}",
@@ -446,15 +445,12 @@ fn log_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
         ("status", status)
     );
     if with_source_effect {
-        event.set(
-            "from",
-            context
-                .source_effect_context()?
-                .wrap_error_with_message("effect has no source effect")?
-                .effect()
-                .full_name(),
-        );
-        if context.effect_handle().is_ability() {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
+        event.set("from", source_effect_context.effect().full_name());
+
+        if !source_effect_context.effect_handle().is_active_move() {
             if let Some(source_context) = context.source_context()? {
                 event.set("of", Mon::position_details(&source_context)?);
             }
@@ -479,7 +475,7 @@ fn log_weather(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
             .source_effect_context()?
             .wrap_error_with_message("effect has no source effect")?;
         event.set("from", source_effect_context.effect().full_name());
-        if source_effect_context.effect_handle().is_ability() {
+        if !source_effect_context.effect_handle().is_active_move() {
             if let Some(source_context) = context.source_context()? {
                 event.set("of", Mon::position_details(&source_context)?);
             }

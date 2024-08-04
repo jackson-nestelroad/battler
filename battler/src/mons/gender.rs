@@ -5,7 +5,14 @@ use serde_string_enum::{
 
 /// The gender of a specific Mon.
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 pub enum Gender {
     #[string = "U"]

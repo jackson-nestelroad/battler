@@ -973,7 +973,38 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "attract"
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "if !($target.gender == m and $source.gender == f) and !($target.gender == f and $source.gender == m):",
+          ["return false"],
+          "if !func_call(run_event: Attract):",
+          ["return false"],
+          "if !$source_effect.is_move:",
+          ["log_start: with_source_effect"],
+          "else:",
+          ["log_start"]
+        ],
+        "on_any_exit": [
+          "if $mon == $effect_state.source:",
+          ["remove_volatile: $effect_state.target $this.id"]
+        ],
+        "on_end": ["log_end: silent"],
+        "on_before_move": {
+          "priority": 2,
+          "program": [
+            "log_activate: str('of:{}', $effect_state.source.position_details)",
+            "if func_call(chance: 1 2):",
+            ["log_cant: $this.name", "return false"]
+          ]
+        }
+      }
+    }
   },
   "sleeptalk": {
     "name": "Sleep Talk",

@@ -2675,6 +2675,7 @@ pub fn try_add_volatile(
     .is_some_and(|result| !result)
     {
         context.target_mut().volatiles.remove(&status);
+        return Ok(false);
     }
 
     let volatile_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?

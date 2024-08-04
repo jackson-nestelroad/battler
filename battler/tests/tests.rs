@@ -53,6 +53,7 @@ mod moves {
     }
 
     mod gen2 {
+        mod attract_test;
         mod belly_drum_test;
         mod conversion_2_test;
         mod curse_test;

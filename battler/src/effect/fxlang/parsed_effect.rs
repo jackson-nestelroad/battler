@@ -48,6 +48,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AfterSubstituteDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::AllySetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Attract, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearWeather, callbacks)?;
