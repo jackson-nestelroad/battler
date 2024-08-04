@@ -746,7 +746,7 @@ impl BattleEvent {
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
-            Self::Damage => CommonCallbackType::MoveModifier as u32,
+            Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
@@ -834,6 +834,7 @@ impl BattleEvent {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::BasePower => &[("base_power", ValueType::UFraction, true)],
+            Self::Damage => &[("damage", ValueType::UFraction, false)],
             Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],

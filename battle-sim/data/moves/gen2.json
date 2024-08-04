@@ -754,7 +754,31 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
+    "hit_effect": {
+      "volatile_status": "endure"
+    },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+        ],
+        "on_hit": ["add_volatile: $target stall"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_damage": {
+          "priority": -10,
+          "program": [
+            "if $effect.is_move and $damage > $target.hp:",
+            ["log_activate: with_target", "return expr($target.hp - 1)"]
+          ]
+        }
+      }
+    }
   },
   "charm": {
     "name": "Charm",
