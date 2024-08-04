@@ -80,6 +80,7 @@ pub fn run_function(
         "can_escape" => can_escape(context, args).map(|val| Some(val)),
         "can_switch" => can_switch(context, args).map(|val| Some(val)),
         "chance" => chance(context, args).map(|val| Some(val)),
+        "clamp_number" => clamp_number(args).map(|val| Some(val)),
         "clear_boosts" => clear_boosts(context, args).map(|()| None),
         "clear_weather" => clear_weather(context, args).map(|val| Some(val)),
         "cure_status" => cure_status(context, args).map(|()| None),
@@ -1032,12 +1033,48 @@ fn max(mut args: VecDeque<Value>) -> Result<Value, Error> {
 }
 
 fn floor(mut args: VecDeque<Value>) -> Result<Value, Error> {
-    let number = args
+    let value = match args.pop_front().wrap_error_with_message("missing number")? {
+        Value::Fraction(number) => Value::Fraction(number.floor().into()),
+        Value::UFraction(number) => Value::UFraction(number.floor().into()),
+        _ => {
+            return Err(battler_error!("invalid number"));
+        }
+    };
+    Ok(value)
+}
+
+fn clamp_number(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let number = args.pop_front().wrap_error_with_message("missing number")?;
+    let min = args
         .pop_front()
-        .wrap_error_with_message("missing number")?
-        .integer_u64()
-        .wrap_error_with_message("invalid number")?;
-    Ok(Value::UFraction(number.into()))
+        .wrap_error_with_message("missing minimum")?;
+    let max = args
+        .pop_front()
+        .wrap_error_with_message("missing maximum")?;
+
+    if MaybeReferenceValueForOperation::from(&min)
+        .greater_than_or_equal(MaybeReferenceValueForOperation::from(&max))?
+        .boolean()
+        .unwrap_or(false)
+    {
+        return Err(battler_error!("invalid range"));
+    }
+
+    if MaybeReferenceValueForOperation::from(&number)
+        .greater_than(MaybeReferenceValueForOperation::from(&max))?
+        .boolean()
+        .unwrap_or(false)
+    {
+        Ok(max)
+    } else if MaybeReferenceValueForOperation::from(&number)
+        .less_than(MaybeReferenceValueForOperation::from(&min))?
+        .boolean()
+        .unwrap_or(false)
+    {
+        Ok(min)
+    } else {
+        Ok(number)
+    }
 }
 
 fn heal(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
