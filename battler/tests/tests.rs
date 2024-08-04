@@ -69,6 +69,7 @@ mod moves {
         mod nightmare_test;
         mod perish_song_test;
         mod protect_test;
+        mod return_test;
         mod rollout_test;
         mod sketch_test;
         mod sleep_talk_test;
