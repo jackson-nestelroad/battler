@@ -414,11 +414,13 @@ pub fn use_active_move(
     context.active_move_mut().external = external;
 
     // BeforeMove event handlers can prevent the move from being used.
-    if !core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(None)?,
-        fxlang::BattleEvent::BeforeMove,
-        fxlang::VariableInput::default(),
-    ) {
+    if !external
+        && !core_battle_effects::run_event_for_applying_effect(
+            &mut context.user_applying_effect_context(None)?,
+            fxlang::BattleEvent::BeforeMove,
+            fxlang::VariableInput::default(),
+        )
+    {
         core_battle_effects::run_event_for_applying_effect(
             &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::MoveAborted,

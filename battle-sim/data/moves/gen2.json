@@ -1022,7 +1022,25 @@
       "NoMetronome",
       "NoSleepTalk",
       "SleepUsable"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["return $user.is_asleep"],
+        "on_hit": [
+          "$moves = []",
+          "foreach $move_slot in $target.move_slots:",
+          [
+            "$potential_move = func_call(get_move: $move_slot.id)",
+            "if $move_slot.is_defined and !func_call(move_has_flag: $potential_move nosleeptalk):",
+            ["$moves = func_call(append: $moves $potential_move.id)"]
+          ],
+          "$random_move = func_call(sample: $moves)",
+          "if !$random_move:",
+          ["return false"],
+          "use_move: $source $random_move"
+        ]
+      }
+    }
   },
   "healbell": {
     "name": "Heal Bell",

@@ -70,6 +70,7 @@ mod moves {
         mod protect_test;
         mod rollout_test;
         mod sketch_test;
+        mod sleep_talk_test;
         mod spikes_test;
     }
 

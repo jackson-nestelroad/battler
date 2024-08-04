@@ -333,6 +333,7 @@ impl Value {
             Self::ActiveMove(val) | Self::Effect(EffectHandle::ActiveMove(val, _)) => {
                 Ok(context.active_move(val)?.id().clone())
             }
+            Self::Effect(EffectHandle::InactiveMove(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
             val @ _ => Err(battler_error!(
                 "value of type {} cannot be converted to a move id",
