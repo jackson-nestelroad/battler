@@ -813,7 +813,7 @@
             "$base_power = $base_power * 2 ^ $rollout_state.hit_count",
             "# Update the hit count for the next use of the move.",
             "$rollout_state.hit_count = $rollout_state.hit_count + 1",
-            "# If we are not on the last hit, udpate the duration to keep us locked into this move.",
+            "# If we are not on the last hit, update the duration to keep us locked into this move.",
             "# The reason for manually updating the duration is that if the next use of the move is interrupted, the move will end by default.",
             "if $rollout_state.hit_count < 5:",
             ["$rollout_state.duration = 2"]
