@@ -77,7 +77,7 @@ mod return_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Reverse)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -102,14 +102,14 @@ mod return_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "move|mon:Typhlosion,player-1,1|name:Return|target:Typhlosion,player-2,1",
-                "split|side:1",
-                "damage|mon:Typhlosion,player-2,1|health:119/138",
-                "damage|mon:Typhlosion,player-2,1|health:87/100",
                 "move|mon:Typhlosion,player-2,1|name:Return|target:Typhlosion,player-1,1",
                 "split|side:0",
-                "damage|mon:Typhlosion,player-1,1|health:93/138",
-                "damage|mon:Typhlosion,player-1,1|health:68/100",
+                "damage|mon:Typhlosion,player-1,1|health:90/138",
+                "damage|mon:Typhlosion,player-1,1|health:66/100",
+                "move|mon:Typhlosion,player-1,1|name:Return|target:Typhlosion,player-2,1",
+                "split|side:1",
+                "damage|mon:Typhlosion,player-2,1|health:120/138",
+                "damage|mon:Typhlosion,player-2,1|health:87/100",
                 "residual",
                 "turn|turn:2"
             ]"#,
@@ -135,14 +135,14 @@ mod return_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "move|mon:Typhlosion,player-1,1|name:Frustration|target:Typhlosion,player-2,1",
-                "split|side:1",
-                "damage|mon:Typhlosion,player-2,1|health:108/138",
-                "damage|mon:Typhlosion,player-2,1|health:79/100",
                 "move|mon:Typhlosion,player-2,1|name:Frustration|target:Typhlosion,player-1,1",
                 "split|side:0",
                 "damage|mon:Typhlosion,player-1,1|health:137/138",
                 "damage|mon:Typhlosion,player-1,1|health:99/100",
+                "move|mon:Typhlosion,player-1,1|name:Frustration|target:Typhlosion,player-2,1",
+                "split|side:1",
+                "damage|mon:Typhlosion,player-2,1|health:111/138",
+                "damage|mon:Typhlosion,player-2,1|health:81/100",
                 "residual",
                 "turn|turn:2"
             ]"#,

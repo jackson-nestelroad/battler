@@ -94,7 +94,7 @@ mod spikes_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Reverse)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -136,11 +136,11 @@ mod spikes_test {
                 "switch|player:player-2|position:2|name:Donphan|health:100/100|species:Donphan|level:50|gender:F",
                 "switch|player:player-2|position:1|name:Kingdra|health:100/100|species:Kingdra|level:50|gender:F",
                 "split|side:1",
-                "damage|mon:Donphan,player-2,2|from:move:Spikes|health:132/150",
-                "damage|mon:Donphan,player-2,2|from:move:Spikes|health:88/100",
-                "split|side:1",
                 "damage|mon:Kingdra,player-2,1|from:move:Spikes|health:119/135",
                 "damage|mon:Kingdra,player-2,1|from:move:Spikes|health:89/100",
+                "split|side:1",
+                "damage|mon:Donphan,player-2,2|from:move:Spikes|health:132/150",
+                "damage|mon:Donphan,player-2,2|from:move:Spikes|health:88/100",
                 "move|mon:Skarmory,player-1,1|name:Spikes",
                 "sidestart|side:1|move:Spikes",
                 "residual",
@@ -159,11 +159,11 @@ mod spikes_test {
                 "switch|player:player-2|position:1|name:Kingdra|health:89/100|species:Kingdra|level:50|gender:F",
                 "switch|player:player-2|position:2|name:Donphan|health:88/100|species:Donphan|level:50|gender:F",
                 "split|side:1",
-                "damage|mon:Kingdra,player-2,1|from:move:Spikes|health:86/135",
-                "damage|mon:Kingdra,player-2,1|from:move:Spikes|health:64/100",
-                "split|side:1",
                 "damage|mon:Donphan,player-2,2|from:move:Spikes|health:95/150",
                 "damage|mon:Donphan,player-2,2|from:move:Spikes|health:64/100",
+                "split|side:1",
+                "damage|mon:Kingdra,player-2,1|from:move:Spikes|health:86/135",
+                "damage|mon:Kingdra,player-2,1|from:move:Spikes|health:64/100",
                 "move|mon:Skarmory,player-1,1|name:Spikes|noanim",
                 "fail|mon:Skarmory,player-1,1",
                 "residual",

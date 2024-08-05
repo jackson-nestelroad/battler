@@ -1061,6 +1061,9 @@ where
                                 .data
                                 .ignore_immunity,
                         ),
+                        "infiltrates" => ValueRefMut::Boolean(
+                            &mut context.active_move_mut(**active_move_handle)?.infiltrates,
+                        ),
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
                         ),
@@ -1077,6 +1080,9 @@ where
                 | ValueRefMut::OptionalHitEffect(Some(hit_effect)) => {
                     value = match *member {
                         "boosts" => ValueRefMut::OptionalBoostTable(&mut hit_effect.boosts),
+                        "heal_percent" => {
+                            ValueRefMut::OptionalFractionU16(&mut hit_effect.heal_percent)
+                        }
                         "volatile_status" => {
                             ValueRefMut::OptionalString(&mut hit_effect.volatile_status)
                         }
@@ -1972,6 +1978,18 @@ impl Evaluator {
             }
             (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::OptionalFractionU16(var), Value::Fraction(val)) => {
+                *var = Some(
+                    val.try_convert()
+                        .wrap_error_with_message("integer overflow")?,
+                );
+            }
+            (ValueRefMut::OptionalFractionU16(var), Value::UFraction(val)) => {
+                *var = Some(
+                    val.try_convert()
+                        .wrap_error_with_message("integer overflow")?,
+                );
             }
             (ValueRefMut::String(var), Value::String(val)) => {
                 *var = val;

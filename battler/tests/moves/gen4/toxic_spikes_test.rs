@@ -102,7 +102,7 @@ mod toxic_spikes_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Reverse)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -151,11 +151,11 @@ mod toxic_spikes_test {
                 "move|mon:Roserade,player-1,1|name:Toxic Spikes|noanim",
                 "fail|mon:Roserade,player-1,1",
                 "split|side:1",
-                "damage|mon:Infernape,player-2,2|from:status:Poison|health:102/136",
-                "damage|mon:Infernape,player-2,2|from:status:Poison|health:75/100",
-                "split|side:1",
                 "damage|mon:Torterra,player-2,1|from:status:Bad Poison|health:146/155",
                 "damage|mon:Torterra,player-2,1|from:status:Bad Poison|health:95/100",
+                "split|side:1",
+                "damage|mon:Infernape,player-2,2|from:status:Poison|health:102/136",
+                "damage|mon:Infernape,player-2,2|from:status:Poison|health:75/100",
                 "residual",
                 "turn|turn:4"
             ]"#,

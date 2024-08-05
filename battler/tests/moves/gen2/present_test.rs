@@ -1,8 +1,9 @@
 #[cfg(test)]
-mod foresight_test {
+mod present_test {
     use battler::{
         battle::{
             BattleType,
+            CoreBattleEngineRandomizeBaseDamage,
             CoreBattleEngineSpeedSortTieResolution,
             PublicCoreBattle,
         },
@@ -18,41 +19,21 @@ mod foresight_test {
     };
     use battler_test_utils::{
         assert_logs_since_turn_eq,
+        get_controlled_rng_for_battle,
         LogMatch,
         TestBattleBuilder,
     };
 
-    fn machamp() -> Result<TeamData, Error> {
+    fn delibird() -> Result<TeamData, Error> {
         serde_json::from_str(
             r#"{
                 "members": [
                     {
-                        "name": "Machamp",
-                        "species": "Machamp",
+                        "name": "Delibird",
+                        "species": "Delibird",
                         "ability": "No Ability",
                         "moves": [
-                            "Foresight",
-                            "Rock Smash"
-                        ],
-                        "nature": "Hardy",
-                        "level": 50
-                    }
-                ]
-            }"#,
-        )
-        .wrap_error()
-    }
-
-    fn gengar() -> Result<TeamData, Error> {
-        serde_json::from_str(
-            r#"{
-                "members": [
-                    {
-                        "name": "Gengar",
-                        "species": "Gengar",
-                        "ability": "No Ability",
-                        "moves": [
-                            "Double Team"
+                            "Present"
                         ],
                         "nature": "Hardy",
                         "level": 50
@@ -74,7 +55,9 @@ mod foresight_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
+            .with_controlled_rng(true)
             .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
+            .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -83,31 +66,48 @@ mod foresight_test {
     }
 
     #[test]
-    fn foresight_ignores_evasion_and_removes_ghost_type_immunity() {
+    fn present_deals_damage_or_heals_target() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_battle(&data, 0, machamp().unwrap(), gengar().unwrap()).unwrap();
+        let mut battle = make_battle(&data, 0, delibird().unwrap(), delibird().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
+
+        let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+        rng.insert_fake_values_relative_to_sequence_count([
+            (1, 9),
+            (2, 9),
+            (3, 9),
+            (4, 6),
+            (8, 9),
+            (9, 5),
+            (10, 0),
+        ]);
 
         assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
         assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "move|mon:Gengar,player-2,1|name:Double Team|target:Gengar,player-2,1",
-                "boost|mon:Gengar,player-2,1|stat:eva|by:1",
-                "move|mon:Machamp,player-1,1|name:Foresight|target:Gengar,player-2,1",
-                "start|mon:Gengar,player-2,1|move:Foresight",
+                "move|mon:Delibird,player-2,1|name:Present|target:Delibird,player-1,1",
+                "split|side:0",
+                "damage|mon:Delibird,player-1,1|health:40/105",
+                "damage|mon:Delibird,player-1,1|health:39/100",
+                "move|mon:Delibird,player-1,1|name:Present|target:Delibird,player-2,1",
+                "split|side:1",
+                "damage|mon:Delibird,player-2,1|health:61/105",
+                "damage|mon:Delibird,player-2,1|health:59/100",
                 "residual",
                 "turn|turn:2",
                 ["time"],
-                "move|mon:Machamp,player-1,1|name:Rock Smash|target:Gengar,player-2,1",
-                "resisted|mon:Gengar,player-2,1",
+                "move|mon:Delibird,player-2,1|name:Present|target:Delibird,player-1,1",
+                "split|side:0",
+                "damage|mon:Delibird,player-1,1|health:17/105",
+                "damage|mon:Delibird,player-1,1|health:17/100",
+                "move|mon:Delibird,player-1,1|name:Present|target:Delibird,player-2,1",
                 "split|side:1",
-                "damage|mon:Gengar,player-2,1|health:93/120",
-                "damage|mon:Gengar,player-2,1|health:78/100",
-                "unboost|mon:Gengar,player-2,1|stat:def|by:1",
+                "heal|mon:Delibird,player-2,1|health:87/105",
+                "heal|mon:Delibird,player-2,1|health:83/100",
                 "residual",
                 "turn|turn:3"
             ]"#,

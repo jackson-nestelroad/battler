@@ -68,6 +68,7 @@ mod moves {
         mod magnitude_test;
         mod nightmare_test;
         mod perish_song_test;
+        mod present_test;
         mod protect_test;
         mod return_test;
         mod rollout_test;

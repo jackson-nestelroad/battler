@@ -69,7 +69,7 @@ mod perish_song_test {
             .with_seed(seed)
             .with_team_validation(false)
             .with_pass_allowed(true)
-            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Reverse)
+            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
@@ -97,36 +97,37 @@ mod perish_song_test {
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
-                "move|mon:Misdreavus,player-1,1|name:Perish Song",
-                "fieldactivate|move:Perish Song",
                 "move|mon:Misdreavus,player-2,1|name:Perish Song",
-                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:3",
-                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",
-                "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
+                "fieldactivate|move:Perish Song",
+                "move|mon:Misdreavus,player-1,1|name:Perish Song|noanim",
+                "fail|mon:Misdreavus,player-1,1",
                 "start|mon:Misdreavus,player-1,1|move:Perish Song|perish:3",
+                "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
+                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",
+                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:3",
                 "residual",
                 "turn|turn:2",
                 ["time"],
                 "switch|player:player-1|position:1|name:Whismur|health:100/100|species:Whismur|level:50|gender:F",
-                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:2",
-                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:2",
                 "start|mon:Smoochum,player-1,2|move:Perish Song|perish:2",
+                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:2",
+                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:2",
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:1",
-                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:1",
                 "start|mon:Smoochum,player-1,2|move:Perish Song|perish:1",
+                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:1",
+                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:1",
                 "residual",
                 "turn|turn:4",
                 ["time"],
-                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:0",
-                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:0",
                 "start|mon:Smoochum,player-1,2|move:Perish Song|perish:0",
+                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:0",
+                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:0",
                 "residual",
-                "faint|mon:Smoochum,player-2,2",
+                "faint|mon:Smoochum,player-1,2",
                 "faint|mon:Misdreavus,player-2,1",
-                "faint|mon:Smoochum,player-1,2"
+                "faint|mon:Smoochum,player-2,2"
             ]"#,
         )
         .unwrap();
@@ -151,10 +152,9 @@ mod perish_song_test {
                 "move|mon:Misdreavus,player-2,1|name:Perish Song",
                 "immune|mon:Whismur,player-1,1|from:ability:Soundproof",
                 "fieldactivate|move:Perish Song",
-                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:3",
-                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",
                 "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
-                "residual",
+                "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",
+                "start|mon:Smoochum,player-2,2|move:Perish Song|perish:3",
                 "turn|turn:2"
             ]"#,
         )

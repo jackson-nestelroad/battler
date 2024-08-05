@@ -613,13 +613,12 @@
           ["return false"],
           "foreach $target in func_call(prepare_direct_move: $targets):",
           [
-            "# Successful if we have the chance to hit at least one target.",
             "$success = true",
             "# Activate if at least one Mon did not already have this status.",
             "$hit_target = func_call(add_volatile: $target $this.id)",
             "$activate = $activate or $hit_target"
           ],
-          "if !$success:",
+          "if !$success or !$activate:",
           ["return false"],
           "if $activate:",
           ["log_field_activate"]
@@ -1091,7 +1090,26 @@
     "pp": 15,
     "accuracy": 90,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "$rand = func_call(random: 10)",
+          "if $rand < 2:",
+          [
+            "$move.hit_effect = func_call(hit_effect)",
+            "$move.hit_effect.heal_percent = 1/4",
+            "$move.infiltrates = true"
+          ],
+          "else if $rand < 6:",
+          ["$move.base_power = 40"],
+          "else if $rand < 9:",
+          ["$move.base_power = 80"],
+          "else:",
+          ["$move.base_power = 120"]
+        ]
+      }
+    }
   },
   "frustration": {
     "name": "Frustration",
