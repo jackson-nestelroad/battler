@@ -1173,7 +1173,18 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$target_hp = $target.hp",
+          "$average_hp = func_call(max: 1 expr(($target.hp + $source.hp) / 2))",
+          "$target_diff = $target_hp - $average_hp",
+          "set_hp: $target $average_hp",
+          "set_hp: $source $average_hp"
+        ]
+      }
+    }
   },
   "sacredfire": {
     "name": "Sacred Fire",

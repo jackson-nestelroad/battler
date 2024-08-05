@@ -1711,6 +1711,31 @@ impl Mon {
         // TODO: CanEscape event that quick returns a value, with the above being the default.
         Ok(!cannot_escape)
     }
+
+    /// Sets the HP on the Mon directly, returning the delta.
+    pub fn set_hp(context: &mut MonContext, mut hp: u16) -> Result<i32, Error> {
+        if context.mon().hp == 0 {
+            return Ok(0);
+        }
+        if hp < 1 {
+            hp = 1;
+        }
+        let mut delta = context.mon().hp as i32 - hp as i32;
+        context.mon_mut().hp = hp;
+        if context.mon().hp > context.mon().max_hp {
+            let hp_delta = context.mon().hp - context.mon().max_hp;
+            delta -= hp_delta as i32;
+            context.mon_mut().hp = context.mon().max_hp;
+        }
+
+        let event = log_event!(
+            "sethp",
+            ("mon", Self::position_details(context)?),
+            ("hp", context.mon().hp)
+        );
+        context.battle_mut().log(event);
+        Ok(delta)
+    }
 }
 
 #[cfg(test)]

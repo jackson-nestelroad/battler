@@ -151,6 +151,7 @@ pub fn run_function(
         "run_event_on_move" => run_event_on_move(context, args).map(|()| None),
         "sample" => sample(context, args),
         "set_boost" => set_boost(args).map(|val| Some(val)),
+        "set_hp" => set_hp(context, args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
         "set_types" => set_types(context, args).map(|val| Some(val)),
         "set_weather" => set_weather(context, args).map(|val| Some(val)),
@@ -2028,4 +2029,20 @@ fn check_immunity(
         source_effect_handle,
     )?)
     .map(|val| Value::Boolean(val))
+}
+
+fn set_hp(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let hp = args
+        .pop_front()
+        .wrap_error_with_message("missing hp")?
+        .integer_u16()
+        .wrap_error_with_message("invalid hp")?;
+    Ok(Value::Fraction(
+        Mon::set_hp(&mut context.mon_context(mon_handle)?, hp)?.into(),
+    ))
 }
