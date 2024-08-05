@@ -1044,6 +1044,9 @@ where
                 ValueRefMut::Mon(ref mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
+                        "boosts" => {
+                            ValueRefMut::BoostTable(&mut context.mon_mut(**mon_handle)?.boosts)
+                        }
                         "last_target_location" => ValueRefMut::OptionalISize(
                             &mut context.mon_mut(**mon_handle)?.last_move_target_location,
                         ),

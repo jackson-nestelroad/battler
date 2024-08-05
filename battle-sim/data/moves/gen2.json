@@ -1584,7 +1584,23 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute"]
+    "flags": ["BypassSubstitute"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$source.boosts = $target.boosts",
+          "log: copyboosts str('mon:{}', $source.position_details) str('of:{}', $target.position_details)",
+          "$volatiles = [focusenergy]",
+          "foreach $volatile in $volatiles:",
+          [
+            "if func_call(has_volatile: $target $volatile):",
+            ["add_volatile: $source $volatile"],
+            "else:",
+            ["remove_volatile: $source $volatile"]
+          ]
+        ]
+      }
+    }
   },
   "extremespeed": {
     "name": "Extreme Speed",

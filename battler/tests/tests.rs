@@ -73,6 +73,7 @@ mod moves {
         mod perish_song_test;
         mod present_test;
         mod protect_test;
+        mod psych_up_test;
         mod rapid_spin_test;
         mod return_test;
         mod rollout_test;
