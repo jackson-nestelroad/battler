@@ -159,8 +159,13 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_effect_to_side_effect<'eval>(
         &'eval mut self,
         side: usize,
+        use_target_as_source: bool,
     ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = self.source_handle();
+        let source_handle = if use_target_as_source {
+            self.target_handle()
+        } else {
+            self.source_handle()
+        };
         let context: SideEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .side_effect_context(side, source_handle)?;
@@ -624,6 +629,9 @@ where
                             "happiness" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.happiness.into())
                             }
+                            "hidden_power_type" => {
+                                ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
+                            }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
@@ -1062,6 +1070,12 @@ where
                         ),
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
+                        ),
+                        "type" => ValueRefMut::Type(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .primary_type,
                         ),
                         "user_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context

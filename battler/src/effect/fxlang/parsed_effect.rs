@@ -42,6 +42,7 @@ impl ParsedCallbacks {
         if let Some(callbacks) = callbacks {
             parsed.parse_and_save(BattleEvent::AccuracyExempt, callbacks)?;
             parsed.parse_and_save(BattleEvent::AddVolatile, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AfterHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMoveSecondaryEffects, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
@@ -91,6 +92,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyType, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveDamage, callbacks)?;

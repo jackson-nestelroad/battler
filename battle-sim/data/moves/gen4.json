@@ -401,8 +401,7 @@
           ["return"],
           "if func_call(has_type: $mon poison):",
           [
-            "log_side_end: str('of:{}', $mon.position_details)",
-            "remove_side_condition: $mon.side $this.id",
+            "remove_side_condition: $mon.side $this.id use_target_as_source",
             "return"
           ],
           "if $mon.is_immune_to_entry_hazards:",
@@ -411,6 +410,12 @@
           ["set_status: $mon tox"],
           "else:",
           ["set_status: $mon psn"]
+        ],
+        "on_side_end": [
+          "if $source_effect == $this.id:",
+          ["log_side_end: with_source"],
+          "else:",
+          ["log_side_end: with_source_effect with_source"]
         ]
       }
     }

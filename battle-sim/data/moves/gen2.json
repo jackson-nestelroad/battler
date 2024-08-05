@@ -527,6 +527,12 @@
           "else:",
           ["$den = 4"],
           "damage: expr($mon.max_hp / $den)"
+        ],
+        "on_side_end": [
+          "if $source_effect == $this.id:",
+          ["log_side_end: with_source"],
+          "else:",
+          ["log_side_end: with_source_effect with_source"]
         ]
       }
     }
@@ -1320,7 +1326,21 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_after_substitute_damage": ["run_event_on_active_move: AfterHit"],
+        "on_after_hit": [
+          "if $source.hp == 0:",
+          ["return"],
+          "remove_volatile: $source partiallytrapped",
+          "remove_volatile: $source leechseed",
+          "$side_conditions = [spikes, toxicspikes, stealthrock, stickyweb]",
+          "foreach $condition in $side_conditions:",
+          ["remove_side_condition: $source.side $condition"]
+        ]
+      }
+    }
   },
   "sweetscent": {
     "name": "Sweet Scent",
@@ -1467,7 +1487,12 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_modify_type": ["$move.type = $user.hidden_power_type"]
+      }
+    }
   },
   "crosschop": {
     "name": "Cross Chop",

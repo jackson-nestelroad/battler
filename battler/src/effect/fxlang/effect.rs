@@ -217,6 +217,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect.
     #[string = "AddVolatile"]
     AddVolatile,
+    /// Runs after a Mon hits another Mon with a move.
+    ///
+    /// Runs on the active move itself.
+    #[string = "AfterHit"]
+    AfterHit,
     /// Runs after a Mon finishes using a move.
     ///
     /// Runs on the active move itself and in the context of an active move from the user.
@@ -496,6 +501,13 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifySpe"]
     ModifySpe,
+    /// Runs when a Mon uses a move.
+    ///
+    /// Can be used to modify a move's type when it is used.
+    ///
+    /// Runs on the active move itself and in the context of an active move from the user.
+    #[string = "ModifyType"]
+    ModifyType,
     /// Runs when a move is aborted due to failing the BeforeMove event.
     ///
     /// Runs in the context of an active move from the user.
@@ -753,6 +765,7 @@ impl BattleEvent {
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -802,6 +815,7 @@ impl BattleEvent {
             Self::ModifySpA => CommonCallbackType::MonModifier as u32,
             Self::ModifySpD => CommonCallbackType::MonModifier as u32,
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
+            Self::ModifyType => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
@@ -1115,6 +1129,7 @@ pub struct Callbacks {
     pub is_sunny: Callback,
     pub on_accuracy_exempt: Callback,
     pub on_add_volatile: Callback,
+    pub on_after_hit: Callback,
     pub on_after_move: Callback,
     pub on_after_move_secondary_effects: Callback,
     pub on_after_set_status: Callback,
@@ -1157,6 +1172,7 @@ pub struct Callbacks {
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
+    pub on_modify_type: Callback,
     pub on_move_aborted: Callback,
     pub on_move_base_power: Callback,
     pub on_move_damage: Callback,
@@ -1205,6 +1221,7 @@ impl Callbacks {
         match event {
             BattleEvent::AccuracyExempt => Some(&self.on_accuracy_exempt),
             BattleEvent::AddVolatile => Some(&self.on_add_volatile),
+            BattleEvent::AfterHit => Some(&self.on_after_hit),
             BattleEvent::AfterMove => Some(&self.on_after_move),
             BattleEvent::AfterMoveSecondaryEffects => Some(&self.on_after_move_secondary_effects),
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
@@ -1254,6 +1271,7 @@ impl Callbacks {
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),
+            BattleEvent::ModifyType => Some(&self.on_modify_type),
             BattleEvent::MoveAborted => Some(&self.on_move_aborted),
             BattleEvent::MoveBasePower => Some(&self.on_move_base_power),
             BattleEvent::MoveDamage => Some(&self.on_move_damage),

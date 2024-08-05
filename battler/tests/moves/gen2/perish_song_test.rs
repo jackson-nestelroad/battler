@@ -155,6 +155,7 @@ mod perish_song_test {
                 "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
                 "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",
                 "start|mon:Smoochum,player-2,2|move:Perish Song|perish:3",
+                "residual",
                 "turn|turn:2"
             ]"#,
         )

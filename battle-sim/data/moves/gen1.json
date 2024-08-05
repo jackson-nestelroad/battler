@@ -1020,7 +1020,8 @@
           "$damage = func_call(damage: $target expr($target.base_max_hp / 8))",
           "if $damage > 0:",
           ["heal: $source $damage $target"]
-        ]
+        ],
+        "on_end": ["log_end: with_source_effect with_source"]
       }
     }
   },

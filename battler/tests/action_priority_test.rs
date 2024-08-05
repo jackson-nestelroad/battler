@@ -291,8 +291,8 @@ mod action_priority_tests {
                 "residual",
                 "turn|turn:3",
                 ["time"],
-                "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
                 "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
+                "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
                 "residual",
                 "turn|turn:4"
             ]"#,

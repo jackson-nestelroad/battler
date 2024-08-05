@@ -64,6 +64,7 @@ mod moves {
         mod foresight_test;
         mod fury_cutter_test;
         mod heal_bell_test;
+        mod hidden_power_test;
         mod lock_on_test;
         mod magnitude_test;
         mod nightmare_test;
@@ -71,6 +72,7 @@ mod moves {
         mod perish_song_test;
         mod present_test;
         mod protect_test;
+        mod rapid_spin_test;
         mod return_test;
         mod rollout_test;
         mod safeguard_test;

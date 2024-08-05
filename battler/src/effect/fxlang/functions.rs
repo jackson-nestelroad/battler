@@ -376,6 +376,32 @@ fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
 
 fn log_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let no_effect = has_special_string_flag(&mut args, "no_effect");
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+    let mut with_source = has_special_string_flag(&mut args, "with_source");
+
+    if with_source_effect {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
+        args.push_back(Value::String(format!(
+            "from:{}",
+            source_effect_context.effect().full_name()
+        )));
+
+        if !source_effect_context.effect_handle().is_active_move() {
+            with_source = true;
+        }
+    }
+
+    if with_source {
+        if let Some(source_context) = context.source_context()? {
+            args.push_back(Value::String(format!(
+                "of:{}",
+                Mon::position_details(&source_context)?
+            )));
+        }
+    }
+
     if !no_effect {
         add_effect_to_args(context, &mut args)?;
     }
@@ -409,6 +435,32 @@ fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
         .wrap_error_with_message("context has no side index")?;
 
     let no_effect = has_special_string_flag(&mut args, "no_effect");
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+    let mut with_source = has_special_string_flag(&mut args, "with_source");
+
+    if with_source_effect {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
+        args.push_back(Value::String(format!(
+            "from:{}",
+            source_effect_context.effect().full_name()
+        )));
+
+        if !source_effect_context.effect_handle().is_active_move() {
+            with_source = true;
+        }
+    }
+
+    if with_source {
+        if let Some(source_context) = context.source_context()? {
+            args.push_back(Value::String(format!(
+                "of:{}",
+                Mon::position_details(&source_context)?
+            )));
+        }
+    }
+
     if !no_effect {
         add_effect_to_args(context, &mut args)?;
     }
@@ -1952,6 +2004,7 @@ fn remove_side_condition(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<Value, Error> {
+    let use_target_as_source = should_use_target_as_source(&mut args);
     let side = args
         .pop_front()
         .wrap_error_with_message("missing side")?
@@ -1964,7 +2017,7 @@ fn remove_side_condition(
         .wrap_error_with_message("invalid side condition")?;
     let condition = Id::from(condition);
     Ok(Value::Boolean(core_battle_actions::remove_side_condition(
-        &mut context.forward_effect_to_side_effect(side)?,
+        &mut context.forward_effect_to_side_effect(side, use_target_as_source)?,
         &condition,
     )?))
 }

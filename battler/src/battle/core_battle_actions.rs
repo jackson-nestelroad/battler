@@ -449,7 +449,12 @@ fn use_active_move_internal(
 ) -> Result<MoveOutcome, Error> {
     context.mon_mut().last_move_used = Some(context.active_move_handle());
 
-    // TODO: ModifyType on the move.
+    core_battle_effects::run_active_move_event_expecting_void(
+        context,
+        fxlang::BattleEvent::ModifyType,
+        core_battle_effects::MoveTargetForEvent::User,
+        fxlang::VariableInput::default(),
+    );
     let use_move_input = fxlang::VariableInput::from_iter([target
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
@@ -460,7 +465,11 @@ fn use_active_move_internal(
         use_move_input.clone(),
     );
 
-    // TODO: ModifyType events on the Mon.
+    core_battle_effects::run_event_for_applying_effect(
+        &mut context.user_applying_effect_context(None)?,
+        fxlang::BattleEvent::ModifyType,
+        fxlang::VariableInput::default(),
+    );
     core_battle_effects::run_event_for_applying_effect(
         &mut context.user_applying_effect_context(None)?,
         fxlang::BattleEvent::UseMove,
@@ -1014,6 +1023,12 @@ fn hit_targets(
             fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
                 target.outcome.damage().into(),
             )]),
+        );
+        core_battle_effects::run_active_move_event_expecting_void(
+            context,
+            fxlang::BattleEvent::AfterHit,
+            core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+            fxlang::VariableInput::default(),
         );
     }
 

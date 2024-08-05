@@ -423,7 +423,14 @@
           ]
         },
         "on_end": [
-          "log_end: no_effect str('move:{}', $effect_state.source_effect.name)"
+          "if $source_effect == $this.id:",
+          [
+            "log_end: no_effect str('move:{}', $effect_state.source_effect.name)"
+          ],
+          "else:",
+          [
+            "log_end: no_effect str('move:{}', $effect_state.source_effect.name) with_source_effect with_source"
+          ]
         ],
         "on_trap_mon": ["return true"]
       }
