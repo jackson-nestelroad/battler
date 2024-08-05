@@ -77,6 +77,7 @@ mod moves {
         mod sketch_test;
         mod sleep_talk_test;
         mod spikes_test;
+        mod spite_test;
     }
 
     mod gen4 {

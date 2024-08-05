@@ -88,6 +88,7 @@ pub fn run_function(
         "cure_status" => cure_status(context, args).map(|val| Some(val)),
         "damage" => damage(context, args).map(|val| Some(val)),
         "debug_log" => debug_log(context, args).map(|()| None),
+        "deduct_pp" => deduct_pp(context, args).map(|val| Some(val)),
         "direct_damage" => direct_damage(context, args).map(|()| None),
         "disable_move" => disable_move(context, args).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
@@ -2044,5 +2045,31 @@ fn set_hp(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<
         .wrap_error_with_message("invalid hp")?;
     Ok(Value::Fraction(
         Mon::set_hp(&mut context.mon_context(mon_handle)?, hp)?.into(),
+    ))
+}
+
+fn deduct_pp(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    let pp = args
+        .pop_front()
+        .wrap_error_with_message("missing pp")?
+        .integer_u8()
+        .wrap_error_with_message("invalid pp")?;
+    Ok(Value::UFraction(
+        context
+            .mon_context(mon_handle)?
+            .mon_mut()
+            .deduct_pp(&move_id, pp)
+            .into(),
     ))
 }

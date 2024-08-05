@@ -1426,10 +1426,12 @@ impl Mon {
     }
 
     /// Deducts PP from the given move.
-    pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) {
+    pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) -> u8 {
         let mut move_slot_index = None;
         let mut pp = 0;
+        let mut delta = 0;
         if let Some((i, move_slot)) = self.indexed_move_slot_mut(move_id) {
+            let before = move_slot.pp;
             move_slot.used = true;
             if amount > move_slot.pp {
                 move_slot.pp = 0;
@@ -1440,6 +1442,7 @@ impl Mon {
                 move_slot_index = Some(i);
                 pp = move_slot.pp;
             }
+            delta = before - move_slot.pp;
         }
 
         if let Some(index) = move_slot_index {
@@ -1447,6 +1450,8 @@ impl Mon {
                 base_move_slot.pp = pp;
             }
         }
+
+        delta
     }
 
     /// Checks if the Mon is immune to the given type.

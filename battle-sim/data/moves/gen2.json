@@ -315,11 +315,10 @@
           "$last_move = $target.last_move",
           "if !$last_move:",
           ["return false"],
-          "$last_move = func_call(get_move: $last_move.id)",
           "$pp = func_call(deduct_pp: $target $last_move.id 4)",
           "if $pp == 0:",
           ["return false"],
-          "log_activate: str('lastmove:{}', $last_move.id) str('pp:{}', $pp)"
+          "log_activate: str('lastmove:{}', $last_move.name) str('pp:{}', $pp)"
         ]
       }
     }

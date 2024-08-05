@@ -665,6 +665,6 @@ mod queue_tests {
         assert_matches::assert_matches!(queue.find_action_mut(|action| match action {
             Action::Experience(action) => action.mon == MonHandle::from(0),
             _ => false,
-        }),  Some(Action::Experience(action)) => assert_eq!(action.exp, 300));
+        }), Some(Action::Experience(action)) => assert_eq!(action.exp, 300));
     }
 }
