@@ -692,14 +692,10 @@ where
                                 Mon::position_details(&context.mon_context(mon_handle)?)?
                             )),
                             "side" => ValueRef::Side(context.mon(mon_handle)?.side),
-                            "status" => ValueRef::TempString(
-                                context
-                                    .mon(mon_handle)?
-                                    .status
-                                    .as_ref()
-                                    .map(|id| id.as_ref().to_owned())
-                                    .unwrap_or(String::new()),
-                            ),
+                            "status" => match context.mon(mon_handle)?.status.as_ref() {
+                                Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
+                                None => ValueRef::Undefined,
+                            },
                             "status_state" => ValueRef::EffectState(
                                 MonStatusEffectStateConnector::new(mon_handle).make_dynamic(),
                             ),

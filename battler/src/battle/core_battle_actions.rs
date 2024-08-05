@@ -2539,7 +2539,7 @@ pub fn try_set_status(
 }
 
 /// Checks the immunity of a Mon from an effect.
-fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
     if context.target().hp == 0 {
         return Ok(true);
     }

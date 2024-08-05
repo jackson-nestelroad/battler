@@ -1134,7 +1134,37 @@
     "pp": 25,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "side_condition": "safeguard"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"],
+        "on_set_status": [
+          "if $effect.id == yawn:",
+          ["return"],
+          "if $effect.infiltrates:",
+          ["return"],
+          "if $target == $source:",
+          ["return"],
+          "log_activate: with_target",
+          "return false"
+        ],
+        "on_add_volatile": [
+          "if $effect.infiltrates:",
+          ["return"],
+          "if $target == $source:",
+          ["return"],
+          "if $volatile != confusion and $volatile != yawn:",
+          ["return"],
+          "log_activate: with_target",
+          "return false"
+        ]
+      }
+    }
   },
   "painsplit": {
     "name": "Pain Split",

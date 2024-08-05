@@ -322,7 +322,29 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable", "SleepInducing"]
+    "flags": ["Mirror", "Protect", "Reflectable", "SleepInducing"],
+    "hit_effect": {
+      "volatile_status": "yawn"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target.status.is_defined or func_call(check_immunity: $target slp):",
+          ["return false"]
+        ]
+      }
+    },
+    "condition": {
+      "no_copy": true,
+      "duration": 2,
+      "callbacks": {
+        "on_start": ["log_start: with_source"],
+        "on_end": [
+          "log_end: silent",
+          "set_status: $target slp $effect_state.source"
+        ]
+      }
+    }
   },
   "knockoff": {
     "name": "Knock Off",

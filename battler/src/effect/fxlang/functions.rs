@@ -81,6 +81,7 @@ pub fn run_function(
         "can_escape" => can_escape(context, args).map(|val| Some(val)),
         "can_switch" => can_switch(context, args).map(|val| Some(val)),
         "chance" => chance(context, args).map(|val| Some(val)),
+        "check_immunity" => check_immunity(context, args).map(|val| Some(val)),
         "clamp_number" => clamp_number(args).map(|val| Some(val)),
         "clear_boosts" => clear_boosts(context, args).map(|()| None),
         "clear_weather" => clear_weather(context, args).map(|val| Some(val)),
@@ -334,6 +335,7 @@ fn log_animate_move(
 fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let no_effect = has_special_string_flag(&mut args, "no_effect");
     let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+    let mut with_source = has_special_string_flag(&mut args, "with_source");
 
     if with_source_effect {
         let source_effect_context = context
@@ -345,12 +347,16 @@ fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
         )));
 
         if !source_effect_context.effect_handle().is_active_move() {
-            if let Some(source_context) = context.source_context()? {
-                args.push_back(Value::String(format!(
-                    "of:{}",
-                    Mon::position_details(&source_context)?
-                )));
-            }
+            with_source = true;
+        }
+    }
+
+    if with_source {
+        if let Some(source_context) = context.source_context()? {
+            args.push_back(Value::String(format!(
+                "of:{}",
+                Mon::position_details(&source_context)?
+            )));
         }
     }
 
@@ -1153,13 +1159,24 @@ fn set_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Res
         .string()
         .wrap_error_with_message("invalid status")?;
     let status = Id::from(status);
-    let mut context = if should_use_source_effect(&mut args) {
-        context.forward_source_effect_to_applying_effect(mon_handle)?
-    } else {
-        context.forward_effect_to_applying_effect(mon_handle)?
+    let source_handle = match args.pop_front() {
+        Some(value) => Some(value.mon_handle().wrap_error_with_message("invalid mon")?),
+        None => context.source_handle(),
     };
-    core_battle_actions::try_set_status(&mut context, Some(status), false)
-        .map(move |val| Value::Boolean(val.success()))
+    let value = if should_use_source_effect(&mut args) {
+        let mut context = context
+            .source_effect_context()?
+            .wrap_error_with_message("context has no source effect")?;
+        let mut context = context.applying_effect_context(source_handle, mon_handle)?;
+        core_battle_actions::try_set_status(&mut context, Some(status), false)
+    } else {
+        let mut context = context
+            .effect_context_mut()
+            .applying_effect_context(source_handle, mon_handle)?;
+        core_battle_actions::try_set_status(&mut context, Some(status), false)
+    };
+
+    value.map(|val| Value::Boolean(val.success()))
 }
 
 fn is_ally(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
@@ -1980,4 +1997,35 @@ fn prepare_direct_move(
             .map(|target| Value::Mon(target))
             .collect(),
     ))
+}
+
+fn check_immunity(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let effect_id = args
+        .pop_front()
+        .wrap_error_with_message("missing effect")?
+        .string()
+        .wrap_error_with_message("invalid effect")?;
+    let effect_id = Id::from(effect_id);
+    let effect_handle = context
+        .battle_context_mut()
+        .battle_mut()
+        .get_effect_handle_by_id(&effect_id)?
+        .clone();
+    let source_handle = context.source_handle();
+    let source_effect_handle = context.source_effect_handle().cloned();
+    core_battle_actions::check_immunity(&mut context.battle_context_mut().applying_effect_context(
+        effect_handle,
+        source_handle,
+        mon_handle,
+        source_effect_handle,
+    )?)
+    .map(|val| Value::Boolean(val))
 }
