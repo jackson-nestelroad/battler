@@ -63,6 +63,7 @@ use crate::{
         Accuracy,
         Move,
         MoveTarget,
+        MultihitType,
     },
 };
 
@@ -610,6 +611,9 @@ where
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
+                            "base_stats" => {
+                                ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
+                            }
                             "boosts" => ValueRef::BoostTable(&context.mon(mon_handle)?.boosts),
                             "effective_weather" => {
                                 match mon_states::effective_weather(
@@ -687,6 +691,7 @@ where
                                     .map(|outcome| !outcome.success())
                                     .unwrap_or(false),
                             ),
+                            "name" => ValueRef::String(&context.mon(mon_handle)?.name),
                             "player" => ValueRef::Player(context.mon(mon_handle)?.player),
                             "position" => ValueRef::UFraction(
                                 TryInto::<u32>::try_into(Mon::position_on_side(
@@ -945,6 +950,16 @@ where
                             "spe" => ValueRef::Fraction(boosts.spe.into()),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
+                    } else if let ValueRef::StatTable(stats) = value {
+                        value = match *member {
+                            "atk" => ValueRef::Fraction(stats.atk.into()),
+                            "def" => ValueRef::Fraction(stats.def.into()),
+                            "hp" => ValueRef::Fraction(stats.hp.into()),
+                            "spa" => ValueRef::Fraction(stats.spa.into()),
+                            "spd" => ValueRef::Fraction(stats.spd.into()),
+                            "spe" => ValueRef::Fraction(stats.spe.into()),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
                     } else if let ValueRef::EffectState(connector) = value {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = connector
@@ -1067,6 +1082,9 @@ where
                         ),
                         "infiltrates" => ValueRefMut::Boolean(
                             &mut context.active_move_mut(**active_move_handle)?.infiltrates,
+                        ),
+                        "multihit" => ValueRefMut::OptionalMultihitType(
+                            &mut context.active_move_mut(**active_move_handle)?.data.multihit,
                         ),
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
@@ -2072,6 +2090,23 @@ impl Evaluator {
             }
             (ValueRefMut::Gender(var), Value::Gender(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::OptionalMultihitType(var), Value::Fraction(val)) => {
+                *var = Some(MultihitType::Static(
+                    val.floor()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?,
+                ));
+            }
+            (ValueRefMut::StatTable(var), Value::StatTable(val)) => {
+                *var = val;
+            }
+            (ValueRefMut::OptionalMultihitType(var), Value::UFraction(val)) => {
+                *var = Some(MultihitType::Static(
+                    val.floor()
+                        .try_into()
+                        .wrap_error_with_message("integer overflow")?,
+                ));
             }
             (ValueRefMut::EffectState(var), Value::EffectState(val)) => {
                 *var = val;

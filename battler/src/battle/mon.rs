@@ -1233,13 +1233,6 @@ impl Mon {
         context.mon_mut().base_max_hp = stats.hp;
         context.mon_mut().base_stored_stats = stats.clone();
 
-        context.mon_mut().base_stored_stats = context
-            .mon()
-            .stats
-            .entries()
-            .map(|(stat, _)| (stat, stats.get(stat)))
-            .collect();
-
         Ok(())
     }
 

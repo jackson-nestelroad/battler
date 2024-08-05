@@ -1686,6 +1686,24 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "$effect_state.mons = []",
+          "foreach $mon in func_call(all_mons_in_party: $user.player):",
+          [
+            "if $mon == $user or (!$mon.fainted and !$mon.status):",
+            ["$effect_state.mons = func_call(append: $effect_state.mons $mon)"]
+          ],
+          "$move.multihit = $effect_state.mons.length"
+        ],
+        "on_move_base_power": [
+          "$mon = func_call(index: $effect_state.mons expr($move.hit - 1))",
+          "log_activate: str('hit:{}', $mon.name)",
+          "return expr(5 + $mon.base_stats.atk / 10)"
+        ]
+      }
+    }
   }
 }

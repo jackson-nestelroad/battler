@@ -65,6 +65,7 @@ pub fn run_function(
     match function_name {
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
+        "all_mons_in_party" => all_mons_in_party(context, args).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context, args).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
         "any_mon_will_move_this_turn" => any_mon_will_move_this_turn(context).map(|val| Some(val)),
@@ -105,6 +106,7 @@ pub fn run_function(
         "has_volatile" => has_volatile(context, args).map(|val| Some(val)),
         "heal" => heal(context, args).map(|()| None),
         "hit_effect" => hit_effect().map(|val| Some(val)),
+        "index" => index(args),
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "log" => log(context, args).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
@@ -1574,6 +1576,26 @@ fn all_mons_on_side(
     ))
 }
 
+fn all_mons_in_party(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let player = args
+        .pop_front()
+        .wrap_error_with_message("missing player")?
+        .player_index()
+        .wrap_error_with_message("invalid player")?;
+    Ok(Value::List(
+        context
+            .battle_context()
+            .battle()
+            .player(player)?
+            .mon_handles()
+            .map(|mon_handle| Value::Mon(*mon_handle))
+            .collect(),
+    ))
+}
+
 fn clear_boosts(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let mon_handle = args
         .pop_front()
@@ -1992,6 +2014,20 @@ fn append(mut args: VecDeque<Value>) -> Result<Value, Error> {
     let value = args.pop_front().wrap_error_with_message("missing value")?;
     list.push(value);
     Ok(Value::List(list))
+}
+
+fn index(mut args: VecDeque<Value>) -> Result<Option<Value>, Error> {
+    let list = args
+        .pop_front()
+        .wrap_error_with_message("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    let index = args
+        .pop_front()
+        .wrap_error_with_message("missing index")?
+        .integer_usize()
+        .wrap_error_with_message("invalid index")?;
+    Ok(list.get(index).cloned())
 }
 
 fn any_mon_will_move_this_turn(context: &mut EvaluationContext) -> Result<Value, Error> {
