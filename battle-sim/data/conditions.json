@@ -210,7 +210,7 @@
       "callbacks": {
         "is_asleep": ["return true"],
         "on_start": [
-          "if $source_effect.is_ability or $source_effect.is_move:",
+          "if $source_effect.is_ability or $source_effect.is_move or $source_effect.id == disobedience:",
           ["log_status: $this.name with_source_effect"],
           "else:",
           ["log_status: $this.name"],
@@ -773,6 +773,75 @@
           "run_event_for_each_active_mon: Weather"
         ],
         "on_field_end": ["log_weather"]
+      }
+    }
+  },
+  "disobedience": {
+    "name": "Disobedience",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_before_move": {
+          "program": [
+            "# This condition is added to the Mon with a different OT whose level exceeds the obedience cap.",
+            "if func_call(random: 256) < 128 * $format.obedience_cap / $user.level:",
+            ["return"],
+            "$rand = func_call(random: 256)",
+            "$diff = $user.level - $format.obedience_cap",
+            "if $rand < $diff:",
+            ["set_status: $user slp", "return false"],
+            "else if $rand < 2 * $diff:",
+            [
+              "log_activate: with_target confusion",
+              "$damage = func_call(calculate_confusion_damage: $user 40)",
+              "damage: no_source $user $damage $this",
+              "return false"
+            ],
+            "log_activate: with_target",
+            "return false"
+          ]
+        }
+      }
+    }
+  },
+  "affection": {
+    "name": "Affection",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_damage": {
+          "order": 999,
+          "program": [
+            "if $target.affection_level == 3:",
+            ["$chance = 10"],
+            "else if $target.affection_level >= 4:",
+            [
+              "# Range of 15% to 25% (since max is 255).",
+              "$chance = $target.happiness / 10"
+            ],
+            "if $chance.is_defined and func_call(chance: $chance 100) and $damage >= $target.hp:",
+            ["log_activate: with_target tough", "return expr($target.hp - 1)"]
+          ]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": [
+            "if $target.status.is_defined and $target.affection_level >= 4 and func_call(chance: 1 5):",
+            ["log_activate: with_target cure", "cure_status: $target"]
+          ]
+        },
+        "on_modify_accuracy": [
+          "if $target.happiness >= 200:",
+          ["return expr($acc - 10)"]
+        ],
+        "on_modify_crit_chance": [
+          "if $target.affection_level >= 5:",
+          ["return expr($chance * 2)"]
+        ],
+        "on_modify_experience": [
+          "if $mon.affection_level >= 2:",
+          ["return expr($exp * 6/5)"]
+        ]
       }
     }
   }

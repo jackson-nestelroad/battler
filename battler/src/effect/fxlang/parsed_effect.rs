@@ -84,11 +84,14 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::IsSoundproof, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;
             parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyAccuracy, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyBoosts, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyCritChance, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyCritRatio, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDef, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyExperience, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;

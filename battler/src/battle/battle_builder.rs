@@ -9,6 +9,7 @@ use crate::{
         CoreBattleEngineOptions,
         CoreBattleOptions,
         PlayerData,
+        PlayerOptions,
         PlayerType,
         PublicCoreBattle,
         SideData,
@@ -44,6 +45,9 @@ pub struct BattleBuilderPlayerData {
     /// Player type.
     #[serde(default)]
     pub player_type: PlayerType,
+    /// Player options.
+    #[serde(default)]
+    pub player_options: PlayerOptions,
 }
 
 impl Into<PlayerData> for BattleBuilderPlayerData {
@@ -53,6 +57,7 @@ impl Into<PlayerData> for BattleBuilderPlayerData {
             name: self.name,
             team: TeamData::default(),
             player_type: self.player_type,
+            player_options: self.player_options,
         }
     }
 }

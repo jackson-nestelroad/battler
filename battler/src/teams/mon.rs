@@ -69,4 +69,7 @@ pub struct MonData {
     pub ball: String,
     /// Hidden power type.
     pub hidden_power_type: Option<Type>,
+    /// Different original trainer.
+    #[serde(default)]
+    pub different_original_trainer: bool,
 }

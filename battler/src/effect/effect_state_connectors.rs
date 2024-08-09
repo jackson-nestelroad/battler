@@ -121,8 +121,8 @@ impl MonStatusEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for MonStatusEffectStateConnector {
-    fn exists(&self, _: &mut Context) -> Result<bool, Error> {
-        Ok(true)
+    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+        Ok(context.mon(self.mon)?.status.is_some())
     }
 
     fn get_mut<'a>(
@@ -222,8 +222,8 @@ impl WeatherEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for WeatherEffectStateConnector {
-    fn exists(&self, _: &mut Context) -> Result<bool, Error> {
-        Ok(true)
+    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+        Ok(context.battle().field.weather.is_some())
     }
 
     fn get_mut<'a>(

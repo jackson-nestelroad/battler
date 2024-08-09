@@ -96,6 +96,8 @@ mod side {
 }
 
 mod singleplayer {
+    mod affection_test;
+    mod disobedience_test;
     mod escape_test;
     mod horde_test;
     mod level_up_test;

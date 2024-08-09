@@ -459,6 +459,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "LockMove"]
     LockMove,
+    /// Runs when calculating the accuracy of a move.
+    ///
+    /// Runs in the context of an active move against the target.
+    #[string = "ModifyAccuracy"]
+    ModifyAccuracy,
     /// Runs when calculating a Mon's Atk stat.
     ///
     /// Runs in the context of the target Mon.
@@ -469,6 +474,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifyBoosts"]
     ModifyBoosts,
+    /// Runs when calculating a move's critical hit chance.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "ModifyCritChance"]
+    ModifyCritChance,
     /// Runs when calculating a move's critical hit ratio.
     ///
     /// Runs in the context of an active move from the user.
@@ -491,6 +501,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifySpA"]
     ModifySpA,
+    /// Runs when calculating the amount of experience gained by a Mon.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "ModifyExperience"]
+    ModifyExperience,
     /// Runs when caclculating a Mon's SpD stat.
     ///
     /// Runs in the context of the target Mon.
@@ -807,11 +822,14 @@ impl BattleEvent {
             Self::IsSoundproof => CommonCallbackType::MonResult as u32,
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
+            Self::ModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
             Self::ModifyBoosts => CommonCallbackType::MonBoostModifier as u32,
+            Self::ModifyCritChance => CommonCallbackType::MoveModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MonModifier as u32,
+            Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifySpA => CommonCallbackType::MonModifier as u32,
             Self::ModifySpD => CommonCallbackType::MonModifier as u32,
             Self::ModifySpe => CommonCallbackType::MonModifier as u32,
@@ -877,14 +895,17 @@ impl BattleEvent {
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
             ],
+            Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
             Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
+            Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
             Self::ModifyDamage
             | Self::SourceModifyDamage
             | Self::SourceWeatherModifyDamage
             | Self::WeatherModifyDamage => &[("damage", ValueType::UFraction, true)],
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
+            Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
@@ -1164,11 +1185,14 @@ pub struct Callbacks {
     pub on_immunity: Callback,
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
+    pub on_modify_accuracy: Callback,
     pub on_modify_atk: Callback,
     pub on_modify_boosts: Callback,
+    pub on_modify_crit_chance: Callback,
     pub on_modify_crit_ratio: Callback,
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
+    pub on_modify_experience: Callback,
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
@@ -1263,11 +1287,14 @@ impl Callbacks {
             BattleEvent::IsSoundproof => Some(&self.is_soundproof),
             BattleEvent::IsSunny => Some(&self.is_sunny),
             BattleEvent::LockMove => Some(&self.on_lock_move),
+            BattleEvent::ModifyAccuracy => Some(&self.on_modify_accuracy),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyBoosts => Some(&self.on_modify_boosts),
+            BattleEvent::ModifyCritChance => Some(&self.on_modify_crit_chance),
             BattleEvent::ModifyCritRatio => Some(&self.on_modify_crit_ratio),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
+            BattleEvent::ModifyExperience => Some(&self.on_modify_experience),
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),

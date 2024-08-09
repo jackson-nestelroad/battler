@@ -108,6 +108,7 @@ pub use player::{
     Player,
     PlayerBattleRequestData,
     PlayerData,
+    PlayerOptions,
     PlayerType,
     WildPlayerOptions,
 };

@@ -608,6 +608,9 @@ where
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
                             "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
+                            "affection_level" => ValueRef::UFraction(
+                                context.mon(mon_handle)?.affection_level().into(),
+                            ),
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
@@ -930,6 +933,20 @@ where
                             }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
+                    } else if let ValueRef::Format = value {
+                        let context = unsafe { context.unsafely_detach_borrow_mut() };
+                        value = match *member {
+                            "obedience_cap" => ValueRef::UFraction(
+                                context
+                                    .battle_context()
+                                    .battle()
+                                    .format
+                                    .options
+                                    .obedience_cap
+                                    .into(),
+                            ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        };
                     } else if let ValueRef::HitEffect(hit_effect) = value {
                         value = match *member {
                             "boosts" => hit_effect
@@ -1299,6 +1316,7 @@ impl Evaluator {
         self.vars
             .set("this", Value::Effect(context.effect_handle().clone()))?;
         self.vars.set("field", Value::Field)?;
+        self.vars.set("format", Value::Format)?;
 
         if event.has_flag(CallbackFlag::TakesGeneralMon) {
             self.vars.set(

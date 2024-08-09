@@ -1,3 +1,5 @@
+use std::u8;
+
 use serde::{
     Deserialize,
     Serialize,
@@ -38,11 +40,16 @@ pub struct FormatOptions {
     ///       0
     /// ```
     pub adjacency_reach: u8,
+    /// The maximum level that will obey its player if it originates from a different trainer.
+    pub obedience_cap: u8,
 }
 
 impl Default for FormatOptions {
     fn default() -> Self {
-        Self { adjacency_reach: 2 }
+        Self {
+            adjacency_reach: 2,
+            obedience_cap: u8::MAX,
+        }
     }
 }
 

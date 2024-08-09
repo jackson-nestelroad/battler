@@ -14,6 +14,7 @@ use battler::{
         CoreBattleEngineOptions,
         CoreBattleEngineRandomizeBaseDamage,
         CoreBattleEngineSpeedSortTieResolution,
+        PlayerOptions,
         PlayerType,
         PublicCoreBattle,
         WildPlayerOptions,
@@ -163,6 +164,7 @@ impl TestBattleBuilder {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Trainer,
+            player_options: PlayerOptions::default(),
         });
         self
     }
@@ -172,6 +174,9 @@ impl TestBattleBuilder {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Protagonist,
+            player_options: PlayerOptions {
+                has_affection: true,
+            },
         });
         self
     }
@@ -181,6 +186,7 @@ impl TestBattleBuilder {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Trainer,
+            player_options: PlayerOptions::default(),
         });
         self
     }
@@ -195,6 +201,7 @@ impl TestBattleBuilder {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Wild(options),
+            player_options: PlayerOptions::default(),
         });
         self
     }
@@ -206,6 +213,11 @@ impl TestBattleBuilder {
 
     pub fn with_adjacenecy_reach(mut self, adjacenecy_reach: u8) -> Self {
         self.options.format.options.adjacency_reach = adjacenecy_reach;
+        self
+    }
+
+    pub fn with_obedience_cap(mut self, obedience_cap: u8) -> Self {
+        self.options.format.options.obedience_cap = obedience_cap;
         self
     }
 }

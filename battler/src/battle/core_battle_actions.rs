@@ -1135,15 +1135,21 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         crit_ratio,
     );
     let crit_ratio = crit_ratio.max(0).min(4);
-    let crit_mult = [0, 24, 8, 2, 1];
+    let crit_chance = if crit_ratio > 0 {
+        let crit_chance = [0u32, 24, 8, 2, 1][crit_ratio as usize];
+        core_battle_effects::run_event_for_applying_effect_expecting_u32(
+            &mut context.applying_effect_context()?,
+            fxlang::BattleEvent::ModifyCritChance,
+            crit_chance,
+        )
+    } else {
+        0
+    };
+
     context.active_move_mut().hit_data(target_mon_handle).crit =
         context.active_move().data.will_crit
-            || (crit_ratio > 0
-                && rand_util::chance(
-                    context.battle_mut().prng.as_mut(),
-                    1,
-                    crit_mult[crit_ratio as usize],
-                ));
+            || (crit_chance > 0
+                && rand_util::chance(context.battle_mut().prng.as_mut(), 1, crit_chance as u64));
 
     if context.active_move_mut().hit_data(target_mon_handle).crit {
         // TODO: CriticalHit event.
@@ -1542,8 +1548,12 @@ mod direct_move_step {
                 }
             }
         } else {
-            // TODO: ModifyAccuracy event.
             if let Accuracy::Chance(accuracy) = &mut accuracy {
+                *accuracy = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+                    &mut context.applying_effect_context()?,
+                    fxlang::BattleEvent::ModifyAccuracy,
+                    *accuracy,
+                );
                 let mut boost = 0;
                 if !context.active_move().data.ignore_accuracy {
                     let boosts = context.mon().boosts.clone();
@@ -2949,14 +2959,25 @@ fn calculate_exp_gain(
     let dynamic_scaling = dynamic_scaling * dynamic_scaling * dynamic_scaling.sqrt();
     let exp = dynamic_scaling * exp;
     let exp = exp.floor() + 1;
+
     let exp = if mon_happiness > 220 {
         exp * 6 / 5
     } else {
         exp
     };
 
-    // TODO: x1.5 for different owner.
-    // TODO: Item modifiers (Lucky Egg).
+    let exp = if context.mon().different_original_trainer {
+        exp * 3 / 2
+    } else {
+        exp
+    };
+
+    core_battle_effects::run_event_for_mon_expecting_u32(
+        context,
+        fxlang::BattleEvent::ModifyExperience,
+        exp,
+    );
+
     // TODO: Custom experience modifiers set on the battle itself, to simulate outside effects (like
     // Exp Charm).
 

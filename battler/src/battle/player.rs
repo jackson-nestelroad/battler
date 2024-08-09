@@ -139,6 +139,14 @@ impl PlayerType {
     }
 }
 
+/// Options for the player that are not specific to any player type.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct PlayerOptions {
+    /// If the player has affection mechanics enabled.
+    #[serde(default)]
+    pub has_affection: bool,
+}
+
 /// Data for a single player of a battle.
 ///
 /// A player is exactly what it sounds like: a single participant in a battle. A player brings their
@@ -154,6 +162,8 @@ pub struct PlayerData {
     /// Player type.
     #[serde(default)]
     pub player_type: PlayerType,
+    #[serde(default)]
+    pub player_options: PlayerOptions,
 }
 
 /// What the player has chosen to happen in the current turn.
@@ -284,6 +294,7 @@ pub struct Player {
     pub id: String,
     pub name: String,
     pub player_type: PlayerType,
+    pub player_options: PlayerOptions,
     pub side: usize,
     pub position: usize,
     pub index: usize,
@@ -327,6 +338,7 @@ impl Player {
             id: data.id,
             name: data.name,
             player_type: data.player_type,
+            player_options: data.player_options,
             side,
             position,
             index: usize::MAX,

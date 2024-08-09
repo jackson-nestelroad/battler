@@ -139,6 +139,12 @@ fn run_effect_event_with_errors(
     input: fxlang::VariableInput,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
 ) -> Result<fxlang::ProgramEvalResult, Error> {
+    // Effect state no longer exists, so we should skip the callback.
+    if let Some(effect_state_connector) = &effect_state_connector {
+        if !effect_state_connector.exists(context.battle_context_mut())? {
+            return Ok(fxlang::ProgramEvalResult::default());
+        }
+    }
     let mut context = match context {
         UpcomingEvaluationContext::ApplyingEffect(context) => {
             fxlang::EvaluationContext::ApplyingEffect(
@@ -298,6 +304,7 @@ pub enum MoveTargetForEvent {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum EffectOrigin {
     None,
+    Mon(MonHandle),
     MonAbility(MonHandle),
     MonItem(MonHandle),
     MonStatus(MonHandle),
@@ -331,6 +338,7 @@ impl CallbackHandle {
     pub fn effect_state_connector(&self) -> Option<fxlang::DynamicEffectStateConnector> {
         match self.origin {
             EffectOrigin::None => None,
+            EffectOrigin::Mon(_) => None,
             EffectOrigin::MonAbility(mon) => {
                 Some(MonAbilityEffectStateConnector::new(mon).make_dynamic())
             }
@@ -649,6 +657,24 @@ fn find_callbacks_on_mon(
                 ));
             }
         }
+    }
+
+    if context.mon().different_original_trainer
+        && context.mon().level > context.battle().format.options.obedience_cap
+    {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Condition(Id::from_known("disobedience")),
+            event,
+            EffectOrigin::Mon(context.mon_handle()),
+        ));
+    }
+
+    if context.player().player_options.has_affection {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Condition(Id::from_known("affection")),
+            event,
+            EffectOrigin::Mon(context.mon_handle()),
+        ));
     }
 
     Ok(callbacks)
@@ -1121,7 +1147,7 @@ fn run_residual_callbacks_with_errors(
                     )?;
                 }
             }
-            EffectOrigin::MonType(mon) => {
+            EffectOrigin::Mon(mon) | EffectOrigin::MonType(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
@@ -1820,6 +1846,25 @@ pub fn run_event_for_mon(
         .map(|value| value.boolean().ok())
         .flatten()
         .unwrap_or(true)
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects an integer that can fit in a [`u32`].
+pub fn run_event_for_mon_expecting_u32(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    input: u32,
+) -> u32 {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u32().unwrap_or(input),
+        None => input,
+    }
 }
 
 /// Runs an event targeted on the given [`Mon`].

@@ -368,6 +368,7 @@ pub struct Mon {
     pub gender: Gender,
     pub shiny: bool,
     pub ball: String,
+    pub different_original_trainer: bool,
 
     pub base_move_slots: Vec<MoveSlot>,
     pub move_slots: Vec<MoveSlot>,
@@ -433,6 +434,7 @@ impl Mon {
         let gender = data.gender;
         let shiny = data.shiny;
         let ball = data.ball;
+        let different_original_trainer = data.different_original_trainer;
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {
@@ -509,6 +511,7 @@ impl Mon {
             gender,
             shiny,
             ball,
+            different_original_trainer,
 
             base_move_slots,
             move_slots,
@@ -1171,6 +1174,18 @@ impl Mon {
                 }))
             }
             None => Ok(None),
+        }
+    }
+
+    /// The affection level of the Mon, based on its happiness.
+    pub fn affection_level(&self) -> u8 {
+        match self.happiness {
+            0 => 0,
+            1..=49 => 1,
+            50..=99 => 2,
+            100..=149 => 3,
+            150..=254 => 4,
+            255 => 5,
         }
     }
 }
