@@ -179,7 +179,11 @@ impl<'battle, 'data> Context<'battle, 'data> {
             .active_move(active_move_handle)?
             .used_by
             .wrap_error_with_message("active move handle does not have a user")?;
-        ActiveMoveContext::new_from_mon_context(self.mon_context(user)?.into(), hit_effect_type)
+        ActiveMoveContext::new_from_mon_context(
+            self.mon_context(user)?.into(),
+            active_move_handle,
+            hit_effect_type,
+        )
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -629,8 +633,13 @@ impl<'player, 'side, 'context, 'battle, 'data>
     /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
     pub fn active_move_context<'mon>(
         &'mon mut self,
+        active_move_handle: MoveHandle,
     ) -> Result<ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>, Error> {
-        ActiveMoveContext::new_from_mon_context(self.into(), MoveHitEffectType::PrimaryEffect)
+        ActiveMoveContext::new_from_mon_context(
+            self.into(),
+            active_move_handle,
+            MoveHitEffectType::PrimaryEffect,
+        )
     }
 
     /// Creates a new [`ApplyingEffectContext`], scoped to the lifetime of this context.
@@ -762,15 +771,9 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 {
     fn new_from_mon_context(
         context: MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>,
+        active_move_handle: MoveHandle,
         hit_effect_type: MoveHitEffectType,
     ) -> Result<Self, Error> {
-        let active_move_handle = context
-            .mon()
-            .active_move
-            .wrap_error_with_format(format_args!(
-                "mon {} has no active move",
-                context.mon_handle()
-            ))?;
         let active_move = context
             .as_battle_context()
             .cache
@@ -938,15 +941,6 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         Error,
     > {
         ActiveTargetContext::new_from_active_move_context(self.into(), target_mon_handle)
-    }
-
-    /// Creates a new [`ActiveMoveContext`], scoped to the lifetime of this context.
-    ///
-    /// This method refetches the active move and target.
-    pub fn active_move_context(
-        self,
-    ) -> Result<ActiveMoveContext<'mon, 'player, 'side, 'context, 'battle, 'data>, Error> {
-        ActiveMoveContext::new_from_mon_context(self.context, self.hit_effect_type)
     }
 
     /// Creates a new [`EffectContext`], scoped to the lifetime of this context.

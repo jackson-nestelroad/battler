@@ -1660,7 +1660,30 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Future"],
-    "ignore_immunity": true
+    "ignore_immunity": true,
+    "effect": {
+      "callbacks": {
+        "on_try_move": [
+          "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
+          ["return false"],
+          "do_not_animate_last_move",
+          "return stop"
+        ]
+      },
+      "local_data": {
+        "moves": {
+          "futuremove": {
+            "name": "Future Sight",
+            "category": "Special",
+            "primary_type": "Psychic",
+            "accuracy": 100,
+            "base_power": 120,
+            "target": "Scripted",
+            "flags": ["Future"]
+          }
+        }
+      }
+    }
   },
   "rocksmash": {
     "name": "Rock Smash",

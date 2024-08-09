@@ -279,7 +279,7 @@ fn do_move_internal(
     // Make a copy of the move so we can work with it and modify it for the turn.
     let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
     context.mon_mut().set_active_move(active_move_handle);
-    let mut context = context.active_move_context()?;
+    let mut context = context.active_move_context(active_move_handle)?;
 
     let locked_move_before = Mon::locked_move(context.as_mon_context_mut())?;
 
@@ -311,6 +311,7 @@ fn do_move_internal(
         target,
         None,
         false,
+        true,
     )?;
 
     let this_move_is_the_last_selected = context
@@ -393,7 +394,14 @@ pub fn use_move(
     external: bool,
 ) -> Result<bool, Error> {
     let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
-    use_active_move(context, active_move_handle, target, source_effect, external)
+    use_active_move(
+        context,
+        active_move_handle,
+        target,
+        source_effect,
+        external,
+        true,
+    )
 }
 
 /// Uses a move that was already registered as an active move.
@@ -403,18 +411,21 @@ pub fn use_active_move(
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     external: bool,
+    directly_used: bool,
 ) -> Result<bool, Error> {
-    context.mon_mut().move_this_turn_outcome = None;
+    if directly_used {
+        context.mon_mut().move_this_turn_outcome = None;
+        context.mon_mut().set_active_move(active_move_handle);
+    }
 
-    context.mon_mut().set_active_move(active_move_handle);
-
-    let mut context = context.active_move_context()?;
+    let mut context = context.active_move_context(active_move_handle)?;
     context.active_move_mut().source_effect = source_effect.cloned();
     context.active_move_mut().used_by = Some(context.mon_handle());
     context.active_move_mut().external = external;
 
     // BeforeMove event handlers can prevent the move from being used.
     if !external
+        && directly_used
         && !core_battle_effects::run_event_for_applying_effect(
             &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::BeforeMove,
@@ -430,15 +441,22 @@ pub fn use_active_move(
         return Ok(false);
     }
 
-    let outcome = use_active_move_internal(&mut context, target)?;
-    context.mon_mut().move_this_turn_outcome =
-        match (context.mon_mut().move_this_turn_outcome, outcome) {
-            (
-                left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
-                MoveOutcome::Skipped | MoveOutcome::Failed,
-            ) => left,
-            _ => Some(outcome),
-        };
+    if directly_used {
+        context.mon_mut().last_move_used = Some(context.active_move_handle());
+    }
+
+    let outcome = use_active_move_internal(&mut context, target, directly_used)?;
+
+    if directly_used {
+        context.mon_mut().move_this_turn_outcome =
+            match (context.mon_mut().move_this_turn_outcome, outcome) {
+                (
+                    left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
+                    MoveOutcome::Skipped | MoveOutcome::Failed,
+                ) => left,
+                _ => Some(outcome),
+            };
+    }
 
     Ok(outcome.success())
 }
@@ -446,9 +464,8 @@ pub fn use_active_move(
 fn use_active_move_internal(
     context: &mut ActiveMoveContext,
     mut target: Option<MonHandle>,
+    directly_used: bool,
 ) -> Result<MoveOutcome, Error> {
-    context.mon_mut().last_move_used = Some(context.active_move_handle());
-
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::ModifyType,
@@ -476,10 +493,7 @@ fn use_active_move_internal(
         use_move_input,
     );
 
-    // Mon fainted before this move could be made.
-    if context.mon().fainted {
-        return Ok(MoveOutcome::Failed);
-    }
+    // TODO: Prevent moves if Mon faints at this point? Would this ever happen?
 
     let targets = get_move_targets(context, target)?;
     if context.active_move().data.target.has_single_target() {
@@ -488,7 +502,12 @@ fn use_active_move_internal(
 
     // Log that the move is being used.
     let move_name = context.active_move().data.name.clone();
-    core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target, false)?;
+    core_battle_logs::use_move(
+        context.as_mon_context_mut(),
+        &move_name,
+        target,
+        !directly_used,
+    )?;
 
     if context.active_move().data.target.requires_target() && target.is_none() {
         core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
@@ -498,14 +517,22 @@ fn use_active_move_internal(
 
     // TODO: Targeted event.
 
-    let try_move_result =
+    let try_move_result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+        context,
+        fxlang::BattleEvent::TryMove,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
+    );
+    let try_move_result = if try_move_result.advance() {
         core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
             &mut context.user_applying_effect_context(target)?,
             fxlang::BattleEvent::TryMove,
-        );
+        )
+    } else {
+        try_move_result
+    };
     if !try_move_result.advance() {
         if try_move_result.failed() {
-            core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             core_battle_logs::fail(context.as_mon_context_mut())?;
         }
         return Ok(MoveOutcome::Failed);
@@ -2072,7 +2099,16 @@ fn apply_move_effects(
                 }
 
                 if let Some(slot_condition) = hit_effect.slot_condition {
-                    // TODO: Add slot condition.
+                    let slot = Mon::position_on_side(&target_context.target_mon_context()?)?;
+                    let added_slot_condition = add_slot_condition(
+                        &mut target_context
+                            .applying_effect_context()?
+                            .side_effect_context()?,
+                        slot,
+                        &Id::from(slot_condition),
+                    )?;
+                    let outcome = MoveOutcomeOnTarget::from(added_slot_condition);
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if let Some(weather) = hit_effect.weather {
@@ -2810,7 +2846,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         .clone();
     let condition = side_condition_handle
         .try_id()
-        .wrap_error_with_message("volatile must have an id")?
+        .wrap_error_with_message("side condition must have an id")?
         .clone();
 
     if context.side().conditions.contains_key(&condition) {
@@ -2824,7 +2860,8 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         );
     }
 
-    let effect_state = initial_effect_state(context.as_effect_context_mut(), None, None)?;
+    let source_handle = context.source_handle();
+    let effect_state = initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
     context
         .side_mut()
         .conditions
@@ -2894,7 +2931,7 @@ pub fn remove_side_condition(
         .clone();
     let condition = side_condition_handle
         .try_id()
-        .wrap_error_with_message("volatile must have an id")?
+        .wrap_error_with_message("side condition must have an id")?
         .clone();
 
     if !context.side().conditions.contains_key(&condition) {
@@ -2911,7 +2948,7 @@ pub fn remove_side_condition(
     let condition_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
         .name()
         .to_owned();
-    core_battle_logs::remove_side_conditions(context, &condition_name)?;
+    core_battle_logs::remove_side_condition(context, &condition_name)?;
 
     Ok(true)
 }
@@ -3268,8 +3305,9 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
     let previous_weather_state = context.battle().field.weather_state.clone();
 
     context.battle_mut().field.weather = Some(weather.clone());
+    let source_handle = context.source_handle();
     context.battle_mut().field.weather_state =
-        initial_effect_state(context.as_effect_context_mut(), None, None)?;
+        initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
 
     if let Some(weather_condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
@@ -3425,6 +3463,150 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, 
     });
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
+
+    Ok(true)
+}
+
+/// Adds a condition to the slot on the side.
+pub fn add_slot_condition(
+    context: &mut SideEffectContext,
+    slot: usize,
+    condition: &Id,
+) -> Result<bool, Error> {
+    let slot_condition_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(condition)?
+        .clone();
+    let condition = slot_condition_handle
+        .try_id()
+        .wrap_error_with_message("slot condition must have an id")?
+        .clone();
+
+    if context
+        .side()
+        .slot_conditions
+        .get(&slot)
+        .is_some_and(|conditions| conditions.contains_key(&condition))
+    {
+        return Ok(
+            core_battle_effects::run_slot_condition_event_expecting_bool(
+                context,
+                fxlang::BattleEvent::SlotRestart,
+                slot,
+                &condition,
+            )
+            .unwrap_or(false),
+        );
+    }
+
+    let source_handle = context.source_handle();
+    let effect_state = initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
+    context
+        .side_mut()
+        .slot_conditions
+        .entry(slot)
+        .or_default()
+        .insert(condition.clone(), effect_state);
+
+    if let Some(slot_condition) =
+        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &slot_condition_handle)?
+            .fxlang_condition()
+    {
+        if let Some(duration) = slot_condition.duration {
+            context
+                .side_mut()
+                .slot_conditions
+                .entry(slot)
+                .or_default()
+                .get_mut(&condition)
+                .wrap_error_with_message("expected slot condition state to exist")?
+                .set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_slot_condition_event_expecting_u8(
+            context,
+            fxlang::BattleEvent::Duration,
+            slot,
+            &condition,
+        ) {
+            context
+                .side_mut()
+                .slot_conditions
+                .entry(slot)
+                .or_default()
+                .get_mut(&condition)
+                .wrap_error_with_message("expected side condition state to exist")?
+                .set_duration(duration);
+        }
+    }
+
+    if core_battle_effects::run_slot_condition_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::SlotStart,
+        slot,
+        &condition,
+    )
+    .is_some_and(|result| !result)
+    {
+        context
+            .side_mut()
+            .slot_conditions
+            .entry(slot)
+            .or_default()
+            .remove(&condition);
+        return Ok(false);
+    }
+
+    let slot_condition_name =
+        CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
+            .name()
+            .to_owned();
+    core_battle_logs::add_slot_condition(context, slot, &slot_condition_name)?;
+
+    Ok(true)
+}
+
+/// Removes a condition from the slot on the side.
+pub fn remove_slot_condition(
+    context: &mut SideEffectContext,
+    slot: usize,
+    condition: &Id,
+) -> Result<bool, Error> {
+    let slot_condition_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(condition)?
+        .clone();
+    let condition = slot_condition_handle
+        .try_id()
+        .wrap_error_with_message("slot condition must have an id")?
+        .clone();
+
+    if !context
+        .side()
+        .slot_conditions
+        .get(&slot)
+        .is_some_and(|conditions| conditions.contains_key(&condition))
+    {
+        return Ok(false);
+    }
+
+    core_battle_effects::run_slot_condition_event(
+        context,
+        fxlang::BattleEvent::SlotEnd,
+        slot,
+        &condition,
+    );
+    context
+        .side_mut()
+        .slot_conditions
+        .entry(slot)
+        .or_default()
+        .remove(&condition);
+
+    let condition_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
+        .name()
+        .to_owned();
+    core_battle_logs::remove_slot_condition(context, slot, &condition_name)?;
 
     Ok(true)
 }

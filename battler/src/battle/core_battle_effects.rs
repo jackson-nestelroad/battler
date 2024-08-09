@@ -42,6 +42,7 @@ use crate::{
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
+        SlotConditionEffectStateConnector,
         WeatherEffectStateConnector,
     },
     mons::Type,
@@ -222,6 +223,15 @@ fn run_active_move_event_with_errors(
             input,
             Some(effect_state_connector),
         )?,
+        MoveTargetForEvent::UserWithTarget(target) => run_effect_event_with_errors(
+            &mut UpcomingEvaluationContext::ApplyingEffect(
+                context.user_applying_effect_context(target)?.into(),
+            ),
+            &effect_handle,
+            event,
+            input,
+            Some(effect_state_connector),
+        )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::Effect(context.effect_context()?.into()),
             &effect_handle,
@@ -291,6 +301,9 @@ pub enum MoveTargetForEvent {
     ///
     /// This does not mean the target of the move is the user.
     User,
+    /// The effect runs with respect to the user of the move, additionally with an optional target
+    /// if one is available.
+    UserWithTarget(Option<MonHandle>),
     /// The effect runs with respect to a single target of the move.
     Mon(MonHandle),
     /// The effect runs with respect to the target side of the move.
@@ -311,6 +324,7 @@ enum EffectOrigin {
     MonType(MonHandle),
     MonVolatileStatus(MonHandle),
     SideCondition(usize),
+    SlotCondition(usize, usize),
     Weather,
 }
 
@@ -356,6 +370,9 @@ impl CallbackHandle {
                 .effect_handle
                 .try_id()
                 .map(|id| SideConditionEffectStateConnector::new(side, id.clone()).make_dynamic()),
+            EffectOrigin::SlotCondition(side, slot) => self.effect_handle.try_id().map(|id| {
+                SlotConditionEffectStateConnector::new(side, slot, id.clone()).make_dynamic()
+            }),
             EffectOrigin::Weather => Some(WeatherEffectStateConnector::new().make_dynamic()),
         }
     }
@@ -541,6 +558,30 @@ fn run_side_condition_event_internal(
     )
 }
 
+fn run_slot_condition_event_internal(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    slot: usize,
+    condition: &Id,
+) -> Option<fxlang::Value> {
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(condition)
+        .ok()?
+        .clone();
+    let side_index = context.side().index;
+    run_callback_under_side_effect(
+        context,
+        input,
+        CallbackHandle::new(
+            effect_handle,
+            event,
+            EffectOrigin::SlotCondition(side_index, slot),
+        ),
+    )
+}
+
 fn run_weather_event_internal(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
@@ -642,7 +683,6 @@ fn find_callbacks_on_mon(
     }
 
     // TODO: Species.
-    // TODO: Slot conditions on the side.
 
     if include_applied_field_effects {
         if event.callback_lookup_layer()
@@ -697,6 +737,19 @@ fn find_callbacks_on_side(
             event,
             EffectOrigin::SideCondition(side),
         ));
+    }
+
+    for (slot, slot_conditions) in context.side().slot_conditions.clone() {
+        for slot_condition in slot_conditions.keys() {
+            let slot_condition_handle = context
+                .battle_mut()
+                .get_effect_handle_by_id(&slot_condition)?;
+            callbacks.push(CallbackHandle::new(
+                slot_condition_handle.clone(),
+                event,
+                EffectOrigin::SlotCondition(side, slot),
+            ));
+        }
     }
 
     Ok(callbacks)
@@ -1192,6 +1245,25 @@ fn run_residual_callbacks_with_errors(
                     )?;
                 }
             }
+            EffectOrigin::SlotCondition(side, slot) => {
+                let mut context = context.side_effect_context(side, None)?;
+                if ended {
+                    core_battle_actions::remove_slot_condition(
+                        &mut context,
+                        slot,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected side condition to have an id")?,
+                    )?;
+                } else {
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::SideEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
             EffectOrigin::Weather => {
                 let mut context = context.field_effect_context(None)?;
                 if ended {
@@ -1599,6 +1671,71 @@ pub fn run_side_condition_event_expecting_u8(
     run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition)?
         .integer_u8()
         .ok()
+}
+
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s slot condition.
+pub fn run_slot_condition_event(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    slot: usize,
+    condition: &Id,
+) {
+    match TryInto::<u64>::try_into(slot) {
+        Ok(value) => {
+            run_slot_condition_event_internal(
+                context,
+                event,
+                fxlang::VariableInput::from_iter([fxlang::Value::UFraction(value.into())]),
+                slot,
+                condition,
+            );
+        }
+        Err(_) => (),
+    }
+}
+
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s slot condition.
+///
+/// Expects a [`bool`].
+pub fn run_slot_condition_event_expecting_bool(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    slot: usize,
+    condition: &Id,
+) -> Option<bool> {
+    run_slot_condition_event_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
+            TryInto::<u64>::try_into(slot).ok()?.into(),
+        )]),
+        slot,
+        condition,
+    )?
+    .boolean()
+    .ok()
+}
+
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s slot condition.
+///
+/// Expects an integer that can fit in a [`u8`].
+pub fn run_slot_condition_event_expecting_u8(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    slot: usize,
+    condition: &Id,
+) -> Option<u8> {
+    run_slot_condition_event_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
+            TryInto::<u64>::try_into(slot).ok()?.into(),
+        )]),
+        slot,
+        condition,
+    )?
+    .integer_u8()
+    .ok()
 }
 
 /// Runs an event on the [`Field`][`crate::battle::Field`]'s current weather.

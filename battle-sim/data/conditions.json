@@ -529,6 +529,29 @@
       }
     }
   },
+  "futuremove": {
+    "name": "Future Move",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 3,
+      "callbacks": {
+        "on_slot_start": [
+          "log_start: no_effect no_target with_source str('move:{}', $effect_state.source_effect.name)"
+        ],
+        "on_residual": ["debug_log: here"],
+        "on_slot_end": [
+          "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id)",
+          "$target = func_call(mon_in_position: $side $slot)",
+          "if !$target or $target.fainted or $target == $effect_state.source:",
+          ["return"],
+          "log_end: no_effect no_target str('mon:{}', $target.position_details) str('move:{}', $effect_state.source_effect.name) str('of:{}', $effect_state.source.position_details)",
+          "remove_volatile: $target protect",
+          "remove_volatile: $target endure",
+          "use_active_move: $effect_state.source $move $target indirect"
+        ]
+      }
+    }
+  },
   "rainweather": {
     "name": "Rain",
     "condition_type": "Weather",
@@ -789,15 +812,15 @@
             "$rand = func_call(random: 256)",
             "$diff = $user.level - $format.obedience_cap",
             "if $rand < $diff:",
-            ["set_status: $user slp", "return false"],
+            ["set_status: $user slp"],
             "else if $rand < 2 * $diff:",
             [
               "log_activate: with_target confusion",
               "$damage = func_call(calculate_confusion_damage: $user 40)",
-              "damage: no_source $user $damage $this",
-              "return false"
+              "damage: no_source $user $damage $this"
             ],
-            "log_activate: with_target",
+            "else:",
+            ["log_activate: with_target"],
             "return false"
           ]
         }

@@ -210,6 +210,55 @@ impl fxlang::EffectStateConnector for SideConditionEffectStateConnector {
     }
 }
 
+/// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for a
+/// condition on a slot.
+#[derive(Debug, Clone)]
+pub struct SlotConditionEffectStateConnector {
+    side: usize,
+    slot: usize,
+    condition: Id,
+}
+
+impl SlotConditionEffectStateConnector {
+    pub fn new(side: usize, slot: usize, condition: Id) -> Self {
+        Self {
+            side,
+            slot,
+            condition,
+        }
+    }
+}
+
+impl fxlang::EffectStateConnector for SlotConditionEffectStateConnector {
+    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+        Ok(context
+            .side_context(self.side)?
+            .side()
+            .slot_conditions
+            .get(&self.slot)
+            .is_some_and(|conditions| conditions.contains_key(&self.condition)))
+    }
+
+    fn get_mut<'a>(
+        &self,
+        context: &'a mut Context,
+    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+        match context
+            .battle_mut()
+            .side_mut(self.side)?
+            .slot_conditions
+            .get_mut(&self.slot)
+        {
+            Some(conditions) => Ok(conditions.get_mut(&self.condition)),
+            None => Ok(None),
+        }
+    }
+
+    fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
+        fxlang::DynamicEffectStateConnector::new(self.clone())
+    }
+}
+
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for
 /// weather on the field.
 #[derive(Debug, Clone)]

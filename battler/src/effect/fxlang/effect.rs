@@ -104,6 +104,7 @@ enum CommonCallbackType {
     SourceMoveVoid =
         CallbackFlag::TakesUserMon | CallbackFlag::TakesActiveMove | CallbackFlag::ReturnsVoid,
     SourceMoveControllingResult = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMoveResult
         | CallbackFlag::ReturnsBoolean
@@ -622,6 +623,21 @@ pub enum BattleEvent {
     /// Runs in the context of the side condition itself.
     #[string = "SideStart"]
     SideStart,
+    /// Runs when a slot condition ends.
+    ///
+    /// Runs in the context of the slot condition itself.
+    #[string = "SlotEnd"]
+    SlotEnd,
+    /// Runs when a slot condition restarts.
+    ///
+    /// Runs in the context of the slot condition itself.
+    #[string = "SlotRestart"]
+    SlotRestart,
+    /// Runs when a slot condition starts.
+    ///
+    /// Runs in the context of the slot condition itself.
+    #[string = "SlotStart"]
+    SlotStart,
     /// Runs when the accuracy of a move used by a Mon is being determined.
     ///
     /// Runs in the context of an active move on the target.
@@ -725,7 +741,7 @@ pub enum BattleEvent {
     ///
     /// Can fail the move.
     ///
-    /// Runs in the context of an applying effect from the user.
+    /// Runs on the active move itself and in the context of an applying effect from the user.
     #[string = "TryMove"]
     TryMove,
     /// Runs when a move's primary hit is being applied to a target.
@@ -851,6 +867,9 @@ impl BattleEvent {
             Self::SideResidual => CommonCallbackType::SideVoid as u32,
             Self::SideRestart => CommonCallbackType::SideResult as u32,
             Self::SideStart => CommonCallbackType::SideResult as u32,
+            Self::SlotEnd => CommonCallbackType::SideResult as u32,
+            Self::SlotRestart => CommonCallbackType::SideResult as u32,
+            Self::SlotStart => CommonCallbackType::SideResult as u32,
             Self::SourceAccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
@@ -916,6 +935,9 @@ impl BattleEvent {
             }
             Self::SetWeather => &[("weather", ValueType::Effect, true)],
             Self::SideConditionStart => &[("condition", ValueType::Effect, true)],
+            Self::SlotEnd => &[("slot", ValueType::UFraction, true)],
+            Self::SlotRestart => &[("slot", ValueType::UFraction, true)],
+            Self::SlotStart => &[("slot", ValueType::UFraction, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::Types => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
@@ -1214,6 +1236,9 @@ pub struct Callbacks {
     pub on_side_residual: Callback,
     pub on_side_restart: Callback,
     pub on_side_start: Callback,
+    pub on_slot_end: Callback,
+    pub on_slot_restart: Callback,
+    pub on_slot_start: Callback,
     pub on_source_accuracy_exempt: Callback,
     pub on_source_invulnerability: Callback,
     pub on_source_modify_damage: Callback,
@@ -1316,6 +1341,9 @@ impl Callbacks {
             BattleEvent::SideResidual => Some(&self.on_side_residual),
             BattleEvent::SideRestart => Some(&self.on_side_restart),
             BattleEvent::SideStart => Some(&self.on_side_start),
+            BattleEvent::SlotEnd => Some(&self.on_slot_end),
+            BattleEvent::SlotRestart => Some(&self.on_slot_restart),
+            BattleEvent::SlotStart => Some(&self.on_slot_start),
             BattleEvent::SourceAccuracyExempt => Some(&self.on_source_accuracy_exempt),
             BattleEvent::SourceInvulnerability => Some(&self.on_source_invulnerability),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),

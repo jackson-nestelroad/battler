@@ -63,6 +63,7 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
+        "add_slot_condition" => add_slot_condition(context, args).map(|val| Some(val)),
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
         "all_mons_in_party" => all_mons_in_party(context, args).map(|val| Some(val)),
@@ -338,6 +339,7 @@ fn log_animate_move(
 
 fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let no_effect = has_special_string_flag(&mut args, "no_effect");
+    let no_target = has_special_string_flag(&mut args, "no_target");
     let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
     let mut with_source = has_special_string_flag(&mut args, "with_source");
 
@@ -368,16 +370,19 @@ fn log_start(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
         add_effect_to_args(context, &mut args)?;
     }
 
-    args.push_front(Value::String(format!(
-        "mon:{}",
-        Mon::position_details(&mut context.target_context()?)?
-    )));
+    if !no_target {
+        args.push_front(Value::String(format!(
+            "mon:{}",
+            Mon::position_details(&mut context.target_context()?)?
+        )));
+    }
 
     log_internal(context, "start".to_owned(), args)
 }
 
 fn log_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
     let no_effect = has_special_string_flag(&mut args, "no_effect");
+    let no_target = has_special_string_flag(&mut args, "no_target");
     let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
     let mut with_source = has_special_string_flag(&mut args, "with_source");
 
@@ -408,10 +413,12 @@ fn log_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result
         add_effect_to_args(context, &mut args)?;
     }
 
-    args.push_front(Value::String(format!(
-        "mon:{}",
-        Mon::position_details(&mut context.target_context()?)?
-    )));
+    if !no_target {
+        args.push_front(Value::String(format!(
+            "mon:{}",
+            Mon::position_details(&mut context.target_context()?)?
+        )));
+    }
 
     log_internal(context, "end".to_owned(), args)
 }
@@ -1631,15 +1638,18 @@ fn new_active_move_from_local_data(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<Value, Error> {
+    let effect_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing effect")?
+        .effect_handle()
+        .wrap_error_with_message("invalid effect")?;
     let move_id = args
         .pop_front()
         .wrap_error_with_message("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
-    let move_data = context
-        .effect_context()
-        .effect()
+    let move_data = CoreBattle::get_effect_by_handle(context.battle_context(), &effect_handle)?
         .fxlang_effect()
         .wrap_error_with_message("effect does not have local data")?
         .local_data
@@ -1659,6 +1669,7 @@ fn use_active_move(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
 ) -> Result<Value, Error> {
+    let indirect = has_special_string_flag(&mut args, "indirect");
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -1690,11 +1701,13 @@ fn use_active_move(
         target_handle,
         source_effect.as_ref(),
         true,
+        !indirect,
     )
     .map(|val| Value::Boolean(val))
 }
 
 fn use_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let indirect = has_special_string_flag(&mut args, "indirect");
     let mon_handle = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -1725,7 +1738,7 @@ fn use_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         &move_id,
         target_handle,
         source_effect.as_ref(),
-        true,
+        !indirect,
     )
     .map(|val| Value::Boolean(val))
 }
@@ -2161,4 +2174,32 @@ fn deduct_pp(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
             .deduct_pp(&move_id, pp)
             .into(),
     ))
+}
+
+fn add_slot_condition(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let use_target_as_source = should_use_target_as_source(&mut args);
+
+    let side_index = args
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let slot = args
+        .pop_front()
+        .wrap_error_with_message("missing slot")?
+        .integer_usize()
+        .wrap_error_with_message("invalid slot")?;
+    let condition = args
+        .pop_front()
+        .wrap_error_with_message("missing condition id")?
+        .string()
+        .wrap_error_with_message("invalid condition id")?;
+    let condition = Id::from(condition);
+
+    let mut context = context.forward_effect_to_side_effect(side_index, use_target_as_source)?;
+    let value = core_battle_actions::add_slot_condition(&mut context, slot, &condition);
+    value.map(|val| Value::Boolean(val))
 }

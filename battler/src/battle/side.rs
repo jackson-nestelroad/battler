@@ -47,6 +47,7 @@ pub struct Side {
     pub index: usize,
 
     pub conditions: FastHashMap<Id, fxlang::EffectState>,
+    pub slot_conditions: FastHashMap<usize, FastHashMap<Id, fxlang::EffectState>>,
 }
 
 // Construction and initialization logic.
@@ -70,6 +71,7 @@ impl Side {
                 name: data.name,
                 index,
                 conditions: FastHashMap::new(),
+                slot_conditions: FastHashMap::new(),
             },
             players,
         ))

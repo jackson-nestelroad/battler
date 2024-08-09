@@ -114,9 +114,16 @@ pub struct CoreBattleEngineOptions {
     /// Should side conditions be logged?
     ///
     /// By default, side conditions are invisible to Mons unless explicitly logged. It may be
-    /// helpful, especially for debugging purposes, to view all volatile statuses added to and
+    /// helpful, especially for debugging purposes, to view all side conditions added to and
     /// removed from sides through the course of a battle.
     pub log_side_conditions: bool,
+
+    /// Should slot conditions be logged?
+    ///
+    /// By default, slot conditions are invisible to Mons unless explicitly logged. It may be
+    /// helpful, especially for debugging purposes, to view all slot conditions added to and
+    /// removed from sides through the course of a battle.
+    pub log_slot_conditions: bool,
 }
 
 impl Default for CoreBattleEngineOptions {
@@ -130,6 +137,7 @@ impl Default for CoreBattleEngineOptions {
             speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Random,
             log_volatile_statuses: false,
             log_side_conditions: false,
+            log_slot_conditions: false,
         }
     }
 }

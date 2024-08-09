@@ -380,7 +380,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &str) -> R
     Ok(())
 }
 
-pub fn remove_side_conditions(
+pub fn remove_side_condition(
     context: &mut SideEffectContext,
     condition: &str,
 ) -> Result<(), Error> {
@@ -390,6 +390,44 @@ pub fn remove_side_conditions(
     let event = log_event!(
         "removeaddsidecondition",
         ("side", context.side().index),
+        ("condition", condition),
+        ("from", context.effect().name())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn add_slot_condition(
+    context: &mut SideEffectContext,
+    slot: usize,
+    condition: &str,
+) -> Result<(), Error> {
+    if !context.battle().engine_options.log_slot_conditions {
+        return Ok(());
+    }
+    let event = log_event!(
+        "addslotcondition",
+        ("side", context.side().index),
+        ("slot", slot),
+        ("condition", condition),
+        ("from", context.effect().name())
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn remove_slot_condition(
+    context: &mut SideEffectContext,
+    slot: usize,
+    condition: &str,
+) -> Result<(), Error> {
+    if !context.battle().engine_options.log_slot_conditions {
+        return Ok(());
+    }
+    let event = log_event!(
+        "removeaddsidecondition",
+        ("side", context.side().index),
+        ("slot", slot),
         ("condition", condition),
         ("from", context.effect().name())
     );
