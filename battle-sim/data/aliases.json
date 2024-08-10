@@ -207,5 +207,6 @@
   "sleep": "slp",
   "freeze": "frz",
   "poison": "psn",
-  "badpoison": "tox"
+  "badpoison": "tox",
+  "faint": "fnt"
 }

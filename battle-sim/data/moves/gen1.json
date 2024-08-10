@@ -242,6 +242,7 @@
     "condition": {
       "duration": 2,
       "callbacks": {
+        "is_semi_invulnerable": ["return true"],
         "on_invulnerability": [
           "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
           ["return"],
@@ -1282,6 +1283,7 @@
     "condition": {
       "duration": 2,
       "callbacks": {
+        "is_semi_invulnerable": ["return true"],
         "on_immunity": [
           "if $effect.id == sandstormweather or $effect.id == hailweather:",
           ["return true"]

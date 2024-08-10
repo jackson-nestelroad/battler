@@ -1096,8 +1096,6 @@ impl Player {
             _ => return Err(battler_error!("you cannot learn move out of turn")),
         }
 
-        // TODO: Only one learn move choice at a time.
-
         let choice =
             LearnMoveChoice::new(data.wrap_error_with_message("missing learn move choice")?)?;
         let team_position = Self::get_position_for_next_choice(context, false)?;

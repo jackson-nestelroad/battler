@@ -188,19 +188,4 @@ mod switch_bad_input_tests {
             "cannot switch: the Mon in slot 2 can only switch in once",
         );
     }
-
-    #[test]
-    fn switch_to_fainted_mon() {
-        // TODO: Force Mon to faint then try to switch to it.
-    }
-
-    #[test]
-    fn switch_out_trapped_mon() {
-        // TODO: Attempt to switch out a trapped Mon.
-    }
-
-    #[test]
-    fn too_many_force_switches() {
-        // TODO: Force a switch and send too many choices.
-    }
 }

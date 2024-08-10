@@ -156,7 +156,10 @@ mod pursuit_test {
             battle.set_player_choice("player-2", "switch 2;pass"),
             Ok(())
         );
-        assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
+        assert_eq!(
+            battle.set_player_choice("player-2", "switch 2;pass"),
+            Ok(())
+        );
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[

@@ -11,6 +11,10 @@
     "name": "Switch Out",
     "condition_type": "Built-in"
   },
+  "fnt": {
+    "name": "Faint",
+    "condition_type": "Built-in"
+  },
   "drain": {
     "name": "Drain",
     "condition_type": "Built-in"

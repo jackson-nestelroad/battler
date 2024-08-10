@@ -433,7 +433,6 @@ fn do_move_internal(
             1,
         );
         if deduction > 0 {
-            // TODO: DeductPP event to interrupt this (or set deduction to 0).
             let move_id = context.active_move().id();
             // SAFETY: move_id is only used for lookup.
             let move_id = unsafe { move_id.unsafely_detach_borrow() };
@@ -563,8 +562,6 @@ fn use_active_move_internal(
         fxlang::BattleEvent::UseMove,
         use_move_input,
     );
-
-    // TODO: Prevent moves if Mon faints at this point? Would this ever happen?
 
     let targets = get_move_targets(context, target)?;
     if context.active_move().data.target.has_single_target() {
@@ -1474,6 +1471,7 @@ mod direct_move_step {
             core_battle_actions,
             core_battle_effects,
             core_battle_logs,
+            mon_states,
             ActiveMoveContext,
             ActiveTargetContext,
             CoreBattle,
@@ -1614,27 +1612,30 @@ mod direct_move_step {
         let mut accuracy = context.active_move().data.accuracy;
         // OHKO moves bypass accuracy modifiers.
         if let Some(ohko) = context.active_move().data.ohko_type.clone() {
-            // TODO: Skip if target is semi-invulnerable.
-            let mut immune = context.mon().level < context.target_mon().level;
-            if let OhkoType::Type(typ) = ohko {
-                if Mon::has_type(&mut context.target_mon_context()?, typ)? {
-                    immune = true;
+            if !mon_states::is_semi_invulnerable(&mut context.target_mon_context()?) {
+                let mut immune = context.mon().level < context.target_mon().level;
+                if let OhkoType::Type(typ) = ohko {
+                    if Mon::has_type(&mut context.target_mon_context()?, typ)? {
+                        immune = true;
+                    }
                 }
-            }
 
-            if immune {
-                core_battle_logs::immune(&mut context.target_mon_context()?)?;
-                return Ok(false);
-            }
+                if immune {
+                    core_battle_logs::immune(&mut context.target_mon_context()?)?;
+                    return Ok(false);
+                }
 
-            if let Accuracy::Chance(accuracy) = &mut accuracy {
-                if context.mon().level >= context.target_mon().level {
-                    let user_has_ohko_type = match ohko {
-                        OhkoType::Always => true,
-                        OhkoType::Type(typ) => Mon::has_type(context.as_mon_context_mut(), typ)?,
-                    };
-                    if user_has_ohko_type {
-                        *accuracy += context.mon().level - context.target_mon().level;
+                if let Accuracy::Chance(accuracy) = &mut accuracy {
+                    if context.mon().level >= context.target_mon().level {
+                        let user_has_ohko_type = match ohko {
+                            OhkoType::Always => true,
+                            OhkoType::Type(typ) => {
+                                Mon::has_type(context.as_mon_context_mut(), typ)?
+                            }
+                        };
+                        if user_has_ohko_type {
+                            *accuracy += context.mon().level - context.target_mon().level;
+                        }
                     }
                 }
             }
@@ -1675,15 +1676,14 @@ mod direct_move_step {
 
         if context.active_move().data.target == MoveTarget::User
             && context.active_move().data.category == MoveCategory::Status
+            && !mon_states::is_semi_invulnerable(&mut context.target_mon_context()?)
         {
-            // TODO: If also not semi-invulnerable, accuracy is exempt.
-        } else {
-            if core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
-                &mut context.applying_effect_context()?,
-                fxlang::BattleEvent::AccuracyExempt,
-            ) {
-                accuracy = Accuracy::Exempt;
-            }
+            accuracy = Accuracy::Exempt;
+        } else if core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+            &mut context.applying_effect_context()?,
+            fxlang::BattleEvent::AccuracyExempt,
+        ) {
+            accuracy = Accuracy::Exempt;
         }
 
         let hit = match accuracy {

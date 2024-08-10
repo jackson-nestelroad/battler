@@ -1004,7 +1004,7 @@ impl Mon {
     /// Calculates the speed value to use for battle action ordering.
     pub fn action_speed(context: &mut MonContext) -> Result<u16, Error> {
         let speed = Self::get_stat(context, Stat::Spe, false, false)?;
-        // TODO: If Trick Room, return u16::MAX - speed.
+        // TODO: If Trick Room, return u16::MAX - speed. CalculateSpeed event?
         Ok(speed)
     }
 
@@ -1548,7 +1548,14 @@ impl Mon {
 
     /// Clears the Mon's state when it faints.
     pub fn clear_state_on_faint(context: &mut MonContext) -> Result<(), Error> {
-        // TODO: End event for ability.
+        core_battle_effects::run_mon_ability_event(
+            &mut context.applying_effect_context(
+                EffectHandle::Condition(Id::from_known("faint")),
+                None,
+                None,
+            )?,
+            fxlang::BattleEvent::End,
+        );
         Self::clear_volatile(context, false)?;
         context.mon_mut().fainted = true;
         Self::switch_out(context)?;

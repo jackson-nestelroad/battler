@@ -455,6 +455,11 @@ pub enum BattleEvent {
     /// Runs on the effect itslf.
     #[string = "IsRaining"]
     IsRaining,
+    /// Runs when determining if a Mon is in a semi-invulnerable state.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsSemiInvulnerable"]
+    IsSemiInvulnerable,
     /// Runs when determining if a weather includes snowing.
     ///
     /// Runs on the effect itslf.
@@ -863,6 +868,7 @@ impl BattleEvent {
             Self::IsGrounded => CommonCallbackType::MonResult as u32,
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
             Self::IsRaining => CommonCallbackType::NoContextResult as u32,
+            Self::IsSemiInvulnerable => CommonCallbackType::MonResult as u32,
             Self::IsSnowing => CommonCallbackType::NoContextResult as u32,
             Self::IsSoundproof => CommonCallbackType::MonResult as u32,
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
@@ -1199,6 +1205,7 @@ pub struct Callbacks {
     pub is_asleep: Callback,
     pub is_grounded: Callback,
     pub is_immune_to_entry_hazards: Callback,
+    pub is_semi_invulnerable: Callback,
     pub is_raining: Callback,
     pub is_snowing: Callback,
     pub is_soundproof: Callback,
@@ -1347,6 +1354,7 @@ impl Callbacks {
             BattleEvent::IsGrounded => Some(&self.is_grounded),
             BattleEvent::IsImmuneToEntryHazards => Some(&self.is_immune_to_entry_hazards),
             BattleEvent::IsRaining => Some(&self.is_raining),
+            BattleEvent::IsSemiInvulnerable => Some(&self.is_semi_invulnerable),
             BattleEvent::IsSnowing => Some(&self.is_snowing),
             BattleEvent::IsSoundproof => Some(&self.is_soundproof),
             BattleEvent::IsSunny => Some(&self.is_sunny),

@@ -184,7 +184,6 @@ pub fn damage(
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
 ) -> Result<(), Error> {
-    // TODO: Handle other special cases where the damage log should have more information.
     let mut event = log_event!("damage", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
         if !effect.is_active_move() {
@@ -242,9 +241,6 @@ pub fn heal(
             }
         }
     }
-
-    // TODO: Let conditions add their own context. For example, "Wish" would probably want to log
-    // who originally granted the Wish.
 
     let mut private_event = event;
     let mut public_event = private_event.clone();
