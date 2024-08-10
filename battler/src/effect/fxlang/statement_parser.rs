@@ -831,7 +831,10 @@ impl<'s> StatementParser<'s> {
             Some(Token::FalseKeyword | Token::TrueKeyword) => {
                 Ok(Some(tree::Value::BoolLiteral(self.parse_bool_literal()?)))
             }
-            Some(Token::UndefinedKeyword) => Ok(Some(tree::Value::UndefinedLiteral)),
+            Some(Token::UndefinedKeyword) => {
+                self.parse_undefined_literal()?;
+                Ok(Some(tree::Value::UndefinedLiteral))
+            }
             Some(Token::Integer | Token::Plus | Token::Minus) => Ok(Some(
                 tree::Value::NumberLiteral(self.parse_number_literal()?),
             )),
@@ -864,6 +867,16 @@ impl<'s> StatementParser<'s> {
             _ => return Err(self.unexpected_token_error_with_expected_hint("bool")),
         };
         Ok(result)
+    }
+
+    fn parse_undefined_literal(&mut self) -> Result<(), Error> {
+        match self.token_parser.next_token(NextTokenContext::new())? {
+            Some(Token::UndefinedKeyword) => {
+                self.token_parser.consume_lexeme();
+            }
+            _ => return Err(self.unexpected_token_error_with_expected_hint("bool")),
+        };
+        Ok(())
     }
 
     fn parse_number_literal(&mut self) -> Result<tree::NumberLiteral, Error> {
