@@ -1253,11 +1253,14 @@ impl<'d> CoreBattle<'d> {
                     {
                         let mut context = context.mon_context(mon)?;
                         if context.mon().needs_switch.is_some() {
-                            core_battle_effects::run_event_for_mon(
-                                &mut context,
-                                fxlang::BattleEvent::BeforeSwitchOut,
-                                fxlang::VariableInput::default(),
-                            );
+                            if !context.mon().skip_before_switch_out {
+                                core_battle_effects::run_event_for_mon(
+                                    &mut context,
+                                    fxlang::BattleEvent::BeforeSwitchOut,
+                                    fxlang::VariableInput::default(),
+                                );
+                            }
+
                             context.mon_mut().skip_before_switch_out = true;
 
                             // Mon may have fainted here.

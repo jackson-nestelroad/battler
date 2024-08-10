@@ -54,6 +54,7 @@ mod moves {
 
     mod gen2 {
         mod attract_test;
+        mod baton_pass_test;
         mod beat_up_test;
         mod belly_drum_test;
         mod conversion_2_test;

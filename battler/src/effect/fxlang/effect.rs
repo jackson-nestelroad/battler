@@ -303,6 +303,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the field.
     #[string = "ClearWeather"]
     ClearWeather,
+    /// Runs when copying a volatile condition to the target Mon.
+    ///
+    /// Runs in the context of an applying effect on the target Mon.
+    #[string = "CopyVolatile"]
+    CopyVolatile,
     /// Runs when a Mon's current status is cured.
     ///
     /// Runs in the context of an applying effect on the target.
@@ -824,6 +829,7 @@ impl BattleEvent {
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
+            Self::CopyVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1203,6 +1209,7 @@ pub struct Callbacks {
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
     pub on_clear_weather: Callback,
+    pub on_copy_volatile: Callback,
     pub on_cure_status: Callback,
     pub on_damage: Callback,
     pub on_damage_received: Callback,
@@ -1303,6 +1310,7 @@ impl Callbacks {
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
+            BattleEvent::CopyVolatile => Some(&self.on_copy_volatile),
             BattleEvent::CureStatus => Some(&self.on_cure_status),
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamageReceived => Some(&self.on_damage_received),

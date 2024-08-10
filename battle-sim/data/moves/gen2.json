@@ -1291,7 +1291,16 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": [],
-    "user_switch": "copyvolatile"
+    "user_switch": "copyvolatile",
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if !func_call(can_switch: $target.player):",
+          ["return false"],
+          "$target.skip_before_switch_out = true"
+        ]
+      }
+    }
   },
   "encore": {
     "name": "Encore",

@@ -55,6 +55,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::CopyVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::CureStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::Damage, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamageReceived, callbacks)?;

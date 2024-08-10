@@ -1,5 +1,6 @@
 use std::ops::Deref;
 
+use ahash::HashMapExt;
 use lazy_static::lazy_static;
 
 use crate::{
@@ -38,6 +39,7 @@ use crate::{
     battler_error,
     common::{
         Error,
+        FastHashMap,
         Fraction,
         Id,
         Identifiable,
@@ -154,6 +156,7 @@ pub fn switch_in(
         ));
     }
 
+    let mon_handle = context.mon_handle();
     if let Some(previous_mon) = context.player().active_mon_handle(position) {
         let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
         if context.mon().hp > 0 {
@@ -163,12 +166,20 @@ pub fn switch_in(
 
             context.mon_mut().being_called_back = true;
 
-            if !switch_out(&mut context, true)? {
-                return Ok(false);
+            if let Some(SwitchType::CopyVolatile) = switch_type {
+                copy_volatile(
+                    &mut context.as_battle_context_mut().applying_effect_context(
+                        EffectHandle::Condition(Id::from_known("switchout")),
+                        Some(previous_mon),
+                        mon_handle,
+                        None,
+                    )?,
+                    previous_mon,
+                )?;
             }
 
-            if let Some(SwitchType::CopyVolatile) = switch_type {
-                // TODO: Copy volatiles to the new Mon.
+            if !switch_out(&mut context, true)? {
+                return Ok(false);
             }
         }
     }
@@ -230,6 +241,43 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
     }
 
     Ok(true)
+}
+
+fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<(), Error> {
+    Mon::clear_volatile(&mut context.target_context()?, true)?;
+
+    let mut source_context = context.as_battle_context_mut().mon_context(source)?;
+    let boosts = source_context.mon().boosts.clone();
+    let mut volatiles = FastHashMap::new();
+    for (volatile, state) in source_context.mon().volatiles.clone() {
+        if CoreBattle::get_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
+            .fxlang_condition()
+            .is_some_and(|condition| condition.no_copy)
+        {
+            continue;
+        }
+        volatiles.insert(volatile, state);
+    }
+    Mon::clear_volatile(&mut source_context, true)?;
+
+    context.target_mut().boosts = boosts;
+    context.target_mut().volatiles = volatiles;
+
+    let copied = context
+        .target()
+        .volatiles
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>();
+    for volatile in copied {
+        core_battle_effects::run_mon_volatile_event(
+            context,
+            fxlang::BattleEvent::CopyVolatile,
+            &volatile,
+        );
+    }
+
+    Ok(())
 }
 
 fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<MoveHandle, Error> {

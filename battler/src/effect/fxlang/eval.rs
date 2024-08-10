@@ -1076,6 +1076,9 @@ where
                         "last_target_location" => ValueRefMut::OptionalISize(
                             &mut context.mon_mut(**mon_handle)?.last_move_target_location,
                         ),
+                        "skip_before_switch_out" => ValueRefMut::Boolean(
+                            &mut context.mon_mut(**mon_handle)?.skip_before_switch_out,
+                        ),
                         "status_state" => ValueRefMut::TempEffectState(
                             MonStatusEffectStateConnector::new(**mon_handle).make_dynamic(),
                         ),
