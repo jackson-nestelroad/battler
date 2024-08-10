@@ -64,7 +64,22 @@
       "NoAssist",
       "NoMetronome",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_after_hit": [
+          "if $source.item.is_defined:",
+          ["return"],
+          "$item = func_call(take_item: $target)",
+          "if !$item:",
+          ["return"],
+          "log_item_end: $target $item silent with_source_effect with_source",
+          "if !func_call(set_item: $source $item):",
+          ["return"],
+          "log_item: $source $item with_source_effect str('of:{}', $target.position_details)"
+        ]
+      }
+    }
   },
   "spiderweb": {
     "name": "Spider Web",

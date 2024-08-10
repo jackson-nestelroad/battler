@@ -1633,9 +1633,21 @@ pub fn run_mon_ability_event(context: &mut ApplyingEffectContext, event: fxlang:
     run_mon_ability_event_internal(context, event, fxlang::VariableInput::default());
 }
 
-/// Runs an event on the target [`Mon`]'s current itemt.
+/// Runs an event on the target [`Mon`]'s current item.
 pub fn run_mon_item_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
     run_mon_item_event_internal(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event on the target [`Mon`]'s current item.
+///
+/// Expects a [`bool`].
+pub fn run_mon_item_event_expecting_bool(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_mon_item_event_internal(context, event, fxlang::VariableInput::default())?
+        .boolean()
+        .ok()
 }
 
 /// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.

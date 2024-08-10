@@ -1439,7 +1439,17 @@
   "safetygoggles": {
     "name": "Safety Goggles",
     "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_immunity": [
+          "if [sandstormweather, hailweather] has $effect.id:",
+          ["return true"],
+          "if $effect.is_move and func_call(move_has_flag: $effect powder):",
+          ["return true"]
+        ]
+      }
+    }
   },
   "richmulch": { "name": "Rich Mulch", "flags": [] },
   "surprisemulch": { "name": "Surprise Mulch", "flags": [] },

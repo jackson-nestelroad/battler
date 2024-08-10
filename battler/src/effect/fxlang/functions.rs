@@ -124,6 +124,8 @@ pub fn run_function(
         "log_fail_heal" => log_fail_heal(context, args).map(|()| None),
         "log_field_activate" => log_field_activate(context, args).map(|()| None),
         "log_immune" => log_immune(context, args).map(|()| None),
+        "log_item" => log_item(context, args).map(|()| None),
+        "log_item_end" => log_item_end(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
         "log_side_end" => log_side_end(context, args).map(|()| None),
@@ -163,10 +165,12 @@ pub fn run_function(
         "sample" => sample(context, args),
         "set_boost" => set_boost(args).map(|val| Some(val)),
         "set_hp" => set_hp(context, args).map(|val| Some(val)),
+        "set_item" => set_item(context, args).map(|val| Some(val)),
         "set_status" => set_status(context, args).map(|val| Some(val)),
         "set_types" => set_types(context, args).map(|val| Some(val)),
         "set_weather" => set_weather(context, args).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context, args),
+        "take_item" => take_item(context, args),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
         "transform_into" => transform_into(context, args).map(|val| Some(val)),
         "type_has_no_effect_against" => {
@@ -487,6 +491,108 @@ fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
     log_internal(context, "sideend".to_owned(), args)
 }
 
+fn log_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+    let mut with_source = has_special_string_flag(&mut args, "with_source");
+
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let item = args
+        .pop_front()
+        .wrap_error_with_message("missing item")?
+        .string()
+        .wrap_error_with_message("invalid item")?;
+    let item = Id::from(item);
+    let item_name = CoreBattle::get_effect_by_id(context.battle_context_mut(), &item)?
+        .name()
+        .to_owned();
+
+    if with_source_effect {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
+        args.push_back(Value::String(format!(
+            "from:{}",
+            source_effect_context.effect().full_name()
+        )));
+
+        if !source_effect_context.effect_handle().is_active_move() {
+            with_source = true;
+        }
+    }
+
+    if with_source {
+        if let Some(source_context) = context.source_context()? {
+            args.push_back(Value::String(format!(
+                "of:{}",
+                Mon::position_details(&source_context)?
+            )));
+        }
+    }
+
+    args.push_front(Value::String(format!("item:{item_name}")));
+    args.push_front(Value::String(format!(
+        "mon:{}",
+        Mon::position_details(&context.mon_context(mon_handle)?)?
+    )));
+
+    log_internal(context, "item".to_owned(), args)
+}
+
+fn log_item_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
+    let mut with_source = has_special_string_flag(&mut args, "with_source");
+
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let item = args
+        .pop_front()
+        .wrap_error_with_message("missing item")?
+        .string()
+        .wrap_error_with_message("invalid item")?;
+    let item = Id::from(item);
+    let item_name = CoreBattle::get_effect_by_id(context.battle_context_mut(), &item)?
+        .name()
+        .to_owned();
+
+    if with_source_effect {
+        let source_effect_context = context
+            .source_effect_context()?
+            .wrap_error_with_message("effect has no source effect")?;
+        args.push_back(Value::String(format!(
+            "from:{}",
+            source_effect_context.effect().full_name()
+        )));
+
+        if !source_effect_context.effect_handle().is_active_move() {
+            with_source = true;
+        }
+    }
+
+    if with_source {
+        if let Some(source_context) = context.source_context()? {
+            args.push_back(Value::String(format!(
+                "of:{}",
+                Mon::position_details(&source_context)?
+            )));
+        }
+    }
+
+    args.push_front(Value::String(format!("item:{item_name}")));
+    args.push_front(Value::String(format!(
+        "mon:{}",
+        Mon::position_details(&context.mon_context(mon_handle)?)?
+    )));
+
+    log_internal(context, "itemend".to_owned(), args)
+}
+
 fn log_prepare_move(context: &mut EvaluationContext) -> Result<(), Error> {
     let mut context = context
         .source_active_move_context()?
@@ -793,7 +899,7 @@ fn has_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let ability = args
+    let item = args
         .pop_front()
         .wrap_error_with_message("missing item id")?
         .string()
@@ -801,7 +907,7 @@ fn has_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .wrap_error_with_message("invalid item id")?;
     Ok(Value::Boolean(Mon::has_item(
         &mut context.mon_context(mon_handle)?,
-        &ability,
+        &item,
     )))
 }
 
@@ -2356,4 +2462,37 @@ fn cancel_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
             .queue
             .cancel_move(mon),
     ))
+}
+
+fn take_item(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    Ok(
+        core_battle_actions::take_item(&mut context.forward_effect_to_applying_effect(mon)?)?
+            .map(|val| Value::String(val.to_string())),
+    )
+}
+
+fn set_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let item = args
+        .pop_front()
+        .wrap_error_with_message("missing item")?
+        .string()
+        .wrap_error_with_message("invalid item")?;
+    let item = Id::from(item);
+    Ok(Value::Boolean(core_battle_actions::set_item(
+        &mut context.forward_effect_to_applying_effect(mon)?,
+        &item,
+    )?))
 }

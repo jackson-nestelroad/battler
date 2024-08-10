@@ -719,6 +719,13 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "SwitchIn"]
     SwitchIn,
+    /// Runs when an item is being taken from a Mon.
+    ///
+    /// Can prevent the item from being taken.
+    ///
+    /// Runs on the item itself and in the context of an applying effect on the target.
+    #[string = "TakeItem"]
+    TakeItem,
     /// Runs when determining if a Mon is trapped (i.e., cannot switch out).
     ///
     /// Runs in the context of the target Mon.
@@ -903,6 +910,7 @@ impl BattleEvent {
             Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
+            Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
@@ -962,6 +970,7 @@ impl BattleEvent {
             Self::SlotEnd => &[("slot", ValueType::UFraction, true)],
             Self::SlotRestart => &[("slot", ValueType::UFraction, true)],
             Self::SlotStart => &[("slot", ValueType::UFraction, true)],
+            Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::Types => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
@@ -1273,6 +1282,7 @@ pub struct Callbacks {
     pub on_start: Callback,
     pub on_stall_move: Callback,
     pub on_switch_in: Callback,
+    pub on_take_item: Callback,
     pub on_trap_mon: Callback,
     pub on_try_boost: Callback,
     pub on_try_hit: Callback,
@@ -1384,6 +1394,7 @@ impl Callbacks {
             BattleEvent::SuppressMonItem => Some(&self.suppress_mon_item),
             BattleEvent::SuppressMonWeather => Some(&self.suppress_mon_weather),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
+            BattleEvent::TakeItem => Some(&self.on_take_item),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
             BattleEvent::TryBoost => Some(&self.on_try_boost),
             BattleEvent::TryHit => Some(&self.on_try_hit),

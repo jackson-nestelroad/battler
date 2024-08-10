@@ -660,6 +660,10 @@ where
                                     &mut context.mon_context(mon_handle)?,
                                 ))
                             }
+                            "item" => match context.mon(mon_handle)?.item.as_ref() {
+                                Some(item) => ValueRef::TempString(item.id.to_string()),
+                                None => ValueRef::Undefined,
+                            },
                             "last_move" => match context.mon(mon_handle)?.last_move {
                                 Some(last_move) => ValueRef::ActiveMove(last_move),
                                 _ => ValueRef::Undefined,

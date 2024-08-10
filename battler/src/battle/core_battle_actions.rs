@@ -3517,26 +3517,6 @@ pub fn transform_into(
     Ok(true)
 }
 
-/// Sets the target Mon's item.
-pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, Error> {
-    if context.target().hp == 0 || !context.target().active {
-        return Ok(false);
-    }
-
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
-
-    let item = context.battle().dex.items.get_by_id(item)?;
-    context.target_mut().item = Some(ItemSlot {
-        id: item.id().clone(),
-        name: item.data.name.clone(),
-        effect_state: fxlang::EffectState::new(),
-    });
-
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
-
-    Ok(true)
-}
-
 /// Adds a condition to the slot on the side.
 pub fn add_slot_condition(
     context: &mut SideEffectContext,
@@ -3679,4 +3659,56 @@ pub fn remove_slot_condition(
     core_battle_logs::remove_slot_condition(context, slot, &condition_name)?;
 
     Ok(true)
+}
+
+/// Sets the target Mon's item.
+pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, Error> {
+    if context.target().hp == 0 || !context.target().active {
+        return Ok(false);
+    }
+
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
+
+    let item = context.battle().dex.items.get_by_id(item)?;
+    context.target_mut().item = Some(ItemSlot {
+        id: item.id().clone(),
+        name: item.data.name.clone(),
+        effect_state: fxlang::EffectState::new(),
+    });
+
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
+
+    Ok(true)
+}
+
+/// Takes the target Mon's item, returning it if successful.
+pub fn take_item(context: &mut ApplyingEffectContext) -> Result<Option<Id>, Error> {
+    if !context.target().active {
+        return Ok(None);
+    }
+    let item_id = match &context.target().item {
+        Some(item) => item.id.clone(),
+        None => return Ok(None),
+    };
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item_id)?
+        .clone();
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::TakeItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    ) || !core_battle_effects::run_mon_item_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::TakeItem,
+    )
+    .unwrap_or(true)
+    {
+        return Ok(None);
+    }
+
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
+    context.target_mut().item = None;
+
+    Ok(Some(item_id))
 }

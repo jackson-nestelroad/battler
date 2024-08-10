@@ -129,6 +129,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SuppressMonItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TakeItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHit, callbacks)?;
