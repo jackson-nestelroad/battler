@@ -27,7 +27,7 @@ The battle engine is designed off of a few principles:
   - Evasion and accuracy checks.
   - OHKO.
   - Self-destruct.
-  - Self switch.
+  - Self switch (including Baton Pass).
   - Recoil.
   - Multi-hit.
   - User and target effects.
@@ -45,22 +45,25 @@ The battle engine is designed off of a few principles:
   - Move disabling.
   - Transformation.
   - Substitute.
+  - Protection.
 - Status conditions (burn, paralysis, sleep, freeze, poison, bad poison).
 - Volatile conditions (e.g., confusion, partially-trapped, flinch, recharge).
 - Side conditions.
+- Entry hazards.
+- Slot conditions (e.g., Future Sight).
 - Weather.
 - Single-player mechanics.
   - Experience.
   - Level up and move learning.
   - EVs.
   - Fleeing.
+  - Affection.
+  - Disobedience.
 - Horde battle support.
 
 ### Roadmap
 
 - Catch mechanics.
-- Common Mon effects (e.g., "asleep", "semi-invulnerable", "grounded", etc.).
 - Abilities.
 - Field effects.
-- Slot conditions.
 - Items.
