@@ -14,6 +14,7 @@ use battler::{
         CoreBattleEngineOptions,
         CoreBattleEngineRandomizeBaseDamage,
         CoreBattleEngineSpeedSortTieResolution,
+        FieldData,
         PlayerOptions,
         PlayerType,
         PublicCoreBattle,
@@ -56,6 +57,7 @@ impl TestBattleBuilder {
                     rules: SerializedRuleSet::new(),
                     options: FormatOptions::default(),
                 },
+                field: FieldData::default(),
                 side_1: BattleBuilderSideData {
                     name: "Side 1".to_string(),
                     players: Vec::new(),
@@ -218,6 +220,11 @@ impl TestBattleBuilder {
 
     pub fn with_obedience_cap(mut self, obedience_cap: u8) -> Self {
         self.options.format.options.obedience_cap = obedience_cap;
+        self
+    }
+
+    pub fn with_weather(mut self, weather: Option<String>) -> Self {
+        self.options.field.weather = weather;
         self
     }
 }

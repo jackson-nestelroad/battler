@@ -3361,7 +3361,13 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
     core_battle_effects::run_weather_event(context, fxlang::BattleEvent::FieldEnd);
     context.battle_mut().field.weather = None;
     context.battle_mut().field.weather_state = fxlang::EffectState::new();
+
+    if let Some(default_weather) = context.battle().field.default_weather.clone() {
+        set_weather(context, &default_weather)?;
+    }
+
     // TODO: WeatherChange event.
+
     Ok(true)
 }
 

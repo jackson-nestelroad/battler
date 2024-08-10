@@ -1,4 +1,8 @@
 {
+  "start": {
+    "name": "Start",
+    "condition_type": "Built-in"
+  },
   "switchin": {
     "name": "Switch In",
     "condition_type": "Built-in"
@@ -556,12 +560,14 @@
     "name": "Rain",
     "condition_type": "Weather",
     "condition": {
-      "duration": 5,
       "callbacks": {
         "is_raining": ["return true"],
         "on_duration": [
+          "if !$source:",
+          ["return"],
           "if func_call(has_item: $source damprock):",
-          ["return 8"]
+          ["return 8"],
+          "return 5"
         ],
         "on_source_weather_modify_damage": [
           "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
@@ -618,12 +624,14 @@
     "name": "Harsh Sunlight",
     "condition_type": "Weather",
     "condition": {
-      "duration": 5,
       "callbacks": {
         "is_sunny": ["return true"],
         "on_duration": [
+          "if !$source:",
+          ["return"],
           "if func_call(has_item: $source heatrock):",
-          ["return 8"]
+          ["return 8"],
+          "return 5"
         ],
         "on_source_weather_modify_damage": [
           "if $move.id == hydrosteam:",
@@ -683,11 +691,13 @@
     "name": "Sandstorm",
     "condition_type": "Weather",
     "condition": {
-      "duration": 5,
       "callbacks": {
         "on_duration": [
+          "if !$source:",
+          ["return"],
           "if func_call(has_item: $source smoothrock):",
-          ["return 8"]
+          ["return 8"],
+          "return 5"
         ],
         "on_modify_spd": {
           "priority": 10,
@@ -718,12 +728,14 @@
     "name": "Hail",
     "condition_type": "Weather",
     "condition": {
-      "duration": 5,
       "callbacks": {
         "is_snowing": ["return true"],
         "on_duration": [
+          "if !$source:",
+          ["return"],
           "if func_call(has_item: $source icyrock):",
-          ["return 8"]
+          ["return 8"],
+          "return 5"
         ],
         "on_field_start": [
           "if $source_effect.is_ability:",
@@ -747,12 +759,14 @@
     "name": "Snow",
     "condition_type": "Weather",
     "condition": {
-      "duration": 5,
       "callbacks": {
         "is_snowing": ["return true"],
         "on_duration": [
+          "if !$source:",
+          ["return"],
           "if func_call(has_item: $source icyrock):",
-          ["return 8"]
+          ["return 8"],
+          "return 5"
         ],
         "on_modify_def": {
           "priority": 10,

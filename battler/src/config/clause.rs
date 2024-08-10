@@ -217,6 +217,7 @@ mod clause_tests {
         battle::{
             BattleType,
             CoreBattleOptions,
+            FieldData,
             PlayerData,
             PlayerOptions,
             PlayerType,
@@ -537,6 +538,7 @@ mod clause_tests {
         let mut bad_options = CoreBattleOptions {
             seed: None,
             format: None,
+            field: FieldData::default(),
             side_1: SideData {
                 name: "Side 1".to_owned(),
                 players: Vec::new(),
@@ -556,6 +558,7 @@ mod clause_tests {
         let mut good_options = CoreBattleOptions {
             seed: None,
             format: None,
+            field: FieldData::default(),
             side_1: SideData {
                 name: "Side 1".to_owned(),
                 players: Vec::from_iter([

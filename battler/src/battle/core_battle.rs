@@ -284,7 +284,7 @@ impl<'d> CoreBattle<'d> {
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
         let faint_queue = VecDeque::new();
-        let field = Field::new();
+        let field = Field::new(options.field);
         let (side_1, mut players) =
             Side::new(options.side_1, 0, &format.battle_type, &dex, &registry)?;
         let (side_2, side_2_players) =
@@ -1061,6 +1061,13 @@ impl<'d> CoreBattle<'d> {
 
                 // TODO: Start event for species. Some forms changes happen at the very beginning of
                 // the battle.
+
+                // Clears the weather, which then sets the default weather.
+                core_battle_actions::clear_weather(&mut context.field_effect_context(
+                    EffectHandle::Condition(Id::from_known("start")),
+                    None,
+                    None,
+                )?)?;
 
                 context.battle_mut().mid_turn = true;
             }

@@ -83,7 +83,10 @@ pub use core_battle::{
     CoreBattle,
     PublicCoreBattle,
 };
-pub use field::Field;
+pub use field::{
+    Field,
+    FieldData,
+};
 pub use mon::{
     AbilitySlot,
     ActiveMonDetails,

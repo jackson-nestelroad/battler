@@ -6,6 +6,7 @@ use serde::{
 use crate::{
     battle::{
         BattleType,
+        FieldData,
         PlayerData,
         SideData,
     },
@@ -159,6 +160,8 @@ pub struct CoreBattleOptions {
     pub seed: Option<u64>,
     /// The format of the battle.
     pub format: Option<FormatData>,
+    /// The field of the battle.
+    pub field: FieldData,
     /// One side of the battle.
     pub side_1: SideData,
     /// The other side of the battle.

@@ -8,6 +8,7 @@ use crate::{
         BattleOptions,
         CoreBattleEngineOptions,
         CoreBattleOptions,
+        FieldData,
         PlayerData,
         PlayerOptions,
         PlayerType,
@@ -93,6 +94,8 @@ pub struct BattleBuilderOptions {
     pub seed: Option<u64>,
     /// The format of the battle.
     pub format: FormatData,
+    /// The field of the battle.
+    pub field: FieldData,
     /// One side of the battle.
     pub side_1: BattleBuilderSideData,
     /// The other side of the battle.
@@ -121,6 +124,7 @@ impl<'d> BattleBuilder<'d> {
         let options = CoreBattleOptions {
             seed: options.seed,
             format: None,
+            field: options.field,
             side_1: options.side_1.into(),
             side_2: options.side_2.into(),
         };

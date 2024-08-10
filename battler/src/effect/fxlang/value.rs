@@ -292,6 +292,7 @@ impl Value {
     /// Consumes the value into a [`bool`].
     pub fn boolean(self) -> Result<bool, Error> {
         match self {
+            Self::Undefined => Ok(false),
             Self::Boolean(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boolean)),
         }
@@ -565,6 +566,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
     /// Converts the value to a boolean, if possible.
     pub fn boolean(&self) -> Option<bool> {
         match self {
+            Self::Undefined => Some(false),
             Self::Boolean(val) => Some(*val),
             Self::Reference(val) => val.value_ref().boolean(),
             _ => None,
@@ -782,6 +784,7 @@ impl<'eval> ValueRef<'eval> {
     /// Converts the value to a boolean, if possible.
     pub fn boolean(&self) -> Option<bool> {
         match self {
+            Self::Undefined => Some(false),
             Self::Boolean(val) => Some(*val),
             _ => None,
         }
