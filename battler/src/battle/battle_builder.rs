@@ -95,6 +95,7 @@ pub struct BattleBuilderOptions {
     /// The format of the battle.
     pub format: FormatData,
     /// The field of the battle.
+    #[serde(default)]
     pub field: FieldData,
     /// One side of the battle.
     pub side_1: BattleBuilderSideData,

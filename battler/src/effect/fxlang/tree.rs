@@ -76,9 +76,10 @@ impl Var {
     }
 }
 
-/// Value -> Bool | Number | String | List | Var | ValueExpr | ValueFunctionCall
+/// Value -> "undefined" | Bool | Number | String | List | Var | ValueExpr | ValueFunctionCall
 #[derive(Debug, PartialEq, Eq)]
 pub enum Value {
+    UndefinedLiteral,
     BoolLiteral(BoolLiteral),
     NumberLiteral(NumberLiteral),
     StringLiteral(StringLiteral),

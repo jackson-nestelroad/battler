@@ -617,6 +617,9 @@ where
                             "base_stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
                             }
+                            "being_called_back" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.being_called_back)
+                            }
                             "boosts" => ValueRef::BoostTable(&context.mon(mon_handle)?.boosts),
                             "effective_weather" => {
                                 match mon_states::effective_weather(
@@ -632,6 +635,9 @@ where
                                 }
                             }
                             "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
+                            "foe_side" => {
+                                ValueRef::Side(context.mon_context(mon_handle)?.foe_side().index)
+                            }
                             "gender" => ValueRef::Gender(context.mon(mon_handle)?.gender),
                             "happiness" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.happiness.into())
@@ -695,6 +701,9 @@ where
                                     .unwrap_or(false),
                             ),
                             "name" => ValueRef::String(&context.mon(mon_handle)?.name),
+                            "needs_switch" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.needs_switch.is_some())
+                            }
                             "player" => ValueRef::Player(context.mon(mon_handle)?.player),
                             "position" => ValueRef::UFraction(
                                 TryInto::<u32>::try_into(Mon::position_on_side(
@@ -1864,6 +1873,7 @@ impl Evaluator {
         'program: 'eval,
     {
         match value {
+            tree::Value::UndefinedLiteral => Ok(MaybeReferenceValue::Undefined),
             tree::Value::BoolLiteral(bool) => Ok(MaybeReferenceValue::Boolean(bool.0)),
             tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(number)) => {
                 Ok(MaybeReferenceValue::UFraction(*number))
@@ -2043,6 +2053,9 @@ impl Evaluator {
             (ValueRefMut::String(var), Value::String(val)) => {
                 *var = val;
             }
+            (ValueRefMut::OptionalString(var), Value::Undefined) => {
+                *var = None;
+            }
             (ValueRefMut::OptionalString(var), Value::String(val)) => {
                 *var = Some(val);
             }
@@ -2105,6 +2118,9 @@ impl Evaluator {
             }
             (ValueRefMut::HitEffect(var), Value::HitEffect(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::OptionalHitEffect(var), Value::Undefined) => {
+                *var = None;
             }
             (ValueRefMut::OptionalHitEffect(var), Value::HitEffect(val)) => {
                 *var = Some(val);

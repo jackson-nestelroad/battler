@@ -161,6 +161,7 @@ pub struct CoreBattleOptions {
     /// The format of the battle.
     pub format: Option<FormatData>,
     /// The field of the battle.
+    #[serde(default)]
     pub field: FieldData,
     /// One side of the battle.
     pub side_1: SideData,

@@ -75,6 +75,7 @@ mod moves {
         mod present_test;
         mod protect_test;
         mod psych_up_test;
+        mod pursuit_test;
         mod rapid_spin_test;
         mod return_test;
         mod rollout_test;

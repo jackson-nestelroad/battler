@@ -149,6 +149,28 @@ impl BattleQueue {
         })
     }
 
+    /// Cancels the move action to be made by the Mon.
+    pub fn cancel_move(&mut self, mon: MonHandle) -> bool {
+        let before = self.actions.len();
+
+        let mut actions = VecDeque::new();
+        mem::swap(&mut actions, &mut self.actions);
+        actions = actions
+            .into_iter()
+            .filter(|action| {
+                if let Action::Move(action) = action {
+                    action.mon_action.mon != mon
+                } else {
+                    true
+                }
+            })
+            .collect();
+        mem::swap(&mut actions, &mut self.actions);
+
+        let after = self.actions.len();
+        before > after
+    }
+
     /// Inserts an [`Action`] into the queue into the position it would have been had it been sorted
     /// originally.
     ///

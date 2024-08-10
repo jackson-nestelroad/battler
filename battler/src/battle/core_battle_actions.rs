@@ -93,7 +93,11 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
     if context.mon().hp > 0 {
         if run_switch_out_events {
             if !context.mon().skip_before_switch_out {
-                // TODO: BeforeSwitchOut event.
+                core_battle_effects::run_event_for_mon(
+                    context,
+                    fxlang::BattleEvent::BeforeSwitchOut,
+                    fxlang::VariableInput::default(),
+                );
                 // TODO: Update event.
             }
             context.mon_mut().skip_before_switch_out = false;
@@ -469,7 +473,7 @@ fn use_active_move_internal(
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::ModifyType,
-        core_battle_effects::MoveTargetForEvent::User,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
         fxlang::VariableInput::default(),
     );
     let use_move_input = fxlang::VariableInput::from_iter([target
@@ -478,17 +482,17 @@ fn use_active_move_internal(
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::UseMove,
-        core_battle_effects::MoveTargetForEvent::User,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
         use_move_input.clone(),
     );
 
     core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(None)?,
+        &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::ModifyType,
         fxlang::VariableInput::default(),
     );
     core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(None)?,
+        &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::UseMove,
         use_move_input,
     );
@@ -640,23 +644,16 @@ fn get_move_targets(
             );
         }
         MoveTarget::AllAdjacent => {
-            targets.extend(
-                Mon::adjacent_allies(&mut context.as_mon_context_mut())?.filter_map(|mon| mon),
-            );
-            targets.extend(
-                Mon::adjacent_foes(&mut context.as_mon_context_mut())?.filter_map(|mon| mon),
-            );
+            targets.extend(Mon::adjacent_allies(&mut context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
         }
         MoveTarget::AllAdjacentFoes => {
-            targets.extend(
-                Mon::adjacent_foes(&mut context.as_mon_context_mut())?.filter_map(|mon| mon),
-            );
+            targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
         }
         MoveTarget::Allies => {
-            targets.extend(
-                Mon::adjacent_allies_and_self(&mut context.as_mon_context_mut())?
-                    .filter_map(|mon| mon),
-            );
+            targets.extend(Mon::adjacent_allies_and_self(
+                &mut context.as_mon_context_mut(),
+            )?);
         }
         _ => {
             let mut target = match selected_target {

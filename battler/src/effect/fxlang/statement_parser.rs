@@ -42,6 +42,7 @@ pub(crate) enum Token {
 
     TrueKeyword,
     FalseKeyword,
+    UndefinedKeyword,
     ExprKeyword,
     FuncCallKeyword,
     IfKeyword,
@@ -471,6 +472,7 @@ mod token {
             match identifier {
                 "true" => Token::TrueKeyword,
                 "false" => Token::FalseKeyword,
+                "undefined" => Token::UndefinedKeyword,
                 "expr" => Token::ExprKeyword,
                 "func_call" => Token::FuncCallKeyword,
                 "if" => Token::IfKeyword,
@@ -829,6 +831,7 @@ impl<'s> StatementParser<'s> {
             Some(Token::FalseKeyword | Token::TrueKeyword) => {
                 Ok(Some(tree::Value::BoolLiteral(self.parse_bool_literal()?)))
             }
+            Some(Token::UndefinedKeyword) => Ok(Some(tree::Value::UndefinedLiteral)),
             Some(Token::Integer | Token::Plus | Token::Minus) => Ok(Some(
                 tree::Value::NumberLiteral(self.parse_number_literal()?),
             )),

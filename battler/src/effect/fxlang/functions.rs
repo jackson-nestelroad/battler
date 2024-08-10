@@ -41,6 +41,7 @@ use crate::{
         Effect,
         EffectHandle,
         MonVolatileStatusEffectStateConnector,
+        SideConditionEffectStateConnector,
     },
     log::Event,
     log_event,
@@ -63,6 +64,7 @@ pub fn run_function(
     args: VecDeque<Value>,
 ) -> Result<Option<Value>, Error> {
     match function_name {
+        "add_side_condition" => add_side_condition(context, args).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context, args).map(|val| Some(val)),
         "add_volatile" => add_volatile(context, args).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
@@ -82,6 +84,7 @@ pub fn run_function(
         }
         "can_escape" => can_escape(context, args).map(|val| Some(val)),
         "can_switch" => can_switch(context, args).map(|val| Some(val)),
+        "cancel_move" => cancel_move(context, args).map(|val| Some(val)),
         "chance" => chance(context, args).map(|val| Some(val)),
         "check_immunity" => check_immunity(context, args).map(|val| Some(val)),
         "clamp_number" => clamp_number(args).map(|val| Some(val)),
@@ -93,6 +96,7 @@ pub fn run_function(
         "deduct_pp" => deduct_pp(context, args).map(|val| Some(val)),
         "direct_damage" => direct_damage(context, args).map(|()| None),
         "disable_move" => disable_move(context, args).map(|()| None),
+        "do_move" => do_move(context, args).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "escape" => escape(context, args).map(|val| Some(val)),
         "faint" => faint(context, args).map(|()| None),
@@ -108,6 +112,7 @@ pub fn run_function(
         "heal" => heal(context, args).map(|()| None),
         "hit_effect" => hit_effect().map(|val| Some(val)),
         "index" => index(args),
+        "is_adjacent" => is_adjacent(context, args).map(|val| Some(val)),
         "is_ally" => is_ally(context, args).map(|val| Some(val)),
         "log" => log(context, args).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
@@ -144,6 +149,7 @@ pub fn run_function(
         "prepare_direct_move" => prepare_direct_move(context, args).map(|val| Some(val)),
         "random" => random(context, args).map(|val| Some(val)),
         "random_target" => random_target(context, args),
+        "remove" => remove(args).map(|val| Some(val)),
         "remove_side_condition" => remove_side_condition(context, args).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context, args).map(|val| Some(val)),
         "run_event" => run_event(context, args).map(|val| Some(val)),
@@ -159,6 +165,7 @@ pub fn run_function(
         "set_status" => set_status(context, args).map(|val| Some(val)),
         "set_types" => set_types(context, args).map(|val| Some(val)),
         "set_weather" => set_weather(context, args).map(|val| Some(val)),
+        "side_condition_effect_state" => side_condition_effect_state(context, args),
         "target_location_of_mon" => target_location_of_mon(context, args).map(|val| Some(val)),
         "transform_into" => transform_into(context, args).map(|val| Some(val)),
         "type_has_no_effect_against" => {
@@ -1365,16 +1372,35 @@ fn volatile_effect_state(
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile_id = Id::from(volatile_id);
-    Ok(context
-        .mon_context(mon_handle)?
-        .mon()
-        .volatiles
-        .contains_key(&volatile_id)
-        .then(|| {
-            Value::EffectState(
-                MonVolatileStatusEffectStateConnector::new(mon_handle, volatile_id).make_dynamic(),
-            )
-        }))
+    let effect_state = MonVolatileStatusEffectStateConnector::new(mon_handle, volatile_id);
+    if effect_state.exists(context.battle_context_mut())? {
+        Ok(Some(Value::EffectState(effect_state.make_dynamic())))
+    } else {
+        Ok(None)
+    }
+}
+
+fn side_condition_effect_state(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let side = args
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let condition_id = args
+        .pop_front()
+        .wrap_error_with_message("missing condition")?
+        .string()
+        .wrap_error_with_message("invalid condition")?;
+    let condition_id = Id::from(condition_id);
+    let effect_state = SideConditionEffectStateConnector::new(side, condition_id);
+    if effect_state.exists(context.battle_context_mut())? {
+        Ok(Some(Value::EffectState(effect_state.make_dynamic())))
+    } else {
+        Ok(None)
+    }
 }
 
 struct StatBoost(Boost, i8);
@@ -1743,6 +1769,41 @@ fn use_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
     .map(|val| Value::Boolean(val))
 }
 
+fn do_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = args
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .move_id(context)
+        .wrap_error_with_message("invalid move")?;
+    let target_position = match args.pop_front() {
+        Some(value) => Some(
+            value
+                .integer_isize()
+                .wrap_error_with_message("invalid target position")?,
+        ),
+        None => None,
+    };
+    let target = match args.pop_front() {
+        Some(value) => Some(
+            value
+                .mon_handle()
+                .wrap_error_with_message("invalid target mon")?,
+        ),
+        None => None,
+    };
+    core_battle_actions::do_move(
+        &mut context.mon_context(mon_handle)?,
+        &move_id,
+        target_position,
+        target,
+    )
+}
+
 fn mon_at_target_location(
     context: &mut EvaluationContext,
     mut args: VecDeque<Value>,
@@ -2029,6 +2090,24 @@ fn append(mut args: VecDeque<Value>) -> Result<Value, Error> {
     Ok(Value::List(list))
 }
 
+fn remove(mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let list = args
+        .pop_front()
+        .wrap_error_with_message("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    let value = args.pop_front().wrap_error_with_message("missing value")?;
+    let list = list
+        .into_iter()
+        .filter(|element| {
+            MaybeReferenceValueForOperation::from(element)
+                .not_equal(MaybeReferenceValueForOperation::from(&value))
+                .is_ok_and(|val| val.boolean().is_some_and(|val| val))
+        })
+        .collect();
+    Ok(Value::List(list))
+}
+
 fn index(mut args: VecDeque<Value>) -> Result<Option<Value>, Error> {
     let list = args
         .pop_front()
@@ -2202,4 +2281,56 @@ fn add_slot_condition(
     let mut context = context.forward_effect_to_side_effect(side_index, use_target_as_source)?;
     let value = core_battle_actions::add_slot_condition(&mut context, slot, &condition);
     value.map(|val| Value::Boolean(val))
+}
+
+fn add_side_condition(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Value, Error> {
+    let use_target_as_source = should_use_target_as_source(&mut args);
+
+    let side_index = args
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let condition = args
+        .pop_front()
+        .wrap_error_with_message("missing condition id")?
+        .string()
+        .wrap_error_with_message("invalid condition id")?;
+    let condition = Id::from(condition);
+
+    let mut context = context.forward_effect_to_side_effect(side_index, use_target_as_source)?;
+    let value = core_battle_actions::add_side_condition(&mut context, &condition);
+    value.map(|val| Value::Boolean(val))
+}
+
+fn is_adjacent(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let other = args
+        .pop_front()
+        .wrap_error_with_message("missing second mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid second mon")?;
+    Mon::is_adjacent(&mut context.mon_context(mon)?, other).map(|val| Value::Boolean(val))
+}
+
+fn cancel_move(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let mon = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    Ok(Value::Boolean(
+        context
+            .battle_context_mut()
+            .battle_mut()
+            .queue
+            .cancel_move(mon),
+    ))
 }

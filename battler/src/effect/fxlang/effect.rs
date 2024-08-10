@@ -98,11 +98,14 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
     SourceMoveResult = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
-    SourceMoveVoid =
-        CallbackFlag::TakesUserMon | CallbackFlag::TakesActiveMove | CallbackFlag::ReturnsVoid,
+    SourceMoveVoid = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsVoid,
     SourceMoveControllingResult = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
@@ -110,6 +113,7 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
     SourceMoveMonModifier = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMon
         | CallbackFlag::ReturnsVoid,
@@ -276,6 +280,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "BeforeMove"]
     BeforeMove,
+    /// Runs before a Mon switches out.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "BeforeSwitchOut"]
+    BeforeSwitchOut,
     /// Runs before a turn of a battle.
     ///
     /// Runs in the context of an applying effect on the target.
@@ -805,6 +814,7 @@ impl BattleEvent {
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
             Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
@@ -1181,6 +1191,7 @@ pub struct Callbacks {
     pub on_any_exit: Callback,
     pub on_attract: Callback,
     pub on_before_move: Callback,
+    pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
     pub on_clear_weather: Callback,
@@ -1279,6 +1290,7 @@ impl Callbacks {
             BattleEvent::AnyExit => Some(&self.on_any_exit),
             BattleEvent::Attract => Some(&self.on_attract),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
+            BattleEvent::BeforeSwitchOut => Some(&self.on_before_switch_out),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),

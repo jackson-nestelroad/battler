@@ -1253,8 +1253,13 @@ impl<'d> CoreBattle<'d> {
                     {
                         let mut context = context.mon_context(mon)?;
                         if context.mon().needs_switch.is_some() {
-                            // TODO: BeforeSwitchOut event.
+                            core_battle_effects::run_event_for_mon(
+                                &mut context,
+                                fxlang::BattleEvent::BeforeSwitchOut,
+                                fxlang::VariableInput::default(),
+                            );
                             context.mon_mut().skip_before_switch_out = true;
+
                             // Mon may have fainted here.
                             Self::faint_messages(context.as_battle_context_mut())?;
                             if context.battle().ending {
@@ -1445,15 +1450,11 @@ impl<'d> CoreBattle<'d> {
         let mut context = context.mon_context(mon)?;
         let mons = if !move_target.can_target_foes() {
             // Cannot target foes, so only consider allies.
-            Mon::adjacent_allies(&mut context)?
-                .filter_map(|ally| ally)
-                .collect::<Vec<_>>()
+            Mon::adjacent_allies(&mut context)?.collect::<Vec<_>>()
         } else if move_target.is_adjacent_only() {
             // Consider adjacent foes. Allies are excluded, so that a move will never randomly
             // target an ally if it doesn't need to.
-            Mon::adjacent_foes(&mut context)?
-                .filter_map(|foe| foe)
-                .collect::<Vec<_>>()
+            Mon::adjacent_foes(&mut context)?.collect::<Vec<_>>()
         } else {
             // Consider all foes.
             Mon::active_foes(&mut context).collect::<Vec<_>>()

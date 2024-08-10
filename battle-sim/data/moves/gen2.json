@@ -1316,7 +1316,51 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $target.being_called_back or $target.needs_switch:",
+          ["return expr($move.base_power * 2)"]
+        ],
+        "on_before_turn": [
+          "$side = $target.foe_side",
+          "add_side_condition: $side $this.id use_target_as_source",
+          "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
+          "if !$pursuit_state.sources:",
+          ["$pursuit_state.sources = []"],
+          "$pursuit_state.sources = func_call(append: $pursuit_state.sources $target)"
+        ],
+        "on_use_move": [
+          "if $target.being_called_back or $target.needs_switch:",
+          ["$move.accuracy = exempt"]
+        ],
+        "on_try_hit": [
+          "$pursuit_state = func_call(side_condition_effect_state: $target.side $this.id)",
+          "if !$pursuit_state or !$pursuit_state.sources:",
+          ["return"],
+          "$pursuit_state.sources = func_call(remove: $pursuit_state.sources $source)"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_before_switch_out": [
+          "$activated = false",
+          "# Make a copy, since this list is mutated after Pursuit hits.",
+          "$sources = $effect_state.sources",
+          "foreach $source in $sources:",
+          [
+            "if !func_call(is_adjacent: $source $mon) or !func_call(cancel_move: $source) or $source.hp == 0:",
+            ["continue"],
+            "if !$activated:",
+            ["$activated = true", "log_activate: with_target"],
+            "do_move: $source $this.id func_call(target_location_of_mon: $source $mon) $mon"
+          ]
+        ]
+      }
+    }
   },
   "rapidspin": {
     "name": "Rapid Spin",
@@ -1575,7 +1619,45 @@
     "accuracy": 100,
     "priority": -5,
     "target": "Scripted",
-    "flags": ["FailMeFirst", "NoAssist", "NoMetronome", "Protect"]
+    "flags": ["FailMeFirst", "NoAssist", "NoMetronome", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_before_turn": ["add_volatile: $target $this.id"],
+        "on_try_use_move": [
+          "$effect_state = func_call(volatile_effect_state: $user $this.id)",
+          "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
+          ["return false"]
+        ],
+        "on_move_damage": [
+          "$effect_state = func_call(volatile_effect_state: $source $this.id)",
+          "if !$effect_state:",
+          ["return 0"],
+          "return $effect_state.damage"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["$effect_state.damage = 0"],
+        "on_redirect_target": [
+          "if $move.id != counter:",
+          ["return"],
+          "if !$effect_state.target_side or $effect_state.target_position.is_undefined:",
+          ["return"],
+          "return func_call(mon_in_position: $effect_state.target_side $effect_state.target_position)"
+        ],
+        "on_damaging_hit": [
+          "if !func_call(is_ally: $source $target) and $move.category == special:",
+          [
+            "$effect_state.target_side = $source.side",
+            "$effect_state.target_position = $source.position",
+            "$effect_state.damage = 2 * $damage"
+          ]
+        ]
+      }
+    }
   },
   "psychup": {
     "name": "Psych Up",

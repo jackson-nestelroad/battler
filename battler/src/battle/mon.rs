@@ -777,7 +777,7 @@ impl Mon {
             ));
         }
 
-        Ok(Mon::relative_location(
+        Ok(Self::relative_location(
             mon_position,
             target_position,
             mon_side == target_side,
@@ -802,7 +802,7 @@ impl Mon {
     ) -> Result<isize, Error> {
         let target_context = context.as_battle_context_mut().mon_context(target)?;
         let target_side = target_context.mon().side;
-        let target_position = Mon::position_on_side(context)? + 1;
+        let target_position = Self::position_on_side(context)? + 1;
         if target_side != context.mon().side {
             Ok(-(target_position as isize))
         } else {
@@ -813,6 +813,33 @@ impl Mon {
     /// Checks if the given Mon is an ally.
     pub fn is_ally(&self, mon: &Mon) -> bool {
         self.side == mon.side
+    }
+
+    /// Checks if the given Mon is adjacent to this Mon.
+    pub fn is_adjacent(context: &mut MonContext, other: MonHandle) -> Result<bool, Error> {
+        let side = context.mon().side;
+        let position = Self::position_on_side(context)?;
+        let other_context = context.as_battle_context_mut().mon_context(other)?;
+        let other_side = other_context.mon().side;
+        let mut other_position = Self::position_on_side(&other_context)?;
+
+        if side != other_side {
+            let mons_per_side = context.battle().max_side_length();
+            if position >= mons_per_side {
+                return Err(battler_error!("mon position {position} is out of bounds"));
+            }
+            // Flip the position.
+            other_position = mons_per_side - other_position - 1;
+        }
+
+        let reach = context.battle().format.options.adjacency_reach as usize - 1;
+        let diff = if position > other_position {
+            position - other_position
+        } else {
+            other_position - position
+        };
+
+        Ok(diff <= reach)
     }
 
     /// Creates an iterator over all active allies and this Mon.
@@ -826,28 +853,25 @@ impl Mon {
     /// Creates an iterator over all adjacent allies.
     pub fn adjacent_allies(
         context: &mut MonContext,
-    ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
-        let position = Mon::position_on_side(context)?;
-        let context = context.as_side_context_mut();
-        let reach = context.battle().format.options.adjacency_reach as usize - 1;
-        let min = if reach > position {
-            0
-        } else {
-            position - reach
-        };
-        let max = position + reach;
-        Ok((min..=max)
-            .filter(|pos| *pos != position)
-            .map(|pos| Side::mon_in_position(context, pos))
-            .collect::<Result<Vec<_>, Error>>()?
-            .into_iter())
+    ) -> Result<impl Iterator<Item = MonHandle>, Error> {
+        let allies = context
+            .battle()
+            .active_mon_handles_on_side(context.mon().side)
+            .collect::<Vec<_>>();
+        let mut adjacent_allies = Vec::new();
+        for ally in allies {
+            if context.mon_handle() != ally && Self::is_adjacent(context, ally)? {
+                adjacent_allies.push(ally);
+            }
+        }
+        Ok(adjacent_allies.into_iter())
     }
 
     /// Creates an iterator over all adjacent allies and this Mon.
     pub fn adjacent_allies_and_self(
         context: &mut MonContext,
-    ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
-        Ok(Self::adjacent_allies(context)?.chain(iter::once(Some(context.mon_handle()))))
+    ) -> Result<impl Iterator<Item = MonHandle>, Error> {
+        Ok(Self::adjacent_allies(context)?.chain(iter::once(context.mon_handle())))
     }
 
     /// Checks if the given Mon is a foe.
@@ -864,26 +888,15 @@ impl Mon {
     /// Creates an iterator over all adjacent foes.
     pub fn adjacent_foes(
         context: &mut MonContext,
-    ) -> Result<impl Iterator<Item = Option<MonHandle>>, Error> {
-        let position = Mon::position_on_side(context)?;
-        let mons_per_side = context.battle().max_side_length();
-        if position >= mons_per_side {
-            return Err(battler_error!("mon position {position} is out of bounds"));
+    ) -> Result<impl Iterator<Item = MonHandle>, Error> {
+        let foes = Self::active_foes(context).collect::<Vec<_>>();
+        let mut adjacent_foes = Vec::new();
+        for foe in foes {
+            if Self::is_adjacent(context, foe)? {
+                adjacent_foes.push(foe);
+            }
         }
-        let flipped_position = mons_per_side - position - 1;
-
-        let mut context = context.foe_side_context()?;
-        let reach = context.battle().format.options.adjacency_reach as usize - 1;
-        let min = if reach > flipped_position {
-            0
-        } else {
-            flipped_position - reach
-        };
-        let max = flipped_position + reach;
-        Ok((min..=max)
-            .map(|pos| Side::mon_in_position(&mut context, pos))
-            .collect::<Result<Vec<_>, Error>>()?
-            .into_iter())
+        Ok(adjacent_foes.into_iter())
     }
 
     fn calculate_stat_internal(
