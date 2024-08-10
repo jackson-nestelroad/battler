@@ -1306,7 +1306,52 @@
       "Mirror",
       "Protect",
       "Reflectable"
-    ]
+    ],
+    "hit_effect": {
+      "volatile_status": "encore"
+    },
+    "condition": {
+      "duration": 3,
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "$last_move = $target.last_move",
+          "if !$last_move or func_call(move_has_flag: $last_move failencore):",
+          ["return false"],
+          "$index = func_call(move_slot_index: $target $last_move.id)",
+          "if $index.is_undefined:",
+          ["return false"],
+          "$move_slot = func_call(move_slot_at_index: $target $index)",
+          "if !$move_slot or $move_slot.pp == 0:",
+          ["return false"],
+          "$effect_state.move = $last_move.id",
+          "log_start",
+          "if $target.will_move_this_turn:",
+          ["$effect_state.duration = $effect_state.duration + 1"]
+        ],
+        "on_override_move": [
+          "if $move.id != $effect_state.move:",
+          ["return $effect_state.move"]
+        ],
+        "on_residual": [
+          "$index = func_call(move_slot_index: $target $effect_state.move)",
+          "if $index.is_defined:",
+          ["$move_slot = func_call(move_slot_at_index: $target $index)"],
+          "if $move_slot.is_defined and $move_slot.pp == 0:",
+          ["remove_volatile: $target $this.id"]
+        ],
+        "on_end": ["log_end"],
+        "on_disable_move": [
+          "if !func_call(has_move: $mon $effect_state.move):",
+          ["return"],
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.id != $effect_state.move:",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ]
+      }
+    }
   },
   "pursuit": {
     "name": "Pursuit",

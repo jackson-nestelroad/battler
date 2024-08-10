@@ -150,7 +150,8 @@ enum CommonCallbackType {
     MonResult =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
-    MonInfo = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString,
+    MonInfo =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString | CallbackFlag::ReturnsVoid,
     MonTypes = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes,
     MonBoostModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoosts | CallbackFlag::ReturnsVoid,
@@ -565,6 +566,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "NegateImmunity"]
     NegateImmunity,
+    /// Runs when a Mon uses a move, to override the chosen move.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "OverrideMove"]
+    OverrideMove,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -865,6 +871,7 @@ impl BattleEvent {
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
+            Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -939,6 +946,7 @@ impl BattleEvent {
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
+            Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
                 &[("status", ValueType::Effect, true)]
@@ -1235,6 +1243,7 @@ pub struct Callbacks {
     pub on_move_damage: Callback,
     pub on_move_failed: Callback,
     pub on_negate_immunity: Callback,
+    pub on_override_move: Callback,
     pub on_prepare_hit: Callback,
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
@@ -1341,6 +1350,7 @@ impl Callbacks {
             BattleEvent::MoveDamage => Some(&self.on_move_damage),
             BattleEvent::MoveFailed => Some(&self.on_move_failed),
             BattleEvent::NegateImmunity => Some(&self.on_negate_immunity),
+            BattleEvent::OverrideMove => Some(&self.on_override_move),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),

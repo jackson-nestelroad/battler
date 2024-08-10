@@ -874,7 +874,7 @@ impl<'s> StatementParser<'s> {
             Some(Token::UndefinedKeyword) => {
                 self.token_parser.consume_lexeme();
             }
-            _ => return Err(self.unexpected_token_error_with_expected_hint("bool")),
+            _ => return Err(self.unexpected_token_error_with_expected_hint("undefined")),
         };
         Ok(())
     }

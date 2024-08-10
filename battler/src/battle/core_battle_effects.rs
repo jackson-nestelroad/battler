@@ -2048,15 +2048,11 @@ pub fn run_event_for_mon_expecting_u8(
 pub fn run_event_for_mon_expecting_string(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
 ) -> Option<String> {
-    run_event_for_mon_internal(
-        context,
-        event,
-        fxlang::VariableInput::default(),
-        &RunCallbacksOptions::default(),
-    )?
-    .string()
-    .ok()
+    run_event_for_mon_internal(context, event, input, &RunCallbacksOptions::default())?
+        .string()
+        .ok()
 }
 
 /// Runs an event targeted on the given [`Mon`].

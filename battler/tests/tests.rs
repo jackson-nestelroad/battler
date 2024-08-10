@@ -59,6 +59,7 @@ mod moves {
         mod conversion_2_test;
         mod curse_test;
         mod destiny_bond_test;
+        mod encore_test;
         mod endure_test;
         mod false_swipe_test;
         mod flail_test;

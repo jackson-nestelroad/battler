@@ -680,6 +680,7 @@ impl Mon {
         let locked_move = core_battle_effects::run_event_for_mon_expecting_string(
             context,
             fxlang::BattleEvent::LockMove,
+            fxlang::VariableInput::default(),
         );
         if locked_move.is_some() {
             // A Mon with a locked move is trapped.

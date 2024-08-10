@@ -272,7 +272,7 @@ fn do_move_internal(
     original_target: Option<MonHandle>,
 ) -> Result<(), Error> {
     let mon_handle = context.mon_handle();
-    let target = CoreBattle::get_target(
+    let mut target = CoreBattle::get_target(
         context.as_battle_context_mut(),
         mon_handle,
         move_id,
@@ -281,7 +281,26 @@ fn do_move_internal(
     )?;
 
     // Make a copy of the move so we can work with it and modify it for the turn.
-    let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    let mut active_move_handle =
+        register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+
+    if let Some(change_move) = core_battle_effects::run_event_for_mon_expecting_string(
+        context,
+        fxlang::BattleEvent::OverrideMove,
+        fxlang::VariableInput::from_iter([fxlang::Value::ActiveMove(active_move_handle)]),
+    ) {
+        active_move_handle =
+            register_active_move_by_id(context.as_battle_context_mut(), &Id::from(change_move))?;
+        let mon_handle = context.mon_handle();
+        let move_target = context
+            .as_battle_context()
+            .active_move(active_move_handle)?
+            .data
+            .target;
+        target =
+            CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?;
+    }
+
     context.mon_mut().set_active_move(active_move_handle);
     let mut context = context.active_move_context(active_move_handle)?;
 

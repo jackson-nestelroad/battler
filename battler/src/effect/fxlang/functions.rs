@@ -141,6 +141,7 @@ pub fn run_function(
         "move_crit_target" => move_crit_target(context, args).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context, args).map(|val| Some(val)),
         "move_slot" => move_slot(context, args).map(|val| Some(val)),
+        "move_slot_at_index" => move_slot_at_index(context, args),
         "move_slot_index" => move_slot_index(context, args),
         "new_active_move_from_local_data" => {
             new_active_move_from_local_data(context, args).map(|val| Some(val))
@@ -1501,6 +1502,28 @@ fn move_slot_index(
         ))),
         None => Ok(None),
     }
+}
+
+fn move_slot_at_index(
+    context: &mut EvaluationContext,
+    mut args: VecDeque<Value>,
+) -> Result<Option<Value>, Error> {
+    let mon_handle = args
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let index = args
+        .pop_front()
+        .wrap_error_with_message("missing index")?
+        .integer_usize()
+        .wrap_error_with_message("invalid index")?;
+    Ok(context
+        .mon(mon_handle)?
+        .move_slots
+        .get(index)
+        .cloned()
+        .map(|move_slot| Value::MoveSlot(move_slot)))
 }
 
 fn move_slot(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
