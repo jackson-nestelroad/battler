@@ -20,7 +20,7 @@ Our goal is to allow a multitude of _effects_ to define a set of _event callback
 
 ## Potential Solutions
 
-We are looking for a solution that:
+We are looking for a solution that
 
 1. is compatible with the Rust language;
 1. is easy to extend for new behavior; and
@@ -28,9 +28,9 @@ We are looking for a solution that:
 
 An obvious solution would be to just write different event callbacks for each effect directly in Rust. However, this solution is inflexible and is not straightforward to use, because new effects must be written directly in Rust and built directly into the binary. Furthermore, the battle library represents data in JSON, so effect callbacks and data would be completely separate.
 
-Another solution is to create a large set of data fields that the battle library can understand to run the effect correctly. This solution is simple for most effects (for example, most effects deal damage, and most secondary effects are simple stat changes or status effects). Unfortunately, it is practically impossible to generalize all 1000+ battle effects into a set of scalar fields without many strange outliers (for example, random values cannot easily be represented in this format). Complex moves will always require some custom programming.
+Another solution is to create a large set of data fields that the battle library can understand to run the effect correctly. This solution is simple for most effects (for example, most effects deal damage, and most secondary effects are simple stat changes or status effects). Unfortunately, it is practically impossible to generalize all 1000+ battle effects into a set of scalar fields without many strange outliers. For example, random values cannot easily be represented in this format. Many effects also check preconditions before deciding to apply the effect at all. Various parts of the battle can be interrupted or short-circuited due to complex interactions. All in all, complex moves will always require some custom programming.
 
-The solution we opt for is an interpreted language that can be expressed directly in JSON for different event callbacks. An interpreted language can be compatible with any programming language, extended for new behavior, and developed by external users with less knowledge of the internals of the battle engine itself (the interpreted language can hide away some complexities).
+The solution we opt for is an interpreted language that can be expressed directly in JSON for different event callbacks. An interpreted language can be compatible with any programming language, extended for new behavior, and developed by external users with less knowledge of the internals of the battle engine itself (i.e., the interpreted language can hide away some complexities).
 
 ## Design
 
@@ -38,7 +38,7 @@ The solution we opt for is an interpreted language that can be expressed directl
 
 ### Language
 
-Like all other data, callbacks are defined directly in JSON, allowing callbacks to be defined in the same object as their owning effect.
+Like all other data for the battle engine, callbacks are defined directly in JSON, allowing callbacks to be defined in the same object as their owning effect.
 
 Every event callback is implemented as an fxlang program. An fxlang program is made up of many statements and blocks. A statement is a simple JSON string. Statements can be blocked together in an array.
 
@@ -89,6 +89,7 @@ There are also types specific to the battle engine:
 - Mons are references to Mons participating in a battle.
 - Effects are references to generic battle effects, such as moves, abilities, statuses, and more.
 - Active moves are references to moves being executed by a Mon on the current turn. Active moves are modifiable, so they are always separate from effects.
+- Some other types exist for battle-specific functions, such as a player in the battle, a side of the battle, or the entire field itself.
 
 Battle-specific types also have a set of predefined immutable and mutable members, such as `$target.hp` or `$effect.id`.
 
@@ -110,7 +111,7 @@ The simplest statement is a function call. Functions are defined directly in the
 
 #### Assignment
 
-Another core statement is an assignment. The left-hand side of an assignment must be a mutable variable or mutable property of a variable, and the right-hand side is a value. For example, `$status = brn` - Assigns `'brn'` to the `$status` variable. This value can then be accessed later simply by using `$status`.
+Another core statement is an assignment. The left-hand side of an assignment must be a mutable variable or mutable property of a variable, and the right-hand side must be a value. For example, `$status = brn` - Assigns `'brn'` (a string) to the `$status` variable. This value can then be accessed later simply by using `$status`.
 
 Note that some properties are strictly immutable. For example, `$mon.hp` is immutable. HP should be modified through other means (such as damaging the Mon).
 
@@ -128,7 +129,7 @@ A very important part of the battle engine is logging. The battle log represents
 - `log: mustrecharge turn:2 reason:Unknown` - Adds the log `mustrecharge|turn:2|reason:Unknown` to the battle log.
 - `log_activate` - Logs the "activate" event for the applying effect.
 - `log_cant: Flinch` - Logs that the target of the effect's callback cannot move due to the "Flinch" effect.
-- `log_status: Burn with_effect` - Logs that the target of the effect's callback has the "Burn" status, with the source effect added to the log. Note that `with_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
+- `log_status: Burn with_source_effect` - Logs that the target of the effect's callback has the "Burn" status, with the source effect added to the log. Note that `with_source_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
 
 Note that nearly all the logging functions such as the ones above use the context of the event callback to add information to the logs. For instance, `log_activate` on its own (with no arguments) will include the applying effect that the event callback is attached to.
 
@@ -184,6 +185,7 @@ The simplest expression is simply a value. `$mon.base_max_hp` is an expression t
 Expressions can be chained together using operators. The following list describes all operators:
 
 1. `!a` - Negates `a` (`true` becomes `false`, and vice versa).
+1. `a ^ b` - Exponentiates `a` by `b` (i.e., `a` to the power of `b`)
 1. `a * b` - Multiplies `a` and `b`.
 1. `a / b` - Divides `a` and `b`. Note that if both `a` and `b` are number literals, the result is coerced into a fraction at parsing time.
 1. `a % b` - Returns the remainder of `a` divided by `b`.
@@ -205,6 +207,7 @@ Expressions can be chained together using operators. The following list describe
 In expressions where operators are arbitrarily written, certain groupings will be preferred to be evaluated before others. For example, `a + b * c` will unambiguously evaluate `b * c` before adding the result to `a`.
 
 1. `!`
+1. `^`
 1. `*`, `/`, `%`
 1. `+`, `-`
 1. `<` `<=`, `>` `>=`, `has`, `hasany`
@@ -219,7 +222,7 @@ Operator precedence can be manually broken by using parenthesis. For example, `(
 1. The `and` and `or` operators implement short-circuiting. If the left-hand side of an `and` expression is false, the right-hand side will not be evaluated. If the left-hand side of an `or` expression is true, the right-hand side will not be evaluated.
 1. Comparison operators, such as `<`, `>=`, or `==`, always produce a boolean value. Thus, it is invalid to chain comparisons like `a < b < c`, since this will effectively evaluate to `true < c`, which is an illegal statement. The correct form is `a < b and b < c`.
 1. Numeric operations will pick the best type possible for the result. For example, a fraction multiplied by an integer will always produce a fraction. This should never be noticeable unless the numbers you are working with are approaching the reasonable limits of 32-bit integers (2147483647). If integer overflow occurs in either direction, the entire program will fail.
-1. The negation (`!`) operator does allow for type coercion. For example, `!$a` is false for all defined variables (except `false` and `0`). This, along with short-circuiting, makes the negation operator perfect for verifying a variable is defined prior to using it: `if !$a or !$a.is_move:`.
+1. The negation (`!`) operator does allow for type coercion. For example, `!$a` is false for all defined variables (except `false` and `0`). This, along with short-circuiting, makes the negation operator perfect for verifying a variable is defined prior to using it: `if !$a or !$a.is_move:`. You can also check for undefined variables explicitly by using `$a.is_undefined`.
 
 #### Expression Values
 
@@ -352,6 +355,10 @@ Overall there are a handful of event callback categories:
    - `$source` (optional) - The source Mon of the effect.
    - `$effect` - The source effect that is triggering the callback.
    - `$this` - This effect that the event callback is running on.
+1. **Field-Applying Effect** - Callback that runs in the context of an applying effect on some side.
+   - `$source` (optional) - The source Mon of the effect.
+   - `$effect` - The source effect that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
 1. **Effect** - Callback that runs in the context of the effect itself.
    - `$target` - The target Mon of the effect.
    - `$source` (optional) - The source Mon of the effect.
@@ -427,7 +434,7 @@ All supported events are implemented on the [`BattleEvent`](./battler/src/effect
 
 All methods that trigger an event are defined [here](./battler/src/battle/core_battle_effects.rs). Since Rust is a strongly-typed language, there is one method for each type of event trigger and expected output. This also makes the interface very easy to integrate with.
 
-#### Triggering a Single Event (Mon or Active Move)
+#### Triggering a Single Event
 
 Sometimes an event needs to trigger only on a single effect. For example:
 
@@ -775,6 +782,315 @@ Mist protects all Mons on the user's side from stat drops from opposing Mons.
 }
 ```
 
+### Field Conditions
+
+#### Perish Song
+
+Perish Song is not _exactly_ a field condition. It hits the entire field, but it then hits each Mon individually and applies a volatile condition to them that causes them to faint after three turns.
+
+The special `prepare_direct_move` function runs all the pre-move logic that is normally run for a move such as accuracy checks and move-modifying effects. While Perish Song does bypass accuracy, some Mons may still be invulnerable to the move, so this filter is important.
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_hit_field": [
+        "$success = false",
+        "$activate = false",
+        "$targets = func_call(all_active_mons)",
+        "if $targets.is_empty:",
+        ["return false"],
+        "foreach $target in func_call(prepare_direct_move: $targets):",
+        [
+          "$success = true",
+          "# Activate if at least one Mon did not already have this status.",
+          "$hit_target = func_call(add_volatile: $target $this.id)",
+          "$activate = $activate or $hit_target"
+        ],
+        "if !$success or !$activate:",
+        ["return false"],
+        "if $activate:",
+        ["log_field_activate"]
+      ]
+    }
+  },
+  "condition": {
+    "duration": 4,
+    "callbacks": {
+      "on_residual": ["log_start: str('perish:{}', $effect_state.duration)"],
+      "on_end": ["log_start: perish:0", "faint: $target"]
+    }
+  }
+}
+```
+
+### Weather
+
+Any weather is just an effect that applies to the entire field, which can affect many parts of the battle.
+
+#### Rain
+
+Rain is fairly straightforward to implement:
+
+```json
+{
+  "condition": {
+    "callbacks": {
+      "is_raining": ["return true"],
+      "on_duration": [
+        "if !$source:",
+        ["return"],
+        "if func_call(has_item: $source damprock):",
+        ["return 8"],
+        "return 5"
+      ],
+      "on_source_weather_modify_damage": [
+        "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
+        "if $move.type == water:",
+        ["return expr($damage * 3/2)"],
+        "if $move.type == fire:",
+        ["return expr($damage * 1/2)"]
+      ],
+      "on_field_start": [
+        "if $source_effect.is_ability:",
+        ["log_weather: $this.name with_source_effect"],
+        "else:",
+        ["log_weather: $this.name"]
+      ],
+      "on_field_residual": {
+        "order": 1,
+        "program": [
+          "log_weather: $this.name residual",
+          "run_event_for_each_active_mon: Weather"
+        ]
+      },
+      "on_field_end": ["log_weather"]
+    }
+  }
+}
+```
+
+Some notes about the above code:
+
+1. The `IsRaining` event is a state event that only runs for the weather on the field. Other effects can check for this property (which will trigger this state event) without needing to explicitly check for all weathers that include rain (for instance, Primordial Sea causes a different type of rain but many of the same side effects apply).
+1. The `Duration` callback returns no value if the weather did not originate from any source Mon. This allows the effect to be used as the "default weather" of the field (imagine battles that start when it's rainy in the overworld).
+1. As we stated above, using "source" in the damage modification event means it runs when a Mon is being targeted. This is because damage modifications due to rain only apply if the _target_ is under rain.
+
+##### Weather Suppression Example
+
+Let's explore how the damage modification works with a complex example. Consider the following scenario:
+
+1. It is raining.
+1. Blastoise uses Water Gun against Charizard.
+1. Charizard is holding a Utility Umbrella.
+1. Charizard is under the effect of Embargo.
+
+Normally, Blastoise's Water Gun should get a 50% damage boost against Charizard because of the rain. However, since Charizard is holding a Utility Umbrella, the effects of rain are suppressed for Charizard, so the damage effect should not apply. However, Embargo negates the effects of the target's held item, so the rain modification _should_ actually apply!
+
+As you can see, there are two layers of suppression happening here:
+
+1. Utility Umbrella suppresses rain.
+1. Embargo suppresses Utility Umbrella.
+
+This plays itself out in battle code completely naturally.
+
+First, the rain weather declares it is raining.
+
+```json
+{
+  "is_raining": ["return true"]
+}
+```
+
+Second, the Utility Umbrella item declares that it suppresses weather if it is raining:
+
+```json
+{
+  "suppress_mon_weather": [
+    "if $field.weather.is_defined and ($field.weather.is_raining or $field.weather.is_sunny):",
+    ["return true"]
+  ]
+}
+```
+
+Third, Embargo declares that it suppresses the target's item:
+
+```json
+{
+  "suppress_mon_item": ["return true"]
+}
+```
+
+These suppression events are checked in the fxlang evaluation code directly. Thus, callbacks for the weather effect will not run if the Mon's weather is suppressed, and callbacks for the Mon's item effect will not run if its item is suppressed.
+
+The end result is that the rain weather fxlang code **does not** need to care about any of this! It trusts that the core battle engine only executes its callback when it truly applies.
+
+Then, moves that have side effects based on the presence of rain can easily integrate with this complex suppression. For example, consider the accuracy of the move Thunder:
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_use_move": [
+        "$weather = $selected_target.effective_weather",
+        "if !$weather:",
+        ["return"],
+        "if $weather.is_raining:",
+        ["$move.accuracy = exempt"],
+        "else if $weather.is_sunny:",
+        ["$move.accuracy = 50"]
+      ]
+    }
+  }
+}
+```
+
+#### Sandstorm
+
+Sandstorm applies residual damage to Mons on the field.
+
+```json
+{
+  "condition": {
+    "callbacks": {
+      "on_duration": [
+        "if !$source:",
+        ["return"],
+        "if func_call(has_item: $source smoothrock):",
+        ["return 8"],
+        "return 5"
+      ],
+      "on_modify_spd": {
+        "priority": 10,
+        "program": [
+          "if func_call(has_type: $mon rock):",
+          ["return expr($spd * 3/2)"]
+        ]
+      },
+      "on_field_start": [
+        "if $source_effect.is_ability:",
+        ["log_weather: $this.name with_source_effect"],
+        "else:",
+        ["log_weather: $this.name"]
+      ],
+      "on_field_residual": {
+        "order": 1,
+        "program": [
+          "log_weather: $this.name residual",
+          "run_event_for_each_active_mon: Weather"
+        ]
+      },
+      "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
+      "on_field_end": ["log_weather"]
+    }
+  }
+}
+```
+
+Notice that we do not handle immunity or semi-invulnerability (specifically from the move Dig) of the residual damage here. Those are handled directly by the effects that grant the immunity.
+
+For example, all Rock types get the following condition (which is associated with the Rock type itself):
+
+```json
+{
+  "condition": {
+    "callbacks": {
+      "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]]
+    }
+  }
+}
+```
+
+Dig's condition looks very similar, with some other changes shown for fun:
+
+```json
+{
+  "condition": {
+    "duration": 2,
+    "callbacks": {
+      "is_semi_invulnerable": ["return true"],
+      "on_immunity": [
+        "if $effect.id == sandstormweather or $effect.id == hailweather:",
+        ["return true"]
+      ],
+      "on_invulnerability": [
+        "if [earthquake, magnitude] has $move.id:",
+        ["return"],
+        "return true"
+      ],
+      "on_source_modify_damage": [
+        "if [earthquake, magnitude] has $move.id:",
+        ["return expr($damage * 2)"]
+      ]
+    }
+  }
+}
+```
+
+### Single-Player Mechanics
+
+Single-player mechanics like affection and disobedience are handled by adding additional effects to Mons that should use the extra mechanics.
+
+#### Affection
+
+The affection condition is added to Mons when affection is explicitly enabled for their player. Here is the code that allows them to survive moves that can KO them:
+
+```json
+{
+  "condition": {
+    "callbacks": {
+      "on_damage": {
+        "order": 999,
+        "program": [
+          "if $target.affection_level == 3:",
+          ["$chance = 10"],
+          "else if $target.affection_level >= 4:",
+          [
+            "# Range of 15% to 25% (since max is 255).",
+            "$chance = $target.happiness / 10"
+          ],
+          "if $chance.is_defined and func_call(chance: $chance 100) and $damage >= $target.hp:",
+          ["log_activate: with_target tough", "return expr($target.hp - 1)"]
+        ]
+      }
+    }
+  }
+}
+```
+
+#### Disobedience
+
+The disobedience condition is added to Mons with a different original trainer and whose level exceeds the set obedience cap (just like the mainline games!). Then we just run some code before the Mon uses a move, just like any other condition like paralysis or sleep.
+
+Take a close look and see how we use one random value for determining if the Mon disobeys while a different random value determines what the Mon does (nothing, falls asleep, or hurts itself).
+
+```json
+{
+  "condition": {
+    "callbacks": {
+      "on_before_move": [
+        "# This condition is added to the Mon with a different OT whose level exceeds the obedience cap.",
+        "if func_call(random: 256) < 128 * $format.obedience_cap / $user.level:",
+        ["return"],
+        "$rand = func_call(random: 256)",
+        "$diff = $user.level - $format.obedience_cap",
+        "if $rand < $diff:",
+        ["set_status: $user slp"],
+        "else if $rand < 2 * $diff:",
+        [
+          "log_activate: with_target confusion",
+          "$damage = func_call(calculate_confusion_damage: $user 40)",
+          "damage: no_source $user $damage $this"
+        ],
+        "else:",
+        ["log_activate: with_target"],
+        "return false"
+      ]
+    }
+  }
+}
+```
+
 ### Complex Examples
 
 #### Fly
@@ -1022,3 +1338,157 @@ Let's walk through some of it:
    1. If the substitute survives, the substitute effect activates in the log.
    1. Some core move effects on the user still apply, like HP drain and recoil damage.
    1. There is a special event for substitute damage occurring, since there is a distinction between regular damage and substitute damage.
+
+#### Stalling Moves
+
+Stalling moves share a common behavior: their chance of success drops steeply between consecutive uses. Moves like Protect, Detect, and Endure all share the same accuracy check. To be specific, using Endure immediately after Protect has the same chance of failing if Protect is used twice in a row.
+
+To represent this shared state, we simply add a volatile condition to the Mon after it uses a stalling move.
+
+For instance, here is the code for Protect:
+
+```json
+{
+  "hit_effect": {
+    "volatile_status": "protect"
+  },
+  "effect": {
+    "callbacks": {
+      "on_prepare_hit": [
+        "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+      ],
+      "on_hit": ["add_volatile: $target stall"]
+    }
+  }
+}
+```
+
+Then here is the code for the stall condition:
+
+```json
+{
+  "condition": {
+    "duration": 2,
+    "callbacks": {
+      "on_start": ["$effect_state.counter = 3"],
+      "on_restart": [
+        "if $effect_state.counter < 729:",
+        ["$effect_state.counter = $effect_state.counter * 3"],
+        "$effect_state.duration = 2"
+      ],
+      "on_stall_move": [
+        "$success = func_call(chance: $effect_state.counter)",
+        "if !$success:",
+        ["remove_volatile: $mon $this.id"],
+        "return $success"
+      ]
+    }
+  }
+}
+```
+
+This example has one neat trick to it: when the stall condition is restarted, the duration is manually updated so that it persists on the Mon to the next turn. If a Mon does not use a stalling move on the next turn, the duration will decrease to zero at the end of the turn and the condition will end naturally.
+
+#### Counter
+
+If a Mon uses Counter and is hit by a physical move for damage on the same turn, the Mon will hit its last attacker for double the damage.
+
+Counter works by adding a volatile condition to the user at the beginning of the turn instead of when the move is used. This allows us to record state on the Mon before the move is used, which is the core part of how counter works.
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_before_turn": ["add_volatile: $target $this.id"],
+      "on_try_use_move": [
+        "$effect_state = func_call(volatile_effect_state: $user $this.id)",
+        "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
+        ["return false"]
+      ],
+      "on_move_damage": [
+        "$effect_state = func_call(volatile_effect_state: $source $this.id)",
+        "if !$effect_state:",
+        ["return 0"],
+        "return $effect_state.damage"
+      ]
+    }
+  },
+  "condition": {
+    "duration": 1,
+    "no_copy": true,
+    "callbacks": {
+      "on_start": ["$effect_state.damage = 0"],
+      "on_redirect_target": [
+        "if $move.id != counter:",
+        ["return"],
+        "if !$effect_state.target_side or $effect_state.target_position.is_undefined:",
+        ["return"],
+        "return func_call(mon_in_position: $effect_state.target_side $effect_state.target_position)"
+      ],
+      "on_damaging_hit": [
+        "if !func_call(is_ally: $source $target) and $move.category == physical:",
+        [
+          "$effect_state.target_side = $source.side",
+          "$effect_state.target_position = $source.position",
+          "$effect_state.damage = 2 * $damage"
+        ]
+      ]
+    }
+  }
+}
+```
+
+#### Pursuit
+
+Pursuit works like a normal move, but if any target on the opposing side switches out, Pursuit activates immediately and damages the Mon before the switch takes place.
+
+Pursuit gets its own event (`BeforeSwitchOut`) that activates when any Mon switches out on the target side.
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_move_base_power": [
+        "if $target.being_called_back or $target.needs_switch:",
+        ["return expr($move.base_power * 2)"]
+      ],
+      "on_before_turn": [
+        "$side = $target.foe_side",
+        "add_side_condition: $side $this.id use_target_as_source",
+        "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
+        "if !$pursuit_state.sources:",
+        ["$pursuit_state.sources = []"],
+        "$pursuit_state.sources = func_call(append: $pursuit_state.sources $target)"
+      ],
+      "on_use_move": [
+        "if $target.being_called_back or $target.needs_switch:",
+        ["$move.accuracy = exempt"]
+      ],
+      "on_try_hit": [
+        "$pursuit_state = func_call(side_condition_effect_state: $target.side $this.id)",
+        "if !$pursuit_state or !$pursuit_state.sources:",
+        ["return"],
+        "$pursuit_state.sources = func_call(remove: $pursuit_state.sources $source)"
+      ]
+    }
+  },
+  "condition": {
+    "duration": 1,
+    "callbacks": {
+      "on_before_switch_out": [
+        "$activated = false",
+        "# Make a copy, since this list is mutated after Pursuit hits.",
+        "$sources = $effect_state.sources",
+        "foreach $source in $sources:",
+        [
+          "if !func_call(is_adjacent: $source $mon) or !func_call(cancel_move: $source) or $source.hp == 0:",
+          ["continue"],
+          "if !$activated:",
+          ["$activated = true", "log_activate: with_target"],
+          "do_move: $source $this.id func_call(target_location_of_mon: $source $mon) $mon"
+        ]
+      ]
+    }
+  }
+}
+```

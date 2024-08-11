@@ -822,26 +822,24 @@
     "condition_type": "Built-in",
     "condition": {
       "callbacks": {
-        "on_before_move": {
-          "program": [
-            "# This condition is added to the Mon with a different OT whose level exceeds the obedience cap.",
-            "if func_call(random: 256) < 128 * $format.obedience_cap / $user.level:",
-            ["return"],
-            "$rand = func_call(random: 256)",
-            "$diff = $user.level - $format.obedience_cap",
-            "if $rand < $diff:",
-            ["set_status: $user slp"],
-            "else if $rand < 2 * $diff:",
-            [
-              "log_activate: with_target confusion",
-              "$damage = func_call(calculate_confusion_damage: $user 40)",
-              "damage: no_source $user $damage $this"
-            ],
-            "else:",
-            ["log_activate: with_target"],
-            "return false"
-          ]
-        }
+        "on_before_move": [
+          "# This condition is added to the Mon with a different OT whose level exceeds the obedience cap.",
+          "if func_call(random: 256) < 128 * $format.obedience_cap / $user.level:",
+          ["return"],
+          "$rand = func_call(random: 256)",
+          "$diff = $user.level - $format.obedience_cap",
+          "if $rand < $diff:",
+          ["set_status: $user slp"],
+          "else if $rand < 2 * $diff:",
+          [
+            "log_activate: with_target confusion",
+            "$damage = func_call(calculate_confusion_damage: $user 40)",
+            "damage: no_source $user $damage $this"
+          ],
+          "else:",
+          ["log_activate: with_target"],
+          "return false"
+        ]
       }
     }
   },
