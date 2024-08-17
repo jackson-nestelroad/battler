@@ -8,9 +8,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  DATA_DIR: ${GITHUB_WORKSPACE}/battle-sim/data
-  TEST_CASE_DIR: ${GITHUB_WORKSPACE}/battler/test_cases
-  INTEGRATION_TEST_EXPECTED_IO_DIR: ${GITHUB_WORKSPACE}/battler/tests/expected
+  DATA_DIR: ${{ github.workspace }}/battle-sim/data
+  TEST_CASE_DIR: ${{ github.workspace }}/battler/test_cases
+  INTEGRATION_TEST_EXPECTED_IO_DIR: ${{ github.workspace }}/battler/tests/expected
 
 jobs:
   test:
