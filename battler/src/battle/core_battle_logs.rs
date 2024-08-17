@@ -551,3 +551,68 @@ pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     context.battle_mut().log(event);
     Ok(())
 }
+
+pub fn item(
+    context: &mut MonContext,
+    item: &str,
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+) -> Result<(), Error> {
+    let mut event = log_event!(
+        "item",
+        ("mon", Mon::position_details(context)?),
+        ("item", item)
+    );
+    if let Some(effect) = effect {
+        let effect_context = context
+            .as_battle_context_mut()
+            .effect_context(effect.clone(), None)?;
+        event.set("from", effect_context.effect().full_name());
+        if let Some(source) = source {
+            if source != context.mon_handle() {
+                event.set(
+                    "of",
+                    Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
+                );
+            }
+        }
+    }
+
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn item_end(
+    context: &mut MonContext,
+    item: &str,
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+    silent: bool,
+) -> Result<(), Error> {
+    let mut event = log_event!(
+        "itemend",
+        ("mon", Mon::position_details(context)?),
+        ("item", item)
+    );
+    if let Some(effect) = effect {
+        let effect_context = context
+            .as_battle_context_mut()
+            .effect_context(effect.clone(), None)?;
+        event.set("from", effect_context.effect().full_name());
+        if let Some(source) = source {
+            if source != context.mon_handle() {
+                event.set(
+                    "of",
+                    Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
+                );
+            }
+        }
+    }
+
+    if silent {
+        event.add_flag("silent");
+    }
+
+    context.battle_mut().log(event);
+    Ok(())
+}

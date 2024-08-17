@@ -124,8 +124,6 @@ pub fn run_function(
         "log_fail_heal" => log_fail_heal(context, args).map(|()| None),
         "log_field_activate" => log_field_activate(context, args).map(|()| None),
         "log_immune" => log_immune(context, args).map(|()| None),
-        "log_item" => log_item(context, args).map(|()| None),
-        "log_item_end" => log_item_end(context, args).map(|()| None),
         "log_ohko" => log_ohko(context, args).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
         "log_side_end" => log_side_end(context, args).map(|()| None),
@@ -491,108 +489,6 @@ fn log_side_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> R
     log_internal(context, "sideend".to_owned(), args)
 }
 
-fn log_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
-    let mut with_source = has_special_string_flag(&mut args, "with_source");
-
-    let mon_handle = args
-        .pop_front()
-        .wrap_error_with_message("missing mon")?
-        .mon_handle()
-        .wrap_error_with_message("invalid mon")?;
-    let item = args
-        .pop_front()
-        .wrap_error_with_message("missing item")?
-        .string()
-        .wrap_error_with_message("invalid item")?;
-    let item = Id::from(item);
-    let item_name = CoreBattle::get_effect_by_id(context.battle_context_mut(), &item)?
-        .name()
-        .to_owned();
-
-    if with_source_effect {
-        let source_effect_context = context
-            .source_effect_context()?
-            .wrap_error_with_message("effect has no source effect")?;
-        args.push_back(Value::String(format!(
-            "from:{}",
-            source_effect_context.effect().full_name()
-        )));
-
-        if !source_effect_context.effect_handle().is_active_move() {
-            with_source = true;
-        }
-    }
-
-    if with_source {
-        if let Some(source_context) = context.source_context()? {
-            args.push_back(Value::String(format!(
-                "of:{}",
-                Mon::position_details(&source_context)?
-            )));
-        }
-    }
-
-    args.push_front(Value::String(format!("item:{item_name}")));
-    args.push_front(Value::String(format!(
-        "mon:{}",
-        Mon::position_details(&context.mon_context(mon_handle)?)?
-    )));
-
-    log_internal(context, "item".to_owned(), args)
-}
-
-fn log_item_end(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<(), Error> {
-    let with_source_effect = has_special_string_flag(&mut args, "with_source_effect");
-    let mut with_source = has_special_string_flag(&mut args, "with_source");
-
-    let mon_handle = args
-        .pop_front()
-        .wrap_error_with_message("missing mon")?
-        .mon_handle()
-        .wrap_error_with_message("invalid mon")?;
-    let item = args
-        .pop_front()
-        .wrap_error_with_message("missing item")?
-        .string()
-        .wrap_error_with_message("invalid item")?;
-    let item = Id::from(item);
-    let item_name = CoreBattle::get_effect_by_id(context.battle_context_mut(), &item)?
-        .name()
-        .to_owned();
-
-    if with_source_effect {
-        let source_effect_context = context
-            .source_effect_context()?
-            .wrap_error_with_message("effect has no source effect")?;
-        args.push_back(Value::String(format!(
-            "from:{}",
-            source_effect_context.effect().full_name()
-        )));
-
-        if !source_effect_context.effect_handle().is_active_move() {
-            with_source = true;
-        }
-    }
-
-    if with_source {
-        if let Some(source_context) = context.source_context()? {
-            args.push_back(Value::String(format!(
-                "of:{}",
-                Mon::position_details(&source_context)?
-            )));
-        }
-    }
-
-    args.push_front(Value::String(format!("item:{item_name}")));
-    args.push_front(Value::String(format!(
-        "mon:{}",
-        Mon::position_details(&context.mon_context(mon_handle)?)?
-    )));
-
-    log_internal(context, "itemend".to_owned(), args)
-}
-
 fn log_prepare_move(context: &mut EvaluationContext) -> Result<(), Error> {
     let mut context = context
         .source_active_move_context()?
@@ -942,7 +838,7 @@ fn cure_status(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Re
     let mut context = if should_use_source_effect(&mut args) {
         context.forward_source_effect_to_applying_effect(mon_handle)?
     } else {
-        context.forward_effect_to_applying_effect(mon_handle)?
+        context.forward_effect_to_applying_effect(mon_handle, false)?
     };
     Ok(Value::Boolean(
         core_battle_actions::cure_status(&mut context, log_effect)?.success(),
@@ -1033,7 +929,7 @@ fn remove_volatile(
     let mut context = if should_use_source_effect(&mut args) {
         context.forward_source_effect_to_applying_effect(mon_handle)?
     } else {
-        context.forward_effect_to_applying_effect(mon_handle)?
+        context.forward_effect_to_applying_effect(mon_handle, false)?
     };
     core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
         .map(|val| Value::Boolean(val))
@@ -2055,7 +1951,7 @@ fn set_types(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resu
         .wrap_error_with_message("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
-    let mut context = context.forward_effect_to_applying_effect(mon_handle)?;
+    let mut context = context.forward_effect_to_applying_effect(mon_handle, false)?;
     core_battle_actions::set_types(&mut context, Vec::from_iter([typ]))
         .map(|val| Value::Boolean(val))
 }
@@ -2103,7 +1999,7 @@ fn transform_into(
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
 
-    let mut context = context.forward_effect_to_applying_effect(mon_handle)?;
+    let mut context = context.forward_effect_to_applying_effect(mon_handle, false)?;
     core_battle_actions::transform_into(&mut context, target_handle, with_source_effect)
         .map(|val| Value::Boolean(val))
 }
@@ -2473,13 +2369,16 @@ fn take_item(
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    Ok(
-        core_battle_actions::take_item(&mut context.forward_effect_to_applying_effect(mon)?)?
-            .map(|val| Value::String(val.to_string())),
-    )
+    let silent = has_special_string_flag(&mut args, "silent");
+    Ok(core_battle_actions::take_item(
+        &mut context.forward_effect_to_applying_effect(mon, false)?,
+        silent,
+    )?
+    .map(|val| Value::String(val.to_string())))
 }
 
 fn set_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Result<Value, Error> {
+    let use_target_as_source = should_use_target_as_source(&mut args);
     let mon = args
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -2491,8 +2390,9 @@ fn set_item(context: &mut EvaluationContext, mut args: VecDeque<Value>) -> Resul
         .string()
         .wrap_error_with_message("invalid item")?;
     let item = Id::from(item);
+
     Ok(Value::Boolean(core_battle_actions::set_item(
-        &mut context.forward_effect_to_applying_effect(mon)?,
+        &mut context.forward_effect_to_applying_effect(mon, use_target_as_source)?,
         &item,
     )?))
 }

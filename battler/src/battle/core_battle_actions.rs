@@ -3670,19 +3670,29 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
 
     let item = context.battle().dex.items.get_by_id(item)?;
+    let item_name = item.data.name.clone();
     context.target_mut().item = Some(ItemSlot {
         id: item.id().clone(),
-        name: item.data.name.clone(),
+        name: item_name.clone(),
         effect_state: fxlang::EffectState::new(),
     });
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
 
+    let source = context.source_handle();
+    let effect = context.effect_handle().clone();
+    core_battle_logs::item(
+        &mut context.target_context()?,
+        &item_name,
+        source,
+        Some(&effect),
+    )?;
+
     Ok(true)
 }
 
 /// Takes the target Mon's item, returning it if successful.
-pub fn take_item(context: &mut ApplyingEffectContext) -> Result<Option<Id>, Error> {
+pub fn take_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<Option<Id>, Error> {
     if !context.target().active {
         return Ok(None);
     }
@@ -3697,7 +3707,7 @@ pub fn take_item(context: &mut ApplyingEffectContext) -> Result<Option<Id>, Erro
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::TakeItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
     ) || !core_battle_effects::run_mon_item_event_expecting_bool(
         context,
         fxlang::BattleEvent::TakeItem,
@@ -3709,6 +3719,19 @@ pub fn take_item(context: &mut ApplyingEffectContext) -> Result<Option<Id>, Erro
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
     context.target_mut().item = None;
+
+    let item_name = CoreBattle::get_effect_by_handle(context.as_battle_context(), &item_handle)?
+        .name()
+        .to_owned();
+    let source = context.source_handle();
+    let effect = context.effect_handle().clone();
+    core_battle_logs::item_end(
+        &mut context.target_context()?,
+        &item_name,
+        source,
+        Some(&effect),
+        silent,
+    )?;
 
     Ok(Some(item_id))
 }

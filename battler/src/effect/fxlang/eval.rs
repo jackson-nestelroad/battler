@@ -128,8 +128,13 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_effect_to_applying_effect<'eval>(
         &'eval mut self,
         target_handle: MonHandle,
+        use_target_as_source: bool,
     ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = self.source_handle();
+        let source_handle = if use_target_as_source {
+            self.target_handle()
+        } else {
+            self.source_handle()
+        };
         let context: ApplyingEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .applying_effect_context(source_handle, target_handle)?;

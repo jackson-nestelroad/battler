@@ -8,7 +8,18 @@
     "base_power": 40,
     "priority": 3,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "flinch"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if $user.active_move_actions > 1:",
+          ["return false"]
+        ]
+      }
+    }
   },
   "uproar": {
     "name": "Uproar",
@@ -25,7 +36,37 @@
       "NoSleepTalk",
       "Protect",
       "Sound"
-    ]
+    ],
+    "user_effect": {
+      "volatile_status": "uproad"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "foreach $mon in func_call(all_active_mons):",
+          [
+            "if !$mon.is_soundproof and $mon.status == slp:",
+            ["cure_status: $mon"]
+          ]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 3,
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_residual": [
+          "if $target.last_move.is_defined and $target.last_move.id == struggle:",
+          ["remove_volatile: $target $this.id no_events", "log_start: residual"]
+        ],
+        "on_end": ["log_end"],
+        "on_lock_move": ["return $this.id"],
+        "on_any_set_status": [
+          "if !$target.is_soundproof and $status.id == slp:",
+          ["log_fail: $target from_effect", "return false"]
+        ]
+      }
+    }
   },
   "stockpile": {
     "name": "Stockpile",
@@ -34,7 +75,60 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "volatile_status": "stockpile"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "$stockpile_state = func_call(volatile_effect_state: $user $this.id)",
+          "if $stockpile_state.is_defied and $stockpile_state.layers >= 3:",
+          ["return false"]
+        ]
+      }
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.layers = 1",
+          "$effect_state.def = 0",
+          "$effect_state.spd = 0",
+          "log_start: str('count:{}', $effect_state.layers)",
+          "$def = $target.boosts.def",
+          "$spd = $target.boosts.spd",
+          "boost: $target def:1 spd:1",
+          "if $def != $target.boosts.def:",
+          ["$effect_state.def = -1"],
+          "if $spd != $target.boosts.spd:",
+          ["$effect_state.spd = -1"]
+        ],
+        "on_restart": [
+          "if $effect_state.layers >= 3:",
+          ["return false"],
+          "$effect_state.layers = $effect_state.layers + 1",
+          "log_start: str('count:{}', $effect_state.layers)",
+          "$def = $target.boosts.def",
+          "$spd = $target.boosts.spd",
+          "boost: $target def:1 spd:1",
+          "if $def != $target.boosts.def:",
+          ["$effect_state.def = $effect_state.def - 1"],
+          "if $spd != $target.boosts.spd:",
+          ["$effect_state.spd = $effect_state.spd - 1"]
+        ],
+        "on_end": [
+          "if $effect_state.def != 0 or $effect_state.spd != 0:",
+          [
+            "$boosts = func_call(boost_table)",
+            "$boosts.def = $effect_state.def",
+            "$boosts.spd = $effect_state.spd",
+            "boost: $target $boosts"
+          ],
+          "log_end"
+        ]
+      }
+    }
   },
   "spitup": {
     "name": "Spit Up",
@@ -43,7 +137,19 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Protect"]
+    "flags": ["Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["return func_call(has_volatile: $user stockpile)"],
+        "on_move_base_power": [
+          "$stockpile_state = func_call(volatile_effect_state: $source stockpile)",
+          "if !$stockpile_state:",
+          ["return 0"],
+          "return expr($stockpile_state.layers * 100)"
+        ],
+        "on_after_move": ["remove_volatile: $user stockpile"]
+      }
+    }
   },
   "swallow": {
     "name": "Swallow",
@@ -52,7 +158,27 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["return func_call(has_volatile: $user stockpile)"],
+        "on_hit": [
+          "$stockpile_state = func_call(volatile_effect_state: $source stockpile)",
+          "if !$stockpile_state:",
+          ["return false"],
+          "if $stockpile_state.layers <= 1:",
+          ["$heal_percent = 1/4"],
+          "else if $stockpile_state.layers == 2:",
+          ["$heal_percent = 1/2"],
+          "else:",
+          ["$heal_percent = 1"],
+          "$heal_amount = $target.max_hp * $heal_percent",
+          "if !func_call(heal: $target $heal_amount):",
+          ["return false"],
+          "remove_volatile: $target stockpile"
+        ]
+      }
+    }
   },
   "heatwave": {
     "name": "Heat Wave",
@@ -62,7 +188,15 @@
     "accuracy": 90,
     "base_power": 95,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "hail": {
     "name": "Hail",
@@ -83,7 +217,21 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "torment"
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_end": ["log_end"],
+        "on_disable_move": [
+          "if $mon.last_move.is_defined and $mon.last_move.id != struggle:",
+          ["disable_move: $mon $mon.last_move.id"]
+        ]
+      }
+    }
   },
   "flatter": {
     "name": "Flatter",
@@ -92,7 +240,13 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "spa": 1
+      },
+      "volatile_status": "confusion"
+    }
   },
   "willowisp": {
     "name": "Will-O-Wisp",
@@ -123,7 +277,15 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if [psn, tox, par, brn] has $source.status:",
+          ["return expr($move.base_power * 2)"]
+        ]
+      }
+    }
   },
   "focuspunch": {
     "name": "Focus Punch",
@@ -154,7 +316,15 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $target.status == par:",
+          ["return expr($move.base_power * 2)"]
+        ]
+      }
+    }
   },
   "followme": {
     "name": "Follow Me",
@@ -164,7 +334,31 @@
     "accuracy": "exempt",
     "priority": 2,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
+    "hit_effect": {
+      "volatile_status": "followme"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["return $format.mons_per_side > 1"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_foe_redirect_target": {
+          "priority": 1,
+          "program": [
+            "if $effect_state.target.is_sky_dropped:",
+            ["return"],
+            "if !func_call(valid_target: $effect_state.target $source $move.target):",
+            ["return"],
+            "return $effect_state.target"
+          ]
+        }
+      }
+    }
   },
   "naturepower": {
     "name": "Nature Power",
@@ -190,7 +384,39 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "volatile_status": "charge"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $source_effect.is_ability:",
+          ["log_start: with_source_effect"],
+          "else:",
+          ["log_start"]
+        ],
+        "on_restart": [
+          "if $source_effect.is_ability:",
+          ["log_start: with_source_effect"],
+          "else:",
+          ["log_start"]
+        ],
+        "on_base_power": [
+          "if $move.target == electric:",
+          ["return expr($base_power * 2)"]
+        ],
+        "on_move_aborted": [
+          "if $move.type == electric and $move.id != $this.id:",
+          ["remove_volatile: $user $this.id"]
+        ],
+        "on_after_move": [
+          "if $move.type == electric and $move.id != $this.id:",
+          ["remove_volatile: $user $this.id"]
+        ],
+        "on_end": ["log_end: silent"]
+      }
+    }
   },
   "taunt": {
     "name": "Taunt",
@@ -199,7 +425,33 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "taunt"
+    },
+    "condition": {
+      "duration": 3,
+      "callbacks": {
+        "on_duration": ["if !$target.will_move_this_turn:", ["return 4"]],
+        "on_start": ["log_start"],
+        "on_end": ["log_end"],
+        "on_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "$move = func_call(get_move: $move_slot.id)",
+            "if $move.is_defined and $move.category == status and $move.id != mefirst:",
+            ["disable_move: $mon $move.id"]
+          ]
+        ],
+        "on_before_move": {
+          "priority": 5,
+          "program": [
+            "if $move.category == status and $move.id != mefirst:",
+            ["log_cant: $this.name", "return false"]
+          ]
+        }
+      }
+    }
   },
   "helpinghand": {
     "name": "Helping Hand",
@@ -209,7 +461,24 @@
     "accuracy": "exempt",
     "priority": 5,
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"]
+    "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"],
+    "hit_effect": {
+      "volatile_status": "helpinghand"
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.muliplier = 3/2",
+          "log_single_turn: with_target with_source"
+        ],
+        "on_restart": [
+          "$effect_state.muliplier = $effect_state.muliplier * 3/2",
+          "log_single_turn: with_target with_source"
+        ],
+        "on_base_power": ["return expr($base_power * $effect_state.multiplier)"]
+      }
+    }
   },
   "trick": {
     "name": "Trick",
@@ -218,7 +487,24 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome", "Protect"]
+    "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_immunity": [
+          "return func_call(has_ability: $target stickyhold)"
+        ],
+        "on_hit": [
+          "if !$source.item and !$target.item:",
+          ["return false"],
+          "$target_item = func_call(take_item: $target)",
+          "$source_item = func_call(take_item: $source)",
+          "if $target_item.is_defined:",
+          ["set_item: $source $target_item"],
+          "if $source_item.is_defined:",
+          ["set_item: $target $source_item"]
+        ]
+      }
+    }
   },
   "roleplay": {
     "name": "Role Play",
@@ -227,7 +513,24 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute"]
+    "flags": ["BypassSubstitute"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $source.ability == $target.ability:",
+          ["return false"],
+          "$target_ability = func_call(get_ability: $target.ability)",
+          "$source_ability = func_call(get_ability: $source.ability)",
+          "if $target_ability.permanent or $source_ability.permanent or func_call(ability_has_flag: $target_ability noroleplay):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !func_call(set_ability: $source $target.ability):",
+          ["return false"],
+          "log_ability: use_source with_source_effect with_source use_target_as_source"
+        ]
+      }
+    }
   },
   "wish": {
     "name": "Wish",
@@ -236,7 +539,20 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "hit_effect": {
+      "slot_condition": "wish"
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_slot_start": ["$effect_state.hp = $source.max_hp / 2"],
+        "on_slot_end": [
+          "if $target.is_defined and !$target.fainted:",
+          ["heal: $target $effect_state.hp"]
+        ]
+      }
+    }
   },
   "assist": {
     "name": "Assist",

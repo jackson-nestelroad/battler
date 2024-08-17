@@ -70,13 +70,11 @@
         "on_after_hit": [
           "if $source.item.is_defined:",
           ["return"],
-          "$item = func_call(take_item: $target)",
+          "$item = func_call(take_item: $target silent)",
           "if !$item:",
           ["return"],
-          "log_item_end: $target $item silent with_source_effect with_source",
-          "if !func_call(set_item: $source $item):",
-          ["return"],
-          "log_item: $source $item with_source_effect str('of:{}', $target.position_details)"
+          "if !func_call(set_item: $source $item use_target_as_source):",
+          ["return"]
         ]
       }
     }
