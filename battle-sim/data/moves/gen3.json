@@ -548,6 +548,7 @@
       "callbacks": {
         "on_slot_start": ["$effect_state.hp = $source.max_hp / 2"],
         "on_slot_end": [
+          "$target = func_call(mon_in_position: $side $slot)",
           "if $target.is_defined and !$target.fainted:",
           ["heal: $target $effect_state.hp"]
         ]
