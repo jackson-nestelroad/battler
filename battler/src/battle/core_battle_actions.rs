@@ -1704,7 +1704,7 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         if context.active_move().data.breaks_protect {
-            for target in targets {
+            for _ in targets {
                 // TODO: Break protect volatile conditions.
             }
         }
@@ -2186,11 +2186,11 @@ fn apply_move_effects(
                     hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
-                if let Some(terrain) = hit_effect.terrain {
+                if let Some(_) = hit_effect.terrain {
                     // TODO: Set terrain.
                 }
 
-                if let Some(pseudo_weather) = hit_effect.pseudo_weather {
+                if let Some(_) = hit_effect.pseudo_weather {
                     // TODO: Add pseudo weather.
                 }
 

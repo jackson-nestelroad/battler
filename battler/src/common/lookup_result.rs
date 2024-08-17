@@ -164,8 +164,9 @@ impl<T, E> FromResidual<LookupResult<Infallible, E>> for LookupResult<T, E> {
     fn from_residual(residual: <Self as Try>::Residual) -> Self {
         match residual {
             LookupResult::NotFound => Self::NotFound,
-            LookupResult::Found(_) => unreachable!(),
             LookupResult::Error(error) => Self::Error(error),
+            #[allow(unreachable_patterns)]
+            LookupResult::Found(_) => unreachable!(),
         }
     }
 }
@@ -183,6 +184,7 @@ impl<T, E> FromResidual<Result<Infallible, E>> for LookupResult<T, E> {
     fn from_residual(residual: Result<Infallible, E>) -> Self {
         match residual {
             Err(error) => LookupResult::Error(error),
+            #[allow(unreachable_patterns)]
             Ok(_) => unreachable!(),
         }
     }

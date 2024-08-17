@@ -100,7 +100,7 @@ mod switch_before_move_test {
             ]"#,
         )
         .unwrap();
-        assert_turn_logs_eq(& mut battle, 1, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
         let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
             r#"[
@@ -113,6 +113,6 @@ mod switch_before_move_test {
             ]"#,
         )
         .unwrap();
-        assert_turn_logs_eq(& mut battle, 2, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 2, &expected_logs);
     }
 }

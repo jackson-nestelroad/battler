@@ -103,7 +103,7 @@ mod self_destruct_tests {
             ]"#,
         )
         .unwrap();
-        assert_turn_logs_eq(& mut battle, 1, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
     }
 
     #[test]
@@ -130,7 +130,7 @@ mod self_destruct_tests {
             ]"#,
         )
         .unwrap();
-        assert_turn_logs_eq(& mut battle, 4, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 4, &expected_logs);
     }
 
     #[test]
@@ -152,7 +152,7 @@ mod self_destruct_tests {
             ]"#,
         )
         .unwrap();
-        assert_turn_logs_eq(& mut battle, 1, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 1, &expected_logs);
     }
 
     #[test]
@@ -178,6 +178,6 @@ mod self_destruct_tests {
             ]"#,
         )
         .unwrap();
-        assert_turn_logs_eq(& mut battle, 4, &expected_logs);
+        assert_turn_logs_eq(&mut battle, 4, &expected_logs);
     }
 }
