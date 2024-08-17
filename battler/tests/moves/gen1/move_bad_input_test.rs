@@ -420,7 +420,7 @@ mod move_bad_input_tests {
     #[test]
     fn target_adjacent_ally_or_user() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle = make_triples_battle(&data).unwrap();
+        let _ = make_triples_battle(&data).unwrap();
         // TODO: Use an AdjacentAllyOrUser move.
         // Acupressure is the only move that does this.
     }
