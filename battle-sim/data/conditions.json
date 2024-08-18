@@ -544,7 +544,7 @@
       "duration": 3,
       "callbacks": {
         "on_slot_start": [
-          "log_start: no_effect no_target with_source str('move:{}', $effect_state.source_effect.name)"
+          "log_start: no_effect with_source str('move:{}', $effect_state.source_effect.name)"
         ],
         "on_residual": ["debug_log: here"],
         "on_slot_end": [
@@ -552,7 +552,7 @@
           "$target = func_call(mon_in_position: $side $slot)",
           "if !$target or $target.fainted or $target == $effect_state.source:",
           ["return"],
-          "log_end: no_effect no_target str('mon:{}', $target.position_details) str('move:{}', $effect_state.source_effect.name) str('of:{}', $effect_state.source.position_details)",
+          "log_end: no_effect str('mon:{}', $target.position_details) str('move:{}', $effect_state.source_effect.name) str('of:{}', $effect_state.source.position_details)",
           "remove_volatile: $target protect",
           "remove_volatile: $target endure",
           "use_active_move: $effect_state.source $move $target indirect"
