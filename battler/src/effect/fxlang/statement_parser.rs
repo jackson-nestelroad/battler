@@ -1394,7 +1394,7 @@ mod statement_parser_tests {
                         11, 20
                     ))),
                     tree::Value::NumberLiteral(tree::NumberLiteral::Signed(Fraction::new(-1, 2))),
-                    tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(23456542u64.into())),
+                    tree::Value::NumberLiteral(tree::NumberLiteral::Signed(23456542i64.into())),
                     tree::Value::NumberLiteral(tree::NumberLiteral::Signed(Fraction::new(-1, 3))),
                 ])
             }))
