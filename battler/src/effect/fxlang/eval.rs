@@ -613,6 +613,12 @@ where
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
                             "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
+                            "active_move_actions" => ValueRef::UFraction(
+                                context.mon(mon_handle)?.active_move_actions.into(),
+                            ),
+                            "active_turns" => {
+                                ValueRef::UFraction(context.mon(mon_handle)?.active_turns.into())
+                            }
                             "affection_level" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.affection_level().into(),
                             ),

@@ -40,6 +40,7 @@ use crate::{
             EvaluationContext,
             MaybeReferenceValueForOperation,
             Value,
+            ValueType,
             VariableInput,
         },
         Effect,
@@ -112,7 +113,7 @@ pub fn run_function(
         "has_move" => has_move(context).map(|val| Some(val)),
         "has_type" => has_type(context).map(|val| Some(val)),
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
-        "heal" => heal(context).map(|()| None),
+        "heal" => heal(context).map(|val| Some(val)),
         "hit_effect" => hit_effect().map(|val| Some(val)),
         "index" => index(context),
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
@@ -261,6 +262,16 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn boosts_from_rest_of_args(&mut self) -> Result<BoostTable, Error> {
         let mut args = VecDeque::new();
         mem::swap(&mut args, &mut self.args);
+        let has_boost_table = args
+            .front()
+            .is_some_and(|val| val.value_type() == ValueType::BoostTable);
+        if has_boost_table {
+            return args
+                .pop_front()
+                .wrap_error_with_message("expected boost table")?
+                .boost_table()
+                .wrap_error_with_message("invalid boost table");
+        }
         let boosts = args
             .into_iter()
             .map(|boost| StatBoost::from_str(&boost.string()?))
@@ -602,20 +613,29 @@ fn log_weather(mut context: FunctionContext) -> Result<(), Error> {
 }
 
 fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
+    let from_effect = context.from_effect();
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    if context.from_effect() {
-        let effect_handle = context.evaluation_context().effect_handle().clone();
-        core_battle_logs::fail_from_effect(
-            &mut context.evaluation_context_mut().mon_context(mon_handle)?,
-            &effect_handle,
-        )
+    let what = match context.pop_front() {
+        Some(what) => Some(
+            what.effect_handle()
+                .wrap_error_with_message("invalid effect")?,
+        ),
+        None => None,
+    };
+    let effect_handle = if from_effect {
+        Some(context.evaluation_context().effect_handle().clone())
     } else {
-        core_battle_logs::fail(&mut context.evaluation_context_mut().mon_context(mon_handle)?)
-    }
+        None
+    };
+    core_battle_logs::fail(
+        &mut context.evaluation_context_mut().mon_context(mon_handle)?,
+        what.as_ref(),
+        effect_handle.as_ref(),
+    )
 }
 
 fn log_immune(mut context: FunctionContext) -> Result<(), Error> {
@@ -1229,7 +1249,7 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
     }
 }
 
-fn heal(mut context: FunctionContext) -> Result<(), Error> {
+fn heal(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -1254,8 +1274,8 @@ fn heal(mut context: FunctionContext) -> Result<(), Error> {
         damage,
         source_handle,
         Some(&effect),
-    )?;
-    Ok(())
+    )
+    .map(|val| Value::UFraction(val.into()))
 }
 
 fn apply_drain(mut context: FunctionContext) -> Result<(), Error> {

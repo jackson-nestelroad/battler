@@ -880,16 +880,16 @@ impl<'s> StatementParser<'s> {
     }
 
     fn parse_number_literal(&mut self) -> Result<tree::NumberLiteral, Error> {
-        let negative = match self.token_parser.next_token(NextTokenContext::new())? {
+        let (signed, negative) = match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Plus) => {
                 self.token_parser.consume_lexeme();
-                false
+                (true, false)
             }
             Some(Token::Minus) => {
                 self.token_parser.consume_lexeme();
-                true
+                (true, true)
             }
-            _ => false,
+            _ => (false, false),
         };
 
         let mut numerator = match self.token_parser.next_token(NextTokenContext::new())? {
@@ -926,7 +926,7 @@ impl<'s> StatementParser<'s> {
             numerator = -numerator;
         }
 
-        if numerator < 0 {
+        if signed || numerator < 0 {
             Ok(tree::NumberLiteral::Signed(
                 Fraction::new(numerator, denominator).simplify(),
             ))

@@ -267,6 +267,13 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "AnyExit"]
     AnyExit,
+    /// Runs when any Mon's status effect is being set.
+    ///
+    /// Runs before the status effect is applied. Can be used to fail the status change.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "AnySetStatus"]
+    AnySetStatus,
     /// Runs when a Mon becomes attracted to another Mon.
     ///
     /// Can fail the attraction.
@@ -835,6 +842,7 @@ impl BattleEvent {
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
+            Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
@@ -968,7 +976,7 @@ impl BattleEvent {
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
-            Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus => {
+            Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
             Self::SetWeather => &[("weather", ValueType::Effect, true)],
@@ -1097,6 +1105,7 @@ impl BattleEvent {
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
             Self::Exit => Some(Self::AnyExit),
+            Self::SetStatus => Some(Self::AnySetStatus),
             _ => None,
         }
     }
@@ -1219,6 +1228,7 @@ pub struct Callbacks {
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
     pub on_any_exit: Callback,
+    pub on_any_set_status: Callback,
     pub on_attract: Callback,
     pub on_before_move: Callback,
     pub on_before_switch_out: Callback,
@@ -1321,6 +1331,7 @@ impl Callbacks {
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::AnyExit => Some(&self.on_any_exit),
+            BattleEvent::AnySetStatus => Some(&self.on_any_set_status),
             BattleEvent::Attract => Some(&self.on_attract),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeSwitchOut => Some(&self.on_before_switch_out),

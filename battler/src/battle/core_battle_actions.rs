@@ -579,7 +579,7 @@ fn use_active_move_internal(
 
     if context.active_move().data.target.requires_target() && target.is_none() {
         core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
-        core_battle_logs::fail(context.as_mon_context_mut())?;
+        core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         return Ok(MoveOutcome::Failed);
     }
 
@@ -601,7 +601,7 @@ fn use_active_move_internal(
     if !try_move_result.advance() {
         if try_move_result.failed() {
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
         return Ok(MoveOutcome::Failed);
     }
@@ -628,7 +628,7 @@ fn use_active_move_internal(
     } else {
         if targets.is_empty() {
             core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             return Ok(MoveOutcome::Failed);
         }
         try_direct_move(context, &targets)?
@@ -804,7 +804,7 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<Option<Mov
 
     if !move_event_result.advance() {
         if move_event_result.failed() {
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             return Ok(Some(MoveOutcome::Failed));
         }
@@ -849,7 +849,7 @@ fn try_indirect_move(
 
     if !try_move_result.advance() {
         if try_move_result.failed() {
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
         }
         return Ok(MoveOutcome::Failed);
@@ -1049,7 +1049,7 @@ fn hit_targets(
 
     if !try_move_result.advance() {
         if try_move_result.failed() {
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
         }
         for target in targets {
@@ -1544,7 +1544,7 @@ mod direct_move_step {
         }
         if targets.iter().all(|target| target.outcome.failed()) {
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-            core_battle_logs::fail(context.as_mon_context_mut())?;
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
         Ok(())
     }
@@ -2310,7 +2310,7 @@ fn apply_move_effects(
             // as a whole.
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             if log_failure {
-                core_battle_logs::fail(context.as_mon_context_mut())?;
+                core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             }
         }
     } else if context.active_move().data.user_switch.is_some() && context.mon().hp > 0 {

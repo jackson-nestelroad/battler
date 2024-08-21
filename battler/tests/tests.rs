@@ -89,6 +89,15 @@ mod moves {
         mod thief_test;
     }
 
+    mod gen3 {
+        mod facade_test;
+        mod fake_out_test;
+        mod smelling_salts_test;
+        mod stockpile_test;
+        mod torment_test;
+        mod uproar_test;
+    }
+
     mod gen4 {
         mod miracle_eye_test;
         mod toxic_spikes_test;

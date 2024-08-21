@@ -14,10 +14,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_use_move": [
-          "if $user.active_move_actions > 1:",
-          ["return false"]
-        ]
+        "on_try_use_move": ["if $user.active_turns > 1:", ["return false"]]
       }
     }
   },
@@ -38,23 +35,19 @@
       "Sound"
     ],
     "user_effect": {
-      "volatile_status": "uproad"
+      "volatile_status": "uproar"
     },
-    "effect": {
+    "condition": {
+      "duration": 3,
       "callbacks": {
-        "on_try_hit": [
+        "on_start": [
+          "log_start",
           "foreach $mon in func_call(all_active_mons):",
           [
             "if !$mon.is_soundproof and $mon.status == slp:",
             ["cure_status: $mon"]
           ]
-        ]
-      }
-    },
-    "condition": {
-      "duration": 3,
-      "callbacks": {
-        "on_start": ["log_start"],
+        ],
         "on_residual": [
           "if $target.last_move.is_defined and $target.last_move.id == struggle:",
           ["remove_volatile: $target $this.id no_events", "log_start: residual"]
@@ -63,7 +56,7 @@
         "on_lock_move": ["return $this.id"],
         "on_any_set_status": [
           "if !$target.is_soundproof and $status.id == slp:",
-          ["log_fail: $target from_effect", "return false"]
+          ["log_fail: $target $status from_effect", "return false"]
         ]
       }
     }
@@ -83,7 +76,7 @@
       "callbacks": {
         "on_try_use_move": [
           "$stockpile_state = func_call(volatile_effect_state: $user $this.id)",
-          "if $stockpile_state.is_defied and $stockpile_state.layers >= 3:",
+          "if $stockpile_state.is_defined and $stockpile_state.layers >= 3:",
           ["return false"]
         ]
       }
@@ -93,8 +86,8 @@
       "callbacks": {
         "on_start": [
           "$effect_state.layers = 1",
-          "$effect_state.def = 0",
-          "$effect_state.spd = 0",
+          "$effect_state.def = +0",
+          "$effect_state.spd = +0",
           "log_start: str('count:{}', $effect_state.layers)",
           "$def = $target.boosts.def",
           "$spd = $target.boosts.spd",
@@ -115,7 +108,8 @@
           "if $def != $target.boosts.def:",
           ["$effect_state.def = $effect_state.def - 1"],
           "if $spd != $target.boosts.spd:",
-          ["$effect_state.spd = $effect_state.spd - 1"]
+          ["$effect_state.spd = $effect_state.spd - 1"],
+          "return true"
         ],
         "on_end": [
           "if $effect_state.def != 0 or $effect_state.spd != 0:",

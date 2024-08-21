@@ -1599,6 +1599,8 @@ impl Mon {
 
     /// Resets the Mon's state for the next turn.
     pub fn reset_state_for_next_turn(context: &mut MonContext) -> Result<(), Error> {
+        context.mon_mut().active_turns += 1;
+
         context.mon_mut().old_active_position = None;
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().hurt_this_turn = 0;

@@ -105,19 +105,22 @@ where
     Ok(())
 }
 
-pub fn fail(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!("fail", ("mon", Mon::position_details(context)?));
-    context.battle_mut().log(event);
-    Ok(())
-}
-
-pub fn fail_from_effect(context: &mut MonContext, effect: &EffectHandle) -> Result<(), Error> {
-    let effect = CoreBattle::get_effect_by_handle(context.as_battle_context(), effect)?.full_name();
-    let event = log_event!(
-        "fail",
-        ("mon", Mon::position_details(context)?),
-        ("from", effect)
-    );
+pub fn fail(
+    context: &mut MonContext,
+    what: Option<&EffectHandle>,
+    from: Option<&EffectHandle>,
+) -> Result<(), Error> {
+    let mut event = log_event!("fail", ("mon", Mon::position_details(context)?));
+    if let Some(what) = what {
+        let effect =
+            CoreBattle::get_effect_by_handle(context.as_battle_context(), what)?.full_name();
+        event.set("what", effect);
+    }
+    if let Some(from) = from {
+        let effect =
+            CoreBattle::get_effect_by_handle(context.as_battle_context(), from)?.full_name();
+        event.set("from", effect);
+    }
     context.battle_mut().log(event);
     Ok(())
 }
