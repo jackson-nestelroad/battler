@@ -19,6 +19,10 @@ pub enum ParsedProgramBlock {
 }
 
 impl ParsedProgramBlock {
+    /// The number of statements in the block.
+    ///
+    /// Note that this recursively looks into all blocks if this block is a branch, so this can
+    /// potentially be expensive.
     pub fn len(&self) -> usize {
         match self {
             Self::Leaf(_) => 1,
