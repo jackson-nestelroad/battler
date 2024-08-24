@@ -1444,9 +1444,9 @@
       "callbacks": {
         "on_immunity": [
           "if [sandstormweather, hailweather] has $effect.id:",
-          ["return true"],
+          ["return false"],
           "if $effect.is_move and func_call(move_has_flag: $effect powder):",
-          ["return true"]
+          ["return false"]
         ]
       }
     }
