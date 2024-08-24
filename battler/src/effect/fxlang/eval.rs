@@ -1336,7 +1336,7 @@ impl ProgramEvalResult {
 /// Holds the global state of an fxlang [`ParsedProgram`] during evaluation. Individual blocks
 /// ([`ParsedProgramBlock`]) are evaluated recursively and get their own local state.
 pub struct Evaluator {
-    statement: u16,
+    statement: usize,
     vars: VariableRegistry,
 }
 
@@ -1534,7 +1534,7 @@ impl Evaluator {
             }
             ParsedProgramBlock::Branch(blocks) => {
                 if parent_state.skip_next_block {
-                    self.statement += blocks.len() as u16;
+                    self.statement += block.len() as usize;
                     return Ok(ProgramStatementEvalResult::Skipped);
                 }
 

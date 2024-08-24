@@ -18,6 +18,15 @@ pub enum ParsedProgramBlock {
     Branch(Vec<ParsedProgramBlock>),
 }
 
+impl ParsedProgramBlock {
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Leaf(_) => 1,
+            Self::Branch(blocks) => blocks.iter().map(|block| block.len()).sum(),
+        }
+    }
+}
+
 /// A parsed version of [`Program`], which can be evaluated in the context of an ongoing battle.
 #[derive(Debug, PartialEq, Eq)]
 pub struct ParsedProgram {
