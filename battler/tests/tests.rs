@@ -1,7 +1,3 @@
-mod field {
-    mod haze_test;
-}
-
 mod moves {
     mod gen1 {
         mod accuracy_check_test;
@@ -16,13 +12,16 @@ mod moves {
         mod drain_test;
         mod dream_eater_test;
         mod focus_energy_test;
+        mod haze_test;
         mod heal_test;
         mod immunity_test;
         mod leech_seed_test;
+        mod light_screen_test;
         mod metronome_test;
         mod mimic_test;
         mod minimize_test;
         mod mirror_move_test;
+        mod mist_test;
         mod move_bad_input_test;
         mod move_pp_test;
         mod move_target_test;
@@ -103,11 +102,6 @@ mod moves {
         mod miracle_eye_test;
         mod toxic_spikes_test;
     }
-}
-
-mod side {
-    mod light_screen_test;
-    mod mist_test;
 }
 
 mod singleplayer {
