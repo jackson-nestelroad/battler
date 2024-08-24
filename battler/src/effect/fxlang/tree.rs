@@ -218,7 +218,7 @@ pub struct ForEachStatement {
     pub range: Value,
 }
 
-/// ReturnStatement -> "return" Expr
+/// ReturnStatement -> "return" (Expr)
 #[derive(Debug, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ReturnStatement(pub Option<Expr>);
