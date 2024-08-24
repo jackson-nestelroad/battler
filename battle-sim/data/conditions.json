@@ -36,7 +36,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == brn:", ["return true"]]
+        "on_immunity": ["if $effect.id == brn:", ["return false"]]
       }
     }
   },
@@ -49,7 +49,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == par:", ["return true"]]
+        "on_immunity": ["if $effect.id == par:", ["return false"]]
       }
     }
   },
@@ -60,7 +60,7 @@
       "callbacks": {
         "on_immunity": [
           "if $effect.is_move and func_call(move_has_flag: $effect powder):",
-          ["return true"]
+          ["return false"]
         ]
       }
     }
@@ -72,7 +72,7 @@
       "callbacks": {
         "on_immunity": [
           "if [frz, hailweather] has $effect.id:",
-          ["return true"]
+          ["return false"]
         ]
       }
     }
@@ -86,7 +86,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [psn, tox] has $effect.id:", ["return true"]]
+        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
       }
     }
   },
@@ -95,7 +95,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]],
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]],
         "on_negate_immunity": ["if !$mon.is_grounded:", ["return false"]]
       }
     }
@@ -122,7 +122,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return true"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
       }
     }
   },
@@ -131,7 +131,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == trapped:", ["return true"]]
+        "on_immunity": ["if $effect.id == trapped:", ["return false"]]
       }
     }
   },
@@ -153,7 +153,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [psn, tox] has $effect.id:", ["return true"]]
+        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
       }
     }
   },
@@ -645,7 +645,7 @@
           "if $move.type == water:",
           ["return $damage * 1/2"]
         ],
-        "on_immunity": ["if $effect == frz:", ["return true"]],
+        "on_immunity": ["if $effect == frz:", ["return false"]],
         "on_field_start": [
           "if $source_effect.is_ability:",
           ["log_weather: $this.name with_source_effect"],
@@ -681,7 +681,7 @@
           "if $move.type == fire:",
           ["return $damage * 3/2"]
         ],
-        "on_immunity": ["if $effect == frz:", ["return true"]],
+        "on_immunity": ["if $effect == frz:", ["return false"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": [
           "log_weather: $this.name residual",

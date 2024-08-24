@@ -1286,7 +1286,7 @@
         "is_semi_invulnerable": ["return true"],
         "on_immunity": [
           "if $effect.id == sandstormweather or $effect.id == hailweather:",
-          ["return true"]
+          ["return false"]
         ],
         "on_invulnerability": [
           "if [earthquake, magnitude] has $move.id:",

@@ -496,7 +496,7 @@
     "effect": {
       "callbacks": {
         "on_try_immunity": [
-          "return func_call(has_ability: $target stickyhold)"
+          "return !func_call(has_ability: $target stickyhold)"
         ],
         "on_hit": [
           "if !$source.item and !$target.item:",

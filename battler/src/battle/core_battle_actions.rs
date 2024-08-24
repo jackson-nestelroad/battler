@@ -2677,12 +2677,11 @@ pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error
         return Ok(true);
     }
 
-    Ok(
-        core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::Immunity,
-        ),
-    )
+    Ok(!core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::Immunity,
+        fxlang::VariableInput::default(),
+    ))
 }
 
 /// Clears the status of a Mon.
