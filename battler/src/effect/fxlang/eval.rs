@@ -722,6 +722,9 @@ where
                             "needs_switch" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.needs_switch.is_some())
                             }
+                            "newly_switched" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.newly_switched)
+                            }
                             "player" => ValueRef::Player(context.mon(mon_handle)?.player),
                             "position" => ValueRef::UFraction(
                                 TryInto::<u32>::try_into(Mon::position_on_side(

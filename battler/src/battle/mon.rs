@@ -387,6 +387,7 @@ pub struct Mon {
     pub speed: u16,
     pub weight: u32,
     pub fainted: bool,
+    pub newly_switched: bool,
     pub needs_switch: Option<SwitchType>,
     pub force_switch: Option<SwitchType>,
     pub skip_before_switch_out: bool,
@@ -530,6 +531,7 @@ impl Mon {
             speed: 0,
             weight: 1,
             fainted: false,
+            newly_switched: false,
             needs_switch: None,
             force_switch: None,
             skip_before_switch_out: false,
@@ -1395,6 +1397,7 @@ impl Mon {
         context.mon_mut().active_turns = 0;
         context.mon_mut().active_move_actions = 0;
         context.mon_mut().active_position = Some(position);
+        context.mon_mut().newly_switched = true;
 
         let mon_handle = context.mon_handle();
         context
@@ -1606,6 +1609,7 @@ impl Mon {
         context.mon_mut().hurt_this_turn = 0;
         context.mon_mut().stats_raised_this_turn = false;
         context.mon_mut().stats_lowered_this_turn = false;
+        context.mon_mut().newly_switched = false;
 
         for move_slot in &mut context.mon_mut().move_slots {
             move_slot.disabled = false;

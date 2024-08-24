@@ -460,18 +460,28 @@
     "hit_effect": {
       "volatile_status": "helpinghand"
     },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "return expr($target.newly_switched or $target.will_move_this_turn)"
+        ]
+      }
+    },
     "condition": {
       "duration": 1,
       "callbacks": {
         "on_start": [
-          "$effect_state.muliplier = 3/2",
+          "$effect_state.multiplier = 3/2",
           "log_single_turn: with_target with_source"
         ],
         "on_restart": [
-          "$effect_state.muliplier = $effect_state.muliplier * 3/2",
-          "log_single_turn: with_target with_source"
+          "$effect_state.multiplier = $effect_state.multiplier * 3/2",
+          "log_single_turn: with_target with_source",
+          "return true"
         ],
-        "on_base_power": ["return expr($base_power * $effect_state.multiplier)"]
+        "on_source_base_power": [
+          "return expr($base_power * $effect_state.multiplier)"
+        ]
       }
     }
   },
