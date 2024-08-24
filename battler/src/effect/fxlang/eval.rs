@@ -613,6 +613,11 @@ where
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
                             "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
+                            "active_move" => context
+                                .mon(mon_handle)?
+                                .active_move
+                                .map(|active_move| ValueRef::ActiveMove(active_move))
+                                .unwrap_or(ValueRef::Undefined),
                             "active_move_actions" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.active_move_actions.into(),
                             ),
@@ -632,6 +637,19 @@ where
                                 ValueRef::Boolean(context.mon(mon_handle)?.being_called_back)
                             }
                             "boosts" => ValueRef::BoostTable(&context.mon(mon_handle)?.boosts),
+                            "effective_item" => {
+                                match mon_states::effective_item(
+                                    &mut context.mon_context(mon_handle)?,
+                                ) {
+                                    Some(weather) => ValueRef::Effect(
+                                        context
+                                            .battle_context_mut()
+                                            .battle_mut()
+                                            .get_effect_handle_by_id(&weather)?,
+                                    ),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "effective_weather" => {
                                 match mon_states::effective_weather(
                                     &mut context.mon_context(mon_handle)?,

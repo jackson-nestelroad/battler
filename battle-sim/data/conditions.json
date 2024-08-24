@@ -883,5 +883,33 @@
         ]
       }
     }
+  },
+  "choicelock": {
+    "name": "Choice Lock",
+    "condition_type": "Volatile",
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if !$target.active_move:",
+          ["return false"],
+          "$effect_state.move = $target.active_move.id"
+        ],
+        "on_before_move": [
+          "if !$user.effective_item and $move.id != $effect_state.move and $move.id != struggle:",
+          ["log_fail: $user from_effect", "return false"]
+        ],
+        "on_disable_move": [
+          "if !func_call(has_move: $mon $effect_state.move):",
+          ["remove_volatile: $mon $this.id", "return"],
+          "if !$mon.effective_item:",
+          ["return"],
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.id != $effect_state.move:",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ]
+      }
+    }
   }
 }

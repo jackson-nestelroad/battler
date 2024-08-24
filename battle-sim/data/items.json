@@ -578,7 +578,14 @@
   "choiceband": {
     "name": "Choice Band",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": ["ChoiceLocking"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "on_use_move": ["add_volatile: $user choicelock"],
+        "on_modify_atk": ["return $atk * 3/2"]
+      }
+    }
   },
   "kingsrock": {
     "name": "King's Rock",
@@ -766,7 +773,14 @@
   "choicescarf": {
     "name": "Choice Scarf",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": ["ChoiceLocking"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "on_use_move": ["add_volatile: $user choicelock"],
+        "on_modify_spe": ["return $spe * 3/2"]
+      }
+    }
   },
   "stickybarb": {
     "name": "Sticky Barb",
@@ -796,7 +810,14 @@
   "choicespecs": {
     "name": "Choice Specs",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": ["ChoiceLocking"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "on_use_move": ["add_volatile: $user choicelock"],
+        "on_modify_spa": ["return $spa * 3/2"]
+      }
+    }
   },
   "flameplate": {
     "name": "Flame Plate",

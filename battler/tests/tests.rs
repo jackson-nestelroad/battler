@@ -118,6 +118,7 @@ mod singleplayer {
 
 mod status {
     mod burn_test;
+    mod choice_lock_test;
     mod confusion_test;
     mod flinch_test;
     mod freeze_test;

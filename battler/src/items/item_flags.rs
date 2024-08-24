@@ -9,6 +9,9 @@ use serde_string_enum::{
     Debug, Clone, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum ItemFlags {
+    /// Locks the holder's move choice.
+    #[string = "ChoiceLocking"]
+    ChoiceLocking,
     /// Raises the user's evasion.
     #[string = "EvasionRaising"]
     EvasionRaising,
