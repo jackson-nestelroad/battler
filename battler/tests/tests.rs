@@ -95,6 +95,7 @@ mod moves {
         mod follow_me_test;
         mod smelling_salts_test;
         mod stockpile_test;
+        mod taunt_test;
         mod torment_test;
         mod uproar_test;
     }

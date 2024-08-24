@@ -760,6 +760,16 @@ where
                     } else if let Some(effect_handle) = value.effect_handle() {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "category" => ValueRef::MoveCategory(
+                                CoreBattle::get_effect_by_handle(
+                                    context.battle_context(),
+                                    &effect_handle,
+                                )?
+                                .move_effect()
+                                .wrap_error_with_message("effect is not a move")?
+                                .data
+                                .category,
+                            ),
                             "condition" => ValueRef::TempEffect(
                                 effect_handle
                                     .condition_handle(context.battle_context())?
