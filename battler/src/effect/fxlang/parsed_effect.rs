@@ -51,6 +51,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnySetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::Attract, callbacks)?;
+            parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeSwitchOut, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
@@ -124,6 +125,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SlotRestart, callbacks)?;
             parsed.parse_and_save(BattleEvent::SlotStart, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceAccuracyExempt, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceInvulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;

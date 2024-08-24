@@ -89,6 +89,7 @@ mod moves {
     }
 
     mod gen3 {
+        mod charge_test;
         mod facade_test;
         mod fake_out_test;
         mod follow_me_test;

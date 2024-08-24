@@ -281,6 +281,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "Attract"]
     Attract,
+    /// Runs when a move's base power is being calculated for a target.
+    ///
+    /// Used to override a move's base power.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "BasePower"]
+    BasePower,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
@@ -324,7 +331,7 @@ pub enum BattleEvent {
     ///
     /// Used to override damage calculations.
     ///
-    /// Runs on the active move itself and in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on the target.
     #[string = "Damage"]
     Damage,
     /// Runs after a Mon receives damage, regardless of the source.
@@ -686,6 +693,14 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "SourceAccuracyExempt"]
     SourceAccuracyExempt,
+    /// Runs when a Mon is the source of determining its move's base power is being calculated for
+    /// a target.
+    ///
+    /// Used to override a move's base power.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "SourceBasePower"]
+    SourceBasePower,
     /// Runs when a Mon is the source of determining if another Mon is invulnerable to targeting
     /// moves.
     ///
@@ -855,6 +870,7 @@ impl BattleEvent {
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
             Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -928,6 +944,7 @@ impl BattleEvent {
             Self::SlotRestart => CommonCallbackType::SideResult as u32,
             Self::SlotStart => CommonCallbackType::SideResult as u32,
             Self::SourceAccuracyExempt => CommonCallbackType::MoveResult as u32,
+            Self::SourceBasePower => CommonCallbackType::MoveModifier as u32,
             Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
@@ -964,6 +981,9 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
             Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::BasePower | Self::SourceBasePower => {
+                &[("base_power", ValueType::UFraction, true)]
+            }
             Self::Damage => &[("damage", ValueType::UFraction, true)],
             Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
@@ -1108,6 +1128,7 @@ impl BattleEvent {
     pub fn source_event(&self) -> Option<BattleEvent> {
         match self {
             Self::AccuracyExempt => Some(Self::SourceAccuracyExempt),
+            Self::BasePower => Some(Self::SourceBasePower),
             Self::Invulnerability => Some(Self::SourceInvulnerability),
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
             Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
@@ -1245,6 +1266,7 @@ pub struct Callbacks {
     pub on_any_exit: Callback,
     pub on_any_set_status: Callback,
     pub on_attract: Callback,
+    pub on_base_power: Callback,
     pub on_before_move: Callback,
     pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
@@ -1309,6 +1331,7 @@ pub struct Callbacks {
     pub on_slot_restart: Callback,
     pub on_slot_start: Callback,
     pub on_source_accuracy_exempt: Callback,
+    pub on_source_base_power: Callback,
     pub on_source_invulnerability: Callback,
     pub on_source_modify_damage: Callback,
     pub on_source_weather_modify_damage: Callback,
@@ -1349,6 +1372,7 @@ impl Callbacks {
             BattleEvent::AnyExit => Some(&self.on_any_exit),
             BattleEvent::AnySetStatus => Some(&self.on_any_set_status),
             BattleEvent::Attract => Some(&self.on_attract),
+            BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeSwitchOut => Some(&self.on_before_switch_out),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
@@ -1422,6 +1446,7 @@ impl Callbacks {
             BattleEvent::SlotRestart => Some(&self.on_slot_restart),
             BattleEvent::SlotStart => Some(&self.on_slot_start),
             BattleEvent::SourceAccuracyExempt => Some(&self.on_source_accuracy_exempt),
+            BattleEvent::SourceBasePower => Some(&self.on_source_base_power),
             BattleEvent::SourceInvulnerability => Some(&self.on_source_invulnerability),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),

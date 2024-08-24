@@ -440,18 +440,6 @@ fn do_move_internal(
         }
     }
 
-    core_battle_effects::run_active_move_event_expecting_void(
-        &mut context,
-        fxlang::BattleEvent::AfterMove,
-        core_battle_effects::MoveTargetForEvent::User,
-        fxlang::VariableInput::default(),
-    );
-    core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(None)?,
-        fxlang::BattleEvent::AfterMove,
-        fxlang::VariableInput::default(),
-    );
-
     Ok(())
 }
 
@@ -475,6 +463,8 @@ pub fn use_move(
 }
 
 /// Uses a move that was already registered as an active move.
+///
+/// This code is shared between chosen and external moves.
 pub fn use_active_move(
     context: &mut MonContext,
     active_move_handle: MoveHandle,
@@ -527,6 +517,18 @@ pub fn use_active_move(
                 _ => Some(outcome),
             };
     }
+
+    core_battle_effects::run_active_move_event_expecting_void(
+        &mut context,
+        fxlang::BattleEvent::AfterMove,
+        core_battle_effects::MoveTargetForEvent::User,
+        fxlang::VariableInput::default(),
+    );
+    core_battle_effects::run_event_for_applying_effect(
+        &mut context.user_applying_effect_context(None)?,
+        fxlang::BattleEvent::AfterMove,
+        fxlang::VariableInput::default(),
+    );
 
     Ok(outcome.success())
 }
@@ -1207,6 +1209,12 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     ) {
         base_power = dynamic_base_power;
     }
+
+    let base_power = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+        &mut context.applying_effect_context()?,
+        fxlang::BattleEvent::BasePower,
+        base_power,
+    );
 
     // If base power is explicitly 0, no damage should be dealt.
     //

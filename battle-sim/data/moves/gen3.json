@@ -394,10 +394,11 @@
           "if $source_effect.is_ability:",
           ["log_start: with_source_effect"],
           "else:",
-          ["log_start"]
+          ["log_start"],
+          "return true"
         ],
-        "on_base_power": [
-          "if $move.target == electric:",
+        "on_source_base_power": [
+          "if $move.type == electric:",
           ["return expr($base_power * 2)"]
         ],
         "on_move_aborted": [
