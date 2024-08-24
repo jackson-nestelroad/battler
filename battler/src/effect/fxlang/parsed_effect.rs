@@ -74,6 +74,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::FieldResidual, callbacks)?;
             parsed.parse_and_save(BattleEvent::FieldStart, callbacks)?;
             parsed.parse_and_save(BattleEvent::Flinch, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FoeRedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitField, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitSide, callbacks)?;
@@ -84,6 +85,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::IsImmuneToEntryHazards, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSemiInvulnerable, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsSkyDropped, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSnowing, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSoundproof, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;

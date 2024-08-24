@@ -92,6 +92,7 @@ mod moves {
     mod gen3 {
         mod facade_test;
         mod fake_out_test;
+        mod follow_me_test;
         mod smelling_salts_test;
         mod stockpile_test;
         mod torment_test;

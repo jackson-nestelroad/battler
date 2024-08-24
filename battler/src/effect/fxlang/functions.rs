@@ -140,7 +140,6 @@ pub fn run_function(
         "max" => max(context).map(|val| Some(val)),
         "mon_at_target_location" => mon_at_target_location(context),
         "mon_in_position" => mon_in_position(context),
-        "mons_per_side" => mons_per_side(context).map(|val| Some(val)),
         "move_at_move_slot_index" => move_at_move_slot_index(context),
         "move_crit_target" => move_crit_target(context).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context).map(|val| Some(val)),
@@ -177,6 +176,7 @@ pub fn run_function(
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
+        "valid_target" => valid_target(context).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context),
         _ => Err(battler_error!("undefined function: {function_name}")),
     }
@@ -1665,20 +1665,6 @@ fn overwrite_move_slot(mut context: FunctionContext) -> Result<(), Error> {
         .overwrite_move_slot(index, move_slot, override_base_slot)
 }
 
-fn mons_per_side(context: FunctionContext) -> Result<Value, Error> {
-    Ok(Value::UFraction(
-        TryInto::<u64>::try_into(
-            context
-                .evaluation_context()
-                .battle_context()
-                .battle()
-                .max_side_length(),
-        )
-        .wrap_error_with_message("integer overflow")?
-        .into(),
-    ))
-}
-
 fn move_crit_target(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move_handle = context
         .pop_front()
@@ -2507,4 +2493,26 @@ fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
             .forward_effect_to_applying_effect(mon, use_target_as_source)?,
         &item,
     )?))
+}
+
+fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let target = context
+        .pop_front()
+        .wrap_error_with_message("missing target mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target mon")?;
+    let move_target = context
+        .pop_front()
+        .wrap_error_with_message("missing move target")?
+        .move_target()
+        .wrap_error_with_message("invalid move target")?;
+    let mut context = context.evaluation_context_mut().mon_context(mon)?;
+    let target_location = Mon::get_target_location(&mut context, target)?;
+    CoreBattle::valid_target(&mut context, move_target, target_location)
+        .map(|val| Value::Boolean(val))
 }

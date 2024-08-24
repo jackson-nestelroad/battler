@@ -53,6 +53,15 @@ pub fn is_semi_invulnerable(context: &mut MonContext) -> bool {
     )
 }
 
+/// Checks if the [`Mon`][`crate::battle::Mon`] is sky-dropped..
+pub fn is_sky_dropped(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsSkyDropped,
+        false,
+    )
+}
+
 /// The effective weather for the [`Mon`][`crate::battle::Mon`].
 ///
 /// Weather can be suppressed for the Mon by abilities and items.

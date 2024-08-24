@@ -796,15 +796,15 @@ impl Mon {
         Side::mon_in_position(&mut side_context, position)
     }
 
-    // Gets the target Mon's position based on this Mon's position.
+    /// Gets the target Mon's position based on this Mon's position.
     pub fn get_target_location(
         context: &mut MonContext,
         target: MonHandle,
     ) -> Result<isize, Error> {
         let target_context = context.as_battle_context_mut().mon_context(target)?;
         let target_side = target_context.mon().side;
-        let target_position = Self::position_on_side(context)? + 1;
-        if target_side != context.mon().side {
+        let target_position = Self::position_on_side(&target_context)? + 1;
+        if target_side == context.mon().side {
             Ok(-(target_position as isize))
         } else {
             Ok(target_position as isize)

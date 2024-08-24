@@ -1603,7 +1603,7 @@
           ["return"],
           "if func_call(move_crit_target: $move $target) or $move.infiltrates:",
           ["return"],
-          "if func_call(mons_per_side) > 1:",
+          "if $format.mons_per_side > 1:",
           ["return expr($damage * 2 / 3)"],
           "return expr($damage / 2)"
         ],
@@ -1647,7 +1647,7 @@
           ["return"],
           "if func_call(move_crit_target: $move $target) or $move.infiltrates:",
           ["return"],
-          "if func_call(mons_per_side) > 1:",
+          "if $format.mons_per_side > 1:",
           ["return expr($damage * 2 / 3)"],
           "return expr($damage / 2)"
         ],

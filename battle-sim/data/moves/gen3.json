@@ -334,7 +334,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_use_move": ["return $format.mons_per_side > 1"]
+        "on_try_use_move": ["return expr($format.mons_per_side > 1)"]
       }
     },
     "condition": {
@@ -346,7 +346,7 @@
           "program": [
             "if $effect_state.target.is_sky_dropped:",
             ["return"],
-            "if !func_call(valid_target: $effect_state.target $source $move.target):",
+            "if !func_call(valid_target: $user $effect_state.target $move.target):",
             ["return"],
             "return $effect_state.target"
           ]

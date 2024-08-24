@@ -663,6 +663,9 @@ where
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "is_sky_dropped" => ValueRef::Boolean(mon_states::is_sky_dropped(
+                                &mut context.mon_context(mon_handle)?,
+                            )),
                             "is_soundproof" => ValueRef::Boolean(mon_states::is_soundproof(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -960,6 +963,13 @@ where
                     } else if let ValueRef::Format = value {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "mons_per_side" => ValueRef::UFraction(
+                                TryInto::<u64>::try_into(
+                                    context.battle_context().battle().max_side_length(),
+                                )
+                                .wrap_error_with_message("integer overflow")?
+                                .into(),
+                            ),
                             "obedience_cap" => ValueRef::UFraction(
                                 context
                                     .battle_context()

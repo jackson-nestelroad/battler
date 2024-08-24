@@ -406,6 +406,12 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Flinch"]
     Flinch,
+    /// Runs when a foe's move is going to target one Mon but can be redirected towards a different
+    /// target.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "FoeRedirectTarget"]
+    FoeRedirectTarget,
     /// Runs when a Mon is hit by a move.
     ///
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
@@ -467,6 +473,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "IsSemiInvulnerable"]
     IsSemiInvulnerable,
+    /// Runs when determining if a Mon is sky-dropped.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsSkyDropped"]
+    IsSkyDropped,
     /// Runs when determining if a weather includes snowing.
     ///
     /// Runs on the effect itslf.
@@ -867,6 +878,7 @@ impl BattleEvent {
             Self::FieldRestart => CommonCallbackType::FieldResult as u32,
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
+            Self::FoeRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
@@ -877,6 +889,7 @@ impl BattleEvent {
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
             Self::IsRaining => CommonCallbackType::NoContextResult as u32,
             Self::IsSemiInvulnerable => CommonCallbackType::MonResult as u32,
+            Self::IsSkyDropped => CommonCallbackType::MonResult as u32,
             Self::IsSnowing => CommonCallbackType::NoContextResult as u32,
             Self::IsSoundproof => CommonCallbackType::MonResult as u32,
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
@@ -975,7 +988,7 @@ impl BattleEvent {
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
-            Self::RedirectTarget => &[("target", ValueType::Mon, true)],
+            Self::RedirectTarget | Self::FoeRedirectTarget => &[("target", ValueType::Mon, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
@@ -1086,6 +1099,7 @@ impl BattleEvent {
     /// Returns the associated foe event.
     pub fn foe_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::RedirectTarget => Some(Self::FoeRedirectTarget),
             _ => None,
         }
     }
@@ -1215,6 +1229,7 @@ pub struct Callbacks {
     pub is_grounded: Callback,
     pub is_immune_to_entry_hazards: Callback,
     pub is_semi_invulnerable: Callback,
+    pub is_sky_dropped: Callback,
     pub is_raining: Callback,
     pub is_snowing: Callback,
     pub is_soundproof: Callback,
@@ -1253,6 +1268,7 @@ pub struct Callbacks {
     pub on_field_restart: Callback,
     pub on_field_start: Callback,
     pub on_flinch: Callback,
+    pub on_foe_redirect_target: Callback,
     pub on_hit: Callback,
     pub on_hit_field: Callback,
     pub on_hit_side: Callback,
@@ -1356,6 +1372,7 @@ impl Callbacks {
             BattleEvent::FieldRestart => Some(&self.on_field_restart),
             BattleEvent::FieldStart => Some(&self.on_field_start),
             BattleEvent::Flinch => Some(&self.on_flinch),
+            BattleEvent::FoeRedirectTarget => Some(&self.on_foe_redirect_target),
             BattleEvent::Hit => Some(&self.on_hit),
             BattleEvent::HitField => Some(&self.on_hit_field),
             BattleEvent::HitSide => Some(&self.on_hit_side),
@@ -1366,6 +1383,7 @@ impl Callbacks {
             BattleEvent::IsImmuneToEntryHazards => Some(&self.is_immune_to_entry_hazards),
             BattleEvent::IsRaining => Some(&self.is_raining),
             BattleEvent::IsSemiInvulnerable => Some(&self.is_semi_invulnerable),
+            BattleEvent::IsSkyDropped => Some(&self.is_sky_dropped),
             BattleEvent::IsSnowing => Some(&self.is_snowing),
             BattleEvent::IsSoundproof => Some(&self.is_soundproof),
             BattleEvent::IsSunny => Some(&self.is_sunny),

@@ -145,7 +145,7 @@ mod pursuit_test {
     fn pursuit_runs_before_switch() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle =
-            make_battle(&data, 0, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
+            make_battle(&data, 100, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(
@@ -184,7 +184,7 @@ mod pursuit_test {
     fn multiple_pursuits_at_the_same_time() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let mut battle =
-            make_battle(&data, 0, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
+            make_battle(&data, 100, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
         assert_eq!(battle.start(), Ok(()));
 
         assert_eq!(
@@ -203,8 +203,8 @@ mod pursuit_test {
                 "move|mon:Umbreon,player-1,2|name:Pursuit|target:Espeon,player-2,1",
                 "supereffective|mon:Espeon,player-2,1",
                 "split|side:1",
-                "damage|mon:Espeon,player-2,1|health:15/125",
-                "damage|mon:Espeon,player-2,1|health:12/100",
+                "damage|mon:Espeon,player-2,1|health:27/125",
+                "damage|mon:Espeon,player-2,1|health:22/100",
                 "move|mon:Tyranitar,player-1,1|name:Pursuit|target:Espeon,player-2,1",
                 "supereffective|mon:Espeon,player-2,1",
                 "split|side:1",

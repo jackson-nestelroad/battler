@@ -1551,19 +1551,19 @@ impl<'d> CoreBattle<'d> {
     pub fn valid_target(
         context: &mut MonContext,
         move_target: MoveTarget,
-        target_position: isize,
+        target_location: isize,
     ) -> Result<bool, Error> {
-        if target_position == 0 {
+        if target_location == 0 {
             return Err(battler_error!("target position cannot be 0"));
         }
-        let target_side = if target_position > 0 {
+        let target_side = if target_location > 0 {
             context.foe_side().index
         } else {
             context.side().index
         };
-        let target_position = target_position.abs() as usize;
-        let target_position = target_position - 1;
-        if !Mon::relative_location_of_target(&context, target_side, target_position).map_or(
+        let target_location = target_location.abs() as usize;
+        let target_location = target_location - 1;
+        if !Mon::relative_location_of_target(&context, target_side, target_location).map_or(
             false,
             |relative_location| {
                 move_target.valid_target(
