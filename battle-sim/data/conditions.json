@@ -899,7 +899,7 @@
           ["log_fail: $user from_effect", "return false"]
         ],
         "on_disable_move": [
-          "if !func_call(has_move: $mon $effect_state.move):",
+          "if !$mon.item or !func_call(item_has_flag: $mon.item choicelocking) or !func_call(has_move: $mon $effect_state.move):",
           ["remove_volatile: $mon $this.id", "return"],
           "if !$mon.effective_item:",
           ["return"],

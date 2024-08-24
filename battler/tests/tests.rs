@@ -98,6 +98,7 @@ mod moves {
         mod stockpile_test;
         mod taunt_test;
         mod torment_test;
+        mod trick_test;
         mod uproar_test;
     }
 

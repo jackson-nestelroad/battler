@@ -48,6 +48,7 @@ use crate::{
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
     },
+    items::ItemFlags,
     log::Event,
     log_event,
     mons::TypeEffectiveness,
@@ -118,6 +119,7 @@ pub fn run_function(
         "index" => index(context),
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
+        "item_has_flag" => item_has_flag(context).map(|val| Some(val)),
         "log" => log(context).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context).map(|()| None),
@@ -966,6 +968,33 @@ fn move_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
             .data
             .flags
             .contains(&move_flag),
+    ))
+}
+
+fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
+    let item_id = context
+        .pop_front()
+        .wrap_error_with_message("missing item")?
+        .string()
+        .wrap_error_with_message("invalid item")?;
+    let item_id = Id::from(item_id);
+    let item_flag = context
+        .pop_front()
+        .wrap_error_with_message("missing item flag")?
+        .string()
+        .wrap_error_with_message("invalid item flag")?;
+    let item_flag = ItemFlags::from_str(&item_flag).wrap_error_with_message("invalid item flag")?;
+    Ok(Value::Boolean(
+        context
+            .evaluation_context_mut()
+            .battle_context()
+            .battle()
+            .dex
+            .items
+            .get_by_id(&item_id)?
+            .data
+            .flags
+            .contains(&item_flag),
     ))
 }
 
