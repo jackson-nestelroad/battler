@@ -5,12 +5,12 @@ use std::{
 
 use crate::common::Fraction;
 
-/// Bool -> true | false
+/// Bool -> "true" | "false"
 #[derive(Debug, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct BoolLiteral(pub bool);
 
-/// Number -> [0-9]+('/'[0-9]+)?
+/// Number -> ("+" | "-")? [0-9]+ ("/" [0-9]+)?
 #[derive(Debug, PartialEq, Eq)]
 pub enum NumberLiteral {
     Unsigned(Fraction<u64>),
