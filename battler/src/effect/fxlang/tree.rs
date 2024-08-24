@@ -218,10 +218,10 @@ pub struct ForEachStatement {
     pub range: Value,
 }
 
-/// ReturnStatement -> "return" Value
+/// ReturnStatement -> "return" Expr
 #[derive(Debug, PartialEq, Eq)]
 #[repr(transparent)]
-pub struct ReturnStatement(pub Option<Value>);
+pub struct ReturnStatement(pub Option<Expr>);
 
 /// ContinueStatement -> "continue"
 #[derive(Debug, PartialEq, Eq)]

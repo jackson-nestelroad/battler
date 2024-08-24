@@ -45,7 +45,7 @@
     "multiaccuracy": true,
     "multihit": 3,
     "effect": {
-      "callbacks": { "on_move_base_power": ["return expr(10 * $move.hit)"] }
+      "callbacks": { "on_move_base_power": ["return 10 * $move.hit"] }
     }
   },
   "thief": {
@@ -369,7 +369,7 @@
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
-          "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
         ],
         "on_hit": ["add_volatile: $target stall"]
       }
@@ -681,7 +681,7 @@
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
-          "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
         ],
         "on_hit": ["add_volatile: $target stall"]
       }
@@ -778,7 +778,7 @@
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
-          "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
         ],
         "on_hit": ["add_volatile: $target stall"]
       }
@@ -791,7 +791,7 @@
           "priority": -10,
           "program": [
             "if $effect.is_move and $damage > $target.hp:",
-            ["log_activate: with_target", "return expr($target.hp - 1)"]
+            ["log_activate: with_target", "return $target.hp - 1"]
           ]
         }
       }
@@ -867,10 +867,7 @@
       "callbacks": {
         "on_damage": {
           "order": 999,
-          "program": [
-            "if $damage >= $target.hp:",
-            ["return expr($target.hp - 1)"]
-          ]
+          "program": ["if $damage >= $target.hp:", ["return $target.hp - 1"]]
         }
       }
     }
@@ -1388,7 +1385,7 @@
       "callbacks": {
         "on_move_base_power": [
           "if $target.being_called_back or $target.needs_switch:",
-          ["return expr($move.base_power * 2)"]
+          ["return $move.base_power * 2"]
         ],
         "on_before_turn": [
           "$side = $target.foe_side",
@@ -1889,7 +1886,7 @@
         "on_move_base_power": [
           "$mon = func_call(index: $effect_state.mons expr($move.hit - 1))",
           "log_activate: str('hit:{}', $mon.name)",
-          "return expr(5 + $mon.base_stats.atk / 10)"
+          "return 5 + $mon.base_stats.atk / 10"
         ]
       }
     }

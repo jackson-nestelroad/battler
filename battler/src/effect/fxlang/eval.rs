@@ -1698,7 +1698,7 @@ impl Evaluator {
             tree::Statement::ReturnStatement(statement) => {
                 let value = match &statement.0 {
                     None => None,
-                    Some(value) => Some(self.resolve_value(context, value)?),
+                    Some(expr) => Some(self.evaluate_expr(context, expr)?),
                 };
                 Ok(ProgramStatementEvalResult::ReturnStatement(
                     value.map(|value| value.to_owned()),

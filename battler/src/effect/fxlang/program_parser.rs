@@ -331,7 +331,7 @@ mod program_parser_tests {
                                     [
                                         "if $mon.fainted:",
                                         [
-                                            "return 2"
+                                            "return 2 + 2"
                                         ]
                                     ]
                                 ]
@@ -376,9 +376,21 @@ mod program_parser_tests {
                                 ),),
                                 ParsedProgramBlock::Branch(vec![ParsedProgramBlock::Leaf(
                                     tree::Statement::ReturnStatement(tree::ReturnStatement(Some(
-                                        tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(
-                                            2u64.into()
-                                        ))
+                                        tree::Expr::BinaryExpr(tree::BinaryExpr {
+                                            lhs: Box::new(tree::Expr::Value(
+                                                tree::Value::NumberLiteral(
+                                                    tree::NumberLiteral::Unsigned(2u64.into())
+                                                )
+                                            )),
+                                            rhs: vec![tree::BinaryExprRhs {
+                                                op: tree::Operator::Add,
+                                                expr: Box::new(tree::Expr::Value(
+                                                    tree::Value::NumberLiteral(
+                                                        tree::NumberLiteral::Unsigned(2u64.into())
+                                                    )
+                                                ))
+                                            }]
+                                        })
                                     )))
                                 )])
                             ])

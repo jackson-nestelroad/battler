@@ -760,11 +760,11 @@ impl<'s> StatementParser<'s> {
             Some(Token::ReturnKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("return")),
         };
-        let value = match self.parse_value()? {
+        let expr = match self.token_parser.next_token(NextTokenContext::new())? {
+            Some(_) => Some(self.parse_expr()?),
             None => None,
-            Some(value) => Some(value),
         };
-        Ok(tree::ReturnStatement(value))
+        Ok(tree::ReturnStatement(expr))
     }
 
     fn parse_continue_statement(&mut self) -> Result<tree::ContinueStatement, Error> {
@@ -1999,11 +1999,33 @@ mod statement_parser_tests {
     }
 
     #[test]
-    fn parses_return_statement() {
+    fn parses_return_statement_with_value() {
         assert_eq!(
             StatementParser::new("return false").parse(),
             Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
-                Some(tree::Value::BoolLiteral(tree::BoolLiteral(false)))
+                Some(tree::Expr::Value(tree::Value::BoolLiteral(
+                    tree::BoolLiteral(false)
+                )))
+            )))
+        );
+    }
+
+    #[test]
+    fn parses_return_statement_with_expr() {
+        assert_eq!(
+            StatementParser::new("return 4 * 16").parse(),
+            Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
+                Some(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                    lhs: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
+                        tree::NumberLiteral::Unsigned(4u64.into())
+                    ))),
+                    rhs: vec![tree::BinaryExprRhs {
+                        op: tree::Operator::Multiply,
+                        expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
+                            tree::NumberLiteral::Unsigned(16u64.into())
+                        )))
+                    }]
+                }))
             )))
         );
     }

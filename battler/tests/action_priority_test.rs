@@ -247,7 +247,7 @@ fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBa
 fn speed_ties_broken_randomly() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
-    let mut battle = make_battle_with_seed(&data, 1234321234).unwrap();
+    let mut battle = make_battle_with_seed(&data, 6433123542).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(
@@ -279,18 +279,18 @@ fn speed_ties_broken_randomly() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
+            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
+            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
             "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
+            "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
             "residual",
             "turn|turn:4"
         ]"#,
