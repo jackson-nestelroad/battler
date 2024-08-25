@@ -1454,9 +1454,9 @@ fn is_ally(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("invalid first mon")?;
     let right_mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing first mon")?
+        .wrap_error_with_message("missing second mon")?
         .mon_handle()
-        .wrap_error_with_message("invalid first mon")?;
+        .wrap_error_with_message("invalid second mon")?;
     Ok(Value::Boolean(
         context
             .evaluation_context()

@@ -575,7 +575,30 @@
       "NoAssist",
       "NoMetronome",
       "NoSleepTalk"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$moves = []",
+          "foreach $mon in func_call(all_mons_on_side: $target.side):",
+          [
+            "if $mon == $target:",
+            ["continue"],
+            "foreach $move_slot in $mon.move_slots:",
+            [
+              "$usable_move = func_call(get_move: $move_slot.id)",
+              "if !$usable_move or func_call(move_has_flag: $usable_move noassist):",
+              ["continue"],
+              "$moves = func_call(append: $moves $usable_move.id)"
+            ]
+          ],
+          "$random_move = func_call(sample: $moves)",
+          "if !$random_move:",
+          ["return false"],
+          "use_move: $target $random_move"
+        ]
+      }
+    }
   },
   "ingrain": {
     "name": "Ingrain",
@@ -584,7 +607,19 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "volatile_status": "ingrain"
+    },
+    "condition": {
+      "callbacks": {
+        "is_grounded": ["return true"],
+        "on_start": ["log_start"],
+        "on_residual": ["heal: $target expr($target.base_max_hp / 16)"],
+        "on_trap_mon": ["return true"],
+        "on_drag_out": ["log_activate: with_target", "return false"]
+      }
+    }
   },
   "superpower": {
     "name": "Superpower",
@@ -605,7 +640,32 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "volatile_status": "magiccoat"
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_try_hit": [
+          "if $target == $source or $move.reflected or !func_call(move_has_flag: $move reflectable):",
+          ["return"],
+          "$reflected_move = func_call(new_active_move: $move.id)",
+          "$reflected_move.reflected = true",
+          "use_active_move: $target $reflected_move $source",
+          "return stop"
+        ],
+        "on_ally_try_hit_side": [
+          "if func_call(is_ally: $target $source) or $move.reflected or !func_call(move_has_flag: $move reflectable):",
+          ["return"],
+          "$reflected_move = func_call(new_active_move: $move.id)",
+          "$reflected_move.reflected = true",
+          "use_active_move: $target $reflected_move $source",
+          "return stop"
+        ]
+      }
+    }
   },
   "recycle": {
     "name": "Recycle",
@@ -614,7 +674,18 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $mon.item.is_defined or !$mon.last_item:",
+          ["return false"],
+          "$item = $mon.last_item",
+          "$mon.last_item = undefined",
+          "set_item: $target $item"
+        ]
+      }
+    }
   },
   "revenge": {
     "name": "Revenge",
@@ -635,7 +706,16 @@
     "accuracy": 100,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "remove_side_condition: $target.side reflect",
+          "remove_side_condition: $target.side lightscreen",
+          "remove_side_condition: $target.side auroraveil"
+        ]
+      }
+    }
   },
   "yawn": {
     "name": "Yawn",
