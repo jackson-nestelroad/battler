@@ -100,6 +100,7 @@ fn fake_out_only_works_on_first_turn() {
             "damage|mon:Ralts,player-2,2|health:14/100",
             "start|mon:Whismur,player-1,1|move:Uproar",
             "curestatus|mon:Whismur,player-2,1|status:Sleep",
+            "start|mon:Whismur,player-1,1|move:Uproar|residual",
             "residual",
             "turn|turn:3",
             ["time"],
@@ -111,6 +112,7 @@ fn fake_out_only_works_on_first_turn() {
             "damage|mon:Ralts,player-2,2|health:0",
             "damage|mon:Ralts,player-2,2|health:0",
             "faint|mon:Ralts,player-2,2",
+            "start|mon:Whismur,player-1,1|move:Uproar|residual",
             "residual",
             "turn|turn:4"
         ]"#,

@@ -50,7 +50,8 @@
         ],
         "on_residual": [
           "if $target.last_move.is_defined and $target.last_move.id == struggle:",
-          ["remove_volatile: $target $this.id no_events", "log_start: residual"]
+          ["remove_volatile: $target $this.id no_events"],
+          "log_start: residual"
         ],
         "on_end": ["log_end"],
         "on_lock_move": ["return $this.id"],
