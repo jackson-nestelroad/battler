@@ -101,6 +101,7 @@ mod moves {
         mod torment_test;
         mod trick_test;
         mod uproar_test;
+        mod wish_test;
     }
 
     mod gen4 {
