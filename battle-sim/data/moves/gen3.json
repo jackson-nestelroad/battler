@@ -526,11 +526,11 @@
           ["return false"],
           "$target_ability = func_call(get_ability: $target.ability)",
           "$source_ability = func_call(get_ability: $source.ability)",
-          "if $target_ability.permanent or $source_ability.permanent or func_call(ability_has_flag: $target_ability noroleplay):",
+          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noroleplay):",
           ["return false"]
         ],
         "on_hit": [
-          "if !func_call(set_ability: $source $target.ability):",
+          "if !func_call(set_ability: $source $target.ability use_target_as_source):",
           ["return false"],
           "log_ability: use_source with_source_effect with_source use_target_as_source"
         ]

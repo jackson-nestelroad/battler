@@ -531,16 +531,6 @@ pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn ability(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!(
-        "ability",
-        ("mon", Mon::position_details(context)?),
-        ("ability", context.mon().ability.name.clone())
-    );
-    context.battle_mut().log(event);
-    Ok(())
-}
-
 pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     let mut event = log_event!("endability");
     {

@@ -94,6 +94,7 @@ mod moves {
         mod fake_out_test;
         mod follow_me_test;
         mod helping_hand_test;
+        mod role_play_test;
         mod smelling_salts_test;
         mod stockpile_test;
         mod taunt_test;

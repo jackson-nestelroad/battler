@@ -15,6 +15,12 @@ pub enum AbilityFlags {
     /// Raises the user's evasion.
     #[string = "EvasionRaising"]
     EvasionRaising,
+    /// Cannot be copied by Role Play.
+    #[string = "NoRolePlay"]
+    NoRolePlay,
+    /// The ability is permanently applied to the Mon.
+    #[string = "Permanent"]
+    Permanent,
 }
 
 #[cfg(test)]

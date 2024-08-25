@@ -10,6 +10,7 @@ use ahash::{
 };
 
 use crate::{
+    abilities::AbilityFlags,
     battle::{
         core_battle_actions,
         core_battle_effects,
@@ -71,6 +72,7 @@ pub fn run_function(
 ) -> Result<Option<Value>, Error> {
     let context = FunctionContext::new(context, args);
     match function_name {
+        "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
@@ -107,6 +109,7 @@ pub fn run_function(
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context).map(|val| Some(val)),
+        "get_ability" => get_ability(context).map(|val| Some(val)),
         "get_boost" => get_boost(context).map(|val| Some(val)),
         "get_move" => get_move(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
@@ -164,6 +167,7 @@ pub fn run_function(
         "run_event_on_mon_item" => run_event_on_mon_item(context).map(|()| None),
         "run_event_on_move" => run_event_on_move(context).map(|()| None),
         "sample" => sample(context),
+        "set_ability" => set_ability(context).map(|val| Some(val)),
         "set_boost" => set_boost(context).map(|val| Some(val)),
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
@@ -230,6 +234,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.args.push_back(value)
     }
 
+    fn insert(&mut self, index: usize, value: Value) {
+        self.args.insert(index, value)
+    }
+
     fn has_flag_internal(&mut self, flag: &str) -> bool {
         match self
             .args
@@ -246,11 +254,11 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     }
 
     fn has_flag(&mut self, flag: &str) -> bool {
-        if let Some(val) = self.flags.get(flag).cloned() {
+        if self.flags.get(flag).cloned().is_some_and(|val| val) {
             // Still check the flag value so that it is removed, in case it was forcefully set but
             // is still set by the function call.
             self.has_flag_internal(flag);
-            return val;
+            return true;
         }
         let val = self.has_flag_internal(flag);
         self.flags.insert(flag.to_owned(), val);
@@ -320,8 +328,12 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("silent")
     }
 
-    fn use_source_effect(&mut self) -> bool {
+    fn use_source(&mut self) -> bool {
         self.has_flag("use_source")
+    }
+
+    fn use_source_effect(&mut self) -> bool {
+        self.has_flag("use_source_effect")
     }
 
     fn use_target_as_source(&mut self) -> bool {
@@ -416,7 +428,24 @@ fn add_effect_to_args(context: &mut FunctionContext) -> Result<(), Error> {
 }
 
 fn log_ability(mut context: FunctionContext) -> Result<(), Error> {
-    core_battle_logs::ability(&mut context.evaluation_context_mut().target_context()?)
+    context.set_with_target(true);
+    context.set_no_effect(true);
+    log_effect_activation_base(
+        context,
+        "ability",
+        Some(|context: &mut FunctionContext| {
+            let target = if context.use_source() {
+                context.evaluation_context().source_handle()
+            } else {
+                context.evaluation_context().target_handle()
+            };
+            if let Some(target) = target {
+                let target = context.evaluation_context().mon(target)?;
+                context.insert(1, Value::String(format!("ability:{}", target.ability.name)));
+            }
+            Ok(())
+        }),
+    )
 }
 
 fn log_effect_activation_base(
@@ -429,8 +458,18 @@ fn log_effect_activation_base(
     }
 
     if context.with_target() {
-        let position_details =
-            Mon::position_details(&context.evaluation_context_mut().target_context()?)?.to_string();
+        let position_details = if context.use_source() {
+            Mon::position_details(
+                &context
+                    .evaluation_context_mut()
+                    .source_context()?
+                    .wrap_error_with_message("effect has no source")?,
+            )?
+            .to_string()
+        } else {
+            Mon::position_details(&context.evaluation_context_mut().target_context()?)?.to_string()
+        };
+
         context.push_front(Value::String(format!("mon:{}", position_details)));
     }
 
@@ -975,7 +1014,7 @@ fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     let item_id = context
         .pop_front()
         .wrap_error_with_message("missing item")?
-        .string()
+        .item_id()
         .wrap_error_with_message("invalid item")?;
     let item_id = Id::from(item_id);
     let item_flag = context
@@ -995,6 +1034,34 @@ fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
             .data
             .flags
             .contains(&item_flag),
+    ))
+}
+
+fn ability_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
+    let ability_id = context
+        .pop_front()
+        .wrap_error_with_message("missing ability")?
+        .ability_id()
+        .wrap_error_with_message("invalid ability")?;
+    let ability_id = Id::from(ability_id);
+    let ability_flag = context
+        .pop_front()
+        .wrap_error_with_message("missing ability flag")?
+        .string()
+        .wrap_error_with_message("invalid ability flag")?;
+    let ability_flag =
+        AbilityFlags::from_str(&ability_flag).wrap_error_with_message("invalid ability flag")?;
+    Ok(Value::Boolean(
+        context
+            .evaluation_context_mut()
+            .battle_context()
+            .battle()
+            .dex
+            .abilities
+            .get_by_id(&ability_id)?
+            .data
+            .flags
+            .contains(&ability_flag),
     ))
 }
 
@@ -1987,6 +2054,15 @@ fn get_move(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Effect(EffectHandle::InactiveMove(move_id)))
 }
 
+fn get_ability(mut context: FunctionContext) -> Result<Value, Error> {
+    let ability_id = context
+        .pop_front()
+        .wrap_error_with_message("missing ability id")?
+        .move_id(context.evaluation_context_mut())
+        .wrap_error_with_message("invalid ability id")?;
+    Ok(Value::Effect(EffectHandle::Ability(ability_id)))
+}
+
 fn get_all_moves(mut context: FunctionContext) -> Result<Value, Error> {
     let mut with_flags = FastHashSet::new();
     let mut without_flags = FastHashSet::new();
@@ -2544,4 +2620,27 @@ fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {
     let target_location = Mon::get_target_location(&mut context, target)?;
     CoreBattle::valid_target(&mut context, move_target, target_location)
         .map(|val| Value::Boolean(val))
+}
+
+fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
+    let use_target_as_source = context.use_target_as_source();
+    let mon = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let ability_id = context
+        .pop_front()
+        .wrap_error_with_message("missing ability")?
+        .string()
+        .wrap_error_with_message("invalid ability")?;
+    let ability_id = Id::from(ability_id);
+    core_battle_actions::set_ability(
+        &mut context
+            .evaluation_context_mut()
+            .forward_effect_to_applying_effect(mon, use_target_as_source)?,
+        &ability_id,
+        false,
+    )
+    .map(|val| Value::Boolean(val))
 }

@@ -10,7 +10,7 @@
   "strongjaw": { "name": "Strong Jaw", "flags": [] },
   "refrigerate": { "name": "Refrigerate", "flags": [] },
   "sweetveil": { "name": "Sweet Veil", "flags": [] },
-  "stancechange": { "name": "Stance Change", "flags": [] },
+  "stancechange": { "name": "Stance Change", "flags": ["Permanent"] },
   "galewings": { "name": "Gale Wings", "flags": [] },
   "megalauncher": { "name": "Mega Launcher", "flags": [] },
   "grasspelt": { "name": "Grass Pelt", "flags": [] },

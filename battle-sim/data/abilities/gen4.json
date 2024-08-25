@@ -60,7 +60,7 @@
   "honeygather": { "name": "Honey Gather", "flags": [] },
   "frisk": { "name": "Frisk", "flags": [] },
   "reckless": { "name": "Reckless", "flags": [] },
-  "multitype": { "name": "Multitype", "flags": [] },
-  "flowergift": { "name": "Flower Gift", "flags": [] },
+  "multitype": { "name": "Multitype", "flags": ["Permanent"] },
+  "flowergift": { "name": "Flower Gift", "flags": ["NoRolePlay"] },
   "baddreams": { "name": "Bad Dreams", "flags": [] }
 }

@@ -612,6 +612,9 @@ where
                     if let Some(mon_handle) = value.mon_handle() {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "ability" => ValueRef::TempString(
+                                context.mon(mon_handle)?.ability.id.to_string(),
+                            ),
                             "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
                             "active_move" => context
                                 .mon(mon_handle)?

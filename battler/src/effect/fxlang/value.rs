@@ -351,6 +351,30 @@ impl Value {
         }
     }
 
+    /// Consumes the value into an ability ID.
+    pub fn ability_id(self) -> Result<Id, Error> {
+        match self {
+            Self::Effect(EffectHandle::Ability(val)) => Ok(val),
+            Self::String(val) => Ok(Id::from(val)),
+            val @ _ => Err(battler_error!(
+                "value of type {} cannot be converted to an ability id",
+                val.value_type()
+            )),
+        }
+    }
+
+    /// Consumes the value into a item ID.
+    pub fn item_id(self) -> Result<Id, Error> {
+        match self {
+            Self::Effect(EffectHandle::Item(val)) => Ok(val),
+            Self::String(val) => Ok(Id::from(val)),
+            val @ _ => Err(battler_error!(
+                "value of type {} cannot be converted to a item id",
+                val.value_type()
+            )),
+        }
+    }
+
     /// Consumes the value into an [`EffectHandle`].
     pub fn effect_handle(self) -> Result<EffectHandle, Error> {
         match self {
