@@ -541,7 +541,43 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "terrain": "psychicterrain"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source terrainextender):",
+          ["return 8"]
+        ],
+        "on_field_start": [
+          "if !$source:",
+          ["return"],
+          "if $source_effect.is_ability:",
+          ["log_field_start: with_source_effect"],
+          "else:",
+          ["log_field_start"]
+        ],
+        "on_field_end": ["log_field_end"],
+        "on_source_base_power": [
+          "if $move.type == psychic:",
+          ["return $base_power * 13/10"]
+        ],
+        "on_try_hit": {
+          "priority": 4,
+          "program": [
+            "if $move.priority <= 0 or $move.target == user:",
+            ["return"],
+            "if func_call(is_ally: $target $source):",
+            ["return"],
+            "log_activate: with_target",
+            "return false"
+          ]
+        }
+      }
+    }
   },
   "lunge": {
     "name": "Lunge",

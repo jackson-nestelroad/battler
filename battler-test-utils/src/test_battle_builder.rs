@@ -15,6 +15,7 @@ use battler::{
         CoreBattleEngineRandomizeBaseDamage,
         CoreBattleEngineSpeedSortTieResolution,
         FieldData,
+        FieldEnvironment,
         PlayerOptions,
         PlayerType,
         PublicCoreBattle,
@@ -225,6 +226,16 @@ impl TestBattleBuilder {
 
     pub fn with_weather(mut self, weather: Option<String>) -> Self {
         self.options.field.weather = weather;
+        self
+    }
+
+    pub fn with_terrain(mut self, terrain: Option<String>) -> Self {
+        self.options.field.terrain = terrain;
+        self
+    }
+
+    pub fn with_field_environment(mut self, environment: FieldEnvironment) -> Self {
+        self.options.field.environment = environment;
         self
     }
 }

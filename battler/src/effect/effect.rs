@@ -123,6 +123,14 @@ impl EffectHandle {
         }
     }
 
+    /// Is the effect handle a secondary effect of an active move?
+    pub fn is_active_move_secondary(&self) -> bool {
+        match self {
+            Self::ActiveMove(_, MoveHitEffectType::SecondaryEffect(_)) => true,
+            _ => false,
+        }
+    }
+
     /// Returns the ID associated with the effect handle, if any.
     pub fn try_id(&self) -> Option<&Id> {
         match self {

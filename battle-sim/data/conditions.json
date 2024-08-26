@@ -546,7 +546,6 @@
         "on_slot_start": [
           "log_start: no_effect with_source str('move:{}', $effect_state.source_effect.name)"
         ],
-        "on_residual": ["debug_log: here"],
         "on_slot_end": [
           "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id)",
           "$target = func_call(mon_in_position: $side $slot)",
@@ -588,10 +587,11 @@
         ],
         "on_field_residual": {
           "order": 1,
-          "program": [
-            "log_weather: $this.name residual",
-            "run_event_for_each_active_mon: Weather"
-          ]
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
         },
         "on_field_end": ["log_weather"]
       }
@@ -616,10 +616,14 @@
           ["return $damage * 3/2"]
         ],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
-        "on_field_residual": [
-          "log_weather: $this.name residual",
-          "run_event_for_each_active_mon: Weather"
-        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
+        },
         "on_field_end": ["log_weather"]
       }
     }
@@ -654,10 +658,11 @@
         ],
         "on_field_residual": {
           "order": 1,
-          "program": [
-            "log_weather: $this.name residual",
-            "run_event_for_each_active_mon: Weather"
-          ]
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
         },
         "on_field_end": ["log_weather"]
       }
@@ -683,10 +688,14 @@
         ],
         "on_immunity": ["if $effect == frz:", ["return false"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
-        "on_field_residual": [
-          "log_weather: $this.name residual",
-          "run_event_for_each_active_mon: Weather"
-        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
+        },
         "on_field_end": ["log_weather"]
       }
     }
@@ -718,10 +727,11 @@
         ],
         "on_field_residual": {
           "order": 1,
-          "program": [
-            "log_weather: $this.name residual",
-            "run_event_for_each_active_mon: Weather"
-          ]
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
         },
         "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
         "on_field_end": ["log_weather"]
@@ -749,10 +759,11 @@
         ],
         "on_field_residual": {
           "order": 1,
-          "program": [
-            "log_weather: $this.name residual",
-            "run_event_for_each_active_mon: Weather"
-          ]
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
         },
         "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
         "on_field_end": ["log_weather"]
@@ -787,10 +798,11 @@
         ],
         "on_field_residual": {
           "order": 1,
-          "program": [
-            "log_weather: $this.name residual",
-            "run_event_for_each_active_mon: Weather"
-          ]
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
         },
         "on_field_end": ["log_weather"]
       }
@@ -809,10 +821,14 @@
           ]
         },
         "on_field_start": ["log_weather: $this.name with_source_effect"],
-        "on_field_residual": [
-          "log_weather: $this.name residual",
-          "run_event_for_each_active_mon: Weather"
-        ],
+        "on_field_residual": {
+          "order": 1,
+          "program": ["log_weather: $this.name residual"]
+        },
+        "on_residual": {
+          "order": 1,
+          "program": ["run_event: Weather"]
+        },
         "on_field_end": ["log_weather"]
       }
     }

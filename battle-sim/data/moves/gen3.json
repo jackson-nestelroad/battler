@@ -317,7 +317,8 @@
         "on_move_base_power": [
           "if $target.status == par:",
           ["return $move.base_power * 2"]
-        ]
+        ],
+        "on_hit": ["if $target.status == par:", ["cure_status: $target"]]
       }
     }
   },
@@ -370,7 +371,39 @@
       "NoAssist",
       "NoMetronome",
       "NoSleepTalk"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "$transformed_move = triattack",
+          "$terrain = $source.effective_terrain",
+          "if $terrain == electricterrain:",
+          ["$transformed_move = thunderbolt"],
+          "else if $terrain == grassyterrain:",
+          ["$transformed_move = energyball"],
+          "else if $terrain == mistyterrain:",
+          ["$transformed_move = moonblast"],
+          "else if $terrain == psychicterrain:",
+          ["$transformed_move = psychic"],
+          "else if $field.environment == cave:",
+          ["$transformed_move = powergem"],
+          "else if $field.environment == sand:",
+          ["$transformed_move = earthpower"],
+          "else if $field.environment == water:",
+          ["$transformed_move = hydropump"],
+          "else if $field.environment == ice:",
+          ["$transformed_move = icebeam"],
+          "else if $field.environment == sky:",
+          ["$transformed_move = airslash"],
+          "else if $field.environment == grass:",
+          ["$transformed_move = energyball"],
+          "else if $field.environment == volcano:",
+          ["$transformed_move = lavaplume"],
+          "use_move: $source $transformed_move $target",
+          "return stop"
+        ]
+      }
+    }
   },
   "charge": {
     "name": "Charge",

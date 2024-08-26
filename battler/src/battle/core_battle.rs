@@ -1069,6 +1069,13 @@ impl<'d> CoreBattle<'d> {
                     None,
                 )?)?;
 
+                // Clears the terrain, which then sets the default terrain.
+                core_battle_actions::clear_terrain(&mut context.field_effect_context(
+                    EffectHandle::Condition(Id::from_known("start")),
+                    None,
+                    None,
+                )?)?;
+
                 context.battle_mut().mid_turn = true;
             }
             Action::End(action) => {

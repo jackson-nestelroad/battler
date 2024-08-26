@@ -132,6 +132,8 @@ pub fn run_function(
         "log_fail" => log_fail(context).map(|()| None),
         "log_fail_heal" => log_fail_heal(context).map(|()| None),
         "log_field_activate" => log_field_activate(context).map(|()| None),
+        "log_field_start" => log_field_start(context).map(|()| None),
+        "log_field_end" => log_field_end(context).map(|()| None),
         "log_immune" => log_immune(context).map(|()| None),
         "log_ohko" => log_ohko(context).map(|()| None),
         "log_prepare_move" => log_prepare_move(context).map(|()| None),
@@ -232,10 +234,6 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn push_back(&mut self, value: Value) {
         self.args.push_back(value)
-    }
-
-    fn insert(&mut self, index: usize, value: Value) {
-        self.args.insert(index, value)
     }
 
     fn has_flag_internal(&mut self, flag: &str) -> bool {
@@ -428,24 +426,19 @@ fn add_effect_to_args(context: &mut FunctionContext) -> Result<(), Error> {
 }
 
 fn log_ability(mut context: FunctionContext) -> Result<(), Error> {
+    let target = if context.use_source() {
+        context.evaluation_context().source_handle()
+    } else {
+        context.evaluation_context().target_handle()
+    };
+    if let Some(target) = target {
+        let target = context.evaluation_context().mon(target)?;
+        context.push_front(Value::String(format!("ability:{}", target.ability.name)));
+    }
+
     context.set_with_target(true);
     context.set_no_effect(true);
-    log_effect_activation_base(
-        context,
-        "ability",
-        Some(|context: &mut FunctionContext| {
-            let target = if context.use_source() {
-                context.evaluation_context().source_handle()
-            } else {
-                context.evaluation_context().target_handle()
-            };
-            if let Some(target) = target {
-                let target = context.evaluation_context().mon(target)?;
-                context.insert(1, Value::String(format!("ability:{}", target.ability.name)));
-            }
-            Ok(())
-        }),
-    )
+    log_effect_activation_base(context, "ability", None)
 }
 
 fn log_effect_activation_base(
@@ -591,6 +584,14 @@ fn log_side_end(context: FunctionContext) -> Result<(), Error> {
             Ok(())
         }),
     )
+}
+
+fn log_field_start(context: FunctionContext) -> Result<(), Error> {
+    log_effect_activation_base(context, "fieldstart", None)
+}
+
+fn log_field_end(context: FunctionContext) -> Result<(), Error> {
+    log_effect_activation_base(context, "fieldend", None)
 }
 
 fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {

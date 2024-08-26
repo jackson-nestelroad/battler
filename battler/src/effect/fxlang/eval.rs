@@ -666,6 +666,19 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
+                            "effective_terrain" => {
+                                match mon_states::effective_terrain(
+                                    &mut context.mon_context(mon_handle)?,
+                                ) {
+                                    Some(weather) => ValueRef::Effect(
+                                        context
+                                            .battle_context_mut()
+                                            .battle_mut()
+                                            .get_effect_handle_by_id(&weather)?,
+                                    ),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
                             "foe_side" => {
                                 ValueRef::Side(context.mon_context(mon_handle)?.foe_side().index)
@@ -827,6 +840,9 @@ where
                             ),
                             "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
                             "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
+                            "is_move_secondary" => {
+                                ValueRef::Boolean(effect_handle.is_active_move_secondary())
+                            }
                             "is_raining" => ValueRef::Boolean(weather_states::is_raining(
                                 context.effect_context_for_handle(effect_handle)?.as_mut(),
                             )),
@@ -928,6 +944,13 @@ where
                                     .ohko_type
                                     .is_some(),
                             ),
+                            "priority" => ValueRef::Fraction(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .priority
+                                    .into(),
+                            ),
                             "recoil_percent" => ValueRef::UFraction(
                                 context
                                     .active_move(active_move_handle)?
@@ -970,6 +993,17 @@ where
                     } else if let ValueRef::Field = value {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "effective_terrain" => {
+                                match Field::effective_terrain(context.battle_context_mut()) {
+                                    Some(weather) => ValueRef::Effect(
+                                        context
+                                            .battle_context_mut()
+                                            .battle_mut()
+                                            .get_effect_handle_by_id(&weather)?,
+                                    ),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "effective_weather" => {
                                 match Field::effective_weather(context.battle_context_mut()) {
                                     Some(weather) => ValueRef::Effect(
@@ -981,6 +1015,9 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
+                            "environment" => ValueRef::FieldEnvironment(
+                                context.battle_context().battle().field.environment,
+                            ),
                             "weather" => {
                                 match context.battle_context().battle().field.weather.clone() {
                                     Some(weather) => ValueRef::Effect(

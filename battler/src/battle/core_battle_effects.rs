@@ -1,5 +1,7 @@
 use std::iter;
 
+use ahash::HashSetExt;
+
 use crate::{
     battle::{
         core_battle_actions,
@@ -24,6 +26,7 @@ use crate::{
     },
     common::{
         Error,
+        FastHashSet,
         Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
@@ -43,6 +46,7 @@ use crate::{
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
         SlotConditionEffectStateConnector,
+        TerrainEffectStateConnector,
         WeatherEffectStateConnector,
     },
     mons::Type,
@@ -320,12 +324,39 @@ enum EffectOrigin {
     Mon(MonHandle),
     MonAbility(MonHandle),
     MonItem(MonHandle),
+    MonSideCondition(usize, MonHandle),
+    MonSlotCondition(usize, usize, MonHandle),
     MonStatus(MonHandle),
+    MonTerrain(MonHandle),
     MonType(MonHandle),
     MonVolatileStatus(MonHandle),
+    MonWeather(MonHandle),
     SideCondition(usize),
     SlotCondition(usize, usize),
+    Terrain,
     Weather,
+}
+
+impl EffectOrigin {
+    /// The effect origin for running the residual event, which should only decrease the effect's
+    /// counter a single time.
+    pub fn origin_for_residual(&self) -> Self {
+        match self {
+            Self::MonSideCondition(side, _) => Self::SideCondition(*side),
+            Self::MonSlotCondition(side, slot, _) => Self::SlotCondition(*side, *slot),
+            Self::MonTerrain(_) => Self::Terrain,
+            Self::MonWeather(_) => Self::Weather,
+            _ => *self,
+        }
+    }
+
+    pub fn speed_for_callback_ordering(&self) -> u32 {
+        match self {
+            Self::SideCondition(_) | Self::SlotCondition(_, _) => 1,
+            Self::Terrain | Self::Weather => 2,
+            _ => 0,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -366,14 +397,22 @@ impl CallbackHandle {
             EffectOrigin::MonVolatileStatus(mon) => self.effect_handle.try_id().map(|id| {
                 MonVolatileStatusEffectStateConnector::new(mon, id.clone()).make_dynamic()
             }),
-            EffectOrigin::SideCondition(side) => self
+            EffectOrigin::SideCondition(side) | EffectOrigin::MonSideCondition(side, _) => self
                 .effect_handle
                 .try_id()
                 .map(|id| SideConditionEffectStateConnector::new(side, id.clone()).make_dynamic()),
-            EffectOrigin::SlotCondition(side, slot) => self.effect_handle.try_id().map(|id| {
-                SlotConditionEffectStateConnector::new(side, slot, id.clone()).make_dynamic()
-            }),
-            EffectOrigin::Weather => Some(WeatherEffectStateConnector::new().make_dynamic()),
+            EffectOrigin::SlotCondition(side, slot)
+            | EffectOrigin::MonSlotCondition(side, slot, _) => {
+                self.effect_handle.try_id().map(|id| {
+                    SlotConditionEffectStateConnector::new(side, slot, id.clone()).make_dynamic()
+                })
+            }
+            EffectOrigin::Terrain | EffectOrigin::MonTerrain(_) => {
+                Some(TerrainEffectStateConnector::new().make_dynamic())
+            }
+            EffectOrigin::Weather | EffectOrigin::MonWeather(_) => {
+                Some(WeatherEffectStateConnector::new().make_dynamic())
+            }
         }
     }
 }
@@ -582,6 +621,24 @@ fn run_slot_condition_event_internal(
     )
 }
 
+fn run_terrain_event_internal(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let weather = context.battle().field.terrain.clone()?;
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&weather)
+        .ok()?
+        .clone();
+    run_callback_under_field_effect(
+        context,
+        input,
+        CallbackHandle::new(effect_handle, event, EffectOrigin::Terrain),
+    )
+}
+
 fn run_weather_event_internal(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
@@ -630,7 +687,6 @@ fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     mon: MonHandle,
-    include_applied_field_effects: bool,
 ) -> Result<Vec<CallbackHandle>, Error> {
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
@@ -683,21 +739,6 @@ fn find_callbacks_on_mon(
     }
 
     // TODO: Species.
-
-    if include_applied_field_effects {
-        if event.callback_lookup_layer()
-            > fxlang::BattleEvent::SuppressMonWeather.callback_lookup_layer()
-        {
-            if let Some(weather) = mon_states::effective_weather(&mut context) {
-                let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-                callbacks.push(CallbackHandle::new(
-                    weather_handle.clone(),
-                    event,
-                    EffectOrigin::Weather,
-                ));
-            }
-        }
-    }
 
     if context.mon().different_original_trainer
         && context.mon().level > context.battle().format.options.obedience_cap
@@ -755,6 +796,45 @@ fn find_callbacks_on_side(
     Ok(callbacks)
 }
 
+fn find_callbacks_on_side_on_mon(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    mon: MonHandle,
+) -> Result<Vec<CallbackHandle>, Error> {
+    let mut callbacks = Vec::new();
+    let mut context = context.mon_context(mon)?;
+    let side = context.mon().side;
+
+    for side_condition in context.side().conditions.clone().keys() {
+        let side_condition_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&side_condition)?;
+        callbacks.push(CallbackHandle::new(
+            side_condition_handle.clone(),
+            event,
+            EffectOrigin::MonSideCondition(side, mon),
+        ));
+    }
+
+    if context.mon().active {
+        let slot = Mon::position_on_side(&context)?;
+        if let Some(slot_conditions) = context.side().slot_conditions.get(&slot).cloned() {
+            for slot_condition in slot_conditions.keys() {
+                let slot_condition_handle = context
+                    .battle_mut()
+                    .get_effect_handle_by_id(&slot_condition)?;
+                callbacks.push(CallbackHandle::new(
+                    slot_condition_handle.clone(),
+                    event,
+                    EffectOrigin::MonSlotCondition(side, slot, mon),
+                ));
+            }
+        }
+    }
+
+    Ok(callbacks)
+}
+
 fn find_callbacks_on_field(
     context: &mut Context,
     event: fxlang::BattleEvent,
@@ -774,8 +854,58 @@ fn find_callbacks_on_field(
         }
     }
 
+    if event.callback_lookup_layer()
+        > fxlang::BattleEvent::SuppressFieldTerrain.callback_lookup_layer()
+    {
+        if let Some(weather) = Field::effective_terrain(context) {
+            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
+            callbacks.push(CallbackHandle::new(
+                weather_handle.clone(),
+                event,
+                EffectOrigin::Terrain,
+            ));
+        }
+    }
+
     // TODO: Pseudo-weather.
-    // TODO: Terrain.
+
+    Ok(callbacks)
+}
+
+fn find_callbacks_on_field_on_mon(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    mon: MonHandle,
+) -> Result<Vec<CallbackHandle>, Error> {
+    let mut callbacks = Vec::new();
+    let mut context = context.mon_context(mon)?;
+
+    if event.callback_lookup_layer()
+        > fxlang::BattleEvent::SuppressMonTerrain.callback_lookup_layer()
+    {
+        if let Some(weather) = mon_states::effective_terrain(&mut context) {
+            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
+            callbacks.push(CallbackHandle::new(
+                weather_handle.clone(),
+                event,
+                EffectOrigin::MonTerrain(mon),
+            ));
+        }
+    }
+    if event.callback_lookup_layer()
+        > fxlang::BattleEvent::SuppressMonWeather.callback_lookup_layer()
+    {
+        if let Some(weather) = mon_states::effective_weather(&mut context) {
+            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
+            callbacks.push(CallbackHandle::new(
+                weather_handle.clone(),
+                event,
+                EffectOrigin::MonWeather(mon),
+            ));
+        }
+    }
+
+    // TODO: Pseudo-weather.
 
     Ok(callbacks)
 }
@@ -798,7 +928,7 @@ fn find_all_callbacks(
 
     match target {
         AllEffectsTarget::Mon(mon) => {
-            callbacks.extend(find_callbacks_on_mon(context, event, mon, true)?);
+            callbacks.extend(find_callbacks_on_mon(context, event, mon)?);
             let mut context = context.mon_context(mon)?;
             for mon in Mon::active_allies_and_self(&mut context).collect::<Vec<_>>() {
                 if let Some(ally_event) = event.ally_event() {
@@ -806,7 +936,6 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         ally_event,
                         mon,
-                        true,
                     )?);
                 }
                 if let Some(any_event) = event.any_event() {
@@ -814,7 +943,6 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         any_event,
                         mon,
-                        true,
                     )?);
                 }
             }
@@ -824,7 +952,6 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         foe_event,
                         mon,
-                        true,
                     )?);
                 }
                 if let Some(any_event) = event.any_event() {
@@ -832,16 +959,22 @@ fn find_all_callbacks(
                         context.as_battle_context_mut(),
                         any_event,
                         mon,
-                        true,
                     )?);
                 }
             }
-            let side = context.side().index;
-            callbacks.extend(find_callbacks_on_side(
+            callbacks.extend(find_callbacks_on_side_on_mon(
                 context.as_battle_context_mut(),
                 event,
-                side,
+                mon,
             )?);
+            if let Some(ally_event) = event.ally_event() {
+                let side = context.side().index;
+                callbacks.extend(find_callbacks_on_side(
+                    context.as_battle_context_mut(),
+                    ally_event,
+                    side,
+                )?);
+            }
             if let Some(foe_event) = event.foe_event() {
                 let foe_side = context.foe_side().index;
                 callbacks.extend(find_callbacks_on_side(
@@ -851,9 +984,10 @@ fn find_all_callbacks(
                 )?);
             }
 
-            callbacks.extend(find_callbacks_on_field(
+            callbacks.extend(find_callbacks_on_field_on_mon(
                 context.as_battle_context_mut(),
                 event,
+                mon,
             )?);
         }
         AllEffectsTarget::Side(side) => {
@@ -879,7 +1013,7 @@ fn find_all_callbacks(
                 .all_active_mon_handles()
                 .collect::<Vec<_>>()
             {
-                callbacks.extend(find_callbacks_on_mon(context, event, mon, true)?);
+                callbacks.extend(find_callbacks_on_mon(context, event, mon)?);
             }
             for side in context.battle().side_indices() {
                 callbacks.extend(find_callbacks_on_side(context, event, side)?);
@@ -892,7 +1026,9 @@ fn find_all_callbacks(
                 .all_active_mon_handles()
                 .collect::<Vec<_>>()
             {
-                callbacks.extend(find_callbacks_on_mon(context, event, mon, false)?);
+                callbacks.extend(find_callbacks_on_mon(context, event, mon)?);
+                callbacks.extend(find_callbacks_on_side_on_mon(context, event, mon)?);
+                callbacks.extend(find_callbacks_on_field_on_mon(context, event, mon)?);
             }
             for side in context.battle().side_indices() {
                 if let Some(side_event) = event.side_event() {
@@ -907,9 +1043,17 @@ fn find_all_callbacks(
 
     if let Some(source) = source {
         if let Some(source_event) = event.source_event() {
-            callbacks.extend(find_callbacks_on_mon(context, source_event, source, true)?);
-            let side = context.mon(source)?.side;
-            callbacks.extend(find_callbacks_on_side(context, source_event, side)?);
+            callbacks.extend(find_callbacks_on_mon(context, source_event, source)?);
+            callbacks.extend(find_callbacks_on_side_on_mon(
+                context,
+                source_event,
+                source,
+            )?);
+            callbacks.extend(find_callbacks_on_field_on_mon(
+                context,
+                source_event,
+                source,
+            )?);
         }
     }
 
@@ -920,15 +1064,18 @@ struct SpeedOrderableCallbackHandle {
     pub callback_handle: CallbackHandle,
     pub order: u32,
     pub priority: i32,
+    pub speed: u32,
     pub sub_order: u32,
 }
 
 impl SpeedOrderableCallbackHandle {
     pub fn new(callback_handle: CallbackHandle) -> Self {
+        let speed = callback_handle.origin.speed_for_callback_ordering();
         Self {
             callback_handle,
             order: u32::MAX,
             priority: 0,
+            speed,
             sub_order: 0,
         }
     }
@@ -944,7 +1091,7 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
     }
 
     fn speed(&self) -> u32 {
-        0
+        self.speed
     }
 
     fn sub_order(&self) -> u32 {
@@ -952,7 +1099,7 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
     }
 }
 
-fn get_speed_orderable_effect_handle(
+fn get_speed_orderable_effect_handle_internal(
     context: &mut Context,
     callback_handle: CallbackHandle,
 ) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
@@ -973,6 +1120,22 @@ fn get_speed_orderable_effect_handle(
     result.priority = callback.priority();
     result.sub_order = callback.sub_order();
     Ok(Some(result))
+}
+
+fn get_speed_orderable_effect_handle(
+    context: &mut Context,
+    callback_handle: CallbackHandle,
+) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
+    match get_speed_orderable_effect_handle_internal(context, callback_handle.clone())? {
+        Some(handle) => Ok(Some(handle)),
+        None => {
+            if callback_handle.event.force_default_callback() {
+                Ok(Some(SpeedOrderableCallbackHandle::new(callback_handle)))
+            } else {
+                Ok(None)
+            }
+        }
+    }
 }
 
 fn get_ordered_effects_for_event(
@@ -1142,6 +1305,9 @@ fn run_residual_callbacks_with_errors(
     context: &mut Context,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<(), Error> {
+    // Ensure we only decrease the duration of each event once.
+    let mut duration_decreased = FastHashSet::new();
+
     for callback_handle in callbacks {
         if context.battle().ending() {
             break;
@@ -1150,15 +1316,20 @@ fn run_residual_callbacks_with_errors(
         let mut context = context.effect_context(callback_handle.effect_handle.clone(), None)?;
 
         let mut ended = false;
-        if let Some(effect_state_connector) = callback_handle.effect_state_connector() {
-            if effect_state_connector.exists(context.as_battle_context_mut())? {
-                let effect_state =
-                    effect_state_connector.get_mut(context.as_battle_context_mut())?;
-                if let Some(duration) = effect_state.duration() {
-                    let duration = if duration > 0 { duration - 1 } else { duration };
-                    effect_state.set_duration(duration);
-                    if duration == 0 {
-                        ended = true;
+        if duration_decreased.insert((
+            callback_handle.effect_handle.clone(),
+            callback_handle.origin.origin_for_residual(),
+        )) {
+            if let Some(effect_state_connector) = callback_handle.effect_state_connector() {
+                if effect_state_connector.exists(context.as_battle_context_mut())? {
+                    let effect_state =
+                        effect_state_connector.get_mut(context.as_battle_context_mut())?;
+                    if let Some(duration) = effect_state.duration() {
+                        let duration = if duration > 0 { duration - 1 } else { duration };
+                        effect_state.set_duration(duration);
+                        if duration == 0 {
+                            ended = true;
+                        }
                     }
                 }
             }
@@ -1208,6 +1379,55 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
+            EffectOrigin::MonSideCondition(side, mon) => {
+                if ended {
+                    core_battle_actions::remove_side_condition(
+                        &mut context.side_effect_context(side, None)?,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected side condition to have an id")?,
+                    )?;
+                } else {
+                    let context = context.applying_effect_context(None, mon)?;
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
+            EffectOrigin::MonSlotCondition(side, slot, mon) => {
+                if ended {
+                    core_battle_actions::remove_slot_condition(
+                        &mut context.side_effect_context(side, None)?,
+                        slot,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected side condition to have an id")?,
+                    )?;
+                } else {
+                    let context = context.applying_effect_context(None, mon)?;
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
+            EffectOrigin::MonTerrain(mon) => {
+                if ended {
+                    core_battle_actions::clear_terrain(&mut context.field_effect_context(None)?)?;
+                } else {
+                    let context = context.applying_effect_context(None, mon)?;
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
             EffectOrigin::MonVolatileStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
                 if ended {
@@ -1220,6 +1440,18 @@ fn run_residual_callbacks_with_errors(
                         false,
                     )?;
                 } else {
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
+            EffectOrigin::MonWeather(mon) => {
+                if ended {
+                    core_battle_actions::clear_terrain(&mut context.field_effect_context(None)?)?;
+                } else {
+                    let context = context.applying_effect_context(None, mon)?;
                     run_callback_with_errors(
                         UpcomingEvaluationContext::ApplyingEffect(context.into()),
                         fxlang::VariableInput::default(),
@@ -1259,6 +1491,18 @@ fn run_residual_callbacks_with_errors(
                 } else {
                     run_callback_with_errors(
                         UpcomingEvaluationContext::SideEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
+            EffectOrigin::Terrain => {
+                let mut context = context.field_effect_context(None)?;
+                if ended {
+                    core_battle_actions::clear_terrain(&mut context)?;
+                } else {
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::FieldEffect(context.into()),
                         fxlang::VariableInput::default(),
                         callback_handle,
                     )?;
@@ -1775,6 +2019,35 @@ pub fn run_weather_event_expecting_u8(
     event: fxlang::BattleEvent,
 ) -> Option<u8> {
     run_weather_event_internal(context, event, fxlang::VariableInput::default())?
+        .integer_u8()
+        .ok()
+}
+
+/// Runs an event on the [`Field`][`crate::battle::Field`]'s current terrain.
+pub fn run_terrain_event(context: &mut FieldEffectContext, event: fxlang::BattleEvent) {
+    run_terrain_event_internal(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event on the [`Field`][`crate::battle::Field`]'s terrain.
+///
+/// Expects a [`bool`].
+pub fn run_terrain_event_expecting_bool(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_terrain_event_internal(context, event, fxlang::VariableInput::default())?
+        .boolean()
+        .ok()
+}
+
+/// Runs an event on the [`Field`][`crate::battle::Field`]'s terrain.
+///
+/// Expects an integer that can fit in a [`u8`].
+pub fn run_terrain_event_expecting_u8(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<u8> {
+    run_terrain_event_internal(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
 }

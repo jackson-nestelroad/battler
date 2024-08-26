@@ -76,6 +76,23 @@ pub fn effective_weather(context: &mut MonContext) -> Option<Id> {
     Field::effective_weather(context.as_battle_context_mut())
 }
 
+/// The effective terrain for the [`Mon`][`crate::battle::Mon`].
+///
+/// Terrain can be suppressed for the Mon by abilities and items.
+pub fn effective_terrain(context: &mut MonContext) -> Option<Id> {
+    if !is_grounded(context) || is_semi_invulnerable(context) {
+        return None;
+    }
+    if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::SuppressMonTerrain,
+        false,
+    ) {
+        return None;
+    }
+    Field::effective_terrain(context.as_battle_context_mut())
+}
+
 /// The effective ability of the [`Mon`][`crate::battle::Mon`].
 ///
 /// Abilities can be suppressed by other effects and abilities.

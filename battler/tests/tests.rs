@@ -94,6 +94,7 @@ mod moves {
         mod fake_out_test;
         mod follow_me_test;
         mod helping_hand_test;
+        mod nature_power_test;
         mod role_play_test;
         mod smelling_salts_test;
         mod stockpile_test;
@@ -133,6 +134,13 @@ mod status {
     mod sleep_test;
     mod toxic_test;
     mod trapped_test;
+}
+
+mod terrain {
+    mod electric_terrain_test;
+    mod grassy_terrain_test;
+    mod misty_terrain_test;
+    mod psychic_terrain_test;
 }
 
 mod weather {

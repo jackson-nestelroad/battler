@@ -86,6 +86,7 @@ pub use core_battle::{
 pub use field::{
     Field,
     FieldData,
+    FieldEnvironment,
 };
 pub use mon::{
     AbilitySlot,

@@ -91,6 +91,7 @@ fn smelling_salts_doubles_power_against_paralysis() {
             "split|side:1",
             "damage|mon:Hariyama,player-2,1|health:36/204",
             "damage|mon:Hariyama,player-2,1|health:18/100",
+            "curestatus|mon:Hariyama,player-2,1|status:Paralysis",
             "residual",
             "turn|turn:4"
         ]"#,

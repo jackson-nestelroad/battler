@@ -310,6 +310,13 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "ChargeMove"]
     ChargeMove,
+    /// Runs when the field's terrain is being cleared.
+    ///
+    /// Runs before the terrain effect is cleared. Can be used to fail the clear.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "ClearTerrain"]
+    ClearTerrain,
     /// Runs when the field's weather is being cleared.
     ///
     /// Runs before the weather effect is cleared. Can be used to fail the clear.
@@ -641,6 +648,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "SetStatus"]
     SetStatus,
+    /// Runs when the field's terrain is being set.
+    ///
+    /// Runs before the terrain effect is applied. Can be used to fail the terrain.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "SetTerrain"]
+    SetTerrain,
     /// Runs when the field's weather is being set.
     ///
     /// Runs before the weather effect is applied. Can be used to fail the weather.
@@ -737,6 +751,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Start"]
     Start,
+    /// Runs when determining if terrain on the field is suppressed, for some other active effect.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "SuppressFieldTerrain"]
+    SuppressFieldTerrain,
     /// Runs when determining if weather on the field is suppressed, for some other active effect.
     ///
     /// Runs on the effect itslf.
@@ -747,6 +766,11 @@ pub enum BattleEvent {
     /// Runs on the effect itslf.
     #[string = "SuppressMonItem"]
     SuppressMonItem,
+    /// Runs when determining if terrain on the Mon is suppressed, for some other active effect.
+    ///
+    /// Runs on the effect itslf.
+    #[string = "SuppressMonTerrain"]
+    SuppressMonTerrain,
     /// Runs when determining if weather on the Mon is suppressed, for some other active effect.
     ///
     /// Runs on the effect itslf.
@@ -875,6 +899,7 @@ impl BattleEvent {
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
+            Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::CopyVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -934,6 +959,7 @@ impl BattleEvent {
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::SetTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::SetWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::SideConditionStart => CommonCallbackType::SideVoid as u32,
             Self::SideEnd => CommonCallbackType::SideVoid as u32,
@@ -950,8 +976,10 @@ impl BattleEvent {
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
+            Self::SuppressFieldTerrain => CommonCallbackType::NoContextResult as u32,
             Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
+            Self::SuppressMonTerrain => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1012,6 +1040,7 @@ impl BattleEvent {
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
+            Self::SetTerrain => &[("terrain", ValueType::Effect, true)],
             Self::SetWeather => &[("weather", ValueType::Effect, true)],
             Self::SideConditionStart => &[("condition", ValueType::Effect, true)],
             Self::SlotEnd => &[("slot", ValueType::UFraction, true)],
@@ -1092,9 +1121,13 @@ impl BattleEvent {
     pub fn callback_lookup_layer(&self) -> usize {
         match self {
             Self::Types => 0,
-            Self::SuppressMonItem => 1,
-            Self::SuppressFieldWeather => 2,
-            Self::SuppressMonWeather => 3,
+            Self::IsGrounded => 1,
+            Self::IsSemiInvulnerable => 1,
+            Self::SuppressMonItem => 2,
+            Self::SuppressFieldTerrain => 3,
+            Self::SuppressFieldWeather => 3,
+            Self::SuppressMonTerrain => 4,
+            Self::SuppressMonWeather => 4,
             _ => usize::MAX,
         }
     }
@@ -1104,6 +1137,14 @@ impl BattleEvent {
     pub fn run_callback_on_source_effect(&self) -> bool {
         match self {
             Self::Damage => true,
+            _ => false,
+        }
+    }
+
+    /// Whether or not to force effects to have a default callback for the event.
+    pub fn force_default_callback(&self) -> bool {
+        match self {
+            Self::FieldResidual | Self::SideResidual | Self::Residual => true,
             _ => false,
         }
     }
@@ -1271,6 +1312,7 @@ pub struct Callbacks {
     pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
     pub on_charge_move: Callback,
+    pub on_clear_terrain: Callback,
     pub on_clear_weather: Callback,
     pub on_copy_volatile: Callback,
     pub on_cure_status: Callback,
@@ -1321,6 +1363,7 @@ pub struct Callbacks {
     pub on_restart: Callback,
     pub on_set_last_move: Callback,
     pub on_set_status: Callback,
+    pub on_set_terrain: Callback,
     pub on_set_weather: Callback,
     pub on_side_condition_start: Callback,
     pub on_side_end: Callback,
@@ -1353,8 +1396,10 @@ pub struct Callbacks {
     pub on_use_move_message: Callback,
     pub on_weather: Callback,
     pub on_weather_modify_damage: Callback,
+    pub suppress_field_terrain: Callback,
     pub suppress_field_weather: Callback,
     pub suppress_mon_item: Callback,
+    pub suppress_mon_terrain: Callback,
     pub suppress_mon_weather: Callback,
 }
 
@@ -1376,6 +1421,7 @@ impl Callbacks {
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeSwitchOut => Some(&self.on_before_switch_out),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
+            BattleEvent::ClearTerrain => Some(&self.on_clear_terrain),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::CopyVolatile => Some(&self.on_copy_volatile),
@@ -1436,6 +1482,7 @@ impl Callbacks {
             BattleEvent::Restart => Some(&self.on_restart),
             BattleEvent::SetLastMove => Some(&self.on_set_last_move),
             BattleEvent::SetStatus => Some(&self.on_set_status),
+            BattleEvent::SetTerrain => Some(&self.on_set_terrain),
             BattleEvent::SetWeather => Some(&self.on_set_weather),
             BattleEvent::SideConditionStart => Some(&self.on_side_condition_start),
             BattleEvent::SideEnd => Some(&self.on_side_end),
@@ -1452,8 +1499,10 @@ impl Callbacks {
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::StallMove => Some(&self.on_stall_move),
+            BattleEvent::SuppressFieldTerrain => Some(&self.suppress_field_terrain),
             BattleEvent::SuppressFieldWeather => Some(&self.suppress_field_weather),
             BattleEvent::SuppressMonItem => Some(&self.suppress_mon_item),
+            BattleEvent::SuppressMonTerrain => Some(&self.suppress_mon_terrain),
             BattleEvent::SuppressMonWeather => Some(&self.suppress_mon_weather),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
             BattleEvent::TakeItem => Some(&self.on_take_item),

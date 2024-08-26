@@ -13,6 +13,7 @@ use crate::{
     battle::{
         Boost,
         BoostTable,
+        FieldEnvironment,
         MonHandle,
         MoveEventResult,
         MoveHandle,
@@ -74,6 +75,7 @@ pub enum ValueType {
     HitEffect,
     Gender,
     StatTable,
+    FieldEnvironment,
     EffectState,
     List,
     Object,
@@ -120,6 +122,7 @@ pub enum Value {
     HitEffect(HitEffect),
     Gender(Gender),
     StatTable(StatTable),
+    FieldEnvironment(FieldEnvironment),
     EffectState(DynamicEffectStateConnector),
     List(Vec<Value>),
     Object(FastHashMap<String, Value>),
@@ -151,6 +154,7 @@ impl Value {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::Gender(_) => ValueType::Gender,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
@@ -512,6 +516,7 @@ pub enum MaybeReferenceValue<'eval> {
     HitEffect(HitEffect),
     Gender(Gender),
     StatTable(StatTable),
+    FieldEnvironment(FieldEnvironment),
     EffectState(DynamicEffectStateConnector),
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
@@ -545,6 +550,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Gender(_) => ValueType::Gender,
             Self::EffectState(_) => ValueType::EffectState,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
             Self::Reference(val) => val.value_type(),
@@ -576,6 +582,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::HitEffect(val) => Value::HitEffect(val.clone()),
             Self::Gender(val) => Value::Gender(*val),
             Self::StatTable(val) => Value::StatTable(val.clone()),
+            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::EffectState(val) => Value::EffectState(val.clone()),
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
@@ -663,6 +670,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::Gender(val) => Self::Gender(val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::EffectState(val) => Self::EffectState(val),
             Value::List(val) => Self::List(
                 val.into_iter()
@@ -712,6 +720,7 @@ pub enum ValueRef<'eval> {
     HitEffect(&'eval HitEffect),
     Gender(Gender),
     StatTable(&'eval StatTable),
+    FieldEnvironment(FieldEnvironment),
     EffectState(DynamicEffectStateConnector),
     List(&'eval Vec<Value>),
     TempList(Vec<ValueRefToStoredValue<'eval>>),
@@ -747,6 +756,7 @@ impl<'eval> ValueRef<'eval> {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::Gender(_) => ValueType::Gender,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
@@ -782,6 +792,7 @@ impl<'eval> ValueRef<'eval> {
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
+            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::EffectState(val) => Value::EffectState(val.clone()),
             Self::List(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
@@ -912,6 +923,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::Gender(val) => Self::Gender(*val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::EffectState(val) => Self::EffectState(val.clone()),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
@@ -997,6 +1009,7 @@ pub enum ValueRefMut<'eval> {
     Gender(&'eval mut Gender),
     OptionalMultihitType(&'eval mut Option<MultihitType>),
     StatTable(&'eval mut StatTable),
+    FieldEnvironment(&'eval mut FieldEnvironment),
     EffectState(&'eval mut DynamicEffectStateConnector),
     TempEffectState(DynamicEffectStateConnector),
     List(&'eval mut Vec<Value>),
@@ -1042,6 +1055,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Gender(_) => ValueType::Gender,
             Self::OptionalMultihitType(_) => ValueType::UFraction,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::EffectState(_) => ValueType::EffectState,
             Self::TempEffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
@@ -1075,6 +1089,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::Gender(val) => Self::Gender(val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::EffectState(val) => Self::EffectState(val),
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
@@ -1119,6 +1134,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     HitEffect(&'eval HitEffect),
     Gender(Gender),
     StatTable(&'eval StatTable),
+    FieldEnvironment(FieldEnvironment),
     EffectState(DynamicEffectStateConnector),
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
@@ -1156,6 +1172,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::Gender(_) => ValueType::Gender,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::EffectState(_) => ValueType::EffectState,
             Self::List(_) => ValueType::List,
             Self::StoredList(_) => ValueType::List,
@@ -1193,6 +1210,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
+            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::EffectState(val) => Value::EffectState(val.clone()),
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::StoredList(val) => Value::List((*val).clone()),
@@ -1233,6 +1251,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::HitEffect(_) => 115,
             Self::Gender(_) => 116,
             Self::StatTable(_) => 117,
+            Self::FieldEnvironment(_) => 118,
             Self::EffectState(_) => 175,
             Self::List(_) => 200,
             Self::StoredList(_) => 201,
@@ -1605,6 +1624,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Gender(rhs)) => {
                 Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::FieldEnvironment(rhs)) => {
+                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
             (Self::Str(lhs), Self::Effect(rhs)) => {
@@ -1623,6 +1645,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::Str(lhs), Self::Gender(rhs)) => {
                 Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::Str(lhs), Self::FieldEnvironment(rhs)) => {
+                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
             (Self::TempString(lhs), Self::Effect(rhs)) => rhs
@@ -1647,6 +1672,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempString(lhs), Self::Gender(rhs)) => {
                 Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::TempString(lhs), Self::FieldEnvironment(rhs)) => {
+                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Mon(lhs), Self::Mon(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::TempEffect(rhs)) => lhs.eq(&rhs),
@@ -1666,6 +1694,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::HitEffect(lhs), Self::HitEffect(rhs)) => lhs.eq(rhs),
             (Self::Gender(lhs), Self::Gender(rhs)) => lhs.eq(rhs),
             (Self::StatTable(lhs), Self::StatTable(rhs)) => lhs.eq(rhs),
+            (Self::FieldEnvironment(lhs), Self::FieldEnvironment(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -1832,6 +1861,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::Gender(val) => Self::Gender(*val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::EffectState(val) => Self::EffectState(val.clone()),
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
@@ -1864,6 +1894,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::HitEffect(val) => Self::HitEffect(val),
             MaybeReferenceValue::Gender(val) => Self::Gender(*val),
             MaybeReferenceValue::StatTable(val) => Self::StatTable(val),
+            MaybeReferenceValue::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             MaybeReferenceValue::EffectState(val) => Self::EffectState(val.clone()),
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
@@ -1900,6 +1931,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::Gender(val) => Self::Gender(val),
             ValueRef::StatTable(val) => Self::StatTable(val),
+            ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(val),
             ValueRef::EffectState(val) => Self::EffectState(val),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
@@ -1940,6 +1972,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::Gender(val) => Self::Gender(*val),
             ValueRef::StatTable(val) => Self::StatTable(val),
+            ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             ValueRef::EffectState(val) => Self::EffectState(val.clone()),
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(

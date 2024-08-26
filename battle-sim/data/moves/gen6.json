@@ -216,7 +216,36 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "terrain": "grassyterrain"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source terrainextender):",
+          ["return 8"]
+        ],
+        "on_field_start": [
+          "if !$source:",
+          ["return"],
+          "if $source_effect.is_ability:",
+          ["log_field_start: with_source_effect"],
+          "else:",
+          ["log_field_start"]
+        ],
+        "on_field_end": ["log_field_end"],
+        "on_source_base_power": [
+          "$weakened = [earthquake, bulldoze, magnitude]",
+          "if $weakened has $move.id:",
+          ["return $base_power * 1/2"],
+          "if $move.type == grass:",
+          ["return $base_power * 13/10"]
+        ],
+        "on_residual": ["heal: $target expr($target.base_max_hp / 16)"]
+      }
+    }
   },
   "mistyterrain": {
     "name": "Misty Terrain",
@@ -225,7 +254,45 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "terrain": "mistyterrain"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source terrainextender):",
+          ["return 8"]
+        ],
+        "on_field_start": [
+          "if !$source:",
+          ["return"],
+          "if $source_effect.is_ability:",
+          ["log_field_start: with_source_effect"],
+          "else:",
+          ["log_field_start"]
+        ],
+        "on_field_end": ["log_field_end"],
+        "on_base_power": [
+          "if $move.type == dragon:",
+          ["return $base_power * 1/2"]
+        ],
+        "on_set_status": [
+          "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
+          ["log_activate: with_target"],
+          "return false"
+        ],
+        "on_add_volatile": [
+          "if $volatile.id == yawn or $volatile.id == confusion:",
+          [
+            "if $effect.is_move and !$effect.is_move_secondary:",
+            ["log_activate: with_target"],
+            "return false"
+          ]
+        ]
+      }
+    }
   },
   "electrify": {
     "name": "Electrify",
@@ -455,7 +522,44 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "terrain": "electricterrain"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if func_call(has_item: $source terrainextender):",
+          ["return 8"]
+        ],
+        "on_field_start": [
+          "if !$source:",
+          ["return"],
+          "if $source_effect.is_ability:",
+          ["log_field_start: with_source_effect"],
+          "else:",
+          ["log_field_start"]
+        ],
+        "on_field_end": ["log_field_end"],
+        "on_set_status": [
+          "if $status.id == slp:",
+          [
+            "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
+            ["log_activate: with_target"],
+            "return false"
+          ]
+        ],
+        "on_add_volatile": [
+          "if $volatile.id == yawn:",
+          ["log_activate: with_target", "return false"]
+        ],
+        "on_source_base_power": [
+          "if $move.type == electric:",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
   },
   "dazzlinggleam": {
     "name": "Dazzling Gleam",

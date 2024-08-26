@@ -259,6 +259,34 @@ impl fxlang::EffectStateConnector for SlotConditionEffectStateConnector {
     }
 }
 
+/// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for the
+/// terrain on the field.
+#[derive(Debug, Clone)]
+pub struct TerrainEffectStateConnector {}
+
+impl TerrainEffectStateConnector {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl fxlang::EffectStateConnector for TerrainEffectStateConnector {
+    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+        Ok(context.battle().field.terrain.is_some())
+    }
+
+    fn get_mut<'a>(
+        &self,
+        context: &'a mut Context,
+    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+        Ok(Some(&mut context.battle_mut().field.terrain_state))
+    }
+
+    fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
+        fxlang::DynamicEffectStateConnector::new(self.clone())
+    }
+}
+
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for
 /// weather on the field.
 #[derive(Debug, Clone)]

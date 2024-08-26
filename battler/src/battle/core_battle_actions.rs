@@ -2194,8 +2194,15 @@ fn apply_move_effects(
                     hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
-                if let Some(_) = hit_effect.terrain {
-                    // TODO: Set terrain.
+                if let Some(terrain) = hit_effect.terrain {
+                    let set_terrain_success = set_terrain(
+                        &mut target_context
+                            .applying_effect_context()?
+                            .field_effect_context()?,
+                        &Id::from(terrain),
+                    )?;
+                    let outcome = MoveOutcomeOnTarget::from(set_terrain_success);
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if let Some(_) = hit_effect.pseudo_weather {
@@ -3438,6 +3445,105 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
     }
 
     // TODO: WeatherChange event.
+
+    Ok(true)
+}
+
+/// Sets the terrain on the field.
+pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<bool, Error> {
+    let terrain_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(terrain)?
+        .clone();
+    let terrain = terrain_handle
+        .try_id()
+        .wrap_error_with_message("terrain must have an id")?
+        .clone();
+
+    if context
+        .battle()
+        .field
+        .terrain
+        .as_ref()
+        .is_some_and(|existing| existing == &terrain)
+    {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_field_effect(
+        context,
+        fxlang::BattleEvent::SetTerrain,
+        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(terrain_handle.clone()))]),
+    ) {
+        return Ok(false);
+    }
+
+    let previous_terrain = context.battle().field.terrain.clone();
+    let previous_terrain_state = context.battle().field.terrain_state.clone();
+
+    context.battle_mut().field.terrain = Some(terrain.clone());
+    let source_handle = context.source_handle();
+    context.battle_mut().field.terrain_state =
+        initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
+
+    if let Some(terrain_condition) =
+        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &terrain_handle)?
+            .fxlang_condition()
+    {
+        if let Some(duration) = terrain_condition.duration {
+            context
+                .battle_mut()
+                .field
+                .terrain_state
+                .set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_terrain_event_expecting_u8(
+            context,
+            fxlang::BattleEvent::Duration,
+        ) {
+            context
+                .battle_mut()
+                .field
+                .terrain_state
+                .set_duration(duration);
+        }
+    }
+
+    if core_battle_effects::run_terrain_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::FieldStart,
+    )
+    .is_some_and(|result| !result)
+    {
+        context.battle_mut().field.terrain = previous_terrain;
+        context.battle_mut().field.terrain_state = previous_terrain_state;
+        return Ok(false);
+    }
+
+    // TODO: TerrainChange event.
+
+    Ok(true)
+}
+
+/// Clears the terrain on the field.
+pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool, Error> {
+    if !core_battle_effects::run_event_for_field_effect(
+        context,
+        fxlang::BattleEvent::ClearTerrain,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
+    core_battle_effects::run_terrain_event(context, fxlang::BattleEvent::FieldEnd);
+    context.battle_mut().field.terrain = None;
+    context.battle_mut().field.terrain_state = fxlang::EffectState::new();
+
+    if let Some(default_terrain) = context.battle().field.default_terrain.clone() {
+        set_terrain(context, &default_terrain)?;
+    }
+
+    // TODO: TerrainChange event.
 
     Ok(true)
 }
