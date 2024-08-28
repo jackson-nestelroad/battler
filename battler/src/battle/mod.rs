@@ -24,6 +24,8 @@ pub mod weather_states;
 
 pub use action::{
     Action,
+    BeforeMoveAction,
+    BeforeMoveActionInput,
     EndAction,
     EscapeAction,
     EscapeActionInput,

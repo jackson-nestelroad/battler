@@ -1109,6 +1109,34 @@ impl<'d> CoreBattle<'d> {
                     action.original_target,
                 )?;
             }
+            Action::BeforeTurnMove(action) => {
+                let mut context = context.mon_context(action.mon_action.mon)?;
+                if !context.mon().active || context.mon().fainted {
+                    return Ok(());
+                }
+                core_battle_effects::run_applying_effect_event(
+                    &mut context.applying_effect_context(
+                        EffectHandle::InactiveMove(action.id.clone()),
+                        None,
+                        None,
+                    )?,
+                    fxlang::BattleEvent::BeforeTurn,
+                );
+            }
+            Action::PriorityChargeMove(action) => {
+                let mut context = context.mon_context(action.mon_action.mon)?;
+                if !context.mon().active || context.mon().fainted {
+                    return Ok(());
+                }
+                core_battle_effects::run_applying_effect_event(
+                    &mut context.applying_effect_context(
+                        EffectHandle::InactiveMove(action.id.clone()),
+                        None,
+                        None,
+                    )?,
+                    fxlang::BattleEvent::PriorityChargeMove,
+                );
+            }
             Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
             Action::Pass => (),
             Action::BeforeTurn => {
@@ -1129,20 +1157,6 @@ impl<'d> CoreBattle<'d> {
                             .insert(mon_handle);
                     }
                 }
-            }
-            Action::BeforeTurnMove(action) => {
-                let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || context.mon().fainted {
-                    return Ok(());
-                }
-                core_battle_effects::run_applying_effect_event(
-                    &mut context.applying_effect_context(
-                        EffectHandle::InactiveMove(action.id.clone()),
-                        None,
-                        None,
-                    )?,
-                    fxlang::BattleEvent::BeforeTurn,
-                );
             }
             Action::Residual => {
                 Self::clear_all_active_moves(context)?;

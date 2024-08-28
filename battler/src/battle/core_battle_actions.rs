@@ -486,11 +486,16 @@ pub fn use_active_move(
     // BeforeMove event handlers can prevent the move from being used.
     if !external
         && directly_used
-        && !core_battle_effects::run_event_for_applying_effect(
+        && (!core_battle_effects::run_event_for_applying_effect(
             &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::BeforeMove,
             fxlang::VariableInput::default(),
+        ) || !core_battle_effects::run_active_move_event_expecting_bool(
+            &mut context,
+            fxlang::BattleEvent::BeforeMove,
+            core_battle_effects::MoveTargetForEvent::User,
         )
+        .unwrap_or(true))
     {
         core_battle_effects::run_event_for_applying_effect(
             &mut context.user_applying_effect_context(None)?,

@@ -8,6 +8,8 @@ use crate::{
         compare_priority,
         speed_sort,
         Action,
+        BeforeMoveAction,
+        BeforeMoveActionInput,
         Context,
         CoreBattle,
         CoreBattleEngineSpeedSortTieResolution,
@@ -57,7 +59,16 @@ impl BattleQueue {
     fn sub_actions(action: &Action) -> Vec<Action> {
         match action {
             Action::Move(action) => {
-                let mut actions = Vec::from_iter([Action::BeforeTurnMove(action.clone())]);
+                let mut actions = Vec::from_iter([
+                    Action::BeforeTurnMove(BeforeMoveAction::new(BeforeMoveActionInput {
+                        id: action.id.clone(),
+                        mon: action.mon_action.mon,
+                    })),
+                    Action::PriorityChargeMove(BeforeMoveAction::new(BeforeMoveActionInput {
+                        id: action.id.clone(),
+                        mon: action.mon_action.mon,
+                    })),
+                ]);
                 if action.mega {
                     actions.push(Action::MegaEvo(action.mon_action.clone()));
                 }
@@ -67,13 +78,15 @@ impl BattleQueue {
         }
     }
 
-    fn resolve_action(context: &mut Context, mut action: Action) -> Result<Vec<Action>, Error> {
+    fn resolve_action(context: &mut Context, action: Action) -> Result<Vec<Action>, Error> {
         match action {
             Action::Pass => Ok(Vec::new()),
             _ => {
                 let mut actions = Self::sub_actions(&action);
-                CoreBattle::resolve_action(context, &mut action)?;
                 actions.push(action);
+                for action in &mut actions {
+                    CoreBattle::resolve_action(context, action)?;
+                }
                 Ok(actions)
             }
         }
@@ -340,14 +353,17 @@ mod queue_tests {
                 Action::End(_) => "end".to_owned(),
                 Action::Pass => "pass".to_owned(),
                 Action::BeforeTurn => "beforeturn".to_owned(),
-                Action::BeforeTurnMove(action) => {
-                    format!("beforeturnmove {}", action.mon_action.mon)
-                }
                 Action::Residual => "residual".to_owned(),
                 Action::Team(action) => format!("team {}", action.mon_action.mon),
                 Action::Switch(action) => format!("switch {}", action.mon_action.mon),
                 Action::SwitchEvents(action) => format!("switchevents {}", action.mon_action.mon),
                 Action::Move(action) => format!("move {}", action.id),
+                Action::BeforeTurnMove(action) => {
+                    format!("beforeturnmove {}", action.mon_action.mon)
+                }
+                Action::PriorityChargeMove(action) => {
+                    format!("prioritychargemove {}", action.mon_action.mon)
+                }
                 Action::MegaEvo(action) => format!("megaevo {}", action.mon),
                 Action::Experience(action) => format!("experience {}", action.mon),
                 Action::LevelUp(action) => format!("levelup {}", action.mon),

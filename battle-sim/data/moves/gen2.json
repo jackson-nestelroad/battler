@@ -1388,12 +1388,12 @@
           ["return $move.base_power * 2"]
         ],
         "on_before_turn": [
-          "$side = $target.foe_side",
+          "$side = $mon.foe_side",
           "add_side_condition: $side $this.id use_target_as_source",
           "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
           "if !$pursuit_state.sources:",
           ["$pursuit_state.sources = []"],
-          "$pursuit_state.sources = func_call(append: $pursuit_state.sources $target)"
+          "$pursuit_state.sources = func_call(append: $pursuit_state.sources $mon)"
         ],
         "on_use_move": [
           "if $target.being_called_back or $target.needs_switch:",
@@ -1686,7 +1686,7 @@
     "flags": ["FailMeFirst", "NoAssist", "NoMetronome", "Protect"],
     "effect": {
       "callbacks": {
-        "on_before_turn": ["add_volatile: $target $this.id"],
+        "on_before_turn": ["add_volatile: $mon $this.id"],
         "on_try_use_move": [
           "$effect_state = func_call(volatile_effect_state: $user $this.id)",
           "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",

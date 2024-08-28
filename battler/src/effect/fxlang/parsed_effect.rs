@@ -111,6 +111,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::NegateImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::OverrideMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::PriorityChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::RedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Restart, callbacks)?;

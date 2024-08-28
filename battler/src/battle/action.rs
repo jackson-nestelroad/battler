@@ -112,6 +112,34 @@ impl MoveAction {
     }
 }
 
+/// A before move action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BeforeMoveActionInput {
+    pub id: Id,
+    pub mon: MonHandle,
+}
+
+/// A before move action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BeforeMoveAction {
+    pub id: Id,
+    pub mon_action: MonAction,
+    pub priority: i32,
+    pub sub_priority: u32,
+}
+
+impl BeforeMoveAction {
+    /// Creates a new [`BeforeMoveAction`] from [`BeforeMoveActionInput`].
+    pub fn new(input: BeforeMoveActionInput) -> Self {
+        Self {
+            id: input.id,
+            mon_action: MonAction::new(input.mon),
+            priority: 0,
+            sub_priority: 0,
+        }
+    }
+}
+
 /// An experience action.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExperienceAction {
@@ -188,12 +216,13 @@ pub enum Action {
     End(EndAction),
     Pass,
     BeforeTurn,
-    BeforeTurnMove(MoveAction),
     Residual,
     Team(TeamAction),
     Switch(SwitchAction),
     SwitchEvents(SwitchEventsAction),
     Move(MoveAction),
+    BeforeTurnMove(BeforeMoveAction),
+    PriorityChargeMove(BeforeMoveAction),
     MegaEvo(MonAction),
     Experience(ExperienceAction),
     LevelUp(LevelUpAction),
@@ -208,6 +237,8 @@ impl Action {
             Self::Switch(action) => Some(&mut action.mon_action),
             Self::SwitchEvents(action) => Some(&mut action.mon_action),
             Self::Move(action) => Some(&mut action.mon_action),
+            Self::BeforeTurnMove(action) => Some(&mut action.mon_action),
+            Self::PriorityChargeMove(action) => Some(&mut action.mon_action),
             Self::MegaEvo(action) => Some(action),
             Self::Escape(action) => Some(&mut action.mon_action),
             _ => None,
@@ -236,6 +267,7 @@ impl SpeedOrderable for Action {
             Self::Escape(_) => 101,
             Self::SwitchEvents(_) => 102,
             Self::MegaEvo(_) => 103,
+            Self::PriorityChargeMove(_) => 104,
             Self::Move(_) => 200,
             Self::Pass => 200,
             Self::Residual => 300,

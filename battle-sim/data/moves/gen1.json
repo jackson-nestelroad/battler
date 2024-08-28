@@ -917,7 +917,7 @@
     ],
     "effect": {
       "callbacks": {
-        "on_before_turn": ["add_volatile: $target $this.id"],
+        "on_before_turn": ["add_volatile: $mon $this.id"],
         "on_try_use_move": [
           "$effect_state = func_call(volatile_effect_state: $user $this.id)",
           "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",

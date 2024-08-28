@@ -302,7 +302,7 @@ pub enum BattleEvent {
     BeforeSwitchOut,
     /// Runs before a turn of a battle.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of the target Mon (the user of the move).
     #[string = "BeforeTurn"]
     BeforeTurn,
     /// Runs when a Mon is using a charge move, on the charging turn.
@@ -620,6 +620,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move from the user.
     #[string = "PrepareHit"]
     PrepareHit,
+    /// Runs before at the start of the turn, when a move is charging for the turn.
+    ///
+    ///Runs in the context of the target Mon (the user of the move).
+    #[string = "PriorityChargeMove"]
+    PriorityChargeMove,
     /// Runs when a move is going to target one Mon but can be redirected towards a different
     /// target.
     ///
@@ -897,7 +902,7 @@ impl BattleEvent {
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
-            Self::BeforeTurn => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
@@ -954,6 +959,7 @@ impl BattleEvent {
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
+            Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
@@ -1358,6 +1364,7 @@ pub struct Callbacks {
     pub on_negate_immunity: Callback,
     pub on_override_move: Callback,
     pub on_prepare_hit: Callback,
+    pub on_priority_charge_move: Callback,
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
     pub on_restart: Callback,
@@ -1477,6 +1484,7 @@ impl Callbacks {
             BattleEvent::NegateImmunity => Some(&self.on_negate_immunity),
             BattleEvent::OverrideMove => Some(&self.on_override_move),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
+            BattleEvent::PriorityChargeMove => Some(&self.on_priority_charge_move),
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),

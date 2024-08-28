@@ -301,7 +301,31 @@
       "NoSleepTalk",
       "Protect",
       "Punch"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_priority_charge_move": ["add_volatile: $mon $this.id"],
+        "on_before_move": [
+          "$volatile_state = func_call(volatile_effect_state: $user $this.id)",
+          "if !$volatile_state or $volatile_state.lost_focus:",
+          ["log_cant: $this.name", "return false"]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.lost_focus = false",
+          "log_single_turn: with_target"
+        ],
+        "on_hit": [
+          "if $move.category != status:",
+          ["$effect_state.lost_focus = true"]
+        ],
+        "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]]
+      }
+    }
   },
   "smellingsalts": {
     "name": "Smelling Salts",

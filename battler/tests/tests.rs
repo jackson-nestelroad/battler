@@ -92,6 +92,7 @@ mod moves {
         mod charge_test;
         mod facade_test;
         mod fake_out_test;
+        mod focus_punch_test;
         mod follow_me_test;
         mod helping_hand_test;
         mod nature_power_test;
