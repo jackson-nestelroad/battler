@@ -787,20 +787,19 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<Option<Mov
         core_battle_effects::MoveTargetForEvent::User,
     );
 
-    let move_prepare_hit_result = core_battle_effects::run_active_move_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::PrepareHit,
-        core_battle_effects::MoveTargetForEvent::User,
-    )
-    .map(|value| MoveEventResult::from(value))
-    .unwrap_or(MoveEventResult::Advance);
+    let move_prepare_hit_result =
+        core_battle_effects::run_active_move_event_expecting_move_event_result(
+            context,
+            fxlang::BattleEvent::PrepareHit,
+            core_battle_effects::MoveTargetForEvent::User,
+        );
 
-    let event_prepare_hit_result =
-        MoveEventResult::from(core_battle_effects::run_event_for_applying_effect(
+    let event_prepare_hit_result = MoveEventResult::from(
+        core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
             &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::PrepareHit,
-            fxlang::VariableInput::default(),
-        ));
+        ),
+    );
 
     let move_event_result = move_event_result
         .combine(move_prepare_hit_result)
@@ -1530,9 +1529,10 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            if core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+            if !core_battle_effects::run_event_for_applying_effect(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
+                fxlang::VariableInput::default(),
             ) {
                 target.outcome = MoveOutcome::Failed;
                 core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
@@ -3615,7 +3615,8 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool, Error> {
 pub fn set_ability(
     context: &mut ApplyingEffectContext,
     ability: &Id,
-    from_forme_change: bool,
+    dry_run: bool,
+    silent: bool,
 ) -> Result<bool, Error> {
     if context.target().hp == 0 {
         return Ok(false);
@@ -3623,8 +3624,12 @@ pub fn set_ability(
 
     // TODO: SetAbility event, which can cancel this completely.
 
+    if dry_run {
+        return Ok(true);
+    }
+
     core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::End);
-    if !from_forme_change {
+    if !silent {
         core_battle_logs::end_ability(context)?;
     }
 
@@ -3636,6 +3641,10 @@ pub fn set_ability(
         priority: ability_priority,
         effect_state: fxlang::EffectState::new(),
     };
+
+    if !silent {
+        core_battle_logs::ability(context)?;
+    }
 
     core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::Start);
 
@@ -3685,7 +3694,7 @@ pub fn transform_into(
     context.target_mut().types = types;
     context.target_mut().stats = stats;
     context.target_mut().boosts = boosts;
-    set_ability(context, &ability_id, true)?;
+    set_ability(context, &ability_id, false, true)?;
     context.target_mut().move_slots = move_slots;
 
     core_battle_logs::transform(context, target, log_effect)?;
@@ -3868,7 +3877,11 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, 
 }
 
 /// Takes the target Mon's item, returning it if successful.
-pub fn take_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<Option<Id>, Error> {
+pub fn take_item(
+    context: &mut ApplyingEffectContext,
+    dry_run: bool,
+    silent: bool,
+) -> Result<Option<Id>, Error> {
     if !context.target().active {
         return Ok(None);
     }
@@ -3891,6 +3904,10 @@ pub fn take_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<Op
     .unwrap_or(true)
     {
         return Ok(None);
+    }
+
+    if dry_run {
+        return Ok(Some(item_id));
     }
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);

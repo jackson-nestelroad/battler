@@ -21,9 +21,15 @@
   "perishbody": { "name": "Perish Body", "flags": [] },
   "wanderingspirit": { "name": "Wandering Spirit", "flags": [] },
   "gorillatactics": { "name": "Gorilla Tactics", "flags": [] },
-  "neutralizinggas": { "name": "Neutralizing Gas", "flags": ["NoRolePlay"] },
+  "neutralizinggas": {
+    "name": "Neutralizing Gas",
+    "flags": ["NoRolePlay", "NoSkillSwap"]
+  },
   "pastelveil": { "name": "Pastel Veil", "flags": [] },
-  "hungerswitch": { "name": "Hunger Switch", "flags": ["NoRolePlay"] },
+  "hungerswitch": {
+    "name": "Hunger Switch",
+    "flags": ["NoRolePlay", "NoSkillSwap"]
+  },
   "quickdraw": { "name": "Quick Draw", "flags": [] },
   "unseenfist": { "name": "Unseen Fist", "flags": [] },
   "curiousmedicine": { "name": "Curious Medicine", "flags": [] },

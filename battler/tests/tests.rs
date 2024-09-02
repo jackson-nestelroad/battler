@@ -91,18 +91,27 @@ mod moves {
     mod gen3 {
         mod assist_test;
         mod charge_test;
+        mod endeavor_test;
+        mod eruption_test;
         mod facade_test;
         mod fake_out_test;
         mod focus_punch_test;
         mod follow_me_test;
+        mod grudge_test;
         mod helping_hand_test;
+        mod imprison_test;
         mod ingrain_test;
+        mod knock_off_test;
         mod magic_coat_test;
         mod nature_power_test;
         mod recycle_test;
+        mod refresh_test;
         mod revenge_test;
         mod role_play_test;
+        mod secret_power_test;
+        mod skill_swap_test;
         mod smelling_salts_test;
+        mod snatch_test;
         mod stockpile_test;
         mod taunt_test;
         mod torment_test;

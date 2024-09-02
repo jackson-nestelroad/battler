@@ -246,7 +246,7 @@
         "on_invulnerability": [
           "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
           ["return"],
-          "return true"
+          "return false"
         ],
         "on_source_modify_damage": [
           "if [gust, twister] has $move.id:",
@@ -1291,7 +1291,7 @@
         "on_invulnerability": [
           "if [earthquake, magnitude] has $move.id:",
           ["return"],
-          "return true"
+          "return false"
         ],
         "on_source_modify_damage": [
           "if [earthquake, magnitude] has $move.id:",

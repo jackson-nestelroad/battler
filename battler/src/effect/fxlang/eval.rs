@@ -440,7 +440,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         self.battle_context().active_move(active_move_handle)
     }
 
-    fn active_move_mut<'eval>(
+    pub fn active_move_mut<'eval>(
         &'eval mut self,
         active_move_handle: MoveHandle,
     ) -> Result<&'eval mut Move, Error> {
@@ -819,14 +819,6 @@ where
                                         "effect has no associated condition",
                                     )?,
                             ),
-                            "has_source_effect" => ValueRef::Boolean(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .source_effect_handle()
-                                .is_some(),
-                            ),
                             "id" => ValueRef::TempString(
                                 CoreBattle::get_effect_by_handle(
                                     context.battle_context(),
@@ -872,6 +864,15 @@ where
                                 .name()
                                 .to_owned(),
                             ),
+                            "source_effect" => match CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .source_effect_handle()
+                            {
+                                Some(effect) => ValueRef::TempEffect(effect.clone()),
+                                None => ValueRef::Undefined,
+                            },
                             "type" => ValueRef::Type(
                                 CoreBattle::get_effect_by_handle(
                                     context.battle_context(),
@@ -967,6 +968,16 @@ where
                             "reflected" => ValueRef::Boolean(
                                 context.active_move(active_move_handle)?.reflected,
                             ),
+                            "source_effect" => {
+                                match context
+                                    .active_move(active_move_handle)?
+                                    .source_effect
+                                    .as_ref()
+                                {
+                                    Some(effect) => ValueRef::TempEffect(effect.clone()),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "target" => ValueRef::MoveTarget(
                                 context.active_move(active_move_handle)?.data.target,
                             ),
@@ -1253,6 +1264,7 @@ where
                         "heal_percent" => {
                             ValueRefMut::OptionalFractionU16(&mut hit_effect.heal_percent)
                         }
+                        "status" => ValueRefMut::OptionalString(&mut hit_effect.status),
                         "volatile_status" => {
                             ValueRefMut::OptionalString(&mut hit_effect.volatile_status)
                         }
@@ -1818,7 +1830,12 @@ impl Evaluator {
         function_name: &'program str,
         args: VecDeque<Value>,
     ) -> Result<Option<MaybeReferenceValue<'eval>>, Error> {
-        run_function(context, function_name, args)
+        let effect_state = self
+            .vars
+            .get("effect_state")?
+            .map(|val| (*val).clone().effect_state().ok())
+            .flatten();
+        run_function(context, function_name, args, effect_state)
             .map(|val| val.map(|val| MaybeReferenceValue::from(val)))
     }
 

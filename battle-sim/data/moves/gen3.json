@@ -589,8 +589,7 @@
         ],
         "on_hit": [
           "if !func_call(set_ability: $source $target.ability use_target_as_source):",
-          ["return false"],
-          "log_ability: use_source with_source_effect with_source use_target_as_source"
+          ["return false"]
         ]
       }
     }
@@ -722,7 +721,7 @@
         "on_side_try_hit_side": [
           "if $source.side == $side or $move.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
-          "log_activate: str('mon:{}', $effect_state.source.position_details)",
+          "log_activate: with_target use_effect_state_source",
           "do_not_animate_last_move",
           "$reflected_move = func_call(new_active_move: $move.id)",
           "$reflected_move.reflected = true",
@@ -830,7 +829,22 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$item = func_call(take_item: $target dry_run)",
+          "if !$item:",
+          ["return"],
+          "return $move.base_power * 3/2"
+        ],
+        "on_after_hit": [
+          "if $source.hp == 0:",
+          ["return"],
+          "take_item: $target"
+        ]
+      }
+    }
   },
   "endeavor": {
     "name": "Endeavor",
@@ -839,7 +853,13 @@
     "pp": 5,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoParentalBond", "Protect"]
+    "flags": ["Contact", "Mirror", "NoParentalBond", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["return $source.hp < $target.hp"],
+        "on_move_damage": ["return $target.hp - $source.hp"]
+      }
+    }
   },
   "eruption": {
     "name": "Eruption",
@@ -849,7 +869,14 @@
     "accuracy": 100,
     "base_power": 150,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "return $move.base_power * $source.hp / $source.max_hp"
+        ]
+      }
+    }
   },
   "skillswap": {
     "name": "Skill Swap",
@@ -858,7 +885,37 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "$target_ability = func_call(get_ability: $target.ability)",
+          "$source_ability = func_call(get_ability: $source.ability)",
+          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap):",
+          ["return false"],
+          "if !func_call(set_ability: $source $target_ability.id use_target_as_source dry_run):",
+          ["return false"],
+          "if !func_call(set_ability: $target $source_ability.id dry_run):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "$target_ability = func_call(get_ability: $target.ability)",
+          "$source_ability = func_call(get_ability: $source.ability)",
+          "log_activate: with_target with_source",
+          "$allies = func_call(is_ally: $target $source)",
+          "if $allies:",
+          [
+            "set_ability: $source $target_ability.id use_target_as_source silent",
+            "set_ability: $target $source_ability.id silent"
+          ],
+          "else:",
+          [
+            "set_ability: $source $target_ability.id use_target_as_source",
+            "set_ability: $target $source_ability.id"
+          ]
+        ]
+      }
+    }
   },
   "imprison": {
     "name": "Imprison",
@@ -867,7 +924,27 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["BypassSubstitute", "MustPressure", "Snatch"]
+    "flags": ["BypassSubstitute", "MustPressure", "Snatch"],
+    "hit_effect": {
+      "volatile_status": "imprison"
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_foe_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if func_call(has_move: $effect_state.source $move_slot.id):",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ],
+        "on_foe_before_move": [
+          "if $move.id != struggle and func_call(has_move: $effect_state.source $move.id):",
+          ["log_cant: $this.name", "return false"]
+        ]
+      }
+    }
   },
   "refresh": {
     "name": "Refresh",
@@ -876,7 +953,16 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if !$target.status or ([slp, frz] has $target.status):",
+          ["return false"],
+          "cure_status: $target"
+        ]
+      }
+    }
   },
   "grudge": {
     "name": "Grudge",
@@ -885,7 +971,25 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["BypassSubstitute"]
+    "flags": ["BypassSubstitute"],
+    "hit_effect": {
+      "volatile_status": "grudge"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_single_move: with_target"],
+        "on_faint": [
+          "if !$source or $source.fainted or !$effect:",
+          ["return"],
+          "if !$effect.is_move or func_call(move_has_flag: $effect future) or !$source.last_move.is_defined:",
+          ["return"],
+          "$last_move = $source.last_move",
+          "set_pp: $source $last_move.id 0",
+          "log_activate: with_source str('affected:{}', $last_move.name)"
+        ],
+        "on_before_move": ["remove_volatile: $user $this.id"]
+      }
+    }
   },
   "snatch": {
     "name": "Snatch",
@@ -901,7 +1005,25 @@
       "MustPressure",
       "NoAssist",
       "NoMetronome"
-    ]
+    ],
+    "hit_effect": {
+      "volatile_status": "snatch"
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "log_start": ["log_single_turn"],
+        "on_any_prepare_hit": [
+          "if !func_call(move_has_flag: $move snatch) or ($move.source_effect.is_defined and $move.source_effect.id == $this.id):",
+          ["return"],
+          "$snatch_user = $effect_state.source",
+          "log_activate: with_target use_effect_state_source",
+          "remove_volatile: $snatch_user $this.id",
+          "use_move: $snatch_user $move.id",
+          "return stop"
+        ]
+      }
+    }
   },
   "secretpower": {
     "name": "Secret Power",
@@ -911,7 +1033,40 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "$hit_effect = func_call(hit_effect)",
+          "$terrain = $user.effective_terrain",
+          "if $terrain == electricterrain:",
+          ["$hit_effect.status = par"],
+          "else if $terrain == grassyterrain:",
+          ["$hit_effect.status = slp"],
+          "else if $terrain == mistyterrain:",
+          ["$hit_effect.boosts = func_call(boost_table: spa:-1)"],
+          "else if $terrain == psychicterrain:",
+          ["$hit_effect.boosts = func_call(boost_table: spe:-1)"],
+          "else if $field.environment == cave:",
+          ["$hit_effect.volatile_status = flinch"],
+          "else if $field.environment == sand:",
+          ["$hit_effect.boosts = func_call(boost_table: acc:-1)"],
+          "else if $field.environment == water:",
+          ["$hit_effect.boosts = func_call(boost_table: atk:-1)"],
+          "else if $field.environment == ice:",
+          ["$hit_effect.status = frz"],
+          "else if $field.environment == sky:",
+          ["$hit_effect.boosts = func_call(boost_table: spe:-1)"],
+          "else if $field.environment == grass:",
+          ["$hit_effect.status = slp"],
+          "else if $field.environment == volcano:",
+          ["$hit_effect.status = brn"],
+          "else:",
+          ["$hit_effect.status = par"],
+          "add_secondary_effect_to_move: $move 30/100 $hit_effect"
+        ]
+      }
+    }
   },
   "dive": {
     "name": "Dive",
@@ -929,7 +1084,39 @@
       "NoAssist",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "is_semi_invulnerable": ["return true"],
+        "on_immunity": [
+          "if $effect.id == sandstormweather or $effect.id == hailweather:",
+          ["return false"]
+        ],
+        "on_invulnerability": [
+          "if [surf, whirlpool] has $move.id:",
+          ["return"],
+          "return false"
+        ],
+        "on_source_modify_damage": [
+          "if [surf, whirlpool] has $move.id:",
+          ["return $damage * 2"]
+        ]
+      }
+    }
   },
   "armthrust": {
     "name": "Arm Thrust",

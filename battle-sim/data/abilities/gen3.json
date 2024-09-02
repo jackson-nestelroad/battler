@@ -31,7 +31,10 @@
   "intimidate": { "name": "Intimidate", "flags": [] },
   "shadowtag": { "name": "Shadow Tag", "flags": [] },
   "roughskin": { "name": "Rough Skin", "flags": [] },
-  "wonderguard": { "name": "Wonder Guard", "flags": ["NoRolePlay"] },
+  "wonderguard": {
+    "name": "Wonder Guard",
+    "flags": ["NoRolePlay", "NoSkillSwap"]
+  },
   "levitate": { "name": "Levitate", "flags": [] },
   "effectspore": { "name": "Effect Spore", "flags": [] },
   "synchronize": { "name": "Synchronize", "flags": [] },

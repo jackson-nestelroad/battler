@@ -37,6 +37,7 @@ use crate::{
     effect::{
         fxlang::{
             BattleEvent,
+            DynamicEffectStateConnector,
             EffectStateConnector,
             EvaluationContext,
             MaybeReferenceValueForOperation,
@@ -58,6 +59,7 @@ use crate::{
         Move,
         MoveFlags,
         MoveTarget,
+        SecondaryEffect,
     },
     rng::rand_util,
 };
@@ -69,10 +71,12 @@ pub fn run_function(
     context: &mut EvaluationContext,
     function_name: &str,
     args: VecDeque<Value>,
+    effect_state: Option<DynamicEffectStateConnector>,
 ) -> Result<Option<Value>, Error> {
-    let context = FunctionContext::new(context, args);
+    let context = FunctionContext::new(context, args, effect_state);
     match function_name {
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
+        "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
@@ -176,6 +180,7 @@ pub fn run_function(
         "set_boost" => set_boost(context).map(|val| Some(val)),
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
+        "set_pp" => set_pp(context).map(|()| None),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
@@ -196,6 +201,7 @@ pub fn run_function(
 struct FunctionContext<'eval, 'effect, 'context, 'battle, 'data> {
     context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
     args: VecDeque<Value>,
+    effect_state: Option<DynamicEffectStateConnector>,
     flags: FastHashMap<String, bool>,
 }
 
@@ -205,10 +211,12 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn new(
         context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
         args: VecDeque<Value>,
+        effect_state: Option<DynamicEffectStateConnector>,
     ) -> Self {
         Self {
             context,
             args,
+            effect_state,
             flags: FastHashMap::new(),
         }
     }
@@ -221,6 +229,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         &mut self,
     ) -> &mut EvaluationContext<'effect, 'context, 'battle, 'data> {
         self.context
+    }
+
+    fn effect_state(&self) -> Option<DynamicEffectStateConnector> {
+        self.effect_state.clone()
     }
 
     fn front(&self) -> Option<&Value> {
@@ -327,6 +339,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn silent(&mut self) -> bool {
         self.has_flag("silent")
+    }
+
+    fn use_effect_state_source(&mut self) -> bool {
+        self.has_flag("use_effect_state_source")
     }
 
     fn use_source(&mut self) -> bool {
@@ -462,6 +478,16 @@ fn log_effect_activation_base(
                     .wrap_error_with_message("effect has no source")?,
             )?
             .to_string()
+        } else if context.use_effect_state_source() {
+            let source = context
+                .effect_state()
+                .wrap_error_with_message("effect has no effect state")?
+                .get_mut(context.evaluation_context_mut().battle_context_mut())
+                .wrap_error_with_message("failed to get effect state")?
+                .source()
+                .wrap_error_with_message("effect state has no source")?;
+            Mon::position_details(&context.evaluation_context_mut().mon_context(source)?)?
+                .to_string()
         } else {
             Mon::position_details(&context.evaluation_context_mut().target_context()?)?.to_string()
         };
@@ -2507,6 +2533,31 @@ fn deduct_pp(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
+fn set_pp(mut context: FunctionContext) -> Result<(), Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = context
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    let pp = context
+        .pop_front()
+        .wrap_error_with_message("missing pp")?
+        .integer_u8()
+        .wrap_error_with_message("invalid pp")?;
+    context
+        .evaluation_context_mut()
+        .mon_context(mon_handle)?
+        .mon_mut()
+        .set_pp(&move_id, pp);
+    Ok(())
+}
+
 fn add_slot_condition(mut context: FunctionContext) -> Result<Value, Error> {
     let use_target_as_source = context.use_target_as_source();
 
@@ -2596,11 +2647,13 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>, Error> {
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
+    let dry_run = context.has_flag("dry_run");
     let silent = context.silent();
     Ok(core_battle_actions::take_item(
         &mut context
             .evaluation_context_mut()
             .forward_effect_to_applying_effect(mon, false)?,
+        dry_run,
         silent,
     )?
     .map(|val| Value::String(val.to_string())))
@@ -2665,6 +2718,8 @@ fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {
 }
 
 fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
+    let silent = context.silent();
+    let dry_run = context.has_flag("dry_run");
     let use_target_as_source = context.use_target_as_source();
     let mon = context
         .pop_front()
@@ -2682,7 +2737,8 @@ fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
             .evaluation_context_mut()
             .forward_effect_to_applying_effect(mon, use_target_as_source)?,
         &ability_id,
-        false,
+        dry_run,
+        silent,
     )
     .map(|val| Value::Boolean(val))
 }
@@ -2717,4 +2773,35 @@ fn received_attack(mut context: FunctionContext) -> Result<Value, Error> {
                     && (!this_turn || entry.turn == turn)
             }),
     ))
+}
+
+fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<(), Error> {
+    let active_move = context
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let chance = context
+        .pop_front()
+        .wrap_error_with_message("missing chance")?
+        .fraction_u16()
+        .wrap_error_with_message("invalid chance")?;
+    let target_effect = context
+        .pop_front()
+        .wrap_error_with_message("missing target effect")?
+        .hit_effect()
+        .wrap_error_with_message("invalid target effect")?;
+    let secondary_effect = SecondaryEffect {
+        chance: Some(chance),
+        target: Some(target_effect),
+        user: None,
+        ..Default::default()
+    };
+    context
+        .evaluation_context_mut()
+        .active_move_mut(active_move)?
+        .data
+        .secondary_effects
+        .push(secondary_effect);
+    Ok(())
 }

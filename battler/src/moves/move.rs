@@ -64,7 +64,7 @@ pub struct HitEffect {
 }
 
 /// Secondary effect that occurs after a move is used.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SecondaryEffect {
     /// Chance of the effect occurring.
     pub chance: Option<Fraction<u16>>,

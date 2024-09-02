@@ -1494,6 +1494,25 @@ impl Mon {
         delta
     }
 
+    /// Sets the PP for a given move.
+    pub fn set_pp(&mut self, move_id: &Id, amount: u8) {
+        let mut move_slot_index = None;
+        let mut pp = 0;
+        if let Some((i, move_slot)) = self.indexed_move_slot_mut(move_id) {
+            move_slot.pp = amount;
+            if !move_slot.simulated {
+                move_slot_index = Some(i);
+                pp = move_slot.pp;
+            }
+        }
+
+        if let Some(index) = move_slot_index {
+            if let Some(base_move_slot) = self.base_move_slots.get_mut(index) {
+                base_move_slot.pp = pp;
+            }
+        }
+    }
+
     /// Checks if the Mon is immune to the given type.
     pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
         if context.mon().fainted {
@@ -1635,8 +1654,6 @@ impl Mon {
             fxlang::BattleEvent::DisableMove,
             fxlang::VariableInput::default(),
         );
-
-        // TODO: Modify attacked by storage.
 
         context.mon_mut().trapped = false;
         if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(

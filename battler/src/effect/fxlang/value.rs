@@ -285,6 +285,24 @@ impl Value {
             .wrap_error_with_message("integer overflow")
     }
 
+    /// Consumes the value into a [`Fraction<u64>`].
+    pub fn fraction_u64(self) -> Result<Fraction<u64>, Error> {
+        match self {
+            Self::Fraction(val) => val
+                .try_convert()
+                .wrap_error_with_message("integer overflow"),
+            Self::UFraction(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::UFraction)),
+        }
+    }
+
+    /// Consumes the value into a [`Fraction<u16>`].
+    pub fn fraction_u16(self) -> Result<Fraction<u16>, Error> {
+        self.fraction_u64()?
+            .try_convert()
+            .wrap_error_with_message("integer overflow")
+    }
+
     /// Checks if the value is undefined.
     pub fn is_undefined(&self) -> bool {
         match self {
@@ -483,6 +501,14 @@ impl Value {
         match self {
             Self::HitEffect(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::HitEffect)),
+        }
+    }
+
+    /// Consumes the value into a [`DynamicEffectStateConnector`].
+    pub fn effect_state(self) -> Result<DynamicEffectStateConnector, Error> {
+        match self {
+            Self::EffectState(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::EffectState)),
         }
     }
 }

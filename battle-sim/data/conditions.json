@@ -382,7 +382,7 @@
           "add_volatile: $target $source_effect.id",
           "# If this move is called by another move, we may need to modify the targer that the user will be locked into.",
           "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
-          "if $source_effect.has_source_effect and $source_effect.move_target != user:",
+          "if $source_effect.source_effect.is_defined and $source_effect.move_target != user:",
           [
             "$need_new_target = false",
             "if !$target.last_target_location:",

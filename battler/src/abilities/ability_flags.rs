@@ -18,6 +18,9 @@ pub enum AbilityFlags {
     /// Cannot be copied by Role Play.
     #[string = "NoRolePlay"]
     NoRolePlay,
+    /// Cannot be swapped by Skill Swap.
+    #[string = "NoSkillSwap"]
+    NoSkillSwap,
     /// The ability is permanently applied to the Mon.
     #[string = "Permanent"]
     Permanent,

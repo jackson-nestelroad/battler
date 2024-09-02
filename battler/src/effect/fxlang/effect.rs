@@ -262,6 +262,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect.
     #[string = "AllySetStatus"]
     AllySetStatus,
+    /// Runs when any Mon is preparing to hit all of its targets with a move.
+    ///
+    /// Can fail the move.
+    ///
+    /// Runs on the active move itself and in the context of an active move from the user.
+    #[string = "AnyPrepareHit"]
+    AnyPrepareHit,
     /// Runs when any Mon exits the battle (is no longer active).
     ///
     /// Runs in the context of the target Mon.
@@ -432,6 +439,18 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Flinch"]
     Flinch,
+    /// Runs before a foe uses a move.
+    ///
+    /// Can prevent the move from being used.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "FoeBeforeMove"]
+    FoeBeforeMove,
+    /// Runs when a foe is determining which moves are disabled.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "FoeDisableMove"]
+    FoeDisableMove,
     /// Runs when a foe's move is going to target one Mon but can be redirected towards a different
     /// target.
     ///
@@ -921,6 +940,7 @@ impl BattleEvent {
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
+            Self::AnyPrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
@@ -950,6 +970,8 @@ impl BattleEvent {
             Self::FieldRestart => CommonCallbackType::FieldResult as u32,
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
+            Self::FoeBeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::FoeDisableMove => CommonCallbackType::MonVoid as u32,
             Self::FoeRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
@@ -984,7 +1006,7 @@ impl BattleEvent {
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
-            Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
+            Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1194,6 +1216,8 @@ impl BattleEvent {
     /// Returns the associated foe event.
     pub fn foe_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::BeforeMove => Some(Self::FoeBeforeMove),
+            Self::DisableMove => Some(Self::FoeDisableMove),
             Self::RedirectTarget => Some(Self::FoeRedirectTarget),
             _ => None,
         }
@@ -1215,6 +1239,7 @@ impl BattleEvent {
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
             Self::Exit => Some(Self::AnyExit),
+            Self::PrepareHit => Some(Self::AnyPrepareHit),
             Self::SetStatus => Some(Self::AnySetStatus),
             _ => None,
         }
@@ -1340,6 +1365,7 @@ pub struct Callbacks {
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
     pub on_any_exit: Callback,
+    pub on_any_prepare_hit: Callback,
     pub on_any_set_status: Callback,
     pub on_attract: Callback,
     pub on_base_power: Callback,
@@ -1369,6 +1395,8 @@ pub struct Callbacks {
     pub on_field_restart: Callback,
     pub on_field_start: Callback,
     pub on_flinch: Callback,
+    pub on_foe_before_move: Callback,
+    pub on_foe_disable_move: Callback,
     pub on_foe_redirect_target: Callback,
     pub on_hit: Callback,
     pub on_hit_field: Callback,
@@ -1455,6 +1483,7 @@ impl Callbacks {
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
             BattleEvent::AnyExit => Some(&self.on_any_exit),
+            BattleEvent::AnyPrepareHit => Some(&self.on_any_prepare_hit),
             BattleEvent::AnySetStatus => Some(&self.on_any_set_status),
             BattleEvent::Attract => Some(&self.on_attract),
             BattleEvent::BasePower => Some(&self.on_base_power),
@@ -1484,6 +1513,8 @@ impl Callbacks {
             BattleEvent::FieldRestart => Some(&self.on_field_restart),
             BattleEvent::FieldStart => Some(&self.on_field_start),
             BattleEvent::Flinch => Some(&self.on_flinch),
+            BattleEvent::FoeBeforeMove => Some(&self.on_foe_before_move),
+            BattleEvent::FoeDisableMove => Some(&self.on_foe_disable_move),
             BattleEvent::FoeRedirectTarget => Some(&self.on_foe_redirect_target),
             BattleEvent::Hit => Some(&self.on_hit),
             BattleEvent::HitField => Some(&self.on_hit_field),

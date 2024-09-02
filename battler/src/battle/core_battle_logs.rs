@@ -525,6 +525,26 @@ pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
     Ok(())
 }
 
+pub fn ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+    let mut event = log_event!("ability");
+    {
+        let context = context.target_context()?;
+        event.set("mon", Mon::position_details(&context)?);
+        event.set("ability", context.mon().ability.name.clone());
+    }
+
+    let target_handle = context.target_handle();
+    event.set("from", context.effect().full_name());
+    if let Some(context) = context.source_context()? {
+        if target_handle != context.mon_handle() {
+            event.set("of", Mon::position_details(&context)?);
+        }
+    }
+
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     let mut event = log_event!("endability");
     {
@@ -532,9 +552,14 @@ pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
         event.set("mon", Mon::position_details(&context)?);
         event.set("ability", context.mon().ability.name.clone());
     }
-    if context.effect().effect_type() == EffectType::Move {
-        event.set("from", context.effect().full_name());
+
+    event.set("from", context.effect().full_name());
+    if context.effect().effect_type() != EffectType::Move {
+        if let Some(context) = context.source_context()? {
+            event.set("of", Mon::position_details(&context)?);
+        }
     }
+
     context.battle_mut().log(event);
     Ok(())
 }
