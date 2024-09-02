@@ -68,30 +68,30 @@ fn lock_on_removes_accuracy_and_invulnerability() {
         make_battle(&data, 998989898, nosepass().unwrap(), nosepass().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Nosepass,player-1,1|name:Lock-On|target:Nosepass,player-2,1",
-            "activate|mon:Nosepass,player-1,1|move:Lock-On|of:Nosepass,player-2,1",
-            "move|mon:Nosepass,player-2,1|name:Dig|noanim",
-            "prepare|mon:Nosepass,player-2,1|move:Dig",
+            "move|mon:Nosepass,player-2,1|name:Lock-On|target:Nosepass,player-1,1",
+            "activate|mon:Nosepass,player-2,1|move:Lock-On|of:Nosepass,player-1,1",
+            "move|mon:Nosepass,player-1,1|name:Dig|noanim",
+            "prepare|mon:Nosepass,player-1,1|move:Dig",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Nosepass,player-1,1|name:Zap Cannon|target:Nosepass,player-2,1",
-            "split|side:1",
-            "damage|mon:Nosepass,player-2,1|health:64/90",
-            "damage|mon:Nosepass,player-2,1|health:72/100",
-            "status|mon:Nosepass,player-2,1|status:Paralysis",
-            "move|mon:Nosepass,player-2,1|name:Dig|target:Nosepass,player-1,1",
-            "supereffective|mon:Nosepass,player-1,1",
+            "move|mon:Nosepass,player-2,1|name:Zap Cannon|target:Nosepass,player-1,1",
             "split|side:0",
             "damage|mon:Nosepass,player-1,1|health:64/90",
             "damage|mon:Nosepass,player-1,1|health:72/100",
+            "status|mon:Nosepass,player-1,1|status:Paralysis",
+            "move|mon:Nosepass,player-1,1|name:Dig|target:Nosepass,player-2,1",
+            "supereffective|mon:Nosepass,player-2,1",
+            "split|side:1",
+            "damage|mon:Nosepass,player-2,1|health:64/90",
+            "damage|mon:Nosepass,player-2,1|health:72/100",
             "residual",
             "turn|turn:3"
         ]"#,

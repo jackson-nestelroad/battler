@@ -187,16 +187,16 @@ fn move_can_switch_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:89/105",
-            "damage|mon:Bulbasaur,player-1,1|health:85/100",
             "move|mon:Bulbasaur,player-1,1|name:U-turn|target:Bulbasaur,player-2,1",
             "split|side:1",
-            "damage|mon:Bulbasaur,player-2,1|health:74/105",
-            "damage|mon:Bulbasaur,player-2,1|health:71/100",
+            "damage|mon:Bulbasaur,player-2,1|health:77/105",
+            "damage|mon:Bulbasaur,player-2,1|health:74/100",
             ["time"],
             "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:50|gender:M",
+            "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Squirtle,player-1,1",
+            "split|side:0",
+            "damage|mon:Squirtle,player-1,1|health:90/104",
+            "damage|mon:Squirtle,player-1,1|health:87/100",
             "residual",
             "turn|turn:2"
         ]"#).unwrap();

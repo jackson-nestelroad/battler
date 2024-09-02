@@ -278,6 +278,8 @@ impl SpeedOrderable for Action {
         match self {
             Self::Team(action) => action.priority,
             Self::Move(action) => action.priority,
+            Self::BeforeTurnMove(action) => action.priority,
+            Self::PriorityChargeMove(action) => action.priority,
             Self::Experience(action) => action.player_index as i32,
             _ => 0,
         }
@@ -288,6 +290,8 @@ impl SpeedOrderable for Action {
             Self::Team(action) => action.mon_action.speed,
             Self::Switch(action) => action.mon_action.speed,
             Self::Move(action) => action.mon_action.speed,
+            Self::BeforeTurnMove(action) => action.mon_action.speed,
+            Self::PriorityChargeMove(action) => action.mon_action.speed,
             Self::MegaEvo(action) => action.speed,
             _ => 1,
         }
@@ -296,6 +300,8 @@ impl SpeedOrderable for Action {
     fn sub_order(&self) -> u32 {
         match self {
             Self::Move(action) => action.sub_priority,
+            Self::BeforeTurnMove(action) => action.sub_priority,
+            Self::PriorityChargeMove(action) => action.sub_priority,
             Self::Experience(action) => {
                 // Active Mons should get experience before inactive Mons.
                 if action.active {

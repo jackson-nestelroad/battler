@@ -34,7 +34,7 @@ fn two_pidgeot() -> Result<TeamData, Error> {
                         "Razor Wind",
                         "Fly",
                         "Gust",
-                        "Tackle"
+                        "Quick Attack"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -49,7 +49,7 @@ fn two_pidgeot() -> Result<TeamData, Error> {
                         "Razor Wind",
                         "Fly",
                         "Gust",
-                        "Tackle"
+                        "Quick Attack"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -270,8 +270,6 @@ fn fly_grants_invulnerability() {
 
     // Show Gust can hit Mons in Fly, and gains double power.
     assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -283,7 +281,7 @@ fn fly_grants_invulnerability() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Pidgeot,player-2,1|name:Tackle|noanim",
+            "move|mon:Pidgeot,player-2,1|name:Quick Attack|noanim",
             "miss|mon:Pidgeot,player-1,1",
             "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
             "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
@@ -298,21 +296,12 @@ fn fly_grants_invulnerability() {
             "prepare|mon:Pidgeot,player-1,1|move:Fly",
             "addvolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Two Turn Move",
             "addvolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Fly",
-            "residual",
-            "turn|turn:4",
-            ["time"],
             "move|mon:Pidgeot,player-2,1|name:Gust|target:Pidgeot,player-1,1",
             "split|side:0",
             "damage|mon:Pidgeot,player-1,1|health:93/143",
             "damage|mon:Pidgeot,player-1,1|health:66/100",
-            "move|mon:Pidgeot,player-1,1|name:Fly|target:Pidgeot,player-2,1",
-            "removevolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Fly",
-            "split|side:1",
-            "damage|mon:Pidgeot,player-2,1|health:25/143",
-            "damage|mon:Pidgeot,player-2,1|health:18/100",
-            "removevolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:Two Turn Move",
             "residual",
-            "turn|turn:5"
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

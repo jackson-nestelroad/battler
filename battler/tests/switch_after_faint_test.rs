@@ -69,6 +69,7 @@ fn make_battle_builder() -> TestBattleBuilder {
         .with_battle_type(BattleType::Doubles)
         .with_seed(0)
         .with_team_validation(false)
+        .with_pass_allowed(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -93,16 +94,12 @@ fn must_switch_after_faint() {
         Ok(())
     );
     assert_eq!(
-        battle.set_player_choice("player-2", "move 0,1;move 0,1"),
+        battle.set_player_choice("player-2", "pass;move 0,1"),
         Ok(())
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:87/105",
-            "damage|mon:Bulbasaur,player-1,1|health:83/100",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,2",
             "split|side:1",
             "damage|mon:Charmander,player-2,2|health:0",
@@ -168,17 +165,13 @@ fn must_switch_after_faint() {
         Ok(())
     );
     assert_eq!(
-        battle.set_player_choice("player-2", "move 0,1;move 0,1"),
+        battle.set_player_choice("player-2", "pass;move 0,1"),
         Ok(())
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             ["time"],
-            "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:70/105",
-            "damage|mon:Bulbasaur,player-1,1|health:67/100",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Squirtle,player-2,2",
             "split|side:1",
             "damage|mon:Squirtle,player-2,2|health:0",

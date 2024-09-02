@@ -93,18 +93,18 @@ fn electric_terrain_uses_thunderbolt() {
     let mut battle = make_battle(&data, 0, None, ludicolo().unwrap(), ludicolo().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ludicolo,player-2,1|name:Electric Terrain",
+            "move|mon:Ludicolo,player-1,1|name:Electric Terrain",
             "fieldstart|move:Electric Terrain",
-            "move|mon:Ludicolo,player-1,1|name:Nature Power|target:Ludicolo,player-2,1",
-            "move|mon:Ludicolo,player-1,1|name:Thunderbolt|target:Ludicolo,player-2,1",
-            "split|side:1",
-            "damage|mon:Ludicolo,player-2,1|health:94/140",
-            "damage|mon:Ludicolo,player-2,1|health:68/100",
+            "move|mon:Ludicolo,player-2,1|name:Nature Power|target:Ludicolo,player-1,1",
+            "move|mon:Ludicolo,player-2,1|name:Thunderbolt|target:Ludicolo,player-1,1",
+            "split|side:0",
+            "damage|mon:Ludicolo,player-1,1|health:94/140",
+            "damage|mon:Ludicolo,player-1,1|health:68/100",
             "residual",
             "turn|turn:2"
         ]"#,

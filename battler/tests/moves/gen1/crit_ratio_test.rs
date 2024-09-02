@@ -64,17 +64,17 @@ fn increased_crit_ratio() {
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Bulbasaur,player-2,1|name:Razor Leaf",
-            "resisted|mon:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:97/105",
-            "damage|mon:Bulbasaur,player-1,1|health:93/100",
             "move|mon:Bulbasaur,player-1,1|name:Razor Leaf",
             "resisted|mon:Bulbasaur,player-2,1",
-            "crit|mon:Bulbasaur,player-2,1",
             "split|side:1",
-            "damage|mon:Bulbasaur,player-2,1|health:91/105",
-            "damage|mon:Bulbasaur,player-2,1|health:87/100",
+            "damage|mon:Bulbasaur,player-2,1|health:97/105",
+            "damage|mon:Bulbasaur,player-2,1|health:93/100",
+            "move|mon:Bulbasaur,player-2,1|name:Razor Leaf",
+            "resisted|mon:Bulbasaur,player-1,1",
+            "crit|mon:Bulbasaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Bulbasaur,player-1,1|health:91/105",
+            "damage|mon:Bulbasaur,player-1,1|health:87/100",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -111,18 +111,18 @@ fn moves_can_force_crit() {
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Bulbasaur,player-2,1|name:Frost Breath|target:Bulbasaur,player-1,1",
-            "supereffective|mon:Bulbasaur,player-1,1",
-            "crit|mon:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:25/105",
-            "damage|mon:Bulbasaur,player-1,1|health:24/100",
             "move|mon:Bulbasaur,player-1,1|name:Frost Breath|target:Bulbasaur,player-2,1",
             "supereffective|mon:Bulbasaur,player-2,1",
             "crit|mon:Bulbasaur,player-2,1",
             "split|side:1",
-            "damage|mon:Bulbasaur,player-2,1|health:23/105",
-            "damage|mon:Bulbasaur,player-2,1|health:22/100",
+            "damage|mon:Bulbasaur,player-2,1|health:25/105",
+            "damage|mon:Bulbasaur,player-2,1|health:24/100",
+            "move|mon:Bulbasaur,player-2,1|name:Frost Breath|target:Bulbasaur,player-1,1",
+            "supereffective|mon:Bulbasaur,player-1,1",
+            "crit|mon:Bulbasaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Bulbasaur,player-1,1|health:23/105",
+            "damage|mon:Bulbasaur,player-1,1|health:22/100",
             "residual",
             "turn|turn:2"
         ]"#,

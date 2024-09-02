@@ -440,31 +440,31 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m1",
                 "move m2",
                 "move m3",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
 
-        sort(&mut queue, Some(123456));
+        sort(&mut queue, Some(1234567));
         pretty_assertions::assert_eq!(
             battle_queue_actions_to_string_for_test(&queue),
             vec![
                 "switch 2",
                 "switch 1",
-                "megaevo 3",
                 "megaevo 4",
-                "move m5",
+                "megaevo 3",
                 "move m4",
-                "move m2",
-                "move m1",
+                "move m5",
                 "move m3",
-                "move m7",
+                "move m1",
+                "move m2",
                 "move m6",
+                "move m7",
             ]
         );
 
@@ -474,15 +474,15 @@ mod queue_tests {
             vec![
                 "switch 2",
                 "switch 1",
-                "megaevo 4",
                 "megaevo 3",
-                "move m5",
+                "megaevo 4",
                 "move m4",
-                "move m2",
-                "move m1",
+                "move m5",
                 "move m3",
-                "move m6",
+                "move m1",
+                "move m2",
                 "move m7",
+                "move m6",
             ]
         );
 
@@ -492,15 +492,15 @@ mod queue_tests {
             vec![
                 "switch 2",
                 "switch 1",
-                "megaevo 3",
                 "megaevo 4",
-                "move m4",
+                "megaevo 3",
                 "move m5",
+                "move m4",
                 "move m1",
-                "move m2",
                 "move m3",
-                "move m6",
+                "move m2",
                 "move m7",
+                "move m6",
             ]
         );
 
@@ -510,15 +510,15 @@ mod queue_tests {
             vec![
                 "switch 1",
                 "switch 2",
-                "megaevo 4",
                 "megaevo 3",
-                "move m4",
+                "megaevo 4",
                 "move m5",
-                "move m3",
+                "move m4",
                 "move m2",
+                "move m3",
                 "move m1",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
     }
@@ -548,13 +548,13 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m1",
                 "move m2",
                 "move m3",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
 
@@ -571,14 +571,14 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m8",
                 "move m1",
                 "move m2",
                 "move m3",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
 
@@ -595,14 +595,14 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m8",
                 "move m1",
                 "move m2",
                 "move m3",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
 
@@ -619,14 +619,14 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m1",
                 "move m8",
                 "move m2",
                 "move m3",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
 
@@ -643,14 +643,14 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m1",
                 "move m2",
                 "move m8",
                 "move m3",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
 
@@ -667,14 +667,14 @@ mod queue_tests {
                 "switch 2",
                 "megaevo 3",
                 "megaevo 4",
-                "move m4",
                 "move m5",
+                "move m4",
                 "move m1",
                 "move m2",
                 "move m3",
                 "move m8",
-                "move m7",
                 "move m6",
+                "move m7",
             ]
         );
     }

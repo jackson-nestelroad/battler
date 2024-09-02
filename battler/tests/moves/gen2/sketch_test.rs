@@ -30,7 +30,7 @@ fn smeargle_1() -> Result<TeamData, Error> {
                     "ability": "No Ability",
                     "moves": [
                         "Sketch",
-                        "Flamethrower"
+                        "Water Gun"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -53,7 +53,7 @@ fn smeargle_2() -> Result<TeamData, Error> {
                     "ability": "No Ability",
                     "moves": [
                         "Sketch",
-                        "Water Gun"
+                        "Flamethrower"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -116,33 +116,33 @@ fn sketch_copies_targets_last_move() {
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Smeargle,player-2,1|name:Water Gun|target:Smeargle,player-1,1",
-            "split|side:0",
-            "damage|mon:Smeargle,player-1,1|health:106/115",
-            "damage|mon:Smeargle,player-1,1|health:93/100",
-            "move|mon:Smeargle,player-1,1|name:Flamethrower|target:Smeargle,player-2,1",
+            "move|mon:Smeargle,player-1,1|name:Water Gun|target:Smeargle,player-2,1",
             "split|side:1",
-            "damage|mon:Smeargle,player-2,1|health:97/115",
-            "damage|mon:Smeargle,player-2,1|health:85/100",
+            "damage|mon:Smeargle,player-2,1|health:106/115",
+            "damage|mon:Smeargle,player-2,1|health:93/100",
+            "move|mon:Smeargle,player-2,1|name:Flamethrower|target:Smeargle,player-1,1",
+            "split|side:0",
+            "damage|mon:Smeargle,player-1,1|health:97/115",
+            "damage|mon:Smeargle,player-1,1|health:85/100",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Smeargle,player-2,1|name:Sketch|target:Smeargle,player-1,1",
-            "activate|move:Sketch|mon:Smeargle,player-2,1|newmove:Flamethrower",
-            "move|mon:Smeargle,player-1,1|name:Sketch|noanim",
-            "fail|mon:Smeargle,player-1,1",
+            "move|mon:Smeargle,player-1,1|name:Sketch|target:Smeargle,player-2,1",
+            "activate|move:Sketch|mon:Smeargle,player-1,1|newmove:Flamethrower",
+            "move|mon:Smeargle,player-2,1|name:Sketch|noanim",
+            "fail|mon:Smeargle,player-2,1",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Smeargle,player-2,1|name:Flamethrower|target:Smeargle,player-1,1",
-            "split|side:0",
-            "damage|mon:Smeargle,player-1,1|health:86/115",
-            "damage|mon:Smeargle,player-1,1|health:75/100",
+            "move|mon:Smeargle,player-1,1|name:Flamethrower|target:Smeargle,player-2,1",
+            "split|side:1",
+            "damage|mon:Smeargle,player-2,1|health:86/115",
+            "damage|mon:Smeargle,player-2,1|health:75/100",
             "residual",
             "turn|turn:4"
         ]"#,

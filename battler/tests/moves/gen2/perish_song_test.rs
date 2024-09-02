@@ -95,10 +95,10 @@ fn perish_song_faints_all_active_mons() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Misdreavus,player-2,1|name:Perish Song",
+            "move|mon:Misdreavus,player-1,1|name:Perish Song",
             "fieldactivate|move:Perish Song",
-            "move|mon:Misdreavus,player-1,1|name:Perish Song|noanim",
-            "fail|mon:Misdreavus,player-1,1",
+            "move|mon:Misdreavus,player-2,1|name:Perish Song|noanim",
+            "fail|mon:Misdreavus,player-2,1",
             "start|mon:Misdreavus,player-1,1|move:Perish Song|perish:3",
             "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
             "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",

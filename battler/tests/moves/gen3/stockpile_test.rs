@@ -80,19 +80,21 @@ fn stockpile_changes_effect_of_spit_up() {
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pelipper,player-2,1|name:Stockpile|target:Pelipper,player-2,1",
-            "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
-            "boost|mon:Pelipper,player-2,1|stat:def|by:1",
-            "boost|mon:Pelipper,player-2,1|stat:spd|by:1",
             "move|mon:Pelipper,player-1,1|name:Stockpile|target:Pelipper,player-1,1",
             "start|mon:Pelipper,player-1,1|move:Stockpile|count:1",
             "boost|mon:Pelipper,player-1,1|stat:def|by:1",
             "boost|mon:Pelipper,player-1,1|stat:spd|by:1",
+            "move|mon:Pelipper,player-2,1|name:Stockpile|target:Pelipper,player-2,1",
+            "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
+            "boost|mon:Pelipper,player-2,1|stat:def|by:1",
+            "boost|mon:Pelipper,player-2,1|stat:spd|by:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -122,6 +124,9 @@ fn stockpile_changes_effect_of_spit_up() {
             "unboost|mon:Pelipper,player-2,1|stat:def|by:1",
             "unboost|mon:Pelipper,player-2,1|stat:spd|by:1",
             "end|mon:Pelipper,player-2,1|move:Stockpile",
+            "residual",
+            "turn|turn:6",
+            ["time"],
             "move|mon:Pelipper,player-1,1|name:Spit Up|target:Pelipper,player-2,1",
             "split|side:1",
             "damage|mon:Pelipper,player-2,1|health:13/120",
@@ -130,7 +135,7 @@ fn stockpile_changes_effect_of_spit_up() {
             "unboost|mon:Pelipper,player-1,1|stat:spd|by:3",
             "end|mon:Pelipper,player-1,1|move:Stockpile",
             "residual",
-            "turn|turn:6"
+            "turn|turn:7"
         ]"#,
     )
     .unwrap();
@@ -149,8 +154,10 @@ fn stockpile_changes_effect_of_swallow() {
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
@@ -163,38 +170,31 @@ fn stockpile_changes_effect_of_swallow() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pelipper,player-2,1|name:Stockpile|target:Pelipper,player-2,1",
-            "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
-            "boost|mon:Pelipper,player-2,1|stat:def|by:1",
-            "boost|mon:Pelipper,player-2,1|stat:spd|by:1",
             "move|mon:Pelipper,player-1,1|name:Stockpile|target:Pelipper,player-1,1",
             "start|mon:Pelipper,player-1,1|move:Stockpile|count:1",
             "boost|mon:Pelipper,player-1,1|stat:def|by:1",
             "boost|mon:Pelipper,player-1,1|stat:spd|by:1",
+            "move|mon:Pelipper,player-2,1|name:Stockpile|target:Pelipper,player-2,1",
+            "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
+            "boost|mon:Pelipper,player-2,1|stat:def|by:1",
+            "boost|mon:Pelipper,player-2,1|stat:spd|by:1",
             "residual",
-            "turn|turn:6",
+            "turn|turn:7",
             ["time"],
             "move|mon:Pelipper,player-1,1|name:Stockpile|target:Pelipper,player-1,1",
             "start|mon:Pelipper,player-1,1|move:Stockpile|count:2",
             "boost|mon:Pelipper,player-1,1|stat:def|by:1",
             "boost|mon:Pelipper,player-1,1|stat:spd|by:1",
             "residual",
-            "turn|turn:7",
+            "turn|turn:8",
             ["time"],
             "move|mon:Pelipper,player-1,1|name:Stockpile|target:Pelipper,player-1,1",
             "start|mon:Pelipper,player-1,1|move:Stockpile|count:3",
             "boost|mon:Pelipper,player-1,1|stat:def|by:1",
             "boost|mon:Pelipper,player-1,1|stat:spd|by:1",
             "residual",
-            "turn|turn:8",
+            "turn|turn:9",
             ["time"],
-            "move|mon:Pelipper,player-2,1|name:Swallow|target:Pelipper,player-2,1",
-            "split|side:1",
-            "heal|mon:Pelipper,player-2,1|health:43/120",
-            "heal|mon:Pelipper,player-2,1|health:36/100",
-            "unboost|mon:Pelipper,player-2,1|stat:def|by:1",
-            "unboost|mon:Pelipper,player-2,1|stat:spd|by:1",
-            "end|mon:Pelipper,player-2,1|move:Stockpile",
             "move|mon:Pelipper,player-1,1|name:Swallow|target:Pelipper,player-1,1",
             "split|side:0",
             "heal|mon:Pelipper,player-1,1|health:120/120",
@@ -202,10 +202,17 @@ fn stockpile_changes_effect_of_swallow() {
             "unboost|mon:Pelipper,player-1,1|stat:def|by:3",
             "unboost|mon:Pelipper,player-1,1|stat:spd|by:3",
             "end|mon:Pelipper,player-1,1|move:Stockpile",
+            "move|mon:Pelipper,player-2,1|name:Swallow|target:Pelipper,player-2,1",
+            "split|side:1",
+            "heal|mon:Pelipper,player-2,1|health:43/120",
+            "heal|mon:Pelipper,player-2,1|health:36/100",
+            "unboost|mon:Pelipper,player-2,1|stat:def|by:1",
+            "unboost|mon:Pelipper,player-2,1|stat:spd|by:1",
+            "end|mon:Pelipper,player-2,1|move:Stockpile",
             "residual",
-            "turn|turn:9"
+            "turn|turn:10"
         ]"#,
     )
     .unwrap();
-    assert_logs_since_turn_eq(&battle, 5, &expected_logs);
+    assert_logs_since_turn_eq(&battle, 6, &expected_logs);
 }

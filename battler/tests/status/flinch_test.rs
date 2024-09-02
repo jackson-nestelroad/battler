@@ -76,11 +76,11 @@ fn flinch_prevents_movement() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Rapidash,player-2,1|name:Stomp|target:Rapidash,player-1,1",
-            "split|side:0",
-            "damage|mon:Rapidash,player-1,1|health:85/125",
-            "damage|mon:Rapidash,player-1,1|health:68/100",
-            "cant|mon:Rapidash,player-1,1|reason:Flinch",
+            "move|mon:Rapidash,player-1,1|name:Stomp|target:Rapidash,player-2,1",
+            "split|side:1",
+            "damage|mon:Rapidash,player-2,1|health:85/125",
+            "damage|mon:Rapidash,player-2,1|health:68/100",
+            "cant|mon:Rapidash,player-2,1|reason:Flinch",
             "residual",
             "turn|turn:2"
         ]"#,

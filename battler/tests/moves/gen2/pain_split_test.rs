@@ -66,32 +66,32 @@ fn pain_split_splits_hp() {
     let mut battle = make_battle(&data, 0, misdreavus().unwrap(), misdreavus().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Misdreavus,player-2,1|name:Dark Pulse|target:Misdreavus,player-1,1",
-            "supereffective|mon:Misdreavus,player-1,1",
-            "split|side:0",
-            "damage|mon:Misdreavus,player-1,1|health:50/120",
-            "damage|mon:Misdreavus,player-1,1|health:42/100",
-            "move|mon:Misdreavus,player-1,1|name:Pain Split|target:Misdreavus,player-2,1",
-            "sethp|mon:Misdreavus,player-2,1|hp:85",
+            "move|mon:Misdreavus,player-1,1|name:Dark Pulse|target:Misdreavus,player-2,1",
+            "supereffective|mon:Misdreavus,player-2,1",
+            "split|side:1",
+            "damage|mon:Misdreavus,player-2,1|health:50/120",
+            "damage|mon:Misdreavus,player-2,1|health:42/100",
+            "move|mon:Misdreavus,player-2,1|name:Pain Split|target:Misdreavus,player-1,1",
             "sethp|mon:Misdreavus,player-1,1|hp:85",
+            "sethp|mon:Misdreavus,player-2,1|hp:85",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Misdreavus,player-2,1|name:Dark Pulse|target:Misdreavus,player-1,1",
-            "supereffective|mon:Misdreavus,player-1,1",
-            "split|side:0",
-            "damage|mon:Misdreavus,player-1,1|health:19/120",
-            "damage|mon:Misdreavus,player-1,1|health:16/100",
-            "move|mon:Misdreavus,player-1,1|name:Pain Split|target:Misdreavus,player-2,1",
-            "sethp|mon:Misdreavus,player-2,1|hp:52",
+            "move|mon:Misdreavus,player-1,1|name:Dark Pulse|target:Misdreavus,player-2,1",
+            "supereffective|mon:Misdreavus,player-2,1",
+            "split|side:1",
+            "damage|mon:Misdreavus,player-2,1|health:19/120",
+            "damage|mon:Misdreavus,player-2,1|health:16/100",
+            "move|mon:Misdreavus,player-2,1|name:Pain Split|target:Misdreavus,player-1,1",
             "sethp|mon:Misdreavus,player-1,1|hp:52",
+            "sethp|mon:Misdreavus,player-2,1|hp:52",
             "residual",
             "turn|turn:3"
         ]"#,

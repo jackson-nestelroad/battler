@@ -244,9 +244,9 @@ fn desolate_land_stops_when_last_mon_with_ability_switches_out() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["switch", "player-2", "Groudon"],
             ["switch", "player-1", "Groudon"],
-            "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-1,1",
+            ["switch", "player-2", "Groudon"],
+            "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-2,1",
             "weather|weather:Extremely Harsh Sunlight|residual",
             "residual",
             "turn|turn:2",

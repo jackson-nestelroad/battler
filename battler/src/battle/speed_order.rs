@@ -60,6 +60,20 @@ where
     })
 }
 
+fn stable_move_to_position<T>(items: &mut [T], index: usize, target: usize) {
+    if target == index {
+        return;
+    } else if index < target {
+        for i in index..target {
+            items.swap(i, i + 1);
+        }
+    } else {
+        for i in ((target + 1)..=index).rev() {
+            items.swap(i - 1, i);
+        }
+    }
+}
+
 // Selection sort implementation that shuffles tied elements.
 pub fn sort_with_random_ties<T, C>(
     items: &mut [T],
@@ -84,9 +98,8 @@ pub fn sort_with_random_ties<T, C>(
         // Move smallest elements to the beginning of the list.
         let ties = smallest_indices.len();
         for (i, item_index) in smallest_indices.into_iter().enumerate() {
-            if item_index != sorted + i {
-                items.swap(sorted + i, item_index);
-            }
+            // Stable sort to make testing much easier.
+            stable_move_to_position(items, item_index, sorted + i);
         }
         // Shuffle ties.
         if ties > 1 {

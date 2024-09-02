@@ -78,15 +78,15 @@ fn tri_attack_applies_random_status() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Dugtrio,player-2,1|name:Tri Attack|target:Dugtrio,player-1,1",
-            "split|side:0",
-            "damage|mon:Dugtrio,player-1,1|health:71/95",
-            "damage|mon:Dugtrio,player-1,1|health:75/100",
             "move|mon:Dugtrio,player-1,1|name:Tri Attack|target:Dugtrio,player-2,1",
             "split|side:1",
-            "damage|mon:Dugtrio,player-2,1|health:68/95",
-            "damage|mon:Dugtrio,player-2,1|health:72/100",
-            "status|mon:Dugtrio,player-2,1|status:Freeze",
+            "damage|mon:Dugtrio,player-2,1|health:71/95",
+            "damage|mon:Dugtrio,player-2,1|health:75/100",
+            "move|mon:Dugtrio,player-2,1|name:Tri Attack|target:Dugtrio,player-1,1",
+            "split|side:0",
+            "damage|mon:Dugtrio,player-1,1|health:68/95",
+            "damage|mon:Dugtrio,player-1,1|health:72/100",
+            "status|mon:Dugtrio,player-1,1|status:Freeze",
             "residual",
             "turn|turn:2"
         ]"#,

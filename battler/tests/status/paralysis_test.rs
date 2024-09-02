@@ -150,10 +150,10 @@ fn electric_types_resist_paralysis() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Thunder Wave|noanim",
-            "immune|mon:Pikachu,player-1,1",
             "move|mon:Pikachu,player-1,1|name:Thunder Wave|noanim",
             "immune|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-2,1|name:Thunder Wave|noanim",
+            "immune|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

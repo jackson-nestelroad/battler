@@ -17,6 +17,7 @@ use battler::{
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,
+    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
 };
@@ -71,6 +72,7 @@ fn make_battle(
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_controlled_rng(true)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
@@ -113,25 +115,25 @@ fn light_screen_halves_special_damage_in_singles() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Raichu,player-2,1|name:Tackle|target:Raichu,player-1,1",
-            "split|side:0",
-            "damage|mon:Raichu,player-1,1|health:91/120",
-            "damage|mon:Raichu,player-1,1|health:76/100",
             "move|mon:Raichu,player-1,1|name:Tackle|target:Raichu,player-2,1",
             "split|side:1",
             "damage|mon:Raichu,player-2,1|health:91/120",
             "damage|mon:Raichu,player-2,1|health:76/100",
+            "move|mon:Raichu,player-2,1|name:Tackle|target:Raichu,player-1,1",
+            "split|side:0",
+            "damage|mon:Raichu,player-1,1|health:91/120",
+            "damage|mon:Raichu,player-1,1|health:76/100",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Raichu,player-2,1|name:Psychic|target:Raichu,player-1,1",
-            "split|side:0",
-            "damage|mon:Raichu,player-1,1|health:68/120",
-            "damage|mon:Raichu,player-1,1|health:57/100",
             "move|mon:Raichu,player-1,1|name:Psychic|target:Raichu,player-2,1",
             "split|side:1",
             "damage|mon:Raichu,player-2,1|health:45/120",
             "damage|mon:Raichu,player-2,1|health:38/100",
+            "move|mon:Raichu,player-2,1|name:Psychic|target:Raichu,player-1,1",
+            "split|side:0",
+            "damage|mon:Raichu,player-1,1|health:68/120",
+            "damage|mon:Raichu,player-1,1|health:57/100",
             "residual",
             "turn|turn:4",
             ["time"],
@@ -142,10 +144,6 @@ fn light_screen_halves_special_damage_in_singles() {
             "residual",
             "turn|turn:6",
             ["time"],
-            "move|mon:Raichu,player-2,1|name:Psychic|target:Raichu,player-1,1",
-            "split|side:0",
-            "damage|mon:Raichu,player-1,1|health:22/120",
-            "damage|mon:Raichu,player-1,1|health:19/100",
             "move|mon:Raichu,player-1,1|name:Psychic|target:Raichu,player-2,1",
             "split|side:1",
             "damage|mon:Raichu,player-2,1|health:0",
@@ -205,36 +203,36 @@ fn light_screen_applies_two_thirds_special_damage_in_doubles() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Alakazam,player-2,2|name:Psychic|target:Raichu,player-1,1",
-            "split|side:0",
-            "damage|mon:Raichu,player-1,1|health:54/120",
-            "damage|mon:Raichu,player-1,1|health:45/100",
             "move|mon:Alakazam,player-1,2|name:Psychic|target:Raichu,player-2,1",
             "split|side:1",
             "damage|mon:Raichu,player-2,1|health:20/120",
             "damage|mon:Raichu,player-2,1|health:17/100",
+            "move|mon:Alakazam,player-2,2|name:Psychic|target:Raichu,player-1,1",
+            "split|side:0",
+            "damage|mon:Raichu,player-1,1|health:54/120",
+            "damage|mon:Raichu,player-1,1|health:45/100",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Raichu,player-2,1|name:Tackle|target:Alakazam,player-1,2",
-            "split|side:0",
-            "damage|mon:Alakazam,player-1,2|health:80/115",
-            "damage|mon:Alakazam,player-1,2|health:70/100",
             "move|mon:Raichu,player-1,1|name:Tackle|target:Alakazam,player-2,2",
             "split|side:1",
             "damage|mon:Alakazam,player-2,2|health:80/115",
             "damage|mon:Alakazam,player-2,2|health:70/100",
+            "move|mon:Raichu,player-2,1|name:Tackle|target:Alakazam,player-1,2",
+            "split|side:0",
+            "damage|mon:Alakazam,player-1,2|health:80/115",
+            "damage|mon:Alakazam,player-1,2|health:70/100",
             "residual",
             "turn|turn:4",
             ["time"],
-            "move|mon:Raichu,player-2,1|name:Thunderbolt|target:Alakazam,player-1,2",
-            "split|side:0",
-            "damage|mon:Alakazam,player-1,2|health:42/115",
-            "damage|mon:Alakazam,player-1,2|health:37/100",
             "move|mon:Raichu,player-1,1|name:Thunderbolt|target:Alakazam,player-2,2",
             "split|side:1",
             "damage|mon:Alakazam,player-2,2|health:22/115",
             "damage|mon:Alakazam,player-2,2|health:20/100",
+            "move|mon:Raichu,player-2,1|name:Thunderbolt|target:Alakazam,player-1,2",
+            "split|side:0",
+            "damage|mon:Alakazam,player-1,2|health:42/115",
+            "damage|mon:Alakazam,player-1,2|health:37/100",
             "residual",
             "turn|turn:5"
         ]"#,
@@ -249,7 +247,7 @@ fn critical_hit_bypasses_light_screen() {
     let mut battle = make_battle(
         &data,
         BattleType::Singles,
-        102222307471928,
+        0,
         team().unwrap(),
         team().unwrap(),
     )
@@ -260,6 +258,10 @@ fn critical_hit_bypasses_light_screen() {
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(4, 0)]);
+
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
@@ -270,22 +272,22 @@ fn critical_hit_bypasses_light_screen() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Raichu,player-2,1|name:Razor Wind|noanim",
-            "prepare|mon:Raichu,player-2,1|move:Razor Wind",
             "move|mon:Raichu,player-1,1|name:Razor Wind|noanim",
             "prepare|mon:Raichu,player-1,1|move:Razor Wind",
+            "move|mon:Raichu,player-2,1|name:Razor Wind|noanim",
+            "prepare|mon:Raichu,player-2,1|move:Razor Wind",
             "residual",
             "turn|turn:3",
             ["time"],
+            "move|mon:Raichu,player-1,1|name:Razor Wind",
+            "split|side:1",
+            "damage|mon:Raichu,player-2,1|health:79/120",
+            "damage|mon:Raichu,player-2,1|health:66/100",
             "move|mon:Raichu,player-2,1|name:Razor Wind",
             "crit|mon:Raichu,player-1,1",
             "split|side:0",
             "damage|mon:Raichu,player-1,1|health:59/120",
             "damage|mon:Raichu,player-1,1|health:50/100",
-            "move|mon:Raichu,player-1,1|name:Razor Wind",
-            "split|side:1",
-            "damage|mon:Raichu,player-2,1|health:79/120",
-            "damage|mon:Raichu,player-2,1|health:66/100",
             "residual",
             "turn|turn:4"
         ]"#,

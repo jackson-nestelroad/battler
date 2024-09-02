@@ -95,35 +95,35 @@ fn conversion_sets_users_type() {
     let mut battle = make_battle(
         &data,
         0,
-        normal_type_conversion().unwrap(),
         water_type_conversion().unwrap(),
+        normal_type_conversion().unwrap(),
     )
     .unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Porygon,player-2,1|name:Conversion|target:Porygon,player-2,1",
-            "typechange|mon:Porygon,player-2,1|types:Water",
-            "move|mon:Porygon,player-1,1|name:Conversion|noanim",
-            "fail|mon:Porygon,player-1,1",
+            "move|mon:Porygon,player-1,1|name:Conversion|target:Porygon,player-1,1",
+            "typechange|mon:Porygon,player-1,1|types:Water",
+            "move|mon:Porygon,player-2,1|name:Conversion|noanim",
+            "fail|mon:Porygon,player-2,1",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Porygon,player-2,1|name:Water Gun|target:Porygon,player-1,1",
-            "split|side:0",
-            "damage|mon:Porygon,player-1,1|health:94/125",
-            "damage|mon:Porygon,player-1,1|health:76/100",
             "move|mon:Porygon,player-1,1|name:Water Gun|target:Porygon,player-2,1",
-            "resisted|mon:Porygon,player-2,1",
             "split|side:1",
-            "damage|mon:Porygon,player-2,1|health:115/125",
-            "damage|mon:Porygon,player-2,1|health:92/100",
+            "damage|mon:Porygon,player-2,1|health:94/125",
+            "damage|mon:Porygon,player-2,1|health:76/100",
+            "move|mon:Porygon,player-2,1|name:Water Gun|target:Porygon,player-1,1",
+            "resisted|mon:Porygon,player-1,1",
+            "split|side:0",
+            "damage|mon:Porygon,player-1,1|health:115/125",
+            "damage|mon:Porygon,player-1,1|health:92/100",
             "residual",
             "turn|turn:3"
         ]"#,

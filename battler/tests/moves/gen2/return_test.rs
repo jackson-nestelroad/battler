@@ -100,14 +100,14 @@ fn return_power_depends_on_happiness() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Typhlosion,player-2,1|name:Return|target:Typhlosion,player-1,1",
-            "split|side:0",
-            "damage|mon:Typhlosion,player-1,1|health:90/138",
-            "damage|mon:Typhlosion,player-1,1|health:66/100",
             "move|mon:Typhlosion,player-1,1|name:Return|target:Typhlosion,player-2,1",
             "split|side:1",
-            "damage|mon:Typhlosion,player-2,1|health:120/138",
+            "damage|mon:Typhlosion,player-2,1|health:119/138",
             "damage|mon:Typhlosion,player-2,1|health:87/100",
+            "move|mon:Typhlosion,player-2,1|name:Return|target:Typhlosion,player-1,1",
+            "split|side:0",
+            "damage|mon:Typhlosion,player-1,1|health:93/138",
+            "damage|mon:Typhlosion,player-1,1|health:68/100",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -133,14 +133,14 @@ fn frustration_power_depends_on_happiness() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "move|mon:Typhlosion,player-1,1|name:Frustration|target:Typhlosion,player-2,1",
+            "split|side:1",
+            "damage|mon:Typhlosion,player-2,1|health:108/138",
+            "damage|mon:Typhlosion,player-2,1|health:79/100",
             "move|mon:Typhlosion,player-2,1|name:Frustration|target:Typhlosion,player-1,1",
             "split|side:0",
             "damage|mon:Typhlosion,player-1,1|health:137/138",
             "damage|mon:Typhlosion,player-1,1|health:99/100",
-            "move|mon:Typhlosion,player-1,1|name:Frustration|target:Typhlosion,player-2,1",
-            "split|side:1",
-            "damage|mon:Typhlosion,player-2,1|health:111/138",
-            "damage|mon:Typhlosion,player-2,1|health:81/100",
             "residual",
             "turn|turn:2"
         ]"#,

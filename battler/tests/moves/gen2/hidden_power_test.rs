@@ -98,16 +98,16 @@ fn hidden_power_uses_hidden_power_type() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Unown,player-2,1|name:Hidden Power|target:Unown,player-1,1",
-            "resisted|mon:Unown,player-1,1",
-            "split|side:0",
-            "damage|mon:Unown,player-1,1|health:80/108",
-            "damage|mon:Unown,player-1,1|health:75/100",
             "move|mon:Unown,player-1,1|name:Hidden Power|target:Unown,player-2,1",
             "supereffective|mon:Unown,player-2,1",
             "split|side:1",
-            "damage|mon:Unown,player-2,1|health:36/108",
-            "damage|mon:Unown,player-2,1|health:34/100",
+            "damage|mon:Unown,player-2,1|health:32/108",
+            "damage|mon:Unown,player-2,1|health:30/100",
+            "move|mon:Unown,player-2,1|name:Hidden Power|target:Unown,player-1,1",
+            "resisted|mon:Unown,player-1,1",
+            "split|side:0",
+            "damage|mon:Unown,player-1,1|health:81/108",
+            "damage|mon:Unown,player-1,1|health:75/100",
             "residual",
             "turn|turn:2"
         ]"#,

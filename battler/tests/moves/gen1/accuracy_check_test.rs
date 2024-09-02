@@ -135,27 +135,27 @@ fn accuracy_check_applies_normally() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
-            "resisted|mon:Pikachu,player-1,1",
-            "split|side:0",
-            "damage|mon:Pikachu,player-1,1|health:60/95",
-            "damage|mon:Pikachu,player-1,1|health:64/100",
-            "move|mon:Pikachu,player-1,1|name:Thunder|noanim",
-            "miss|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1",
+            "resisted|mon:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:60/95",
+            "damage|mon:Pikachu,player-2,1|health:64/100",
+            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
+            "miss|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
-            "resisted|mon:Pikachu,player-1,1",
-            "split|side:0",
-            "damage|mon:Pikachu,player-1,1|health:27/95",
-            "damage|mon:Pikachu,player-1,1|health:29/100",
             "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1",
             "resisted|mon:Pikachu,player-2,1",
-            "crit|mon:Pikachu,player-2,1",
             "split|side:1",
-            "damage|mon:Pikachu,player-2,1|health:40/95",
-            "damage|mon:Pikachu,player-2,1|health:43/100",
+            "damage|mon:Pikachu,player-2,1|health:27/95",
+            "damage|mon:Pikachu,player-2,1|health:29/100",
+            "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
+            "resisted|mon:Pikachu,player-1,1",
+            "crit|mon:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:40/95",
+            "damage|mon:Pikachu,player-1,1|health:43/100",
             "residual",
             "turn|turn:3"
         ]"#,
@@ -187,41 +187,41 @@ fn accuracy_check_impacted_by_lowered_accuracy() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
-            "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
-            "move|mon:Pikachu,player-1,1|name:Sand Attack|noanim",
-            "miss|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
+            "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
+            "move|mon:Pikachu,player-2,1|name:Sand Attack|noanim",
+            "miss|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
-            "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
             "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
             "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
+            "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
+            "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
-            "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
             "move|mon:Pikachu,player-1,1|name:Sand Attack|target:Pikachu,player-2,1",
             "unboost|mon:Pikachu,player-2,1|stat:acc|by:1",
+            "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
+            "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
             "residual",
             "turn|turn:4",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
-            "miss|mon:Pikachu,player-1,1",
             "move|mon:Pikachu,player-1,1|name:Thunder|noanim",
             "miss|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
+            "miss|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:5",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
-            "resisted|mon:Pikachu,player-1,1",
-            "split|side:0",
-            "damage|mon:Pikachu,player-1,1|health:61/95",
-            "damage|mon:Pikachu,player-1,1|health:65/100",
-            "move|mon:Pikachu,player-1,1|name:Thunder|noanim",
-            "miss|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1",
+            "resisted|mon:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:61/95",
+            "damage|mon:Pikachu,player-2,1|health:65/100",
+            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
+            "miss|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -253,41 +253,41 @@ fn accuracy_check_impacted_by_raised_evasion() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
-            "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
             "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
             "boost|mon:Pikachu,player-1,1|stat:eva|by:1",
+            "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
+            "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
-            "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
             "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
             "boost|mon:Pikachu,player-1,1|stat:eva|by:1",
+            "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
+            "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
-            "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
             "move|mon:Pikachu,player-1,1|name:Double Team|target:Pikachu,player-1,1",
             "boost|mon:Pikachu,player-1,1|stat:eva|by:1",
+            "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
+            "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
             "residual",
             "turn|turn:4",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Thunder|target:Pikachu,player-1,1",
-            "resisted|mon:Pikachu,player-1,1",
-            "split|side:0",
-            "damage|mon:Pikachu,player-1,1|health:59/95",
-            "damage|mon:Pikachu,player-1,1|health:63/100",
-            "move|mon:Pikachu,player-1,1|name:Thunder|noanim",
-            "miss|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-1,1|name:Thunder|target:Pikachu,player-2,1",
+            "resisted|mon:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:59/95",
+            "damage|mon:Pikachu,player-2,1|health:63/100",
+            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
+            "miss|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:5",
             ["time"],
-            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
-            "miss|mon:Pikachu,player-1,1",
             "move|mon:Pikachu,player-1,1|name:Thunder|noanim",
             "miss|mon:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-2,1|name:Thunder|noanim",
+            "miss|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -313,10 +313,10 @@ fn accuracy_check_for_each_target() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,2|name:Double Team|target:Pikachu,player-2,2",
-            "boost|mon:Pikachu,player-2,2|stat:eva|by:1",
             "move|mon:Pikachu,player-2,1|name:Sand Attack|target:Pikachu,player-1,1",
             "unboost|mon:Pikachu,player-1,1|stat:acc|by:1",
+            "move|mon:Pikachu,player-2,2|name:Double Team|target:Pikachu,player-2,2",
+            "boost|mon:Pikachu,player-2,2|stat:eva|by:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -346,11 +346,14 @@ fn accuracy_check_only_once_for_multihit_moves() {
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
     assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+
+    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
@@ -372,6 +375,9 @@ fn accuracy_check_only_once_for_multihit_moves() {
             ["time"],
             "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
             "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
+            "residual",
+            "turn|turn:4",
+            ["time"],
             "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1",
             "split|side:1",
             "damage|mon:Pikachu,player-2,1|health:86/95",
@@ -385,11 +391,11 @@ fn accuracy_check_only_once_for_multihit_moves() {
             "damage|mon:Pikachu,player-2,1|health:68/95",
             "damage|mon:Pikachu,player-2,1|health:72/100",
             "hitcount|hits:3",
-            "residual",
-            "turn|turn:4",
-            ["time"],
             "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
             "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
+            "residual",
+            "turn|turn:5",
+            ["time"],
             "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1",
             "split|side:1",
             "damage|mon:Pikachu,player-2,1|health:60/95",
@@ -408,12 +414,12 @@ fn accuracy_check_only_once_for_multihit_moves() {
             "damage|mon:Pikachu,player-2,1|health:35/100",
             "hitcount|hits:4",
             "residual",
-            "turn|turn:5",
+            "turn|turn:6",
             ["time"],
             "move|mon:Pikachu,player-1,1|name:Fury Attack|noanim",
             "miss|mon:Pikachu,player-2,1",
             "residual",
-            "turn|turn:6",
+            "turn|turn:7",
             ["time"],
             "move|mon:Pikachu,player-1,1|name:Fury Attack|target:Pikachu,player-2,1",
             "crit|mon:Pikachu,player-2,1",
@@ -426,7 +432,7 @@ fn accuracy_check_only_once_for_multihit_moves() {
             "damage|mon:Pikachu,player-2,1|health:14/100",
             "hitcount|hits:2",
             "residual",
-            "turn|turn:7"
+            "turn|turn:8"
         ]"#,
     )
     .unwrap();
@@ -442,8 +448,11 @@ fn accuracy_check_for_multiaccuracy_moves() {
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+
+    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
@@ -463,10 +472,13 @@ fn accuracy_check_for_multiaccuracy_moves() {
             ["time"],
             "move|mon:Pikachu,player-2,1|name:Double Team|target:Pikachu,player-2,1",
             "boost|mon:Pikachu,player-2,1|stat:eva|by:1",
+            "residual",
+            "turn|turn:3",
+            ["time"],
             "move|mon:Pikachu,player-1,1|name:Triple Kick|noanim",
             "miss|mon:Pikachu,player-2,1",
             "residual",
-            "turn|turn:3",
+            "turn|turn:4",
             ["time"],
             "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
             "split|side:1",
@@ -480,7 +492,7 @@ fn accuracy_check_for_multiaccuracy_moves() {
             "miss|mon:Pikachu,player-2,1",
             "hitcount|hits:2",
             "residual",
-            "turn|turn:4",
+            "turn|turn:5",
             ["time"],
             "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
             "split|side:1",
@@ -497,7 +509,7 @@ fn accuracy_check_for_multiaccuracy_moves() {
             "damage|mon:Pikachu,player-2,1|health:37/100",
             "hitcount|hits:3",
             "residual",
-            "turn|turn:5",
+            "turn|turn:6",
             ["time"],
             "move|mon:Pikachu,player-1,1|name:Triple Kick|target:Pikachu,player-2,1",
             "split|side:1",
@@ -507,7 +519,7 @@ fn accuracy_check_for_multiaccuracy_moves() {
             "miss|mon:Pikachu,player-2,1",
             "hitcount|hits:1",
             "residual",
-            "turn|turn:6"
+            "turn|turn:7"
         ]"#,
     )
     .unwrap();

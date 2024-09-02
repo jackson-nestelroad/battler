@@ -62,14 +62,14 @@ fn moves_can_deal_static_damage() {
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Bulbasaur,player-2,1|name:Dragon Rage|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:65/105",
-            "damage|mon:Bulbasaur,player-1,1|health:62/100",
             "move|mon:Bulbasaur,player-1,1|name:Dragon Rage|target:Bulbasaur,player-2,1",
             "split|side:1",
             "damage|mon:Bulbasaur,player-2,1|health:65/105",
             "damage|mon:Bulbasaur,player-2,1|health:62/100",
+            "move|mon:Bulbasaur,player-2,1|name:Dragon Rage|target:Bulbasaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Bulbasaur,player-1,1|health:65/105",
+            "damage|mon:Bulbasaur,player-1,1|health:62/100",
             "residual",
             "turn|turn:2"
         ]"#,

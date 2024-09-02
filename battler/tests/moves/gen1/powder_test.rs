@@ -71,10 +71,10 @@ fn grass_types_resist_powder() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Paras,player-2,1|name:Stun Spore|noanim",
-            "immune|mon:Paras,player-1,1",
             "move|mon:Paras,player-1,1|name:Spore|noanim",
             "immune|mon:Paras,player-2,1",
+            "move|mon:Paras,player-2,1|name:Stun Spore|noanim",
+            "immune|mon:Paras,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,
