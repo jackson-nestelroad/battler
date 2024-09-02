@@ -337,6 +337,16 @@ impl SpeedOrderable for SpeedOrderableMon {
     }
 }
 
+/// Information about a single attack received by a [`Mon`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReceivedAttackEntry {
+    pub source: MonHandle,
+    pub source_side: usize,
+    pub source_position: usize,
+    pub damage: u16,
+    pub turn: u64,
+}
+
 /// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -412,6 +422,7 @@ pub struct Mon {
     pub stats_raised_this_turn: bool,
     pub stats_lowered_this_turn: bool,
     pub foes_fought_while_active: FastHashSet<MonHandle>,
+    pub received_attacks: Vec<ReceivedAttackEntry>,
 
     pub status: Option<Id>,
     pub status_state: fxlang::EffectState,
@@ -551,6 +562,7 @@ impl Mon {
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
             foes_fought_while_active: FastHashSet::new(),
+            received_attacks: Vec::new(),
 
             status: None,
             status_state: fxlang::EffectState::new(),
@@ -1218,6 +1230,7 @@ impl Mon {
         context.mon_mut().last_move_target_location = None;
         context.mon_mut().last_move_used = None;
         context.mon_mut().foes_fought_while_active.clear();
+        context.mon_mut().received_attacks.clear();
 
         context.mon_mut().clear_boosts();
 

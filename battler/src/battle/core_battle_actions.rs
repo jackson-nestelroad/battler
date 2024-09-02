@@ -1476,7 +1476,12 @@ pub fn apply_recoil_damage(
 }
 
 mod direct_move_step {
-    use std::ops::Mul;
+    use std::{
+        collections::hash_map::Entry,
+        ops::Mul,
+    };
+
+    use ahash::HashMapExt;
 
     use super::check_immunity;
     use crate::{
@@ -1492,9 +1497,11 @@ mod direct_move_step {
             MonHandle,
             MoveOutcome,
             MoveOutcomeOnTarget,
+            ReceivedAttackEntry,
         },
         common::{
             Error,
+            FastHashMap,
             Fraction,
             WrapResultError,
         },
@@ -1753,6 +1760,8 @@ mod direct_move_step {
 
         // TODO: Consider Loaded Dice item.
 
+        let mut target_hit_results = FastHashMap::new();
+
         for hit in 0..hits {
             // No more targets.
             if targets.iter().all(|target| !target.outcome.success()) {
@@ -1846,6 +1855,17 @@ mod direct_move_step {
                 })
                 .sum::<u64>();
 
+            for state in hit_targets_state.iter() {
+                match target_hit_results.entry(state.handle) {
+                    Entry::Vacant(entry) => {
+                        entry.insert(state.outcome);
+                    }
+                    Entry::Occupied(mut entry) => {
+                        *entry.get_mut() = entry.get().combine(state.outcome)
+                    }
+                }
+            }
+
             // TODO: Update event for everything on the field, like items.
         }
 
@@ -1880,7 +1900,26 @@ mod direct_move_step {
             );
         }
 
-        // TODO: Record which Mon attacked which, and how many times.
+        // Record received attacks. Multihit moves are folded into one attack at this point.
+        for (target, result) in target_hit_results {
+            let source = context.mon_handle();
+            if target != source && result.hit() {
+                let turn = context.battle().turn();
+                let source_side = context.side().index;
+                let source_position = Mon::position_on_side(context.as_mon_context())?;
+                context
+                    .target_mon_context(target)?
+                    .mon_mut()
+                    .received_attacks
+                    .push(ReceivedAttackEntry {
+                        source,
+                        source_side,
+                        source_position,
+                        damage: result.damage(),
+                        turn,
+                    });
+            }
+        }
 
         // At this point, all hits have been applied.
         Ok(())

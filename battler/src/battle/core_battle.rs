@@ -510,6 +510,10 @@ impl<'d> CoreBattle<'d> {
             .max()
             .unwrap_or(0)
     }
+
+    pub fn turn(&self) -> u64 {
+        self.turn
+    }
 }
 
 // Block for methods that are only called from the public interface.

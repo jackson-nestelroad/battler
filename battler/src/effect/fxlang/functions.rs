@@ -160,6 +160,7 @@ pub fn run_function(
         "prepare_direct_move" => prepare_direct_move(context).map(|val| Some(val)),
         "random" => random(context).map(|val| Some(val)),
         "random_target" => random_target(context),
+        "received_attack" => received_attack(context).map(|val| Some(val)),
         "remove" => remove(context).map(|val| Some(val)),
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
@@ -2644,4 +2645,36 @@ fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
         false,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn received_attack(mut context: FunctionContext) -> Result<Value, Error> {
+    let has_damage = context.has_flag("has_damage");
+    let this_turn = context.has_flag("this_turn");
+    let target = context
+        .pop_front()
+        .wrap_error_with_message("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    let source = context
+        .pop_front()
+        .wrap_error_with_message("missing source")?
+        .mon_handle()
+        .wrap_error_with_message("invalid source")?;
+    let turn = context
+        .evaluation_context()
+        .battle_context()
+        .battle()
+        .turn();
+    Ok(Value::Boolean(
+        context
+            .evaluation_context()
+            .mon(target)?
+            .received_attacks
+            .iter()
+            .any(|entry| {
+                entry.source == source
+                    && (!has_damage || entry.damage > 0)
+                    && (!this_turn || entry.turn == turn)
+            }),
+    ))
 }

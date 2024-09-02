@@ -754,7 +754,16 @@
     "base_power": 60,
     "priority": -4,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$attacked_by_target = func_call(received_attack: $source $target has_damage this_turn)",
+          "if $attacked_by_target:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "brickbreak": {
     "name": "Brick Break",

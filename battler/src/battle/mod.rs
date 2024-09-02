@@ -104,6 +104,7 @@ pub use mon::{
     MonSummaryRequestData,
     MoveSlot,
     PublicMonDetails,
+    ReceivedAttackEntry,
 };
 pub use move_outcome::{
     MoveEventResult,
