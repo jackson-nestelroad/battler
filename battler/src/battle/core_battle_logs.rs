@@ -52,12 +52,6 @@ pub fn cant(context: &mut MonContext, reason: &str, do_what: Option<&str>) -> Re
     Ok(())
 }
 
-pub fn hint(context: &mut Context, hint: &str) -> Result<(), Error> {
-    let event = log_event!("hint", ("details", hint));
-    context.battle_mut().log(event);
-    Ok(())
-}
-
 pub fn use_move(
     context: &mut MonContext,
     move_name: &str,
@@ -581,6 +575,7 @@ pub fn item_end(
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
     silent: bool,
+    eat: bool,
 ) -> Result<(), Error> {
     let mut event = log_event!(
         "itemend",
@@ -604,6 +599,9 @@ pub fn item_end(
 
     if silent {
         event.add_flag("silent");
+    }
+    if eat {
+        event.add_flag("eat");
     }
 
     context.battle_mut().log(event);

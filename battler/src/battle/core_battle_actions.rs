@@ -100,7 +100,6 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
                     fxlang::BattleEvent::BeforeSwitchOut,
                     fxlang::VariableInput::default(),
                 );
-                // TODO: Update event.
             }
             context.mon_mut().skip_before_switch_out = false;
 
@@ -141,11 +140,7 @@ pub fn switch_in(
     mut switch_type: Option<SwitchType>,
     is_drag: bool,
 ) -> Result<bool, Error> {
-    if context.mon_mut().active {
-        core_battle_logs::hint(
-            context.as_battle_context_mut(),
-            "A switch failed because the Mon trying to switch in is already in.",
-        )?;
+    if context.mon().active {
         return Ok(false);
     }
 
@@ -1869,7 +1864,8 @@ mod direct_move_step {
                 }
             }
 
-            // TODO: Update event for everything on the field, like items.
+            // Run effects between move hits.
+            CoreBattle::update(context.as_battle_context_mut())?;
         }
 
         // Log OHKOs.
@@ -1888,20 +1884,6 @@ mod direct_move_step {
         }
 
         core_battle_actions::apply_recoil_damage(context, context.active_move().total_damage)?;
-
-        for target in targets.iter().filter(|target| target.outcome.success()) {
-            core_battle_effects::run_active_move_event_expecting_void(
-                context,
-                fxlang::BattleEvent::AfterMoveSecondaryEffects,
-                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                fxlang::VariableInput::default(),
-            );
-            core_battle_effects::run_event_for_applying_effect(
-                &mut context.applying_effect_context_for_target(target.handle)?,
-                fxlang::BattleEvent::AfterMoveSecondaryEffects,
-                fxlang::VariableInput::default(),
-            );
-        }
 
         // Record received attacks. Multihit moves are folded into one attack at this point.
         for (target, result) in target_hit_results {
@@ -1922,6 +1904,23 @@ mod direct_move_step {
                         turn,
                     });
             }
+        }
+
+        // Trigger effects at the end of each move.
+        CoreBattle::update(context.as_battle_context_mut())?;
+
+        for target in targets.iter().filter(|target| target.outcome.success()) {
+            core_battle_effects::run_active_move_event_expecting_void(
+                context,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
+                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                fxlang::VariableInput::default(),
+            );
+            core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
+                fxlang::VariableInput::default(),
+            );
         }
 
         // At this point, all hits have been applied.
@@ -3908,7 +3907,49 @@ pub fn take_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<Op
         source,
         Some(&effect),
         silent,
+        false,
     )?;
 
     Ok(Some(item_id))
+}
+
+/// Makes the target Mon eat its held item (berries).
+pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+    if context.target().hp == 0 || !context.target().active {
+        return Ok(false);
+    }
+
+    let item_id = match &context.target().item {
+        Some(item) => item.id.clone(),
+        None => return Ok(false),
+    };
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item_id)?
+        .clone();
+    let item_name = CoreBattle::get_effect_by_handle(context.as_battle_context(), &item_handle)?
+        .name()
+        .to_owned();
+
+    // TODO: UseItem event.
+    // TODO: TryEatItem event.
+
+    core_battle_logs::item_end(
+        &mut context.target_context()?,
+        &item_name,
+        None,
+        None,
+        false,
+        true,
+    )?;
+
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Eat);
+    // TODO: EatItem event.
+
+    context.target_mut().last_item = Some(item_id);
+    context.target_mut().item = None;
+
+    // TODO: AfterUseItem event.
+
+    Ok(true)
 }

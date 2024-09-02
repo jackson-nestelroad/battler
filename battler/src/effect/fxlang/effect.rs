@@ -377,6 +377,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Duration"]
     Duration,
+    /// Runs when an item is eaten.
+    ///
+    /// Runs on the item itself.
+    #[string = "Eat"]
+    Eat,
     /// Runs when determining the type effectiveness of a move.
     ///
     /// Runs on the active move itself and in the context of an active move on the target.
@@ -874,6 +879,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Types"]
     Types,
+    /// Runs when miscellaneous Mon effects in the battle could activate.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "Update"]
+    Update,
     /// Runs when a Mon uses a move.
     ///
     /// Can be used to modify a move when it is used.
@@ -930,6 +940,7 @@ impl BattleEvent {
             Self::DragOut => CommonCallbackType::MonResult as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
+            Self::Eat => CommonCallbackType::MonVoid as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::EntryHazard => CommonCallbackType::MonVoid as u32,
             Self::Exit => CommonCallbackType::MonVoid as u32,
@@ -1015,6 +1026,7 @@ impl BattleEvent {
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
+            Self::Update => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
             Self::Weather => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1346,6 +1358,7 @@ pub struct Callbacks {
     pub on_deduct_pp: Callback,
     pub on_drag_out: Callback,
     pub on_duration: Callback,
+    pub on_eat: Callback,
     pub on_effectiveness: Callback,
     pub on_end: Callback,
     pub on_entry_hazard: Callback,
@@ -1418,6 +1431,7 @@ pub struct Callbacks {
     pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
     pub on_types: Callback,
+    pub on_update: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
     pub on_weather: Callback,
@@ -1459,6 +1473,7 @@ impl Callbacks {
             BattleEvent::DisableMove => Some(&self.on_disable_move),
             BattleEvent::DragOut => Some(&self.on_drag_out),
             BattleEvent::Duration => Some(&self.on_duration),
+            BattleEvent::Eat => Some(&self.on_eat),
             BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::EntryHazard => Some(&self.on_entry_hazard),
@@ -1545,6 +1560,7 @@ impl Callbacks {
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::Types => Some(&self.on_types),
+            BattleEvent::Update => Some(&self.on_update),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
             BattleEvent::Weather => Some(&self.on_weather),

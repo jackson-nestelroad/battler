@@ -194,7 +194,13 @@
     "name": "Rawst Berry",
     "fling": { "power": 10 },
     "berry": true,
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_update": ["if $mon.status == brn:", ["eat_item: $mon"]],
+        "on_eat": ["if $mon.status == brn:", ["cure_status: $mon"]]
+      }
+    }
   },
   "aspearberry": {
     "name": "Aspear Berry",

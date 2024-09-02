@@ -1246,7 +1246,7 @@ impl<'d> CoreBattle<'d> {
 
         // TODO: Update speed dynamically, if we wish to support it like gen 8 does.
 
-        // TODO: Update event for everything on the field.
+        Self::update(context)?;
 
         let mut some_switch_needed = false;
         for player in context.battle().player_indices() {
@@ -1843,5 +1843,13 @@ impl<'d> CoreBattle<'d> {
         let prng = unsafe { mem::transmute(prng) };
         let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
         speed_sort(items, prng, tie_resolution);
+    }
+
+    /// Updates the battle, triggering any miscellaneous effects on Mons that could activate.
+    pub fn update(context: &mut Context) -> Result<(), Error> {
+        core_battle_effects::run_event_for_each_active_mon(
+            &mut context.effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
+            fxlang::BattleEvent::Update,
+        )
     }
 }

@@ -67,6 +67,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::DisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::DragOut, callbacks)?;
             parsed.parse_and_save(BattleEvent::Duration, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Eat, callbacks)?;
             parsed.parse_and_save(BattleEvent::Effectiveness, callbacks)?;
             parsed.parse_and_save(BattleEvent::End, callbacks)?;
             parsed.parse_and_save(BattleEvent::EntryHazard, callbacks)?;
@@ -153,6 +154,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::TryPrimaryHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Types, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Update, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Weather, callbacks)?;

@@ -743,10 +743,10 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if $mon.item.is_defined or !$mon.last_item:",
+          "if $target.item.is_defined or !$target.last_item:",
           ["return false"],
-          "$item = $mon.last_item",
-          "$mon.last_item = undefined",
+          "$item = $target.last_item",
+          "$target.last_item = undefined",
           "set_item: $target $item"
         ]
       }

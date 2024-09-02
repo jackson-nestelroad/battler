@@ -33,6 +33,7 @@ use crate::{
     common::{
         Error,
         Fraction,
+        Id,
         Identifiable,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
@@ -712,6 +713,10 @@ where
                                 Some(item) => ValueRef::TempString(item.id.to_string()),
                                 None => ValueRef::Undefined,
                             },
+                            "last_item" => match context.mon(mon_handle)?.last_item.as_ref() {
+                                Some(item) => ValueRef::TempString(item.to_string()),
+                                None => ValueRef::Undefined,
+                            },
                             "last_move" => match context.mon(mon_handle)?.last_move {
                                 Some(last_move) => ValueRef::ActiveMove(last_move),
                                 _ => ValueRef::Undefined,
@@ -1171,6 +1176,9 @@ where
                     value = match *member {
                         "boosts" => {
                             ValueRefMut::BoostTable(&mut context.mon_mut(**mon_handle)?.boosts)
+                        }
+                        "last_item" => {
+                            ValueRefMut::OptionalId(&mut context.mon_mut(**mon_handle)?.last_item)
                         }
                         "last_target_location" => ValueRefMut::OptionalISize(
                             &mut context.mon_mut(**mon_handle)?.last_move_target_location,
@@ -2163,6 +2171,12 @@ impl Evaluator {
             }
             (ValueRefMut::OptionalString(var), Value::String(val)) => {
                 *var = Some(val);
+            }
+            (ValueRefMut::OptionalId(var), Value::Undefined) => {
+                *var = None;
+            }
+            (ValueRefMut::OptionalId(var), Value::String(val)) => {
+                *var = Some(Id::from(val));
             }
             (ValueRefMut::Mon(var), Value::Mon(val)) => {
                 *var = val;

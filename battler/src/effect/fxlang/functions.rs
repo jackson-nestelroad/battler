@@ -105,6 +105,7 @@ pub fn run_function(
         "disable_move" => disable_move(context).map(|()| None),
         "do_move" => do_move(context).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
+        "eat_item" => eat_item(context).map(|val| Some(val)),
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
@@ -2625,6 +2626,20 @@ fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
             .forward_effect_to_applying_effect(mon, use_target_as_source)?,
         &item,
     )?))
+}
+
+fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_actions::eat_item(
+        &mut context
+            .evaluation_context_mut()
+            .forward_effect_to_applying_effect(mon, false)?,
+    )
+    .map(|val| Value::Boolean(val))
 }
 
 fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {

@@ -99,6 +99,7 @@ mod moves {
         mod ingrain_test;
         mod magic_coat_test;
         mod nature_power_test;
+        mod recycle_test;
         mod revenge_test;
         mod role_play_test;
         mod smelling_salts_test;

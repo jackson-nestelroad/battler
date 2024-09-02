@@ -3,6 +3,10 @@
     "name": "Start",
     "condition_type": "Built-in"
   },
+  "update": {
+    "name": "Update",
+    "condition_type": "Built-in"
+  },
   "switchin": {
     "name": "Switch In",
     "condition_type": "Built-in"
