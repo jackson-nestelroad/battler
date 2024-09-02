@@ -153,6 +153,7 @@ pub fn run_function(
         "move_slot" => move_slot(context).map(|val| Some(val)),
         "move_slot_at_index" => move_slot_at_index(context),
         "move_slot_index" => move_slot_index(context),
+        "new_active_move" => new_active_move(context).map(|val| Some(val)),
         "new_active_move_from_local_data" => {
             new_active_move_from_local_data(context).map(|val| Some(val))
         }
@@ -1863,6 +1864,30 @@ fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
         move_target,
     )?
     .map(|mon| Value::Mon(mon)))
+}
+
+fn new_active_move(mut context: FunctionContext) -> Result<Value, Error> {
+    let move_id = context
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    let move_data = context
+        .evaluation_context()
+        .battle_context()
+        .battle()
+        .dex
+        .moves
+        .get_by_id(&move_id)?
+        .data
+        .clone();
+    let active_move = Move::new(move_id, move_data);
+    let active_move_handle = core_battle_actions::register_active_move(
+        context.evaluation_context_mut().battle_context_mut(),
+        active_move,
+    )?;
+    Ok(Value::ActiveMove(active_move_handle))
 }
 
 fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value, Error> {

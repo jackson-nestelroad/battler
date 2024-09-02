@@ -671,7 +671,10 @@
     },
     "condition": {
       "callbacks": {
-        "is_grounded": ["return true"],
+        "is_grounded": {
+          "order": 1,
+          "program": ["return true"]
+        },
         "on_start": ["log_start"],
         "on_residual": ["heal: $target expr($target.base_max_hp / 16)"],
         "on_trap_mon": ["return true"],
@@ -709,17 +712,21 @@
         "on_try_hit": [
           "if $target == $source or $move.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
+          "log_activate: with_target",
+          "do_not_animate_last_move",
           "$reflected_move = func_call(new_active_move: $move.id)",
           "$reflected_move.reflected = true",
           "use_active_move: $target $reflected_move $source",
           "return stop"
         ],
-        "on_ally_try_hit_side": [
-          "if func_call(is_ally: $target $source) or $move.reflected or !func_call(move_has_flag: $move reflectable):",
+        "on_side_try_hit_side": [
+          "if $source.side == $side or $move.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
+          "log_activate: str('mon:{}', $effect_state.source.position_details)",
+          "do_not_animate_last_move",
           "$reflected_move = func_call(new_active_move: $move.id)",
           "$reflected_move.reflected = true",
-          "use_active_move: $target $reflected_move $source",
+          "use_active_move: $effect_state.source $reflected_move $source",
           "return stop"
         ]
       }

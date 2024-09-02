@@ -573,6 +573,8 @@ fn use_active_move_internal(
     let targets = get_move_targets(context, target)?;
     if context.active_move().data.target.has_single_target() {
         target = targets.first().cloned();
+    } else if !context.active_move().data.target.affects_mons_directly() {
+        target = None;
     }
 
     // Log that the move is being used.
@@ -846,7 +848,7 @@ fn try_indirect_move(
         }
         MoveTarget::FoeSide => {
             core_battle_effects::run_event_for_side_effect_expecting_move_event_result(
-                &mut context.side_effect_context(context.side().index)?,
+                &mut context.side_effect_context(context.foe_side().index)?,
                 fxlang::BattleEvent::TryHitSide,
                 fxlang::VariableInput::default(),
             )
@@ -858,8 +860,9 @@ fn try_indirect_move(
         if try_move_result.failed() {
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+            return Ok(MoveOutcome::Failed);
         }
-        return Ok(MoveOutcome::Failed);
+        return Ok(MoveOutcome::Skipped);
     }
 
     // Hit the first target, as a representative of the side.
@@ -2082,16 +2085,23 @@ pub fn heal(
 
 /// Drags a random Mon into a player's position.
 pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Error> {
-    let old = context.player().active_mon_handle(position);
+    let old = context
+        .player()
+        .active_mon_handle(position)
+        .wrap_error_with_message("nothing to drag out")?;
 
-    let old_context = match old {
-        None => return Err(battler_error!("nothing to drag out")),
-        Some(old) => context.mon_context(old)?,
-    };
+    let mut old_context = context.mon_context(old)?;
     if old_context.mon().hp == 0 {
         return Ok(false);
     }
-    // TODO: DragOut event.
+
+    if !core_battle_effects::run_event_for_mon(
+        &mut old_context,
+        fxlang::BattleEvent::DragOut,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
 
     let player = context.player().index;
     let mon = CoreBattle::random_switchable(context.as_battle_context_mut(), player)?;
@@ -2254,7 +2264,9 @@ fn apply_move_effects(
                 }
 
                 if hit_effect.force_switch {
-                    let outcome = if Player::can_switch(target_context.as_player_context()) {
+                    let outcome = if Player::can_switch(
+                        target_context.target_mon_context()?.as_player_context(),
+                    ) {
                         MoveOutcomeOnTarget::Success
                     } else {
                         MoveOutcomeOnTarget::Failure
@@ -2563,7 +2575,15 @@ fn force_switch(
         {
             continue;
         }
-        // TODO: DragOut event.
+
+        if !core_battle_effects::run_event_for_mon(
+            &mut context.target_mon_context()?,
+            fxlang::BattleEvent::DragOut,
+            fxlang::VariableInput::default(),
+        ) {
+            continue;
+        }
+
         context.target_mon_mut().force_switch = Some(SwitchType::Normal);
     }
 

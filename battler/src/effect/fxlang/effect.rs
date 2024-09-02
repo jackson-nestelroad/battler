@@ -363,6 +363,13 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "DisableMove"]
     DisableMove,
+    /// Runs before a Mon is dragged out of battle.
+    ///
+    /// Can cancel the force switch.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "DragOut"]
+    DragOut,
     /// Runs when determining the duration of an effect.
     ///
     /// Used to apply dynamic durations.
@@ -707,6 +714,13 @@ pub enum BattleEvent {
     /// Runs in the context of the slot condition itself.
     #[string = "SlotStart"]
     SlotStart,
+    /// Runs when a move is trying to hit an entire side that a Mon is in.
+    ///
+    /// Can fail the move.
+    ///
+    /// Runs on the active move itself and in the context of an applying effect on the side.
+    #[string = "SideTryHitSide"]
+    SideTryHitSide,
     /// Runs when the accuracy of a move used by a Mon is being determined.
     ///
     /// Runs in the context of an active move on the target.
@@ -817,7 +831,7 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an applying effect on the field.
     #[string = "TryHitField"]
     TryHitField,
-    /// Runs when a move is trying to hit the whole field.
+    /// Runs when a move is trying to hit an entire side
     ///
     /// Can fail the move.
     ///
@@ -913,6 +927,7 @@ impl BattleEvent {
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
             Self::DeductPp => CommonCallbackType::MonModifier as u32,
+            Self::DragOut => CommonCallbackType::MonResult as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
@@ -972,6 +987,7 @@ impl BattleEvent {
             Self::SideResidual => CommonCallbackType::SideVoid as u32,
             Self::SideRestart => CommonCallbackType::SideResult as u32,
             Self::SideStart => CommonCallbackType::SideResult as u32,
+            Self::SideTryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
             Self::SlotEnd => CommonCallbackType::SideResult as u32,
             Self::SlotRestart => CommonCallbackType::SideResult as u32,
             Self::SlotStart => CommonCallbackType::SideResult as u32,
@@ -1204,6 +1220,7 @@ impl BattleEvent {
     pub fn side_event(&self) -> Option<BattleEvent> {
         match self {
             Self::Residual => Some(Self::SideResidual),
+            Self::TryHitSide => Some(Self::SideTryHitSide),
             _ => None,
         }
     }
@@ -1327,6 +1344,7 @@ pub struct Callbacks {
     pub on_damaging_hit: Callback,
     pub on_disable_move: Callback,
     pub on_deduct_pp: Callback,
+    pub on_drag_out: Callback,
     pub on_duration: Callback,
     pub on_effectiveness: Callback,
     pub on_end: Callback,
@@ -1377,6 +1395,7 @@ pub struct Callbacks {
     pub on_side_residual: Callback,
     pub on_side_restart: Callback,
     pub on_side_start: Callback,
+    pub on_side_try_hit_side: Callback,
     pub on_slot_end: Callback,
     pub on_slot_restart: Callback,
     pub on_slot_start: Callback,
@@ -1438,6 +1457,7 @@ impl Callbacks {
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::DeductPp => Some(&self.on_deduct_pp),
             BattleEvent::DisableMove => Some(&self.on_disable_move),
+            BattleEvent::DragOut => Some(&self.on_drag_out),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
@@ -1497,6 +1517,7 @@ impl Callbacks {
             BattleEvent::SideResidual => Some(&self.on_side_residual),
             BattleEvent::SideRestart => Some(&self.on_side_restart),
             BattleEvent::SideStart => Some(&self.on_side_start),
+            BattleEvent::SideTryHitSide => Some(&self.on_side_try_hit_side),
             BattleEvent::SlotEnd => Some(&self.on_slot_end),
             BattleEvent::SlotRestart => Some(&self.on_slot_restart),
             BattleEvent::SlotStart => Some(&self.on_slot_start),

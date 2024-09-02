@@ -298,6 +298,8 @@ pub struct Move {
     pub total_damage: u64,
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
+    /// Has the move been reflected back at the user?
+    pub reflected: bool,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -331,6 +333,7 @@ impl Move {
             effect_state: fxlang::EffectState::new(),
             unlinked: false,
             hit_data: FastHashMap::new(),
+            reflected: false,
         }
     }
 
@@ -351,6 +354,7 @@ impl Move {
             effect_state: fxlang::EffectState::new(),
             unlinked: true,
             hit_data: FastHashMap::new(),
+            reflected: false,
         }
     }
 

@@ -390,6 +390,7 @@ pub struct Mon {
     pub hidden_power_type: Type,
 
     pub item: Option<ItemSlot>,
+    pub last_item: Option<Id>,
 
     pub hp: u16,
     pub base_max_hp: u16,
@@ -535,6 +536,7 @@ impl Mon {
             hidden_power_type,
 
             item,
+            last_item: None,
 
             hp: 0,
             base_max_hp: 0,

@@ -691,6 +691,12 @@ fn find_callbacks_on_mon(
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
 
+    callbacks.push(CallbackHandle::new(
+        EffectHandle::Condition(Id::from_known("mon")),
+        event,
+        EffectOrigin::None,
+    ));
+
     if event.callback_lookup_layer() > fxlang::BattleEvent::Types.callback_lookup_layer() {
         let types = Mon::types(&mut context)?;
         for typ in types {
@@ -1006,6 +1012,20 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
             )?);
+
+            if let Some(side_event) = event.side_event() {
+                for mon in context
+                    .battle()
+                    .active_mon_handles_on_side(side)
+                    .collect::<Vec<_>>()
+                {
+                    callbacks.extend(find_callbacks_on_mon(
+                        context.as_battle_context_mut(),
+                        side_event,
+                        mon,
+                    )?);
+                }
+            }
         }
         AllEffectsTarget::Field => {
             for mon in context
@@ -1102,37 +1122,36 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
 fn get_speed_orderable_effect_handle_internal(
     context: &mut Context,
     callback_handle: CallbackHandle,
-) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
-    let effect = CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle)
-        .wrap_error_with_format(format_args!(
-            "effect {:?} not found",
-            callback_handle.effect_handle
-        ))?;
+) -> Option<SpeedOrderableCallbackHandle> {
+    let effect = match CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle) {
+        Ok(effect) => effect,
+        Err(_) => return None,
+    };
     let callback = match effect.fxlang_effect() {
         Some(effect) => match effect.callbacks.event(callback_handle.event) {
             Some(callback) => callback,
-            None => return Ok(None),
+            None => return None,
         },
-        None => return Ok(None),
+        None => return None,
     };
     let mut result = SpeedOrderableCallbackHandle::new(callback_handle);
     result.order = callback.order();
     result.priority = callback.priority();
     result.sub_order = callback.sub_order();
-    Ok(Some(result))
+    Some(result)
 }
 
 fn get_speed_orderable_effect_handle(
     context: &mut Context,
     callback_handle: CallbackHandle,
-) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
-    match get_speed_orderable_effect_handle_internal(context, callback_handle.clone())? {
-        Some(handle) => Ok(Some(handle)),
+) -> Option<SpeedOrderableCallbackHandle> {
+    match get_speed_orderable_effect_handle_internal(context, callback_handle.clone()) {
+        Some(handle) => Some(handle),
         None => {
             if callback_handle.event.force_default_callback() {
-                Ok(Some(SpeedOrderableCallbackHandle::new(callback_handle)))
+                Some(SpeedOrderableCallbackHandle::new(callback_handle))
             } else {
-                Ok(None)
+                None
             }
         }
     }
@@ -1145,7 +1164,7 @@ fn get_ordered_effects_for_event(
     let mut speed_orderable_handles = Vec::new();
     speed_orderable_handles.reserve(callback_handles.len());
     for effect_handle in callback_handles {
-        match get_speed_orderable_effect_handle(context, effect_handle)? {
+        match get_speed_orderable_effect_handle(context, effect_handle) {
             Some(handle) => speed_orderable_handles.push(handle),
             None => (),
         }
@@ -1313,7 +1332,11 @@ fn run_residual_callbacks_with_errors(
             break;
         }
 
-        let mut context = context.effect_context(callback_handle.effect_handle.clone(), None)?;
+        let mut context = match context.effect_context(callback_handle.effect_handle.clone(), None)
+        {
+            Ok(context) => context,
+            Err(_) => continue,
+        };
 
         let mut ended = false;
         if duration_decreased.insert((

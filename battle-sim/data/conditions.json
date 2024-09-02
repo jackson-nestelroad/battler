@@ -27,6 +27,18 @@
     "name": "Struggle Recoil",
     "condition_type": "Built-in"
   },
+  "mon": {
+    "name": "Mon",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_negate_immunity": [
+          "if $type == ground and $mon.is_grounded:",
+          ["return false"]
+        ]
+      }
+    }
+  },
   "normaltype": {
     "name": "Normal",
     "condition_type": "Type"
@@ -95,8 +107,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]],
-        "on_negate_immunity": ["if !$mon.is_grounded:", ["return false"]]
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
       }
     }
   },
@@ -105,7 +116,10 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "is_grounded": ["return false"]
+        "is_grounded": {
+          "order": 100,
+          "program": ["return false"]
+        }
       }
     }
   },

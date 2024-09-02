@@ -959,6 +959,9 @@ where
                                     .unwrap_or(Fraction::from(0u16))
                                     .convert(),
                             ),
+                            "reflected" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.reflected,
+                            ),
                             "target" => ValueRef::MoveTarget(
                                 context.active_move(active_move_handle)?.data.target,
                             ),
@@ -1213,6 +1216,9 @@ where
                         ),
                         "multihit" => ValueRefMut::OptionalMultihitType(
                             &mut context.active_move_mut(**active_move_handle)?.data.multihit,
+                        ),
+                        "reflected" => ValueRefMut::Boolean(
+                            &mut context.active_move_mut(**active_move_handle)?.reflected,
                         ),
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
