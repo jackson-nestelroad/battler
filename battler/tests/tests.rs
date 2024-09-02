@@ -1,3 +1,9 @@
+mod abilities {
+    mod gen3 {
+        mod stench_test;
+    }
+}
+
 mod moves {
     mod gen1 {
         mod accuracy_check_test;

@@ -176,6 +176,7 @@ pub fn run_function(
         "run_event_on_mon_item" => run_event_on_mon_item(context).map(|()| None),
         "run_event_on_move" => run_event_on_move(context).map(|()| None),
         "sample" => sample(context),
+        "secondary_hit_effect" => secondary_hit_effect().map(|val| Some(val)),
         "set_ability" => set_ability(context).map(|val| Some(val)),
         "set_boost" => set_boost(context).map(|val| Some(val)),
         "set_hp" => set_hp(context).map(|val| Some(val)),
@@ -2265,6 +2266,10 @@ fn hit_effect() -> Result<Value, Error> {
     Ok(Value::HitEffect(HitEffect::default()))
 }
 
+fn secondary_hit_effect() -> Result<Value, Error> {
+    Ok(Value::SecondaryHitEffect(SecondaryEffect::default()))
+}
+
 fn all_types(context: FunctionContext) -> Result<Value, Error> {
     let mut types = context
         .evaluation_context()
@@ -2781,22 +2786,11 @@ fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<(), Erro
         .wrap_error_with_message("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
-    let chance = context
-        .pop_front()
-        .wrap_error_with_message("missing chance")?
-        .fraction_u16()
-        .wrap_error_with_message("invalid chance")?;
-    let target_effect = context
+    let secondary_effect = context
         .pop_front()
         .wrap_error_with_message("missing target effect")?
-        .hit_effect()
+        .secondary_hit_effect()
         .wrap_error_with_message("invalid target effect")?;
-    let secondary_effect = SecondaryEffect {
-        chance: Some(chance),
-        target: Some(target_effect),
-        user: None,
-        ..Default::default()
-    };
     context
         .evaluation_context_mut()
         .active_move_mut(active_move)?

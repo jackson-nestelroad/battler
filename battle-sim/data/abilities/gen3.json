@@ -1,5 +1,29 @@
 {
-  "stench": { "name": "Stench", "flags": [] },
+  "stench": {
+    "name": "Stench",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": {
+          "priority": -1,
+          "program": [
+            "if $move.category == status:",
+            ["return"],
+            "foreach $secondary in $move.secondary_effects:",
+            [
+              "if $secondary.target.is_defined and $secondary.target.volatile_status == flinch:",
+              ["return"]
+            ],
+            "$added_secondary = func_call(secondary_hit_effect)",
+            "$added_secondary.chance = 1/10",
+            "$added_secondary.target = func_call(hit_effect)",
+            "$added_secondary.target.volatile_status = flinch",
+            "add_secondary_effect_to_move: $move $added_secondary"
+          ]
+        }
+      }
+    }
+  },
   "drizzle": {
     "name": "Drizzle",
     "flags": [],

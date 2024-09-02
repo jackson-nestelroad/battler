@@ -977,6 +977,20 @@ where
                             "reflected" => ValueRef::Boolean(
                                 context.active_move(active_move_handle)?.reflected,
                             ),
+                            "secondary_effects" => ValueRef::TempList(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .secondary_effects
+                                    .iter()
+                                    .map(|val| {
+                                        ValueRefToStoredValue::new(
+                                            self.stored.clone(),
+                                            ValueRef::SecondaryHitEffect(val),
+                                        )
+                                    })
+                                    .collect(),
+                            ),
                             "source" | "user" => {
                                 match context.active_move(active_move_handle)?.used_by {
                                     Some(mon) => ValueRef::Mon(mon),
@@ -1092,6 +1106,25 @@ where
                                 .boosts
                                 .as_ref()
                                 .map(ValueRef::BoostTable)
+                                .unwrap_or(ValueRef::Undefined),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::SecondaryHitEffect(secondary_effect) = value {
+                        value = match *member {
+                            "chance" => secondary_effect
+                                .chance
+                                .as_ref()
+                                .map(|val| ValueRef::UFraction(val.convert()))
+                                .unwrap_or(ValueRef::Undefined),
+                            "target" => secondary_effect
+                                .target
+                                .as_ref()
+                                .map(ValueRef::HitEffect)
+                                .unwrap_or(ValueRef::Undefined),
+                            "user" => secondary_effect
+                                .user
+                                .as_ref()
+                                .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
@@ -1283,6 +1316,14 @@ where
                         "volatile_status" => {
                             ValueRefMut::OptionalString(&mut hit_effect.volatile_status)
                         }
+                        _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
+                    }
+                }
+                ValueRefMut::SecondaryHitEffect(secondary_effect) => {
+                    value = match *member {
+                        "chance" => ValueRefMut::OptionalFractionU16(&mut secondary_effect.chance),
+                        "target" => ValueRefMut::OptionalHitEffect(&mut secondary_effect.target),
+                        "user" => ValueRefMut::OptionalHitEffect(&mut secondary_effect.user),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
@@ -2278,6 +2319,9 @@ impl Evaluator {
             }
             (ValueRefMut::OptionalHitEffect(var), Value::HitEffect(val)) => {
                 *var = Some(val);
+            }
+            (ValueRefMut::SecondaryHitEffect(var), Value::SecondaryHitEffect(val)) => {
+                *var = val;
             }
             (ValueRefMut::Gender(var), Value::Gender(val)) => {
                 *var = val;
