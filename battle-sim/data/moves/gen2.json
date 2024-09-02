@@ -721,9 +721,9 @@
         "on_start": ["log_activate: with_target with_source"],
         "on_source_invulnerability": {
           "priority": 1,
-          "program": ["return false"]
+          "program": ["return true"]
         },
-        "on_source_accuracy_exempt": ["return true"]
+        "on_source_accuracy_exempt": ["return false"]
       }
     }
   },

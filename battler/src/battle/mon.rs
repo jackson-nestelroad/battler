@@ -592,6 +592,18 @@ impl Mon {
         }
 
         context.mon_mut().hp = context.mon().max_hp;
+
+        let mon_handle = context.mon_handle();
+        let ability_effect_state = fxlang::EffectState::initial_effect_state(
+            &mut context
+                .as_battle_context_mut()
+                .effect_context(EffectHandle::Condition(Id::from_known("start")), None)?,
+            Some(mon_handle),
+            None,
+        )?;
+        context.mon_mut().base_ability.effect_state = ability_effect_state;
+        context.mon_mut().ability.effect_state = context.mon().base_ability.effect_state.clone();
+
         Ok(())
     }
 }

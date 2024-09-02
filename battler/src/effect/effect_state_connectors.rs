@@ -314,3 +314,41 @@ impl fxlang::EffectStateConnector for WeatherEffectStateConnector {
         fxlang::DynamicEffectStateConnector::new(self.clone())
     }
 }
+
+/// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for a
+/// pseudo-weather on the fielf.
+#[derive(Debug, Clone)]
+pub struct PseudoWeatherEffectStateConnector {
+    pseudo_weather: Id,
+}
+
+impl PseudoWeatherEffectStateConnector {
+    pub fn new(pseudo_weather: Id) -> Self {
+        Self { pseudo_weather }
+    }
+}
+
+impl fxlang::EffectStateConnector for PseudoWeatherEffectStateConnector {
+    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+        Ok(context
+            .battle()
+            .field
+            .pseudo_weathers
+            .contains_key(&self.pseudo_weather))
+    }
+
+    fn get_mut<'a>(
+        &self,
+        context: &'a mut Context,
+    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+        Ok(context
+            .battle_mut()
+            .field
+            .pseudo_weathers
+            .get_mut(&self.pseudo_weather))
+    }
+
+    fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
+        fxlang::DynamicEffectStateConnector::new(self.clone())
+    }
+}

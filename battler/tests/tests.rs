@@ -89,8 +89,11 @@ mod moves {
     }
 
     mod gen3 {
+        mod aromatherapy_test;
         mod assist_test;
+        mod camouflage_test;
         mod charge_test;
+        mod doom_desire_test;
         mod endeavor_test;
         mod eruption_test;
         mod facade_test;
@@ -103,6 +106,7 @@ mod moves {
         mod ingrain_test;
         mod knock_off_test;
         mod magic_coat_test;
+        mod mud_sport_test;
         mod nature_power_test;
         mod recycle_test;
         mod refresh_test;
@@ -117,6 +121,7 @@ mod moves {
         mod torment_test;
         mod trick_test;
         mod uproar_test;
+        mod weather_ball_test;
         mod wish_test;
     }
 

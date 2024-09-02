@@ -41,6 +41,7 @@ impl ParsedCallbacks {
         };
         if let Some(callbacks) = callbacks {
             parsed.parse_and_save(BattleEvent::AccuracyExempt, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AddPseudoWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::AddVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMove, callbacks)?;
@@ -88,6 +89,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsBehindSubstitute, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsGrounded, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsImmuneToEntryHazards, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;

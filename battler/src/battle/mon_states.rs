@@ -17,6 +17,15 @@ pub fn is_asleep(context: &mut MonContext) -> bool {
     )
 }
 
+/// Checks if the [`Mon`][`crate::battle::Mon`] is behind a substitute.
+pub fn is_behind_substitute(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsBehindSubstitute,
+        false,
+    )
+}
+
 /// Checks if the [`Mon`][`crate::battle::Mon`] is grounded.
 pub fn is_grounded(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(

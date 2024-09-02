@@ -1529,10 +1529,10 @@ mod direct_move_step {
         targets: &mut [MoveStepTarget],
     ) -> Result<(), Error> {
         for target in targets {
-            if !core_battle_effects::run_event_for_applying_effect(
+            if !core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
-                fxlang::VariableInput::default(),
+                true,
             ) {
                 target.outcome = MoveOutcome::Failed;
                 core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
@@ -1697,9 +1697,10 @@ mod direct_move_step {
             && !mon_states::is_semi_invulnerable(&mut context.target_mon_context()?)
         {
             accuracy = Accuracy::Exempt;
-        } else if core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+        } else if !core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
             &mut context.applying_effect_context()?,
             fxlang::BattleEvent::AccuracyExempt,
+            true,
         ) {
             accuracy = Accuracy::Exempt;
         }
@@ -2258,8 +2259,15 @@ fn apply_move_effects(
                     hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
-                if let Some(_) = hit_effect.pseudo_weather {
-                    // TODO: Add pseudo weather.
+                if let Some(pseudo_weather) = hit_effect.pseudo_weather {
+                    let add_pseudo_weather_success = add_pseudo_weather(
+                        &mut target_context
+                            .applying_effect_context()?
+                            .field_effect_context()?,
+                        &Id::from(pseudo_weather),
+                    )?;
+                    let outcome = MoveOutcomeOnTarget::from(add_pseudo_weather_success);
+                    hit_effect_outcome = hit_effect_outcome.combine(outcome);
                 }
 
                 if hit_effect.force_switch {
@@ -2589,31 +2597,6 @@ fn force_switch(
     Ok(())
 }
 
-fn initial_effect_state(
-    context: &mut EffectContext,
-    target: Option<MonHandle>,
-    source: Option<MonHandle>,
-) -> Result<fxlang::EffectState, Error> {
-    let mut effect_state = fxlang::EffectState::new();
-    effect_state.set_source_effect(
-        context
-            .effect_handle()
-            .stable_effect_handle(context.as_battle_context())?,
-    );
-    if let Some(target_handle) = target {
-        effect_state.set_target(target_handle);
-    }
-    if let Some(source_handle) = source {
-        effect_state.set_source(source_handle);
-        let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
-        effect_state.set_source_side(context.mon().side);
-        if let Ok(source_position) = Mon::position_on_side(&mut context) {
-            effect_state.set_source_position(source_position)?;
-        }
-    }
-    Ok(effect_state)
-}
-
 /// The result of applying a move effect.
 ///
 /// Must be its own type because some effects handle immunity and failure differently.
@@ -2700,7 +2683,7 @@ pub fn try_set_status(
 
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().status_state = initial_effect_state(
+    context.target_mut().status_state = fxlang::EffectState::initial_effect_state(
         context.as_effect_context_mut(),
         Some(target_handle),
         source_handle,
@@ -2834,7 +2817,7 @@ pub fn try_add_volatile(
 
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    let effect_state = initial_effect_state(
+    let effect_state = fxlang::EffectState::initial_effect_state(
         context.as_effect_context_mut(),
         Some(target_handle),
         source_handle,
@@ -3002,7 +2985,11 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
     }
 
     let source_handle = context.source_handle();
-    let effect_state = initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
+    let effect_state = fxlang::EffectState::initial_effect_state(
+        context.as_effect_context_mut(),
+        None,
+        source_handle,
+    )?;
     context
         .side_mut()
         .conditions
@@ -3447,8 +3434,11 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
 
     context.battle_mut().field.weather = Some(weather.clone());
     let source_handle = context.source_handle();
-    context.battle_mut().field.weather_state =
-        initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
+    context.battle_mut().field.weather_state = fxlang::EffectState::initial_effect_state(
+        context.as_effect_context_mut(),
+        None,
+        source_handle,
+    )?;
 
     if let Some(weather_condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
@@ -3546,8 +3536,11 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
 
     context.battle_mut().field.terrain = Some(terrain.clone());
     let source_handle = context.source_handle();
-    context.battle_mut().field.terrain_state =
-        initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
+    context.battle_mut().field.terrain_state = fxlang::EffectState::initial_effect_state(
+        context.as_effect_context_mut(),
+        None,
+        source_handle,
+    )?;
 
     if let Some(terrain_condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &terrain_handle)?
@@ -3607,6 +3600,117 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool, Error> {
     }
 
     // TODO: TerrainChange event.
+
+    Ok(true)
+}
+
+/// Adds a pseudo-weather to the field.
+pub fn add_pseudo_weather(
+    context: &mut FieldEffectContext,
+    pseudo_weather: &Id,
+) -> Result<bool, Error> {
+    let pseudo_weather_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(pseudo_weather)?
+        .clone();
+    let pseudo_weather = pseudo_weather_handle
+        .try_id()
+        .wrap_error_with_message("pseudo weather must have an id")?
+        .clone();
+
+    if context
+        .battle()
+        .field
+        .pseudo_weathers
+        .contains_key(&pseudo_weather)
+    {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_field_effect(
+        context,
+        fxlang::BattleEvent::AddPseudoWeather,
+        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(pseudo_weather_handle.clone()))]),
+    ) {
+        return Ok(false);
+    }
+
+    let source_handle = context.source_handle();
+    let effect_state = fxlang::EffectState::initial_effect_state(
+        context.as_effect_context_mut(),
+        None,
+        source_handle,
+    )?;
+    context
+        .battle_mut()
+        .field
+        .pseudo_weathers
+        .insert(pseudo_weather.clone(), effect_state);
+
+    if let Some(pseudo_weather_condition) =
+        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &pseudo_weather_handle)?
+            .fxlang_condition()
+    {
+        if let Some(duration) = pseudo_weather_condition.duration {
+            context
+                .battle_mut()
+                .field
+                .pseudo_weathers
+                .get_mut(&pseudo_weather)
+                .wrap_error_with_message("expected pseudo weather state to exist")?
+                .set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_pseudo_weather_event_expecting_u8(
+            context,
+            fxlang::BattleEvent::Duration,
+            &pseudo_weather,
+        ) {
+            context
+                .battle_mut()
+                .field
+                .pseudo_weathers
+                .get_mut(&pseudo_weather)
+                .wrap_error_with_message("expected pseudo weather state to exist")?
+                .set_duration(duration);
+        }
+    }
+
+    if core_battle_effects::run_pseudo_weather_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::FieldStart,
+        &pseudo_weather,
+    )
+    .is_some_and(|result| !result)
+    {
+        context
+            .battle_mut()
+            .field
+            .pseudo_weathers
+            .remove(&pseudo_weather);
+        return Ok(false);
+    }
+
+    // TODO: PseudoWeatherChange event.
+
+    Ok(true)
+}
+
+/// Removes a pseudo-weather from the field.
+pub fn remove_pseudo_weather(
+    context: &mut FieldEffectContext,
+    pseudo_weather: &Id,
+) -> Result<bool, Error> {
+    core_battle_effects::run_pseudo_weather_event(
+        context,
+        fxlang::BattleEvent::FieldEnd,
+        pseudo_weather,
+    );
+    context
+        .battle_mut()
+        .field
+        .pseudo_weathers
+        .remove(pseudo_weather);
 
     Ok(true)
 }
@@ -3735,7 +3839,11 @@ pub fn add_slot_condition(
     }
 
     let source_handle = context.source_handle();
-    let effect_state = initial_effect_state(context.as_effect_context_mut(), None, source_handle)?;
+    let effect_state = fxlang::EffectState::initial_effect_state(
+        context.as_effect_context_mut(),
+        None,
+        source_handle,
+    )?;
     context
         .side_mut()
         .slot_conditions

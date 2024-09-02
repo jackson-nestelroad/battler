@@ -1136,7 +1136,38 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$type = normal",
+          "$terrain = $target.effective_terrain",
+          "if $terrain == electricterrain:",
+          ["$type = electric"],
+          "else if $terrain == grassyterrain:",
+          ["$type = grass"],
+          "else if $terrain == mistyterrain:",
+          ["$type = fairy"],
+          "else if $terrain == psychicterrain:",
+          ["$type = psychic"],
+          "else if $field.environment == cave:",
+          ["$type = rock"],
+          "else if $field.environment == sand:",
+          ["$type = ground"],
+          "else if $field.environment == water:",
+          ["$type = water"],
+          "else if $field.environment == ice:",
+          ["$type = ice"],
+          "else if $field.environment == sky:",
+          ["$type = flying"],
+          "else if $field.environment == grass:",
+          ["$type = grass"],
+          "else if $field.environment == volcano:",
+          ["$type = fire"],
+          "set_types: $target $type"
+        ]
+      }
+    }
   },
   "tailglow": {
     "name": "Tail Glow",
@@ -1145,7 +1176,12 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "spa": 3
+      }
+    }
   },
   "lusterpurge": {
     "name": "Luster Purge",
@@ -1155,7 +1191,17 @@
     "accuracy": 100,
     "base_power": 95,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "mistball": {
     "name": "Mist Ball",
@@ -1165,7 +1211,17 @@
     "accuracy": 100,
     "base_power": 95,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "featherdance": {
     "name": "Feather Dance",
@@ -1174,7 +1230,12 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Dance", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Dance", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "atk": -2
+      }
+    }
   },
   "teeterdance": {
     "name": "Teeter Dance",
@@ -1183,7 +1244,10 @@
     "pp": 20,
     "accuracy": 100,
     "target": "AllAdjacent",
-    "flags": ["Dance", "Mirror", "Protect"]
+    "flags": ["Dance", "Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "confusion"
+    }
   },
   "blazekick": {
     "name": "Blaze Kick",
@@ -1194,7 +1258,15 @@
     "base_power": 85,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "mudsport": {
     "name": "Mud Sport",
@@ -1203,7 +1275,21 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "pseudo_weather": "mudsport"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_field_start": ["log_field_start: with_source"],
+        "on_base_power": [
+          "if $move.type == electric:",
+          ["return $base_power / 3"]
+        ],
+        "on_field_end": ["log_field_end"]
+      }
+    }
   },
   "iceball": {
     "name": "Ice Ball",
@@ -1220,7 +1306,40 @@
       "Mirror",
       "NoParentalBond",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$base_power = $move.base_power",
+          "$rollout_state = func_call(volatile_effect_state: $source $this.id)",
+          "if $rollout_state.is_defined:",
+          [
+            "$base_power = $base_power * 2 ^ $rollout_state.hit_count",
+            "# Update the hit count for the next use of the move.",
+            "$rollout_state.hit_count = $rollout_state.hit_count + 1",
+            "# If we are not on the last hit, update the duration to keep us locked into this move.",
+            "# The reason for manually updating the duration is that if the next use of the move is interrupted, the move will end by default.",
+            "if $rollout_state.hit_count < 5:",
+            ["$rollout_state.duration = 2"]
+          ],
+          "if func_call(has_volatile: $source defensecurl):",
+          ["$base_power = $base_power * 2"],
+          "return $base_power"
+        ],
+        "on_use_move": ["add_volatile: $user $this.id"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["$effect_state.hit_count = 0"],
+        "on_residual": [
+          "if $target.last_move.is_defined and $target.last_move.id == struggle:",
+          ["remove_volatile: $target $this.id"]
+        ],
+        "on_lock_move": ["return $this.id"]
+      }
+    }
   },
   "needlearm": {
     "name": "Needle Arm",
@@ -1230,7 +1349,15 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "slackoff": {
     "name": "Slack Off",
@@ -1239,7 +1366,10 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "hit_effect": {
+      "heal_percent": "50%"
+    }
   },
   "hypervoice": {
     "name": "Hyper Voice",
@@ -1259,7 +1389,15 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "status": "tox"
+        }
+      }
+    ]
   },
   "crushclaw": {
     "name": "Crush Claw",
@@ -1269,7 +1407,17 @@
     "accuracy": 95,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "boosts": {
+            "def": -1
+          }
+        }
+      }
+    ]
   },
   "blastburn": {
     "name": "Blast Burn",
@@ -1279,7 +1427,10 @@
     "accuracy": 90,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Recharge"]
+    "flags": ["Mirror", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "hydrocannon": {
     "name": "Hydro Cannon",
@@ -1289,7 +1440,10 @@
     "accuracy": 90,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Recharge"]
+    "flags": ["Mirror", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "meteormash": {
     "name": "Meteor Mash",
@@ -1299,7 +1453,17 @@
     "accuracy": 90,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Punch"]
+    "flags": ["Contact", "Mirror", "Protect", "Punch"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "user": {
+          "boosts": {
+            "atk": 1
+          }
+        }
+      }
+    ]
   },
   "astonish": {
     "name": "Astonish",
@@ -1309,7 +1473,15 @@
     "accuracy": 100,
     "base_power": 30,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "weatherball": {
     "name": "Weather Ball",
@@ -1319,7 +1491,28 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_modify_type": [
+          "$weather = $user.effective_weather",
+          "if !$weather:",
+          ["return"],
+          "if $weather.is_sunny:",
+          ["$move.type = fire"],
+          "else if $weather.is_raining:",
+          ["$move.type = water"],
+          "else if $weather.is_snowing:",
+          ["$move.type = ice"],
+          "else if $weather.id == sandstormweather:",
+          ["$move.type = rock"]
+        ],
+        "on_move_base_power": [
+          "if $move.type != normal:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "aromatherapy": {
     "name": "Aromatherapy",
@@ -1328,7 +1521,24 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AllyTeam",
-    "flags": ["Distance", "Snatch"]
+    "flags": ["Distance", "Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_hit_side": [
+          "log_activate: with_source",
+          "$success = false",
+          "foreach $ally in func_call(all_mons_on_side: $source.side):",
+          [
+            "if $ally == $source or !$ally.is_behind_substitute or $move.infiltrates:",
+            [
+              "$cured = func_call(cure_status: $ally)",
+              "$success = $success or $cured"
+            ]
+          ],
+          "return $success"
+        ]
+      }
+    }
   },
   "faketears": {
     "name": "Fake Tears",
@@ -1359,7 +1569,12 @@
     "accuracy": 90,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "user_effect": {
+      "boosts": {
+        "spa": -2
+      }
+    }
   },
   "odorsleuth": {
     "name": "Odor Sleuth",
@@ -1381,7 +1596,12 @@
     "accuracy": 95,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "hit_effect": {
+      "boosts": {
+        "spe": -1
+      }
+    }
   },
   "silverwind": {
     "name": "Silver Wind",
@@ -1391,7 +1611,21 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "user": {
+          "boosts": {
+            "atk": 1,
+            "def": 1,
+            "spa": 1,
+            "spd": 1,
+            "spe": 1
+          }
+        }
+      }
+    ]
   },
   "metalsound": {
     "name": "Metal Sound",
@@ -1400,7 +1634,12 @@
     "pp": 40,
     "accuracy": 85,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"],
+    "hit_effect": {
+      "boosts": {
+        "spd": -2
+      }
+    }
   },
   "grasswhistle": {
     "name": "Grass Whistle",
@@ -1416,7 +1655,10 @@
       "Reflectable",
       "SleepInducing",
       "Sound"
-    ]
+    ],
+    "hit_effect": {
+      "status": "slp"
+    }
   },
   "tickle": {
     "name": "Tickle",
@@ -1425,7 +1667,13 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "atk": -1,
+        "def": -1
+      }
+    }
   },
   "cosmicpower": {
     "name": "Cosmic Power",
@@ -1434,7 +1682,13 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "def": 1,
+        "spd": 1
+      }
+    }
   },
   "waterspout": {
     "name": "Water Spout",
@@ -1487,7 +1741,15 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "skyuppercut": {
     "name": "Sky Uppercut",
@@ -1582,7 +1844,10 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Reflectable"]
+    "flags": ["Mirror", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "trapped"
+    }
   },
   "howl": {
     "name": "Howl",
@@ -1612,7 +1877,10 @@
     "accuracy": 90,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Recharge"]
+    "flags": ["Mirror", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "bulkup": {
     "name": "Bulk Up",
@@ -1621,7 +1889,13 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1
+      }
+    }
   },
   "bounce": {
     "name": "Bounce",
@@ -1641,7 +1915,43 @@
       "NoAssist",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove",
+          "return stop"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "is_semi_invulnerable": ["return true"],
+        "on_invulnerability": [
+          "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
+          ["return"],
+          "return false"
+        ],
+        "on_source_modify_damage": [
+          "if [gust, twister] has $move.id:",
+          ["return $damage * 2"]
+        ]
+      }
+    }
   },
   "mudshot": {
     "name": "Mud Shot",
@@ -1651,7 +1961,12 @@
     "accuracy": 95,
     "base_power": 55,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "hit_effect": {
+      "boosts": {
+        "spe": -1
+      }
+    }
   },
   "poisontail": {
     "name": "Poison Tail",
@@ -1662,7 +1977,15 @@
     "base_power": 50,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ]
   },
   "covet": {
     "name": "Covet",
@@ -1680,7 +2003,20 @@
       "NoAssist",
       "NoMetronome",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_after_hit": [
+          "if $source.item.is_defined:",
+          ["return"],
+          "$item = func_call(take_item: $target silent)",
+          "if !$item:",
+          ["return"],
+          "if !func_call(set_item: $source $item use_target_as_source):",
+          ["return"]
+        ]
+      }
+    }
   },
   "volttackle": {
     "name": "Volt Tackle",
@@ -1711,7 +2047,18 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "All",
-    "flags": []
+    "flags": [],
+    "hit_effect": {
+      "pseudo_weather": "watersport"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_field_start": ["log_field_start: with_source"],
+        "on_base_power": ["if $move.type == fire:", ["return $base_power / 3"]],
+        "on_field_end": ["log_field_end"]
+      }
+    }
   },
   "calmmind": {
     "name": "Calm Mind",
@@ -1741,7 +2088,13 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Dance", "Snatch"]
+    "flags": ["Dance", "Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "spe": 1
+      }
+    }
   },
   "rockblast": {
     "name": "Rock Blast",
@@ -1785,7 +2138,30 @@
     "accuracy": 100,
     "base_power": 140,
     "target": "Normal",
-    "flags": ["Future"]
+    "flags": ["Future"],
+    "effect": {
+      "callbacks": {
+        "on_try_move": [
+          "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
+          ["return false"],
+          "do_not_animate_last_move",
+          "return stop"
+        ]
+      },
+      "local_data": {
+        "moves": {
+          "futuremove": {
+            "name": "Doom Desire",
+            "category": "Special",
+            "primary_type": "Steel",
+            "accuracy": 100,
+            "base_power": 140,
+            "target": "Scripted",
+            "flags": ["Future"]
+          }
+        }
+      }
+    }
   },
   "psychoboost": {
     "name": "Psycho Boost",
@@ -1795,6 +2171,11 @@
     "accuracy": 90,
     "base_power": 140,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "user_effect": {
+      "boosts": {
+        "spa": -2
+      }
+    }
   }
 }

@@ -44,6 +44,7 @@ use crate::{
         MonItemEffectStateConnector,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
+        PseudoWeatherEffectStateConnector,
         SideConditionEffectStateConnector,
         SlotConditionEffectStateConnector,
         TerrainEffectStateConnector,
@@ -324,6 +325,7 @@ enum EffectOrigin {
     Mon(MonHandle),
     MonAbility(MonHandle),
     MonItem(MonHandle),
+    MonPseudoWeather(MonHandle),
     MonSideCondition(usize, MonHandle),
     MonSlotCondition(usize, usize, MonHandle),
     MonStatus(MonHandle),
@@ -331,6 +333,7 @@ enum EffectOrigin {
     MonType(MonHandle),
     MonVolatileStatus(MonHandle),
     MonWeather(MonHandle),
+    PseudoWeather,
     SideCondition(usize),
     SlotCondition(usize, usize),
     Terrain,
@@ -342,6 +345,7 @@ impl EffectOrigin {
     /// counter a single time.
     pub fn origin_for_residual(&self) -> Self {
         match self {
+            Self::MonPseudoWeather(_) => Self::PseudoWeather,
             Self::MonSideCondition(side, _) => Self::SideCondition(*side),
             Self::MonSlotCondition(side, slot, _) => Self::SlotCondition(*side, *slot),
             Self::MonTerrain(_) => Self::Terrain,
@@ -397,6 +401,10 @@ impl CallbackHandle {
             EffectOrigin::MonVolatileStatus(mon) => self.effect_handle.try_id().map(|id| {
                 MonVolatileStatusEffectStateConnector::new(mon, id.clone()).make_dynamic()
             }),
+            EffectOrigin::PseudoWeather | EffectOrigin::MonPseudoWeather(_) => self
+                .effect_handle
+                .try_id()
+                .map(|id| PseudoWeatherEffectStateConnector::new(id.clone()).make_dynamic()),
             EffectOrigin::SideCondition(side) | EffectOrigin::MonSideCondition(side, _) => self
                 .effect_handle
                 .try_id()
@@ -657,6 +665,24 @@ fn run_weather_event_internal(
     )
 }
 
+fn run_pseudo_weather_event_internal(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    pseudo_weather: &Id,
+) -> Option<fxlang::Value> {
+    let effect_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&pseudo_weather)
+        .ok()?
+        .clone();
+    run_callback_under_field_effect(
+        context,
+        input,
+        CallbackHandle::new(effect_handle, event, EffectOrigin::PseudoWeather),
+    )
+}
+
 fn run_applying_effect_event_internal(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -873,7 +899,16 @@ fn find_callbacks_on_field(
         }
     }
 
-    // TODO: Pseudo-weather.
+    for pseudo_weather in context.battle().field.pseudo_weathers.clone().keys() {
+        let pseudo_weather_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&pseudo_weather)?;
+        callbacks.push(CallbackHandle::new(
+            pseudo_weather_handle.clone(),
+            event,
+            EffectOrigin::PseudoWeather,
+        ));
+    }
 
     Ok(callbacks)
 }
@@ -911,7 +946,16 @@ fn find_callbacks_on_field_on_mon(
         }
     }
 
-    // TODO: Pseudo-weather.
+    for pseudo_weather in context.battle().field.pseudo_weathers.clone().keys() {
+        let pseudo_weather_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&pseudo_weather)?;
+        callbacks.push(CallbackHandle::new(
+            pseudo_weather_handle.clone(),
+            event,
+            EffectOrigin::MonPseudoWeather(mon),
+        ));
+    }
 
     Ok(callbacks)
 }
@@ -1382,6 +1426,24 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
+            EffectOrigin::MonPseudoWeather(mon) => {
+                let mut context = context.applying_effect_context(None, mon)?;
+                if ended {
+                    core_battle_actions::remove_pseudo_weather(
+                        &mut context.field_effect_context()?,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected pseudo-weather to have an id")?,
+                    )?;
+                } else {
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
             EffectOrigin::MonStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
                 if ended {
@@ -1477,6 +1539,24 @@ fn run_residual_callbacks_with_errors(
                     let context = context.applying_effect_context(None, mon)?;
                     run_callback_with_errors(
                         UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                        fxlang::VariableInput::default(),
+                        callback_handle,
+                    )?;
+                }
+            }
+            EffectOrigin::PseudoWeather => {
+                let mut context = context.field_effect_context(None)?;
+                if ended {
+                    core_battle_actions::remove_pseudo_weather(
+                        &mut context,
+                        callback_handle
+                            .effect_handle
+                            .try_id()
+                            .wrap_error_with_message("expected pseudo-weather to have an id")?,
+                    )?;
+                } else {
+                    run_callback_with_errors(
+                        UpcomingEvaluationContext::FieldEffect(context.into()),
                         fxlang::VariableInput::default(),
                         callback_handle,
                     )?;
@@ -2075,6 +2155,56 @@ pub fn run_terrain_event_expecting_u8(
         .ok()
 }
 
+/// Runs an event on one of the [`Field`][`crate::battle::Field`]'s pseudo-weather.
+pub fn run_pseudo_weather_event(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    pseudo_weather: &Id,
+) {
+    run_pseudo_weather_event_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        pseudo_weather,
+    );
+}
+
+/// Runs an event on one of the [`Field`][`crate::battle::Field`]'s pseudo-weather.
+///
+/// Expects a [`bool`].
+pub fn run_pseudo_weather_event_expecting_bool(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    pseudo_weather: &Id,
+) -> Option<bool> {
+    run_pseudo_weather_event_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        pseudo_weather,
+    )?
+    .boolean()
+    .ok()
+}
+
+/// Runs an event on one of the [`Field`][`crate::battle::Field`]'s pseudo-weather.
+///
+/// Expects an integer that can fit in a [`u8`].
+pub fn run_pseudo_weather_event_expecting_u8(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    pseudo_weather: &Id,
+) -> Option<u8> {
+    run_pseudo_weather_event_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        pseudo_weather,
+    )?
+    .integer_u8()
+    .ok()
+}
+
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
 pub fn run_applying_effect_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
     run_applying_effect_event_internal(context, event, fxlang::VariableInput::default());
@@ -2112,6 +2242,7 @@ pub fn run_event_for_applying_effect(
 pub fn run_event_for_applying_effect_expecting_bool_quick_return(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
+    default: bool,
 ) -> bool {
     run_event_for_applying_effect_internal(
         context,
@@ -2123,7 +2254,7 @@ pub fn run_event_for_applying_effect_expecting_bool_quick_return(
     )
     .map(|value| value.boolean().ok())
     .flatten()
-    .unwrap_or(false)
+    .unwrap_or(default)
 }
 
 /// Runs an event on the [`CoreBattle`] for an applying effect.

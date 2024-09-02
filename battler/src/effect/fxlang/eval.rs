@@ -60,6 +60,7 @@ use crate::{
         EffectHandle,
         MonStatusEffectStateConnector,
     },
+    mons::Type,
     moves::{
         Accuracy,
         Move,
@@ -695,6 +696,11 @@ where
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "is_behind_substitute" => {
+                                ValueRef::Boolean(mon_states::is_behind_substitute(
+                                    &mut context.mon_context(mon_handle)?,
+                                ))
+                            }
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -843,6 +849,9 @@ where
                             "is_raining" => ValueRef::Boolean(weather_states::is_raining(
                                 context.effect_context_for_handle(effect_handle)?.as_mut(),
                             )),
+                            "is_snowing" => ValueRef::Boolean(weather_states::is_snowing(
+                                context.effect_context_for_handle(effect_handle)?.as_mut(),
+                            )),
                             "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
                                 context.effect_context_for_handle(effect_handle)?.as_mut(),
                             )),
@@ -968,6 +977,12 @@ where
                             "reflected" => ValueRef::Boolean(
                                 context.active_move(active_move_handle)?.reflected,
                             ),
+                            "source" | "user" => {
+                                match context.active_move(active_move_handle)?.used_by {
+                                    Some(mon) => ValueRef::Mon(mon),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "source_effect" => {
                                 match context
                                     .active_move(active_move_handle)?
@@ -2215,6 +2230,9 @@ impl Evaluator {
             }
             (ValueRefMut::Type(var), Value::Type(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::Type(var), Value::String(val)) => {
+                *var = Type::from_str(&val).wrap_error_with_message("invalid type")?;
             }
             (ValueRefMut::Boost(var), Value::Boost(val)) => {
                 *var = val;

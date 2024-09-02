@@ -5,6 +5,8 @@ use ahash::HashMapExt;
 use crate::{
     battle::{
         Context,
+        EffectContext,
+        Mon,
         MonHandle,
     },
     common::{
@@ -35,7 +37,39 @@ impl EffectState {
     const SOURCE_SIDE: &'static str = "source_side";
     const SOURCE_POSITION: &'static str = "source_position";
 
+    /// Creates an initial effect state for a new effect.
+    pub fn initial_effect_state(
+        context: &mut EffectContext,
+        target: Option<MonHandle>,
+        source: Option<MonHandle>,
+    ) -> Result<Self, Error> {
+        let mut effect_state = Self::new();
+        effect_state.set_source_effect(
+            context
+                .effect_handle()
+                .stable_effect_handle(context.as_battle_context())?,
+        );
+        if let Some(target_handle) = target {
+            effect_state.set_target(target_handle);
+        }
+        if let Some(source_handle) = source {
+            effect_state.set_source(source_handle);
+            let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
+            effect_state.set_source_side(context.mon().side);
+            if let Ok(source_position) = Mon::position_on_side(&mut context) {
+                effect_state.set_source_position(source_position)?;
+            }
+        }
+        Ok(effect_state)
+    }
+
     /// Creates a new, default instance.
+    ///
+    /// Prefer [`Self::initial_effect_state`] as much as possible, since callbacks can rely on
+    /// consistency between effect states.
+    ///
+    /// TODO: All calls to this should be migrated to an equivalent `initial_effect_state` call on
+    /// battle initialization.
     pub fn new() -> Self {
         Self {
             values: FastHashMap::new(),

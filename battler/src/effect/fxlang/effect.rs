@@ -218,6 +218,13 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "AccuracyExempt"]
     AccuracyExempt,
+    /// Runs when a pseudo-weather is being added to the field.
+    ///
+    /// Runs before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "AddPseudoWeather"]
+    AddPseudoWeather,
     /// Runs after a volatile effect is added to a Mon.
     ///
     /// Runs in the context of an applying effect.
@@ -498,6 +505,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "IsAsleep"]
     IsAsleep,
+    /// Runs when determining if a Mon is behind a substitute.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsBehindSubstitute"]
+    IsBehindSubstitute,
     /// Runs when determining if a Mon is grounded.
     ///
     /// Runs in the context of the target Mon.
@@ -932,6 +944,7 @@ impl BattleEvent {
     pub fn callback_type_flags(&self) -> u32 {
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
+            Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -979,6 +992,7 @@ impl BattleEvent {
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
+            Self::IsBehindSubstitute => CommonCallbackType::MonResult as u32,
             Self::IsGrounded => CommonCallbackType::MonResult as u32,
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
             Self::IsRaining => CommonCallbackType::NoContextResult as u32,
@@ -1064,6 +1078,7 @@ impl BattleEvent {
     /// The name of the input variable by index.
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
+            Self::AddPseudoWeather => &[("pseudo_weather", ValueType::Effect, true)],
             Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
@@ -1348,6 +1363,7 @@ impl SpeedOrderable for Callback {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Callbacks {
     pub is_asleep: Callback,
+    pub is_behind_substitute: Callback,
     pub is_grounded: Callback,
     pub is_immune_to_entry_hazards: Callback,
     pub is_semi_invulnerable: Callback,
@@ -1357,6 +1373,7 @@ pub struct Callbacks {
     pub is_soundproof: Callback,
     pub is_sunny: Callback,
     pub on_accuracy_exempt: Callback,
+    pub on_add_pseudo_weather: Callback,
     pub on_add_volatile: Callback,
     pub on_after_hit: Callback,
     pub on_after_move: Callback,
@@ -1475,6 +1492,7 @@ impl Callbacks {
     pub fn event(&self, event: BattleEvent) -> Option<&Callback> {
         match event {
             BattleEvent::AccuracyExempt => Some(&self.on_accuracy_exempt),
+            BattleEvent::AddPseudoWeather => Some(&self.on_add_pseudo_weather),
             BattleEvent::AddVolatile => Some(&self.on_add_volatile),
             BattleEvent::AfterHit => Some(&self.on_after_hit),
             BattleEvent::AfterMove => Some(&self.on_after_move),
@@ -1522,6 +1540,7 @@ impl Callbacks {
             BattleEvent::Immunity => Some(&self.on_immunity),
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::IsAsleep => Some(&self.is_asleep),
+            BattleEvent::IsBehindSubstitute => Some(&self.is_behind_substitute),
             BattleEvent::IsGrounded => Some(&self.is_grounded),
             BattleEvent::IsImmuneToEntryHazards => Some(&self.is_immune_to_entry_hazards),
             BattleEvent::IsRaining => Some(&self.is_raining),

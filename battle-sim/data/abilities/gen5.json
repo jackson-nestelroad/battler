@@ -32,7 +32,29 @@
   "justified": { "name": "Justified", "flags": [] },
   "rattled": { "name": "Rattled", "flags": [] },
   "magicbounce": { "name": "Magic Bounce", "flags": [] },
-  "sapsipper": { "name": "Sap Sipper", "flags": [] },
+  "sapsipper": {
+    "name": "Sap Sipper",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": {
+          "priority": 1,
+          "program": [
+            "if $target == $source or $move.type != grass:",
+            ["return"],
+            "if !func_call(boost: $target atk:1):",
+            ["log_immune: $target from_effect"],
+            "return stop"
+          ]
+        },
+        "on_side_try_hit_side": [
+          "if $move.source == $effect_state.target or $move.type != grass:",
+          ["return"],
+          "boost: $effect_state.target atk:1"
+        ]
+      }
+    }
+  },
   "prankster": { "name": "Prankster", "flags": [] },
   "sandforce": { "name": "Sand Force", "flags": [] },
   "ironbarbs": { "name": "Iron Barbs", "flags": [] },

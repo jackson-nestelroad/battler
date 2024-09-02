@@ -15,6 +15,7 @@ pub use effect_state_connectors::{
     MonItemEffectStateConnector,
     MonStatusEffectStateConnector,
     MonVolatileStatusEffectStateConnector,
+    PseudoWeatherEffectStateConnector,
     SideConditionEffectStateConnector,
     SlotConditionEffectStateConnector,
     TerrainEffectStateConnector,
