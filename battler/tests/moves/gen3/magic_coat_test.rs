@@ -101,7 +101,7 @@ fn magic_coat_reflects_status_moves_for_the_turn() {
             "move|mon:Grumpig,player-1,1|name:Magic Coat|target:Grumpig,player-1,1",
             "singleturn|mon:Grumpig,player-1,1|move:Magic Coat",
             "move|mon:Seviper,player-2,2|name:Spikes|noanim",
-            "activate|move:Magic Coat|mon:Grumpig,player-1,1",
+            "activate|mon:Grumpig,player-1,1|move:Magic Coat",
             "move|mon:Grumpig,player-1,1|name:Spikes",
             "sidestart|side:1|move:Spikes",
             "split|side:1",
