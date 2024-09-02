@@ -1967,7 +1967,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         value: &'program tree::Value,
-    ) -> Result<MaybeReferenceValue, Error>
+    ) -> Result<MaybeReferenceValue<'eval>, Error>
     where
         'program: 'eval,
     {
