@@ -74,7 +74,7 @@ pub struct SecondaryEffect {
     pub user: Option<HitEffect>,
     /// Dynamic battle effects.
     #[serde(default)]
-    pub effect: fxlang::Effect,
+    pub effect: Box<fxlang::Effect>,
 }
 
 fn default_crit_ratio() -> Option<u8> {
