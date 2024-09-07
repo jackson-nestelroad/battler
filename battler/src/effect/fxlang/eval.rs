@@ -64,6 +64,7 @@ use crate::{
     moves::{
         Accuracy,
         Move,
+        MoveHitEffectType,
         MoveTarget,
         MultihitType,
     },
@@ -167,13 +168,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_effect_to_side_effect<'eval>(
         &'eval mut self,
         side: usize,
-        use_target_as_source: bool,
+        source_handle: Option<MonHandle>,
     ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = if use_target_as_source {
-            self.target_handle()
-        } else {
-            self.source_handle()
-        };
         let context: SideEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .side_effect_context(side, source_handle)?;
@@ -199,13 +195,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn forward_effect_to_field_effect<'eval>(
         &'eval mut self,
-        use_target_as_source: bool,
+        source_handle: Option<MonHandle>,
     ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = if use_target_as_source {
-            self.target_handle()
-        } else {
-            self.source_handle()
-        };
         let context: FieldEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .field_effect_context(source_handle)?;
@@ -447,6 +438,14 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<&'eval mut Move, Error> {
         self.battle_context_mut()
             .active_move_mut(active_move_handle)
+    }
+
+    pub fn active_move_context<'eval>(
+        &'eval mut self,
+        active_move_handle: MoveHandle,
+    ) -> Result<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>, Error> {
+        self.battle_context_mut()
+            .active_move_context(active_move_handle, MoveHitEffectType::PrimaryEffect)
     }
 
     pub fn target_handle(&self) -> Option<MonHandle> {

@@ -1,6 +1,17 @@
 mod abilities {
     mod gen3 {
+        mod damp_test;
+        mod limber_test;
+        mod sand_veil_test;
+        mod speed_boost_test;
+        mod static_test;
         mod stench_test;
+        mod sturdy_test;
+        mod volt_absorb_test;
+    }
+
+    mod gen4 {
+        mod aftermath_test;
     }
 }
 

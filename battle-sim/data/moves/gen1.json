@@ -647,7 +647,7 @@
           "priority": 7,
           "program": [
             "if $move.id == $effect_state.move:",
-            ["log_cant: $this.name", "return false"]
+            ["log_cant", "return false"]
           ]
         },
         "on_disable_move": [

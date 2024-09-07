@@ -269,6 +269,18 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect.
     #[string = "AllySetStatus"]
     AllySetStatus,
+    /// Runs when any Mon's damage is being calculated for a target.
+    ///
+    /// Used to override damage calculations.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "AnyDamage"]
+    AnyDamage,
+    /// Runs when any Mon exits the battle (is no longer active).
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "AnyExit"]
+    AnyExit,
     /// Runs when any Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -276,11 +288,6 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move from the user.
     #[string = "AnyPrepareHit"]
     AnyPrepareHit,
-    /// Runs when any Mon exits the battle (is no longer active).
-    ///
-    /// Runs in the context of the target Mon.
-    #[string = "AnyExit"]
-    AnyExit,
     /// Runs when any Mon's status effect is being set.
     ///
     /// Runs before the status effect is applied. Can be used to fail the status change.
@@ -288,6 +295,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "AnySetStatus"]
     AnySetStatus,
+    /// Runs when any Mon is trying to use a move.
+    ///
+    /// Can fail the move.
+    ///
+    /// Runs on the active move itself and in the context of an applying effect from the user.
+    #[string = "AnyTryMove"]
+    AnyTryMove,
     /// Runs when a Mon becomes attracted to another Mon.
     ///
     /// Can fail the attraction.
@@ -343,12 +357,17 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target Mon.
     #[string = "CopyVolatile"]
     CopyVolatile,
+    /// Runs when a move critical hits a target.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "CriticalHit"]
+    CriticalHit,
     /// Runs when a Mon's current status is cured.
     ///
     /// Runs in the context of an applying effect on the target.
     #[string = "CureStatus"]
     CureStatus,
-    /// Runs when a move's damage is being calculated for a target.
+    /// Runs when a Mon's damage is being calculated for a target.
     ///
     /// Used to override damage calculations.
     ///
@@ -510,6 +529,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "IsBehindSubstitute"]
     IsBehindSubstitute,
+    /// Runs when determining if a Mon is protected from making contact with other Mons.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "IsContactProof"]
+    IsContactProof,
     /// Runs when determining if a Mon is grounded.
     ///
     /// Runs in the context of the target Mon.
@@ -952,9 +976,11 @@ impl BattleEvent {
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AnyDamage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
             Self::AnyPrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AnyTryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
@@ -964,6 +990,7 @@ impl BattleEvent {
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::CopyVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::CriticalHit => CommonCallbackType::MoveResult as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -993,6 +1020,7 @@ impl BattleEvent {
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
             Self::IsBehindSubstitute => CommonCallbackType::MonResult as u32,
+            Self::IsContactProof => CommonCallbackType::MonResult as u32,
             Self::IsGrounded => CommonCallbackType::MonResult as u32,
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
             Self::IsRaining => CommonCallbackType::NoContextResult as u32,
@@ -1083,7 +1111,7 @@ impl BattleEvent {
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
             }
-            Self::Damage => &[("damage", ValueType::UFraction, true)],
+            Self::Damage | Self::AnyDamage => &[("damage", ValueType::UFraction, true)],
             Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
@@ -1253,9 +1281,11 @@ impl BattleEvent {
     /// Returns the associated any event.
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::Damage => Some(Self::AnyDamage),
             Self::Exit => Some(Self::AnyExit),
             Self::PrepareHit => Some(Self::AnyPrepareHit),
             Self::SetStatus => Some(Self::AnySetStatus),
+            Self::TryMove => Some(Self::AnyTryMove),
             _ => None,
         }
     }
@@ -1364,6 +1394,7 @@ impl SpeedOrderable for Callback {
 pub struct Callbacks {
     pub is_asleep: Callback,
     pub is_behind_substitute: Callback,
+    pub is_contact_proof: Callback,
     pub is_grounded: Callback,
     pub is_immune_to_entry_hazards: Callback,
     pub is_semi_invulnerable: Callback,
@@ -1381,9 +1412,11 @@ pub struct Callbacks {
     pub on_after_set_status: Callback,
     pub on_after_substitute_damage: Callback,
     pub on_ally_set_status: Callback,
+    pub on_any_damage: Callback,
     pub on_any_exit: Callback,
     pub on_any_prepare_hit: Callback,
     pub on_any_set_status: Callback,
+    pub on_any_try_move: Callback,
     pub on_attract: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
@@ -1393,6 +1426,7 @@ pub struct Callbacks {
     pub on_clear_terrain: Callback,
     pub on_clear_weather: Callback,
     pub on_copy_volatile: Callback,
+    pub on_critical_hit: Callback,
     pub on_cure_status: Callback,
     pub on_damage: Callback,
     pub on_damage_received: Callback,
@@ -1500,9 +1534,11 @@ impl Callbacks {
             BattleEvent::AfterSetStatus => Some(&self.on_after_set_status),
             BattleEvent::AfterSubstituteDamage => Some(&self.on_after_substitute_damage),
             BattleEvent::AllySetStatus => Some(&self.on_ally_set_status),
+            BattleEvent::AnyDamage => Some(&self.on_any_damage),
             BattleEvent::AnyExit => Some(&self.on_any_exit),
             BattleEvent::AnyPrepareHit => Some(&self.on_any_prepare_hit),
             BattleEvent::AnySetStatus => Some(&self.on_any_set_status),
+            BattleEvent::AnyTryMove => Some(&self.on_any_try_move),
             BattleEvent::Attract => Some(&self.on_attract),
             BattleEvent::BasePower => Some(&self.on_base_power),
             BattleEvent::BeforeMove => Some(&self.on_before_move),
@@ -1512,6 +1548,7 @@ impl Callbacks {
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::CopyVolatile => Some(&self.on_copy_volatile),
+            BattleEvent::CriticalHit => Some(&self.on_critical_hit),
             BattleEvent::CureStatus => Some(&self.on_cure_status),
             BattleEvent::Damage => Some(&self.on_damage),
             BattleEvent::DamageReceived => Some(&self.on_damage_received),
@@ -1541,6 +1578,7 @@ impl Callbacks {
             BattleEvent::Invulnerability => Some(&self.on_invulnerability),
             BattleEvent::IsAsleep => Some(&self.is_asleep),
             BattleEvent::IsBehindSubstitute => Some(&self.is_behind_substitute),
+            BattleEvent::IsContactProof => Some(&self.is_contact_proof),
             BattleEvent::IsGrounded => Some(&self.is_grounded),
             BattleEvent::IsImmuneToEntryHazards => Some(&self.is_immune_to_entry_hazards),
             BattleEvent::IsRaining => Some(&self.is_raining),

@@ -28,7 +28,23 @@
   "klutz": { "name": "Klutz", "flags": [] },
   "moldbreaker": { "name": "Mold Breaker", "flags": [] },
   "superluck": { "name": "Super Luck", "flags": [] },
-  "aftermath": { "name": "Aftermath", "flags": [] },
+  "aftermath": {
+    "name": "Aftermath",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": {
+          "order": 1,
+          "program": [
+            "if $target.hp == 0 and func_call(move_makes_contact: $move):",
+            [
+              "damage: $source expr($source.base_max_hp / 4) use_target_as_source"
+            ]
+          ]
+        }
+      }
+    }
+  },
   "anticipation": { "name": "Anticipation", "flags": [] },
   "forewarn": { "name": "Forewarn", "flags": [] },
   "unaware": { "name": "Unaware", "flags": [] },

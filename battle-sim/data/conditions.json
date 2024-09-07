@@ -121,7 +121,7 @@
     "condition": {
       "callbacks": {
         "is_grounded": {
-          "order": 100,
+          "priority": -100,
           "program": ["return false"]
         }
       }
@@ -219,7 +219,7 @@
           "priority": 1,
           "program": [
             "if func_call(chance: 1 4):",
-            ["log_cant: $this.name", "return false"]
+            ["log_cant", "return false"]
           ]
         },
         "on_modify_spe": [
@@ -252,7 +252,7 @@
             "$effect_state.time = $effect_state.time - 1",
             "if $effect_state.time <= 0:",
             ["cure_status: $user", "return"],
-            "log_cant: $this.name",
+            "log_cant",
             "if func_call(move_has_flag: $move sleepusable):",
             ["return"],
             "return false"
@@ -279,7 +279,7 @@
             ["return"],
             "if func_call(chance: 1 5):",
             ["cure_status: $user", "return"],
-            "log_cant: $this.name",
+            "log_cant",
             ["return false"]
           ]
         },
@@ -412,7 +412,7 @@
           ["return false"]
         ],
         "on_deduct_pp": {
-          "order": 999,
+          "priority": -999,
           "program": [
             "# Run last, to ensure no PP is deducted while charging.",
             "if $effect_state.duration > 1:",
@@ -489,11 +489,7 @@
       "callbacks": {
         "on_before_move": {
           "priority": 8,
-          "program": [
-            "log_cant: $this.name",
-            "run_event: Flinch",
-            "return false"
-          ]
+          "program": ["log_cant", "run_event: Flinch", "return false"]
         }
       }
     }
@@ -510,7 +506,7 @@
         "on_before_move": {
           "priority": 11,
           "program": [
-            "log_cant: $this.name",
+            "log_cant",
             "remove_volatile: $user $this.id",
             "return false"
           ]
@@ -667,7 +663,7 @@
           "if $move.type == water:",
           ["return $damage * 1/2"]
         ],
-        "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_immunity": ["if $effect.id == frz:", ["return false"]],
         "on_field_start": [
           "if $source_effect.is_ability:",
           ["log_weather: $this.name with_source_effect"],
@@ -704,7 +700,7 @@
           "if $move.type == fire:",
           ["return $damage * 3/2"]
         ],
-        "on_immunity": ["if $effect == frz:", ["return false"]],
+        "on_immunity": ["if $effect.id == frz:", ["return false"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": {
           "order": 1,
@@ -883,7 +879,7 @@
     "condition": {
       "callbacks": {
         "on_damage": {
-          "order": 999,
+          "priority": -999,
           "program": [
             "if $target.affection_level == 3:",
             ["$chance = 10"],

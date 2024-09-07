@@ -20,17 +20,16 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn baltoy() -> Result<TeamData, Error> {
+fn sudowoodo() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Baltoy",
-                    "species": "Baltoy",
-                    "ability": "No Ability",
+                    "name": "Sudowoodo",
+                    "species": "Sudowoodo",
+                    "ability": "Limber",
                     "moves": [
-                        "Imprison",
-                        "Tackle"
+                        "Thunder Wave"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -61,34 +60,21 @@ fn make_battle(
 }
 
 #[test]
-fn imprison_disables_moves_known_by_user() {
+fn limber_prevents_paralysis() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, baltoy().unwrap(), baltoy().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, sudowoodo().unwrap(), sudowoodo().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Baltoy,player-1,1|name:Imprison|target:Baltoy,player-1,1",
-            "start|mon:Baltoy,player-1,1|move:Imprison",
-            "cant|mon:Baltoy,player-2,1|reason:move:Imprison",
+            "move|mon:Sudowoodo,player-1,1|name:Thunder Wave|noanim",
+            "immune|mon:Sudowoodo,player-2,1|from:ability:Limber",
+            "fail|mon:Sudowoodo,player-1,1",
             "residual",
-            "turn|turn:2",
-            ["time"],
-            "move|mon:Baltoy,player-2,1|name:Struggle|target:Baltoy,player-1,1",
-            "crit|mon:Baltoy,player-1,1",
-            "split|side:0",
-            "damage|mon:Baltoy,player-1,1|health:77/100",
-            "damage|mon:Baltoy,player-1,1|health:77/100",
-            "split|side:1",
-            "damage|mon:Baltoy,player-2,1|from:Struggle Recoil|health:75/100",
-            "damage|mon:Baltoy,player-2,1|from:Struggle Recoil|health:75/100",
-            "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

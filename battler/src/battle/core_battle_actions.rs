@@ -356,10 +356,7 @@ fn do_move_internal(
         && !move_id.eq("struggle")
     {
         // No PP, so this move action cannot be carried through.
-        let move_name = &context.active_move().data.name;
-        // SAFETY: Logging does not change the active move.
-        let move_name = unsafe { move_name.unsafely_detach_borrow() };
-        core_battle_logs::cant(context.as_mon_context_mut(), "nopp", Some(move_name))?;
+        core_battle_logs::cant(context.as_mon_context_mut(), "nopp")?;
         return Ok(());
     }
 
@@ -1250,7 +1247,13 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
                 && rand_util::chance(context.battle_mut().prng.as_mut(), 1, crit_chance as u64));
 
     if context.active_move_mut().hit_data(target_mon_handle).crit {
-        // TODO: CriticalHit event.
+        if !core_battle_effects::run_event_for_applying_effect(
+            &mut context.applying_effect_context()?,
+            fxlang::BattleEvent::CriticalHit,
+            fxlang::VariableInput::default(),
+        ) {
+            context.active_move_mut().hit_data(target_mon_handle).crit = false;
+        }
     }
 
     let level = context.mon().level;
@@ -1579,7 +1582,7 @@ mod direct_move_step {
             let mut target_context = context.target_mon_context(target.handle)?;
             let immune = immune && Mon::is_immune(&mut target_context, move_type)?;
             if immune {
-                core_battle_logs::immune(&mut target_context)?;
+                core_battle_logs::immune(&mut target_context, None)?;
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -1604,7 +1607,7 @@ mod direct_move_step {
                 || check_immunity(&mut context.applying_effect_context_for_target(target.handle)?)?;
 
             if immune {
-                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?)?;
+                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -1639,7 +1642,7 @@ mod direct_move_step {
                 }
 
                 if immune {
-                    core_battle_logs::immune(&mut context.target_mon_context()?)?;
+                    core_battle_logs::immune(&mut context.target_mon_context()?, None)?;
                     return Ok(false);
                 }
 
@@ -2661,7 +2664,7 @@ pub fn try_set_status(
     if check_immunity(&mut context.forward_applying_effect_context(status_effect_handle.clone())?)?
     {
         if is_primary_move_effect {
-            core_battle_logs::immune(&mut context.target_context()?)?;
+            core_battle_logs::immune(&mut context.target_context()?, None)?;
         }
         return Ok(ApplyMoveEffectResult::Immune);
     }
@@ -2803,7 +2806,7 @@ pub fn try_add_volatile(
         &mut context.forward_applying_effect_context(volatile_effect_handle.clone())?,
     )? {
         if is_primary_move_effect {
-            core_battle_logs::immune(&mut context.target_context()?)?;
+            core_battle_logs::immune(&mut context.target_context()?, None)?;
         }
         return Ok(false);
     }

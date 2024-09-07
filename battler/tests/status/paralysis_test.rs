@@ -127,7 +127,7 @@ fn paralysis_reduces_speed_and_prevents_movement() {
             "split|side:1",
             "damage|mon:Alakazam,player-2,1|health:77/115",
             "damage|mon:Alakazam,player-2,1|health:67/100",
-            "cant|mon:Alakazam,player-2,1|reason:Paralysis",
+            "cant|mon:Alakazam,player-2,1|reason:status:Paralysis",
             "residual",
             "turn|turn:4"
         ]"#,

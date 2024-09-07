@@ -1,6 +1,7 @@
 use battler::{
     battle::{
         BattleType,
+        CoreBattleEngineRandomizeBaseDamage,
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
@@ -20,16 +21,16 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn baltoy() -> Result<TeamData, Error> {
+fn pikachu() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Baltoy",
-                    "species": "Baltoy",
-                    "ability": "No Ability",
+                    "name": "Pikachu",
+                    "species": "Pikachu",
+                    "ability": "Volt Absorb",
                     "moves": [
-                        "Imprison",
+                        "Thunderbolt",
                         "Tackle"
                     ],
                     "nature": "Hardy",
@@ -53,6 +54,7 @@ fn make_battle(
         .with_team_validation(false)
         .with_pass_allowed(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
+        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Min)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
@@ -61,36 +63,33 @@ fn make_battle(
 }
 
 #[test]
-fn imprison_disables_moves_known_by_user() {
+fn volt_absorb_heals_when_hit_by_electric_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, baltoy().unwrap(), baltoy().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Baltoy,player-1,1|name:Imprison|target:Baltoy,player-1,1",
-            "start|mon:Baltoy,player-1,1|move:Imprison",
-            "cant|mon:Baltoy,player-2,1|reason:move:Imprison",
-            "residual",
-            "turn|turn:2",
-            ["time"],
-            "move|mon:Baltoy,player-2,1|name:Struggle|target:Baltoy,player-1,1",
-            "crit|mon:Baltoy,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pikachu,player-1,1",
             "split|side:0",
-            "damage|mon:Baltoy,player-1,1|health:77/100",
-            "damage|mon:Baltoy,player-1,1|health:77/100",
-            "split|side:1",
-            "damage|mon:Baltoy,player-2,1|from:Struggle Recoil|health:75/100",
-            "damage|mon:Baltoy,player-2,1|from:Struggle Recoil|health:75/100",
+            "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95",
+            "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:100/100",
             "residual",
-            "turn|turn:3"
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pikachu,player-1,1",
+            "immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb",
+            "residual",
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();
-    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+    assert_logs_since_turn_eq(&battle, 2, &expected_logs);
 }

@@ -49,9 +49,11 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterSubstituteDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::AllySetStatus, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AnyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyPrepareHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnySetStatus, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AnyTryMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Attract, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
@@ -61,6 +63,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ClearWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::CopyVolatile, callbacks)?;
+            parsed.parse_and_save(BattleEvent::CriticalHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::CureStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::Damage, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamageReceived, callbacks)?;
@@ -90,6 +93,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsBehindSubstitute, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsContactProof, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsGrounded, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsImmuneToEntryHazards, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;

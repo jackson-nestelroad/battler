@@ -866,7 +866,7 @@
     "effect": {
       "callbacks": {
         "on_damage": {
-          "order": 999,
+          "priority": -999,
           "program": ["if $damage >= $target.hp:", ["return $target.hp - 1"]]
         }
       }
@@ -1014,7 +1014,7 @@
           "program": [
             "log_activate: str('of:{}', $effect_state.source.position_details)",
             "if func_call(chance: 1 2):",
-            ["log_cant: $this.name", "return false"]
+            ["log_cant", "return false"]
           ]
         }
       }

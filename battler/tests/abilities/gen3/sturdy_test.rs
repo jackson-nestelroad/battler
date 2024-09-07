@@ -20,17 +20,37 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn vigoroth() -> Result<TeamData, Error> {
+fn geodude() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Vigoroth",
-                    "species": "Vigoroth",
-                    "ability": "No Ability",
+                    "name": "Geodude",
+                    "species": "Geodude",
+                    "ability": "Sturdy",
                     "moves": [
-                        "Focus Punch",
-                        "Tackle"
+                        "Guillotine"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn swampert() -> Result<TeamData, Error> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Swampert",
+                    "species": "Swampert",
+                    "ability": "Torrent",
+                    "moves": [
+                        "Surf",
+                        "Guillotine"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -61,22 +81,22 @@ fn make_battle(
 }
 
 #[test]
-fn focus_punch_charges_and_succeeds() {
+fn sturdy_survives_one_hit_ko() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, vigoroth().unwrap(), vigoroth().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Vigoroth,player-1,1|move:Focus Punch",
-            "move|mon:Vigoroth,player-1,1|name:Focus Punch|target:Vigoroth,player-2,1",
-            "supereffective|mon:Vigoroth,player-2,1",
-            "split|side:1",
-            "damage|mon:Vigoroth,player-2,1|health:10/140",
-            "damage|mon:Vigoroth,player-2,1|health:8/100",
+            "move|mon:Swampert,player-2,1|name:Surf",
+            "supereffective|mon:Geodude,player-1,1",
+            "ability|mon:Geodude,player-1,1|ability:Sturdy",
+            "split|side:0",
+            "damage|mon:Geodude,player-1,1|health:1/100",
+            "damage|mon:Geodude,player-1,1|health:1/100",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -86,22 +106,18 @@ fn focus_punch_charges_and_succeeds() {
 }
 
 #[test]
-fn focus_punch_fails_if_hit() {
+fn sturdy_resists_ohko_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, vigoroth().unwrap(), vigoroth().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Vigoroth,player-1,1|move:Focus Punch",
-            "move|mon:Vigoroth,player-2,1|name:Tackle|target:Vigoroth,player-1,1",
-            "split|side:0",
-            "damage|mon:Vigoroth,player-1,1|health:113/140",
-            "damage|mon:Vigoroth,player-1,1|health:81/100",
-            "cant|mon:Vigoroth,player-1,1|reason:move:Focus Punch",
+            "move|mon:Swampert,player-2,1|name:Guillotine|target:Geodude,player-1,1",
+            "immune|mon:Geodude,player-1,1|from:ability:Sturdy",
             "residual",
             "turn|turn:2"
         ]"#,

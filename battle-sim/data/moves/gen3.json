@@ -308,7 +308,7 @@
         "on_before_move": [
           "$volatile_state = func_call(volatile_effect_state: $user $this.id)",
           "if !$volatile_state or $volatile_state.lost_focus:",
-          ["log_cant: $this.name", "return false"]
+          ["log_cant", "return false"]
         ]
       }
     },
@@ -500,7 +500,7 @@
           "priority": 5,
           "program": [
             "if $move.category == status and $move.id != mefirst:",
-            ["log_cant: $this.name", "return false"]
+            ["log_cant", "return false"]
           ]
         }
       }
@@ -941,7 +941,7 @@
         ],
         "on_foe_before_move": [
           "if $move.id != struggle and func_call(has_move: $effect_state.source $move.id):",
-          ["log_cant: $this.name", "return false"]
+          ["log_cant", "return false"]
         ]
       }
     }

@@ -33,15 +33,138 @@
       }
     }
   },
-  "speedboost": { "name": "Speed Boost", "flags": [] },
-  "battlearmor": { "name": "Battle Armor", "flags": [] },
-  "sturdy": { "name": "Sturdy", "flags": [] },
-  "damp": { "name": "Damp", "flags": [] },
-  "limber": { "name": "Limber", "flags": [] },
-  "sandveil": { "name": "Sand Veil", "flags": [] },
-  "static": { "name": "Static", "flags": [] },
-  "voltabsorb": { "name": "Volt Absorb", "flags": [] },
-  "waterabsorb": { "name": "Water Absorb", "flags": [] },
+  "speedboost": {
+    "name": "Speed Boost",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if $target.active_turns > 0:",
+          ["boost: $target spe:1"]
+        ]
+      }
+    }
+  },
+  "battlearmor": {
+    "name": "Battle Armor",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_critical_hit": ["return false"]
+      }
+    }
+  },
+  "sturdy": {
+    "name": "Sturdy",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $move.ohko:",
+          ["log_immune: $target from_effect", "return stop"]
+        ],
+        "on_damage": {
+          "priority": -100,
+          "program": [
+            "if $target.hp == $target.max_hp and $damage > $target.hp and $effect.is_move:",
+            ["log_ability", "return $target.hp - 1"]
+          ]
+        }
+      }
+    }
+  },
+  "damp": {
+    "name": "Damp",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_any_try_move": [
+          "if [explosion, mindblown, mistyexplosion, selfdestruct] has $move.id:",
+          [
+            "log_cant: with_source use_effect_state_target_as_source",
+            "return false"
+          ]
+        ],
+        "on_any_damage": ["if $effect.id == aftermath:", ["return 0"]]
+      }
+    }
+  },
+  "limber": {
+    "name": "Limber",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.status == par:",
+          ["log_ability", "cure_status: $mon"]
+        ],
+        "on_set_status": [
+          "if $status.id != par:",
+          ["return"],
+          "if $effect.is_move and !$effect.is_move_secondary:",
+          ["log_immune: $target from_effect"],
+          "return false"
+        ]
+      }
+    }
+  },
+  "sandveil": {
+    "name": "Sand Veil",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]],
+        "on_modify_accuracy": [
+          "if $field.weather == sandstormweather:",
+          ["return $acc * 4/5"]
+        ]
+      }
+    }
+  },
+  "static": {
+    "name": "Static",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
+          ["set_status: $source par $target"]
+        ]
+      }
+    }
+  },
+  "voltabsorb": {
+    "name": "Volt Absorb",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target != $source and $move.type == electric:",
+          [
+            "if func_call(heal: $target expr($target.base_max_hp / 4) $target) == 0:",
+            ["log_immune: $target from_effect"],
+            "return stop"
+          ]
+        ]
+      }
+    }
+  },
+  "waterabsorb": {
+    "name": "Water Absorb",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target != $source and $move.type == electric:",
+          [
+            "if func_call(heal: $target expr($target.base_max_hp / 4)) > 0:",
+            ["log_immune: $target from_effect"],
+            "return stop"
+          ]
+        ]
+      }
+    }
+  },
   "oblivious": { "name": "Oblivious", "flags": [] },
   "cloudnine": { "name": "Cloud Nine", "flags": [] },
   "compoundeyes": { "name": "Compound Eyes", "flags": [] },

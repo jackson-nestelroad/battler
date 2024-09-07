@@ -1,11 +1,13 @@
 use crate::{
     battle::{
         core_battle_effects,
+        ActiveMoveContext,
         Field,
         MonContext,
     },
     common::Id,
     effect::fxlang,
+    moves::MoveFlags,
 };
 
 /// Checks if the [`Mon`][`crate::battle::Mon`] is asleep.
@@ -22,6 +24,15 @@ pub fn is_behind_substitute(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,
         fxlang::BattleEvent::IsBehindSubstitute,
+        false,
+    )
+}
+
+/// Checks if the [`Mon`][`crate::battle::Mon`] is protected from making contact with other Mons.
+pub fn is_contact_proof(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsContactProof,
         false,
     )
 }
@@ -128,4 +139,19 @@ pub fn effective_item(context: &mut MonContext) -> Option<Id> {
         return None;
     }
     context.mon().item.as_ref().map(|item| item.id.clone())
+}
+
+/// Checks if the [`Move`][`crate::moves::Move`] makes contact with its targets.
+pub fn move_makes_contact(context: &mut ActiveMoveContext) -> bool {
+    if !context
+        .active_move()
+        .data
+        .flags
+        .contains(&MoveFlags::Contact)
+    {
+        return false;
+    }
+
+    // Check if the attacker is contact-proof.
+    return !is_contact_proof(context.as_mon_context_mut());
 }

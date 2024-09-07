@@ -39,14 +39,32 @@ pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn cant(context: &mut MonContext, reason: &str, do_what: Option<&str>) -> Result<(), Error> {
-    let mut event = log_event!(
+pub fn cant(context: &mut MonContext, reason: &str) -> Result<(), Error> {
+    let event = log_event!(
         "cant",
         ("mon", Mon::position_details(context)?),
         ("reason", reason),
     );
-    if let Some(do_what) = do_what {
-        event.set("what", do_what);
+    context.battle_mut().log(event);
+    Ok(())
+}
+
+pub fn cant_from_effect(
+    context: &mut MonContext,
+    effect: &EffectHandle,
+    source: Option<MonHandle>,
+) -> Result<(), Error> {
+    let effect = CoreBattle::get_effect_by_handle(context.as_battle_context(), effect)?.full_name();
+    let mut event = log_event!(
+        "cant",
+        ("mon", Mon::position_details(context)?),
+        ("reason", effect),
+    );
+    if let Some(source) = source {
+        event.set(
+            "of",
+            Mon::position_details(&context.as_battle_context_mut().mon_context(source)?)?,
+        );
     }
     context.battle_mut().log(event);
     Ok(())
@@ -129,19 +147,13 @@ pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn immune(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!("immune", ("mon", Mon::position_details(context)?));
-    context.battle_mut().log(event);
-    Ok(())
-}
-
-pub fn immune_from_effect(context: &mut MonContext, effect: &EffectHandle) -> Result<(), Error> {
-    let effect = CoreBattle::get_effect_by_handle(context.as_battle_context(), effect)?.full_name();
-    let event = log_event!(
-        "immune",
-        ("mon", Mon::position_details(context)?),
-        ("from", effect)
-    );
+pub fn immune(context: &mut MonContext, effect: Option<&EffectHandle>) -> Result<(), Error> {
+    let mut event = log_event!("immune", ("mon", Mon::position_details(context)?));
+    if let Some(effect) = effect {
+        let effect =
+            CoreBattle::get_effect_by_handle(context.as_battle_context(), effect)?.full_name();
+        event.set("from", effect);
+    }
     context.battle_mut().log(event);
     Ok(())
 }
@@ -192,7 +204,7 @@ pub fn damage(
             if let Some(source) = source {
                 if source != context.mon_handle() || effect.is_ability() {
                     event.set(
-                        "source",
+                        "of",
                         Mon::position_details(
                             &context.as_battle_context_mut().mon_context(source)?,
                         )?,
@@ -221,10 +233,10 @@ pub fn heal(
 ) -> Result<(), Error> {
     let mut event = log_event!("heal", ("mon", Mon::position_details(context)?));
     if let Some(effect) = effect {
-        let effect_context = context
-            .as_battle_context_mut()
-            .effect_context(effect.clone(), None)?;
-        if effect_context.effect().effect_type() != EffectType::Move {
+        if !effect.is_active_move() {
+            let effect_context = context
+                .as_battle_context_mut()
+                .effect_context(effect.clone(), None)?;
             event.set("from", effect_context.effect().full_name());
             if let Some(source) = source {
                 if source != context.mon_handle() {
