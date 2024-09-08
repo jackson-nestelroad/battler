@@ -27,7 +27,7 @@ fn pikachu_team() -> Result<TeamData, Error> {
                 {
                     "name": "Pikachu",
                     "species": "Pikachu",
-                    "ability": "Lightning Rod",
+                    "ability": "No Ability",
                     "moves": [
                         "Thunder",
                         "Sand Attack",
