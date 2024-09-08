@@ -645,12 +645,7 @@ where
                                 match mon_states::effective_item(
                                     &mut context.mon_context(mon_handle)?,
                                 ) {
-                                    Some(weather) => ValueRef::Effect(
-                                        context
-                                            .battle_context_mut()
-                                            .battle_mut()
-                                            .get_effect_handle_by_id(&weather)?,
-                                    ),
+                                    Some(item) => ValueRef::TempEffect(EffectHandle::Item(item)),
                                     None => ValueRef::Undefined,
                                 }
                             }

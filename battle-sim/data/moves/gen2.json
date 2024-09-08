@@ -1008,7 +1008,7 @@
           "if $mon == $effect_state.source:",
           ["remove_volatile: $effect_state.target $this.id"]
         ],
-        "on_end": ["log_end: silent"],
+        "on_end": ["log_end"],
         "on_before_move": {
           "priority": 2,
           "program": [

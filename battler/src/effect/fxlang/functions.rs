@@ -138,6 +138,7 @@ pub fn run_function(
         "log_end" => log_end(context).map(|()| None),
         "log_fail" => log_fail(context).map(|()| None),
         "log_fail_heal" => log_fail_heal(context).map(|()| None),
+        "log_fail_unboost" => log_fail_unboost(context).map(|()| None),
         "log_field_activate" => log_field_activate(context).map(|()| None),
         "log_field_start" => log_field_start(context).map(|()| None),
         "log_field_end" => log_field_end(context).map(|()| None),
@@ -464,7 +465,8 @@ fn add_effect_to_args(context: &mut FunctionContext) -> Result<(), Error> {
         Effect::ActiveMove(active_move, _) => {
             format!("move:{}", active_move.data.name)
         }
-        Effect::Ability(ability) => {
+        Effect::MoveCondition(condition) => format!("move:{}", condition.data.name),
+        Effect::Ability(ability) | Effect::AbilityCondition(ability) => {
             format!("ability:{}", ability.data.name)
         }
         Effect::Item(item) => format!("item:{}", item.data.name),
@@ -473,7 +475,6 @@ fn add_effect_to_args(context: &mut FunctionContext) -> Result<(), Error> {
             condition.non_empty_condition_type_name(),
             condition.data.name
         ),
-        Effect::MoveCondition(condition) => format!("move:{}", condition.data.name),
         _ => return Ok(()),
     };
     context.push_front(Value::String(string));
@@ -719,6 +720,29 @@ fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
     core_battle_logs::fail(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         what.as_ref(),
+        effect_handle.as_ref(),
+    )
+}
+
+fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
+    let from_effect = context.from_effect();
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let effect_handle = if from_effect {
+        Some(context.evaluation_context().effect_handle().clone())
+    } else {
+        None
+    };
+    let mut boosts = Vec::new();
+    while let Some(val) = context.pop_front() {
+        boosts.push(val.boost().wrap_error_with_message("invalid boost")?);
+    }
+    core_battle_logs::fail_unboost(
+        &mut context.evaluation_context_mut().mon_context(mon_handle)?,
+        &boosts,
         effect_handle.as_ref(),
     )
 }

@@ -137,6 +137,37 @@ pub fn fail(
     Ok(())
 }
 
+pub fn fail_unboost(
+    context: &mut MonContext,
+    boosts: &[Boost],
+    from: Option<&EffectHandle>,
+) -> Result<(), Error> {
+    let mut event = log_event!(
+        "fail",
+        ("mon", Mon::position_details(context)?),
+        ("what", "unboost")
+    );
+
+    if !boosts.is_empty() {
+        event.set(
+            "boosts",
+            boosts
+                .iter()
+                .map(|boost| boost.to_string().to_lowercase())
+                .join(","),
+        );
+    }
+
+    if let Some(from) = from {
+        let effect =
+            CoreBattle::get_effect_by_handle(context.as_battle_context(), from)?.full_name();
+        event.set("from", effect);
+    }
+
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
     let event = log_event!(
         "fail",

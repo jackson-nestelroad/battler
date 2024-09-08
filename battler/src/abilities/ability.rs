@@ -26,6 +26,9 @@ pub struct AbilityData {
     /// Dynamic battle effects.
     #[serde(default)]
     pub effect: fxlang::Effect,
+    /// Dynamic battle effects of the condition created by this ability.
+    #[serde(default)]
+    pub condition: fxlang::Condition,
 }
 
 /// An individual ability on a Mon that affects the battle in a wide variety of ways.

@@ -1778,7 +1778,7 @@ impl<'d> CoreBattle<'d> {
             return EffectHandle::MoveCondition(id);
         }
         if self.dex.abilities.get_by_id(&id).into_option().is_some() {
-            return EffectHandle::Ability(id);
+            return EffectHandle::AbilityCondition(id);
         }
         if self.dex.items.get_by_id(&id).into_option().is_some() {
             return EffectHandle::Item(id);
@@ -1807,6 +1807,9 @@ impl<'d> CoreBattle<'d> {
                 context.battle().dex.moves.get_by_id(id).into_result()?,
             )),
             EffectHandle::Ability(id) => Ok(Effect::for_ability(
+                context.battle().dex.abilities.get_by_id(id).into_result()?,
+            )),
+            EffectHandle::AbilityCondition(id) => Ok(Effect::for_ability_condition(
                 context.battle().dex.abilities.get_by_id(id).into_result()?,
             )),
             EffectHandle::Condition(id) => Ok(Effect::for_condition(

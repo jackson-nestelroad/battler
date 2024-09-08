@@ -12,7 +12,6 @@ use crate::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Token {
     Identifier,
-    UnquotedString,
     String,
     Integer,
     VariableStart,
@@ -67,10 +66,6 @@ mod byte {
         valid_identifier_start(b) || is_digit(b) || b == b'-' || b == b'_'
     }
 
-    pub fn valid_unquoted_string(b: u8) -> bool {
-        valid_identifier(b) || b == b':'
-    }
-
     pub fn is_digit(b: u8) -> bool {
         b >= b'0' && b <= b'9'
     }
@@ -81,47 +76,17 @@ mod byte {
 }
 
 /// Context for reading the next token.
-pub(crate) struct NextTokenContext {
-    /// Whether or not to allow an unquoted string.
-    ///
-    /// An unquoted string can include characters that would normally be separated out as their own
-    /// tokens. The clearest example is a colon:
-    ///
-    /// - `log: weather:Hail`
-    ///
-    /// In the above string `log` is the function name, the following colon is the function call
-    /// separator, and `weather:Hail` is an unquoted string (purely for convenience).
-    pub disallow_unquoted_string: bool,
-}
+pub(crate) struct NextTokenContext {}
 
 impl NextTokenContext {
     pub fn new() -> Self {
-        Self {
-            disallow_unquoted_string: false,
-        }
+        Self {}
     }
-
-    /// See [`disallow_unquoted_string`].
-    pub fn with_disallow_unquoted_string(mut self, val: bool) -> Self {
-        self.disallow_unquoted_string = val;
-        self
-    }
-}
-
-/// The result of parsing an identifier token.
-///
-/// If allowed, the token parser will parse unquoted strings from identifiers with some illegal
-/// characters.
-#[derive(PartialEq, Eq)]
-enum IdentifierParseResult {
-    Identifier,
-    UnquotedString,
 }
 
 mod token {
     use super::{
         byte,
-        IdentifierParseResult,
         NextTokenContext,
         Token,
     };
@@ -198,6 +163,7 @@ mod token {
             self.buffer_index += 1;
         }
 
+        #[allow(unused)]
         fn put_back_byte(&mut self) -> bool {
             if self.buffer_index <= self.input_index {
                 return false;
@@ -246,48 +212,23 @@ mod token {
             self.consume_buffer();
         }
 
-        fn try_read_identifier(
-            &mut self,
-            context: &NextTokenContext,
-        ) -> Option<IdentifierParseResult> {
+        fn try_read_identifier(&mut self) -> bool {
             // Validate identifier start.
             match self.peek_next_byte() {
                 Some(next) if byte::valid_identifier_start(next) => (),
-                _ => return None,
+                _ => return false,
             }
 
             // Read rest of the identifier.
-            let mut result = IdentifierParseResult::Identifier;
-            let mut lost_identifier_at = None;
             self.next_byte();
             while let Some(next) = self.peek_next_byte() {
-                if result == IdentifierParseResult::Identifier && !byte::valid_identifier(next) {
-                    if context.disallow_unquoted_string || !byte::valid_unquoted_string(next) {
-                        break;
-                    }
-                    result = IdentifierParseResult::UnquotedString;
-                    lost_identifier_at = Some(self.buffer_index);
-                } else if result == IdentifierParseResult::UnquotedString
-                    && !byte::valid_unquoted_string(next)
-                {
+                if !byte::valid_identifier(next) {
                     break;
                 }
                 self.next_byte();
             }
 
-            // If an unquoted string ends with a colon, we put it back, since it is most likely
-            // undesired.
-            if let Some(lexeme) = self.lexeme_buffer_str() {
-                if lexeme.ends_with(':') {
-                    self.put_back_byte();
-                    if lost_identifier_at.is_some_and(|lost_index| lost_index == self.buffer_index)
-                    {
-                        result = IdentifierParseResult::Identifier;
-                    }
-                }
-            }
-
-            Some(result)
+            true
         }
 
         fn try_read_string(&mut self) -> Result<Option<String>, Error> {
@@ -464,11 +405,7 @@ mod token {
             }
         }
 
-        fn identifier_to_token(
-            &self,
-            identifier: &str,
-            parse_result: IdentifierParseResult,
-        ) -> Token {
+        fn identifier_to_token(&self, identifier: &str) -> Token {
             match identifier {
                 "true" => Token::TrueKeyword,
                 "false" => Token::FalseKeyword,
@@ -486,10 +423,7 @@ mod token {
                 "hasany" => Token::HasAnyKeyword,
                 "str" => Token::StrKeyword,
                 "continue" => Token::ContinueKeyword,
-                _ => match parse_result {
-                    IdentifierParseResult::Identifier => Token::Identifier,
-                    IdentifierParseResult::UnquotedString => Token::UnquotedString,
-                },
+                _ => Token::Identifier,
             }
         }
 
@@ -527,7 +461,7 @@ mod token {
             string
         }
 
-        fn parse_next_token(&mut self, context: NextTokenContext) -> Result<Option<Token>, Error> {
+        fn parse_next_token(&mut self, _: NextTokenContext) -> Result<Option<Token>, Error> {
             // Skip whitespace bytes, so that the next byte is important for the next token.
             self.skip_whitespace_bytes();
 
@@ -537,14 +471,11 @@ mod token {
             }
 
             // First, try to read an identifier.
-            //
-            // For our language, an identifier can also be an unquoted string, which has slightly
-            // different semantics.
-            if let Some(parse_result) = self.try_read_identifier(&context) {
+            if self.try_read_identifier() {
                 let identifier = self
                     .lexeme_buffer_str()
                     .wrap_error_with_message("parsed empty identifier")?;
-                return Ok(Some(self.identifier_to_token(identifier, parse_result)));
+                return Ok(Some(self.identifier_to_token(identifier)));
             }
             self.reset_buffer();
 
@@ -668,10 +599,7 @@ impl<'s> StatementParser<'s> {
     }
 
     fn parse_statement(&mut self) -> Result<tree::Statement, Error> {
-        match self
-            .token_parser
-            .next_token(NextTokenContext::new().with_disallow_unquoted_string(true))?
-        {
+        match self.token_parser.next_token(NextTokenContext::new())? {
             None => Ok(tree::Statement::Empty),
             Some(Token::LineCommentStart) => Ok(tree::Statement::Empty),
             Some(Token::Identifier) => {
@@ -791,10 +719,7 @@ impl<'s> StatementParser<'s> {
     }
 
     fn parse_identifier(&mut self) -> Result<tree::Identifier, Error> {
-        match self
-            .token_parser
-            .next_token(NextTokenContext::new().with_disallow_unquoted_string(true))?
-        {
+        match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Identifier) => Ok(tree::Identifier(
                 self.token_parser.consume_lexeme().to_owned(),
             )),
@@ -838,9 +763,9 @@ impl<'s> StatementParser<'s> {
             Some(Token::Integer | Token::Plus | Token::Minus) => Ok(Some(
                 tree::Value::NumberLiteral(self.parse_number_literal()?),
             )),
-            Some(Token::String | Token::UnquotedString | Token::Identifier) => Ok(Some(
-                tree::Value::StringLiteral(self.parse_string_literal()?),
-            )),
+            Some(Token::String | Token::Identifier) => Ok(Some(tree::Value::StringLiteral(
+                self.parse_string_literal()?,
+            ))),
             Some(Token::LeftBracket) => Ok(Some(tree::Value::List(self.parse_list()?))),
             Some(Token::VariableStart) => Ok(Some(tree::Value::Var(self.parse_var()?))),
             Some(Token::ExprKeyword) => Ok(Some(tree::Value::ValueExpr(self.parse_value_expr()?))),
@@ -939,7 +864,7 @@ impl<'s> StatementParser<'s> {
 
     fn parse_string_literal(&mut self) -> Result<tree::StringLiteral, Error> {
         match self.token_parser.next_token(NextTokenContext::new())? {
-            Some(Token::UnquotedString | Token::Identifier) => Ok(tree::StringLiteral(
+            Some(Token::Identifier) => Ok(tree::StringLiteral(
                 self.token_parser.consume_lexeme().to_owned(),
             )),
             Some(Token::String) => Ok(tree::StringLiteral(
@@ -1413,24 +1338,6 @@ mod statement_parser_tests {
                     tree::Value::StringLiteral(tree::StringLiteral("another".to_owned())),
                     tree::Value::StringLiteral(tree::StringLiteral("it's magnitude 7!".to_owned())),
                     tree::Value::StringLiteral(tree::StringLiteral("complex \\ backslashing \\\\ \n :)".to_owned())),
-                ])
-            }))
-        );
-    }
-
-    #[test]
-    fn parses_unquoted_string_literals() {
-        assert_eq!(
-            StatementParser::new("log: abcdef this-is-a-test-123 from:ability of:mon").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
-                function: tree::Identifier("log".to_owned()),
-                args: tree::Values(vec![
-                    tree::Value::StringLiteral(tree::StringLiteral("abcdef".to_owned())),
-                    tree::Value::StringLiteral(tree::StringLiteral(
-                        "this-is-a-test-123".to_owned()
-                    )),
-                    tree::Value::StringLiteral(tree::StringLiteral("from:ability".to_owned())),
-                    tree::Value::StringLiteral(tree::StringLiteral("of:mon".to_owned())),
                 ])
             }))
         );

@@ -79,6 +79,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesOptionalEffect
         | CallbackFlag::ReturnsVoid,
+    MaybeApplyingEffectModifier = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesOptionalEffect
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
 
     EffectResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -586,7 +591,8 @@ pub enum BattleEvent {
     ModifyAccuracy,
     /// Runs when calculating a Mon's Atk stat.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
     #[string = "ModifyAtk"]
     ModifyAtk,
     /// Runs when modifying a Mon's stat boosts used for stat calculations.
@@ -613,12 +619,14 @@ pub enum BattleEvent {
     ModifyDamage,
     /// Runs when calculating a Mon's Def stat.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
     #[string = "ModifyDef"]
     ModifyDef,
     /// Runs when calculating a Mon's SpA stat.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
     #[string = "ModifySpA"]
     ModifySpA,
     /// Runs when calculating the amount of experience gained by a Mon.
@@ -628,12 +636,14 @@ pub enum BattleEvent {
     ModifyExperience,
     /// Runs when caclculating a Mon's SpD stat.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
     #[string = "ModifySpD"]
     ModifySpD,
     /// Runs when calculating a Mon's Spe stat.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
     #[string = "ModifySpe"]
     ModifySpe,
     /// Runs when a Mon uses a move.
@@ -1031,16 +1041,16 @@ impl BattleEvent {
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAccuracy => CommonCallbackType::MoveModifier as u32,
-            Self::ModifyAtk => CommonCallbackType::MonModifier as u32,
+            Self::ModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ModifyCritChance => CommonCallbackType::MoveModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
-            Self::ModifyDef => CommonCallbackType::MonModifier as u32,
+            Self::ModifyDef => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
-            Self::ModifySpA => CommonCallbackType::MonModifier as u32,
-            Self::ModifySpD => CommonCallbackType::MonModifier as u32,
-            Self::ModifySpe => CommonCallbackType::MonModifier as u32,
+            Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyType => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,

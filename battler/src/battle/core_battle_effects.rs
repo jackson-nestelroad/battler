@@ -435,7 +435,7 @@ fn run_callback_with_errors(
         &mut context,
         &callback_handle.effect_handle,
         callback_handle.event,
-        input.clone(),
+        input,
         callback_handle.effect_state_connector(),
     );
 
@@ -546,17 +546,12 @@ fn run_mon_ability_event_internal(
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
     let ability = context.target().ability.id.clone();
-    let effect_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&ability)
-        .ok()?
-        .clone();
     let target_handle = context.target_handle();
     run_callback_under_applying_effect(
         context,
         input,
         CallbackHandle::new(
-            effect_handle,
+            EffectHandle::Ability(ability),
             event,
             EffectOrigin::MonAbility(target_handle),
         ),
@@ -569,16 +564,15 @@ fn run_mon_item_event_internal(
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
     let item = context.target().item.as_ref().map(|item| item.id.clone())?;
-    let effect_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&item)
-        .ok()?
-        .clone();
     let target_handle = context.target_handle();
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::MonItem(target_handle)),
+        CallbackHandle::new(
+            EffectHandle::Item(item),
+            event,
+            EffectOrigin::MonItem(target_handle),
+        ),
     )
 }
 
@@ -924,10 +918,10 @@ fn find_callbacks_on_field_on_mon(
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonTerrain.callback_lookup_layer()
     {
-        if let Some(weather) = mon_states::effective_terrain(&mut context) {
-            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
+        if let Some(terrain) = mon_states::effective_terrain(&mut context) {
+            let terrain_handle = context.battle_mut().get_effect_handle_by_id(&terrain)?;
             callbacks.push(CallbackHandle::new(
-                weather_handle.clone(),
+                terrain_handle.clone(),
                 event,
                 EffectOrigin::MonTerrain(mon),
             ));

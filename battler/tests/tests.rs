@@ -1,6 +1,7 @@
 mod abilities {
     mod gen3 {
         mod damp_test;
+        mod flash_fire_test;
         mod limber_test;
         mod sand_veil_test;
         mod speed_boost_test;

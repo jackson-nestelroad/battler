@@ -16,6 +16,7 @@ use crate::{
         BattleQueue,
         BoostTable,
         BoostTableEntries,
+        CalculateStatContext,
         Context,
         CoreBattle,
         EffectContext,
@@ -1293,6 +1294,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         defense_boosts = 0;
     }
 
+    let effect_handle = context.effect_handle();
     let move_user = context.mon_handle();
     let move_target = context.target_mon_handle();
     let attack = Mon::calculate_stat(
@@ -1300,14 +1302,22 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         attack_stat,
         attack_boosts,
         Fraction::from(1u16),
-        move_user,
+        Some(move_user),
+        Some(CalculateStatContext {
+            effect: effect_handle.clone(),
+            source: move_target,
+        }),
     )?;
     let defense = Mon::calculate_stat(
         &mut context.defender_context()?,
         defense_stat,
         defense_boosts,
         Fraction::from(1u16),
-        move_target,
+        Some(move_target),
+        Some(CalculateStatContext {
+            effect: effect_handle,
+            source: move_user,
+        }),
     )?;
 
     let base_damage = 2 * (level as u32) / 5 + 2;
@@ -2945,14 +2955,16 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
         attack_stat,
         attack_boosts,
         Fraction::from(1u16),
-        context.mon_handle(),
+        None,
+        None,
     )?;
     let defense = Mon::calculate_stat(
         context,
         defense_stat,
         defense_boosts,
         Fraction::from(1u16),
-        context.mon_handle(),
+        None,
+        None,
     )?;
     let level = context.mon().level as u32;
     let base_damage = 2 * level / 5 + 2;

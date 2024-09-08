@@ -347,6 +347,13 @@ pub struct ReceivedAttackEntry {
     pub turn: u64,
 }
 
+/// The context of an effect that is triggering a stat calculation.
+#[derive(Clone)]
+pub struct CalculateStatContext {
+    pub effect: EffectHandle,
+    pub source: MonHandle,
+}
+
 /// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -935,8 +942,11 @@ impl Mon {
         boost: Option<i8>,
         unmodified: bool,
         modifier: Option<Fraction<u16>>,
-        stat_user: MonHandle,
+        stat_user: Option<MonHandle>,
+        calculate_stat_context: Option<CalculateStatContext>,
     ) -> Result<u16, Error> {
+        let stat_user = stat_user.unwrap_or(context.mon_handle());
+
         if stat == Stat::HP {
             return Err(battler_error!(
                 "HP should be read directly, not by calling get_stat"
@@ -976,11 +986,26 @@ impl Mon {
         }
         if !unmodified {
             if let Some(modify_event) = stat.modify_event() {
-                value = core_battle_effects::run_event_for_mon_expecting_u16(
-                    context,
-                    modify_event,
-                    value,
-                );
+                let mon_handle = context.mon_handle();
+                value = match calculate_stat_context {
+                    Some(calculate_stat_context) => {
+                        core_battle_effects::run_event_for_applying_effect_expecting_u16(
+                            &mut context.as_battle_context_mut().applying_effect_context(
+                                calculate_stat_context.effect,
+                                Some(calculate_stat_context.source),
+                                mon_handle,
+                                None,
+                            )?,
+                            modify_event,
+                            value,
+                        )
+                    }
+                    None => core_battle_effects::run_event_for_mon_expecting_u16(
+                        context,
+                        modify_event,
+                        value,
+                    ),
+                }
             }
             let modifier = modifier.unwrap_or(Fraction::from(1u16));
             value = modify_32(value as u32, modifier.convert()) as u16;
@@ -997,7 +1022,8 @@ impl Mon {
         stat: Stat,
         boost: i8,
         modifier: Fraction<u16>,
-        stat_user: MonHandle,
+        stat_user: Option<MonHandle>,
+        calculate_stat_context: Option<CalculateStatContext>,
     ) -> Result<u16, Error> {
         Self::calculate_stat_internal(
             context,
@@ -1007,6 +1033,7 @@ impl Mon {
             false,
             Some(modifier),
             stat_user,
+            calculate_stat_context,
         )
     }
 
@@ -1018,15 +1045,7 @@ impl Mon {
         unboosted: bool,
         unmodified: bool,
     ) -> Result<u16, Error> {
-        Self::calculate_stat_internal(
-            context,
-            stat,
-            unboosted,
-            None,
-            unmodified,
-            None,
-            context.mon_handle(),
-        )
+        Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None, None)
     }
 
     /// Calculates the speed value to use for battle action ordering.

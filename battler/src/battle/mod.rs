@@ -93,6 +93,7 @@ pub use field::{
 pub use mon::{
     AbilitySlot,
     ActiveMonDetails,
+    CalculateStatContext,
     ItemSlot,
     Mon,
     MonBaseRequestData,
