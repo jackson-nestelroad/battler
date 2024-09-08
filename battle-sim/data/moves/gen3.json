@@ -92,7 +92,7 @@
           "log_start: str('count:{}', $effect_state.layers)",
           "$def = $target.boosts.def",
           "$spd = $target.boosts.spd",
-          "boost: $target def:1 spd:1",
+          "boost: $target 'def:1' 'spd:1'",
           "if $def != $target.boosts.def:",
           ["$effect_state.def = -1"],
           "if $spd != $target.boosts.spd:",
@@ -105,7 +105,7 @@
           "log_start: str('count:{}', $effect_state.layers)",
           "$def = $target.boosts.def",
           "$spd = $target.boosts.spd",
-          "boost: $target def:1 spd:1",
+          "boost: $target 'def:1' 'spd:1'",
           "if $def != $target.boosts.def:",
           ["$effect_state.def = $effect_state.def - 1"],
           "if $spd != $target.boosts.spd:",
@@ -1046,19 +1046,29 @@
           "else if $terrain == grassyterrain:",
           ["$secondary_effect.target.status = slp"],
           "else if $terrain == mistyterrain:",
-          ["$secondary_effect.target.boosts = func_call(boost_table: spa:-1)"],
+          [
+            "$secondary_effect.target.boosts = func_call(boost_table: 'spa:-1')"
+          ],
           "else if $terrain == psychicterrain:",
-          ["$secondary_effect.target.boosts = func_call(boost_table: spe:-1)"],
+          [
+            "$secondary_effect.target.boosts = func_call(boost_table: 'spe:-1')"
+          ],
           "else if $field.environment == cave:",
           ["$secondary_effect.target.volatile_status = flinch"],
           "else if $field.environment == sand:",
-          ["$secondary_effect.target.boosts = func_call(boost_table: acc:-1)"],
+          [
+            "$secondary_effect.target.boosts = func_call(boost_table: 'acc:-1')"
+          ],
           "else if $field.environment == water:",
-          ["$secondary_effect.target.boosts = func_call(boost_table: atk:-1)"],
+          [
+            "$secondary_effect.target.boosts = func_call(boost_table: 'atk:-'1')"
+          ],
           "else if $field.environment == ice:",
           ["$secondary_effect.target.status = frz"],
           "else if $field.environment == sky:",
-          ["$secondary_effect.target.boosts = func_call(boost_table: spe:-1)"],
+          [
+            "$secondary_effect.target.boosts = func_call(boost_table: 'spe:-1')"
+          ],
           "else if $field.environment == grass:",
           ["$secondary_effect.target.status = slp"],
           "else if $field.environment == volcano:",

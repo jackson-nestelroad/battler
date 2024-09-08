@@ -192,7 +192,7 @@
           ["return false"],
           "$move.hit_effect.volatile_status = undefined",
           "$move.user_effect = func_call(hit_effect)",
-          "$move.user_effect.boosts = func_call(boost_table: spe:-1 atk:1 def:1)"
+          "$move.user_effect.boosts = func_call(boost_table: 'spe:-1' 'atk:1' 'def:1')"
         ],
         "on_hit": [
           "if $effect_state.apply_self_damage:",
@@ -451,7 +451,7 @@
           "if $target.hp <= expr($target.max_hp / 2) or $target.boosts.atk >= 6 or $target.max_hp == 1:",
           ["return false"],
           "direct_damage: expr($target.max_hp / 2)",
-          "boost: $target atk:12"
+          "boost: $target 'atk:12'"
         ]
       }
     }
