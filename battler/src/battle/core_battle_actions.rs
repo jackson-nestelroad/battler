@@ -2558,12 +2558,14 @@ fn apply_secondary_effects(
                 None => break,
                 Some(secondary_effect) => secondary_effect,
             };
-            let chance = secondary_effect.chance.unwrap_or(Fraction::from(1u16));
-            let secondary_roll = rand_util::chance(
-                context.battle_mut().prng.as_mut(),
-                chance.numerator() as u64,
-                chance.denominator() as u64,
-            );
+            let secondary_roll = match secondary_effect.chance {
+                Some(chance) => rand_util::chance(
+                    context.battle_mut().prng.as_mut(),
+                    chance.numerator() as u64,
+                    chance.denominator() as u64,
+                ),
+                None => true,
+            };
             if secondary_roll {
                 let mut context = context.secondary_active_move_context(i);
                 move_hit(&mut context, Vec::from_iter([target.clone()]))?;

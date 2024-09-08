@@ -9,9 +9,13 @@
     "priority": 3,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "hit_effect": {
-      "volatile_status": "flinch"
-    },
+    "secondary_effects": [
+      {
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ],
     "effect": {
       "callbacks": {
         "on_try_use_move": ["if $user.active_turns > 1:", ["return false"]]
@@ -1609,11 +1613,15 @@
     "base_power": 60,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "hit_effect": {
-      "boosts": {
-        "spe": -1
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
       }
-    }
+    ]
   },
   "silverwind": {
     "name": "Silver Wind",
@@ -1974,11 +1982,15 @@
     "base_power": 55,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "hit_effect": {
-      "boosts": {
-        "spe": -1
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
       }
-    }
+    ]
   },
   "poisontail": {
     "name": "Poison Tail",

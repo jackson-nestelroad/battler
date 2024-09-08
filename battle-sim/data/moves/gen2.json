@@ -483,11 +483,15 @@
     "base_power": 20,
     "target": "Normal",
     "flags": ["AccuracyLowering", "Mirror", "Protect"],
-    "hit_effect": {
-      "boosts": {
-        "acc": -1
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
       }
-    }
+    ]
   },
   "octazooka": {
     "name": "Octazooka",
@@ -559,9 +563,13 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
-    "hit_effect": {
-      "status": "par"
-    }
+    "secondary_effects": [
+      {
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "foresight": {
     "name": "Foresight",
@@ -660,11 +668,15 @@
     "base_power": 55,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Wind"],
-    "hit_effect": {
-      "boosts": {
-        "spe": -1
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
       }
-    }
+    ]
   },
   "detect": {
     "name": "Detect",
@@ -1261,9 +1273,13 @@
     "base_power": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"],
-    "hit_effect": {
-      "volatile_status": "confusion"
-    }
+    "secondary_effects": [
+      {
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
+    ]
   },
   "megahorn": {
     "name": "Megahorn",
