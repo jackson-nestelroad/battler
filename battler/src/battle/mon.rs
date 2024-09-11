@@ -1550,9 +1550,9 @@ impl Mon {
             return Ok(false);
         }
 
-        if core_battle_effects::run_event_for_mon(
+        if !core_battle_effects::run_event_for_mon(
             context,
-            fxlang::BattleEvent::TypeImmunity,
+            fxlang::BattleEvent::NegateImmunity,
             fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
         ) {
             return Ok(false);
@@ -1560,10 +1560,10 @@ impl Mon {
 
         if !core_battle_effects::run_event_for_mon(
             context,
-            fxlang::BattleEvent::NegateImmunity,
+            fxlang::BattleEvent::TypeImmunity,
             fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
         ) {
-            return Ok(false);
+            return Ok(true);
         }
 
         let types = Self::types(context)?;
