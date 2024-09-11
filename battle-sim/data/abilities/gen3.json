@@ -487,7 +487,15 @@
       }
     }
   },
-  "naturalcure": { "name": "Natural Cure", "flags": [] },
+  "naturalcure": {
+    "name": "Natural Cure",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_switch_out": ["if !$mon.status:", ["return"], "cure_status: $mon"]
+      }
+    }
+  },
   "lightningrod": {
     "name": "Lightning Rod",
     "flags": ["Breakable"],
@@ -521,7 +529,17 @@
       "callbacks": {
         "on_use_move": {
           "priority": -1,
-          "program": []
+          "program": [
+            "$secondary_effects = $move.secondary_effects",
+            "foreach $secondary in $secondary_effects:",
+            [
+              "if $secondary.chance.is_defined:",
+              ["$secondary.chance = $secondary.chance * 2"]
+            ],
+            "$move.secondary_effects = $secondary_effects",
+            "if $move.user_effect_chance.is_defined:",
+            ["$move.user_effect_chance = $move.user_effect_chance * 2"]
+          ]
         }
       }
     }
@@ -552,14 +570,128 @@
       }
     }
   },
-  "illuminate": { "name": "Illuminate", "flags": ["Breakable"] },
-  "trace": { "name": "Trace", "flags": ["NoRolePlay"] },
-  "hugepower": { "name": "Huge Power", "flags": [] },
-  "poisonpoint": { "name": "Poison Point", "flags": [] },
-  "innerfocus": { "name": "Inner Focus", "flags": [] },
-  "magmaarmor": { "name": "Magma Armor", "flags": [] },
-  "waterveil": { "name": "Water Veil", "flags": [] },
-  "magnetpull": { "name": "Magnet Pull", "flags": [] },
+  "illuminate": {
+    "name": "Illuminate",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_boost": [
+          "if $target == $source:",
+          ["return"],
+          "if $boosts.acc < 0:",
+          [
+            "$boosts.acc = 0",
+            "if !$effect.is_move_secondary:",
+            ["log_fail_unboost: $target from_effect acc"],
+            "return $boosts"
+          ]
+        ]
+      }
+    }
+  },
+  "trace": {
+    "name": "Trace",
+    "flags": ["NoRolePlay", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "$targets = []",
+          "foreach $target in func_call(adjacent_foes: $mon):",
+          [
+            "$ability = func_call(get_ability: $target.ability)",
+            "if !func_call(ability_has_flag: $ability permanent) and !func_call(ability_has_flag: $ability notrace):",
+            ["$targets = func_call(append: $targets $target)"]
+          ],
+          "if $targets.is_empty:",
+          ["return"],
+          "$target = func_call(sample: $targets)",
+          "set_ability: $mon $target.ability"
+        ]
+      }
+    }
+  },
+  "hugepower": {
+    "name": "Huge Power",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": ["return $atk * 2"]
+      }
+    }
+  },
+  "poisonpoint": {
+    "name": "Poison Point",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
+          ["set_status: $source psn use_target_as_source"]
+        ]
+      }
+    }
+  },
+  "innerfocus": {
+    "name": "Inner Focus",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_add_volatile": ["if $volatile == flinch:", ["return false"]],
+        "on_try_boost": [
+          "if $effect.id == intimidate and $boosts.atk != 0:",
+          [
+            "$boosts.atk = 0",
+            "log_fail_unboost: $target from_effect atk",
+            "return $boosts"
+          ]
+        ]
+      }
+    }
+  },
+  "magmaarmor": {
+    "name": "Magma Armor",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.status == frz:",
+          ["log_activate: with_target", "cure_status: $mon"]
+        ],
+        "on_immunity": ["if $effect.id == frz:", ["return false"]]
+      }
+    }
+  },
+  "waterveil": {
+    "name": "Water Veil",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.status == brn:",
+          ["log_activate: with_target", "cure_status: $mon"]
+        ],
+        "on_set_status": [
+          "if $status.id != brn:",
+          ["return"],
+          "if $effect.is_move and !$effect.is_move_secondary:",
+          ["log_immune: $target from_effect"],
+          "return false"
+        ]
+      }
+    }
+  },
+  "magnetpull": {
+    "name": "Magnet Pull",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_foe_trap_mon": [
+          "if func_call(has_type: $mon steel) and func_call(is_adjacent: $mon $effect_state.target):",
+          ["return true"]
+        ]
+      }
+    }
+  },
   "soundproof": {
     "name": "Soundproof",
     "flags": [],
@@ -573,7 +705,19 @@
       }
     }
   },
-  "raindish": { "name": "Rain Dish", "flags": [] },
+  "raindish": {
+    "name": "Rain Dish",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_weather": [
+          "$weather = $target.effective_weather",
+          "if $weather.is_defined and $weather.is_raining:",
+          ["heal: $target expr($target.base_max_hp / 16)"]
+        ]
+      }
+    }
+  },
   "sandstream": {
     "name": "Sand Stream",
     "flags": [],
@@ -583,30 +727,364 @@
       }
     }
   },
-  "pressure": { "name": "Pressure", "flags": [] },
-  "thickfat": { "name": "Thick Fat", "flags": [] },
-  "earlybird": { "name": "Early Bird", "flags": [] },
-  "flamebody": { "name": "Flame Body", "flags": [] },
-  "runaway": { "name": "Run Away", "flags": [] },
-  "keeneye": { "name": "Keen Eye", "flags": [] },
-  "hypercutter": { "name": "Hyper Cutter", "flags": [] },
-  "pickup": { "name": "Pickup", "flags": [] },
-  "truant": { "name": "Truant", "flags": [] },
-  "hustle": { "name": "Hustle", "flags": [] },
-  "cutecharm": { "name": "Cute Charm", "flags": [] },
-  "plus": { "name": "Plus", "flags": [] },
-  "minus": { "name": "Minus", "flags": [] },
-  "forecast": { "name": "Forecast", "flags": ["NoRolePlay"] },
-  "stickyhold": { "name": "Sticky Hold", "flags": [] },
-  "shedskin": { "name": "Shed Skin", "flags": [] },
-  "guts": { "name": "Guts", "flags": [] },
-  "marvelscale": { "name": "Marvel Scale", "flags": [] },
-  "liquidooze": { "name": "Liquid Ooze", "flags": [] },
-  "overgrow": { "name": "Overgrow", "flags": [] },
-  "blaze": { "name": "Blaze", "flags": [] },
-  "torrent": { "name": "Torrent", "flags": [] },
-  "swarm": { "name": "Swarm", "flags": [] },
-  "rockhead": { "name": "Rock Head", "flags": [] },
+  "pressure": {
+    "name": "Pressure",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_deduct_pp": [
+          "if func_call(is_ally: $mon $effect_state.target):",
+          ["return"],
+          "return $pp + 1"
+        ]
+      }
+    }
+  },
+  "thickfat": {
+    "name": "Thick Fat",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_atk": [
+          "if $move.is_defined and ($move.type == ice or $move.type == fire):",
+          ["return $atk / 2"]
+        ],
+        "on_source_modify_spa": [
+          "if $move.is_defined and ($move.type == ice or $move.type == fire):",
+          ["return $spa / 2"]
+        ]
+      }
+    }
+  },
+  "earlybird": {
+    "name": "Early Bird",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_before_move": [
+          "if $user.status == slp:",
+          [
+            "$status_state = func_call(status_effect_state: $user)",
+            "if $status_state.is_defined:",
+            ["$status_state.time = $status_state.time - 1"]
+          ]
+        ]
+      }
+    }
+  },
+  "flamebody": {
+    "name": "Flame Body",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
+          ["set_status: $source brn use_target_as_source"]
+        ]
+      }
+    }
+  },
+  "runaway": {
+    "name": "Run Away",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_can_escape": ["return true"]
+      }
+    }
+  },
+  "keeneye": {
+    "name": "Keen Eye",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_boost": [
+          "if $target == $source:",
+          ["return"],
+          "if $boosts.acc < 0:",
+          [
+            "$boosts.acc = 0",
+            "if !$effect.is_move_secondary:",
+            ["log_fail_unboost: $target from_effect acc"],
+            "return $boosts"
+          ]
+        ]
+      }
+    }
+  },
+  "hypercutter": {
+    "name": "Hyper Cutter",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_boost": [
+          "if $target == $source:",
+          ["return"],
+          "if $boosts.atk < 0:",
+          [
+            "$boosts.atk = 0",
+            "if !$effect.is_move_secondary:",
+            ["log_fail_unboost: $target from_effect atk"],
+            "return $boosts"
+          ]
+        ]
+      }
+    }
+  },
+  "pickup": {
+    "name": "Pickup",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if $target.item.is_defined:",
+          ["return"],
+          "$targets = []",
+          "foreach $mon in func_call(all_active_mons):",
+          [
+            "if $mon.last_item.is_defined and $mon.used_item_this_turn and func_call(is_adjacent: $mon $target):",
+            ["$targets = func_call(append: $targets $mon)"]
+          ],
+          "if $targets.is_empty:",
+          ["return"],
+          "$random_target = func_call(sample: $targets)",
+          "$item = $random_target.last_item",
+          "$random_target.last_item = undefined",
+          "set_item: $target $item"
+        ]
+      }
+    }
+  },
+  "truant": {
+    "name": "Truant",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "remove_volatile: $target $this.id",
+          "# The target moved this turn, so Truant applies.",
+          "if $target.active_turns > 0 and ($target.moved_this_turn or !$target.will_move_this_turn):",
+          ["add_volatile: $target $this.id"]
+        ],
+        "on_before_move": {
+          "priority": 9,
+          "program": [
+            "if func_call(remove_volatile: $user $this.id):",
+            ["log_cant", "return false"],
+            "add_volatile: $user $this.id"
+          ]
+        }
+      }
+    }
+  },
+  "hustle": {
+    "name": "Hustle",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": ["return $atk * 3/2"],
+        "on_source_modify_accuracy": [
+          "if $move.category == physical:",
+          ["return $acc * 4/5"]
+        ]
+      }
+    }
+  },
+  "cutecharm": {
+    "name": "Cute Charm",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
+          ["add_volatile: $source attract use_target_as_source"]
+        ]
+      }
+    }
+  },
+  "plus": {
+    "name": "Plus",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spa": [
+          "foreach $ally in func_call(all_mons_on_side: $target):",
+          [
+            "if $target.ability == plus or $target.ability == minus:",
+            ["return $spa * 3/2"]
+          ]
+        ]
+      }
+    }
+  },
+  "minus": {
+    "name": "Minus",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spa": [
+          "foreach $ally in func_call(all_mons_on_side: $target):",
+          [
+            "if $target.ability == plus or $target.ability == minus:",
+            ["return $spa * 3/2"]
+          ]
+        ]
+      }
+    }
+  },
+  "forecast": {
+    "name": "Forecast",
+    "flags": ["NoRolePlay", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_effect: $this WeatherChange"],
+        "on_weather_change": [
+          "if $target.base_species != castform or $target.transformed or !$target.active:",
+          ["return"],
+          "$weather = $target.effective_weather",
+          "if $weather.is_raining:",
+          ["$forme = castformrainy"],
+          "else if $weather.is_sunny:",
+          ["$forme = castformsunny"],
+          "else if $weather.is_snowing:",
+          ["$forme = castformsnowy"],
+          "else:",
+          ["$forme = castform"],
+          "change_forme: $target $forme"
+        ]
+      }
+    }
+  },
+  "stickyhold": {
+    "name": "Sticky Hold",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_take_item": [
+          "if $target.hp == 0 or $target.item == stickybarb:",
+          ["return"],
+          "if $target != $source:",
+          ["log_activate: with_target", "return false"]
+        ]
+      }
+    }
+  },
+  "shedskin": {
+    "name": "Shed Skin",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if $target.hp > 0 and $target.status.is_defined and func_call(chance: 1 3):",
+          ["log_activate: with_target", "cure_status: $target"]
+        ]
+      }
+    }
+  },
+  "guts": {
+    "name": "Guts",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": ["if $target.status.is_defined:", ["return $atk * 2"]]
+      }
+    }
+  },
+  "marvelscale": {
+    "name": "Marvel Scale",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": ["if $target.status.is_defined:", ["return $atk * 2"]]
+      }
+    }
+  },
+  "liquidooze": {
+    "name": "Liquid Ooze",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_try_heal": [
+          "if [drain, leechseed, strengthsap] has $effect.id:",
+          ["damage: $target $damage", "return 0"]
+        ]
+      }
+    }
+  },
+  "overgrow": {
+    "name": "Overgrow",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $move.is_defined and $move.type == grass and $target.hp <= expr($target.max_hp / 3):",
+          ["return $atk * 3/2"]
+        ],
+        "on_modify_spa": [
+          "if $move.is_defined and $move.type == grass and $target.hp <= expr($target.max_hp / 3):",
+          ["return $spa * 3/2"]
+        ]
+      }
+    }
+  },
+  "blaze": {
+    "name": "Blaze",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $move.is_defined and $move.type == fire and $target.hp <= expr($target.max_hp / 3):",
+          ["return $atk * 3/2"]
+        ],
+        "on_modify_spa": [
+          "if $move.is_defined and $move.type == fire and $target.hp <= expr($target.max_hp / 3):",
+          ["return $spa * 3/2"]
+        ]
+      }
+    }
+  },
+  "torrent": {
+    "name": "Torrent",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $move.is_defined and $move.type == water and $target.hp <= expr($target.max_hp / 3):",
+          ["return $atk * 3/2"]
+        ],
+        "on_modify_spa": [
+          "if $move.is_defined and $move.type == water and $target.hp <= expr($target.max_hp / 3):",
+          ["return $spa * 3/2"]
+        ]
+      }
+    }
+  },
+  "swarm": {
+    "name": "Swarm",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $move.is_defined and $move.type == bug and $target.hp <= expr($target.max_hp / 3):",
+          ["return $atk * 3/2"]
+        ],
+        "on_modify_spa": [
+          "if $move.is_defined and $move.type == bug and $target.hp <= expr($target.max_hp / 3):",
+          ["return $spa * 3/2"]
+        ]
+      }
+    }
+  },
+  "rockhead": {
+    "name": "Rock Head",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damage": ["if $effect.id == recoil:", ["return 0"]]
+      }
+    }
+  },
   "drought": {
     "name": "Drought",
     "flags": [],
@@ -616,11 +1094,79 @@
       }
     }
   },
-  "arenatrap": { "name": "Arena Trap", "flags": [] },
-  "vitalspirit": { "name": "Vital Spirit", "flags": [] },
-  "whitesmoke": { "name": "White Smoke", "flags": [] },
-  "purepower": { "name": "Pure Power", "flags": [] },
-  "shellarmor": { "name": "Shell Armor", "flags": [] },
+  "arenatrap": {
+    "name": "Arena Trap",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_foe_trap_mon": [
+          "if $target.is_grounded and func_call(is_adjacent: $mon $effect_state.target):",
+          ["return true"]
+        ]
+      }
+    }
+  },
+  "vitalspirit": {
+    "name": "Vital Spirit",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.status == slp:",
+          ["log_activate: with_target", "cure_status: $mon"]
+        ],
+        "on_set_status": [
+          "if $status.id != slp:",
+          ["return"],
+          "if $effect.is_move and !$effect.is_move_secondary:",
+          ["log_immune: $target from_effect"],
+          "return false"
+        ]
+      }
+    }
+  },
+  "whitesmoke": {
+    "name": "White Smoke",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_boost": [
+          "if $target == $source:",
+          ["return"],
+          "$cleared = []",
+          "foreach $boost in func_call(boostable_stats):",
+          [
+            "if func_call(get_boost: $boosts $boost) < 0:",
+            [
+              "$boosts = func_call(set_boost: $boosts $boost 0)",
+              "$cleared = func_call(append: $cleared $boost)"
+            ]
+          ],
+          "if !$cleared.is_empty and !$effect.is_move_secondary:",
+          ["log_fail_unboost: $target from_effect $cleared"],
+          "return $boosts"
+        ]
+      }
+    }
+  },
+  "purepower": {
+    "name": "Pure Power",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": ["return $atk * 2"]
+      }
+    }
+  },
+  "shellarmor": {
+    "name": "Shell Armor",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_critical_hit": ["return false"]
+      }
+    }
+  },
   "airlock": {
     "name": "Air Lock",
     "flags": [],

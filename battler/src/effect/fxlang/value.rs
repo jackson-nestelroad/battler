@@ -177,6 +177,8 @@ impl Value {
     pub fn signals_early_exit(&self) -> bool {
         match self {
             Self::Boolean(false) => true,
+            Self::Fraction(val) if val == &Fraction::from(0i64) => true,
+            Self::UFraction(val) if val == &Fraction::from(0u64) => true,
             Self::String(val) => {
                 MoveEventResult::from_str(val).is_ok_and(|result| !result.advance())
             }

@@ -21,6 +21,9 @@ pub enum AbilityFlags {
     /// Cannot be swapped by Skill Swap.
     #[string = "NoSkillSwap"]
     NoSkillSwap,
+    /// Cannot be copied by Trace.
+    #[string = "NoTrace"]
+    NoTrace,
     /// The ability is permanently applied to the Mon.
     #[string = "Permanent"]
     Permanent,

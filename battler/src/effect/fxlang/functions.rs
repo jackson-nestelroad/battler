@@ -551,11 +551,12 @@ fn log(mut context: FunctionContext) -> Result<(), Error> {
 }
 
 fn add_effect_to_args(context: &mut FunctionContext) -> Result<(), Error> {
-    let string = match context
-        .evaluation_context_mut()
-        .effect_context_mut()
-        .effect()
-    {
+    let effect_handle = context.effect_handle_positional()?;
+    let effect = CoreBattle::get_effect_by_handle(
+        context.evaluation_context().battle_context(),
+        &effect_handle,
+    )?;
+    let string = match effect {
         Effect::ActiveMove(active_move, _) => {
             format!("move:{}", active_move.data.name)
         }
@@ -746,7 +747,7 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
 }
 
 fn log_cant(mut context: FunctionContext) -> Result<(), Error> {
-    let effect = context.evaluation_context().effect_handle().clone();
+    let effect = context.effect_handle()?;
     let source = context
         .with_source()
         .then(|| context.source_handle())

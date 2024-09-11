@@ -24,8 +24,11 @@
   "sandrush": { "name": "Sand Rush", "flags": [] },
   "wonderskin": { "name": "Wonder Skin", "flags": [] },
   "analytic": { "name": "Analytic", "flags": [] },
-  "illusion": { "name": "Illusion", "flags": ["NoRolePlay", "NoSkillSwap"] },
-  "imposter": { "name": "Imposter", "flags": ["NoRolePlay"] },
+  "illusion": {
+    "name": "Illusion",
+    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
+  },
+  "imposter": { "name": "Imposter", "flags": ["NoRolePlay", "NoTrace"] },
   "infiltrator": { "name": "Infiltrator", "flags": [] },
   "mummy": { "name": "Mummy", "flags": [] },
   "moxie": { "name": "Moxie", "flags": [] },

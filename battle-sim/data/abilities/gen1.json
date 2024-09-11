@@ -1,6 +1,6 @@
 {
   "noability": {
     "name": "No Ability",
-    "flags": []
+    "flags": ["NoTrace"]
   }
 }

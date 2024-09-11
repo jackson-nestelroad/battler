@@ -23,12 +23,12 @@
   "gorillatactics": { "name": "Gorilla Tactics", "flags": [] },
   "neutralizinggas": {
     "name": "Neutralizing Gas",
-    "flags": ["NoRolePlay", "NoSkillSwap"]
+    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
   "pastelveil": { "name": "Pastel Veil", "flags": [] },
   "hungerswitch": {
     "name": "Hunger Switch",
-    "flags": ["NoRolePlay", "NoSkillSwap"]
+    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
   "quickdraw": { "name": "Quick Draw", "flags": [] },
   "unseenfist": { "name": "Unseen Fist", "flags": [] },

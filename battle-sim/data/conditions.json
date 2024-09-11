@@ -251,8 +251,6 @@
         "on_before_move": {
           "priority": 10,
           "program": [
-            "if func_call(has_ability: $user earlybird):",
-            ["$effect_state.time = $effect_state.time - 1"],
             "$effect_state.time = $effect_state.time - 1",
             "if $effect_state.time <= 0:",
             ["cure_status: $user", "return"],

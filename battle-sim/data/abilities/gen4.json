@@ -77,6 +77,6 @@
   "frisk": { "name": "Frisk", "flags": [] },
   "reckless": { "name": "Reckless", "flags": [] },
   "multitype": { "name": "Multitype", "flags": ["Permanent"] },
-  "flowergift": { "name": "Flower Gift", "flags": ["NoRolePlay"] },
+  "flowergift": { "name": "Flower Gift", "flags": ["NoRolePlay", "NoTrace"] },
   "baddreams": { "name": "Bad Dreams", "flags": [] }
 }
