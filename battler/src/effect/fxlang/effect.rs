@@ -966,6 +966,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself.
     #[string = "TryUseMove"]
     TryUseMove,
+    /// Runs when determining if a Mon has immunity against a single type.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "TypeImmunity"]
+    TypeImmunity,
     /// Runs when determining the types of a Mon.
     ///
     /// Runs in the context of the target Mon.
@@ -1135,6 +1140,7 @@ impl BattleEvent {
             Self::TryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::TypeImmunity => CommonCallbackType::MonResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::Update => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -1199,6 +1205,7 @@ impl BattleEvent {
             Self::SlotStart => &[("slot", ValueType::UFraction, true)],
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
+            Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
             _ => &[],
@@ -1570,6 +1577,7 @@ pub struct Callbacks {
     pub on_try_move: Callback,
     pub on_try_primary_hit: Callback,
     pub on_try_use_move: Callback,
+    pub on_type_immunity: Callback,
     pub on_types: Callback,
     pub on_update: Callback,
     pub on_use_move: Callback,
@@ -1713,6 +1721,7 @@ impl Callbacks {
             BattleEvent::TryMove => Some(&self.on_try_move),
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
+            BattleEvent::TypeImmunity => Some(&self.on_type_immunity),
             BattleEvent::Types => Some(&self.on_types),
             BattleEvent::Update => Some(&self.on_update),
             BattleEvent::UseMove => Some(&self.on_use_move),

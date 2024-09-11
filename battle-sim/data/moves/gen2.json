@@ -655,7 +655,7 @@
       "duration": 4,
       "callbacks": {
         "on_residual": ["log_start: str('perish:{}', $effect_state.duration)"],
-        "on_end": ["log_start: perish:0", "faint: $target"]
+        "on_end": ["log_start: 'perish:0'", "faint: $target"]
       }
     }
   },

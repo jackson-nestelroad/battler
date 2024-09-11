@@ -36,8 +36,8 @@
     "condition_type": "Built-in",
     "condition": {
       "callbacks": {
-        "on_immunity": [
-          "if $effect.is_move and $effect.type == ground and !$target.is_grounded:",
+        "on_type_immunity": [
+          "if $type == ground and !$mon.is_grounded:",
           ["return false"]
         ],
         "on_negate_immunity": [

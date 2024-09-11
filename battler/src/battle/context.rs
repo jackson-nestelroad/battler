@@ -1002,7 +1002,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     pub fn secondary_active_move_context(&mut self, target: MonHandle, index: usize) -> Self {
         ActiveMoveContext::new_from_active_move_context(
             self,
-            MoveHitEffectType::SecondaryEffect(target, index),
+            MoveHitEffectType::SecondaryEffect(target, self.active_move.hit, index),
             self.is_self,
             self.is_external,
         )
@@ -1110,7 +1110,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Checks if the context is scoped to a secondary effect of the active [`Move`].
     pub fn is_secondary(&self) -> bool {
         match self.hit_effect_type {
-            MoveHitEffectType::SecondaryEffect(_, _) => true,
+            MoveHitEffectType::SecondaryEffect(_, _, _) => true,
             _ => false,
         }
     }

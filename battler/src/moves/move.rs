@@ -261,15 +261,15 @@ impl MoveHitData {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum MoveHitEffectType {
     PrimaryEffect,
-    SecondaryEffect(MonHandle, usize),
+    SecondaryEffect(MonHandle, u8, usize),
 }
 
 impl MoveHitEffectType {
     /// The index of the secondary effect, if any.
-    pub fn secondary_index(&self) -> Option<(MonHandle, usize)> {
+    pub fn secondary_index(&self) -> Option<(MonHandle, u8, usize)> {
         match self {
             Self::PrimaryEffect => None,
-            Self::SecondaryEffect(mon, index) => Some((*mon, *index)),
+            Self::SecondaryEffect(mon, hit, index) => Some((*mon, *hit, *index)),
         }
     }
 }
@@ -318,7 +318,7 @@ pub struct Move {
     /// Secondary effects for each target.
     ///
     /// Secondary effects can be modified by effects on the user and the individual target.
-    pub secondary_effects: FastHashMap<MonHandle, Vec<SecondaryEffect>>,
+    pub secondary_effects: FastHashMap<(MonHandle, u8), Vec<SecondaryEffect>>,
 
     hit_data: FastHashMap<MonHandle, MoveHitData>,
 }
@@ -382,9 +382,9 @@ impl Move {
     pub fn target_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.hit_effect.as_ref(),
-            MoveHitEffectType::SecondaryEffect(target, index) => self
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => self
                 .secondary_effects
-                .get(&target)?
+                .get(&(target, hit))?
                 .get(index)?
                 .target
                 .as_ref(),
@@ -398,9 +398,9 @@ impl Move {
     ) -> Option<&mut HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.hit_effect.as_mut(),
-            MoveHitEffectType::SecondaryEffect(target, index) => self
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => self
                 .secondary_effects
-                .get_mut(&target)?
+                .get_mut(&(target, hit))?
                 .get_mut(index)?
                 .target
                 .as_mut(),
@@ -411,9 +411,9 @@ impl Move {
     pub fn user_hit_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.user_effect.as_ref(),
-            MoveHitEffectType::SecondaryEffect(target, index) => self
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => self
                 .secondary_effects
-                .get(&target)?
+                .get(&(target, hit))?
                 .get(index)?
                 .user
                 .as_ref(),
@@ -427,9 +427,9 @@ impl Move {
     ) -> Option<&mut HitEffect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => self.data.user_effect.as_mut(),
-            MoveHitEffectType::SecondaryEffect(target, index) => self
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => self
                 .secondary_effects
-                .get_mut(&target)?
+                .get_mut(&(target, hit))?
                 .get_mut(index)?
                 .user
                 .as_mut(),
@@ -440,11 +440,11 @@ impl Move {
     pub fn fxlang_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&fxlang::Effect> {
         match hit_effect_type {
             MoveHitEffectType::PrimaryEffect => Some(&self.data.effect),
-            MoveHitEffectType::SecondaryEffect(target, secondary_index) => Some(
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => Some(
                 &self
                     .secondary_effects
-                    .get(&target)?
-                    .get(secondary_index)?
+                    .get(&(target, hit))?
+                    .get(index)?
                     .effect,
             ),
         }
@@ -460,9 +460,10 @@ impl Move {
         target: MonHandle,
         secondary_effects: Vec<SecondaryEffect>,
     ) -> Result<(), Error> {
-        match self.secondary_effects.entry(target) {
+        match self.secondary_effects.entry((target, self.hit)) {
             Entry::Occupied(_) => Err(battler_error!(
-                "target {target} already has secondary effects saved"
+                "target {target} already has secondary effects saved for hit {}",
+                self.hit
             )),
             Entry::Vacant(entry) => {
                 entry.insert(secondary_effects);
@@ -477,7 +478,7 @@ impl Move {
         &'a self,
         target: MonHandle,
     ) -> Box<dyn Iterator<Item = (usize, Option<Fraction<u16>>)> + 'a> {
-        match self.secondary_effects.get(&target) {
+        match self.secondary_effects.get(&(target, self.hit)) {
             Some(secondary_effects) => Box::new(
                 secondary_effects
                     .iter()

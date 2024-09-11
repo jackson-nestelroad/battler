@@ -1756,7 +1756,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$moves = func_call(get_all_moves: without_flag:nometronome)",
+          "$moves = func_call(get_all_moves: 'without_flag:nometronome')",
           "$random_move = func_call(sample: $moves)",
           "if !$random_move:",
           ["return false"],
@@ -2449,6 +2449,8 @@
           "return 0"
         ],
         "on_try_boost": [
+          "if $target == $source:",
+          ["return"],
           "log_fail_unboost: $target from_effect",
           "return func_call(boost_table)"
         ],
