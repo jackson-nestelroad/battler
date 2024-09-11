@@ -131,13 +131,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_effect_to_applying_effect<'eval>(
         &'eval mut self,
         target_handle: MonHandle,
-        use_target_as_source: bool,
+        source_handle: Option<MonHandle>,
     ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = if use_target_as_source {
-            self.target_handle()
-        } else {
-            self.source_handle()
-        };
         let context: ApplyingEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .applying_effect_context(source_handle, target_handle)?;
@@ -1010,6 +1005,9 @@ where
                             "type" => ValueRef::Type(
                                 context.active_move(active_move_handle)?.data.primary_type,
                             ),
+                            "typeless" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.data.typeless,
+                            ),
                             "user_effect" => context
                                 .active_move(active_move_handle)?
                                 .data
@@ -1100,6 +1098,11 @@ where
                                 .boosts
                                 .as_ref()
                                 .map(ValueRef::BoostTable)
+                                .unwrap_or(ValueRef::Undefined),
+                            "volatile_status" => hit_effect
+                                .volatile_status
+                                .as_ref()
+                                .map(ValueRef::String)
                                 .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }

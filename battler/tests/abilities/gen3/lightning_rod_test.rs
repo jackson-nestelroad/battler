@@ -20,37 +20,26 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn geodude() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Geodude",
-                    "species": "Geodude",
-                    "ability": "Sturdy",
+                    "name": "Pikachu",
+                    "species": "Pikachu",
+                    "ability": "Static",
                     "moves": [
-                        "Guillotine"
+                        "Thunderbolt"
                     ],
                     "nature": "Hardy",
                     "level": 50
-                }
-            ]
-        }"#,
-    )
-    .wrap_error()
-}
-
-fn swampert() -> Result<TeamData, Error> {
-    serde_json::from_str(
-        r#"{
-            "members": [
+                },
                 {
-                    "name": "Swampert",
-                    "species": "Swampert",
-                    "ability": "Torrent",
+                    "name": "Eevee",
+                    "species": "Eevee",
+                    "ability": "No Ability",
                     "moves": [
-                        "Surf",
-                        "Guillotine"
+                        "Follow Me"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -68,7 +57,7 @@ fn make_battle(
     team_2: TeamData,
 ) -> Result<PublicCoreBattle, Error> {
     TestBattleBuilder::new()
-        .with_battle_type(BattleType::Singles)
+        .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
@@ -81,22 +70,24 @@ fn make_battle(
 }
 
 #[test]
-fn sturdy_survives_one_hit_ko() {
+fn lightning_rod_redirects_electric_moves() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
+    let mut opponent = team().unwrap();
+    opponent.members[0].ability = "Lightning Rod".to_owned();
+    let mut battle = make_battle(&data, 0, team().unwrap(), opponent).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(
+        battle.set_player_choice("player-1", "move 0,2;pass"),
+        Ok(())
+    );
+    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Swampert,player-2,1|name:Surf",
-            "supereffective|mon:Geodude,player-1,1",
-            "activate|mon:Geodude,player-1,1|ability:Sturdy",
-            "split|side:0",
-            "damage|mon:Geodude,player-1,1|health:1/100",
-            "damage|mon:Geodude,player-1,1|health:1/100",
+            "activate|mon:Pikachu,player-1,1|ability:Lightning Rod",
+            "move|mon:Pikachu,player-1,1|name:Thunderbolt|target:Pikachu,player-2,1",
+            "boost|mon:Pikachu,player-2,1|stat:spa|by:1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -106,18 +97,27 @@ fn sturdy_survives_one_hit_ko() {
 }
 
 #[test]
-fn sturdy_resists_ohko_move() {
+fn me_first_takes_priority_over_lightning_rod() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
+    let mut player = team().unwrap();
+    player.members[0].ability = "Lightning Rod".to_owned();
+    let mut battle = make_battle(&data, 0, player, team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass;move 0"), Ok(()));
+    assert_eq!(
+        battle.set_player_choice("player-2", "move 0,2;pass"),
+        Ok(())
+    );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Swampert,player-2,1|name:Guillotine|target:Geodude,player-1,1",
-            "immune|mon:Geodude,player-1,1|from:ability:Sturdy",
+            "move|mon:Eevee,player-1,2|name:Follow Me|target:Eevee,player-1,2",
+            "singleturn|mon:Eevee,player-1,2|move:Follow Me",
+            "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Eevee,player-1,2",
+            "split|side:0",
+            "damage|mon:Eevee,player-1,2|health:67/115",
+            "damage|mon:Eevee,player-1,2|health:59/100",
             "residual",
             "turn|turn:2"
         ]"#,

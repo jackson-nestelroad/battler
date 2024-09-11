@@ -52,6 +52,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AnyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyPrepareHit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AnyRedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnySetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyTryMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::Attract, callbacks)?;
@@ -86,6 +87,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::FoeBeforeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeDisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeRedirectTarget, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FoeTrapMon, callbacks)?;
             parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitField, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitSide, callbacks)?;
@@ -111,6 +113,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDef, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyExperience, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifySecondaryEffects, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
@@ -142,6 +145,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SourceAccuracyExempt, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceInvulnerability, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceModifyAccuracy, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
@@ -167,6 +171,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Weather, callbacks)?;
+            parsed.parse_and_save(BattleEvent::WeatherChange, callbacks)?;
             parsed.parse_and_save(BattleEvent::WeatherModifyDamage, callbacks)?;
         }
         Ok(parsed)

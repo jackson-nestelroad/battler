@@ -1020,7 +1020,7 @@
           ["return"],
           "$damage = func_call(damage: $target expr($target.base_max_hp / 8))",
           "if $damage > 0:",
-          ["heal: $source $damage $target"]
+          ["heal: $source $damage use_target_as_source"]
         ],
         "on_end": ["log_end: with_source_effect with_source"]
       }
@@ -2409,7 +2409,7 @@
           "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
           ["log_fail: $source", "return stop"]
         ],
-        "on_hit": ["direct_damage: expr($target.max_hp / 4)"]
+        "on_hit": ["direct_damage: $target expr($target.max_hp / 4)"]
       }
     },
     "condition": {
@@ -2447,6 +2447,10 @@
           "run_event_on_move: AfterSubstituteDamage",
           "run_event: AfterSubstituteDamage",
           "return 0"
+        ],
+        "on_try_boost": [
+          "log_fail_unboost: $target from_effect",
+          "return func_call(boost_table)"
         ],
         "on_end": ["log_end"]
       }

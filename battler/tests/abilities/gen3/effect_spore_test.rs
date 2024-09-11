@@ -16,21 +16,20 @@ use battler::{
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,
+    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
 };
 
-fn geodude() -> Result<TeamData, Error> {
+fn shroomish() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Geodude",
-                    "species": "Geodude",
-                    "ability": "Sturdy",
-                    "moves": [
-                        "Guillotine"
-                    ],
+                    "name": "Shroomish",
+                    "species": "Shroomish",
+                    "ability": "Effect Spore",
+                    "moves": [],
                     "nature": "Hardy",
                     "level": 50
                 }
@@ -40,17 +39,16 @@ fn geodude() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn swampert() -> Result<TeamData, Error> {
+fn mudkip() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Swampert",
-                    "species": "Swampert",
+                    "name": "Mudkip",
+                    "species": "Mudkip",
                     "ability": "Torrent",
                     "moves": [
-                        "Surf",
-                        "Guillotine"
+                        "Tackle"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -72,6 +70,7 @@ fn make_battle(
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_controlled_rng(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -81,43 +80,27 @@ fn make_battle(
 }
 
 #[test]
-fn sturdy_survives_one_hit_ko() {
+fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, mudkip().unwrap(), shroomish().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(4, 29)]);
+
+    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Swampert,player-2,1|name:Surf",
-            "supereffective|mon:Geodude,player-1,1",
-            "activate|mon:Geodude,player-1,1|ability:Sturdy",
+            "move|mon:Mudkip,player-1,1|name:Tackle|target:Shroomish,player-2,1",
+            "split|side:1",
+            "damage|mon:Shroomish,player-2,1|health:99/120",
+            "damage|mon:Shroomish,player-2,1|health:83/100",
+            "status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1",
             "split|side:0",
-            "damage|mon:Geodude,player-1,1|health:1/100",
-            "damage|mon:Geodude,player-1,1|health:1/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
-    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
-}
-
-#[test]
-fn sturdy_resists_ohko_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-
-    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "move|mon:Swampert,player-2,1|name:Guillotine|target:Geodude,player-1,1",
-            "immune|mon:Geodude,player-1,1|from:ability:Sturdy",
+            "damage|mon:Mudkip,player-1,1|from:status:Poison|health:97/110",
+            "damage|mon:Mudkip,player-1,1|from:status:Poison|health:89/100",
             "residual",
             "turn|turn:2"
         ]"#,

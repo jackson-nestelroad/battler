@@ -1,14 +1,32 @@
 mod abilities {
     mod gen3 {
+        mod clear_body_test;
+        mod cloud_nine_test;
+        mod color_change_test;
+        mod compound_eyes_test;
         mod damp_test;
+        mod effect_spore_test;
         mod flash_fire_test;
+        mod insomnia_test;
+        mod intimidate_test;
+        mod levitate_test;
+        mod lightning_rod_test;
         mod limber_test;
+        mod oblivious_test;
+        mod own_tempo_test;
+        mod rough_skin_test;
         mod sand_veil_test;
+        mod shadow_tag_test;
+        mod shield_dust_test;
         mod speed_boost_test;
         mod static_test;
         mod stench_test;
         mod sturdy_test;
+        mod suction_cups_test;
+        mod swift_swim_test;
+        mod synchronize_test;
         mod volt_absorb_test;
+        mod wonder_guard_test;
     }
 
     mod gen4 {

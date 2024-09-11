@@ -999,10 +999,10 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
     /// Creates a new [`ActiveMoveContext`] for a secondary [`HitEffect`], scoped to the lifetime of
     /// this context.
-    pub fn secondary_active_move_context(&mut self, index: usize) -> Self {
+    pub fn secondary_active_move_context(&mut self, target: MonHandle, index: usize) -> Self {
         ActiveMoveContext::new_from_active_move_context(
             self,
-            MoveHitEffectType::SecondaryEffect(index),
+            MoveHitEffectType::SecondaryEffect(target, index),
             self.is_self,
             self.is_external,
         )
@@ -1110,7 +1110,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     /// Checks if the context is scoped to a secondary effect of the active [`Move`].
     pub fn is_secondary(&self) -> bool {
         match self.hit_effect_type {
-            MoveHitEffectType::SecondaryEffect(_) => true,
+            MoveHitEffectType::SecondaryEffect(_, _) => true,
             _ => false,
         }
     }

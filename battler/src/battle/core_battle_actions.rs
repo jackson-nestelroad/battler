@@ -51,7 +51,6 @@ use crate::{
     effect::{
         fxlang,
         EffectHandle,
-        EffectType,
     },
     mons::{
         MoveSource,
@@ -1329,7 +1328,8 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     modify_damage(context, base_damage)
 }
 
-fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8, Error> {
+/// Calculates the type effectiveness of a move against a target.
+pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8, Error> {
     if context.active_move().data.typeless {
         return Ok(0);
     }
@@ -2456,14 +2456,6 @@ pub fn boost(
         // We are careful to only log stat changes that should be visible to the user.
         if delta != 0 || capped || (!is_secondary && !is_self && user_intended && !suppressed) {
             core_battle_logs::boost(context, boost, delta, original_delta)?;
-        } else if let Some(effect) = effect {
-            let effect_context = context
-                .as_battle_context_mut()
-                .effect_context(effect.clone(), None)?;
-            let effect_type = effect_context.effect().effect_type();
-            if effect_type == EffectType::Ability {
-                core_battle_logs::boost(context, boost, delta, original_delta)?;
-            }
         }
     }
 
@@ -2552,13 +2544,25 @@ fn apply_secondary_effects(
         if target.outcome.failed() {
             continue;
         }
-        // TODO: ModifySecondaries event.
-        for i in 0..context.active_move().data.secondary_effects.len() {
-            let secondary_effect = match context.active_move().data.secondary_effects.get(i) {
-                None => break,
-                Some(secondary_effect) => secondary_effect,
-            };
-            let secondary_roll = match secondary_effect.chance {
+
+        let secondary_effects = context.active_move().data.secondary_effects.clone();
+        let secondary_effects =
+            core_battle_effects::run_event_for_applying_effect_expecting_secondary_effects(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::ModifySecondaryEffects,
+                secondary_effects,
+            );
+
+        context
+            .active_move_mut()
+            .save_secondary_effects(target.handle, secondary_effects)?;
+
+        for (i, chance) in context
+            .active_move()
+            .secondary_effect_chances(target.handle)
+            .collect::<Vec<_>>()
+        {
+            let secondary_roll = match chance {
                 Some(chance) => rand_util::chance(
                     context.battle_mut().prng.as_mut(),
                     chance.numerator() as u64,
@@ -2567,7 +2571,7 @@ fn apply_secondary_effects(
                 None => true,
             };
             if secondary_roll {
-                let mut context = context.secondary_active_move_context(i);
+                let mut context = context.secondary_active_move_context(target.handle, i);
                 move_hit(&mut context, Vec::from_iter([target.clone()]))?;
             }
         }
@@ -3492,7 +3496,10 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         return Ok(false);
     }
 
-    // TODO: WeatherChange event.
+    core_battle_effects::run_event_for_each_active_mon(
+        context.as_effect_context_mut(),
+        fxlang::BattleEvent::WeatherChange,
+    )?;
 
     Ok(true)
 }

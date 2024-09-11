@@ -526,6 +526,14 @@ impl Value {
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::EffectState)),
         }
     }
+
+    /// Consumes the value into a [`Vec<SecondaryEffect>`].
+    pub fn secondary_hit_effects_list(self) -> Result<Vec<SecondaryEffect>, Error> {
+        self.list()?
+            .into_iter()
+            .map(|val| val.secondary_hit_effect())
+            .collect()
+    }
 }
 
 /// A [`Value`] that could also be a reference to a value.

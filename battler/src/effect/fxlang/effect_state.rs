@@ -112,6 +112,11 @@ impl EffectState {
             .insert(Self::TARGET.to_owned(), Value::Mon(target));
     }
 
+    /// The source effect of the effect.
+    pub fn source_effect(&self) -> Option<EffectHandle> {
+        self.get(Self::SOURCE_EFFECT)?.clone().effect_handle().ok()
+    }
+
     /// Sets the source effect of the effect.
     pub fn set_source_effect(&mut self, source_effect: EffectHandle) {
         self.values.insert(

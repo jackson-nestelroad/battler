@@ -51,6 +51,7 @@ use crate::{
         WeatherEffectStateConnector,
     },
     mons::Type,
+    moves::SecondaryEffect,
 };
 
 enum UpcomingEvaluationContext<
@@ -2402,6 +2403,32 @@ pub fn run_event_for_applying_effect_expecting_mon_quick_return(
     )?
     .mon_handle()
     .ok()
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects a [`Vec<SecondaryEffect>`].
+pub fn run_event_for_applying_effect_expecting_secondary_effects(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    secondary_effects: Vec<SecondaryEffect>,
+) -> Vec<SecondaryEffect> {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::List(
+            secondary_effects
+                .iter()
+                .map(|secondary_effect| fxlang::Value::SecondaryHitEffect(secondary_effect.clone()))
+                .collect(),
+        )]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value
+            .secondary_hit_effects_list()
+            .unwrap_or(secondary_effects),
+        None => secondary_effects,
+    }
 }
 
 /// Runs an event targeted on the given [`Mon`].

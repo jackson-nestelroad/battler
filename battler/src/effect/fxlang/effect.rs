@@ -30,6 +30,7 @@ pub mod CallbackFlag {
     pub const TakesSide: u32 = 1 << 9;
     pub const TakesOptionalEffect: u32 = 1 << 10;
 
+    pub const ReturnsSecondaryEffects: u32 = 1 << 23;
     pub const ReturnsTypes: u32 = 1 << 24;
     pub const ReturnsMon: u32 = 1 << 25;
     pub const ReturnsBoosts: u32 = 1 << 26;
@@ -148,6 +149,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMoveResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+    MoveSecondaryEffectModifier = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsSecondaryEffects
         | CallbackFlag::ReturnsVoid,
 
     MonModifier =
@@ -293,6 +299,12 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move from the user.
     #[string = "AnyPrepareHit"]
     AnyPrepareHit,
+    /// Runs when any move is going to target one Mon but can be redirected towards a different
+    /// target.
+    ///
+    /// Runs in the context of an active move from the user.
+    #[string = "AnyRedirectTarget"]
+    AnyRedirectTarget,
     /// Runs when any Mon's status effect is being set.
     ///
     /// Runs before the status effect is applied. Can be used to fail the status change.
@@ -488,6 +500,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "FoeRedirectTarget"]
     FoeRedirectTarget,
+    /// Runs when determining if a foe Mon is trapped (i.e., cannot switch out).
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "FoeTrapMon"]
+    FoeTrapMon,
     /// Runs when a Mon is hit by a move.
     ///
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
@@ -634,6 +651,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifyExperience"]
     ModifyExperience,
+    /// Runs before applying secondary move effects.
+    ///
+    /// Runs in the context of an active move against the target.
+    #[string = "ModifySecondaryEffects"]
+    ModifySecondaryEffects,
     /// Runs when caclculating a Mon's SpD stat.
     ///
     /// Runs in the context of the target Mon or an applying effect, where the target is always the
@@ -812,6 +834,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "SourceInvulnerability"]
     SourceInvulnerability,
+    /// Runs when calculating the accuracy of a move used by the Mon.
+    ///
+    /// Runs in the context of an active move against the target.
+    #[string = "SourceModifyAccuracy"]
+    SourceModifyAccuracy,
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
@@ -966,6 +993,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "Weather"]
     Weather,
+    /// Runs when the weather over a Mon changes.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "WeatherChange"]
+    WeatherChange,
     /// Runs when calculating the damage applied to a Mon.
     ///
     /// Runs in the context of an active move from the user.
@@ -989,6 +1021,7 @@ impl BattleEvent {
             Self::AnyDamage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
             Self::AnyPrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::AnyRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyTryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1023,6 +1056,7 @@ impl BattleEvent {
             Self::FoeBeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::FoeDisableMove => CommonCallbackType::MonVoid as u32,
             Self::FoeRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
+            Self::FoeTrapMon => CommonCallbackType::MonResult as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
@@ -1048,6 +1082,7 @@ impl BattleEvent {
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
+            Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1079,6 +1114,7 @@ impl BattleEvent {
             Self::SourceAccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::SourceBasePower => CommonCallbackType::MoveModifier as u32,
             Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
+            Self::SourceModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
@@ -1104,6 +1140,7 @@ impl BattleEvent {
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
             Self::Weather => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::WeatherChange => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::WeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
         }
     }
@@ -1129,7 +1166,9 @@ impl BattleEvent {
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
             ],
-            Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
+            Self::ModifyAccuracy | Self::SourceModifyAccuracy => {
+                &[("acc", ValueType::UFraction, true)]
+            }
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
             Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
@@ -1140,12 +1179,15 @@ impl BattleEvent {
             | Self::WeatherModifyDamage => &[("damage", ValueType::UFraction, true)],
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
+            Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
-            Self::RedirectTarget | Self::FoeRedirectTarget => &[("target", ValueType::Mon, true)],
+            Self::RedirectTarget | Self::AnyRedirectTarget | Self::FoeRedirectTarget => {
+                &[("target", ValueType::Mon, true)]
+            }
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
@@ -1175,7 +1217,9 @@ impl BattleEvent {
             }
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
-            Some(ValueType::List) => self.has_flag(CallbackFlag::ReturnsTypes),
+            Some(ValueType::List) => {
+                self.has_flag(CallbackFlag::ReturnsTypes | CallbackFlag::ReturnsSecondaryEffects)
+            }
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -1272,6 +1316,7 @@ impl BattleEvent {
             Self::BeforeMove => Some(Self::FoeBeforeMove),
             Self::DisableMove => Some(Self::FoeDisableMove),
             Self::RedirectTarget => Some(Self::FoeRedirectTarget),
+            Self::TrapMon => Some(Self::FoeTrapMon),
             _ => None,
         }
     }
@@ -1282,6 +1327,7 @@ impl BattleEvent {
             Self::AccuracyExempt => Some(Self::SourceAccuracyExempt),
             Self::BasePower => Some(Self::SourceBasePower),
             Self::Invulnerability => Some(Self::SourceInvulnerability),
+            Self::ModifyAccuracy => Some(Self::SourceModifyAccuracy),
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
             Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
             _ => None,
@@ -1294,6 +1340,7 @@ impl BattleEvent {
             Self::Damage => Some(Self::AnyDamage),
             Self::Exit => Some(Self::AnyExit),
             Self::PrepareHit => Some(Self::AnyPrepareHit),
+            Self::RedirectTarget => Some(Self::AnyRedirectTarget),
             Self::SetStatus => Some(Self::AnySetStatus),
             Self::TryMove => Some(Self::AnyTryMove),
             _ => None,
@@ -1425,6 +1472,7 @@ pub struct Callbacks {
     pub on_any_damage: Callback,
     pub on_any_exit: Callback,
     pub on_any_prepare_hit: Callback,
+    pub on_any_redirect_target: Callback,
     pub on_any_set_status: Callback,
     pub on_any_try_move: Callback,
     pub on_attract: Callback,
@@ -1459,6 +1507,7 @@ pub struct Callbacks {
     pub on_foe_before_move: Callback,
     pub on_foe_disable_move: Callback,
     pub on_foe_redirect_target: Callback,
+    pub on_foe_trap_mon: Callback,
     pub on_hit: Callback,
     pub on_hit_field: Callback,
     pub on_hit_side: Callback,
@@ -1473,6 +1522,7 @@ pub struct Callbacks {
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
     pub on_modify_experience: Callback,
+    pub on_modify_secondary_effects: Callback,
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
@@ -1504,6 +1554,7 @@ pub struct Callbacks {
     pub on_source_accuracy_exempt: Callback,
     pub on_source_base_power: Callback,
     pub on_source_invulnerability: Callback,
+    pub on_source_modify_accuracy: Callback,
     pub on_source_modify_damage: Callback,
     pub on_source_weather_modify_damage: Callback,
     pub on_start: Callback,
@@ -1524,6 +1575,7 @@ pub struct Callbacks {
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
     pub on_weather: Callback,
+    pub on_weather_change: Callback,
     pub on_weather_modify_damage: Callback,
     pub suppress_field_terrain: Callback,
     pub suppress_field_weather: Callback,
@@ -1547,6 +1599,7 @@ impl Callbacks {
             BattleEvent::AnyDamage => Some(&self.on_any_damage),
             BattleEvent::AnyExit => Some(&self.on_any_exit),
             BattleEvent::AnyPrepareHit => Some(&self.on_any_prepare_hit),
+            BattleEvent::AnyRedirectTarget => Some(&self.on_any_redirect_target),
             BattleEvent::AnySetStatus => Some(&self.on_any_set_status),
             BattleEvent::AnyTryMove => Some(&self.on_any_try_move),
             BattleEvent::Attract => Some(&self.on_attract),
@@ -1581,6 +1634,7 @@ impl Callbacks {
             BattleEvent::FoeBeforeMove => Some(&self.on_foe_before_move),
             BattleEvent::FoeDisableMove => Some(&self.on_foe_disable_move),
             BattleEvent::FoeRedirectTarget => Some(&self.on_foe_redirect_target),
+            BattleEvent::FoeTrapMon => Some(&self.on_foe_trap_mon),
             BattleEvent::Hit => Some(&self.on_hit),
             BattleEvent::HitField => Some(&self.on_hit_field),
             BattleEvent::HitSide => Some(&self.on_hit_side),
@@ -1606,6 +1660,7 @@ impl Callbacks {
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
             BattleEvent::ModifyExperience => Some(&self.on_modify_experience),
+            BattleEvent::ModifySecondaryEffects => Some(&self.on_modify_secondary_effects),
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
             BattleEvent::ModifySpe => Some(&self.on_modify_spe),
@@ -1637,6 +1692,7 @@ impl Callbacks {
             BattleEvent::SourceAccuracyExempt => Some(&self.on_source_accuracy_exempt),
             BattleEvent::SourceBasePower => Some(&self.on_source_base_power),
             BattleEvent::SourceInvulnerability => Some(&self.on_source_invulnerability),
+            BattleEvent::SourceModifyAccuracy => Some(&self.on_source_modify_accuracy),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
@@ -1662,6 +1718,7 @@ impl Callbacks {
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
             BattleEvent::Weather => Some(&self.on_weather),
+            BattleEvent::WeatherChange => Some(&self.on_weather_change),
             BattleEvent::WeatherModifyDamage => Some(&self.on_weather_modify_damage),
         }
     }

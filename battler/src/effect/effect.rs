@@ -130,7 +130,7 @@ impl EffectHandle {
     /// Is the effect handle a secondary effect of an active move?
     pub fn is_active_move_secondary(&self) -> bool {
         match self {
-            Self::ActiveMove(_, MoveHitEffectType::SecondaryEffect(_)) => true,
+            Self::ActiveMove(_, MoveHitEffectType::SecondaryEffect(_, _)) => true,
             _ => false,
         }
     }
@@ -309,7 +309,9 @@ impl<'borrow> Effect<'borrow> {
         match self {
             Self::ActiveMove(_, hit_effect_type) => match hit_effect_type.secondary_index() {
                 None => "move".to_owned(),
-                Some(secondary_index) => format!("movesecondary{secondary_index}"),
+                Some((target, secondary_index)) => {
+                    format!("movesecondary-{target}-{secondary_index}")
+                }
             },
             Self::MoveCondition(_) => "movecondition".to_owned(),
             Self::InactiveMove(_) => "move".to_owned(),

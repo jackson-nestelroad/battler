@@ -20,16 +20,16 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn geodude() -> Result<TeamData, Error> {
+fn psyduck() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Geodude",
-                    "species": "Geodude",
-                    "ability": "Sturdy",
+                    "name": "Psyduck",
+                    "species": "Psyduck",
+                    "ability": "Swift Swim",
                     "moves": [
-                        "Guillotine"
+                        "Tackle"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -40,17 +40,16 @@ fn geodude() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn swampert() -> Result<TeamData, Error> {
+fn poliwag() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Swampert",
-                    "species": "Swampert",
-                    "ability": "Torrent",
+                    "name": "Poliwag",
+                    "species": "Poliwag",
+                    "ability": "Drizzle",
                     "moves": [
-                        "Surf",
-                        "Guillotine"
+                        "Tackle"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -81,43 +80,25 @@ fn make_battle(
 }
 
 #[test]
-fn sturdy_survives_one_hit_ko() {
+fn swift_swim_boosts_speed_in_rain() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, psyduck().unwrap(), poliwag().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Swampert,player-2,1|name:Surf",
-            "supereffective|mon:Geodude,player-1,1",
-            "activate|mon:Geodude,player-1,1|ability:Sturdy",
+            "move|mon:Psyduck,player-1,1|name:Tackle|target:Poliwag,player-2,1",
+            "split|side:1",
+            "damage|mon:Poliwag,player-2,1|health:77/100",
+            "damage|mon:Poliwag,player-2,1|health:77/100",
+            "move|mon:Poliwag,player-2,1|name:Tackle|target:Psyduck,player-1,1",
             "split|side:0",
-            "damage|mon:Geodude,player-1,1|health:1/100",
-            "damage|mon:Geodude,player-1,1|health:1/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
-    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
-}
-
-#[test]
-fn sturdy_resists_ohko_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, geodude().unwrap(), swampert().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-
-    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "move|mon:Swampert,player-2,1|name:Guillotine|target:Geodude,player-1,1",
-            "immune|mon:Geodude,player-1,1|from:ability:Sturdy",
+            "damage|mon:Psyduck,player-1,1|health:92/110",
+            "damage|mon:Psyduck,player-1,1|health:84/100",
+            "weather|weather:Rain|residual",
             "residual",
             "turn|turn:2"
         ]"#,
