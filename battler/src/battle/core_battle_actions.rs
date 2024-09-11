@@ -2079,12 +2079,28 @@ pub fn heal(
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
 ) -> Result<u16, Error> {
-    // TODO: TryHeal event.
     if damage == 0
         || context.mon().hp == 0
         || !context.mon().active
         || context.mon().hp > context.mon().max_hp
     {
+        return Ok(0);
+    }
+
+    let damage = match effect {
+        Some(effect) => core_battle_effects::run_event_for_applying_effect_expecting_u16(
+            &mut context.applying_effect_context(effect.clone(), source, None)?,
+            fxlang::BattleEvent::TryHeal,
+            damage,
+        ),
+        None => core_battle_effects::run_event_for_mon_expecting_u16(
+            context,
+            fxlang::BattleEvent::TryHeal,
+            damage,
+        ),
+    };
+
+    if damage == 0 {
         return Ok(0);
     }
 
@@ -3376,6 +3392,12 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> 
 
     let escaped = Player::can_escape(context.as_player_context());
     let mut escaped = escaped && force || Mon::can_escape(context)?;
+    let force = force
+        || !core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::ForceEscape,
+            fxlang::VariableInput::default(),
+        );
     if escaped && !context.player().player_type.wild() && !force {
         let speed = context.mon().speed;
 

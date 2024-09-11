@@ -12,10 +12,12 @@ mod abilities {
         mod levitate_test;
         mod lightning_rod_test;
         mod limber_test;
+        mod liquid_ooze_test;
         mod oblivious_test;
         mod own_tempo_test;
         mod rough_skin_test;
         mod sand_veil_test;
+        mod serene_grace_test;
         mod shadow_tag_test;
         mod shield_dust_test;
         mod speed_boost_test;

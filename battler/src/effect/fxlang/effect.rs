@@ -350,6 +350,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon (the user of the move).
     #[string = "BeforeTurn"]
     BeforeTurn,
+    /// Runs when a Mon is attempting to escape from battle.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "CanEscape"]
+    CanEscape,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
     /// Runs in the context of an active move from the user.
@@ -505,6 +510,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "FoeTrapMon"]
     FoeTrapMon,
+    /// Runs when a Mon is attempting to escape from battle, prior to any speed check.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "ForceEscape"]
+    ForceEscape,
     /// Runs when a Mon is hit by a move.
     ///
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
@@ -847,6 +857,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "SourceModifyDamage"]
     SourceModifyDamage,
+    /// Runs before a Mon is the source of another Mon healing for some amount of damage.
+    ///
+    /// Runs in the context of the target Mon or an applying effect.
+    #[string = "SourceTryHeal"]
+    SourceTryHeal,
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
@@ -914,6 +929,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "TryBoost"]
     TryBoost,
+    /// Runs before a Mon is healed for some amount of damage.
+    ///
+    /// Runs in the context of the target Mon or an applying effect.
+    #[string = "TryHeal"]
+    TryHeal,
     /// Runs when a move is trying to hit a set of targets.
     ///
     /// Can fail the move.
@@ -1034,6 +1054,7 @@ impl BattleEvent {
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
+            Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
@@ -1062,6 +1083,7 @@ impl BattleEvent {
             Self::FoeDisableMove => CommonCallbackType::MonVoid as u32,
             Self::FoeRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::FoeTrapMon => CommonCallbackType::MonResult as u32,
+            Self::ForceEscape => CommonCallbackType::MonResult as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
@@ -1121,6 +1143,7 @@ impl BattleEvent {
             Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
             Self::SourceModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
+            Self::SourceTryHeal => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
@@ -1133,6 +1156,7 @@ impl BattleEvent {
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
+            Self::TryHeal => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
             Self::TryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
@@ -1205,6 +1229,7 @@ impl BattleEvent {
             Self::SlotStart => &[("slot", ValueType::UFraction, true)],
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
+            Self::TryHeal | Self::SourceTryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
@@ -1336,6 +1361,7 @@ impl BattleEvent {
             Self::Invulnerability => Some(Self::SourceInvulnerability),
             Self::ModifyAccuracy => Some(Self::SourceModifyAccuracy),
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
+            Self::TryHeal => Some(Self::SourceTryHeal),
             Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
             _ => None,
         }
@@ -1487,6 +1513,7 @@ pub struct Callbacks {
     pub on_before_move: Callback,
     pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
+    pub on_can_escape: Callback,
     pub on_charge_move: Callback,
     pub on_clear_terrain: Callback,
     pub on_clear_weather: Callback,
@@ -1515,6 +1542,7 @@ pub struct Callbacks {
     pub on_foe_disable_move: Callback,
     pub on_foe_redirect_target: Callback,
     pub on_foe_trap_mon: Callback,
+    pub on_force_escape: Callback,
     pub on_hit: Callback,
     pub on_hit_field: Callback,
     pub on_hit_side: Callback,
@@ -1563,6 +1591,7 @@ pub struct Callbacks {
     pub on_source_invulnerability: Callback,
     pub on_source_modify_accuracy: Callback,
     pub on_source_modify_damage: Callback,
+    pub on_source_try_heal: Callback,
     pub on_source_weather_modify_damage: Callback,
     pub on_start: Callback,
     pub on_stall_move: Callback,
@@ -1570,6 +1599,7 @@ pub struct Callbacks {
     pub on_take_item: Callback,
     pub on_trap_mon: Callback,
     pub on_try_boost: Callback,
+    pub on_try_heal: Callback,
     pub on_try_hit: Callback,
     pub on_try_hit_field: Callback,
     pub on_try_hit_side: Callback,
@@ -1617,6 +1647,7 @@ impl Callbacks {
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
             BattleEvent::ClearTerrain => Some(&self.on_clear_terrain),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
+            BattleEvent::CanEscape => Some(&self.on_can_escape),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::CopyVolatile => Some(&self.on_copy_volatile),
             BattleEvent::CriticalHit => Some(&self.on_critical_hit),
@@ -1643,6 +1674,7 @@ impl Callbacks {
             BattleEvent::FoeDisableMove => Some(&self.on_foe_disable_move),
             BattleEvent::FoeRedirectTarget => Some(&self.on_foe_redirect_target),
             BattleEvent::FoeTrapMon => Some(&self.on_foe_trap_mon),
+            BattleEvent::ForceEscape => Some(&self.on_force_escape),
             BattleEvent::Hit => Some(&self.on_hit),
             BattleEvent::HitField => Some(&self.on_hit_field),
             BattleEvent::HitSide => Some(&self.on_hit_side),
@@ -1702,6 +1734,7 @@ impl Callbacks {
             BattleEvent::SourceInvulnerability => Some(&self.on_source_invulnerability),
             BattleEvent::SourceModifyAccuracy => Some(&self.on_source_modify_accuracy),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
+            BattleEvent::SourceTryHeal => Some(&self.on_source_try_heal),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
             BattleEvent::StallMove => Some(&self.on_stall_move),
@@ -1714,6 +1747,7 @@ impl Callbacks {
             BattleEvent::TakeItem => Some(&self.on_take_item),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
             BattleEvent::TryBoost => Some(&self.on_try_boost),
+            BattleEvent::TryHeal => Some(&self.on_try_heal),
             BattleEvent::TryHit => Some(&self.on_try_hit),
             BattleEvent::TryHitField => Some(&self.on_try_hit_field),
             BattleEvent::TryHitSide => Some(&self.on_try_hit_side),

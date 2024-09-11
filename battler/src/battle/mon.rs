@@ -1819,9 +1819,13 @@ impl Mon {
 
     /// Checks if the Mon can escape from battle.
     pub fn can_escape(context: &mut MonContext) -> Result<bool, Error> {
-        let cannot_escape = context.mon().trapped;
-        // TODO: CanEscape event that quick returns a value, with the above being the default.
-        Ok(!cannot_escape)
+        let can_escape = !context.mon().trapped;
+        let can_escape = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+            context,
+            fxlang::BattleEvent::CanEscape,
+            can_escape,
+        );
+        Ok(can_escape)
     }
 
     /// Sets the HP on the Mon directly, returning the delta.

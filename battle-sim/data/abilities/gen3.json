@@ -530,11 +530,12 @@
         "on_use_move": {
           "priority": -1,
           "program": [
-            "$secondary_effects = $move.secondary_effects",
-            "foreach $secondary in $secondary_effects:",
+            "$secondary_effects = []",
+            "foreach $secondary in $move.secondary_effects:",
             [
               "if $secondary.chance.is_defined:",
-              ["$secondary.chance = $secondary.chance * 2"]
+              ["$secondary.chance = $secondary.chance * 2"],
+              "$secondary_effects = func_call(append: $secondary_effects $secondary)"
             ],
             "$move.secondary_effects = $secondary_effects",
             "if $move.user_effect_chance.is_defined:",
@@ -790,7 +791,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_can_escape": ["return true"]
+        "on_force_escape": ["return false"]
       }
     }
   },

@@ -62,6 +62,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearWeather, callbacks)?;
+            parsed.parse_and_save(BattleEvent::CanEscape, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::CopyVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::CriticalHit, callbacks)?;
@@ -88,6 +89,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::FoeDisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeRedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeTrapMon, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ForceEscape, callbacks)?;
             parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitField, callbacks)?;
             parsed.parse_and_save(BattleEvent::HitSide, callbacks)?;
@@ -147,6 +149,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SourceInvulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyAccuracy, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceTryHeal, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::StallMove, callbacks)?;
@@ -159,6 +162,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::TakeItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TryHeal, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHitField, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHitSide, callbacks)?;

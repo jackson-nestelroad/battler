@@ -279,6 +279,34 @@ fn player_escapes_with_lower_speed() {
 }
 
 #[test]
+fn run_away_escapes_immediately() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut low_level_pikachu = low_level_pikachu().unwrap();
+    low_level_pikachu.members[0].ability = "Run Away".to_owned();
+    let mut battle = make_wild_singles_battle(
+        &data,
+        3245467,
+        low_level_pikachu,
+        primeape().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "escaped|player:protagonist",
+            "win|side:1"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
 fn cannot_escape_trainer_battle() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =

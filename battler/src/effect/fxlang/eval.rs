@@ -1015,6 +1015,12 @@ where
                                 .as_ref()
                                 .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
+                            "user_effect_chance" => context
+                                .active_move(active_move_handle)?
+                                .data
+                                .user_effect_chance
+                                .map(|val| ValueRef::UFraction(val.convert()))
+                                .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Player(player) = value {
@@ -1284,6 +1290,12 @@ where
                         "reflected" => ValueRefMut::Boolean(
                             &mut context.active_move_mut(**active_move_handle)?.reflected,
                         ),
+                        "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .secondary_effects,
+                        ),
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
                         ),
@@ -1298,6 +1310,12 @@ where
                                 .active_move_mut(**active_move_handle)?
                                 .data
                                 .user_effect,
+                        ),
+                        "user_effect_chance" => ValueRefMut::OptionalFractionU16(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .user_effect_chance,
                         ),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
@@ -2319,6 +2337,12 @@ impl Evaluator {
             }
             (ValueRefMut::SecondaryHitEffect(var), Value::SecondaryHitEffect(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::SecondaryHitEffectList(var), Value::List(val)) => {
+                *var = val
+                    .into_iter()
+                    .map(|val| val.secondary_hit_effect())
+                    .collect::<Result<Vec<_>, _>>()?;
             }
             (ValueRefMut::Gender(var), Value::Gender(val)) => {
                 *var = val;
