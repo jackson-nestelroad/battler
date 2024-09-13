@@ -2664,10 +2664,10 @@ pub fn run_event_for_battle_expecting_bool_quick_return(
     .unwrap_or(false)
 }
 
-/// Runs an event on the [`CoreBattle`] for each active [`Mon`].
+/// Runs an event on the [`CoreBattle`] for each active [`Mon`], with a source effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
-pub fn run_event_for_each_active_mon(
+pub fn run_event_for_each_active_mon_with_effect(
     context: &mut EffectContext,
     event: fxlang::BattleEvent,
 ) -> Result<(), Error> {
@@ -2676,6 +2676,23 @@ pub fn run_event_for_each_active_mon(
     {
         run_event_for_applying_effect(
             &mut context.applying_effect_context(None, mon_handle)?,
+            event,
+            fxlang::VariableInput::default(),
+        );
+    }
+    Ok(())
+}
+
+/// Runs an event on the [`CoreBattle`] for each active [`Mon`].
+///
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_each_active_mon(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+) -> Result<(), Error> {
+    for mon_handle in CoreBattle::all_active_mon_handles_in_speed_order(context)? {
+        run_event_for_mon(
+            &mut context.mon_context(mon_handle)?,
             event,
             fxlang::VariableInput::default(),
         );

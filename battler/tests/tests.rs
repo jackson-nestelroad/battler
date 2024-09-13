@@ -21,6 +21,7 @@ mod abilities {
         mod liquid_ooze_test;
         mod magma_armor_test;
         mod magnet_pull_test;
+        mod natural_cure_test;
         mod oblivious_test;
         mod own_tempo_test;
         mod pickup_test;

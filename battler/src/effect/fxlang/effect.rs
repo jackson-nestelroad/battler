@@ -447,6 +447,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "End"]
     End,
+    /// Runs when a Mon is active when the battle has ended.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "EndBattle"]
+    EndBattle,
     /// Runs when a Mon is affected by an entry hazard.
     ///
     /// Runs in the context of the target Mon.
@@ -1100,6 +1105,7 @@ impl BattleEvent {
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
             Self::Eat => CommonCallbackType::MonVoid as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
+            Self::EndBattle => CommonCallbackType::MonVoid as u32,
             Self::EntryHazard => CommonCallbackType::MonVoid as u32,
             Self::Exit => CommonCallbackType::MonVoid as u32,
             Self::Faint => CommonCallbackType::MaybeApplyingEffectVoid as u32,
@@ -1568,6 +1574,7 @@ pub struct Callbacks {
     pub on_eat: Callback,
     pub on_effectiveness: Callback,
     pub on_end: Callback,
+    pub on_end_battle: Callback,
     pub on_entry_hazard: Callback,
     pub on_exit: Callback,
     pub on_faint: Callback,
@@ -1705,6 +1712,7 @@ impl Callbacks {
             BattleEvent::Eat => Some(&self.on_eat),
             BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
+            BattleEvent::EndBattle => Some(&self.on_end_battle),
             BattleEvent::EntryHazard => Some(&self.on_entry_hazard),
             BattleEvent::Exit => Some(&self.on_exit),
             BattleEvent::Faint => Some(&self.on_faint),

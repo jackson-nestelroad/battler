@@ -3520,7 +3520,7 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         return Ok(false);
     }
 
-    core_battle_effects::run_event_for_each_active_mon(
+    core_battle_effects::run_event_for_each_active_mon_with_effect(
         context.as_effect_context_mut(),
         fxlang::BattleEvent::WeatherChange,
     )?;
@@ -3545,7 +3545,7 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
         set_weather(context, &default_weather)?;
     }
 
-    core_battle_effects::run_event_for_each_active_mon(
+    core_battle_effects::run_event_for_each_active_mon_with_effect(
         context.as_effect_context_mut(),
         fxlang::BattleEvent::WeatherChange,
     )?;

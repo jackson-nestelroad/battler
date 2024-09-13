@@ -1317,7 +1317,7 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<(), Err
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
-    core_battle_effects::run_event_for_each_active_mon(
+    core_battle_effects::run_event_for_each_active_mon_with_effect(
         context.evaluation_context_mut().effect_context_mut(),
         event,
     )

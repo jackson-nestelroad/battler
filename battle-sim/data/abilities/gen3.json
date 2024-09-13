@@ -492,7 +492,8 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_switch_out": ["if !$mon.status:", ["return"], "cure_status: $mon"]
+        "on_switch_out": ["cure_status: $mon"],
+        "on_end_battle": ["cure_status: $mon"]
       }
     }
   },

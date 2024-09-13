@@ -1083,6 +1083,10 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().mid_turn = true;
             }
             Action::End(action) => {
+                core_battle_effects::run_event_for_each_active_mon(
+                    context,
+                    fxlang::BattleEvent::EndBattle,
+                )?;
                 Self::win(context, action.winning_side)?;
             }
             Action::Team(action) => {
@@ -1850,7 +1854,7 @@ impl<'d> CoreBattle<'d> {
 
     /// Updates the battle, triggering any miscellaneous effects on Mons that could activate.
     pub fn update(context: &mut Context) -> Result<(), Error> {
-        core_battle_effects::run_event_for_each_active_mon(
+        core_battle_effects::run_event_for_each_active_mon_with_effect(
             &mut context.effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
             fxlang::BattleEvent::Update,
         )
