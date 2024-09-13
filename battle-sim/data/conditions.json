@@ -246,7 +246,7 @@
           ["log_status: $this.name"],
           "# 1-3 turns.",
           "$effect_state.total_time = func_call(random: 2 5)",
-          "$effect_state.time = $effect_state.total_time"
+          "$effect_state.time = +$effect_state.total_time"
         ],
         "on_before_move": {
           "priority": 10,

@@ -16,21 +16,20 @@ use battler::{
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,
-    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
 };
 
-fn poochyena() -> Result<TeamData, Error> {
+fn mawile() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Poochyena",
-                    "species": "Poochyena",
-                    "ability": "Static",
+                    "name": "Mawile",
+                    "species": "Mawile",
+                    "ability": "Hyper Cutter",
                     "moves": [
-                        "Scratch"
+                        "Growl"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -52,7 +51,6 @@ fn make_battle(
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
-        .with_controlled_rng(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -62,28 +60,19 @@ fn make_battle(
 }
 
 #[test]
-fn static_has_chance_to_paralyze_on_contact() {
+fn hyper_cutter_prevents_attack_drops() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, poochyena().unwrap(), poochyena().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, mawile().unwrap(), mawile().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
-    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
-    rng.insert_fake_values_relative_to_sequence_count([(4, 0)]);
-
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Poochyena,player-1,1|name:Scratch|target:Poochyena,player-2,1",
-            "split|side:1",
-            "damage|mon:Poochyena,player-2,1|health:68/95",
-            "damage|mon:Poochyena,player-2,1|health:72/100",
-            "status|mon:Poochyena,player-1,1|status:Paralysis|from:ability:Static|of:Poochyena,player-2,1",
-            "move|mon:Poochyena,player-2,1|name:Scratch|target:Poochyena,player-1,1",
-            "split|side:0",
-            "damage|mon:Poochyena,player-1,1|health:70/95",
-            "damage|mon:Poochyena,player-1,1|health:74/100",
+            "move|mon:Mawile,player-1,1|name:Growl|noanim",
+            "fail|mon:Mawile,player-2,1|what:unboost|boosts:atk|from:ability:Hyper Cutter",
+            "fail|mon:Mawile,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

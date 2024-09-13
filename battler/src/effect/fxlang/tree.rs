@@ -117,6 +117,7 @@ pub struct Assignment {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operator {
     Not,
+    UnaryPlus,
 
     Exponent,
 
@@ -146,6 +147,7 @@ impl From<Operator> for &str {
     fn from(value: Operator) -> Self {
         match value {
             Operator::Not => "!",
+            Operator::UnaryPlus => "+",
             Operator::Exponent => "^",
             Operator::Multiply => "*",
             Operator::Divide => "/",

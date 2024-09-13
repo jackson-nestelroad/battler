@@ -86,6 +86,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::FieldStart, callbacks)?;
             parsed.parse_and_save(BattleEvent::Flinch, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeBeforeMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::FoeDeductPp, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeDisableMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeRedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::FoeTrapMon, callbacks)?;
@@ -131,6 +132,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::RedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
             parsed.parse_and_save(BattleEvent::Restart, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SetAbility, callbacks)?;
             parsed.parse_and_save(BattleEvent::SetLastMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::SetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::SetTerrain, callbacks)?;
@@ -148,7 +150,9 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SourceBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceInvulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyAccuracy, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceModifyDamage, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SourceModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceTryHeal, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Start, callbacks)?;
@@ -159,6 +163,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SuppressMonTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::SwitchIn, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SwitchOut, callbacks)?;
             parsed.parse_and_save(BattleEvent::TakeItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;

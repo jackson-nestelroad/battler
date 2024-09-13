@@ -1024,7 +1024,7 @@
         "on_before_move": {
           "priority": 2,
           "program": [
-            "log_activate: str('of:{}', $effect_state.source.position_details)",
+            "log_activate: with_target with_source use_effect_state_source_as_source",
             "if func_call(chance: 1 2):",
             ["log_cant", "return false"]
           ]
@@ -1185,7 +1185,7 @@
           ["return"],
           "if $target == $source:",
           ["return"],
-          "if $volatile != confusion and $volatile != yawn:",
+          "if $volatile.id != confusion and $volatile.id != yawn:",
           ["return"],
           "log_activate: with_target",
           "return false"

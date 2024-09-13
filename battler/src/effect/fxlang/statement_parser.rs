@@ -1205,6 +1205,10 @@ impl<'s> StatementParser<'s> {
                     self.token_parser.consume_lexeme();
                     ops.push(tree::Operator::Not);
                 }
+                Some(Token::Plus) => {
+                    self.token_parser.consume_lexeme();
+                    ops.push(tree::Operator::UnaryPlus);
+                }
                 _ => break,
             }
         }
@@ -1972,6 +1976,37 @@ mod statement_parser_tests {
             StatementParser::new("continue").parse(),
             Ok(tree::Statement::Continue(tree::ContinueStatement)),
         )
+    }
+
+    #[test]
+    fn parses_unary_plus_expr() {
+        assert_eq!(
+            StatementParser::new("$test = +1 + +$test").parse(),
+            Ok(tree::Statement::Assignment(tree::Assignment {
+                lhs: tree::Var {
+                    name: tree::Identifier("test".to_owned()),
+                    member_access: vec![],
+                },
+                rhs: tree::Expr::BinaryExpr(tree::BinaryExpr {
+                    lhs: Box::new(tree::Expr::PrefixUnaryExpr(tree::PrefixUnaryExpr {
+                        ops: vec![tree::Operator::UnaryPlus],
+                        expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
+                            tree::NumberLiteral::Unsigned(Fraction::from(1u64))
+                        ))),
+                    })),
+                    rhs: vec![tree::BinaryExprRhs {
+                        op: tree::Operator::Add,
+                        expr: Box::new(tree::Expr::PrefixUnaryExpr(tree::PrefixUnaryExpr {
+                            ops: vec![tree::Operator::UnaryPlus],
+                            expr: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
+                                name: tree::Identifier("test".to_owned()),
+                                member_access: vec![],
+                            })))
+                        }))
+                    }]
+                })
+            }))
+        );
     }
 
     #[test]

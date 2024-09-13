@@ -53,6 +53,7 @@ use crate::{
         },
         Effect,
         EffectHandle,
+        MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
     },
@@ -88,6 +89,7 @@ pub fn run_function(
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
         "adjacent_foes" => adjacent_foes(context).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
+        "all_active_mons_on_side" => all_active_mons_on_side(context).map(|val| Some(val)),
         "all_mons_in_party" => all_mons_in_party(context).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
@@ -139,6 +141,7 @@ pub fn run_function(
         "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context).map(|()| None),
         "log_animate_move" => log_animate_move(context).map(|()| None),
+        "log_block" => log_block(context).map(|()| None),
         "log_cant" => log_cant(context).map(|()| None),
         "log_end" => log_end(context).map(|()| None),
         "log_fail" => log_fail(context).map(|()| None),
@@ -195,6 +198,7 @@ pub fn run_function(
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
+        "status_effect_state" => status_effect_state(context),
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
@@ -356,6 +360,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("use_effect_state_source")
     }
 
+    fn use_effect_state_source_as_source(&mut self) -> bool {
+        self.has_flag("use_effect_state_source_as_source")
+    }
+
     fn use_effect_state_source_effect(&mut self) -> bool {
         self.has_flag("use_effect_state_source_effect")
     }
@@ -399,6 +407,11 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn source_handle(&mut self) -> Option<MonHandle> {
         if self.no_source() {
             None
+        } else if self.use_effect_state_source_as_source() {
+            self.effect_state()?
+                .get_mut(self.evaluation_context_mut().battle_context_mut())
+                .ok()?
+                .source()
         } else if self.use_effect_state_target_as_source() {
             self.effect_state()?
                 .get_mut(self.evaluation_context_mut().battle_context_mut())
@@ -643,6 +656,10 @@ fn log_effect_activation_base(
 
 fn log_activate(context: FunctionContext) -> Result<(), Error> {
     log_effect_activation_base(context, "activate", None)
+}
+
+fn log_block(context: FunctionContext) -> Result<(), Error> {
+    log_effect_activation_base(context, "block", None)
 }
 
 fn log_field_activate(context: FunctionContext) -> Result<(), Error> {
@@ -1678,6 +1695,20 @@ fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>, 
     }
 }
 
+fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let effect_state = MonStatusEffectStateConnector::new(mon_handle);
+    if effect_state.exists(context.evaluation_context_mut().battle_context_mut())? {
+        Ok(Some(Value::EffectState(effect_state.make_dynamic())))
+    } else {
+        Ok(None)
+    }
+}
+
 fn side_condition_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let side = context
         .pop_front()
@@ -1889,6 +1920,23 @@ fn all_active_mons(context: FunctionContext) -> Result<Value, Error> {
             .battle_context()
             .battle()
             .all_active_mon_handles()
+            .map(|mon_handle| Value::Mon(mon_handle))
+            .collect(),
+    ))
+}
+
+fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
+    let side = context
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    Ok(Value::List(
+        context
+            .evaluation_context()
+            .battle_context()
+            .battle()
+            .active_mon_handles_on_side(side)
             .map(|mon_handle| Value::Mon(mon_handle))
             .collect(),
     ))

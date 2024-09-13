@@ -24,6 +24,9 @@ pub enum AbilityFlags {
     /// Cannot be copied by Trace.
     #[string = "NoTrace"]
     NoTrace,
+    /// Cannot be overwritten by Worry Seed.
+    #[string = "NoWorrySeed"]
+    NoWorrySeed,
     /// The ability is permanently applied to the Mon.
     #[string = "Permanent"]
     Permanent,

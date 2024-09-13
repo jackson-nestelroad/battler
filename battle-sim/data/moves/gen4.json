@@ -362,7 +362,20 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "$ability = func_call(get_ability: $target.ability)",
+          "if func_call(ability_has_flag: $ability permanent) or func_call(ability_has_flag: $ability noworryseed):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !func_call(set_ability: $target insomnia):",
+          ["return false"]
+        ]
+      }
+    }
   },
   "suckerpunch": {
     "name": "Sucker Punch",

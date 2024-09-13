@@ -3053,7 +3053,16 @@
   "abilityshield": {
     "name": "Ability Shield",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_set_ability": [
+          "if $effect.id != trace or !$effect_state.logged_for_trace:",
+          ["log_block: with_target", "$effect_state.logged_for_trace = true"],
+          "return false"
+        ]
+      }
+    }
   },
   "clearamulet": {
     "name": "Clear Amulet",

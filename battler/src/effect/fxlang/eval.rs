@@ -708,6 +708,9 @@ where
                                 Some(item) => ValueRef::TempString(item.id.to_string()),
                                 None => ValueRef::Undefined,
                             },
+                            "item_used_this_turn" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.item_used_this_turn)
+                            }
                             "last_item" => match context.mon(mon_handle)?.last_item.as_ref() {
                                 Some(item) => ValueRef::TempString(item.to_string()),
                                 None => ValueRef::Undefined,
@@ -871,16 +874,13 @@ where
                                 Some(effect) => ValueRef::TempEffect(effect.clone()),
                                 None => ValueRef::Undefined,
                             },
-                            "type" => ValueRef::Type(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .move_effect()
-                                .wrap_error_with_message("effect is not a move")?
-                                .data
-                                .primary_type,
-                            ),
+                            "type" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|move_effect| ValueRef::Type(move_effect.data.primary_type))
+                            .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let Some(active_move_handle) = value.active_move_handle() {
@@ -1916,6 +1916,7 @@ impl Evaluator {
     ) -> Result<MaybeReferenceValue<'eval>, Error> {
         match op {
             tree::Operator::Not => value.negate(),
+            tree::Operator::UnaryPlus => value.unary_plus(),
             _ => Err(battler_error!("invalid prefix operator: {op}")),
         }
     }

@@ -494,6 +494,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "FoeBeforeMove"]
     FoeBeforeMove,
+    /// Runs after a move is used by a foe that should have PP deducted.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "FoeDeductPp"]
+    FoeDeductPp,
     /// Runs when a foe is determining which moves are disabled.
     ///
     /// Runs in the context of the target Mon.
@@ -750,6 +755,13 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Restart"]
     Restart,
+    /// Runs when a Mon's ability is being set.
+    ///
+    /// Runs before the ability is changed. Can be used to fail the ability change.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "SetAbility"]
+    SetAbility,
     /// Runs when the Mon's last move selected is being set.
     ///
     /// Runs in the context of the target Mon.
@@ -849,6 +861,12 @@ pub enum BattleEvent {
     /// Runs in the context of an active move against the target.
     #[string = "SourceModifyAccuracy"]
     SourceModifyAccuracy,
+    /// Runs when the Mon is the source of another Mon calculating its Atk stat.
+    ///
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
+    #[string = "SourceModifyAtk"]
+    SourceModifyAtk,
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
@@ -857,6 +875,12 @@ pub enum BattleEvent {
     /// Runs in the context of an active move from the user.
     #[string = "SourceModifyDamage"]
     SourceModifyDamage,
+    /// Runs when the Mon is the source of another Mon calculating its SpA stat.
+    ///
+    /// Runs in the context of the target Mon or an applying effect, where the target is always the
+    /// target of the stat modification.
+    #[string = "SourceModifySpA"]
+    SourceModifySpA,
     /// Runs before a Mon is the source of another Mon healing for some amount of damage.
     ///
     /// Runs in the context of the target Mon or an applying effect.
@@ -912,6 +936,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "SwitchIn"]
     SwitchIn,
+    /// Runs when a Mon is switching out.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "SwitchOut"]
+    SwitchOut,
     /// Runs when an item is being taken from a Mon.
     ///
     /// Can prevent the item from being taken.
@@ -1080,6 +1109,7 @@ impl BattleEvent {
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::FoeBeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::FoeDeductPp => CommonCallbackType::MonModifier as u32,
             Self::FoeDisableMove => CommonCallbackType::MonVoid as u32,
             Self::FoeRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::FoeTrapMon => CommonCallbackType::MonResult as u32,
@@ -1125,6 +1155,7 @@ impl BattleEvent {
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
+            Self::SetAbility => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetTerrain => CommonCallbackType::FieldEffectResult as u32,
@@ -1142,7 +1173,9 @@ impl BattleEvent {
             Self::SourceBasePower => CommonCallbackType::MoveModifier as u32,
             Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
             Self::SourceModifyAccuracy => CommonCallbackType::MoveModifier as u32,
+            Self::SourceModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
+            Self::SourceModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceTryHeal => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
@@ -1153,6 +1186,7 @@ impl BattleEvent {
             Self::SuppressMonTerrain => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
+            Self::SwitchOut => CommonCallbackType::MonVoid as u32,
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
@@ -1189,7 +1223,7 @@ impl BattleEvent {
                 &[("base_power", ValueType::UFraction, true)]
             }
             Self::Damage | Self::AnyDamage => &[("damage", ValueType::UFraction, true)],
-            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
+            Self::DeductPp | Self::FoeDeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
             Self::Effectiveness => &[
@@ -1199,7 +1233,7 @@ impl BattleEvent {
             Self::ModifyAccuracy | Self::SourceModifyAccuracy => {
                 &[("acc", ValueType::UFraction, true)]
             }
-            Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
+            Self::ModifyAtk | Self::SourceModifyAtk => &[("atk", ValueType::UFraction, true)],
             Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
@@ -1210,7 +1244,7 @@ impl BattleEvent {
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
-            Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
+            Self::ModifySpA | Self::SourceModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
@@ -1218,6 +1252,7 @@ impl BattleEvent {
             Self::RedirectTarget | Self::AnyRedirectTarget | Self::FoeRedirectTarget => {
                 &[("target", ValueType::Mon, true)]
             }
+            Self::SetAbility => &[("ability", ValueType::Effect, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
@@ -1346,6 +1381,7 @@ impl BattleEvent {
     pub fn foe_event(&self) -> Option<BattleEvent> {
         match self {
             Self::BeforeMove => Some(Self::FoeBeforeMove),
+            Self::DeductPp => Some(Self::FoeDeductPp),
             Self::DisableMove => Some(Self::FoeDisableMove),
             Self::RedirectTarget => Some(Self::FoeRedirectTarget),
             Self::TrapMon => Some(Self::FoeTrapMon),
@@ -1360,7 +1396,9 @@ impl BattleEvent {
             Self::BasePower => Some(Self::SourceBasePower),
             Self::Invulnerability => Some(Self::SourceInvulnerability),
             Self::ModifyAccuracy => Some(Self::SourceModifyAccuracy),
+            Self::ModifyAtk => Some(Self::SourceModifyAtk),
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
+            Self::ModifySpA => Some(Self::SourceModifySpA),
             Self::TryHeal => Some(Self::SourceTryHeal),
             Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
             _ => None,
@@ -1539,6 +1577,7 @@ pub struct Callbacks {
     pub on_field_start: Callback,
     pub on_flinch: Callback,
     pub on_foe_before_move: Callback,
+    pub on_foe_deduct_pp: Callback,
     pub on_foe_disable_move: Callback,
     pub on_foe_redirect_target: Callback,
     pub on_foe_trap_mon: Callback,
@@ -1573,6 +1612,7 @@ pub struct Callbacks {
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
     pub on_restart: Callback,
+    pub on_set_ability: Callback,
     pub on_set_last_move: Callback,
     pub on_set_status: Callback,
     pub on_set_terrain: Callback,
@@ -1590,12 +1630,15 @@ pub struct Callbacks {
     pub on_source_base_power: Callback,
     pub on_source_invulnerability: Callback,
     pub on_source_modify_accuracy: Callback,
+    pub on_source_modify_atk: Callback,
     pub on_source_modify_damage: Callback,
+    pub on_source_modify_spa: Callback,
     pub on_source_try_heal: Callback,
     pub on_source_weather_modify_damage: Callback,
     pub on_start: Callback,
     pub on_stall_move: Callback,
     pub on_switch_in: Callback,
+    pub on_switch_out: Callback,
     pub on_take_item: Callback,
     pub on_trap_mon: Callback,
     pub on_try_boost: Callback,
@@ -1671,6 +1714,7 @@ impl Callbacks {
             BattleEvent::FieldStart => Some(&self.on_field_start),
             BattleEvent::Flinch => Some(&self.on_flinch),
             BattleEvent::FoeBeforeMove => Some(&self.on_foe_before_move),
+            BattleEvent::FoeDeductPp => Some(&self.on_foe_deduct_pp),
             BattleEvent::FoeDisableMove => Some(&self.on_foe_disable_move),
             BattleEvent::FoeRedirectTarget => Some(&self.on_foe_redirect_target),
             BattleEvent::FoeTrapMon => Some(&self.on_foe_trap_mon),
@@ -1716,6 +1760,7 @@ impl Callbacks {
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),
+            BattleEvent::SetAbility => Some(&self.on_set_ability),
             BattleEvent::SetLastMove => Some(&self.on_set_last_move),
             BattleEvent::SetStatus => Some(&self.on_set_status),
             BattleEvent::SetTerrain => Some(&self.on_set_terrain),
@@ -1733,7 +1778,9 @@ impl Callbacks {
             BattleEvent::SourceBasePower => Some(&self.on_source_base_power),
             BattleEvent::SourceInvulnerability => Some(&self.on_source_invulnerability),
             BattleEvent::SourceModifyAccuracy => Some(&self.on_source_modify_accuracy),
+            BattleEvent::SourceModifyAtk => Some(&self.on_source_modify_atk),
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
+            BattleEvent::SourceModifySpA => Some(&self.on_source_modify_spa),
             BattleEvent::SourceTryHeal => Some(&self.on_source_try_heal),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::Start => Some(&self.on_start),
@@ -1744,6 +1791,7 @@ impl Callbacks {
             BattleEvent::SuppressMonTerrain => Some(&self.suppress_mon_terrain),
             BattleEvent::SuppressMonWeather => Some(&self.suppress_mon_weather),
             BattleEvent::SwitchIn => Some(&self.on_switch_in),
+            BattleEvent::SwitchOut => Some(&self.on_switch_out),
             BattleEvent::TakeItem => Some(&self.on_take_item),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
             BattleEvent::TryBoost => Some(&self.on_try_boost),

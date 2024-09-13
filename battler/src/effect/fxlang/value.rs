@@ -1350,6 +1350,10 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         }
     }
 
+    fn invalid_unary_operation(operation: &str, val: ValueType) -> Error {
+        battler_error!("cannot apply {operation} on value of type {val}")
+    }
+
     fn invalid_binary_operation(operation: &str, lhs: ValueType, rhs: ValueType) -> Error {
         battler_error!("cannot {operation} {lhs} and {rhs}")
     }
@@ -1370,6 +1374,21 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             _ => MaybeReferenceValue::Boolean(false),
         };
         Ok(result)
+    }
+
+    /// Implements the unary plus operator.
+    pub fn unary_plus(self) -> Result<MaybeReferenceValue<'eval>, Error> {
+        match self {
+            Self::Fraction(val) => Ok(MaybeReferenceValue::Fraction(val)),
+            Self::UFraction(val) => Ok(MaybeReferenceValue::Fraction(
+                val.try_convert()
+                    .wrap_error_with_message("integer overflow")?,
+            )),
+            val @ _ => Err(Self::invalid_unary_operation(
+                "unary plus",
+                val.value_type(),
+            )),
+        }
     }
 
     /// Implements exponentiation.

@@ -103,12 +103,16 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
             }
             context.mon_mut().skip_before_switch_out = false;
 
-            // TODO: SwitchOut event.
-
             // The Mon could faint here, which cancels the switch (Pursuit).
             if context.mon().hp == 0 {
                 return Ok(false);
             }
+
+            core_battle_effects::run_event_for_mon(
+                context,
+                fxlang::BattleEvent::SwitchOut,
+                fxlang::VariableInput::default(),
+            );
         }
 
         core_battle_effects::run_mon_ability_event(
@@ -425,10 +429,8 @@ fn do_move_internal(
             1,
         );
         if deduction > 0 {
-            let move_id = context.active_move().id();
-            // SAFETY: move_id is only used for lookup.
-            let move_id = unsafe { move_id.unsafely_detach_borrow() };
-            context.mon_mut().deduct_pp(move_id, 1);
+            let move_id = context.active_move().id().clone();
+            context.mon_mut().deduct_pp(&move_id, deduction);
         }
     }
 
@@ -3543,7 +3545,10 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
         set_weather(context, &default_weather)?;
     }
 
-    // TODO: WeatherChange event.
+    core_battle_effects::run_event_for_each_active_mon(
+        context.as_effect_context_mut(),
+        fxlang::BattleEvent::WeatherChange,
+    )?;
 
     Ok(true)
 }
@@ -3772,7 +3777,26 @@ pub fn set_ability(
         return Ok(false);
     }
 
-    // TODO: SetAbility event, which can cancel this completely.
+    if context
+        .battle()
+        .dex
+        .abilities
+        .get_by_id(ability)
+        .into_option()
+        .is_none()
+    {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::SetAbility,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(EffectHandle::Ability(
+            ability.clone(),
+        ))]),
+    ) {
+        return Ok(false);
+    }
 
     if dry_run {
         return Ok(true);
@@ -3785,6 +3809,7 @@ pub fn set_ability(
 
     let ability_priority = context.battle_mut().next_ability_priority();
     let ability = context.battle().dex.abilities.get_by_id(ability)?;
+
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
         name: ability.data.name.clone(),
@@ -4117,6 +4142,7 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Eat);
     // TODO: EatItem event.
 
+    context.target_mut().item_used_this_turn = true;
     context.target_mut().last_item = Some(item_id);
     context.target_mut().item = None;
 

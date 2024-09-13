@@ -429,6 +429,7 @@ pub struct Mon {
     pub hurt_this_turn: u16,
     pub stats_raised_this_turn: bool,
     pub stats_lowered_this_turn: bool,
+    pub item_used_this_turn: bool,
     pub foes_fought_while_active: FastHashSet<MonHandle>,
     pub received_attacks: Vec<ReceivedAttackEntry>,
 
@@ -570,6 +571,7 @@ impl Mon {
             hurt_this_turn: 0,
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
+            item_used_this_turn: false,
             foes_fought_while_active: FastHashSet::new(),
             received_attacks: Vec::new(),
 
@@ -1683,6 +1685,7 @@ impl Mon {
         context.mon_mut().hurt_this_turn = 0;
         context.mon_mut().stats_raised_this_turn = false;
         context.mon_mut().stats_lowered_this_turn = false;
+        context.mon_mut().item_used_this_turn = false;
         context.mon_mut().newly_switched = false;
 
         for move_slot in &mut context.mon_mut().move_slots {

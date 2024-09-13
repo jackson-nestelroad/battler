@@ -219,7 +219,7 @@
   },
   "insomnia": {
     "name": "Insomnia",
-    "flags": ["Breakable"],
+    "flags": ["Breakable", "NoWorrySeed"],
     "effect": {
       "callbacks": {
         "on_update": [
@@ -329,7 +329,7 @@
           ["log_activate: with_target", "remove_volatile: $mon confusion"]
         ],
         "on_immunity": ["if $effect.id == confusion:", ["return false"]],
-        "on_add_volatile": ["if $volatile == confusion:", ["return false"]],
+        "on_add_volatile": ["if $volatile.id == confusion:", ["return false"]],
         "on_try_hit": [
           "if $move.hit_effect.volatile_status == confusion:",
           ["log_immune: $target from_effect", "return stop"]
@@ -637,7 +637,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_add_volatile": ["if $volatile == flinch:", ["return false"]],
+        "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]],
         "on_try_boost": [
           "if $effect.id == intimidate and $boosts.atk != 0:",
           [
@@ -734,11 +734,7 @@
     "effect": {
       "callbacks": {
         "on_start": ["log_ability"],
-        "on_deduct_pp": [
-          "if func_call(is_ally: $mon $effect_state.target):",
-          ["return"],
-          "return $pp + 1"
-        ]
+        "on_foe_deduct_pp": ["return $pp + 1"]
       }
     }
   },
@@ -748,11 +744,11 @@
     "effect": {
       "callbacks": {
         "on_source_modify_atk": [
-          "if $move.is_defined and ($move.type == ice or $move.type == fire):",
+          "if $effect.is_defined and ($effect.type == ice or $effect.type == fire):",
           ["return $atk / 2"]
         ],
         "on_source_modify_spa": [
-          "if $move.is_defined and ($move.type == ice or $move.type == fire):",
+          "if $effect.is_defined and ($effect.type == ice or $effect.type == fire):",
           ["return $spa / 2"]
         ]
       }
@@ -763,14 +759,17 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_before_move": [
-          "if $user.status == slp:",
-          [
-            "$status_state = func_call(status_effect_state: $user)",
-            "if $status_state.is_defined:",
-            ["$status_state.time = $status_state.time - 1"]
+        "on_before_move": {
+          "order": 1,
+          "program": [
+            "if $user.status == slp:",
+            [
+              "$status_state = func_call(status_effect_state: $user)",
+              "if $status_state.is_defined:",
+              ["$status_state.time = $status_state.time - 1"]
+            ]
           ]
-        ]
+        }
       }
     }
   },
@@ -844,7 +843,7 @@
           "$targets = []",
           "foreach $mon in func_call(all_active_mons):",
           [
-            "if $mon.last_item.is_defined and $mon.used_item_this_turn and func_call(is_adjacent: $mon $target):",
+            "if $mon.last_item.is_defined and $mon.item_used_this_turn and func_call(is_adjacent: $mon $target):",
             ["$targets = func_call(append: $targets $mon)"]
           ],
           "if $targets.is_empty:",
@@ -859,7 +858,7 @@
   },
   "truant": {
     "name": "Truant",
-    "flags": [],
+    "flags": ["NoWorrySeed"],
     "effect": {
       "callbacks": {
         "on_start": [
@@ -910,9 +909,9 @@
     "effect": {
       "callbacks": {
         "on_modify_spa": [
-          "foreach $ally in func_call(all_mons_on_side: $target):",
+          "foreach $ally in func_call(all_active_mons_on_side: $target.side):",
           [
-            "if $target.ability == plus or $target.ability == minus:",
+            "if $ally != $target and ($ally.ability == plus or $ally.ability == minus):",
             ["return $spa * 3/2"]
           ]
         ]
@@ -925,9 +924,9 @@
     "effect": {
       "callbacks": {
         "on_modify_spa": [
-          "foreach $ally in func_call(all_mons_on_side: $target):",
+          "foreach $ally in func_call(all_active_mons_on_side: $target.side):",
           [
-            "if $target.ability == plus or $target.ability == minus:",
+            "if $ally != $target and ($ally.ability == plus or $ally.ability == minus):",
             ["return $spa * 3/2"]
           ]
         ]
@@ -1019,11 +1018,11 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": [
-          "if $move.is_defined and $move.type == grass and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == grass and $target.hp <= expr($target.max_hp / 3):",
           ["return $atk * 3/2"]
         ],
         "on_modify_spa": [
-          "if $move.is_defined and $move.type == grass and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == grass and $target.hp <= expr($target.max_hp / 3):",
           ["return $spa * 3/2"]
         ]
       }
@@ -1035,11 +1034,11 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": [
-          "if $move.is_defined and $move.type == fire and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == fire and $target.hp <= expr($target.max_hp / 3):",
           ["return $atk * 3/2"]
         ],
         "on_modify_spa": [
-          "if $move.is_defined and $move.type == fire and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == fire and $target.hp <= expr($target.max_hp / 3):",
           ["return $spa * 3/2"]
         ]
       }
@@ -1051,11 +1050,11 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": [
-          "if $move.is_defined and $move.type == water and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == water and $target.hp <= expr($target.max_hp / 3):",
           ["return $atk * 3/2"]
         ],
         "on_modify_spa": [
-          "if $move.is_defined and $move.type == water and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == water and $target.hp <= expr($target.max_hp / 3):",
           ["return $spa * 3/2"]
         ]
       }
@@ -1067,11 +1066,11 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": [
-          "if $move.is_defined and $move.type == bug and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == bug and $target.hp <= expr($target.max_hp / 3):",
           ["return $atk * 3/2"]
         ],
         "on_modify_spa": [
-          "if $move.is_defined and $move.type == bug and $target.hp <= expr($target.max_hp / 3):",
+          "if $effect.is_defined and $effect.type == bug and $target.hp <= expr($target.max_hp / 3):",
           ["return $spa * 3/2"]
         ]
       }
@@ -1101,7 +1100,7 @@
     "effect": {
       "callbacks": {
         "on_foe_trap_mon": [
-          "if $target.is_grounded and func_call(is_adjacent: $mon $effect_state.target):",
+          "if $mon.is_grounded and func_call(is_adjacent: $mon $effect_state.target):",
           ["return true"]
         ]
       }
