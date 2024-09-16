@@ -97,6 +97,8 @@ fn move_can_force_switch_random_target() {
             "damage|mon:Bulbasaur,player-1,1|health:89/105",
             "damage|mon:Bulbasaur,player-1,1|health:85/100",
             "move|mon:Bulbasaur,player-1,1|name:Roar|target:Bulbasaur,player-2,1",
+            "split|side:1",
+            "drag|player:player-2|position:1|name:Squirtle|health:104/104|species:Squirtle|level:50|gender:M",
             "drag|player:player-2|position:1|name:Squirtle|health:100/100|species:Squirtle|level:50|gender:M",
             "residual",
             "turn|turn:2",
@@ -106,6 +108,8 @@ fn move_can_force_switch_random_target() {
             "damage|mon:Bulbasaur,player-1,1|health:70/105",
             "damage|mon:Bulbasaur,player-1,1|health:67/100",
             "move|mon:Bulbasaur,player-1,1|name:Roar|target:Squirtle,player-2,1",
+            "split|side:1",
+            "drag|player:player-2|position:1|name:Bulbasaur|health:105/105|species:Bulbasaur|level:50|gender:M",
             "drag|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M",
             "residual",
             "turn|turn:3",
@@ -115,6 +119,8 @@ fn move_can_force_switch_random_target() {
             "damage|mon:Bulbasaur,player-1,1|health:53/105",
             "damage|mon:Bulbasaur,player-1,1|health:51/100",
             "move|mon:Bulbasaur,player-1,1|name:Roar|target:Bulbasaur,player-2,1",
+            "split|side:1",
+            "drag|player:player-2|position:1|name:Squirtle|health:104/104|species:Squirtle|level:50|gender:M",
             "drag|player:player-2|position:1|name:Squirtle|health:100/100|species:Squirtle|level:50|gender:M",
             "residual",
             "turn|turn:4",
@@ -124,6 +130,8 @@ fn move_can_force_switch_random_target() {
             "damage|mon:Bulbasaur,player-1,1|health:35/105",
             "damage|mon:Bulbasaur,player-1,1|health:34/100",
             "move|mon:Bulbasaur,player-1,1|name:Roar|target:Squirtle,player-2,1",
+            "split|side:1",
+            "drag|player:player-2|position:1|name:Charmander|health:99/99|species:Charmander|level:50|gender:M",
             "drag|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:M",
             "residual",
             "turn|turn:5"
@@ -192,13 +200,17 @@ fn move_can_switch_user() {
             "damage|mon:Bulbasaur,player-2,1|health:77/105",
             "damage|mon:Bulbasaur,player-2,1|health:74/100",
             ["time"],
-            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:50|gender:M",
+            "split|side:0",
+            ["switch", "player-1", "Squirtle"],
+            ["switch", "player-1", "Squirtle"],
             "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Squirtle,player-1,1",
             "split|side:0",
             "damage|mon:Squirtle,player-1,1|health:90/104",
             "damage|mon:Squirtle,player-1,1|health:87/100",
             "residual",
             "turn|turn:2"
-        ]"#).unwrap();
+        ]"#,
+    )
+    .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }

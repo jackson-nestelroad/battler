@@ -111,6 +111,8 @@ fn beat_up_attacks_for_each_mon_in_party() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Feraligatr"],
             ["switch", "player-2", "Feraligatr"],
             "move|mon:Sneasel,player-1,1|name:Beat Up|target:Feraligatr,player-2,1",
             "activate|move:Beat Up|hit:Sneasel",

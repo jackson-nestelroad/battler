@@ -89,7 +89,7 @@ fn sleep_prevents_movement_until_waking_up() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Charizard,player-1,1|name:Sleep Powder|target:Charizard,player-2,1",
-            "status|mon:Charizard,player-2,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Charizard,player-2,1|status:Sleep",
             "cant|mon:Charizard,player-2,1|reason:status:Sleep",
             "residual",
             "turn|turn:2",
@@ -156,7 +156,7 @@ fn sleep_usable_moves_can_only_be_used_while_asleep() {
             "turn|turn:2",
             ["time"],
             "move|mon:Charizard,player-1,1|name:Sleep Powder|target:Charizard,player-2,1",
-            "status|mon:Charizard,player-2,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Charizard,player-2,1|status:Sleep",
             "residual",
             "turn|turn:3",
             ["time"],

@@ -120,6 +120,8 @@ fn disable_disables_last_used_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Aerodactyl"],
             ["switch", "player-2", "Aerodactyl"],
             "move|mon:Alakazam,player-1,1|name:Disable|noanim",
             "fail|mon:Alakazam,player-1,1",
@@ -204,6 +206,8 @@ fn disable_ends_locked_move_and_forces_struggle() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Slowbro"],
             ["switch", "player-2", "Slowbro"],
             "move|mon:Alakazam,player-1,1|name:Disable|noanim",
             "fail|mon:Alakazam,player-1,1",

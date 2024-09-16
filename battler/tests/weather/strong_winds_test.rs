@@ -104,7 +104,13 @@ fn strong_winds_negate_flying_type_super_effectiveness() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
             ["switch"],
+            ["switch"],
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",

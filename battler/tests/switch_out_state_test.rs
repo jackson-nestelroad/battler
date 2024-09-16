@@ -95,6 +95,8 @@ fn switch_out_preserves_health() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Charmander|health:99/99|species:Charmander|level:50|gender:F",
             "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:F",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,1",
             "split|side:1",
@@ -103,6 +105,8 @@ fn switch_out_preserves_health() {
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Bulbasaur|health:105/105|species:Bulbasaur|level:50|gender:F",
             "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
             "split|side:1",
@@ -111,6 +115,8 @@ fn switch_out_preserves_health() {
             "residual",
             "turn|turn:3",
             ["time"],
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Charmander|health:79/99|species:Charmander|level:50|gender:F",
             "switch|player:player-2|position:1|name:Charmander|health:80/100|species:Charmander|level:50|gender:F",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,1",
             "split|side:1",
@@ -119,6 +125,8 @@ fn switch_out_preserves_health() {
             "residual",
             "turn|turn:4",
             ["time"],
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Bulbasaur|health:88/105|species:Bulbasaur|level:50|gender:F",
             "switch|player:player-2|position:1|name:Bulbasaur|health:84/100|species:Bulbasaur|level:50|gender:F",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
             "split|side:1",

@@ -69,7 +69,7 @@ fn make_battle(
 }
 
 #[test]
-fn fake_out_only_works_on_first_turn() {
+fn uproar_continually_prevents_sleep() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
@@ -90,7 +90,7 @@ fn fake_out_only_works_on_first_turn() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Whismur,player-1,1|name:Sleep Powder|target:Whismur,player-2,1",
-            "status|mon:Whismur,player-2,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Whismur,player-2,1|status:Sleep",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -99,7 +99,7 @@ fn fake_out_only_works_on_first_turn() {
             "damage|mon:Ralts,player-2,2|health:12/88",
             "damage|mon:Ralts,player-2,2|health:14/100",
             "start|mon:Whismur,player-1,1|move:Uproar",
-            "curestatus|mon:Whismur,player-2,1|status:Sleep",
+            "curestatus|mon:Whismur,player-2,1|status:Sleep|from:move:Uproar|of:Whismur,player-1,1",
             "start|mon:Whismur,player-1,1|move:Uproar|residual",
             "residual",
             "turn|turn:3",

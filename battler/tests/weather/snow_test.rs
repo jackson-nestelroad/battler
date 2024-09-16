@@ -313,6 +313,10 @@ fn snow_warning_starts_snow_on_switch() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Snow|from:ability:Snow Warning|of:Dewgong,player-1,1",

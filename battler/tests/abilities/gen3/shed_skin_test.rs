@@ -77,8 +77,7 @@ fn shed_skin_has_chance_to_cure_status() {
         r#"[
             "move|mon:Seviper,player-1,1|name:Thunder Wave|target:Seviper,player-2,1",
             "status|mon:Seviper,player-2,1|status:Paralysis",
-            "activate|mon:Seviper,player-2,1|ability:Shed Skin",
-            "curestatus|mon:Seviper,player-2,1|status:Paralysis",
+            "curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin",
             "residual",
             "turn|turn:2"
         ]"#,

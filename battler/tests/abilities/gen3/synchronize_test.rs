@@ -79,7 +79,7 @@ fn synchronize_synchronizes_status_changes() {
             "status|mon:Abra,player-1,1|status:Paralysis|from:ability:Synchronize|of:Abra,player-2,1",
             "activate|mon:Abra,player-1,1|ability:Synchronize",
             "itemend|mon:Abra,player-1,1|item:Cheri Berry|eat",
-            "curestatus|mon:Abra,player-1,1|status:Paralysis",
+            "curestatus|mon:Abra,player-1,1|status:Paralysis|from:item:Cheri Berry",
             "residual",
             "turn|turn:2"
         ]"#,

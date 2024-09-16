@@ -101,7 +101,9 @@ fn grudge_sets_last_move_pp_to_zero_on_faint() {
             "activate|move:Grudge|affected:Dark Pulse|of:Misdreavus,player-2,1",
             "residual",
             ["time"],
-            "switch|player:player-1|position:1|name:Misdreavus|health:100/100|species:Misdreavus|level:50|gender:F",
+            "split|side:0",
+            ["switch", "player-1", "Misdreavus"],
+            ["switch", "player-1", "Misdreavus"],
             "turn|turn:3"
         ]"#,
     )

@@ -106,8 +106,7 @@ fn affection_cures_status() {
         r#"[
             "move|mon:Eevee,trainer,1|name:Toxic|target:Pikachu,protagonist,1",
             "status|mon:Pikachu,protagonist,1|status:Bad Poison",
-            "activate|mon:Pikachu,protagonist,1|condition:Affection|cure",
-            "curestatus|mon:Pikachu,protagonist,1|status:Bad Poison",
+            "curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection",
             "residual",
             "turn|turn:2"
         ]"#,

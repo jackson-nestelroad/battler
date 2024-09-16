@@ -132,10 +132,14 @@ fn trapped_mon_cannot_switch_out_while_source_is_active() {
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Cyndaquil"],
             ["switch", "player-1", "Cyndaquil"],
             "residual",
             "turn|turn:3",
             ["time"],
+            "split|side:1",
+            ["switch", "player-2", "Totodile"],
             ["switch", "player-2", "Totodile"],
             "residual",
             "turn|turn:4"
@@ -164,6 +168,8 @@ fn ghost_types_resist_trapping() {
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Cyndaquil"],
             ["switch", "player-1", "Cyndaquil"],
             "residual",
             "turn|turn:3"

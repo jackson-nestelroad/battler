@@ -82,12 +82,12 @@ fn early_bird_wakes_up_twice_as_fast() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Seedot,player-1,1|name:Rest|target:Seedot,player-1,1",
-            "status|mon:Seedot,player-1,1|status:Sleep|from:move:Rest",
+            "status|mon:Seedot,player-1,1|status:Sleep",
             "split|side:0",
             "heal|mon:Seedot,player-1,1|health:100/100",
             "heal|mon:Seedot,player-1,1|health:100/100",
             "move|mon:Seedot,player-2,1|name:Rest|target:Seedot,player-2,1",
-            "status|mon:Seedot,player-2,1|status:Sleep|from:move:Rest",
+            "status|mon:Seedot,player-2,1|status:Sleep",
             "split|side:1",
             "heal|mon:Seedot,player-2,1|health:100/100",
             "heal|mon:Seedot,player-2,1|health:100/100",

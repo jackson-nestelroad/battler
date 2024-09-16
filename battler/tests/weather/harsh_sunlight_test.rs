@@ -425,6 +425,10 @@ fn drought_starts_harsh_sunlight_on_switch() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-1,1",
@@ -472,6 +476,10 @@ fn air_lock_suppresses_harsh_sunlight() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "ability|mon:Rayquaza,player-2,1|ability:Air Lock",

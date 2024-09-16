@@ -127,6 +127,8 @@ fn move_fails_with_no_target() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Squirtle"],
             ["switch", "player-2", "Squirtle"],
             "residual",
             "turn|turn:2",

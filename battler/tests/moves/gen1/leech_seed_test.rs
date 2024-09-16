@@ -129,6 +129,8 @@ fn leech_seed_leeches_target_until_user_switches_out() {
             "residual",
             "turn|turn:4",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Exeggcute"],
             ["switch", "player-1", "Exeggcute"],
             "move|mon:Eevee,player-2,1|name:Brick Break|target:Exeggcute,player-1,1",
             "resisted|mon:Exeggcute,player-1,1",
@@ -144,7 +146,9 @@ fn leech_seed_leeches_target_until_user_switches_out() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "switch|player:player-2|position:1|name:Exeggcute|health:100/100|species:Exeggcute|level:50|gender:M",
+            "split|side:1",
+            ["switch", "player-2", "Exeggcute"],
+            ["switch", "player-2", "Exeggcute"],
             "residual",
             "turn|turn:6"
         ]"#,
@@ -164,6 +168,8 @@ fn grass_types_resist_leech_seed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Exeggcute"],
             ["switch", "player-2", "Exeggcute"],
             "move|mon:Eevee,player-1,1|name:Leech Seed|noanim",
             "immune|mon:Exeggcute,player-2,1",

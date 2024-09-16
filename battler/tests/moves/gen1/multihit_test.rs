@@ -287,7 +287,9 @@ fn second_hit_can_apply_secondary_effect() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:M",
+            "split|side:1",
+            ["switch", "player-2", "Charmander"],
+            ["switch", "player-2", "Charmander"],
             "move|mon:Bulbasaur,player-1,1|name:Twineedle|target:Charmander,player-2,1",
             "resisted|mon:Charmander,player-2,1",
             "split|side:1",
@@ -306,6 +308,7 @@ fn second_hit_can_apply_secondary_effect() {
             "residual",
             "turn|turn:2"
         ]"#,
-    ).unwrap();
+    )
+    .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }

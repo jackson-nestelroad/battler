@@ -81,7 +81,7 @@ fn nightmare_deals_damage_while_asleep() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Gengar,player-1,1|name:Sleep Powder|target:Gengar,player-2,1",
-            "status|mon:Gengar,player-2,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Gengar,player-2,1|status:Sleep",
             "residual",
             "turn|turn:2",
             ["time"],

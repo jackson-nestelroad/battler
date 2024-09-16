@@ -140,8 +140,12 @@ fn destiny_bond_faints_attacking_mon() {
             "faint|mon:Wobbuffet,player-2,1",
             "residual",
             ["time"],
-            "switch|player:player-2|position:1|name:Qwilfish|health:100/100|species:Qwilfish|level:100|gender:F",
-            "switch|player:player-1|position:1|name:Qwilfish|health:100/100|species:Qwilfish|level:50|gender:F",
+            "split|side:1",
+            ["switch"],
+            ["switch"],
+            "split|side:0",
+            ["switch"],
+            ["switch"],
             "turn|turn:3"
         ]"#,
     )

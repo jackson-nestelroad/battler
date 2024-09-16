@@ -93,7 +93,7 @@ fn dream_eater_drains_damage_of_sleeping_foe() {
             "turn|turn:3",
             ["time"],
             "move|mon:Gengar,player-1,1|name:Sleep Powder|target:Gengar,player-2,1",
-            "status|mon:Gengar,player-2,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Gengar,player-2,1|status:Sleep",
             "residual",
             "turn|turn:4",
             ["time"],

@@ -94,10 +94,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_update": [
-          "if $mon.status == par:",
-          ["log_activate: with_target", "cure_status: $mon"]
-        ],
+        "on_update": ["if $mon.status == par:", ["cure_status: $mon"]],
         "on_set_status": [
           "if $status.id != par:",
           ["return"],
@@ -222,10 +219,7 @@
     "flags": ["Breakable", "NoWorrySeed"],
     "effect": {
       "callbacks": {
-        "on_update": [
-          "if $mon.status == slp:",
-          ["log_activate: with_target", "cure_status: $mon"]
-        ],
+        "on_update": ["if $mon.status == slp:", ["cure_status: $mon"]],
         "on_set_status": [
           "if $status.id != slp:",
           ["return"],
@@ -258,7 +252,7 @@
       "callbacks": {
         "on_update": [
           "if $mon.status == psn or $mon.status == tox:",
-          ["log_activate: with_target", "cure_status: $mon"]
+          ["cure_status: $mon"]
         ],
         "on_set_status": [
           "if $status.id != psn and $status.id != tox:",
@@ -655,10 +649,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_update": [
-          "if $mon.status == frz:",
-          ["log_activate: with_target", "cure_status: $mon"]
-        ],
+        "on_update": ["if $mon.status == frz:", ["cure_status: $mon"]],
         "on_immunity": ["if $effect.id == frz:", ["return false"]]
       }
     }
@@ -668,10 +659,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_update": [
-          "if $mon.status == brn:",
-          ["log_activate: with_target", "cure_status: $mon"]
-        ],
+        "on_update": ["if $mon.status == brn:", ["cure_status: $mon"]],
         "on_set_status": [
           "if $status.id != brn:",
           ["return"],
@@ -978,7 +966,7 @@
       "callbacks": {
         "on_residual": [
           "if $target.hp > 0 and $target.status.is_defined and func_call(chance: 1 3):",
-          ["log_activate: with_target", "cure_status: $target"]
+          ["cure_status: $target"]
         ]
       }
     }
@@ -1112,10 +1100,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_update": [
-          "if $mon.status == slp:",
-          ["log_activate: with_target", "cure_status: $mon"]
-        ],
+        "on_update": ["if $mon.status == slp:", ["cure_status: $mon"]],
         "on_set_status": [
           "if $status.id != slp:",
           ["return"],

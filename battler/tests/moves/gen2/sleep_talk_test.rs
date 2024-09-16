@@ -100,7 +100,7 @@ fn sleep_talk_uses_random_move_while_asleep() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Snorlax,player-2,1|name:Sleep Powder|target:Snorlax,player-1,1",
-            "status|mon:Snorlax,player-1,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Snorlax,player-1,1|status:Sleep",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -144,7 +144,7 @@ fn sleep_talk_fails_with_no_usable_moves() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Snorlax,player-2,1|name:Sleep Powder|target:Snorlax,player-1,1",
-            "status|mon:Snorlax,player-1,1|status:Sleep|from:move:Sleep Powder",
+            "status|mon:Snorlax,player-1,1|status:Sleep",
             "residual",
             "turn|turn:2",
             ["time"],

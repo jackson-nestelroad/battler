@@ -106,7 +106,9 @@ fn perish_song_faints_all_active_mons() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "switch|player:player-1|position:1|name:Whismur|health:100/100|species:Whismur|level:50|gender:F",
+            "split|side:0",
+            ["switch", "player-1", "Whismur"],
+            ["switch", "player-1", "Whismur"],
             "start|mon:Smoochum,player-1,2|move:Perish Song|perish:2",
             "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:2",
             "start|mon:Smoochum,player-2,2|move:Perish Song|perish:2",
@@ -146,7 +148,9 @@ fn soundproof_resists_perish_song() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "switch|player:player-1|position:1|name:Whismur|health:100/100|species:Whismur|level:50|gender:F",
+            "split|side:0",
+            ["switch", "player-1", "Whismur"],
+            ["switch", "player-1", "Whismur"],
             "move|mon:Misdreavus,player-2,1|name:Perish Song",
             "immune|mon:Whismur,player-1,1|from:ability:Soundproof",
             "fieldactivate|move:Perish Song",

@@ -438,6 +438,10 @@ fn sand_stream_starts_sandstorm_on_switch() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Sandstorm|from:ability:Sand Stream|of:Golem,player-1,1",
@@ -459,6 +463,10 @@ fn air_lock_suppresses_sandstorm() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "ability|mon:Rayquaza,player-2,1|ability:Air Lock",

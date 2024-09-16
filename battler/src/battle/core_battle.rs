@@ -803,7 +803,7 @@ impl<'d> CoreBattle<'d> {
                 Ok(log_event!(
                     "mon",
                     ("player", &context.player().id),
-                    context.mon().public_details(),
+                    Mon::public_details(&context)?,
                 ))
             })
             .collect::<Result<Vec<_>, _>>()?;

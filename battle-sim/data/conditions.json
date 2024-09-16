@@ -240,7 +240,7 @@
       "callbacks": {
         "is_asleep": ["return true"],
         "on_start": [
-          "if $source_effect.is_ability or $source_effect.is_move or $source_effect.id == disobedience:",
+          "if $source_effect.is_ability or $source_effect.id == disobedience:",
           ["log_status: $this.name with_source_effect"],
           "else:",
           ["log_status: $this.name"],
@@ -253,7 +253,7 @@
           "program": [
             "$effect_state.time = $effect_state.time - 1",
             "if $effect_state.time <= 0:",
-            ["cure_status: $user", "return"],
+            ["cure_status: $user no_effect", "return"],
             "log_cant",
             "if func_call(move_has_flag: $move sleepusable):",
             ["return"],
@@ -280,14 +280,14 @@
             "if func_call(move_has_flag: $move thawing):",
             ["return"],
             "if func_call(chance: 1 5):",
-            ["cure_status: $user", "return"],
+            ["cure_status: $user no_effect", "return"],
             "log_cant",
             ["return false"]
           ]
         },
         "on_use_move": [
           "if func_call(move_has_flag: $move thawing):",
-          ["cure_status: $user use_source_effect log_effect"]
+          ["cure_status: $user use_source_effect"]
         ],
         "on_after_move_secondary_effects": [
           "if $move.thaws_target:",
@@ -898,7 +898,7 @@
           "order": 1,
           "program": [
             "if $target.status.is_defined and $target.affection_level >= 4 and func_call(chance: 1 5):",
-            ["log_activate: with_target cure", "cure_status: $target"]
+            ["cure_status: $target"]
           ]
         },
         "on_modify_accuracy": [

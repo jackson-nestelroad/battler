@@ -12,7 +12,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -42,7 +42,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -72,7 +72,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -102,7 +102,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -132,7 +132,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -162,7 +162,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -204,7 +204,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -234,7 +234,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -264,7 +264,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -294,7 +294,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -324,7 +324,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -354,7 +354,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -396,7 +396,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -426,7 +426,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -456,7 +456,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -486,7 +486,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -516,7 +516,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -546,7 +546,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -588,7 +588,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -618,7 +618,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -648,7 +648,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -678,7 +678,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -708,7 +708,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -738,7 +738,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -798,7 +798,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -830,7 +830,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -860,7 +860,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -899,7 +899,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -931,7 +931,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -961,7 +961,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1020,7 +1020,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1052,7 +1052,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1082,7 +1082,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1121,7 +1121,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1153,7 +1153,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1183,7 +1183,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1242,7 +1242,7 @@
           "mons": [
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1274,7 +1274,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -1304,7 +1304,7 @@
             },
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1343,7 +1343,7 @@
             "mons": [
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -1375,7 +1375,7 @@
               },
               {
                 "name": "Charmander M",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -1405,7 +1405,7 @@
               },
               {
                 "name": "Bulbasaur M",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -1464,7 +1464,7 @@
           "mons": [
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -1496,7 +1496,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -1526,7 +1526,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -1565,7 +1565,7 @@
             "mons": [
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1597,7 +1597,7 @@
               },
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -1627,7 +1627,7 @@
               },
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1688,7 +1688,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1718,7 +1718,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1750,7 +1750,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1789,7 +1789,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1819,7 +1819,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1851,7 +1851,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -1910,7 +1910,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1940,7 +1940,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -1972,7 +1972,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2011,7 +2011,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2041,7 +2041,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2073,7 +2073,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2132,7 +2132,7 @@
           "mons": [
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2162,7 +2162,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -2194,7 +2194,7 @@
             },
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2233,7 +2233,7 @@
             "mons": [
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -2263,7 +2263,7 @@
               },
               {
                 "name": "Charmander M",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -2295,7 +2295,7 @@
               },
               {
                 "name": "Bulbasaur M",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -2354,7 +2354,7 @@
           "mons": [
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -2384,7 +2384,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -2416,7 +2416,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -2455,7 +2455,7 @@
             "mons": [
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2485,7 +2485,7 @@
               },
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -2517,7 +2517,7 @@
               },
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2578,7 +2578,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2608,7 +2608,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2638,7 +2638,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2679,7 +2679,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2709,7 +2709,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2739,7 +2739,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2800,7 +2800,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2830,7 +2830,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2860,7 +2860,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -2901,7 +2901,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2931,7 +2931,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -2961,7 +2961,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3022,7 +3022,7 @@
           "mons": [
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3052,7 +3052,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -3082,7 +3082,7 @@
             },
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3123,7 +3123,7 @@
             "mons": [
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -3153,7 +3153,7 @@
               },
               {
                 "name": "Charmander M",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -3183,7 +3183,7 @@
               },
               {
                 "name": "Bulbasaur M",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -3244,7 +3244,7 @@
           "mons": [
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -3274,7 +3274,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -3304,7 +3304,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -3345,7 +3345,7 @@
             "mons": [
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3375,7 +3375,7 @@
               },
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -3405,7 +3405,7 @@
               },
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3468,7 +3468,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3500,7 +3500,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3530,7 +3530,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3569,7 +3569,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3601,7 +3601,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3631,7 +3631,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3690,7 +3690,7 @@
           "mons": [
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3722,7 +3722,7 @@
             },
             {
               "name": "Charmander F",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3752,7 +3752,7 @@
             },
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3791,7 +3791,7 @@
             "mons": [
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3823,7 +3823,7 @@
               },
               {
                 "name": "Charmander F",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3853,7 +3853,7 @@
               },
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -3912,7 +3912,7 @@
           "mons": [
             {
               "name": "Squirtle F",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -3944,7 +3944,7 @@
             },
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -3974,7 +3974,7 @@
             },
             {
               "name": "Bulbasaur F",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "F",
               "shiny": false,
@@ -4013,7 +4013,7 @@
             "mons": [
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -4045,7 +4045,7 @@
               },
               {
                 "name": "Charmander M",
-                "species_name": "Charmander",
+                "species": "Charmander",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -4075,7 +4075,7 @@
               },
               {
                 "name": "Bulbasaur M",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -4134,7 +4134,7 @@
           "mons": [
             {
               "name": "Squirtle M",
-              "species_name": "Squirtle",
+              "species": "Squirtle",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -4166,7 +4166,7 @@
             },
             {
               "name": "Charmander M",
-              "species_name": "Charmander",
+              "species": "Charmander",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -4196,7 +4196,7 @@
             },
             {
               "name": "Bulbasaur M",
-              "species_name": "Bulbasaur",
+              "species": "Bulbasaur",
               "level": 100,
               "gender": "M",
               "shiny": false,
@@ -4235,7 +4235,7 @@
             "mons": [
               {
                 "name": "Squirtle F",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -4267,7 +4267,7 @@
               },
               {
                 "name": "Squirtle M",
-                "species_name": "Squirtle",
+                "species": "Squirtle",
                 "level": 100,
                 "gender": "M",
                 "shiny": false,
@@ -4297,7 +4297,7 @@
               },
               {
                 "name": "Bulbasaur F",
-                "species_name": "Bulbasaur",
+                "species": "Bulbasaur",
                 "level": 100,
                 "gender": "F",
                 "shiny": false,
@@ -4381,35 +4381,67 @@
       "teamsize|player:player-3|size:3",
       "teamsize|player:player-4|size:3",
       "start",
+      "split|side:0",
+      "switch|player:player-1|position:1|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
       "switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "split|side:0",
+      "switch|player:player-2|position:2|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
       "switch|player:player-2|position:2|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "split|side:1",
+      "switch|player:player-3|position:1|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
       "switch|player:player-3|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "split|side:1",
+      "switch|player:player-4|position:2|name:Squirtle M|health:198/198|species:Squirtle|level:100|gender:M",
       "switch|player:player-4|position:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
       "turn|turn:1"
     ],
     [
       ["time"],
+      "split|side:0",
+      "switch|player:player-1|position:1|name:Charmander F|health:188/188|species:Charmander|level:100|gender:F",
       "switch|player:player-1|position:1|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
+      "split|side:0",
+      "switch|player:player-2|position:2|name:Charmander F|health:188/188|species:Charmander|level:100|gender:F",
       "switch|player:player-2|position:2|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
+      "split|side:1",
+      "switch|player:player-3|position:1|name:Squirtle M|health:198/198|species:Squirtle|level:100|gender:M",
       "switch|player:player-3|position:1|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
+      "split|side:1",
+      "switch|player:player-4|position:2|name:Charmander M|health:188/188|species:Charmander|level:100|gender:M",
       "switch|player:player-4|position:2|name:Charmander M|health:100/100|species:Charmander|level:100|gender:M",
       "residual",
       "turn|turn:2"
     ],
     [
       ["time"],
+      "split|side:1",
+      "switch|player:player-4|position:2|name:Bulbasaur M|health:200/200|species:Bulbasaur|level:100|gender:M",
       "switch|player:player-4|position:2|name:Bulbasaur M|health:100/100|species:Bulbasaur|level:100|gender:M",
+      "split|side:0",
+      "switch|player:player-2|position:2|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
       "switch|player:player-2|position:2|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "split|side:0",
+      "switch|player:player-1|position:1|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
       "switch|player:player-1|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "split|side:1",
+      "switch|player:player-3|position:1|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
       "switch|player:player-3|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
       "residual",
       "turn|turn:3"
     ],
     [
       ["time"],
+      "split|side:1",
+      "switch|player:player-3|position:1|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
       "switch|player:player-3|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
+      "split|side:1",
+      "switch|player:player-4|position:2|name:Squirtle M|health:198/198|species:Squirtle|level:100|gender:M",
       "switch|player:player-4|position:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",
+      "split|side:0",
+      "switch|player:player-1|position:1|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
       "switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
+      "split|side:0",
+      "switch|player:player-2|position:2|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
       "switch|player:player-2|position:2|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
       "residual",
       "turn|turn:4"

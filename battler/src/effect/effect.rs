@@ -293,7 +293,7 @@ impl<'borrow> Effect<'borrow> {
             Self::AbilityCondition(_) => "ability",
             Self::Condition(condition) => condition.condition_type_name(),
             Self::Item(_) => "item",
-            Self::NonExistent(_) => "condition",
+            Self::NonExistent(_) => "",
         }
     }
 

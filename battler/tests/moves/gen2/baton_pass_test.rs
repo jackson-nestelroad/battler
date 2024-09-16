@@ -107,6 +107,8 @@ fn baton_pass_switches_user_out_and_passes_volatiles() {
         r#"[
             "move|mon:Espeon,player-2,1|name:Baton Pass|target:Espeon,player-2,1",
             ["time"],
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",
             "switch|player:player-2|position:1|name:Umbreon|health:100/100|species:Umbreon|level:50|gender:M",
             "residual",
             "turn|turn:2",
@@ -146,6 +148,8 @@ fn baton_pass_switches_user_out_and_passes_volatiles() {
             ["time"],
             "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
             ["time"],
+            "split|side:0",
+            "switch|player:player-1|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",
             "switch|player:player-1|position:1|name:Umbreon|health:100/100|species:Umbreon|level:50|gender:M",
             "start|mon:Umbreon,player-1,1|move:Perish Song|perish:2",
             "start|mon:Umbreon,player-2,1|move:Perish Song|perish:2",
@@ -180,12 +184,16 @@ fn baton_pass_does_not_activate_pursuit() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",
             "switch|player:player-2|position:1|name:Umbreon|health:100/100|species:Umbreon|level:50|gender:M",
             "residual",
             "turn|turn:2",
             ["time"],
             "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
             ["time"],
+            "split|side:0",
+            "switch|player:player-1|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",
             "switch|player:player-1|position:1|name:Umbreon|health:100/100|species:Umbreon|level:50|gender:M",
             "move|mon:Umbreon,player-2,1|name:Pursuit|target:Umbreon,player-1,1",
             "resisted|mon:Umbreon,player-1,1",

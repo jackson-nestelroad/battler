@@ -119,7 +119,7 @@ fn rest_heals_and_causes_sleep_for_three_turns() {
             "turn|turn:3",
             ["time"],
             "move|mon:Charizard,player-1,1|name:Rest|target:Charizard,player-1,1",
-            "status|mon:Charizard,player-1,1|status:Sleep|from:move:Rest",
+            "status|mon:Charizard,player-1,1|status:Sleep",
             "split|side:0",
             "heal|mon:Charizard,player-1,1|health:138/138",
             "heal|mon:Charizard,player-1,1|health:100/100",

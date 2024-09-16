@@ -78,6 +78,10 @@ fn battle_starts_with_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Rain",
@@ -103,6 +107,10 @@ fn battle_starts_with_harsh_sunlight() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Harsh Sunlight",
@@ -128,6 +136,10 @@ fn battle_starts_with_sandstorm() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Sandstorm",
@@ -153,6 +165,10 @@ fn battle_starts_with_hail() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Hail",
@@ -178,6 +194,10 @@ fn battle_starts_with_snow() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Snow",
@@ -214,6 +234,10 @@ fn battle_goes_back_to_default_weather() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Rain",

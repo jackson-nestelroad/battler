@@ -169,7 +169,7 @@ fn moves_can_thaw_user() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "curestatus|mon:Mewtwo,player-2,1|status:Freeze|from:Flame Wheel",
+            "curestatus|mon:Mewtwo,player-2,1|status:Freeze",
             "move|mon:Mewtwo,player-2,1|name:Flame Wheel|target:Cloyster,player-1,1",
             "split|side:0",
             "damage|mon:Cloyster,player-1,1|health:92/110",

@@ -78,16 +78,16 @@ use crate::{
 
 /// Public [`Mon`] details, which are shared to both sides of a battle when the Mon
 /// appears or during Team Preview.
-pub struct PublicMonDetails<'d> {
-    pub species_name: &'d str,
+pub struct PublicMonDetails {
+    pub species: String,
     pub level: u8,
     pub gender: Gender,
     pub shiny: bool,
 }
 
-impl EventLoggable for PublicMonDetails<'_> {
-    fn log<'s>(&'s self, event: &mut Event) {
-        event.set("species", self.species_name);
+impl EventLoggable for PublicMonDetails {
+    fn log(&self, event: &mut Event) {
+        event.set("species", self.species.clone());
         event.set("level", self.level);
         event.set("gender", &self.gender);
         if self.shiny {
@@ -98,20 +98,20 @@ impl EventLoggable for PublicMonDetails<'_> {
 
 /// Public details for an active [`Mon`], which are shared to both sides of a battle when the Mon
 /// appears in the battle.
-pub struct ActiveMonDetails<'d> {
-    pub public_details: PublicMonDetails<'d>,
-    pub name: &'d str,
-    pub player_id: &'d str,
+pub struct ActiveMonDetails {
+    pub public_details: PublicMonDetails,
+    pub name: String,
+    pub player_id: String,
     pub side_position: usize,
     pub health: String,
     pub status: String,
 }
 
-impl EventLoggable for ActiveMonDetails<'_> {
-    fn log<'s>(&'s self, event: &mut Event) {
-        event.set("player", self.player_id);
+impl EventLoggable for ActiveMonDetails {
+    fn log(&self, event: &mut Event) {
+        event.set("player", self.player_id.clone());
         event.set("position", self.side_position);
-        event.set("name", self.name);
+        event.set("name", self.name.clone());
         event.set("health", &self.health);
         if !self.status.is_empty() {
             event.set("status", &self.status);
@@ -121,14 +121,14 @@ impl EventLoggable for ActiveMonDetails<'_> {
 }
 
 /// Public details for an active [`Mon`]'s position.
-pub struct MonPositionDetails<'d> {
-    pub name: &'d str,
-    pub player_id: &'d str,
+pub struct MonPositionDetails {
+    pub name: String,
+    pub player_id: String,
     pub side_position: usize,
 }
 
-impl Display for MonPositionDetails<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Display for MonPositionDetails {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{},{},{}", self.name, self.player_id, self.side_position)
     }
 }
@@ -190,7 +190,6 @@ impl MoveSlot {
 #[derive(Clone)]
 pub struct AbilitySlot {
     pub id: Id,
-    pub name: String,
     pub priority: u32,
     pub effect_state: fxlang::EffectState,
 }
@@ -199,7 +198,6 @@ pub struct AbilitySlot {
 #[derive(Clone)]
 pub struct ItemSlot {
     pub id: Id,
-    pub name: String,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -263,7 +261,7 @@ pub struct MonBaseRequestData {
 pub struct MonBattleRequestData {
     #[serde(flatten)]
     pub base_data: MonBaseRequestData,
-    pub species_name: String,
+    pub species: String,
     pub health: String,
     pub types: Vec<Type>,
     pub status: String,
@@ -288,7 +286,7 @@ pub struct MonBattleRequestData {
 pub struct MonSummaryRequestData {
     #[serde(flatten)]
     pub base_data: MonBaseRequestData,
-    pub species_name: String,
+    pub species: String,
     pub stats: StatTable,
     pub moves: Vec<MonMoveSlotData>,
     pub ability: String,
@@ -360,8 +358,8 @@ pub struct Mon {
     pub side: usize,
 
     pub name: String,
-    pub base_species: String,
-    pub species: String,
+    pub base_species: Id,
+    pub species: Id,
 
     /// `true` if the Mon is in an active position.
     ///
@@ -445,7 +443,7 @@ impl Mon {
     /// Creates a new Mon.
     pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self, Error> {
         let name = data.name;
-        let species = data.species;
+        let species = Id::from(data.species);
         let ivs = data.ivs;
         let evs = data.evs;
         let level = data.level;
@@ -481,23 +479,17 @@ impl Mon {
 
         let move_slots = base_move_slots.clone();
 
-        let ability = dex.abilities.get(&data.ability)?;
         let ability = AbilitySlot {
-            id: ability.id().clone(),
-            name: ability.data.name.clone(),
+            id: Id::from(data.ability),
             priority: 0,
             effect_state: fxlang::EffectState::new(),
         };
 
         let item = match data.item {
-            Some(item) => {
-                let item = dex.items.get(&item)?;
-                Some(ItemSlot {
-                    id: item.id().clone(),
-                    name: item.data.name.clone(),
-                    effect_state: fxlang::EffectState::new(),
-                })
-            }
+            Some(item) => Some(ItemSlot {
+                id: Id::from(item),
+                effect_state: fxlang::EffectState::new(),
+            }),
             None => None,
         };
 
@@ -588,12 +580,19 @@ impl Mon {
     /// This *must* be called at the very beginning of a battle, as it sets up important fields on
     /// the Mon, such as its stats.
     pub fn initialize(context: &mut MonContext) -> Result<(), Error> {
+        let base_species = context.mon().base_species.clone();
+        Self::set_base_species(context, &base_species, false)?;
+
         Self::clear_volatile(context, true)?;
         Self::recalculate_base_stats(context)?;
 
         // Generate level from experience points if needed.
         if context.mon().level == u8::default() {
-            let species = context.battle().dex.species.get(&context.mon().species)?;
+            let species = context
+                .battle()
+                .dex
+                .species
+                .get_by_id(&context.mon().species)?;
             context.mon_mut().level = species
                 .data
                 .leveling_rate
@@ -602,16 +601,22 @@ impl Mon {
 
         context.mon_mut().hp = context.mon().max_hp;
 
-        let mon_handle = context.mon_handle();
-        let ability_effect_state = fxlang::EffectState::initial_effect_state(
-            &mut context
-                .as_battle_context_mut()
-                .effect_context(EffectHandle::Condition(Id::from_known("start")), None)?,
-            Some(mon_handle),
-            None,
-        )?;
-        context.mon_mut().base_ability.effect_state = ability_effect_state;
         context.mon_mut().ability.effect_state = context.mon().base_ability.effect_state.clone();
+
+        if let Some(item) = &context.mon().item {
+            let mon_handle = context.mon_handle();
+            let item = context.battle().dex.items.get_by_id(&item.id)?;
+            context.mon_mut().item = Some(ItemSlot {
+                id: item.id().clone(),
+                effect_state: fxlang::EffectState::initial_effect_state(
+                    &mut context
+                        .as_battle_context_mut()
+                        .effect_context(EffectHandle::Condition(Id::from_known("start")), None)?,
+                    Some(mon_handle),
+                    None,
+                )?,
+            })
+        }
 
         Ok(())
     }
@@ -643,40 +648,59 @@ impl Mon {
     }
 
     /// The public details for the Mon.
-    pub fn public_details(&self) -> PublicMonDetails {
-        PublicMonDetails {
-            species_name: self.species.as_ref(),
-            level: self.level,
-            gender: self.gender.clone(),
-            shiny: self.shiny,
-        }
+    pub fn public_details(context: &MonContext) -> Result<PublicMonDetails, Error> {
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().species)?
+            .data
+            .name
+            .clone();
+        Ok(PublicMonDetails {
+            species,
+            level: context.mon().level,
+            gender: context.mon().gender.clone(),
+            shiny: context.mon().shiny,
+        })
     }
 
-    /// The public details for the active Mon.
-    pub fn active_details<'b>(context: &'b mut MonContext) -> Result<ActiveMonDetails<'b>, Error> {
-        let status = context.mon().status.clone();
-        let status = match status {
+    fn active_details(context: &mut MonContext, secret: bool) -> Result<ActiveMonDetails, Error> {
+        let status = match context.mon().status.clone() {
             Some(status) => CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
                 .name()
                 .to_owned(),
             None => String::new(),
         };
-        let mon = context.mon();
         Ok(ActiveMonDetails {
-            public_details: mon.public_details(),
-            name: &mon.name,
-            player_id: context.player().id.as_ref(),
+            public_details: Self::public_details(context)?,
+            name: context.mon().name.clone(),
+            player_id: context.player().id.clone(),
             side_position: Self::position_on_side(context)? + 1,
-            health: Self::public_health(context),
+            health: if secret {
+                context.mon().actual_health()
+            } else {
+                Self::public_health(context)
+            },
             status,
         })
     }
 
+    /// The public details for the active Mon.
+    pub fn public_active_details(context: &mut MonContext) -> Result<ActiveMonDetails, Error> {
+        Self::active_details(context, false)
+    }
+
+    /// The private details for the active Mon.
+    pub fn private_active_details(context: &mut MonContext) -> Result<ActiveMonDetails, Error> {
+        Self::active_details(context, true)
+    }
+
     /// The public details for the Mon when an action is made.
-    pub fn position_details<'b>(context: &'b MonContext) -> Result<MonPositionDetails<'b>, Error> {
+    pub fn position_details(context: &MonContext) -> Result<MonPositionDetails, Error> {
         Ok(MonPositionDetails {
-            name: &context.mon().name,
-            player_id: context.player().id.as_ref(),
+            name: context.mon().name.clone(),
+            player_id: context.player().id.clone(),
             side_position: Self::position_on_side(context)? + 1,
         })
     }
@@ -1126,9 +1150,39 @@ impl Mon {
         } else {
             None
         };
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().species)?
+            .data
+            .name
+            .clone();
+        let ability = context
+            .battle()
+            .dex
+            .abilities
+            .get_by_id(&context.mon().ability.id)?
+            .data
+            .name
+            .clone();
+        let item = if let Some(item) = context.mon().item.as_ref() {
+            Some(
+                context
+                    .battle()
+                    .dex
+                    .items
+                    .get_by_id(&item.id)?
+                    .data
+                    .name
+                    .clone(),
+            )
+        } else {
+            None
+        };
         Ok(MonBattleRequestData {
             base_data: context.mon().base_request_data(),
-            species_name: context.mon().species.clone(),
+            species,
             health: context.mon().actual_health(),
             types: context.mon().types.clone(),
             status: context
@@ -1148,8 +1202,8 @@ impl Mon {
                 .into_iter()
                 .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
                 .collect::<Result<Vec<_>, Error>>()?,
-            ability: context.mon().ability.name.clone(),
-            item: context.mon().item.as_ref().map(|item| item.name.clone()),
+            ability,
+            item,
         })
     }
 
@@ -1157,9 +1211,25 @@ impl Mon {
     pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryRequestData, Error> {
         let mut stats = context.mon().base_stored_stats.clone();
         stats.hp = context.mon().base_max_hp;
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().base_species)?
+            .data
+            .name
+            .clone();
+        let ability = context
+            .battle()
+            .dex
+            .abilities
+            .get_by_id(&context.mon().base_ability.id)?
+            .data
+            .name
+            .clone();
         Ok(MonSummaryRequestData {
             base_data: context.mon().base_request_data(),
-            species_name: context.mon().base_species.clone(),
+            species,
             stats,
             moves: context
                 .mon()
@@ -1168,7 +1238,7 @@ impl Mon {
                 .into_iter()
                 .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
                 .collect::<Result<Vec<_>, Error>>()?,
-            ability: context.mon().ability.name.clone(),
+            ability,
         })
     }
 
@@ -1275,7 +1345,7 @@ impl Mon {
         context.mon_mut().volatiles.clear();
 
         let species = context.mon().base_species.clone();
-        Self::set_species(context, species)?;
+        Self::set_species(context, &Id::from(species))?;
         Ok(())
     }
 
@@ -1287,7 +1357,7 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get(context.mon().base_species.as_str())?;
+            .get_by_id(&context.mon().base_species)?;
 
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
@@ -1321,7 +1391,7 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get(context.mon().species.as_str())?;
+            .get_by_id(&context.mon().species)?;
 
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
@@ -1346,14 +1416,63 @@ impl Mon {
         Ok(())
     }
 
-    pub fn set_species(context: &mut MonContext, species: String) -> Result<(), Error> {
+    /// Sets the base species of the Mon.
+    pub fn set_base_species(
+        context: &mut MonContext,
+        base_species: &Id,
+        change_ability: bool,
+    ) -> Result<(), Error> {
+        let species = context.battle().dex.species.get_by_id(base_species)?;
+
+        // Base ability can change.
+        //
+        // We don't set this at the start of the battle since we trust the result of team validation
+        // (or the lack thereof). Forme changes that happen within the battle, though, can force an
+        // ability change (think about Mega Evolution).
+        let mut base_ability = context.mon().base_ability.id.clone();
+        if change_ability
+            && !species
+                .data
+                .abilities
+                .iter()
+                .any(|ability| Id::from(ability.as_ref()) == base_ability)
+        {
+            base_ability = species
+                .data
+                .abilities
+                .first()
+                .map(|ability| Id::from(ability.as_ref()))
+                .unwrap_or(Id::from_known("noability"));
+        }
+
+        context.mon_mut().base_species = species.id().clone();
+
+        let mon_handle = context.mon_handle();
+        let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
+        context.mon_mut().base_ability = AbilitySlot {
+            id: ability.id().clone(),
+            priority: 0,
+            effect_state: fxlang::EffectState::initial_effect_state(
+                &mut context
+                    .as_battle_context_mut()
+                    .effect_context(EffectHandle::Condition(Id::from_known("start")), None)?,
+                Some(mon_handle),
+                None,
+            )?,
+        };
+
+        Ok(())
+    }
+
+    /// Sets the species of the Mon.
+    pub fn set_species(context: &mut MonContext, species: &Id) -> Result<bool, Error> {
         // TODO: ModifySpecies event.
-        let species = context.battle().dex.species.get(species.as_str())?;
+        let species = context.battle().dex.species.get_by_id(species)?;
 
         // SAFETY: Nothing we do below will invalidate any data.
         let species: ElementRef<Species> = unsafe { mem::transmute(species) };
 
-        context.mon_mut().species = species.data.name.clone();
+        context.mon_mut().species = species.id().clone();
         context.mon_mut().types = Vec::with_capacity(4);
         context.mon_mut().types.push(species.data.primary_type);
         if let Some(secondary_type) = species.data.secondary_type {
@@ -1362,7 +1481,7 @@ impl Mon {
 
         Self::recalculate_stats(context)?;
         context.mon_mut().weight = species.data.weight;
-        Ok(())
+        Ok(true)
     }
 
     /// Overwrites the move slot at the given index.

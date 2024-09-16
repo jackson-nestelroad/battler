@@ -86,7 +86,7 @@ fn recycle_recovers_consumed_berry() {
             "move|mon:Snorlax,player-2,1|name:Will-O-Wisp|target:Snorlax,player-1,1",
             "status|mon:Snorlax,player-1,1|status:Burn",
             "itemend|mon:Snorlax,player-1,1|item:Rawst Berry|eat",
-            "curestatus|mon:Snorlax,player-1,1|status:Burn",
+            "curestatus|mon:Snorlax,player-1,1|status:Burn|from:item:Rawst Berry",
             "residual",
             "turn|turn:3",
             ["time"],
@@ -98,7 +98,7 @@ fn recycle_recovers_consumed_berry() {
             "move|mon:Snorlax,player-2,1|name:Will-O-Wisp|target:Snorlax,player-1,1",
             "status|mon:Snorlax,player-1,1|status:Burn",
             "itemend|mon:Snorlax,player-1,1|item:Rawst Berry|eat",
-            "curestatus|mon:Snorlax,player-1,1|status:Burn",
+            "curestatus|mon:Snorlax,player-1,1|status:Burn|from:item:Rawst Berry",
             "residual",
             "turn|turn:5"
         ]"#,

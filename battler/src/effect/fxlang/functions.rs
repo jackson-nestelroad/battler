@@ -51,7 +51,6 @@ use crate::{
             ValueType,
             VariableInput,
         },
-        Effect,
         EffectHandle,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
@@ -258,14 +257,6 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.args.pop_front()
     }
 
-    fn push_front(&mut self, value: Value) {
-        self.args.push_front(value)
-    }
-
-    fn push_back(&mut self, value: Value) {
-        self.args.push_back(value)
-    }
-
     fn has_flag_internal(&mut self, flag: &str) -> bool {
         match self
             .args
@@ -322,10 +313,6 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn from_effect(&mut self) -> bool {
         self.has_flag("from_effect")
-    }
-
-    fn log_effect(&mut self) -> bool {
-        self.has_flag("log_effect")
     }
 
     fn no_effect(&mut self) -> bool {
@@ -480,7 +467,17 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             .effect_context(effect_handle, source_effect_handle)
     }
 
+    #[allow(unused)]
     fn forward_to_applying_effect_context<'function>(
+        &'function mut self,
+    ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>, Error> {
+        let target_handle = self
+            .target_handle()
+            .wrap_error_with_message("effect has no target")?;
+        self.forward_to_applying_effect_context_with_target(target_handle)
+    }
+
+    fn forward_to_applying_effect_context_with_target<'function>(
         &'function mut self,
         target_handle: MonHandle,
     ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>, Error> {
@@ -563,115 +560,102 @@ fn log(mut context: FunctionContext) -> Result<(), Error> {
     log_internal(context, title)
 }
 
-fn add_effect_to_args(context: &mut FunctionContext) -> Result<(), Error> {
-    let effect_handle = context.effect_handle_positional()?;
-    let effect = CoreBattle::get_effect_by_handle(
-        context.evaluation_context().battle_context(),
-        &effect_handle,
-    )?;
-    let string = match effect {
-        Effect::ActiveMove(active_move, _) => {
-            format!("move:{}", active_move.data.name)
-        }
-        Effect::MoveCondition(condition) => format!("move:{}", condition.data.name),
-        Effect::Ability(ability) | Effect::AbilityCondition(ability) => {
-            format!("ability:{}", ability.data.name)
-        }
-        Effect::Item(item) => format!("item:{}", item.data.name),
-        Effect::Condition(condition) => format!(
-            "{}:{}",
-            condition.non_empty_condition_type_name(),
-            condition.data.name
-        ),
-        _ => return Ok(()),
-    };
-    context.push_front(Value::String(string));
-    Ok(())
-}
-
-fn log_ability(mut context: FunctionContext) -> Result<(), Error> {
-    let target = context.target_handle();
-    if let Some(target) = target {
-        let target = context.evaluation_context().mon(target)?;
-        context.push_front(Value::String(format!("ability:{}", target.ability.name)));
-    }
-
-    context.set_with_target(true);
-    context.set_no_effect(true);
-    log_effect_activation_base(context, "ability", None)
+#[derive(Default)]
+struct LogEffectActivationBaseContext {
+    include_side: bool,
+    additional: Vec<String>,
 }
 
 fn log_effect_activation_base(
     mut context: FunctionContext,
     header: &str,
-    additional: Option<fn(&mut FunctionContext) -> Result<(), Error>>,
+    activation_base_context: LogEffectActivationBaseContext,
 ) -> Result<(), Error> {
-    if !context.no_effect() {
-        add_effect_to_args(&mut context)?;
+    let mut activation = core_battle_logs::EffectActivationContext {
+        effect: if !context.no_effect() {
+            Some(context.effect_handle_positional()?)
+        } else {
+            None
+        },
+        side: if activation_base_context.include_side {
+            context.evaluation_context().side_index()
+        } else {
+            None
+        },
+        target: if context.with_target() {
+            context.target_handle()
+        } else {
+            None
+        },
+        source_effect: if context.with_source_effect() {
+            context.set_with_source(true);
+            context.source_effect_handle().cloned()
+        } else {
+            None
+        },
+        source: if context.with_source() {
+            context.source_handle()
+        } else {
+            None
+        },
+        additional: activation_base_context.additional,
+        ..Default::default()
+    };
+
+    while let Some(arg) = context.pop_front() {
+        let entry = arg.string().wrap_error_with_message("invalid log entry")?;
+        activation.additional.push(entry);
     }
+    core_battle_logs::effect_activation(
+        context.evaluation_context_mut().battle_context_mut(),
+        header.to_owned(),
+        activation,
+    )
+}
 
-    if context.with_target() {
-        let target = context
-            .target_handle()
-            .wrap_error_with_message("effect has no target")?;
-        let position_details =
-            Mon::position_details(&context.evaluation_context_mut().mon_context(target)?)?
-                .to_string();
-
-        context.push_front(Value::String(format!("mon:{}", position_details)));
-    }
-
-    if context.with_source_effect() {
-        let source_effect_context = context
-            .evaluation_context_mut()
-            .source_effect_context()?
-            .wrap_error_with_message("effect has no source effect")?;
-
-        let with_source = !source_effect_context.effect_handle().is_active_move();
-        let source_effect_name = source_effect_context.effect().full_name();
-
-        context.set_with_source(with_source);
-        context.push_back(Value::String(format!("from:{source_effect_name}")));
-    }
-
-    if context.with_source() {
-        let source_handle = context.source_handle();
-        if let Some(source_handle) = source_handle {
-            let position_details = Mon::position_details(
-                &context
-                    .evaluation_context_mut()
-                    .mon_context(source_handle)?,
-            )?
-            .to_string();
-            context.push_back(Value::String(format!("of:{}", position_details)));
-        }
-    }
-
-    if let Some(additional) = additional {
-        additional(&mut context)?;
-    }
-
-    log_internal(context, header.to_owned())
+fn log_ability(mut context: FunctionContext) -> Result<(), Error> {
+    context.set_with_target(true);
+    log_effect_activation_base(
+        context,
+        "ability",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_activate(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "activate", None)
+    log_effect_activation_base(
+        context,
+        "activate",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_block(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "block", None)
+    log_effect_activation_base(context, "block", LogEffectActivationBaseContext::default())
 }
 
 fn log_field_activate(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "fieldactivate", None)
+    log_effect_activation_base(
+        context,
+        "fieldactivate",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_single_turn(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "singleturn", None)
+    log_effect_activation_base(
+        context,
+        "singleturn",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_single_move(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "singlemove", None)
+    log_effect_activation_base(
+        context,
+        "singlemove",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_animate_move(mut context: FunctionContext) -> Result<(), Error> {
@@ -703,26 +687,22 @@ fn log_animate_move(mut context: FunctionContext) -> Result<(), Error> {
 
 fn log_start(mut context: FunctionContext) -> Result<(), Error> {
     context.set_with_target(context.evaluation_context().target_handle().is_some());
-    log_effect_activation_base(context, "start", None)
+    log_effect_activation_base(context, "start", LogEffectActivationBaseContext::default())
 }
 
 fn log_end(mut context: FunctionContext) -> Result<(), Error> {
     context.set_with_target(context.evaluation_context().target_handle().is_some());
-    log_effect_activation_base(context, "end", None)
+    log_effect_activation_base(context, "end", LogEffectActivationBaseContext::default())
 }
 
 fn log_side_start(context: FunctionContext) -> Result<(), Error> {
     log_effect_activation_base(
         context,
         "sidestart",
-        Some(|context: &mut FunctionContext| {
-            let side_index = context
-                .evaluation_context()
-                .side_index()
-                .wrap_error_with_message("context has no side index")?;
-            context.push_front(Value::String(format!("side:{side_index}")));
-            Ok(())
-        }),
+        LogEffectActivationBaseContext {
+            include_side: true,
+            ..Default::default()
+        },
     )
 }
 
@@ -730,23 +710,27 @@ fn log_side_end(context: FunctionContext) -> Result<(), Error> {
     log_effect_activation_base(
         context,
         "sideend",
-        Some(|context: &mut FunctionContext| {
-            let side_index = context
-                .evaluation_context()
-                .side_index()
-                .wrap_error_with_message("context has no side index")?;
-            context.push_front(Value::String(format!("side:{side_index}")));
-            Ok(())
-        }),
+        LogEffectActivationBaseContext {
+            include_side: true,
+            ..Default::default()
+        },
     )
 }
 
 fn log_field_start(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "fieldstart", None)
+    log_effect_activation_base(
+        context,
+        "fieldstart",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_field_end(context: FunctionContext) -> Result<(), Error> {
-    log_effect_activation_base(context, "fieldend", None)
+    log_effect_activation_base(
+        context,
+        "fieldend",
+        LogEffectActivationBaseContext::default(),
+    )
 }
 
 fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
@@ -765,13 +749,14 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
 
 fn log_cant(mut context: FunctionContext) -> Result<(), Error> {
     let effect = context.effect_handle()?;
-    let source = context
-        .with_source()
-        .then(|| context.source_handle())
-        .flatten();
-    core_battle_logs::cant_from_effect(
+    let source = if context.with_source() {
+        context.source_handle()
+    } else {
+        None
+    };
+    core_battle_logs::cant(
         &mut context.evaluation_context_mut().target_context()?,
-        &effect,
+        effect,
         source,
     )
 }
@@ -782,11 +767,17 @@ fn log_status(mut context: FunctionContext) -> Result<(), Error> {
         .wrap_error_with_message("missing status")?
         .string()
         .wrap_error_with_message("invalid status")?;
-    context.push_front(Value::String(format!("status:{status}")));
 
     context.set_no_effect(true);
     context.set_with_target(true);
-    log_effect_activation_base(context, "status", None)
+    log_effect_activation_base(
+        context,
+        "status",
+        LogEffectActivationBaseContext {
+            additional: vec![format!("status:{status}")],
+            ..Default::default()
+        },
+    )
 }
 
 fn log_weather(mut context: FunctionContext) -> Result<(), Error> {
@@ -794,24 +785,28 @@ fn log_weather(mut context: FunctionContext) -> Result<(), Error> {
         Some(value) => value.string().wrap_error_with_message("invalid weather")?,
         None => "Clear".to_owned(),
     };
-
-    context.push_front(Value::String(format!("weather:{weather}")));
+    let mut additional = vec![format!("weather:{weather}")];
+    if context.residual() {
+        additional.push("residual".to_owned());
+    }
 
     context.set_no_effect(true);
     log_effect_activation_base(
         context,
         "weather",
-        Some(|context: &mut FunctionContext| {
-            if context.residual() {
-                context.push_back(Value::String("residual".to_owned()));
-            }
-            Ok(())
-        }),
+        LogEffectActivationBaseContext {
+            additional,
+            ..Default::default()
+        },
     )
 }
 
 fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
-    let from_effect = context.from_effect();
+    let effect_handle = if context.from_effect() {
+        Some(context.effect_handle()?)
+    } else {
+        None
+    };
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -824,30 +819,24 @@ fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
         ),
         None => None,
     };
-    let effect_handle = if from_effect {
-        Some(context.evaluation_context().effect_handle().clone())
-    } else {
-        None
-    };
     core_battle_logs::fail(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
-        what.as_ref(),
-        effect_handle.as_ref(),
+        what,
+        effect_handle,
     )
 }
 
 fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
-    let from_effect = context.from_effect();
+    let effect_handle = if context.from_effect() {
+        Some(context.effect_handle()?)
+    } else {
+        None
+    };
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let effect_handle = if from_effect {
-        Some(context.evaluation_context().effect_handle().clone())
-    } else {
-        None
-    };
     let mut boosts = Vec::new();
     while let Some(val) = context.pop_front() {
         if val.is_list() {
@@ -864,7 +853,7 @@ fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
     core_battle_logs::fail_unboost(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         &boosts,
-        effect_handle.as_ref(),
+        effect_handle,
     )
 }
 
@@ -874,12 +863,14 @@ fn log_immune(mut context: FunctionContext) -> Result<(), Error> {
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let effect = context
-        .from_effect()
-        .then(|| context.evaluation_context().effect_handle().clone());
+    let effect = if context.from_effect() {
+        Some(context.effect_handle()?)
+    } else {
+        None
+    };
     core_battle_logs::immune(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
-        effect.as_ref(),
+        effect,
     )
 }
 
@@ -1127,15 +1118,16 @@ fn has_volatile(mut context: FunctionContext) -> Result<Value, Error> {
 }
 
 fn cure_status(mut context: FunctionContext) -> Result<Value, Error> {
+    let no_effect = context.no_effect();
+    context.has_flag("log_active_move");
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    let log_effect = context.log_effect();
-    let mut context = context.forward_to_applying_effect_context(mon_handle)?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     Ok(Value::Boolean(
-        core_battle_actions::cure_status(&mut context, log_effect)?.success(),
+        core_battle_actions::cure_status(&mut context, !no_effect)?.success(),
     ))
 }
 
@@ -1234,7 +1226,7 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {
     let volatile = Id::from(volatile);
 
     core_battle_actions::try_add_volatile(
-        &mut context.forward_to_applying_effect_context(mon_handle)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &volatile,
         false,
     )
@@ -1255,7 +1247,7 @@ fn remove_volatile(mut context: FunctionContext) -> Result<Value, Error> {
 
     let no_events = context.no_events();
     let volatile = Id::from(volatile);
-    let mut context = context.forward_to_applying_effect_context(mon_handle)?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
         .map(|val| Value::Boolean(val))
 }
@@ -1552,7 +1544,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value, Error> {
     let status = Id::from(status);
 
     core_battle_actions::try_set_status(
-        &mut context.forward_to_applying_effect_context(mon_handle)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         Some(status),
         false,
     )
@@ -2314,7 +2306,7 @@ fn set_types(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
-    let mut context = context.forward_to_applying_effect_context(mon_handle)?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     core_battle_actions::set_types(&mut context, Vec::from_iter([typ]))
         .map(|val| Value::Boolean(val))
 }
@@ -2335,8 +2327,6 @@ fn clear_weather(mut context: FunctionContext) -> Result<Value, Error> {
 }
 
 fn transform_into(mut context: FunctionContext) -> Result<Value, Error> {
-    let with_source_effect = context.with_source_effect();
-
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -2349,9 +2339,8 @@ fn transform_into(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("invalid target")?;
 
     core_battle_actions::transform_into(
-        &mut context.forward_to_applying_effect_context(mon_handle)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         target_handle,
-        with_source_effect,
     )
     .map(|val| Value::Boolean(val))
 }
@@ -2761,7 +2750,7 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let dry_run = context.has_flag("dry_run");
     let silent = context.silent();
     Ok(core_battle_actions::take_item(
-        &mut context.forward_to_applying_effect_context(mon)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
         dry_run,
         silent,
     )?
@@ -2782,7 +2771,7 @@ fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
     let item = Id::from(item);
 
     Ok(Value::Boolean(core_battle_actions::set_item(
-        &mut context.forward_to_applying_effect_context(mon)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
     )?))
 }
@@ -2793,7 +2782,7 @@ fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_actions::eat_item(&mut context.forward_to_applying_effect_context(mon)?)
+    core_battle_actions::eat_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
         .map(|val| Value::Boolean(val))
 }
 
@@ -2834,7 +2823,7 @@ fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("invalid ability")?;
     let ability_id = Id::from(ability_id);
     core_battle_actions::set_ability(
-        &mut context.forward_to_applying_effect_context(mon)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &ability_id,
         dry_run,
         silent,

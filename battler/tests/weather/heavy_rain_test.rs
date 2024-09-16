@@ -154,6 +154,10 @@ fn primordial_sea_starts_heavy_rain_on_switch_in() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
@@ -183,6 +187,10 @@ fn primordial_sea_dissipates_fire_type_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
@@ -210,6 +218,10 @@ fn normal_rain_cannot_override_primordial_sea() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
@@ -247,19 +259,27 @@ fn primordial_sea_stops_when_last_mon_with_ability_switches_out() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
             ["switch", "player-1", "Kyogre"],
+            ["switch", "player-1", "Kyogre"],
+            "split|side:1",
+            ["switch", "player-2", "Kyogre"],
             ["switch", "player-2", "Kyogre"],
             "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-2,1",
             "weather|weather:Heavy Rain|residual",
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Charizard"],
             ["switch", "player-1", "Charizard"],
             "weather|weather:Heavy Rain|residual",
             "residual",
             "turn|turn:3",
             ["time"],
             "weather|weather:Clear",
+            "split|side:1",
+            ["switch", "player-2", "Charizard"],
             ["switch", "player-2", "Charizard"],
             "move|mon:Charizard,player-1,1|name:Flamethrower|target:Charizard,player-2,1",
             "resisted|mon:Charizard,player-2,1",

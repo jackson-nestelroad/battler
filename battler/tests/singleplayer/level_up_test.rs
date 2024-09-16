@@ -136,7 +136,7 @@ fn massive_level_up_before_battle_ends() {
                     },
                     "mon_summary": {
                         "name": "Gastly",
-                        "species_name": "Gastly",
+                        "species": "Gastly",
                         "ability": "No Ability",
                         "level": 19,
                         "gender": "M",
@@ -273,7 +273,9 @@ fn massive_level_up_before_battle_ends() {
             "didnotlearnmove|mon:Gastly,player-1,1|move:Destiny Bond",
             "residual",
             ["time"],
-            "switch|player:player-2|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
+            "split|side:1",
+            ["switch", "player-2", "Pikachu"],
+            ["switch", "player-2", "Pikachu"],
             "turn|turn:2",
             ["time"],
             "move|mon:Gastly,player-1,1|name:Shadow Ball|target:Pikachu,player-2,1",
@@ -330,6 +332,8 @@ fn inactive_mon_levels_up_directly_to_level() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch", "player-1", "Gengar"],
             ["switch", "player-1", "Gengar"],
             "move|mon:Blissey,player-2,1|name:Self-Destruct|noanim",
             "immune|mon:Gengar,player-1,1",
@@ -355,9 +359,13 @@ fn inactive_mon_levels_up_directly_to_level() {
             "didnotlearnmove|mon:Gastly,player-1,1|move:Sucker Punch",
             "residual",
             ["time"],
+            "split|side:1",
+            ["switch", "player-2", "Pikachu"],
             ["switch", "player-2", "Pikachu"],
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Gastly"],
             ["switch", "player-1", "Gastly"],
             "residual",
             "turn|turn:3",

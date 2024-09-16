@@ -470,6 +470,10 @@ fn drizzle_starts_rain_on_switch() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Rain|from:ability:Drizzle|of:Blastoise,player-1,1",
@@ -521,6 +525,10 @@ fn air_lock_suppresses_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "ability|mon:Rayquaza,player-2,1|ability:Air Lock",

@@ -118,6 +118,8 @@ fn own_tempo_heals_confusion_on_baton_pass() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch", "player-1", "Trapinch"],
             ["switch", "player-1", "Trapinch"],
             "move|mon:Spinda,player-2,1|name:Confuse Ray|target:Trapinch,player-1,1",
             "start|mon:Trapinch,player-1,1|condition:Confusion",
@@ -127,6 +129,8 @@ fn own_tempo_heals_confusion_on_baton_pass() {
             "activate|mon:Trapinch,player-1,1|condition:Confusion",
             "move|mon:Trapinch,player-1,1|name:Baton Pass|target:Trapinch,player-1,1",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Spinda"],
             ["switch", "player-1", "Spinda"],
             "activate|mon:Spinda,player-1,1|ability:Own Tempo",
             "end|mon:Spinda,player-1,1|condition:Confusion",
@@ -149,6 +153,8 @@ fn own_tempo_resists_intimidate() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Poochyena"],
             ["switch", "player-2", "Poochyena"],
             "activate|mon:Poochyena,player-2,1|ability:Intimidate",
             "fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo",

@@ -153,7 +153,7 @@ fn transform_transforms_into_target() {
                         "mons": [
                             {
                                 "name": "Ditto",
-                                "species_name": "Charizard",
+                                "species": "Charizard",
                                 "level": 50,
                                 "gender": "Male",
                                 "shiny": false,

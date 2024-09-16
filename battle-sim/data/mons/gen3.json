@@ -1152,7 +1152,6 @@
     "leveling_rate": "Medium",
     "ev_yield": { "atk": 2 },
     "base_friendship": 0,
-    "max_hp": 1,
     "base_stats": {
       "hp": 70,
       "atk": 90,

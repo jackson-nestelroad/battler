@@ -106,8 +106,10 @@ fn natural_cure_heals_status_on_switch_out() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "curestatus|mon:Roselia,player-1,1|status:Paralysis",
-            "switch|player:player-1|position:1|name:Swablu|health:100/100|species:Swablu|level:50|gender:F",
+            "curestatus|mon:Roselia,player-1,1|status:Paralysis|from:ability:Natural Cure",
+            "split|side:0",
+            ["switch", "player-1", "Swablu"],
+            ["switch", "player-1", "Swablu"],
             "residual",
             "turn|turn:3"
         ]"#,
@@ -143,7 +145,7 @@ fn natural_cure_heals_status_on_battle_end() {
             "damage|mon:Budew,player-2,1|health:0",
             "damage|mon:Budew,player-2,1|health:0",
             "faint|mon:Budew,player-2,1",
-            "curestatus|mon:Roselia,player-1,1|status:Burn",
+            "curestatus|mon:Roselia,player-1,1|status:Burn|from:ability:Natural Cure",
             "win|side:0"
         ]"#,
     )

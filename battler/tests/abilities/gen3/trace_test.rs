@@ -83,7 +83,9 @@ fn trace_does_not_copy_forbidden_ability() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "switch|player:player-1|position:1|name:Kirlia|health:100/100|species:Kirlia|level:50|gender:F",
+            "split|side:0",
+            ["switch", "player-1", "Kirlia"],
+            ["switch", "player-1", "Kirlia"],
             "residual",
             "turn|turn:2"
         ]"#,
@@ -107,7 +109,7 @@ fn trace_copies_target_ability() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ralts,player-1,1|name:Worry Seed|target:Ralts,player-2,1",
-            "endability|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed",
+            "endability|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1",
             "ability|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
             "endability|mon:Ralts,player-1,1|ability:Trace|from:ability:Trace",
             "ability|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace",
@@ -140,7 +142,7 @@ fn ability_shield_blocks_trace() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ralts,player-1,1|name:Worry Seed|target:Ralts,player-2,1",
-            "endability|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed",
+            "endability|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1",
             "ability|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
             "block|mon:Ralts,player-1,1|item:Ability Shield",
             "residual",

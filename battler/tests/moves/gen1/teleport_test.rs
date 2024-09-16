@@ -115,6 +115,8 @@ fn teleport_switches_user_out() {
         r#"[
             "move|mon:Ralts,player-1,1|name:Teleport|target:Ralts,player-1,1",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Ralts"],
             ["switch", "player-1", "Ralts"],
             "residual",
             "turn|turn:2",
@@ -126,6 +128,8 @@ fn teleport_switches_user_out() {
             "faint|mon:Ralts,player-1,1",
             "residual",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Ralts"],
             ["switch", "player-1", "Ralts"],
             "turn|turn:3",
             ["time"],

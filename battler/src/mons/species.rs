@@ -52,7 +52,7 @@ pub struct SpeciesData {
     /// The secondary type of the species, if it exists.
     pub secondary_type: Option<Type>,
     /// Abilities.
-    pub abilities: FastHashSet<String>,
+    pub abilities: Vec<String>,
     /// Hidden ability, if it exists.
     pub hidden_ability: Option<String>,
     /// Gender ratio.

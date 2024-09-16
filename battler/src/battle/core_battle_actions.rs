@@ -360,7 +360,11 @@ fn do_move_internal(
         && !move_id.eq("struggle")
     {
         // No PP, so this move action cannot be carried through.
-        core_battle_logs::cant(context.as_mon_context_mut(), "nopp")?;
+        core_battle_logs::cant(
+            context.as_mon_context_mut(),
+            EffectHandle::NonExistent(Id::from_known("nopp")),
+            None,
+        )?;
         return Ok(());
     }
 
@@ -1896,7 +1900,7 @@ mod direct_move_step {
 
         let hits = context.active_move().hit;
         if context.active_move().data.multihit.is_some() {
-            core_battle_logs::hit_count(context, hits)?;
+            core_battle_logs::hit_count(context.as_battle_context_mut(), hits)?;
         }
 
         core_battle_actions::apply_recoil_damage(context, context.active_move().total_damage)?;
@@ -1959,7 +1963,7 @@ pub fn direct_damage(
     }
     let damage = damage.max(1);
     let damage = Mon::damage(context, damage, source, effect)?;
-    core_battle_logs::damage(context, source, effect)?;
+    core_battle_logs::damage(context, effect.cloned(), source)?;
     if context.mon().fainted {
         faint(context, source, effect)?;
     }
@@ -2042,8 +2046,8 @@ fn apply_spread_damage(
 
         core_battle_logs::damage(
             &mut context.target_context()?,
+            Some(effect_handle),
             source_handle,
-            Some(&effect_handle),
         )?;
 
         apply_drain(&mut context, *damage)?;
@@ -2108,7 +2112,7 @@ pub fn heal(
 
     let healed = Mon::heal(context, damage)?;
     if healed > 0 {
-        core_battle_logs::heal(context, source, effect)?;
+        core_battle_logs::heal(context, effect.cloned(), source)?;
     }
     // TODO: Heal event.
     Ok(healed)
@@ -2798,11 +2802,7 @@ pub fn cure_status(
     match context.target().status.clone() {
         None => return Ok(ApplyMoveEffectResult::Failed),
         Some(status) => {
-            let status_name =
-                CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
-                    .name()
-                    .to_owned();
-            core_battle_logs::cure_status(context, &status_name, log_effect)?;
+            core_battle_logs::cure_status(context, &status, log_effect)?;
         }
     }
     try_set_status(context, None, false)
@@ -2811,7 +2811,7 @@ pub fn cure_status(
 /// Tries to add the volatile effect to a Mon.
 pub fn try_add_volatile(
     context: &mut ApplyingEffectContext,
-    status: &Id,
+    volatile: &Id,
     is_primary_move_effect: bool,
 ) -> Result<bool, Error> {
     if context.target().hp == 0 {
@@ -2820,18 +2820,18 @@ pub fn try_add_volatile(
 
     let volatile_effect_handle = context
         .battle_mut()
-        .get_effect_handle_by_id(status)?
+        .get_effect_handle_by_id(volatile)?
         .clone();
-    let status = volatile_effect_handle
+    let volatile = volatile_effect_handle
         .try_id()
         .wrap_error_with_message("volatile must have an id")?
         .clone();
 
-    if context.target().volatiles.contains_key(&status) {
+    if context.target().volatiles.contains_key(&volatile) {
         return Ok(core_battle_effects::run_mon_volatile_event_expecting_bool(
             context,
             fxlang::BattleEvent::Restart,
-            &status,
+            &volatile,
         )
         .unwrap_or(false));
     }
@@ -2862,7 +2862,7 @@ pub fn try_add_volatile(
     context
         .target_mut()
         .volatiles
-        .insert(status.clone(), effect_state);
+        .insert(volatile.clone(), effect_state);
 
     if let Some(condition) =
         CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &volatile_effect_handle)?
@@ -2872,7 +2872,7 @@ pub fn try_add_volatile(
             context
                 .target_mut()
                 .volatiles
-                .get_mut(&status)
+                .get_mut(&volatile)
                 .wrap_error_with_message("expected volatile state to exist")?
                 .set_duration(duration);
         }
@@ -2880,12 +2880,12 @@ pub fn try_add_volatile(
         if let Some(duration) = core_battle_effects::run_mon_volatile_event_expecting_u8(
             context,
             fxlang::BattleEvent::Duration,
-            &status,
+            &volatile,
         ) {
             context
                 .target_mut()
                 .volatiles
-                .get_mut(&status)
+                .get_mut(&volatile)
                 .wrap_error_with_message("expected volatile state to exist")?
                 .set_duration(duration);
         }
@@ -2894,18 +2894,15 @@ pub fn try_add_volatile(
     if core_battle_effects::run_mon_volatile_event_expecting_bool(
         context,
         fxlang::BattleEvent::Start,
-        &status,
+        &volatile,
     )
     .is_some_and(|result| !result)
     {
-        context.target_mut().volatiles.remove(&status);
+        context.target_mut().volatiles.remove(&volatile);
         return Ok(false);
     }
 
-    let volatile_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
-        .name()
-        .to_owned();
-    core_battle_logs::add_volatile(context, &volatile_name)?;
+    core_battle_logs::add_volatile(context, &volatile)?;
 
     Ok(true)
 }
@@ -2913,7 +2910,7 @@ pub fn try_add_volatile(
 /// Removes a volatile effect from a Mon.
 pub fn remove_volatile(
     context: &mut ApplyingEffectContext,
-    status: &Id,
+    volatile: &Id,
     no_events: bool,
 ) -> Result<bool, Error> {
     if context.target().hp == 0 {
@@ -2922,29 +2919,26 @@ pub fn remove_volatile(
 
     let volatile_effect_handle = context
         .battle_mut()
-        .get_effect_handle_by_id(&status)?
+        .get_effect_handle_by_id(&volatile)?
         .clone();
-    let status = volatile_effect_handle
+    let volatile = volatile_effect_handle
         .try_id()
         .wrap_error_with_message("volatile must have an id")?
         .clone();
 
-    if !context.target().volatiles.contains_key(&status) {
+    if !context.target().volatiles.contains_key(&volatile) {
         return Ok(false);
     }
 
     if no_events {
-        context.target_mut().volatiles.remove(&status);
+        context.target_mut().volatiles.remove(&volatile);
         return Ok(true);
     }
 
-    core_battle_effects::run_mon_volatile_event(context, fxlang::BattleEvent::End, &status);
-    context.target_mut().volatiles.remove(&status);
+    core_battle_effects::run_mon_volatile_event(context, fxlang::BattleEvent::End, &volatile);
+    context.target_mut().volatiles.remove(&volatile);
 
-    let volatile_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
-        .name()
-        .to_owned();
-    core_battle_logs::remove_volatile(context, &volatile_name)?;
+    core_battle_logs::remove_volatile(context, &volatile)?;
 
     Ok(true)
 }
@@ -3072,11 +3066,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         return Ok(false);
     }
 
-    let side_condition_name =
-        CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
-            .name()
-            .to_owned();
-    core_battle_logs::add_side_condition(context, &side_condition_name)?;
+    core_battle_logs::add_side_condition(context, &condition)?;
 
     core_battle_effects::run_event_for_side_effect(
         context,
@@ -3112,10 +3102,7 @@ pub fn remove_side_condition(
     );
     context.side_mut().conditions.remove(&condition);
 
-    let condition_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
-        .name()
-        .to_owned();
-    core_battle_logs::remove_side_condition(context, &condition_name)?;
+    core_battle_logs::remove_side_condition(context, &condition)?;
 
     Ok(true)
 }
@@ -3133,7 +3120,7 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
     let types = &context.mon().types;
     // SAFETY: Types are not modified in the log statement.
     let types = unsafe { types.unsafely_detach_borrow() };
-    core_battle_logs::type_change(&mut context, types, source, source_effect.as_ref())?;
+    core_battle_logs::type_change(&mut context, types, source_effect, source)?;
     Ok(true)
 }
 
@@ -3153,7 +3140,7 @@ fn calculate_exp_gain(
         .battle()
         .dex
         .species
-        .get(&species)
+        .get_by_id(&species)
         .into_result()?
         .data
         .base_exp_yield;
@@ -3214,7 +3201,7 @@ fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<(), Error
         .battle()
         .dex
         .species
-        .get(&context.mon().species)
+        .get_by_id(&context.mon().species)
         .into_result()?
         .data
         .learnset
@@ -3265,7 +3252,7 @@ pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> 
         .battle()
         .dex
         .species
-        .get(&context.mon().species)
+        .get_by_id(&context.mon().species)
         .into_result()?
         .data
         .leveling_rate;
@@ -3335,7 +3322,7 @@ pub fn give_out_experience(
             .battle()
             .dex
             .species
-            .get(&species)?
+            .get_by_id(&species)?
             .data
             .ev_yield
             .clone();
@@ -3777,6 +3764,10 @@ pub fn set_ability(
         return Ok(false);
     }
 
+    if &context.target().ability.id == ability {
+        return Ok(false);
+    }
+
     if context
         .battle()
         .dex
@@ -3812,7 +3803,6 @@ pub fn set_ability(
 
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
-        name: ability.data.name.clone(),
         priority: ability_priority,
         effect_state: fxlang::EffectState::new(),
     };
@@ -3832,7 +3822,6 @@ pub fn set_ability(
 pub fn transform_into(
     context: &mut ApplyingEffectContext,
     target: MonHandle,
-    log_effect: bool,
 ) -> Result<bool, Error> {
     if context.target().transformed {
         return Ok(false);
@@ -3862,7 +3851,7 @@ pub fn transform_into(
     // Set the species first, for the baseline transformation.
     let species = target_context.mon().species.clone();
     context.target_mut().transformed = true;
-    Mon::set_species(&mut context.target_context()?, species)?;
+    Mon::set_species(&mut context.target_context()?, &Id::from(species))?;
 
     // Then, manually set everything else.
     context.target_mut().weight = weight;
@@ -3872,7 +3861,61 @@ pub fn transform_into(
     set_ability(context, &ability_id, false, true)?;
     context.target_mut().move_slots = move_slots;
 
-    core_battle_logs::transform(context, target, log_effect)?;
+    core_battle_logs::transform(context, target)?;
+
+    Ok(true)
+}
+
+/// The type of forme change being applied to a Mon in [`forme_change`].
+#[derive(Clone, Copy)]
+pub enum FormeChangeType {
+    Temporary,
+    Permanent,
+    MegaEvolution,
+    PrimalReversion,
+}
+
+impl FormeChangeType {
+    pub fn permanent(&self) -> bool {
+        match self {
+            Self::Temporary => false,
+            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion => true,
+        }
+    }
+}
+
+/// Transforms the Mon into the target species.
+pub fn forme_change(
+    context: &mut ApplyingEffectContext,
+    species: &Id,
+    forme_change_type: FormeChangeType,
+) -> Result<bool, Error> {
+    // TODO: Validate forme change type is allowed.
+
+    if !Mon::set_species(&mut context.target_context()?, species)? {
+        return Ok(false);
+    }
+
+    core_battle_logs::species_change(&mut context.target_context()?)?;
+
+    if forme_change_type.permanent() {
+        Mon::set_base_species(&mut context.target_context()?, species, true)?;
+
+        // TODO: Mega Evolution and Primal Reversion logs.
+    }
+
+    match forme_change_type {
+        FormeChangeType::Temporary | FormeChangeType::Permanent => {
+            core_battle_logs::forme_change(context)?;
+        }
+        _ => todo!("forme change log not implemented"),
+    }
+
+    // CHange the ability after logs, since battle effects start triggering.
+    if forme_change_type.permanent() {
+        let new_ability = context.target().base_ability.id.clone();
+        set_ability(context, &new_ability, false, true)?;
+    }
 
     Ok(true)
 }
@@ -3971,11 +4014,7 @@ pub fn add_slot_condition(
         return Ok(false);
     }
 
-    let slot_condition_name =
-        CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
-            .name()
-            .to_owned();
-    core_battle_logs::add_slot_condition(context, slot, &slot_condition_name)?;
+    core_battle_logs::add_slot_condition(context, slot, &condition)?;
 
     Ok(true)
 }
@@ -4017,10 +4056,7 @@ pub fn remove_slot_condition(
         .or_default()
         .remove(&condition);
 
-    let condition_name = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
-        .name()
-        .to_owned();
-    core_battle_logs::remove_slot_condition(context, slot, &condition_name)?;
+    core_battle_logs::remove_slot_condition(context, slot, &condition)?;
 
     Ok(true)
 }
@@ -4034,22 +4070,26 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
 
     let item = context.battle().dex.items.get_by_id(item)?;
-    let item_name = item.data.name.clone();
+    let item_id = item.id().clone();
+    let target = context.target_handle();
+    let source = context.source_handle();
     context.target_mut().item = Some(ItemSlot {
         id: item.id().clone(),
-        name: item_name.clone(),
-        effect_state: fxlang::EffectState::new(),
+        effect_state: fxlang::EffectState::initial_effect_state(
+            context.as_effect_context_mut(),
+            Some(target),
+            source,
+        )?,
     });
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
 
-    let source = context.source_handle();
     let effect = context.effect_handle().clone();
     core_battle_logs::item(
         &mut context.target_context()?,
-        &item_name,
+        &item_id,
+        Some(effect),
         source,
-        Some(&effect),
     )?;
 
     Ok(true)
@@ -4092,16 +4132,13 @@ pub fn take_item(
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
     context.target_mut().item = None;
 
-    let item_name = CoreBattle::get_effect_by_handle(context.as_battle_context(), &item_handle)?
-        .name()
-        .to_owned();
     let source = context.source_handle();
     let effect = context.effect_handle().clone();
     core_battle_logs::item_end(
         &mut context.target_context()?,
-        &item_name,
+        &item_id,
+        Some(effect),
         source,
-        Some(&effect),
         silent,
         false,
     )?;
@@ -4119,20 +4156,13 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         Some(item) => item.id.clone(),
         None => return Ok(false),
     };
-    let item_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&item_id)?
-        .clone();
-    let item_name = CoreBattle::get_effect_by_handle(context.as_battle_context(), &item_handle)?
-        .name()
-        .to_owned();
 
     // TODO: UseItem event.
     // TODO: TryEatItem event.
 
     core_battle_logs::item_end(
         &mut context.target_context()?,
-        &item_name,
+        &item_id,
         None,
         None,
         false,

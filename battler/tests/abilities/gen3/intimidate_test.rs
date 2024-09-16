@@ -95,9 +95,17 @@ fn intimidate_lowers_adjacent_foes_attack_on_appearance() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
             ["switch", "player-1", "Swampert"],
+            ["switch", "player-1", "Swampert"],
+            "split|side:0",
             ["switch", "player-1", "Mightyena"],
+            ["switch", "player-1", "Mightyena"],
+            "split|side:1",
             ["switch", "player-2", "Swampert"],
+            ["switch", "player-2", "Swampert"],
+            "split|side:1",
+            ["switch", "player-2", "Mightyena"],
             ["switch", "player-2", "Mightyena"],
             "activate|mon:Mightyena,player-2,2|ability:Intimidate",
             "unboost|mon:Swampert,player-1,1|stat:atk|by:1",
@@ -107,10 +115,14 @@ fn intimidate_lowers_adjacent_foes_attack_on_appearance() {
             "unboost|mon:Mightyena,player-2,2|stat:atk|by:1",
             "turn|turn:1",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Manectric"],
             ["switch", "player-1", "Manectric"],
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Mightyena"],
             ["switch", "player-1", "Mightyena"],
             "activate|mon:Mightyena,player-1,1|ability:Intimidate",
             "unboost|mon:Swampert,player-2,1|stat:atk|by:1",
@@ -142,6 +154,8 @@ fn substitute_resists_intimidate() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch", "player-1", "Manectric"],
             ["switch", "player-1", "Manectric"],
             "move|mon:Swampert,player-2,1|name:Substitute|target:Swampert,player-2,1",
             "start|mon:Swampert,player-2,1|move:Substitute",
@@ -151,6 +165,8 @@ fn substitute_resists_intimidate() {
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Mightyena"],
             ["switch", "player-1", "Mightyena"],
             "activate|mon:Mightyena,player-1,1|ability:Intimidate",
             "fail|mon:Swampert,player-2,1|what:unboost|from:move:Substitute",

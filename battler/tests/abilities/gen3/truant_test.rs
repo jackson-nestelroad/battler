@@ -86,6 +86,8 @@ fn truant_causes_user_to_slack_off() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Slaking"],
             ["switch", "player-2", "Slaking"],
             "move|mon:Slaking,player-1,1|name:Tackle|target:Slaking,player-2,1",
             "split|side:1",

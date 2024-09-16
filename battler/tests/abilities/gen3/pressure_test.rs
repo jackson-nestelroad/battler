@@ -69,6 +69,10 @@ fn pressure_deducts_extra_pp_from_opponent() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "ability|mon:Dusclops,player-2,1|ability:Pressure",

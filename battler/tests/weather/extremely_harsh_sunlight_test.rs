@@ -151,7 +151,11 @@ fn desolate_land_starts_extremely_harsh_sunlight_on_switch_in() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
             ["switch", "player-1", "Groudon"],
+            ["switch", "player-1", "Groudon"],
+            "split|side:1",
+            ["switch", "player-2", "Blastoise"],
             ["switch", "player-2", "Blastoise"],
             "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-1,1",
             "turn|turn:1",
@@ -180,6 +184,10 @@ fn desolate_land_dissipates_water_type_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-1,1",
@@ -207,6 +215,10 @@ fn normal_harsh_sunlight_cannot_override_desolate_land() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
             ["switch"],
             ["switch"],
             "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-1,1",
@@ -244,19 +256,27 @@ fn desolate_land_stops_when_last_mon_with_ability_switches_out() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
             ["switch", "player-1", "Groudon"],
+            ["switch", "player-1", "Groudon"],
+            "split|side:1",
+            ["switch", "player-2", "Groudon"],
             ["switch", "player-2", "Groudon"],
             "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-2,1",
             "weather|weather:Extremely Harsh Sunlight|residual",
             "residual",
             "turn|turn:2",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Blastoise"],
             ["switch", "player-1", "Blastoise"],
             "weather|weather:Extremely Harsh Sunlight|residual",
             "residual",
             "turn|turn:3",
             ["time"],
             "weather|weather:Clear",
+            "split|side:1",
+            ["switch", "player-2", "Blastoise"],
             ["switch", "player-2", "Blastoise"],
             "move|mon:Blastoise,player-1,1|name:Water Gun|target:Blastoise,player-2,1",
             "resisted|mon:Blastoise,player-2,1",

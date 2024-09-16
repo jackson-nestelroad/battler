@@ -253,6 +253,8 @@ fn mimic_overwrites_move_slot_as_volatile() {
             "residual",
             "turn|turn:4",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Jolteon"],
             ["switch", "player-1", "Jolteon"],
             "move|mon:Flareon,player-2,2|name:Flamethrower|target:Jolteon,player-1,1",
             "split|side:0",
@@ -261,6 +263,8 @@ fn mimic_overwrites_move_slot_as_volatile() {
             "residual",
             "turn|turn:5",
             ["time"],
+            "split|side:0",
+            ["switch", "player-1", "Wigglytuff"],
             ["switch", "player-1", "Wigglytuff"],
             "residual",
             "turn|turn:6",
@@ -312,6 +316,8 @@ fn mimic_fails_on_moves_marked_fail_mimic() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            ["switch", "player-2", "Jolteon"],
             ["switch", "player-2", "Jolteon"],
             "move|mon:Flareon,player-1,2|name:Flamethrower|target:Wigglytuff,player-2,1",
             "split|side:1",

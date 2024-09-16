@@ -89,7 +89,9 @@ fn move_hits_switched_in_mon() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:F",
+            "split|side:1",
+            ["switch", "player-2", "Charmander"],
+            ["switch", "player-2", "Charmander"],
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Charmander,player-2,1",
             "split|side:1",
             ["damage|mon:Charmander,player-2,1"],
@@ -102,7 +104,9 @@ fn move_hits_switched_in_mon() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",
+            "split|side:1",
+            ["switch", "player-2", "Bulbasaur"],
+            ["switch", "player-2", "Bulbasaur"],
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
             "split|side:1",
             ["damage|mon:Bulbasaur,player-2,1"],

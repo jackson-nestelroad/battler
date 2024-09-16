@@ -169,7 +169,9 @@ fn pursuit_runs_before_switch() {
             "faint|mon:Espeon,player-2,1",
             "residual",
             ["time"],
-            "switch|player:player-2|position:1|name:Celebi|health:100/100|species:Celebi|level:50|gender:F",
+            "split|side:1",
+            ["switch", "player-2", "Celebi"],
+            ["switch", "player-2", "Celebi"],
             "turn|turn:2"
         ]"#,
     )
@@ -208,10 +210,14 @@ fn multiple_pursuits_at_the_same_time() {
             "damage|mon:Espeon,player-2,1|health:0",
             "damage|mon:Espeon,player-2,1|health:0",
             "faint|mon:Espeon,player-2,1",
-            "switch|player:player-2|position:2|name:Xatu|health:100/100|species:Xatu|level:50|gender:F",
+            "split|side:1",
+            ["switch", "player-2", "Xatu"],
+            ["switch", "player-2", "Xatu"],
             "residual",
             ["time"],
-            "switch|player:player-2|position:1|name:Celebi|health:100/100|species:Celebi|level:50|gender:F",
+            "split|side:1",
+            ["switch", "player-2", "Celebi"],
+            ["switch", "player-2", "Celebi"],
             "turn|turn:2"
         ]"#,
     )

@@ -143,6 +143,8 @@ fn switch_occurs_before_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:0",
+            "switch|player:player-1|position:2|name:Extra|health:140/140|species:Venusaur|level:50|gender:F",
             "switch|player:player-1|position:2|name:Extra|health:100/100|species:Venusaur|level:50|gender:F",
             "move|mon:Fast,player-2,1|name:High Priority|target:Extra,player-1,2",
             "residual",
@@ -171,7 +173,11 @@ fn switches_ordered_by_speed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "split|side:1",
+            "switch|player:player-2|position:1|name:Extra|health:140/140|species:Venusaur|level:50|gender:F",
             "switch|player:player-2|position:1|name:Extra|health:100/100|species:Venusaur|level:50|gender:F",
+            "split|side:0",
+            "switch|player:player-1|position:2|name:Extra|health:140/140|species:Venusaur|level:50|gender:F",
             "switch|player:player-1|position:2|name:Extra|health:100/100|species:Venusaur|level:50|gender:F",
             "residual",
             "turn|turn:2"
