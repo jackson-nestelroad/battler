@@ -1,5 +1,4 @@
 #![feature(const_trait_impl)]
-#![feature(entry_insert)]
 #![feature(hasher_prefixfree_extras)]
 #![feature(pattern)]
 #![feature(trait_upcasting)]
