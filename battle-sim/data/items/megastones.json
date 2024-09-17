@@ -1,0 +1,333 @@
+{
+  "gengarite": {
+    "name": "Gengarite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Gengar",
+    "mega_evolves_into": "Gengar-Mega",
+    "flags": []
+  },
+  "gardevoirite": {
+    "name": "Gardevoirite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Gardevoir",
+    "mega_evolves_into": "Gardevoir-Mega",
+    "flags": []
+  },
+  "ampharosite": {
+    "name": "Ampharosite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Ampharos",
+    "mega_evolves_into": "Ampharos-Mega",
+    "flags": []
+  },
+  "venusaurite": {
+    "name": "Venusaurite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Venusaur",
+    "mega_evolves_into": "Venusaur-Mega",
+    "flags": []
+  },
+  "charizarditex": {
+    "name": "Charizardite X",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Charizard",
+    "mega_evolves_into": "Charizard-Mega-X",
+    "flags": []
+  },
+  "blastoisinite": {
+    "name": "Blastoisinite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Blastoise",
+    "mega_evolves_into": "Blastoise-Mega",
+    "flags": []
+  },
+  "mewtwonitex": {
+    "name": "Mewtwonite X",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Mewtwo",
+    "mega_evolves_into": "Mewtwo-Mega-X",
+    "flags": []
+  },
+  "mewtwonitey": {
+    "name": "Mewtwonite Y",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Mewtwo",
+    "mega_evolves_into": "Mewtwo-Mega-Y",
+    "flags": []
+  },
+  "blazikenite": {
+    "name": "Blazikenite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Blaziken",
+    "mega_evolves_into": "Blaziken-Mega",
+    "flags": []
+  },
+  "medichamite": {
+    "name": "Medichamite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Medicham",
+    "mega_evolves_into": "Medicham-Mega",
+    "flags": []
+  },
+  "houndoominite": {
+    "name": "Houndoominite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Houndoom",
+    "mega_evolves_into": "Houndoom-Mega",
+    "flags": []
+  },
+  "aggronite": {
+    "name": "Aggronite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Aggron",
+    "mega_evolves_into": "Aggron-Mega",
+    "flags": []
+  },
+  "banettite": {
+    "name": "Banettite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Banette",
+    "mega_evolves_into": "Banette-Mega",
+    "flags": []
+  },
+  "tyranitarite": {
+    "name": "Tyranitarite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Tyranitar",
+    "mega_evolves_into": "Tyranitar-Mega",
+    "flags": []
+  },
+  "scizorite": {
+    "name": "Scizorite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Scizor",
+    "mega_evolves_into": "Scizor-Mega",
+    "flags": []
+  },
+  "pinsirite": {
+    "name": "Pinsirite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Pinsir",
+    "mega_evolves_into": "Pinsir-Mega",
+    "flags": []
+  },
+  "aerodactylite": {
+    "name": "Aerodactylite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Aerodactyl",
+    "mega_evolves_into": "Aerodactyl-Mega",
+    "flags": []
+  },
+  "lucarionite": {
+    "name": "Lucarionite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Lucario",
+    "mega_evolves_into": "Lucario-Mega",
+    "flags": []
+  },
+  "abomasite": {
+    "name": "Abomasite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Abomasnow",
+    "mega_evolves_into": "Abomasnow-Mega",
+    "flags": []
+  },
+  "kangaskhanite": {
+    "name": "Kangaskhanite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Kangaskhan",
+    "mega_evolves_into": "Kangaskhan-Mega",
+    "flags": []
+  },
+  "gyaradosite": {
+    "name": "Gyaradosite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Gyarados",
+    "mega_evolves_into": "Gyarados-Mega",
+    "flags": []
+  },
+  "absolite": {
+    "name": "Absolite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Absol",
+    "mega_evolves_into": "Absol-Mega",
+    "flags": []
+  },
+  "charizarditey": {
+    "name": "Charizardite Y",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Charizard",
+    "mega_evolves_into": "Charizard-Mega-Y",
+    "flags": []
+  },
+  "alakazite": {
+    "name": "Alakazite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Alakazam",
+    "mega_evolves_into": "Alakazam-Mega",
+    "flags": []
+  },
+  "heracronite": {
+    "name": "Heracronite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Heracross",
+    "mega_evolves_into": "Heracross-Mega",
+    "flags": []
+  },
+  "mawilite": {
+    "name": "Mawilite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Mawile",
+    "mega_evolves_into": "Mawile-Mega",
+    "flags": []
+  },
+  "manectite": {
+    "name": "Manectite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Manectric",
+    "mega_evolves_into": "Manectric-Mega",
+    "flags": []
+  },
+  "garchompite": {
+    "name": "Garchompite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Garchomp",
+    "mega_evolves_into": "Garchomp-Mega",
+    "flags": []
+  },
+  "latiasite": {
+    "name": "Latiasite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Latias",
+    "mega_evolves_into": "Latias-Mega",
+    "flags": []
+  },
+  "latiosite": {
+    "name": "Latiosite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Latios",
+    "mega_evolves_into": "Latios-Mega",
+    "flags": []
+  },
+  "swampertite": {
+    "name": "Swampertite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Swampert",
+    "mega_evolves_into": "Swampert-Mega",
+    "flags": []
+  },
+  "sceptilite": {
+    "name": "Sceptilite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Sceptile",
+    "mega_evolves_into": "Sceptile-Mega",
+    "flags": []
+  },
+  "sablenite": {
+    "name": "Sablenite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Sableye",
+    "mega_evolves_into": "Sableye-Mega",
+    "flags": []
+  },
+  "altarianite": {
+    "name": "Altarianite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Altaria",
+    "mega_evolves_into": "Altaria-Mega",
+    "flags": []
+  },
+  "galladite": {
+    "name": "Galladite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Gallade",
+    "mega_evolves_into": "Gallade-Mega",
+    "flags": []
+  },
+  "audinite": {
+    "name": "Audinite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Audino",
+    "mega_evolves_into": "Audino-Mega",
+    "flags": []
+  },
+  "metagrossite": {
+    "name": "Metagrossite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Metagross",
+    "mega_evolves_into": "Metagross-Mega",
+    "flags": []
+  },
+  "sharpedonite": {
+    "name": "Sharpedonite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Sharpedo",
+    "mega_evolves_into": "Sharpedo-Mega",
+    "flags": []
+  },
+  "slowbronite": {
+    "name": "Slowbronite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Slowbro",
+    "mega_evolves_into": "Slowbro-Mega",
+    "flags": []
+  },
+  "steelixite": {
+    "name": "Steelixite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Steelix",
+    "mega_evolves_into": "Steelix-Mega",
+    "flags": []
+  },
+  "pidgeotite": {
+    "name": "Pidgeotite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Pidgeot",
+    "mega_evolves_into": "Pidgeot-Mega",
+    "flags": []
+  },
+  "glalitite": {
+    "name": "Glalitite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Glalie",
+    "mega_evolves_into": "Glalie-Mega",
+    "flags": []
+  },
+  "diancite": {
+    "name": "Diancite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Diancie",
+    "mega_evolves_into": "Diancie-Mega",
+    "flags": []
+  },
+  "prisonbottle": { "name": "Prison Bottle", "flags": [] },
+  "megacuff": { "name": "Mega Cuff", "flags": [] },
+  "cameruptite": {
+    "name": "Cameruptite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Camerupt",
+    "mega_evolves_into": "Camerupt-Mega",
+    "flags": []
+  },
+  "lopunnite": {
+    "name": "Lopunnite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Lopunny",
+    "mega_evolves_into": "Lopunny-Mega",
+    "flags": []
+  },
+  "salamencite": {
+    "name": "Salamencite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Salamence",
+    "mega_evolves_into": "Salamence-Mega",
+    "flags": []
+  },
+  "beedrillite": {
+    "name": "Beedrillite",
+    "fling": { "power": 80 },
+    "mega_evolves_from": "Beedrill",
+    "mega_evolves_into": "Beedrill-Mega",
+    "flags": []
+  }
+}

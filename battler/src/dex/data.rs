@@ -104,10 +104,10 @@ impl LocalDataStore {
     pub const CLAUSES_FILE: &str = "clauses.json";
     /// Conditions file name.
     pub const CONDITIONS_FILE: &str = "conditions.json";
-    /// Items file name.
-    pub const ITEMS_FILE: &str = "items.json";
     /// Abilities directory name.
     pub const ABILITIES_DIR: &str = "abilities";
+    /// Items directory name.
+    pub const ITEMS_DIR: &str = "items";
     /// Moves directory name.
     pub const MOVES_DIR: &str = "moves";
     /// Species directory name.
@@ -173,14 +173,8 @@ impl LocalDataStore {
         .wrap_error_with_message("failed to parse conditions")?;
         self.conditions.register_extend(conditions);
 
-        let items: FastHashMap<Id, ItemData> = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::ITEMS_FILE))
-                .wrap_error_with_message("failed to read items")?,
-        )
-        .wrap_error_with_message("failed to parse items")?;
-        self.items.register_extend(items);
-
         self.abilities = self.read_all_files_in_directory::<AbilityData>(Self::ABILITIES_DIR)?;
+        self.items = self.read_all_files_in_directory::<ItemData>(Self::ITEMS_DIR)?;
         self.moves = self.read_all_files_in_directory::<MoveData>(Self::MOVES_DIR)?;
         self.species = self.read_all_files_in_directory::<SpeciesData>(Self::SPECIES_DIR)?;
 

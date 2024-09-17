@@ -1,0 +1,11 @@
+{
+  "guardspec": { "name": "Guard Spec.", "flags": ["Battle"] },
+  "direhit": { "name": "Dire Hit", "flags": ["Battle"] },
+  "xattack": { "name": "X Attack", "flags": ["Battle"] },
+  "xdefense": { "name": "X Defense", "flags": ["Battle"] },
+  "xspeed": { "name": "X Speed", "flags": ["Battle"] },
+  "xaccuracy": { "name": "X Accuracy", "flags": ["Battle"] },
+  "xspatk": { "name": "X Sp. Atk", "flags": ["Battle"] },
+  "xspdef": { "name": "X Sp. Def", "flags": ["Battle"] },
+  "maxmushrooms": { "name": "Max Mushrooms", "flags": ["Battle"] }
+}

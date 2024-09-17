@@ -1,0 +1,899 @@
+{
+  "pokedoll": { "name": "Poké Doll", "flags": [] },
+  "fluffytail": { "name": "Fluffy Tail", "flags": [] },
+  "adamantorb": {
+    "name": "Adamant Orb",
+    "fling": { "power": 60 },
+    "flags": []
+  },
+  "lustrousorb": {
+    "name": "Lustrous Orb",
+    "fling": { "power": 60 },
+    "flags": []
+  },
+  "brightpowder": {
+    "name": "Bright Powder",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "whiteherb": { "name": "White Herb", "fling": { "power": 10 }, "flags": [] },
+  "machobrace": {
+    "name": "Macho Brace",
+    "fling": { "power": 60 },
+    "flags": []
+  },
+  "expshare": { "name": "Exp. Share", "flags": [] },
+  "quickclaw": { "name": "Quick Claw", "fling": { "power": 80 }, "flags": [] },
+  "soothebell": { "name": "Soothe Bell", "flags": [] },
+  "mentalherb": {
+    "name": "Mental Herb",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "choiceband": {
+    "name": "Choice Band",
+    "fling": { "power": 10 },
+    "flags": ["ChoiceLocking"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "on_use_move": ["add_volatile: $user choicelock"],
+        "on_modify_atk": ["return $atk * 3/2"]
+      }
+    }
+  },
+  "kingsrock": {
+    "name": "King's Rock",
+    "fling": { "power": 30, "volatile_status": "flinch" },
+    "flags": []
+  },
+  "silverpowder": {
+    "name": "Silver Powder",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "amuletcoin": { "name": "Amulet Coin", "flags": [] },
+  "cleansetag": { "name": "Cleanse Tag", "flags": [] },
+  "souldew": { "name": "Soul Dew", "fling": { "power": 30 }, "flags": [] },
+  "deepseatooth": {
+    "name": "Deep Sea Tooth",
+    "fling": { "power": 90 },
+    "flags": []
+  },
+  "deepseascale": {
+    "name": "Deep Sea Scale",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "smokeball": { "name": "Smoke Ball", "flags": [] },
+  "everstone": { "name": "Everstone", "flags": [] },
+  "focusband": { "name": "Focus Band", "fling": { "power": 10 }, "flags": [] },
+  "luckyegg": { "name": "Lucky Egg", "flags": [] },
+  "scopelens": { "name": "Scope Lens", "fling": { "power": 30 }, "flags": [] },
+  "metalcoat": { "name": "Metal Coat", "fling": { "power": 30 }, "flags": [] },
+  "leftovers": { "name": "Leftovers", "fling": { "power": 10 }, "flags": [] },
+  "dragonscale": {
+    "name": "Dragon Scale",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "lightball": {
+    "name": "Light Ball",
+    "fling": { "power": 30, "status": "par" },
+    "flags": []
+  },
+  "softsand": { "name": "Soft Sand", "fling": { "power": 10 }, "flags": [] },
+  "hardstone": { "name": "Hard Stone", "fling": { "power": 100 }, "flags": [] },
+  "miracleseed": {
+    "name": "Miracle Seed",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "blackglasses": {
+    "name": "Black Glasses",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "blackbelt": { "name": "Black Belt", "fling": { "power": 30 }, "flags": [] },
+  "magnet": { "name": "Magnet", "fling": { "power": 30 }, "flags": [] },
+  "mysticwater": {
+    "name": "Mystic Water",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "sharpbeak": { "name": "Sharp Beak", "fling": { "power": 50 }, "flags": [] },
+  "poisonbarb": {
+    "name": "Poison Barb",
+    "fling": { "power": 70, "status": "psn" },
+    "flags": []
+  },
+  "nevermeltice": {
+    "name": "Never-Melt Ice",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "spelltag": { "name": "Spell Tag", "fling": { "power": 30 }, "flags": [] },
+  "twistedspoon": {
+    "name": "Twisted Spoon",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "charcoal": { "name": "Charcoal", "fling": { "power": 30 }, "flags": [] },
+  "dragonfang": {
+    "name": "Dragon Fang",
+    "fling": { "power": 70 },
+    "flags": []
+  },
+  "silkscarf": { "name": "Silk Scarf", "fling": { "power": 10 }, "flags": [] },
+  "upgrade": { "name": "Upgrade", "fling": { "power": 30 }, "flags": [] },
+  "shellbell": { "name": "Shell Bell", "fling": { "power": 30 }, "flags": [] },
+  "seaincense": {
+    "name": "Sea Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "laxincense": {
+    "name": "Lax Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "luckypunch": {
+    "name": "Lucky Punch",
+    "fling": { "power": 40 },
+    "flags": []
+  },
+  "metalpowder": {
+    "name": "Metal Powder",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "thickclub": { "name": "Thick Club", "fling": { "power": 90 }, "flags": [] },
+  "stick": { "name": "Leek", "fling": { "power": 60 }, "flags": [] },
+  "redscarf": { "name": "Red Scarf", "flags": [] },
+  "bluescarf": { "name": "Blue Scarf", "flags": [] },
+  "pinkscarf": { "name": "Pink Scarf", "flags": [] },
+  "greenscarf": { "name": "Green Scarf", "flags": [] },
+  "yellowscarf": { "name": "Yellow Scarf", "flags": [] },
+  "widelens": { "name": "Wide Lens", "fling": { "power": 10 }, "flags": [] },
+  "muscleband": {
+    "name": "Muscle Band",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "wiseglasses": {
+    "name": "Wise Glasses",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "expertbelt": {
+    "name": "Expert Belt",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "lightclay": { "name": "Light Clay", "fling": { "power": 30 }, "flags": [] },
+  "lifeorb": { "name": "Life Orb", "fling": { "power": 30 }, "flags": [] },
+  "powerherb": { "name": "Power Herb", "fling": { "power": 10 }, "flags": [] },
+  "toxicorb": {
+    "name": "Toxic Orb",
+    "fling": { "power": 30, "status": "tox" },
+    "flags": []
+  },
+  "flameorb": {
+    "name": "Flame Orb",
+    "fling": { "power": 30, "status": "brn" },
+    "flags": []
+  },
+  "quickpowder": {
+    "name": "Quick Powder",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "focussash": { "name": "Focus Sash", "fling": { "power": 10 }, "flags": [] },
+  "zoomlens": { "name": "Zoom Lens", "fling": { "power": 10 }, "flags": [] },
+  "metronome": { "name": "Metronome", "fling": { "power": 30 }, "flags": [] },
+  "ironball": { "name": "Iron Ball", "fling": { "power": 130 }, "flags": [] },
+  "laggingtail": {
+    "name": "Lagging Tail",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "destinyknot": {
+    "name": "Destiny Knot",
+    "fling": { "power": 10 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_attract": [
+          "if !$source or $source == $target:",
+          ["return"],
+          "add_volatile: $source attract use_target_as_source"
+        ]
+      }
+    }
+  },
+  "blacksludge": {
+    "name": "Black Sludge",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "icyrock": { "name": "Icy Rock", "fling": { "power": 40 }, "flags": [] },
+  "smoothrock": {
+    "name": "Smooth Rock",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "heatrock": { "name": "Heat Rock", "fling": { "power": 60 }, "flags": [] },
+  "damprock": { "name": "Damp Rock", "fling": { "power": 60 }, "flags": [] },
+  "gripclaw": { "name": "Grip Claw", "fling": { "power": 90 }, "flags": [] },
+  "choicescarf": {
+    "name": "Choice Scarf",
+    "fling": { "power": 10 },
+    "flags": ["ChoiceLocking"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "on_use_move": ["add_volatile: $user choicelock"],
+        "on_modify_spe": ["return $spe * 3/2"]
+      }
+    }
+  },
+  "stickybarb": {
+    "name": "Sticky Barb",
+    "fling": { "power": 80 },
+    "flags": []
+  },
+  "powerbracer": {
+    "name": "Power Bracer",
+    "fling": { "power": 70 },
+    "flags": []
+  },
+  "powerbelt": { "name": "Power Belt", "fling": { "power": 70 }, "flags": [] },
+  "powerlens": { "name": "Power Lens", "fling": { "power": 70 }, "flags": [] },
+  "powerband": { "name": "Power Band", "fling": { "power": 70 }, "flags": [] },
+  "poweranklet": {
+    "name": "Power Anklet",
+    "fling": { "power": 70 },
+    "flags": []
+  },
+  "powerweight": {
+    "name": "Power Weight",
+    "fling": { "power": 70 },
+    "flags": []
+  },
+  "shedshell": { "name": "Shed Shell", "fling": { "power": 10 }, "flags": [] },
+  "bigroot": { "name": "Big Root", "fling": { "power": 10 }, "flags": [] },
+  "choicespecs": {
+    "name": "Choice Specs",
+    "fling": { "power": 10 },
+    "flags": ["ChoiceLocking"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "on_use_move": ["add_volatile: $user choicelock"],
+        "on_modify_spa": ["return $spa * 3/2"]
+      }
+    }
+  },
+  "flameplate": {
+    "name": "Flame Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Fire",
+    "force_forme": "Arceus-Fire",
+    "flags": []
+  },
+  "splashplate": {
+    "name": "Splash Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Water",
+    "force_forme": "Arceus-Water",
+    "flags": []
+  },
+  "zapplate": {
+    "name": "Zap Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Electric",
+    "force_forme": "Arceus-Electric",
+    "flags": []
+  },
+  "meadowplate": {
+    "name": "Meadow Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Grass",
+    "force_forme": "Arceus-Grass",
+    "flags": []
+  },
+  "icicleplate": {
+    "name": "Icicle Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Ice",
+    "force_forme": "Arceus-Ice",
+    "flags": []
+  },
+  "fistplate": {
+    "name": "Fist Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Fighting",
+    "force_forme": "Arceus-Fighting",
+    "flags": []
+  },
+  "toxicplate": {
+    "name": "Toxic Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Poison",
+    "force_forme": "Arceus-Poison",
+    "flags": []
+  },
+  "earthplate": {
+    "name": "Earth Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Ground",
+    "force_forme": "Arceus-Ground",
+    "flags": []
+  },
+  "skyplate": {
+    "name": "Sky Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Flying",
+    "force_forme": "Arceus-Flying",
+    "flags": []
+  },
+  "mindplate": {
+    "name": "Mind Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Psychic",
+    "force_forme": "Arceus-Psychic",
+    "flags": []
+  },
+  "insectplate": {
+    "name": "Insect Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Bug",
+    "force_forme": "Arceus-Bug",
+    "flags": []
+  },
+  "stoneplate": {
+    "name": "Stone Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Rock",
+    "force_forme": "Arceus-Rock",
+    "flags": []
+  },
+  "spookyplate": {
+    "name": "Spooky Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Ghost",
+    "force_forme": "Arceus-Ghost",
+    "flags": []
+  },
+  "dracoplate": {
+    "name": "Draco Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Dragon",
+    "force_forme": "Arceus-Dragon",
+    "flags": []
+  },
+  "dreadplate": {
+    "name": "Dread Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Dark",
+    "force_forme": "Arceus-Dark",
+    "flags": []
+  },
+  "ironplate": {
+    "name": "Iron Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Steel",
+    "force_forme": "Arceus-Steel",
+    "flags": []
+  },
+  "oddincense": {
+    "name": "Odd Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "rockincense": {
+    "name": "Rock Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "fullincense": {
+    "name": "Full Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "waveincense": {
+    "name": "Wave Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "roseincense": {
+    "name": "Rose Incense",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "luckincense": { "name": "Luck Incense", "flags": [] },
+  "pureincense": { "name": "Pure Incense", "flags": [] },
+  "protector": { "name": "Protector", "fling": { "power": 80 }, "flags": [] },
+  "electirizer": {
+    "name": "Electirizer",
+    "fling": { "power": 80 },
+    "flags": []
+  },
+  "magmarizer": { "name": "Magmarizer", "fling": { "power": 80 }, "flags": [] },
+  "dubiousdisc": {
+    "name": "Dubious Disc",
+    "fling": { "power": 50 },
+    "flags": []
+  },
+  "reapercloth": {
+    "name": "Reaper Cloth",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "razorclaw": { "name": "Razor Claw", "fling": { "power": 80 }, "flags": [] },
+  "razorfang": {
+    "name": "Razor Fang",
+    "fling": { "power": 30, "volatile_status": "flinch" },
+    "flags": []
+  },
+  "griseousorb": {
+    "name": "Griseous Orb",
+    "fling": { "power": 60 },
+    "force_forme": "Giratina-Origin",
+    "flags": []
+  },
+  "dousedrive": {
+    "name": "Douse Drive",
+    "fling": { "power": 70 },
+    "special_data": { "techno_blast_type": "Water" },
+    "force_forme": "Genesect-Douse",
+    "flags": []
+  },
+  "shockdrive": {
+    "name": "Shock Drive",
+    "fling": { "power": 70 },
+    "special_data": { "techno_blast_type": "Electric" },
+    "force_forme": "Genesect-Shock",
+    "flags": []
+  },
+  "burndrive": {
+    "name": "Burn Drive",
+    "fling": { "power": 70 },
+    "special_data": { "techno_blast_type": "Fire" },
+    "force_forme": "Genesect-Burn",
+    "flags": []
+  },
+  "chilldrive": {
+    "name": "Chill Drive",
+    "fling": { "power": 70 },
+    "special_data": { "techno_blast_type": "Ice" },
+    "force_forme": "Genesect-Chill",
+    "flags": []
+  },
+  "prismscale": {
+    "name": "Prism Scale",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "eviolite": { "name": "Eviolite", "fling": { "power": 40 }, "flags": [] },
+  "floatstone": {
+    "name": "Float Stone",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "rockyhelmet": {
+    "name": "Rocky Helmet",
+    "fling": { "power": 60 },
+    "flags": []
+  },
+  "airballoon": {
+    "name": "Air Balloon",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "redcard": { "name": "Red Card", "fling": { "power": 10 }, "flags": [] },
+  "ringtarget": {
+    "name": "Ring Target",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "bindingband": {
+    "name": "Binding Band",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "absorbbulb": {
+    "name": "Absorb Bulb",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "cellbattery": {
+    "name": "Cell Battery",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "ejectbutton": {
+    "name": "Eject Button",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "coverfossil": {
+    "name": "Cover Fossil",
+    "fling": { "power": 100 },
+    "flags": []
+  },
+  "plumefossil": {
+    "name": "Plume Fossil",
+    "fling": { "power": 100 },
+    "flags": []
+  },
+  "passorb": { "name": "Pass Orb", "flags": [] },
+  "poketoy": { "name": "Poké Toy", "flags": [] },
+  "balmmushroom": { "name": "Balm Mushroom", "flags": [] },
+  "bignugget": { "name": "Big Nugget", "fling": { "power": 130 }, "flags": [] },
+  "pearlstring": { "name": "Pearl String", "flags": [] },
+  "cometshard": { "name": "Comet Shard", "flags": [] },
+  "reliccopper": { "name": "Relic Copper", "flags": [] },
+  "relicsilver": { "name": "Relic Silver", "flags": [] },
+  "relicgold": { "name": "Relic Gold", "flags": [] },
+  "relicvase": { "name": "Relic Vase", "flags": [] },
+  "relicband": { "name": "Relic Band", "flags": [] },
+  "relicstatue": { "name": "Relic Statue", "flags": [] },
+  "reliccrown": { "name": "Relic Crown", "flags": [] },
+  "weaknesspolicy": {
+    "name": "Weakness Policy",
+    "fling": { "power": 80 },
+    "flags": []
+  },
+  "assaultvest": {
+    "name": "Assault Vest",
+    "fling": { "power": 80 },
+    "flags": []
+  },
+  "pixieplate": {
+    "name": "Pixie Plate",
+    "fling": { "power": 90 },
+    "plate_type": "Fairy",
+    "force_forme": "Arceus-Fairy",
+    "flags": []
+  },
+  "abilitycapsule": { "name": "Ability Capsule", "flags": [] },
+  "whippeddream": {
+    "name": "Whipped Dream",
+    "fling": { "power": 80 },
+    "flags": []
+  },
+  "sachet": { "name": "Sachet", "fling": { "power": 80 }, "flags": [] },
+  "luminousmoss": {
+    "name": "Luminous Moss",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "snowball": { "name": "Snowball", "fling": { "power": 30 }, "flags": [] },
+  "safetygoggles": {
+    "name": "Safety Goggles",
+    "fling": { "power": 80 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_immunity": [
+          "if [sandstormweather, hailweather] has $effect.id:",
+          ["return false"],
+          "if $effect.is_move and func_call(move_has_flag: $effect powder):",
+          ["return false"]
+        ]
+      }
+    }
+  },
+  "richmulch": { "name": "Rich Mulch", "flags": [] },
+  "surprisemulch": { "name": "Surprise Mulch", "flags": [] },
+  "boostmulch": { "name": "Boost Mulch", "flags": [] },
+  "amazemulch": { "name": "Amaze Mulch", "flags": [] },
+  "jawfossil": { "name": "Jaw Fossil", "fling": { "power": 100 }, "flags": [] },
+  "sailfossil": {
+    "name": "Sail Fossil",
+    "fling": { "power": 100 },
+    "flags": []
+  },
+  "bottlecap": { "name": "Bottle Cap", "fling": { "power": 30 }, "flags": [] },
+  "goldbottlecap": {
+    "name": "Gold Bottle Cap",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "adrenalineorb": {
+    "name": "Adrenaline Orb",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "icestone": { "name": "Ice Stone", "fling": { "power": 30 }, "flags": [] },
+  "bigmalasada": { "name": "Big Malasada", "flags": [] },
+  "rednectar": { "name": "Red Nectar", "flags": [] },
+  "yellownectar": { "name": "Yellow Nectar", "flags": [] },
+  "pinknectar": { "name": "Pink Nectar", "flags": [] },
+  "purplenectar": { "name": "Purple Nectar", "flags": [] },
+  "terrainextender": {
+    "name": "Terrain Extender",
+    "fling": { "power": 60 },
+    "flags": []
+  },
+  "protectivepads": {
+    "name": "Protective Pads",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "is_contact_proof": ["return true"]
+      }
+    }
+  },
+  "electricseed": {
+    "name": "Electric Seed",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "psychicseed": {
+    "name": "Psychic Seed",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "mistyseed": { "name": "Misty Seed", "fling": { "power": 10 }, "flags": [] },
+  "grassyseed": {
+    "name": "Grassy Seed",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "fightingmemory": {
+    "name": "Fighting Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Fighting" },
+    "force_forme": "Silvally-Fighting",
+    "flags": []
+  },
+  "flyingmemory": {
+    "name": "Flying Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Flying" },
+    "force_forme": "Silvally-Flying",
+    "flags": []
+  },
+  "poisonmemory": {
+    "name": "Poison Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Poison" },
+    "force_forme": "Silvally-Poison",
+    "flags": []
+  },
+  "groundmemory": {
+    "name": "Ground Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Ground" },
+    "force_forme": "Silvally-Ground",
+    "flags": []
+  },
+  "rockmemory": {
+    "name": "Rock Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Rock" },
+    "force_forme": "Silvally-Rock",
+    "flags": []
+  },
+  "bugmemory": {
+    "name": "Bug Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Bug" },
+    "force_forme": "Silvally-Bug",
+    "flags": []
+  },
+  "ghostmemory": {
+    "name": "Ghost Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Ghost" },
+    "force_forme": "Silvally-Ghost",
+    "flags": []
+  },
+  "steelmemory": {
+    "name": "Steel Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Steel" },
+    "force_forme": "Silvally-Steel",
+    "flags": []
+  },
+  "firememory": {
+    "name": "Fire Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Fire" },
+    "force_forme": "Silvally-Fire",
+    "flags": []
+  },
+  "watermemory": {
+    "name": "Water Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Water" },
+    "force_forme": "Silvally-Water",
+    "flags": []
+  },
+  "grassmemory": {
+    "name": "Grass Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Grass" },
+    "force_forme": "Silvally-Grass",
+    "flags": []
+  },
+  "electricmemory": {
+    "name": "Electric Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Electric" },
+    "force_forme": "Silvally-Electric",
+    "flags": []
+  },
+  "psychicmemory": {
+    "name": "Psychic Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Psychic" },
+    "force_forme": "Silvally-Psychic",
+    "flags": []
+  },
+  "icememory": {
+    "name": "Ice Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Ice" },
+    "force_forme": "Silvally-Ice",
+    "flags": []
+  },
+  "dragonmemory": {
+    "name": "Dragon Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Dragon" },
+    "force_forme": "Silvally-Dragon",
+    "flags": []
+  },
+  "darkmemory": {
+    "name": "Dark Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Dark" },
+    "force_forme": "Silvally-Dark",
+    "flags": []
+  },
+  "fairymemory": {
+    "name": "Fairy Memory",
+    "fling": { "power": 50 },
+    "special_data": { "multi_attack_type": "Fairy" },
+    "force_forme": "Silvally-Fairy",
+    "flags": []
+  },
+  "throatspray": {
+    "name": "Throat Spray",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "ejectpack": { "name": "Eject Pack", "fling": { "power": 50 }, "flags": [] },
+  "heavydutyboots": {
+    "name": "Heavy-Duty Boots",
+    "fling": { "power": 80 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "is_immune_to_entry_hazards": ["return true"]
+      }
+    }
+  },
+  "blunderpolicy": {
+    "name": "Blunder Policy",
+    "fling": { "power": 80 },
+    "flags": []
+  },
+  "roomservice": {
+    "name": "Room Service",
+    "fling": { "power": 100 },
+    "flags": []
+  },
+  "utilityumbrella": {
+    "name": "Utility Umbrella",
+    "fling": { "power": 60 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "suppress_mon_weather": [
+          "if $field.weather.is_defined and ($field.weather.is_raining or $field.weather.is_sunny):",
+          ["return true"]
+        ],
+        "on_weather": {
+          "order": 1,
+          "program": [
+            "if $field.weather.is_defined and ($field.weather.is_raining or $field.weather.is_sunny):",
+            ["return false"]
+          ]
+        }
+      }
+    }
+  },
+  "adamantcrystal": {
+    "name": "Adamant Crystal",
+    "force_forme": "Dialga-Origin",
+    "flags": []
+  },
+  "lustrousglobe": {
+    "name": "Lustrous Globe",
+    "force_forme": "Palkia-Origin",
+    "flags": []
+  },
+  "griseouscore": {
+    "name": "Griseous Core",
+    "force_forme": "Giratina-Origin",
+    "flags": []
+  },
+  "boosterenergy": {
+    "name": "Booster Energy",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "abilityshield": {
+    "name": "Ability Shield",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_set_ability": [
+          "if $effect.id != trace or !$effect_state.logged_for_trace:",
+          ["log_block: with_target", "$effect_state.logged_for_trace = true"],
+          "return false"
+        ]
+      }
+    }
+  },
+  "clearamulet": {
+    "name": "Clear Amulet",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "mirrorherb": {
+    "name": "Mirror Herb",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "punchingglove": {
+    "name": "Punching Glove",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "covertcloak": {
+    "name": "Covert Cloak",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "loadeddice": {
+    "name": "Loaded Dice",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "auspiciousarmor": {
+    "name": "Auspicious Armor",
+    "fling": { "power": 30 },
+    "flags": []
+  },
+  "leaderscrest": { "name": "Leader's Crest", "flags": [] },
+  "fairyfeather": {
+    "name": "Fairy Feather",
+    "fling": { "power": 10 },
+    "flags": []
+  },
+  "wellspringmask": {
+    "name": "Wellspring Mask",
+    "fling": { "power": 60 },
+    "force_forme": "Ogerpon-Wellspring",
+    "flags": []
+  },
+  "hearthflamemask": {
+    "name": "Hearthflame Mask",
+    "fling": { "power": 60 },
+    "force_forme": "Ogerpon-Hearthflame",
+    "flags": []
+  },
+  "cornerstonemask": {
+    "name": "Cornerstone Mask",
+    "fling": { "power": 60 },
+    "force_forme": "Ogerpon-Cornerstone",
+    "flags": []
+  }
+}

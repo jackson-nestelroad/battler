@@ -1,0 +1,20 @@
+{
+  "firegem": { "name": "Fire Gem", "flags": ["Gem"] },
+  "watergem": { "name": "Water Gem", "flags": ["Gem"] },
+  "electricgem": { "name": "Electric Gem", "flags": ["Gem"] },
+  "grassgem": { "name": "Grass Gem", "flags": ["Gem"] },
+  "icegem": { "name": "Ice Gem", "flags": ["Gem"] },
+  "fightinggem": { "name": "Fighting Gem", "flags": ["Gem"] },
+  "poisongem": { "name": "Poison Gem", "flags": ["Gem"] },
+  "groundgem": { "name": "Ground Gem", "flags": ["Gem"] },
+  "flyinggem": { "name": "Flying Gem", "flags": ["Gem"] },
+  "psychicgem": { "name": "Psychic Gem", "flags": ["Gem"] },
+  "buggem": { "name": "Bug Gem", "flags": ["Gem"] },
+  "rockgem": { "name": "Rock Gem", "flags": ["Gem"] },
+  "ghostgem": { "name": "Ghost Gem", "flags": ["Gem"] },
+  "darkgem": { "name": "Dark Gem", "flags": ["Gem"] },
+  "steelgem": { "name": "Steel Gem", "flags": ["Gem"] },
+  "dragongem": { "name": "Dragon Gem", "flags": ["Gem"] },
+  "normalgem": { "name": "Normal Gem", "flags": ["Gem"] },
+  "fairygem": { "name": "Fairy Gem", "flags": ["Gem"] }
+}

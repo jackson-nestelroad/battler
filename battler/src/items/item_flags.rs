@@ -12,6 +12,9 @@ pub enum ItemFlags {
     /// A ball.
     #[string = "Ball"]
     Ball,
+    /// A battle item.
+    #[string = "Battle"]
+    Battle,
     /// A berry.
     #[string = "Berry"]
     Berry,
@@ -21,9 +24,12 @@ pub enum ItemFlags {
     /// Raises the user's evasion.
     #[string = "EvasionRaising"]
     EvasionRaising,
-    ///A gem.
+    /// A gem.
     #[string = "Gem"]
     Gem,
+    /// Medicine.
+    #[string = "Medicine"]
+    Medicine,
 }
 
 #[cfg(test)]

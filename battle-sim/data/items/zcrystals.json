@@ -1,0 +1,122 @@
+{
+  "normaliumz": { "name": "Normalium Z", "flags": [] },
+  "firiumz": {
+    "name": "Firium Z",
+    "plate_type": "Fire",
+    "force_forme": "Arceus-Fire",
+    "flags": []
+  },
+  "wateriumz": {
+    "name": "Waterium Z",
+    "plate_type": "Water",
+    "force_forme": "Arceus-Water",
+    "flags": []
+  },
+  "electriumz": {
+    "name": "Electrium Z",
+    "plate_type": "Electric",
+    "force_forme": "Arceus-Electric",
+    "flags": []
+  },
+  "grassiumz": {
+    "name": "Grassium Z",
+    "plate_type": "Grass",
+    "force_forme": "Arceus-Grass",
+    "flags": []
+  },
+  "iciumz": {
+    "name": "Icium Z",
+    "plate_type": "Ice",
+    "force_forme": "Arceus-Ice",
+    "flags": []
+  },
+  "fightiniumz": {
+    "name": "Fightinium Z",
+    "plate_type": "Fighting",
+    "force_forme": "Arceus-Fighting",
+    "flags": []
+  },
+  "poisoniumz": {
+    "name": "Poisonium Z",
+    "plate_type": "Poison",
+    "force_forme": "Arceus-Poison",
+    "flags": []
+  },
+  "groundiumz": {
+    "name": "Groundium Z",
+    "plate_type": "Ground",
+    "force_forme": "Arceus-Ground",
+    "flags": []
+  },
+  "flyiniumz": {
+    "name": "Flyinium Z",
+    "plate_type": "Flying",
+    "force_forme": "Arceus-Flying",
+    "flags": []
+  },
+  "psychiumz": {
+    "name": "Psychium Z",
+    "plate_type": "Psychic",
+    "force_forme": "Arceus-Psychic",
+    "flags": []
+  },
+  "buginiumz": {
+    "name": "Buginium Z",
+    "plate_type": "Bug",
+    "force_forme": "Arceus-Bug",
+    "flags": []
+  },
+  "rockiumz": {
+    "name": "Rockium Z",
+    "plate_type": "Rock",
+    "force_forme": "Arceus-Rock",
+    "flags": []
+  },
+  "ghostiumz": {
+    "name": "Ghostium Z",
+    "plate_type": "Ghost",
+    "force_forme": "Arceus-Ghost",
+    "flags": []
+  },
+  "dragoniumz": {
+    "name": "Dragonium Z",
+    "plate_type": "Dragon",
+    "force_forme": "Arceus-Dragon",
+    "flags": []
+  },
+  "darkiniumz": {
+    "name": "Darkinium Z",
+    "plate_type": "Dark",
+    "force_forme": "Arceus-Dark",
+    "flags": []
+  },
+  "steeliumz": {
+    "name": "Steelium Z",
+    "plate_type": "Steel",
+    "force_forme": "Arceus-Steel",
+    "flags": []
+  },
+  "fairiumz": {
+    "name": "Fairium Z",
+    "plate_type": "Fairy",
+    "force_forme": "Arceus-Fairy",
+    "flags": []
+  },
+  "pikaniumz": { "name": "Pikanium Z", "flags": [] },
+  "decidiumz": { "name": "Decidium Z", "flags": [] },
+  "inciniumz": { "name": "Incinium Z", "flags": [] },
+  "primariumz": { "name": "Primarium Z", "flags": [] },
+  "tapuniumz": { "name": "Tapunium Z", "flags": [] },
+  "marshadiumz": { "name": "Marshadium Z", "flags": [] },
+  "aloraichiumz": { "name": "Aloraichium Z", "flags": [] },
+  "snorliumz": { "name": "Snorlium Z", "flags": [] },
+  "eeviumz": { "name": "Eevium Z", "flags": [] },
+  "mewniumz": { "name": "Mewnium Z", "flags": [] },
+  "pikashuniumz": { "name": "Pikashunium Z", "flags": [] },
+  "solganiumz": { "name": "Solganium Z", "flags": [] },
+  "lunaliumz": { "name": "Lunalium Z", "flags": [] },
+  "ultranecroziumz": { "name": "Ultranecrozium Z", "flags": [] },
+  "mimikiumz": { "name": "Mimikium Z", "flags": [] },
+  "lycaniumz": { "name": "Lycanium Z", "flags": [] },
+  "kommoniumz": { "name": "Kommonium Z", "flags": [] }
+}

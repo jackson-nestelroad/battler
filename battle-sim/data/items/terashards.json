@@ -1,0 +1,20 @@
+{
+  "normalterashard": { "name": "Normal Tera Shard", "flags": [] },
+  "fireterashard": { "name": "Fire Tera Shard", "flags": [] },
+  "waterterashard": { "name": "Water Tera Shard", "flags": [] },
+  "electricterashard": { "name": "Electric Tera Shard", "flags": [] },
+  "grassterashard": { "name": "Grass Tera Shard", "flags": [] },
+  "iceterashard": { "name": "Ice Tera Shard", "flags": [] },
+  "fightingterashard": { "name": "Fighting Tera Shard", "flags": [] },
+  "poisonterashard": { "name": "Poison Tera Shard", "flags": [] },
+  "groundterashard": { "name": "Ground Tera Shard", "flags": [] },
+  "flyingterashard": { "name": "Flying Tera Shard", "flags": [] },
+  "psychicterashard": { "name": "Psychic Tera Shard", "flags": [] },
+  "bugterashard": { "name": "Bug Tera Shard", "flags": [] },
+  "rockterashard": { "name": "Rock Tera Shard", "flags": [] },
+  "ghostterashard": { "name": "Ghost Tera Shard", "flags": [] },
+  "dragonterashard": { "name": "Dragon Tera Shard", "flags": [] },
+  "darkterashard": { "name": "Dark Tera Shard", "flags": [] },
+  "steelterashard": { "name": "Steel Tera Shard", "flags": [] },
+  "fairyterashard": { "name": "Fairy Tera Shard", "flags": [] }
+}

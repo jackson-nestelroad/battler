@@ -1,0 +1,349 @@
+{
+  "cheriberry": {
+    "name": "Cheri Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": ["if $mon.status == par:", ["eat_item: $mon"]],
+        "on_eat": ["if $mon.status == par:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "chestoberry": {
+    "name": "Chesto Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "pechaberry": {
+    "name": "Pecha Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "rawstberry": {
+    "name": "Rawst Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": ["if $mon.status == brn:", ["eat_item: $mon"]],
+        "on_eat": ["if $mon.status == brn:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "aspearberry": {
+    "name": "Aspear Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "leppaberry": {
+    "name": "Leppa Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "oranberry": {
+    "name": "Oran Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "persimberry": {
+    "name": "Persim Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "lumberry": {
+    "name": "Lum Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "sitrusberry": {
+    "name": "Sitrus Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "figyberry": {
+    "name": "Figy Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "wikiberry": {
+    "name": "Wiki Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "magoberry": {
+    "name": "Mago Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "aguavberry": {
+    "name": "Aguav Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "iapapaberry": {
+    "name": "Iapapa Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "razzberry": {
+    "name": "Razz Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "blukberry": {
+    "name": "Bluk Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "nanabberry": {
+    "name": "Nanab Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "wepearberry": {
+    "name": "Wepear Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "pinapberry": {
+    "name": "Pinap Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "pomegberry": {
+    "name": "Pomeg Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "kelpsyberry": {
+    "name": "Kelpsy Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "qualotberry": {
+    "name": "Qualot Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "hondewberry": {
+    "name": "Hondew Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "grepaberry": {
+    "name": "Grepa Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "tamatoberry": {
+    "name": "Tamato Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "cornnberry": {
+    "name": "Cornn Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "magostberry": {
+    "name": "Magost Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "rabutaberry": {
+    "name": "Rabuta Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "nomelberry": {
+    "name": "Nomel Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "spelonberry": {
+    "name": "Spelon Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "pamtreberry": {
+    "name": "Pamtre Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "watmelberry": {
+    "name": "Watmel Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "durinberry": {
+    "name": "Durin Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "belueberry": {
+    "name": "Belue Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "occaberry": {
+    "name": "Occa Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "passhoberry": {
+    "name": "Passho Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "wacanberry": {
+    "name": "Wacan Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "rindoberry": {
+    "name": "Rindo Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "yacheberry": {
+    "name": "Yache Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "chopleberry": {
+    "name": "Chople Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "kebiaberry": {
+    "name": "Kebia Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "shucaberry": {
+    "name": "Shuca Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "cobaberry": {
+    "name": "Coba Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "payapaberry": {
+    "name": "Payapa Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "tangaberry": {
+    "name": "Tanga Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "chartiberry": {
+    "name": "Charti Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "kasibberry": {
+    "name": "Kasib Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "habanberry": {
+    "name": "Haban Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "colburberry": {
+    "name": "Colbur Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "babiriberry": {
+    "name": "Babiri Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "chilanberry": {
+    "name": "Chilan Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "liechiberry": {
+    "name": "Liechi Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "ganlonberry": {
+    "name": "Ganlon Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "salacberry": {
+    "name": "Salac Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "petayaberry": {
+    "name": "Petaya Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "apicotberry": {
+    "name": "Apicot Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "lansatberry": {
+    "name": "Lansat Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "starfberry": {
+    "name": "Starf Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "enigmaberry": {
+    "name": "Enigma Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "micleberry": {
+    "name": "Micle Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "custapberry": {
+    "name": "Custap Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "jabocaberry": {
+    "name": "Jaboca Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "rowapberry": {
+    "name": "Rowap Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "roseliberry": {
+    "name": "Roseli Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "keeberry": {
+    "name": "Kee Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  },
+  "marangaberry": {
+    "name": "Maranga Berry",
+    "fling": { "power": 10 },
+    "flags": ["Berry"]
+  }
+}
