@@ -1463,7 +1463,7 @@ pub enum Program {
 /// An fxlang program with priority information for ordering.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProgramWithPriority {
-    pub program: Program,
+    pub program: Option<Program>,
     pub order: Option<u32>,
     pub priority: Option<i32>,
     pub sub_order: Option<u32>,
@@ -1485,14 +1485,18 @@ pub struct Callback(Option<CallbackInput>);
 impl Callback {
     /// Checks if the callback has an associated [`Program`].
     pub fn has_program(&self) -> bool {
-        self.0.is_some()
+        match &self.0 {
+            Some(CallbackInput::Regular(_)) => true,
+            Some(CallbackInput::WithPriority(program)) => program.program.is_some(),
+            None => false,
+        }
     }
 
     /// Returns a reference to the callback's [`Program`].
     pub fn program(&self) -> Option<&Program> {
         match self.0.as_ref()? {
             CallbackInput::Regular(program) => Some(&program),
-            CallbackInput::WithPriority(program) => Some(&program.program),
+            CallbackInput::WithPriority(program) => program.program.as_ref(),
         }
     }
 }

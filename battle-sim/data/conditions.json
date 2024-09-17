@@ -559,6 +559,9 @@
     "condition": {
       "duration": 3,
       "callbacks": {
+        "on_residual": {
+          "order": 3
+        },
         "on_slot_start": [
           "log_start: no_effect with_source str('move:{}', $effect_state.source_effect.name)"
         ],
@@ -603,6 +606,7 @@
         ],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -634,6 +638,7 @@
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -674,6 +679,7 @@
         ],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -706,6 +712,7 @@
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -743,6 +750,7 @@
         ],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -775,6 +783,7 @@
         ],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -814,6 +823,7 @@
         ],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {
@@ -839,6 +849,7 @@
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": {
           "order": 1,
+          "priority": 1,
           "program": ["log_weather: $this.name residual"]
         },
         "on_residual": {

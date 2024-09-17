@@ -385,14 +385,6 @@ impl EffectOrigin {
             _ => *self,
         }
     }
-
-    pub fn speed_for_callback_ordering(&self) -> u32 {
-        match self {
-            Self::SideCondition(_) | Self::SlotCondition(_, _) => 1,
-            Self::Terrain | Self::Weather => 2,
-            _ => 0,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -456,6 +448,32 @@ impl CallbackHandle {
                 Some(WeatherEffectStateConnector::new().make_dynamic())
             }
         }
+    }
+
+    /// The associated [`MonHandle`] that the callback originates from.
+    pub fn mon_handle(&self) -> Option<MonHandle> {
+        match self.origin {
+            EffectOrigin::Mon(mon)
+            | EffectOrigin::MonAbility(mon)
+            | EffectOrigin::MonItem(mon)
+            | EffectOrigin::MonPseudoWeather(mon)
+            | EffectOrigin::MonSideCondition(_, mon)
+            | EffectOrigin::MonSlotCondition(_, _, mon)
+            | EffectOrigin::MonStatus(mon)
+            | EffectOrigin::MonTerrain(mon)
+            | EffectOrigin::MonType(mon)
+            | EffectOrigin::MonVolatileStatus(mon)
+            | EffectOrigin::MonWeather(mon) => Some(mon),
+            _ => None,
+        }
+    }
+
+    /// The speed of the callback.
+    pub fn speed(&self, context: &mut Context) -> Result<u32, Error> {
+        if let Some(mon_handle) = self.mon_handle() {
+            return Ok(context.mon(mon_handle)?.speed as u32);
+        }
+        Ok(0)
     }
 }
 
@@ -1189,8 +1207,7 @@ struct SpeedOrderableCallbackHandle {
 }
 
 impl SpeedOrderableCallbackHandle {
-    pub fn new(callback_handle: CallbackHandle) -> Self {
-        let speed = callback_handle.origin.speed_for_callback_ordering();
+    pub fn new(callback_handle: CallbackHandle, speed: u32) -> Self {
         Self {
             callback_handle,
             order: u32::MAX,
@@ -1222,7 +1239,7 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
 fn get_speed_orderable_effect_handle_internal(
     context: &mut Context,
     callback_handle: CallbackHandle,
-) -> Option<SpeedOrderableCallbackHandle> {
+) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
     // Ensure the effect is not ending.
     if let Some(effect_state) = callback_handle.effect_state_connector() {
         if effect_state.exists(context).unwrap_or(false) {
@@ -1230,44 +1247,46 @@ fn get_speed_orderable_effect_handle_internal(
                 .get_mut(context)
                 .is_ok_and(|effect_state| effect_state.ending())
             {
-                return None;
+                return Ok(None);
             }
         }
     }
 
+    let speed = callback_handle.speed(context)?;
+
     // Ensure the effect exists.
     let effect = match CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle) {
         Ok(effect) => effect,
-        Err(_) => return None,
+        Err(_) => return Ok(None),
     };
 
     // Ensure the event callback exists. An empty callback is ignored.
     let callback = match effect.fxlang_effect() {
         Some(effect) => match effect.callbacks.event(callback_handle.event) {
             Some(callback) => callback,
-            None => return None,
+            None => return Ok(None),
         },
-        None => return None,
+        None => return Ok(None),
     };
 
-    let mut result = SpeedOrderableCallbackHandle::new(callback_handle);
+    let mut result = SpeedOrderableCallbackHandle::new(callback_handle, speed);
     result.order = callback.order();
     result.priority = callback.priority();
     result.sub_order = callback.sub_order();
-    Some(result)
+    Ok(Some(result))
 }
 
 fn get_speed_orderable_effect_handle(
     context: &mut Context,
     callback_handle: CallbackHandle,
-) -> Option<SpeedOrderableCallbackHandle> {
-    match get_speed_orderable_effect_handle_internal(context, callback_handle.clone()) {
-        Some(handle) => Some(handle),
+) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
+    match get_speed_orderable_effect_handle_internal(context, callback_handle.clone())? {
+        Some(handle) => Ok(Some(handle)),
         None => {
             if callback_handle.event.force_default_callback() {
-                Some(SpeedOrderableCallbackHandle::new(callback_handle))
+                Ok(Some(SpeedOrderableCallbackHandle::new(callback_handle, 0)))
             } else {
-                None
+                Ok(None)
             }
         }
     }
@@ -1280,7 +1299,7 @@ fn filter_and_order_effects_for_event(
     let mut speed_orderable_handles = Vec::new();
     speed_orderable_handles.reserve(callback_handles.len());
     for effect_handle in callback_handles {
-        match get_speed_orderable_effect_handle(context, effect_handle) {
+        match get_speed_orderable_effect_handle(context, effect_handle)? {
             Some(handle) => speed_orderable_handles.push(handle),
             None => (),
         }
