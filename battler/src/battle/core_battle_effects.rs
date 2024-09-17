@@ -970,11 +970,13 @@ fn find_callbacks_on_field_on_mon(
                 let terrain_handle = context
                     .battle_mut()
                     .get_effect_handle_by_id(&effective_terrain.unwrap_or(terrain))?;
-                callbacks.push(CallbackHandle::new(
+                let mut callback_handle = CallbackHandle::new(
                     terrain_handle.clone(),
                     event,
                     EffectOrigin::MonTerrain(mon),
-                ));
+                );
+                callback_handle.suppressed = suppressed;
+                callbacks.push(callback_handle);
             }
         }
     }
@@ -989,11 +991,13 @@ fn find_callbacks_on_field_on_mon(
                 let weather_handle = context
                     .battle_mut()
                     .get_effect_handle_by_id(&effective_weather.unwrap_or(weather))?;
-                callbacks.push(CallbackHandle::new(
+                let mut callback_handle = CallbackHandle::new(
                     weather_handle.clone(),
                     event,
                     EffectOrigin::MonWeather(mon),
-                ));
+                );
+                callback_handle.suppressed = suppressed;
+                callbacks.push(callback_handle);
             }
         }
     }
