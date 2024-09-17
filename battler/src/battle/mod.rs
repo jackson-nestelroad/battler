@@ -30,6 +30,7 @@ pub use action::{
     EscapeAction,
     EscapeActionInput,
     ExperienceAction,
+    ForfeitAction,
     LearnMoveAction,
     LevelUpAction,
     MonAction,

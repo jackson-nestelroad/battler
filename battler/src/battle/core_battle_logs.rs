@@ -810,3 +810,9 @@ pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
     context.battle_mut().log(event);
     Ok(())
 }
+
+pub fn forfeited(context: &mut PlayerContext) -> Result<(), Error> {
+    let event = log_event!("forfeited", ("player", &context.player().id));
+    context.battle_mut().log(event);
+    Ok(())
+}

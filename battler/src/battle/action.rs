@@ -191,7 +191,6 @@ impl EscapeAction {
 }
 
 /// A switch events action.
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SwitchEventsAction {
     pub mon_action: MonAction,
@@ -203,6 +202,13 @@ impl SwitchEventsAction {
             mon_action: MonAction::new(mon_handle),
         }
     }
+}
+
+/// A forgeit action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ForfeitAction {
+    pub player: usize,
+    pub priority: i32,
 }
 
 /// An action during a battle.
@@ -228,6 +234,7 @@ pub enum Action {
     LevelUp(LevelUpAction),
     LearnMove(LearnMoveAction),
     Escape(EscapeAction),
+    Forfeit(ForfeitAction),
 }
 
 impl Action {
@@ -262,8 +269,9 @@ impl SpeedOrderable for Action {
                 }
             }
             Self::End(_) => 7,
-            Self::BeforeTurn => 8,
-            Self::BeforeTurnMove(_) => 9,
+            Self::Forfeit(_) => 8,
+            Self::BeforeTurn => 9,
+            Self::BeforeTurnMove(_) => 10,
             Self::Escape(_) => 101,
             Self::SwitchEvents(_) => 102,
             Self::MegaEvo(_) => 103,
@@ -281,6 +289,7 @@ impl SpeedOrderable for Action {
             Self::BeforeTurnMove(action) => action.priority,
             Self::PriorityChargeMove(action) => action.priority,
             Self::Experience(action) => action.player_index as i32,
+            Self::Forfeit(action) => action.priority,
             _ => 0,
         }
     }

@@ -246,6 +246,7 @@ pub struct CoreBattle<'d> {
     ending: bool,
     ended: bool,
     next_ability_priority: u32,
+    next_forfeit_priority: i32,
     last_move_log: Option<usize>,
     last_fainted: Option<FaintEntry>,
 
@@ -328,6 +329,7 @@ impl<'d> CoreBattle<'d> {
             ending: false,
             ended: false,
             next_ability_priority: 0,
+            next_forfeit_priority: 0,
             last_move_log: None,
             last_fainted: None,
             input_log,
@@ -496,6 +498,12 @@ impl<'d> CoreBattle<'d> {
     pub fn next_ability_priority(&mut self) -> u32 {
         let next = self.next_ability_priority;
         self.next_ability_priority += 1;
+        next
+    }
+
+    pub fn next_forfeit_priority(&mut self) -> i32 {
+        let next = self.next_forfeit_priority;
+        self.next_forfeit_priority += 1;
         next
     }
 
@@ -759,17 +767,15 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    fn time_now(&self) -> u128 {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis()
+    }
+
     fn log_current_time(&mut self) {
-        self.log(log_event!(
-            "time",
-            (
-                "value",
-                SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .unwrap()
-                    .as_millis()
-            ),
-        ));
+        self.log(log_event!("time", ("value", self.time_now())));
     }
 
     fn log_team_sizes(&mut self) {
@@ -1193,6 +1199,9 @@ impl<'d> CoreBattle<'d> {
                     &mut context.mon_context(action.mon_action.mon)?,
                     false,
                 )?;
+            }
+            Action::Forfeit(action) => {
+                core_battle_actions::forfeit(&mut context.player_context(action.player)?)?;
             }
         }
 

@@ -17,6 +17,7 @@ use crate::{
         CoreBattle,
         EscapeAction,
         EscapeActionInput,
+        ForfeitAction,
         LearnMoveAction,
         Mon,
         MonBattleRequestData,
@@ -134,6 +135,14 @@ impl PlayerType {
         match self {
             Self::Wild(wild) => wild.can_escape,
             Self::Protagonist => true,
+            _ => false,
+        }
+    }
+
+    /// Can this player forfeit?
+    pub fn can_forfeit(&self) -> bool {
+        match self {
+            Self::Trainer | Self::Protagonist => true,
             _ => false,
         }
     }
@@ -735,6 +744,15 @@ impl Player {
                     }
                     _ => (),
                 },
+                "forfeit" => match Self::choose_forfeit(context) {
+                    Err(error) => {
+                        return Self::emit_choice_error(
+                            context,
+                            Error::wrap("cannot forfeit", error),
+                        )
+                    }
+                    _ => (),
+                },
                 _ => {
                     return Self::emit_choice_error(
                         context,
@@ -857,7 +875,14 @@ impl Player {
         pass: bool,
     ) -> Result<usize, Error> {
         if context.player().escaped {
-            return Err(battler_error!("you escaped from the battle"));
+            return Err(battler_error!(
+                "you {} the battle",
+                if Self::can_escape(context) {
+                    "escaped from"
+                } else {
+                    "left"
+                }
+            ));
         }
 
         // Choices generate a single action, so there should be once choice for each active Mon.
@@ -1167,6 +1192,28 @@ impl Player {
         Ok(())
     }
 
+    fn choose_forfeit(context: &mut PlayerContext) -> Result<(), Error> {
+        match context.player().request_type() {
+            Some(RequestType::Turn) => (),
+            _ => return Err(battler_error!("you cannot forfeit out of turn")),
+        }
+
+        if Self::get_position_for_next_choice(context, false)? >= context.player().active.len() {
+            return Err(battler_error!("you sent more choices than active Mons"));
+        }
+        if !Self::can_forfeit(context) {
+            return Err(battler_error!("you cannot forfeit"));
+        }
+
+        let action = Action::Forfeit(ForfeitAction {
+            player: context.player().index,
+            priority: -context.battle_mut().next_forfeit_priority(),
+        });
+        context.player_mut().choice.actions.push(action);
+
+        Ok(())
+    }
+
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
         for mon in context.player().active_or_fainted_mon_handles() {
@@ -1190,6 +1237,11 @@ impl Player {
                     .battle()
                     .players_on_side(context.foe_side().index)
                     .all(|foe| foe.player_type.escapable()))
+    }
+
+    /// Checks if the player can forfeit.
+    pub fn can_forfeit(context: &PlayerContext) -> bool {
+        context.player().player_type.can_forfeit()
     }
 }
 

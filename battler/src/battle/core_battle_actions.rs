@@ -3371,6 +3371,23 @@ pub fn give_out_experience(
     Ok(())
 }
 
+fn leave_battle(context: &mut PlayerContext) -> Result<(), Error> {
+    context.player_mut().escaped = true;
+    for mon in context
+        .player()
+        .active_mon_handles()
+        .cloned()
+        .collect::<Vec<_>>()
+    {
+        switch_out(
+            &mut context.as_battle_context_mut().mon_context(mon)?,
+            false,
+        )?;
+    }
+    context.player_mut().mons_left = 0;
+    Ok(())
+}
+
 /// Attempts to escape the battle, using the speed of the given Mon.
 pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> {
     if context.player().escaped {
@@ -3413,23 +3430,17 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> 
         return Ok(false);
     }
 
-    context.player_mut().escaped = true;
-    for mon in context
-        .player()
-        .active_mon_handles()
-        .cloned()
-        .collect::<Vec<_>>()
-    {
-        switch_out(
-            &mut context.as_battle_context_mut().mon_context(mon)?,
-            false,
-        )?;
-    }
-    context.player_mut().mons_left = 0;
-
+    leave_battle(context.as_player_context_mut())?;
     core_battle_logs::escaped(context.as_player_context_mut())?;
 
     Ok(true)
+}
+
+/// Forfeits the battle.
+pub fn forfeit(context: &mut PlayerContext) -> Result<(), Error> {
+    leave_battle(context)?;
+    core_battle_logs::forfeited(context)?;
+    Ok(())
 }
 
 /// Sets the weather on the field.
