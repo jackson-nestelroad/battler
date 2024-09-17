@@ -57,6 +57,7 @@
   "prettywing": { "name": "Pretty Feather", "flags": ["Medicine"] },
   "casteliacone": { "name": "Casteliacone", "flags": ["Medicine"] },
   "lumiosegalette": { "name": "Lumiose Galette", "flags": ["Medicine"] },
+  "bigmalasada": { "name": "Big Malasada", "flags": ["Medicine"] },
   "pewtercrunchies": { "name": "Pewter Crunchies", "flags": ["Medicine"] },
   "maxhoney": { "name": "Max Honey", "flags": ["Medicine"] }
 }

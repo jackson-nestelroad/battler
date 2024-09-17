@@ -125,7 +125,6 @@
     "flags": []
   },
   "silkscarf": { "name": "Silk Scarf", "fling": { "power": 10 }, "flags": [] },
-  "upgrade": { "name": "Upgrade", "fling": { "power": 30 }, "flags": [] },
   "shellbell": { "name": "Shell Bell", "fling": { "power": 30 }, "flags": [] },
   "seaincense": {
     "name": "Sea Incense",
@@ -413,23 +412,6 @@
   },
   "luckincense": { "name": "Luck Incense", "flags": [] },
   "pureincense": { "name": "Pure Incense", "flags": [] },
-  "protector": { "name": "Protector", "fling": { "power": 80 }, "flags": [] },
-  "electirizer": {
-    "name": "Electirizer",
-    "fling": { "power": 80 },
-    "flags": []
-  },
-  "magmarizer": { "name": "Magmarizer", "fling": { "power": 80 }, "flags": [] },
-  "dubiousdisc": {
-    "name": "Dubious Disc",
-    "fling": { "power": 50 },
-    "flags": []
-  },
-  "reapercloth": {
-    "name": "Reaper Cloth",
-    "fling": { "power": 10 },
-    "flags": []
-  },
   "razorclaw": { "name": "Razor Claw", "fling": { "power": 80 }, "flags": [] },
   "razorfang": {
     "name": "Razor Fang",
@@ -517,29 +499,7 @@
     "fling": { "power": 30 },
     "flags": []
   },
-  "coverfossil": {
-    "name": "Cover Fossil",
-    "fling": { "power": 100 },
-    "flags": []
-  },
-  "plumefossil": {
-    "name": "Plume Fossil",
-    "fling": { "power": 100 },
-    "flags": []
-  },
-  "passorb": { "name": "Pass Orb", "flags": [] },
   "poketoy": { "name": "Poké Toy", "flags": [] },
-  "balmmushroom": { "name": "Balm Mushroom", "flags": [] },
-  "bignugget": { "name": "Big Nugget", "fling": { "power": 130 }, "flags": [] },
-  "pearlstring": { "name": "Pearl String", "flags": [] },
-  "cometshard": { "name": "Comet Shard", "flags": [] },
-  "reliccopper": { "name": "Relic Copper", "flags": [] },
-  "relicsilver": { "name": "Relic Silver", "flags": [] },
-  "relicgold": { "name": "Relic Gold", "flags": [] },
-  "relicvase": { "name": "Relic Vase", "flags": [] },
-  "relicband": { "name": "Relic Band", "flags": [] },
-  "relicstatue": { "name": "Relic Statue", "flags": [] },
-  "reliccrown": { "name": "Relic Crown", "flags": [] },
   "weaknesspolicy": {
     "name": "Weakness Policy",
     "fling": { "power": 80 },
@@ -557,13 +517,6 @@
     "force_forme": "Arceus-Fairy",
     "flags": []
   },
-  "abilitycapsule": { "name": "Ability Capsule", "flags": [] },
-  "whippeddream": {
-    "name": "Whipped Dream",
-    "fling": { "power": 80 },
-    "flags": []
-  },
-  "sachet": { "name": "Sachet", "fling": { "power": 80 }, "flags": [] },
   "luminousmoss": {
     "name": "Luminous Moss",
     "fling": { "power": 30 },
@@ -585,33 +538,11 @@
       }
     }
   },
-  "richmulch": { "name": "Rich Mulch", "flags": [] },
-  "surprisemulch": { "name": "Surprise Mulch", "flags": [] },
-  "boostmulch": { "name": "Boost Mulch", "flags": [] },
-  "amazemulch": { "name": "Amaze Mulch", "flags": [] },
-  "jawfossil": { "name": "Jaw Fossil", "fling": { "power": 100 }, "flags": [] },
-  "sailfossil": {
-    "name": "Sail Fossil",
-    "fling": { "power": 100 },
-    "flags": []
-  },
-  "bottlecap": { "name": "Bottle Cap", "fling": { "power": 30 }, "flags": [] },
-  "goldbottlecap": {
-    "name": "Gold Bottle Cap",
-    "fling": { "power": 30 },
-    "flags": []
-  },
   "adrenalineorb": {
     "name": "Adrenaline Orb",
     "fling": { "power": 30 },
     "flags": []
   },
-  "icestone": { "name": "Ice Stone", "fling": { "power": 30 }, "flags": [] },
-  "bigmalasada": { "name": "Big Malasada", "flags": [] },
-  "rednectar": { "name": "Red Nectar", "flags": [] },
-  "yellownectar": { "name": "Yellow Nectar", "flags": [] },
-  "pinknectar": { "name": "Pink Nectar", "flags": [] },
-  "purplenectar": { "name": "Purple Nectar", "flags": [] },
   "terrainextender": {
     "name": "Terrain Extender",
     "fling": { "power": 60 },
