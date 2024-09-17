@@ -151,7 +151,15 @@ fn run_effect_event_with_errors(
         if !effect_state_connector.exists(context.battle_context_mut())? {
             return Ok(fxlang::ProgramEvalResult::default());
         }
+
+        // If we are ending, set the ending flag, so that nested events don't use this callback.
+        if event == fxlang::BattleEvent::End {
+            effect_state_connector
+                .get_mut(context.battle_context_mut())?
+                .set_ending(true);
+        }
     }
+
     let mut context = match context {
         UpcomingEvaluationContext::ApplyingEffect(context) => {
             fxlang::EvaluationContext::ApplyingEffect(
@@ -1162,10 +1170,25 @@ fn get_speed_orderable_effect_handle_internal(
     context: &mut Context,
     callback_handle: CallbackHandle,
 ) -> Option<SpeedOrderableCallbackHandle> {
+    // Ensure the effect is not ending.
+    if let Some(effect_state) = callback_handle.effect_state_connector() {
+        if effect_state.exists(context).unwrap_or(false) {
+            if effect_state
+                .get_mut(context)
+                .is_ok_and(|effect_state| effect_state.ending())
+            {
+                return None;
+            }
+        }
+    }
+
+    // Ensure the effect exists.
     let effect = match CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle) {
         Ok(effect) => effect,
         Err(_) => return None,
     };
+
+    // Ensure the event callback exists. An empty callback is ignored.
     let callback = match effect.fxlang_effect() {
         Some(effect) => match effect.callbacks.event(callback_handle.event) {
             Some(callback) => callback,
@@ -1173,6 +1196,7 @@ fn get_speed_orderable_effect_handle_internal(
         },
         None => return None,
     };
+
     let mut result = SpeedOrderableCallbackHandle::new(callback_handle);
     result.order = callback.order();
     result.priority = callback.priority();
@@ -1196,7 +1220,7 @@ fn get_speed_orderable_effect_handle(
     }
 }
 
-fn get_ordered_effects_for_event(
+fn filter_and_order_effects_for_event(
     context: &mut Context,
     callback_handles: Vec<CallbackHandle>,
 ) -> Result<Vec<CallbackHandle>, Error> {
@@ -1642,7 +1666,7 @@ fn run_event_with_errors(
             ));
         }
     }
-    let mut callbacks = get_ordered_effects_for_event(context, callbacks)?;
+    let mut callbacks = filter_and_order_effects_for_event(context, callbacks)?;
     callbacks.dedup();
 
     match target {

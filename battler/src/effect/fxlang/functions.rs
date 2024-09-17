@@ -121,6 +121,7 @@ pub fn run_function(
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
+        "forme_change" => forme_change(context).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context).map(|val| Some(val)),
         "get_ability" => get_ability(context).map(|val| Some(val)),
         "get_boost" => get_boost(context).map(|val| Some(val)),
@@ -184,6 +185,7 @@ pub fn run_function(
         "run_event" => run_event(context).map(|val| Some(val)),
         "run_event_for_each_active_mon" => run_event_for_each_active_mon(context).map(|()| None),
         "run_event_for_mon" => run_event_for_mon(context).map(|val| Some(val)),
+        "run_event_on_mon_ability" => run_event_on_mon_ability(context).map(|()| None),
         "run_event_on_mon_item" => run_event_on_mon_item(context).map(|()| None),
         "run_event_on_move" => run_event_on_move(context).map(|()| None),
         "sample" => sample(context),
@@ -1313,6 +1315,22 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<(), Err
         context.evaluation_context_mut().effect_context_mut(),
         event,
     )
+}
+
+fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<(), Error> {
+    let event = context
+        .pop_front()
+        .wrap_error_with_message("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    core_battle_effects::run_mon_ability_event(
+        context
+            .evaluation_context_mut()
+            .applying_effect_context_mut()?,
+        event,
+    );
+    Ok(())
 }
 
 fn run_event_on_mon_item(mut context: FunctionContext) -> Result<(), Error> {
@@ -2914,4 +2932,29 @@ fn type_effectiveness(mut context: FunctionContext) -> Result<Value, Error> {
             .target_context(target)?,
     )
     .map(|val| Value::Fraction(val.into()))
+}
+
+fn forme_change(mut context: FunctionContext) -> Result<Value, Error> {
+    let permanent = context.has_flag("permanent");
+    let target = context
+        .pop_front()
+        .wrap_error_with_message("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    let forme = context
+        .pop_front()
+        .wrap_error_with_message("missing forme")?
+        .string()
+        .wrap_error_with_message("invalid forme")?;
+    let forme = Id::from(forme);
+    core_battle_actions::forme_change(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+        &forme,
+        if permanent {
+            core_battle_actions::FormeChangeType::Permanent
+        } else {
+            core_battle_actions::FormeChangeType::Temporary
+        },
+    )
+    .map(|val| Value::Boolean(val))
 }

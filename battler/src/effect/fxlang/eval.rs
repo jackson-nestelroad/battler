@@ -629,6 +629,9 @@ where
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
+                            "base_species" => {
+                                ValueRef::Str(&context.mon(mon_handle)?.base_species.as_ref())
+                            }
                             "base_stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
                             }

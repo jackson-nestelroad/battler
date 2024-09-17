@@ -927,12 +927,14 @@
     "flags": ["NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
-        "on_start": ["run_event_on_effect: $this WeatherChange"],
+        "on_start": ["run_event_on_mon_ability: WeatherChange"],
         "on_weather_change": [
           "if $target.base_species != castform or $target.transformed or !$target.active:",
           ["return"],
           "$weather = $target.effective_weather",
-          "if $weather.is_raining:",
+          "if !$weather:",
+          ["$forme = castform"],
+          "else if $weather.is_raining:",
           ["$forme = castformrainy"],
           "else if $weather.is_sunny:",
           ["$forme = castformsunny"],
@@ -940,7 +942,7 @@
           ["$forme = castformsnowy"],
           "else:",
           ["$forme = castform"],
-          "change_forme: $target $forme"
+          "forme_change: $target $forme"
         ]
       }
     }

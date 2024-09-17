@@ -1481,6 +1481,7 @@ impl Mon {
 
         Self::recalculate_stats(context)?;
         context.mon_mut().weight = species.data.weight;
+
         Ok(true)
     }
 
@@ -1582,6 +1583,7 @@ impl Mon {
     /// Switches the Mon out of its active position.
     pub fn switch_out(context: &mut MonContext) -> Result<(), Error> {
         context.mon_mut().active = false;
+        context.mon_mut().being_called_back = false;
         context.mon_mut().needs_switch = None;
         context.mon_mut().old_active_position = context.mon().active_position;
         if let Some(old_active_position) = context.mon().old_active_position {

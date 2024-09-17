@@ -9,6 +9,7 @@ mod abilities {
         mod early_bird_test;
         mod effect_spore_test;
         mod flash_fire_test;
+        mod forecast_test;
         mod guts_test;
         mod hustle_test;
         mod hyper_cutter_test;

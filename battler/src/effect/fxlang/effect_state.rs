@@ -36,6 +36,7 @@ impl EffectState {
     const SOURCE: &'static str = "source";
     const SOURCE_SIDE: &'static str = "source_side";
     const SOURCE_POSITION: &'static str = "source_position";
+    const ENDING: &'static str = "ending";
 
     /// Creates an initial effect state for a new effect.
     pub fn initial_effect_state(
@@ -165,6 +166,21 @@ impl EffectState {
             )),
         );
         Ok(())
+    }
+
+    /// Whether or not the effect is ending and should be ignored.
+    pub fn ending(&self) -> bool {
+        self.get(Self::ENDING)
+            .cloned()
+            .map(|val| val.boolean().ok())
+            .flatten()
+            .unwrap_or(false)
+    }
+
+    /// Sets wherher or not the effect is ending and should be ignored.
+    pub fn set_ending(&mut self, ending: bool) {
+        self.values
+            .insert(Self::ENDING.to_owned(), Value::Boolean(ending));
     }
 }
 
