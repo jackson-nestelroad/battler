@@ -46,15 +46,6 @@ pub struct ItemData {
     pub special_data: SpecialItemData,
     /// The type of this item if it is a plate.
     pub plate_type: Option<Type>,
-    /// Is this item a berry?
-    #[serde(default)]
-    pub berry: bool,
-    /// Is this item a gem?
-    #[serde(default)]
-    pub gem: bool,
-    /// Is this item a ball?
-    #[serde(default)]
-    pub ball: bool,
     /// The species that this item allows Mega Evolution from.
     pub mega_evoles_from: Option<String>,
     /// The species that this item allows Mega Evolution into.

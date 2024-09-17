@@ -1,20 +1,20 @@
 {
-  "masterball": { "name": "Master Ball", "ball": true, "flags": [] },
-  "ultraball": { "name": "Ultra Ball", "ball": true, "flags": [] },
-  "greatball": { "name": "Great Ball", "ball": true, "flags": [] },
-  "pokeball": { "name": "Poké Ball", "ball": true, "flags": [] },
-  "safariball": { "name": "Safari Ball", "ball": true, "flags": [] },
-  "netball": { "name": "Net Ball", "ball": true, "flags": [] },
-  "diveball": { "name": "Dive Ball", "ball": true, "flags": [] },
-  "nestball": { "name": "Nest Ball", "ball": true, "flags": [] },
-  "repeatball": { "name": "Repeat Ball", "ball": true, "flags": [] },
-  "timerball": { "name": "Timer Ball", "ball": true, "flags": [] },
-  "luxuryball": { "name": "Luxury Ball", "ball": true, "flags": [] },
-  "premierball": { "name": "Premier Ball", "ball": true, "flags": [] },
-  "duskball": { "name": "Dusk Ball", "ball": true, "flags": [] },
-  "healball": { "name": "Heal Ball", "ball": true, "flags": [] },
-  "quickball": { "name": "Quick Ball", "ball": true, "flags": [] },
-  "cherishball": { "name": "Cherish Ball", "ball": true, "flags": [] },
+  "masterball": { "name": "Master Ball", "flags": ["Ball"] },
+  "ultraball": { "name": "Ultra Ball", "flags": ["Ball"] },
+  "greatball": { "name": "Great Ball", "flags": ["Ball"] },
+  "pokeball": { "name": "Poké Ball", "flags": ["Ball"] },
+  "safariball": { "name": "Safari Ball", "flags": ["Ball"] },
+  "netball": { "name": "Net Ball", "flags": ["Ball"] },
+  "diveball": { "name": "Dive Ball", "flags": ["Ball"] },
+  "nestball": { "name": "Nest Ball", "flags": ["Ball"] },
+  "repeatball": { "name": "Repeat Ball", "flags": ["Ball"] },
+  "timerball": { "name": "Timer Ball", "flags": ["Ball"] },
+  "luxuryball": { "name": "Luxury Ball", "flags": ["Ball"] },
+  "premierball": { "name": "Premier Ball", "flags": ["Ball"] },
+  "duskball": { "name": "Dusk Ball", "flags": ["Ball"] },
+  "healball": { "name": "Heal Ball", "flags": ["Ball"] },
+  "quickball": { "name": "Quick Ball", "flags": ["Ball"] },
+  "cherishball": { "name": "Cherish Ball", "flags": ["Ball"] },
   "potion": { "name": "Potion", "flags": [] },
   "antidote": { "name": "Antidote", "flags": [] },
   "burnheal": { "name": "Burn Heal", "flags": [] },
@@ -175,8 +175,7 @@
   "cheriberry": {
     "name": "Cheri Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": [],
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_update": ["if $mon.status == par:", ["eat_item: $mon"]],
@@ -187,20 +186,17 @@
   "chestoberry": {
     "name": "Chesto Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "pechaberry": {
     "name": "Pecha Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "rawstberry": {
     "name": "Rawst Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": [],
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_update": ["if $mon.status == brn:", ["eat_item: $mon"]],
@@ -211,367 +207,307 @@
   "aspearberry": {
     "name": "Aspear Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "leppaberry": {
     "name": "Leppa Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "oranberry": {
     "name": "Oran Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "persimberry": {
     "name": "Persim Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "lumberry": {
     "name": "Lum Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "sitrusberry": {
     "name": "Sitrus Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "figyberry": {
     "name": "Figy Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "wikiberry": {
     "name": "Wiki Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "magoberry": {
     "name": "Mago Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "aguavberry": {
     "name": "Aguav Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "iapapaberry": {
     "name": "Iapapa Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "razzberry": {
     "name": "Razz Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "blukberry": {
     "name": "Bluk Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "nanabberry": {
     "name": "Nanab Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "wepearberry": {
     "name": "Wepear Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "pinapberry": {
     "name": "Pinap Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "pomegberry": {
     "name": "Pomeg Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "kelpsyberry": {
     "name": "Kelpsy Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "qualotberry": {
     "name": "Qualot Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "hondewberry": {
     "name": "Hondew Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "grepaberry": {
     "name": "Grepa Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "tamatoberry": {
     "name": "Tamato Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "cornnberry": {
     "name": "Cornn Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "magostberry": {
     "name": "Magost Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "rabutaberry": {
     "name": "Rabuta Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "nomelberry": {
     "name": "Nomel Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "spelonberry": {
     "name": "Spelon Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "pamtreberry": {
     "name": "Pamtre Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "watmelberry": {
     "name": "Watmel Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "durinberry": {
     "name": "Durin Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "belueberry": {
     "name": "Belue Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "occaberry": {
     "name": "Occa Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "passhoberry": {
     "name": "Passho Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "wacanberry": {
     "name": "Wacan Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "rindoberry": {
     "name": "Rindo Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "yacheberry": {
     "name": "Yache Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "chopleberry": {
     "name": "Chople Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "kebiaberry": {
     "name": "Kebia Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "shucaberry": {
     "name": "Shuca Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "cobaberry": {
     "name": "Coba Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "payapaberry": {
     "name": "Payapa Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "tangaberry": {
     "name": "Tanga Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "chartiberry": {
     "name": "Charti Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "kasibberry": {
     "name": "Kasib Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "habanberry": {
     "name": "Haban Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "colburberry": {
     "name": "Colbur Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "babiriberry": {
     "name": "Babiri Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "chilanberry": {
     "name": "Chilan Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "liechiberry": {
     "name": "Liechi Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "ganlonberry": {
     "name": "Ganlon Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "salacberry": {
     "name": "Salac Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "petayaberry": {
     "name": "Petaya Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "apicotberry": {
     "name": "Apicot Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "lansatberry": {
     "name": "Lansat Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "starfberry": {
     "name": "Starf Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "enigmaberry": {
     "name": "Enigma Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "micleberry": {
     "name": "Micle Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "custapberry": {
     "name": "Custap Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "jabocaberry": {
     "name": "Jaboca Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "rowapberry": {
     "name": "Rowap Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "brightpowder": {
     "name": "Bright Powder",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": ["Berry"]
   },
   "whiteherb": { "name": "White Herb", "fling": { "power": 10 }, "flags": [] },
   "machobrace": {
@@ -1141,15 +1077,15 @@
   "apricornbox": { "name": "Apricorn Box", "flags": [] },
   "berrypots": { "name": "Berry Pots", "flags": [] },
   "squirtbottle": { "name": "Squirt Bottle", "flags": [] },
-  "lureball": { "name": "Lure Ball", "ball": true, "flags": [] },
-  "levelball": { "name": "Level Ball", "ball": true, "flags": [] },
-  "moonball": { "name": "Moon Ball", "ball": true, "flags": [] },
-  "heavyball": { "name": "Heavy Ball", "ball": true, "flags": [] },
-  "fastball": { "name": "Fast Ball", "ball": true, "flags": [] },
-  "friendball": { "name": "Friend Ball", "ball": true, "flags": [] },
-  "loveball": { "name": "Love Ball", "ball": true, "flags": [] },
-  "parkball": { "name": "Park Ball", "ball": true, "flags": [] },
-  "sportball": { "name": "Sport Ball", "ball": true, "flags": [] },
+  "lureball": { "name": "Lure Ball", "flags": ["Ball"] },
+  "levelball": { "name": "Level Ball", "flags": ["Ball"] },
+  "moonball": { "name": "Moon Ball", "flags": ["Ball"] },
+  "heavyball": { "name": "Heavy Ball", "flags": ["Ball"] },
+  "fastball": { "name": "Fast Ball", "flags": ["Ball"] },
+  "friendball": { "name": "Friend Ball", "flags": ["Ball"] },
+  "loveball": { "name": "Love Ball", "flags": ["Ball"] },
+  "parkball": { "name": "Park Ball", "flags": ["Ball"] },
+  "sportball": { "name": "Sport Ball", "flags": ["Ball"] },
   "redapricorn": { "name": "Red Apricorn", "flags": [] },
   "blueapricorn": { "name": "Blue Apricorn", "flags": [] },
   "yellowapricorn": { "name": "Yellow Apricorn", "flags": [] },
@@ -1343,21 +1279,21 @@
     "fling": { "power": 30 },
     "flags": []
   },
-  "firegem": { "name": "Fire Gem", "gem": true, "flags": [] },
-  "watergem": { "name": "Water Gem", "gem": true, "flags": [] },
-  "electricgem": { "name": "Electric Gem", "gem": true, "flags": [] },
-  "grassgem": { "name": "Grass Gem", "gem": true, "flags": [] },
-  "icegem": { "name": "Ice Gem", "gem": true, "flags": [] },
-  "fightinggem": { "name": "Fighting Gem", "gem": true, "flags": [] },
-  "poisongem": { "name": "Poison Gem", "gem": true, "flags": [] },
-  "groundgem": { "name": "Ground Gem", "gem": true, "flags": [] },
-  "flyinggem": { "name": "Flying Gem", "gem": true, "flags": [] },
-  "psychicgem": { "name": "Psychic Gem", "gem": true, "flags": [] },
-  "buggem": { "name": "Bug Gem", "gem": true, "flags": [] },
-  "rockgem": { "name": "Rock Gem", "gem": true, "flags": [] },
-  "ghostgem": { "name": "Ghost Gem", "gem": true, "flags": [] },
-  "darkgem": { "name": "Dark Gem", "gem": true, "flags": [] },
-  "steelgem": { "name": "Steel Gem", "gem": true, "flags": [] },
+  "firegem": { "name": "Fire Gem", "flags": ["Gem"] },
+  "watergem": { "name": "Water Gem", "flags": ["Gem"] },
+  "electricgem": { "name": "Electric Gem", "flags": ["Gem"] },
+  "grassgem": { "name": "Grass Gem", "flags": ["Gem"] },
+  "icegem": { "name": "Ice Gem", "flags": ["Gem"] },
+  "fightinggem": { "name": "Fighting Gem", "flags": ["Gem"] },
+  "poisongem": { "name": "Poison Gem", "flags": ["Gem"] },
+  "groundgem": { "name": "Ground Gem", "flags": ["Gem"] },
+  "flyinggem": { "name": "Flying Gem", "flags": ["Gem"] },
+  "psychicgem": { "name": "Psychic Gem", "flags": ["Gem"] },
+  "buggem": { "name": "Bug Gem", "flags": ["Gem"] },
+  "rockgem": { "name": "Rock Gem", "flags": ["Gem"] },
+  "ghostgem": { "name": "Ghost Gem", "flags": ["Gem"] },
+  "darkgem": { "name": "Dark Gem", "flags": ["Gem"] },
+  "steelgem": { "name": "Steel Gem", "flags": ["Gem"] },
   "healthwing": { "name": "Health Feather", "flags": [] },
   "musclewing": { "name": "Muscle Feather", "flags": [] },
   "resistwing": { "name": "Resist Feather", "flags": [] },
@@ -1377,7 +1313,7 @@
   },
   "libertypass": { "name": "Liberty Pass", "flags": [] },
   "passorb": { "name": "Pass Orb", "flags": [] },
-  "dreamball": { "name": "Dream Ball", "ball": true, "flags": [] },
+  "dreamball": { "name": "Dream Ball", "flags": ["Ball"] },
   "poketoy": { "name": "Poké Toy", "flags": [] },
   "propcase": { "name": "Prop Case", "flags": [] },
   "dragonskull": { "name": "Dragon Skull", "flags": [] },
@@ -1427,8 +1363,8 @@
   "gram1": { "name": "Gram 1", "flags": [] },
   "gram2": { "name": "Gram 2", "flags": [] },
   "gram3": { "name": "Gram 3", "flags": [] },
-  "dragongem": { "name": "Dragon Gem", "gem": true, "flags": [] },
-  "normalgem": { "name": "Normal Gem", "gem": true, "flags": [] },
+  "dragongem": { "name": "Dragon Gem", "flags": ["Gem"] },
+  "normalgem": { "name": "Normal Gem", "flags": ["Gem"] },
   "medalbox": { "name": "Medal Box", "flags": [] },
   "dnasplicers": { "name": "DNA Splicers", "flags": [] },
   "permit": { "name": "Permit", "flags": [] },
@@ -1687,20 +1623,17 @@
   "roseliberry": {
     "name": "Roseli Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "keeberry": {
     "name": "Kee Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "marangaberry": {
     "name": "Maranga Berry",
     "fling": { "power": 10 },
-    "berry": true,
-    "flags": []
+    "flags": ["Berry"]
   },
   "discountcoupon": { "name": "Discount Coupon", "flags": [] },
   "strangesouvenir": { "name": "Strange Souvenir", "flags": [] },
@@ -1711,7 +1644,7 @@
     "fling": { "power": 100 },
     "flags": []
   },
-  "fairygem": { "name": "Fairy Gem", "gem": true, "flags": [] },
+  "fairygem": { "name": "Fairy Gem", "flags": ["Gem"] },
   "adventurerules": { "name": "Adventure Guide", "flags": [] },
   "elevatorkey": { "name": "Elevator Key", "flags": [] },
   "holocaster": { "name": "Holo Caster", "flags": [] },
@@ -2024,7 +1957,7 @@
   "zygardecube": { "name": "Zygarde Cube", "flags": [] },
   "icestone": { "name": "Ice Stone", "fling": { "power": 30 }, "flags": [] },
   "ridepager": { "name": "Ride Pager", "flags": [] },
-  "beastball": { "name": "Beast Ball", "ball": true, "flags": [] },
+  "beastball": { "name": "Beast Ball", "flags": ["Ball"] },
   "bigmalasada": { "name": "Big Malasada", "flags": [] },
   "rednectar": { "name": "Red Nectar", "flags": [] },
   "yellownectar": { "name": "Yellow Nectar", "flags": [] },
@@ -3004,7 +2937,7 @@
     "fling": { "power": 90 },
     "flags": []
   },
-  "strangeball": { "name": "Strange Ball", "ball": true, "flags": [] },
+  "strangeball": { "name": "Strange Ball", "flags": ["Ball"] },
   "legendplate": {
     "name": "Legend Plate",
     "fling": { "power": 90 },
