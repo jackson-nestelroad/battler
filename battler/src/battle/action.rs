@@ -208,7 +208,7 @@ impl SwitchEventsAction {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ForfeitAction {
     pub player: usize,
-    pub priority: i32,
+    pub order: u32,
 }
 
 /// An action during a battle.
@@ -289,7 +289,6 @@ impl SpeedOrderable for Action {
             Self::BeforeTurnMove(action) => action.priority,
             Self::PriorityChargeMove(action) => action.priority,
             Self::Experience(action) => action.player_index as i32,
-            Self::Forfeit(action) => action.priority,
             _ => 0,
         }
     }
@@ -319,6 +318,7 @@ impl SpeedOrderable for Action {
                     action.mon_index as u32 + 65535
                 }
             }
+            Self::Forfeit(action) => action.order,
             _ => 0,
         }
     }

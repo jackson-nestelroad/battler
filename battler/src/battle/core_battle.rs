@@ -245,8 +245,8 @@ pub struct CoreBattle<'d> {
     in_pre_battle: bool,
     ending: bool,
     ended: bool,
-    next_ability_priority: u32,
-    next_forfeit_priority: i32,
+    next_ability_order: u32,
+    next_forfeit_order: u32,
     last_move_log: Option<usize>,
     last_fainted: Option<FaintEntry>,
 
@@ -328,8 +328,8 @@ impl<'d> CoreBattle<'d> {
             in_pre_battle: false,
             ending: false,
             ended: false,
-            next_ability_priority: 0,
-            next_forfeit_priority: 0,
+            next_ability_order: 0,
+            next_forfeit_order: 0,
             last_move_log: None,
             last_fainted: None,
             input_log,
@@ -495,15 +495,15 @@ impl<'d> CoreBattle<'d> {
             .collect())
     }
 
-    pub fn next_ability_priority(&mut self) -> u32 {
-        let next = self.next_ability_priority;
-        self.next_ability_priority += 1;
+    pub fn next_ability_order(&mut self) -> u32 {
+        let next = self.next_ability_order;
+        self.next_ability_order += 1;
         next
     }
 
-    pub fn next_forfeit_priority(&mut self) -> i32 {
-        let next = self.next_forfeit_priority;
-        self.next_forfeit_priority += 1;
+    pub fn next_forfeit_order(&mut self) -> u32 {
+        let next = self.next_forfeit_order;
+        self.next_forfeit_order += 1;
         next
     }
 

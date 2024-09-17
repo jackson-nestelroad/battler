@@ -1575,8 +1575,8 @@ impl Mon {
         for move_slot in &mut context.mon_mut().move_slots {
             move_slot.used = false;
         }
-        let ability_priority = context.battle_mut().next_ability_priority();
-        context.mon_mut().ability.priority = ability_priority;
+        let ability_order = context.battle_mut().next_ability_order();
+        context.mon_mut().ability.priority = ability_order;
         Ok(())
     }
 

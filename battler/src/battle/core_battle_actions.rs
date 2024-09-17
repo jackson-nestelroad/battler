@@ -3809,12 +3809,12 @@ pub fn set_ability(
         core_battle_logs::end_ability(context)?;
     }
 
-    let ability_priority = context.battle_mut().next_ability_priority();
+    let ability_order = context.battle_mut().next_ability_order();
     let ability = context.battle().dex.abilities.get_by_id(ability)?;
 
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
-        priority: ability_priority,
+        priority: ability_order,
         effect_state: fxlang::EffectState::new(),
     };
 

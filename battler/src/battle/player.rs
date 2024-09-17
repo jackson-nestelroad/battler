@@ -1207,7 +1207,7 @@ impl Player {
 
         let action = Action::Forfeit(ForfeitAction {
             player: context.player().index,
-            priority: -context.battle_mut().next_forfeit_priority(),
+            order: context.battle_mut().next_forfeit_order(),
         });
         context.player_mut().choice.actions.push(action);
 
