@@ -1368,6 +1368,9 @@ impl BattleEvent {
     }
 
     /// Whether or not to force effects to have a default callback for the event.
+    ///
+    /// This is used for residual events that are suppressed. We keep the callback so that durations
+    /// are updated without running the actual callback.
     pub fn force_default_callback(&self) -> bool {
         match self {
             Self::FieldResidual | Self::SideResidual | Self::Residual => true,

@@ -165,6 +165,38 @@ fn rayquaza() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
+fn rayquaza_kyogre() -> Result<TeamData, Error> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Rayquaza",
+                    "species": "Rayquaza",
+                    "ability": "Air Lock",
+                    "moves": [
+                        "Flamethrower"
+                    ],
+                    "nature": "Hardy",
+                    "gender": "M",
+                    "ball": "Normal",
+                    "level": 50
+                },
+                {
+                    "name": "Kyogre",
+                    "species": "Kyogre",
+                    "ability": "Drizzle",
+                    "moves": [],
+                    "nature": "Hardy",
+                    "gender": "M",
+                    "ball": "Normal",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
 fn make_battle(
     data: &dyn DataStore,
     seed: u64,
@@ -559,6 +591,68 @@ fn air_lock_suppresses_rain() {
             "miss|mon:Rayquaza,player-2,1",
             "residual",
             "turn|turn:5"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_start_eq(&battle, &expected_logs);
+}
+
+#[test]
+fn rain_finishes_normally_with_air_lock() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle =
+        make_battle(&data, 0, blastoise().unwrap(), rayquaza_kyogre().unwrap()).unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch"],
+            ["switch"],
+            "split|side:1",
+            ["switch"],
+            ["switch"],
+            "ability|mon:Rayquaza,player-2,1|ability:Air Lock",
+            "turn|turn:1",
+            ["time"],
+            "move|mon:Blastoise,player-1,1|name:Rain Dance",
+            "weather|weather:Rain",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "residual",
+            "turn|turn:4",
+            ["time"],
+            "residual",
+            "turn|turn:5",
+            ["time"],
+            "weather|weather:Clear",
+            "residual",
+            "turn|turn:6",
+            ["time"],
+            "split|side:1",
+            ["switch", "player-2", "Kyogre"],
+            ["switch", "player-2", "Kyogre"],
+            "weather|weather:Rain|from:ability:Drizzle|of:Kyogre,player-2,1",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:7"
         ]"#,
     )
     .unwrap();

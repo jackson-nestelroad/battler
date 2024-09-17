@@ -145,7 +145,16 @@ fn run_effect_event_with_errors(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
+    suppressed: bool,
 ) -> Result<fxlang::ProgramEvalResult, Error> {
+    // Effect was suppressed somewhere up the stack, so we should skip the callback.
+    //
+    // This is important for residual callbacks, which can be suppressed but should still attempt to
+    // run in order to properly decrement duration counters.
+    if suppressed {
+        return Ok(fxlang::ProgramEvalResult::default());
+    }
+
     // Effect state no longer exists, so we should skip the callback.
     if let Some(effect_state_connector) = &effect_state_connector {
         if !effect_state_connector.exists(context.battle_context_mut())? {
@@ -213,6 +222,7 @@ fn run_active_move_event_with_errors(
             event,
             input,
             Some(effect_state_connector),
+            false,
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::SideEffect(context.side_effect_context(side)?.into()),
@@ -220,6 +230,7 @@ fn run_active_move_event_with_errors(
             event,
             input,
             Some(effect_state_connector),
+            false,
         )?,
         MoveTargetForEvent::Field => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::FieldEffect(context.field_effect_context()?.into()),
@@ -227,6 +238,7 @@ fn run_active_move_event_with_errors(
             event,
             input,
             Some(effect_state_connector),
+            false,
         )?,
         MoveTargetForEvent::User => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::ApplyingEffect(
@@ -236,6 +248,7 @@ fn run_active_move_event_with_errors(
             event,
             input,
             Some(effect_state_connector),
+            false,
         )?,
         MoveTargetForEvent::UserWithTarget(target) => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::ApplyingEffect(
@@ -245,6 +258,7 @@ fn run_active_move_event_with_errors(
             event,
             input,
             Some(effect_state_connector),
+            false,
         )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
             &mut UpcomingEvaluationContext::Effect(context.effect_context()?.into()),
@@ -252,6 +266,7 @@ fn run_active_move_event_with_errors(
             event,
             input,
             Some(effect_state_connector),
+            false,
         )?,
     };
 
@@ -287,8 +302,16 @@ fn run_effect_event_by_handle(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
+    suppressed: bool,
 ) -> fxlang::ProgramEvalResult {
-    match run_effect_event_with_errors(context, &effect, event, input, effect_state_connector) {
+    match run_effect_event_with_errors(
+        context,
+        &effect,
+        event,
+        input,
+        effect_state_connector,
+        suppressed,
+    ) {
         Ok(result) => result,
         Err(error) => {
             let effect_name =
@@ -377,6 +400,7 @@ struct CallbackHandle {
     pub effect_handle: EffectHandle,
     pub event: fxlang::BattleEvent,
     pub origin: EffectOrigin,
+    pub suppressed: bool,
 }
 
 impl CallbackHandle {
@@ -389,6 +413,7 @@ impl CallbackHandle {
             effect_handle,
             event,
             origin,
+            suppressed: false,
         }
     }
 
@@ -446,6 +471,7 @@ fn run_callback_with_errors(
         callback_handle.event,
         input,
         callback_handle.effect_state_connector(),
+        callback_handle.suppressed,
     );
 
     Ok(result.value)
@@ -879,26 +905,36 @@ fn find_callbacks_on_field(
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressFieldWeather.callback_lookup_layer()
     {
-        if let Some(weather) = Field::effective_weather(context) {
-            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-            callbacks.push(CallbackHandle::new(
-                weather_handle.clone(),
-                event,
-                EffectOrigin::Weather,
-            ));
+        if let Some(weather) = context.battle().field.weather.clone() {
+            let effective_weather = Field::effective_weather(context);
+            let suppressed = effective_weather.is_none();
+            if event.force_default_callback() || !suppressed {
+                let weather_handle = context
+                    .battle_mut()
+                    .get_effect_handle_by_id(&effective_weather.unwrap_or(weather))?;
+                let mut callback_handle =
+                    CallbackHandle::new(weather_handle.clone(), event, EffectOrigin::Weather);
+                callback_handle.suppressed = suppressed;
+                callbacks.push(callback_handle);
+            }
         }
     }
 
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressFieldTerrain.callback_lookup_layer()
     {
-        if let Some(weather) = Field::effective_terrain(context) {
-            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-            callbacks.push(CallbackHandle::new(
-                weather_handle.clone(),
-                event,
-                EffectOrigin::Terrain,
-            ));
+        if let Some(terrain) = context.battle().field.terrain.clone() {
+            let effective_terrain = Field::effective_terrain(context);
+            let suppressed = effective_terrain.is_none();
+            if event.force_default_callback() || !suppressed {
+                let terrain_handle = context
+                    .battle_mut()
+                    .get_effect_handle_by_id(&effective_terrain.unwrap_or(terrain))?;
+                let mut callback_handle =
+                    CallbackHandle::new(terrain_handle.clone(), event, EffectOrigin::Terrain);
+                callback_handle.suppressed = suppressed;
+                callbacks.push(callback_handle);
+            }
         }
     }
 
@@ -927,25 +963,38 @@ fn find_callbacks_on_field_on_mon(
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonTerrain.callback_lookup_layer()
     {
-        if let Some(terrain) = mon_states::effective_terrain(&mut context) {
-            let terrain_handle = context.battle_mut().get_effect_handle_by_id(&terrain)?;
-            callbacks.push(CallbackHandle::new(
-                terrain_handle.clone(),
-                event,
-                EffectOrigin::MonTerrain(mon),
-            ));
+        if let Some(terrain) = context.battle().field.terrain.clone() {
+            let effective_terrain = mon_states::effective_terrain(&mut context);
+            let suppressed = effective_terrain.is_none();
+            if event.force_default_callback() || !suppressed {
+                let terrain_handle = context
+                    .battle_mut()
+                    .get_effect_handle_by_id(&effective_terrain.unwrap_or(terrain))?;
+                callbacks.push(CallbackHandle::new(
+                    terrain_handle.clone(),
+                    event,
+                    EffectOrigin::MonTerrain(mon),
+                ));
+            }
         }
     }
+
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonWeather.callback_lookup_layer()
     {
-        if let Some(weather) = mon_states::effective_weather(&mut context) {
-            let weather_handle = context.battle_mut().get_effect_handle_by_id(&weather)?;
-            callbacks.push(CallbackHandle::new(
-                weather_handle.clone(),
-                event,
-                EffectOrigin::MonWeather(mon),
-            ));
+        if let Some(weather) = context.battle().field.weather.clone() {
+            let effective_weather = mon_states::effective_weather(&mut context);
+            let suppressed = effective_weather.is_none();
+            if event.force_default_callback() || !suppressed {
+                let weather_handle = context
+                    .battle_mut()
+                    .get_effect_handle_by_id(&effective_weather.unwrap_or(weather))?;
+                callbacks.push(CallbackHandle::new(
+                    weather_handle.clone(),
+                    event,
+                    EffectOrigin::MonWeather(mon),
+                ));
+            }
         }
     }
 
