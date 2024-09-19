@@ -23,8 +23,28 @@
   "hyperpotion": { "name": "Hyper Potion", "flags": ["Medicine"] },
   "superpotion": { "name": "Super Potion", "flags": ["Medicine"] },
   "fullheal": { "name": "Full Heal", "flags": ["Medicine"] },
-  "revive": { "name": "Revive", "flags": ["Medicine"] },
-  "maxrevive": { "name": "Max Revive", "flags": ["Medicine"] },
+  "revive": {
+    "name": "Revive",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_choose_item": ["if !$target.fainted:", ["return false"]],
+        "on_player_use": ["revive: $mon expr($mon.max_hp / 2)"]
+      }
+    }
+  },
+  "maxrevive": {
+    "name": "Max Revive",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_choose_item": ["if !$target.fainted:", ["return false"]],
+        "on_player_use": ["revive: $mon $mon.max_hp"]
+      }
+    }
+  },
   "freshwater": { "name": "Fresh Water", "flags": ["Medicine"] },
   "sodapop": { "name": "Soda Pop", "flags": ["Medicine"] },
   "lemonade": { "name": "Lemonade", "flags": ["Medicine"] },

@@ -68,6 +68,7 @@ mod items {
 
     mod medicine {
         mod potion_test;
+        mod revive_test;
     }
 }
 

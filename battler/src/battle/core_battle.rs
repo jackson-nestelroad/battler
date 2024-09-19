@@ -879,7 +879,7 @@ impl<'d> CoreBattle<'d> {
             RequestType::Switch => {
                 // We only make a request if there are Mons that need to switch out.
                 let mut context = context.player_context(player)?;
-                if context.player().mons_left == 0 {
+                if Player::mons_left(&context)? == 0 {
                     return Ok(None);
                 }
                 let mut needs_switch = Vec::new();
@@ -1044,9 +1044,6 @@ impl<'d> CoreBattle<'d> {
         match &action {
             Action::Start => {
                 context.battle_mut().log_team_sizes();
-                for player in context.battle_mut().players_mut() {
-                    player.start_battle();
-                }
                 context.battle_mut().in_pre_battle = false;
 
                 context.battle_mut().log(log_event!("start"));
@@ -1054,7 +1051,6 @@ impl<'d> CoreBattle<'d> {
                 let switch_ins = context
                     .battle()
                     .players()
-                    .filter(|player| player.mons_left > 0)
                     .sorted_by(|a, b| match (a.player_type.wild(), b.player_type.wild()) {
                         (true, false) => Ordering::Less,
                         (false, true) => Ordering::Greater,
@@ -1793,9 +1789,6 @@ impl<'d> CoreBattle<'d> {
 
             // TODO: BeforeFaint event.
             core_battle_logs::faint(&mut context)?;
-            if context.player().mons_left > 0 {
-                context.player_mut().mons_left -= 1;
-            }
 
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
@@ -1836,8 +1829,8 @@ impl<'d> CoreBattle<'d> {
 
         let mut winner = None;
         for side in context.battle().side_indices() {
-            let context = context.side_context(side)?;
-            let mons_left = Side::mons_left(&context);
+            let mut context = context.side_context(side)?;
+            let mons_left = Side::mons_left(&mut context)?;
             if mons_left > 0 {
                 if winner.is_some() {
                     return Ok(());

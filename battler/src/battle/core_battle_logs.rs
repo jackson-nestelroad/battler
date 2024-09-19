@@ -369,6 +369,54 @@ pub fn heal(
     Ok(())
 }
 
+pub fn set_hp(
+    context: &mut MonContext,
+    effect: Option<EffectHandle>,
+    source: Option<MonHandle>,
+) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        target: Some(context.mon_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: effect,
+        source,
+        ..Default::default()
+    };
+    let mut private_event = effect_activation_internal(
+        context.as_battle_context_mut(),
+        "sethp".to_owned(),
+        activation,
+    )?;
+    let mut public_event = private_event.clone();
+
+    private_event.set("health", Mon::secret_health(context));
+    public_event.set("health", Mon::public_health(context));
+
+    let side = context.mon().side;
+    context
+        .battle_mut()
+        .log_private_public(side, private_event, public_event);
+    Ok(())
+}
+
+pub fn revive(
+    context: &mut MonContext,
+    effect: Option<EffectHandle>,
+    source: Option<MonHandle>,
+) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        target: Some(context.mon_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: effect,
+        source,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "revive".to_owned(),
+        activation,
+    )
+}
+
 pub fn cure_status(
     context: &mut ApplyingEffectContext,
     status: &Id,

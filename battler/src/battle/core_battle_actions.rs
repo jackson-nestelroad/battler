@@ -2450,7 +2450,7 @@ fn apply_move_effects(
 pub fn can_boost(context: &mut MonContext, boosts: BoostTable) -> Result<bool, Error> {
     if context.mon().hp == 0
         || !context.mon().active
-        || Side::mons_left(context.as_side_context()) == 0
+        || Side::mons_left(context.as_side_context_mut())? == 0
     {
         return Ok(false);
     }
@@ -2473,7 +2473,7 @@ pub fn boost(
 ) -> Result<bool, Error> {
     if context.target().hp == 0
         || !context.target().active
-        || Side::mons_left(&context.target_context()?.as_side_context()) == 0
+        || Side::mons_left(context.target_context()?.as_side_context_mut())? == 0
     {
         return Ok(false);
     }
@@ -3410,7 +3410,6 @@ fn leave_battle(context: &mut PlayerContext) -> Result<(), Error> {
             false,
         )?;
     }
-    context.player_mut().mons_left = 0;
     Ok(())
 }
 
@@ -4338,4 +4337,18 @@ pub fn player_use_item_internal(
     // After an item is used, if it is a ball, we attempt to catch the targeted Mon.
 
     Ok(true)
+}
+
+/// Revives a fainted Mon.
+pub fn revive(context: &mut ApplyingEffectContext, hp: u16) -> Result<u16, Error> {
+    if !context.target().fainted {
+        return Ok(0);
+    }
+
+    let effect = context.effect_handle().clone();
+    let source = context.source_handle();
+    core_battle_logs::revive(&mut context.target_context()?, Some(effect), source)?;
+    let hp = Mon::revive(&mut context.target_context()?, hp)?;
+
+    Ok(hp)
 }

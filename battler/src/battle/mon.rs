@@ -26,6 +26,7 @@ use crate::{
         core_battle::FaintEntry,
         core_battle_actions,
         core_battle_effects,
+        core_battle_logs,
         modify_32,
         mon_states,
         Boost,
@@ -1795,6 +1796,15 @@ impl Mon {
         Ok(())
     }
 
+    /// Revives the Mon so that it can be used again.
+    pub fn revive(context: &mut MonContext, hp: u16) -> Result<u16, Error> {
+        context.mon_mut().fainted = false;
+        context.mon_mut().status = None;
+        context.mon_mut().hp = 1;
+        Self::set_hp(context, hp)?;
+        Ok(context.mon().hp)
+    }
+
     /// Caps the given boosts based on the Mon's existing boosts.
     pub fn cap_boosts(context: &MonContext, boosts: BoostTable) -> BoostTable {
         BoostTable::from_iter(boosts.non_zero_iter().map(|(boost, value)| {
@@ -2001,12 +2011,7 @@ impl Mon {
             context.mon_mut().hp = context.mon().max_hp;
         }
 
-        let event = log_event!(
-            "sethp",
-            ("mon", Self::position_details(context)?),
-            ("hp", context.mon().hp)
-        );
-        context.battle_mut().log(event);
+        core_battle_logs::set_hp(context, None, None)?;
         Ok(delta)
     }
 }

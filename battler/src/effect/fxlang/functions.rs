@@ -183,6 +183,7 @@ pub fn run_function(
         "remove" => remove(context).map(|val| Some(val)),
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
+        "revive" => revive(context).map(|val| Some(val)),
         "run_event" => run_event(context).map(|val| Some(val)),
         "run_event_for_each_active_mon" => run_event_for_each_active_mon(context).map(|()| None),
         "run_event_for_mon" => run_event_for_mon(context).map(|val| Some(val)),
@@ -1510,6 +1511,24 @@ fn heal(mut context: FunctionContext) -> Result<Value, Error> {
         source_handle,
         Some(&effect),
         force,
+    )
+    .map(|val| Value::UFraction(val.into()))
+}
+
+fn revive(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let hp = context
+        .pop_front()
+        .wrap_error_with_message("missing hp")?
+        .integer_u16()
+        .wrap_error_with_message("invalid hp")?;
+    core_battle_actions::revive(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        hp,
     )
     .map(|val| Value::UFraction(val.into()))
 }

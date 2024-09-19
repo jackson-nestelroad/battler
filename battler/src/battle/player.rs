@@ -360,7 +360,6 @@ pub struct Player {
     pub index: usize,
     pub choice: ChoiceState,
     pub request: Option<Request>,
-    pub mons_left: usize,
 
     pub mons: Vec<MonHandle>,
     active: Vec<Option<MonHandle>>,
@@ -416,7 +415,6 @@ impl Player {
             active: active.clone(),
             active_or_fainted: active,
             request: None,
-            mons_left: 0,
             escape_attempts: 0,
             escaped: false,
             bag,
@@ -540,12 +538,27 @@ impl Player {
                 .then_some(mon_handle)
         })
     }
+
     /// Creates an iterator over all Mons that can be switched in.
     pub fn switchable_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
         Self::inactive_mon_handles(context)
             .filter(|mon_handle| context.mon(**mon_handle).is_ok_and(|mon| !mon.fainted))
+    }
+
+    /// Counts the number of Mons left that the player owns.
+    pub fn mons_left(context: &PlayerContext) -> Result<usize, Error> {
+        if context.player().escaped {
+            return Ok(0);
+        }
+        let mut count = 0;
+        for mon in context.player().mons.clone() {
+            if !context.mon(mon)?.fainted {
+                count += 1;
+            }
+        }
+        Ok(count)
     }
 
     /// Request data for the player in a battle.
@@ -575,7 +588,7 @@ impl Player {
                 Ok(context.player().choice.actions.len() >= context.player().mons.len())
             }
             _ => {
-                if context.player().escaped || context.player().mons_left == 0 {
+                if context.player().escaped || Player::mons_left(context)? == 0 {
                     return Ok(true);
                 }
                 if context.player().choice.forced_switches_left > 0 {
@@ -841,11 +854,6 @@ impl Player {
 
         context.player_mut().choice.fulfilled = true;
         Ok(())
-    }
-
-    /// Modifies the player for the start of the battle.
-    pub fn start_battle(&mut self) {
-        self.mons_left = self.mons.len();
     }
 
     fn choose_switch(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {

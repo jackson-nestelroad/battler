@@ -104,12 +104,16 @@ impl Side {
     }
 
     /// Counts the number of Mons left on the side.
-    pub fn mons_left(context: &SideContext) -> usize {
-        context
+    pub fn mons_left(context: &mut SideContext) -> Result<usize, Error> {
+        let mut count = 0;
+        for player in context
             .battle()
-            .players_on_side(context.side().index)
-            .map(|player| player.mons_left)
-            .sum()
+            .player_indices_on_side(context.side().index)
+            .collect::<Vec<_>>()
+        {
+            count += Player::mons_left(&context.as_battle_context_mut().player_context(player)?)?;
+        }
+        Ok(count)
     }
 
     /// Counts the number of active Mons on the side.
