@@ -127,6 +127,14 @@ impl PlayerType {
         }
     }
 
+    /// Can other players forfeit against this player?
+    pub fn forfeitable(&self) -> bool {
+        match self {
+            Self::Trainer | Self::Protagonist => true,
+            _ => false,
+        }
+    }
+
     /// Can this player escape?
     ///
     /// If true, other checks are performed before an escape succeeds. For instance, all foe players
@@ -1242,6 +1250,10 @@ impl Player {
     /// Checks if the player can forfeit.
     pub fn can_forfeit(context: &PlayerContext) -> bool {
         context.player().player_type.can_forfeit()
+            && context
+                .battle()
+                .players_on_side(context.foe_side().index)
+                .all(|foe| foe.player_type.forfeitable())
     }
 }
 
