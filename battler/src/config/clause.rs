@@ -215,7 +215,6 @@ mod clause_tests {
 
     use crate::{
         battle::{
-            BagData,
             BattleType,
             CoreBattleOptions,
             FieldData,
@@ -566,20 +565,14 @@ mod clause_tests {
                     PlayerData {
                         id: "player-1".to_owned(),
                         name: "Player 1".to_owned(),
-                        team: TeamData {
-                            members: Vec::new(),
-                        },
-                        bag: BagData::default(),
+                        team: TeamData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },
                     PlayerData {
                         id: "player-2".to_owned(),
                         name: "Player 2".to_owned(),
-                        team: TeamData {
-                            members: Vec::new(),
-                        },
-                        bag: BagData::default(),
+                        team: TeamData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },
@@ -591,20 +584,14 @@ mod clause_tests {
                     PlayerData {
                         id: "player-3".to_owned(),
                         name: "Player 3".to_owned(),
-                        team: TeamData {
-                            members: Vec::new(),
-                        },
-                        bag: BagData::default(),
+                        team: TeamData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },
                     PlayerData {
                         id: "player-4".to_owned(),
                         name: "Player 4".to_owned(),
-                        team: TeamData {
-                            members: Vec::new(),
-                        },
-                        bag: BagData::default(),
+                        team: TeamData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },

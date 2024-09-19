@@ -116,7 +116,6 @@ pub use move_outcome::{
     MoveOutcomeOnTarget,
 };
 pub use player::{
-    BagData,
     Player,
     PlayerBattleRequestData,
     PlayerData,

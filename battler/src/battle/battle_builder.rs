@@ -5,7 +5,6 @@ use serde::{
 
 use crate::{
     battle::{
-        BagData,
         BattleOptions,
         CoreBattleEngineOptions,
         CoreBattleOptions,
@@ -60,7 +59,6 @@ impl Into<PlayerData> for BattleBuilderPlayerData {
             team: TeamData::default(),
             player_type: self.player_type,
             player_options: self.player_options,
-            bag: BagData::default(),
         }
     }
 }
@@ -181,16 +179,7 @@ impl<'d> BattleBuilder<'d> {
     /// callers should be sure that the modified team is recorded properly.
     pub fn validate_team(&self, team: &mut TeamData) -> Result<(), TeamValidationError> {
         let validator = TeamValidator::new(&self.format, &self.dex);
-        validator.validate_team(team.members.iter_mut().collect::<Vec<_>>().as_mut())
-    }
-
-    /// Validates the given bag against the battle format.
-    ///
-    /// Note that team validation can modify the team (for example, when forcing forme changes), so
-    /// callers should be sure that the modified bag is recorded properly.
-    pub fn validate_bag(&self, bag: &mut BagData) -> Result<(), TeamValidationError> {
-        let validator = TeamValidator::new(&self.format, &self.dex);
-        validator.validate_bag(bag)
+        validator.validate_team(team)
     }
 
     fn side_mut(&mut self, side: usize) -> Result<&mut SideData, Error> {
@@ -216,24 +205,6 @@ impl<'d> BattleBuilder<'d> {
             .get_mut(player)
             .wrap_error_with_format(format_args!("index {player} is invalid for side {side}"))?;
         player.team = team;
-        Ok(())
-    }
-
-    /// Updates a player's bag.
-    ///
-    /// If validation should be done, [`Self::validate_bag`] should be called first.
-    pub fn update_bag(&mut self, player: &str, bag: BagData) -> Result<(), Error> {
-        let (side, player) = self
-            .player_ids
-            .get(player)
-            .wrap_error_with_format(format_args!("player {player} does not exist"))?
-            .clone();
-        let player = self
-            .side_mut(side)?
-            .players
-            .get_mut(player)
-            .wrap_error_with_format(format_args!("index {player} is invalid for side {side}"))?;
-        player.bag = bag;
         Ok(())
     }
 }

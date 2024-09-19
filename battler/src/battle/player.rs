@@ -181,13 +181,6 @@ pub struct PlayerOptions {
     pub has_strict_bag: bool,
 }
 
-/// Data for a single player's bag in a battle.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct BagData {
-    /// Item counts available for use.
-    pub items: FastHashMap<String, u16>,
-}
-
 /// Data for a single player of a battle.
 ///
 /// A player is exactly what it sounds like: a single participant in a battle. A player brings their
@@ -206,9 +199,6 @@ pub struct PlayerData {
     /// Player options
     #[serde(default)]
     pub player_options: PlayerOptions,
-    /// Items available for use.
-    #[serde(default)]
-    pub bag: BagData,
 }
 
 /// What the player has chosen to happen in the current turn.
@@ -407,6 +397,7 @@ impl Player {
             .collect::<Result<Vec<_>, _>>()?;
         let active = vec![None; battle_type.active_per_player()];
         let bag = data
+            .team
             .bag
             .items
             .into_iter()

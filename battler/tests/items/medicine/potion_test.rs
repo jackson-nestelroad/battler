@@ -1,6 +1,5 @@
 use battler::{
     battle::{
-        BagData,
         BattleType,
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
@@ -47,17 +46,11 @@ fn team() -> Result<TeamData, Error> {
                     "nature": "Hardy",
                     "level": 50
                 }
-            ]
-        }"#,
-    )
-    .wrap_error()
-}
-
-fn two_potions() -> Result<BagData, Error> {
-    serde_json::from_str(
-        r#"{
-            "items": {
-                "Potion": 2
+            ],
+            "bag": {
+                "items": {
+                    "Potion": 2
+                }
             }
         }"#,
     )
@@ -68,7 +61,6 @@ fn make_battle(
     data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
-    bag_1: BagData,
     team_2: TeamData,
 ) -> Result<PublicCoreBattle, Error> {
     TestBattleBuilder::new()
@@ -81,7 +73,6 @@ fn make_battle(
         .add_protagonist_to_side_1("protagonist", "Protagonist")
         .add_player_to_side_2("trainer", "Trainer")
         .with_team("protagonist", team_1)
-        .with_bag("protagonist", bag_1)
         .with_team("trainer", team_2)
         .build(data)
 }
@@ -89,14 +80,7 @@ fn make_battle(
 #[test]
 fn potion_heals_20_hp() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -131,14 +115,7 @@ fn potion_heals_20_hp() {
 #[test]
 fn using_item_removes_from_bag() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -163,14 +140,7 @@ fn using_item_removes_from_bag() {
 #[test]
 fn potion_can_heal_inactive_mon() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -213,14 +183,7 @@ fn potion_can_heal_inactive_mon() {
 #[test]
 fn potion_fails_at_max_hp() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_error_message(
@@ -232,14 +195,7 @@ fn potion_fails_at_max_hp() {
 #[test]
 fn potion_fails_on_fainted_mon() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -262,14 +218,7 @@ fn potion_fails_on_fainted_mon() {
 #[test]
 fn potion_fails_on_foe() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_error_message(
@@ -281,14 +230,7 @@ fn potion_fails_on_foe() {
 #[test]
 fn embargo_prevents_potion_usage_from_bag() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(
-        &data,
-        0,
-        team().unwrap(),
-        two_potions().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));

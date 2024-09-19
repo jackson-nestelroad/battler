@@ -14,7 +14,6 @@ use zone_alloc::ElementRef;
 
 use crate::{
     abilities::Ability,
-    battle::BagData,
     common::{
         Error,
         FastHashMap,
@@ -38,7 +37,11 @@ use crate::{
         Species,
     },
     moves::Move,
-    teams::MonData,
+    teams::{
+        BagData,
+        MonData,
+        TeamData,
+    },
 };
 
 /// The maximum length of a Mon name.
@@ -180,10 +183,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     }
 
     /// Validates an entire team for a battle.
-    pub fn validate_team(&self, team: &mut [&'b mut MonData]) -> Result<(), TeamValidationError> {
+    pub fn validate_team(&self, team: &mut TeamData) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
-        let team_size = team.len();
+        let team_size = team.members.len();
         let max_team_size = self.format.rules.numeric_rules.max_team_size as usize;
         if team_size > max_team_size {
             result.add_problem(format!(
@@ -200,13 +203,17 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ))
         }
 
-        for mon in team.iter_mut() {
+        for mon in team.members.iter_mut() {
             result.merge(self.validate_mon(&mut *mon));
         }
 
         for clause in self.format.rules.clauses(self.dex) {
-            result.merge(clause.on_validate_team(self, team.as_mut()));
+            result.merge(
+                clause.on_validate_team(self, team.members.iter_mut().collect::<Vec<_>>().as_mut()),
+            );
         }
+
+        result.merge(self.validate_bag(&mut team.bag));
 
         result.into()
     }
@@ -365,7 +372,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
         let mut state = MonValidationState::new();
         if let Some(item) = &item {
-            result.merge(self.validate_item(mon, &item));
+            result.merge(self.validate_item(&item));
         }
         result.merge(self.validate_moveset(mon, &species, &mut state));
         result.merge(self.validate_ability(mon, &species, &ability, &mut state));
@@ -470,11 +477,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         result.into()
     }
 
-    fn validate_item(
-        &self,
-        _: &'b MonData,
-        item: &ElementRef<'d, Item>,
-    ) -> Result<(), TeamValidationError> {
+    fn validate_item(&self, item: &ElementRef<'d, Item>) -> Result<(), TeamValidationError> {
         let mut result = TeamValidationError::new();
 
         // Check if item is allowed.
@@ -906,9 +909,25 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     }
 
     /// Validates an entire bag for a battle.
-    pub fn validate_bag(&self, _bag: &mut BagData) -> Result<(), TeamValidationError> {
-        let result = TeamValidationError::new();
-        // TODO: Bag validation. Players cannot bring illegal items.
+    fn validate_bag(&self, bag: &mut BagData) -> Result<(), TeamValidationError> {
+        let mut result = TeamValidationError::new();
+        for item in bag.items.keys() {
+            let item = match self.dex.items.get(&item) {
+                DataLookupResult::Found(item) => Some(item),
+                DataLookupResult::NotFound => {
+                    result.add_problem(format!("Item {item} (in bag) does not exist."));
+                    return result.into();
+                }
+                DataLookupResult::Error(error) => {
+                    result.add_problem(format!("Failed to lookup item {item}: {error}."));
+                    return result.into();
+                }
+            };
+
+            if let Some(item) = item {
+                result.merge(self.validate_item(&item));
+            }
+        }
         result.into()
     }
 }
@@ -928,7 +947,7 @@ mod team_validator_tests {
             LocalDataStore,
         },
         teams::{
-            MonData,
+            TeamData,
             TeamValidator,
         },
     };
@@ -936,9 +955,9 @@ mod team_validator_tests {
     #[derive(Deserialize)]
     struct TeamValidatorTestCase {
         format: FormatData,
-        team: Vec<MonData>,
+        team: TeamData,
         expected_problems: Vec<String>,
-        want_team: Option<Vec<MonData>>,
+        want_team: Option<TeamData>,
     }
 
     #[test]
@@ -950,8 +969,7 @@ mod team_validator_tests {
         for (test_name, mut test_case) in test_cases {
             let format = Format::new(test_case.format, &dex).unwrap();
             let validator = TeamValidator::new(&format, &dex);
-            let result =
-                validator.validate_team(test_case.team.iter_mut().collect::<Vec<_>>().as_mut());
+            let result = validator.validate_team(&mut test_case.team);
             let problems = match result {
                 Ok(_) => Vec::new(),
                 Err(error) => error.problems,

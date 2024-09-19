@@ -6,7 +6,6 @@ use ahash::{
 };
 use battler::{
     battle::{
-        BagData,
         BattleBuilder,
         BattleBuilderOptions,
         BattleBuilderPlayerData,
@@ -44,7 +43,6 @@ pub struct TestBattleBuilder {
     options: BattleBuilderOptions,
     engine_options: CoreBattleEngineOptions,
     teams: FastHashMap<String, TeamData>,
-    bags: FastHashMap<String, BagData>,
     validate_team: bool,
     controlled_rng: bool,
     infinite_bags: bool,
@@ -73,7 +71,6 @@ impl TestBattleBuilder {
             },
             engine_options: CoreBattleEngineOptions::default(),
             teams: FastHashMap::new(),
-            bags: FastHashMap::new(),
             validate_team: true,
             controlled_rng: false,
             infinite_bags: false,
@@ -104,18 +101,6 @@ impl TestBattleBuilder {
                 }
             }
             builder.update_team(&player_id, team)?;
-        }
-
-        for (player_id, mut bag) in self.bags {
-            if self.validate_team {
-                let validation = builder.validate_bag(&mut bag);
-                if let Err(error) = validation {
-                    return Err(battler_error!(
-                        "bag for player {player_id} is invalid: {error}"
-                    ));
-                }
-            }
-            builder.update_bag(&player_id, bag)?;
         }
 
         builder.build(self.engine_options)
@@ -241,11 +226,6 @@ impl TestBattleBuilder {
 
     pub fn with_team(mut self, player_id: &str, team: TeamData) -> Self {
         self.teams.insert(player_id.to_owned(), team);
-        self
-    }
-
-    pub fn with_bag(mut self, player_id: &str, bag: BagData) -> Self {
-        self.bags.insert(player_id.to_owned(), bag);
         self
     }
 

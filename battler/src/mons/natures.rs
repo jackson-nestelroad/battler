@@ -7,7 +7,14 @@ use crate::mons::Stat;
 
 /// A Mon's nature, which boosts and drops particular stat values.
 #[derive(
-    Debug, Default, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 pub enum Nature {
     #[string = "Hardy"]
