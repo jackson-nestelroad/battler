@@ -1,10 +1,16 @@
 {
   "cheriberry": {
     "name": "Cheri Berry",
+    "target": "Party",
     "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
+        "on_player_choose_item": [
+          "if $target.status != par:",
+          ["return false"]
+        ],
+        "on_player_use": ["if $mon.status == par:", ["cure_status: $mon"]],
         "on_update": ["if $mon.status == par:", ["eat_item: $mon"]],
         "on_eat": ["if $mon.status == par:", ["cure_status: $mon"]]
       }

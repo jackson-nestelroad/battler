@@ -896,7 +896,8 @@ fn find_callbacks_on_side_on_mon(
     }
 
     if context.mon().active {
-        let slot = Mon::position_on_side(&context)?;
+        let slot = Mon::position_on_side(&context)
+            .wrap_error_with_message("expected target to be active")?;
         if let Some(slot_conditions) = context.side().slot_conditions.get(&slot).cloned() {
             for slot_condition in slot_conditions.keys() {
                 let slot_condition_handle = context
@@ -2299,6 +2300,16 @@ pub fn run_pseudo_weather_event_expecting_u8(
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
 pub fn run_applying_effect_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
     run_applying_effect_event_internal(context, event, fxlang::VariableInput::default());
+}
+
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+pub fn run_applying_effect_event_expecting_bool(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_applying_effect_event_internal(context, event, fxlang::VariableInput::default())?
+        .boolean()
+        .ok()
 }
 
 /// Runs an event on the [`Effect`][`crate::effect::Effect`].

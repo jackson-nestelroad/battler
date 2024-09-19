@@ -492,7 +492,16 @@
   "cellbattery": {
     "name": "Cell Battery",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.type == electric and func_call(can_boost: $target 'atk:1'):",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'atk:1'"]
+      }
+    }
   },
   "ejectbutton": {
     "name": "Eject Button",

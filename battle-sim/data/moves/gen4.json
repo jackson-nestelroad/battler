@@ -203,6 +203,7 @@
       "duration": 5,
       "callbacks": {
         "suppress_mon_item": ["return true"],
+        "on_player_choose_item": ["return false"],
         "on_start": ["log_start", "run_event_on_mon_item: End"],
         "on_end": ["log_end"]
       }

@@ -370,6 +370,7 @@ mod queue_tests {
                 Action::LearnMove(action) => format!("learnmove {}", action.mon),
                 Action::Escape(action) => format!("escape {}", action.mon_action.mon),
                 Action::Forfeit(action) => format!("forfeit {}", action.player),
+                Action::Item(action) => format!("item {}", action.item),
             })
             .collect()
     }

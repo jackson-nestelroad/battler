@@ -1,5 +1,18 @@
 {
-  "potion": { "name": "Potion", "flags": ["Medicine"] },
+  "potion": {
+    "name": "Potion",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_choose_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 20 force"]
+      }
+    }
+  },
   "antidote": { "name": "Antidote", "flags": ["Medicine"] },
   "burnheal": { "name": "Burn Heal", "flags": ["Medicine"] },
   "iceheal": { "name": "Ice Heal", "flags": ["Medicine"] },

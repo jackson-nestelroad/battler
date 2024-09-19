@@ -1,5 +1,9 @@
 use std::{
     cmp,
+    collections::{
+        hash_map::Entry,
+        VecDeque,
+    },
     mem,
 };
 
@@ -11,6 +15,7 @@ use serde::{
 
 use crate::{
     battle::{
+        core_battle_effects,
         Action,
         BattleRegistry,
         BattleType,
@@ -18,6 +23,8 @@ use crate::{
         EscapeAction,
         EscapeActionInput,
         ForfeitAction,
+        ItemAction,
+        ItemActionInput,
         LearnMoveAction,
         Mon,
         MonBattleRequestData,
@@ -27,6 +34,7 @@ use crate::{
         PlayerContext,
         Request,
         RequestType,
+        Side,
         SwitchAction,
         SwitchActionInput,
         TeamAction,
@@ -37,11 +45,17 @@ use crate::{
         split_once_optional,
         Captures,
         Error,
+        FastHashMap,
         FastHashSet,
         Id,
+        Identifiable,
         WrapResultError,
     },
     dex::Dex,
+    effect::{
+        fxlang,
+        EffectHandle,
+    },
     teams::TeamData,
 };
 
@@ -162,6 +176,16 @@ pub struct PlayerOptions {
     /// If the player has affection mechanics enabled.
     #[serde(default)]
     pub has_affection: bool,
+    /// If the player requires strict bag checks for using items.
+    #[serde(default)]
+    pub has_strict_bag: bool,
+}
+
+/// Data for a single player's bag in a battle.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct BagData {
+    /// Item counts available for use.
+    pub items: FastHashMap<String, u16>,
 }
 
 /// Data for a single player of a battle.
@@ -179,8 +203,12 @@ pub struct PlayerData {
     /// Player type.
     #[serde(default)]
     pub player_type: PlayerType,
+    /// Player options
     #[serde(default)]
     pub player_options: PlayerOptions,
+    /// Items available for use.
+    #[serde(default)]
+    pub bag: BagData,
 }
 
 /// What the player has chosen to happen in the current turn.
@@ -241,11 +269,13 @@ impl MoveChoice {
     /// 2 while also Mega Evolving.
     ///
     /// The `move` prefix should already be trimmed off.
-    pub fn new(data: &str) -> Result<MoveChoice, Error> {
-        let args = data.split(',').map(|str| str.trim()).collect::<Vec<&str>>();
-        let mut index = 0;
+    pub fn new(data: &str) -> Result<Self, Error> {
+        let mut args = data
+            .split(',')
+            .map(|str| str.trim())
+            .collect::<VecDeque<&str>>();
         let move_slot = args
-            .get(index)
+            .pop_front()
             .wrap_error_with_message("missing move slot")?;
         let move_slot = move_slot
             .parse()
@@ -255,14 +285,17 @@ impl MoveChoice {
             target: None,
             mega: false,
         };
-        index += 1;
 
-        if let Some(target) = args.get(index).and_then(|target| target.parse().ok()) {
+        if let Some(target) = args
+            .front()
+            .map(|target| target.parse::<isize>().ok())
+            .flatten()
+        {
             choice.target = Some(target);
-            index += 1;
+            args.pop_front();
         }
 
-        match args.get(index).cloned() {
+        match args.front().cloned() {
             Some("mega") => {
                 choice.mega = true;
             }
@@ -281,7 +314,7 @@ struct LearnMoveChoice {
 }
 
 impl LearnMoveChoice {
-    pub fn new(data: &str) -> Result<LearnMoveChoice, Error> {
+    pub fn new(data: &str) -> Result<Self, Error> {
         let move_slot = data
             .trim()
             .parse()
@@ -289,6 +322,26 @@ impl LearnMoveChoice {
         Ok(Self {
             forget_move_slot: move_slot,
         })
+    }
+}
+
+/// An item choice for a single Mon on a single turn.
+#[derive(Debug, PartialEq, Eq)]
+struct ItemChoice {
+    pub item: Id,
+    pub target: Option<isize>,
+}
+
+impl ItemChoice {
+    pub fn new(data: &str) -> Result<Self, Error> {
+        let mut args = data
+            .split(',')
+            .map(|str| str.trim())
+            .collect::<VecDeque<&str>>();
+        let item = args.pop_front().wrap_error_with_message("missing item")?;
+        let item = Id::from(item);
+        let target = args.pop_front().map(|target| target.parse().ok()).flatten();
+        Ok(Self { item, target })
     }
 }
 
@@ -328,6 +381,8 @@ pub struct Player {
 
     pub escape_attempts: u16,
     pub escaped: bool,
+
+    pub bag: FastHashMap<Id, u16>,
 }
 
 // Construction and initialization logic.
@@ -351,6 +406,12 @@ impl Player {
             })
             .collect::<Result<Vec<_>, _>>()?;
         let active = vec![None; battle_type.active_per_player()];
+        let bag = data
+            .bag
+            .items
+            .into_iter()
+            .map(|(key, val)| (Id::from(key), val))
+            .collect();
         Ok(Self {
             id: data.id,
             name: data.name,
@@ -367,6 +428,7 @@ impl Player {
             mons_left: 0,
             escape_attempts: 0,
             escaped: false,
+            bag,
         })
     }
 
@@ -761,6 +823,15 @@ impl Player {
                     }
                     _ => (),
                 },
+                "item" => match Self::choose_item(context, data) {
+                    Err(error) => {
+                        return Self::emit_choice_error(
+                            context,
+                            Error::wrap("cannot use item", error),
+                        )
+                    }
+                    _ => (),
+                },
                 _ => {
                     return Self::emit_choice_error(
                         context,
@@ -1080,19 +1151,16 @@ impl Player {
         match (mov.data.target.choosable(), choice.target) {
             (true, None) => {
                 if target_required {
-                    return Err(battler_error!("{} requires a target", move_name));
+                    return Err(battler_error!("{move_name} requires a target"));
                 }
             }
             (true, Some(target)) => {
                 if !CoreBattle::valid_target(&mut context, move_target, target)? {
-                    return Err(battler_error!("invalid target for {}", move_name));
+                    return Err(battler_error!("invalid target for {move_name}"));
                 }
             }
             (false, Some(_)) => {
-                return Err(battler_error!(
-                    "you cannot choose a target for {}",
-                    move_name
-                ))
+                return Err(battler_error!("you cannot choose a target for {move_name}"))
             }
             _ => (),
         }
@@ -1222,6 +1290,96 @@ impl Player {
         Ok(())
     }
 
+    fn choose_item(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+        if !context.battle().format.options.bag_items {
+            return Err(battler_error!("you cannot use items"));
+        }
+
+        match context.player().request_type() {
+            Some(RequestType::Turn) => (),
+            _ => return Err(battler_error!("you cannot use an item out of turn")),
+        }
+        let choice = ItemChoice::new(data.wrap_error_with_message("missing item choice")?)?;
+        let active_position = Self::get_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
+            return Err(battler_error!("you sent more choices than active Mons"));
+        }
+        let mon_handle = context
+            .player()
+            .active_mon_handle(active_position)
+            .wrap_error_with_format(format_args!(
+                "expected an active mon in position {active_position}"
+            ))?;
+
+        let item = context
+            .battle()
+            .dex
+            .items
+            .get_by_id(&choice.item)
+            .into_result()
+            .wrap_error_with_message("item does not exist")?;
+        let item_id = item.id().clone();
+        let item_name = item.data.name.clone();
+        let item_target = item
+            .data
+            .target
+            .wrap_error_with_format(format_args!("{item_name} cannot be used"))?;
+
+        if !Self::use_item_from_bag(context, &item_id, true) {
+            return Err(battler_error!("bag contains no {item_name}"));
+        }
+
+        match (item_target.requires_target(), choice.target) {
+            (true, None) => {
+                return Err(battler_error!("{item_name} requires a target"));
+            }
+            (_, Some(target)) => {
+                if !CoreBattle::valid_item_target(context, item_target, target)? {
+                    return Err(battler_error!("invalid target for {item_name}"));
+                }
+            }
+            _ => (),
+        }
+
+        let target_handle = CoreBattle::get_item_target(context, &item_id, choice.target)?;
+        if let Some(target_handle) = target_handle {
+            let mut context = context.as_battle_context_mut().applying_effect_context(
+                EffectHandle::Item(item_id),
+                None,
+                target_handle,
+                None,
+            )?;
+            if !core_battle_effects::run_applying_effect_event_expecting_bool(
+                &mut context,
+                fxlang::BattleEvent::PlayerChooseItem,
+            )
+            .unwrap_or(true)
+                || !core_battle_effects::run_event_for_applying_effect(
+                    &mut context,
+                    fxlang::BattleEvent::PlayerChooseItem,
+                    fxlang::VariableInput::default(),
+                )
+            {
+                return Err(battler_error!(
+                    "{item_name} cannot be used on {}",
+                    context.as_battle_context().mon(target_handle)?.name
+                ));
+            }
+        }
+
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::Item(ItemAction::new(ItemActionInput {
+                mon: mon_handle,
+                item: choice.item,
+                target: choice.target,
+            })));
+
+        Ok(())
+    }
+
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
         for mon in context.player().active_or_fainted_mon_handles() {
@@ -1254,6 +1412,36 @@ impl Player {
                 .battle()
                 .players_on_side(context.foe_side().index)
                 .all(|foe| foe.player_type.forfeitable())
+    }
+
+    /// Gets the target Mon of an item based on this player's position.
+    pub fn get_item_target(
+        context: &mut PlayerContext,
+        target: isize,
+    ) -> Result<Option<MonHandle>, Error> {
+        if target == 0 {
+            return Err(battler_error!("target cannot be 0"));
+        } else if target < 0 {
+            Ok(context.player().mons.get((-target) as usize - 1).cloned())
+        } else {
+            Side::mon_in_position(&mut context.foe_side_context()?, target as usize)
+        }
+    }
+
+    /// Uses an item from the bag, returning if the item is usable.
+    pub fn use_item_from_bag(context: &mut PlayerContext, item: &Id, dry_run: bool) -> bool {
+        match context.player_mut().bag.entry(item.clone()) {
+            Entry::Vacant(_) => !context.player().player_options.has_strict_bag,
+            Entry::Occupied(mut entry) => {
+                if entry.get() == &0 {
+                    return !context.player().player_options.has_strict_bag;
+                }
+                if !dry_run {
+                    *entry.get_mut() -= 1;
+                }
+                true
+            }
+        }
     }
 }
 

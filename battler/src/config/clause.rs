@@ -215,6 +215,7 @@ mod clause_tests {
 
     use crate::{
         battle::{
+            BagData,
             BattleType,
             CoreBattleOptions,
             FieldData,
@@ -568,6 +569,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        bag: BagData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },
@@ -577,6 +579,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        bag: BagData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },
@@ -591,6 +594,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        bag: BagData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },
@@ -600,6 +604,7 @@ mod clause_tests {
                         team: TeamData {
                             members: Vec::new(),
                         },
+                        bag: BagData::default(),
                         player_type: PlayerType::Trainer,
                         player_options: PlayerOptions::default(),
                     },

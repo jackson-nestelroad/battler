@@ -111,4 +111,13 @@ impl Side {
             .map(|player| player.mons_left)
             .sum()
     }
+
+    /// Counts the number of active Mons on the side.
+    pub fn active_mons_count(context: &SideContext) -> usize {
+        context
+            .battle()
+            .players_on_side(context.side().index)
+            .map(|player| player.active_mon_handles().count())
+            .sum()
+    }
 }

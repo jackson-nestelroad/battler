@@ -101,6 +101,7 @@ pub fn run_function(
         "boostable_stats" => Ok(Some(boostable_stats())),
         "calculate_damage" => calculate_damage(context).map(|val| Some(val)),
         "calculate_confusion_damage" => calculate_confusion_damage(context).map(|val| Some(val)),
+        "can_boost" => can_boost(context).map(|val| Some(val)),
         "can_escape" => can_escape(context).map(|val| Some(val)),
         "can_switch" => can_switch(context).map(|val| Some(val)),
         "cancel_move" => cancel_move(context).map(|val| Some(val)),
@@ -207,6 +208,7 @@ pub fn run_function(
         "type_has_no_effect_against" => type_has_no_effect_against(context).map(|val| Some(val)),
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
+        "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context),
@@ -1489,6 +1491,7 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
 }
 
 fn heal(mut context: FunctionContext) -> Result<Value, Error> {
+    let force = context.has_flag("force");
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -1506,6 +1509,7 @@ fn heal(mut context: FunctionContext) -> Result<Value, Error> {
         damage,
         source_handle,
         Some(&effect),
+        force,
     )
     .map(|val| Value::UFraction(val.into()))
 }
@@ -1752,10 +1756,7 @@ impl FromStr for StatBoost {
     }
 }
 
-fn boost(mut context: FunctionContext) -> Result<Value, Error> {
-    let source = context.source_handle();
-    let effect = context.effect_handle().ok();
-
+fn can_boost(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -1763,11 +1764,28 @@ fn boost(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("invalid mon")?;
     let boosts = context.boosts_from_rest_of_args()?;
 
-    core_battle_actions::boost(
+    core_battle_actions::can_boost(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         boosts,
-        source,
-        effect.as_ref(),
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn boost(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+
+    // Create the context early to parse flags.
+    context.forward_to_applying_effect_context_with_target(mon_handle)?;
+
+    let boosts = context.boosts_from_rest_of_args()?;
+
+    core_battle_actions::boost(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        boosts,
         false,
         false,
     )
@@ -2801,6 +2819,16 @@ fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::eat_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
+        .map(|val| Value::Boolean(val))
+}
+
+fn use_item(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_actions::use_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
         .map(|val| Value::Boolean(val))
 }
 

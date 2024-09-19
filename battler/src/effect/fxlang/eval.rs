@@ -766,13 +766,16 @@ where
                                 ValueRef::Boolean(context.mon(mon_handle)?.newly_switched)
                             }
                             "player" => ValueRef::Player(context.mon(mon_handle)?.player),
-                            "position" => ValueRef::UFraction(
-                                TryInto::<u32>::try_into(Mon::position_on_side(
-                                    &context.mon_context(mon_handle)?,
-                                )?)
-                                .wrap_error_with_message("integer overflow")?
-                                .into(),
-                            ),
+                            "position" => {
+                                match Mon::position_on_side(&context.mon_context(mon_handle)?) {
+                                    Some(position) => ValueRef::UFraction(
+                                        TryInto::<u32>::try_into(position)
+                                            .wrap_error_with_message("integer overflow")?
+                                            .into(),
+                                    ),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "position_details" => ValueRef::TempString(format!(
                                 "{}",
                                 Mon::position_details(&context.mon_context(mon_handle)?)?
@@ -1601,6 +1604,17 @@ impl Evaluator {
                     context
                         .source_active_move_handle()
                         .wrap_error_with_message("context has no active move")?,
+                ),
+            )?;
+        }
+        if event.has_flag(CallbackFlag::TakesItem) {
+            self.vars.set(
+                "item",
+                Value::Effect(
+                    context
+                        .source_effect_handle()
+                        .cloned()
+                        .wrap_error_with_message("context has no item")?,
                 ),
             )?;
         }

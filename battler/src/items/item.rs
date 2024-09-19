@@ -10,7 +10,10 @@ use crate::{
         Identifiable,
     },
     effect::fxlang,
-    items::ItemFlags,
+    items::{
+        ItemFlags,
+        ItemTarget,
+    },
     mons::Type,
 };
 
@@ -39,6 +42,8 @@ pub struct SpecialItemData {
 pub struct ItemData {
     /// Name of the item.
     pub name: String,
+    /// Target of the item if used by a player.
+    pub target: Option<ItemTarget>,
     /// Data for what happens when Fling is used with this item.
     pub fling: Option<FlingItemData>,
     /// Data for special item effects associated with individual moves.

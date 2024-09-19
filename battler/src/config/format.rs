@@ -40,8 +40,12 @@ pub struct FormatOptions {
     ///       0
     /// ```
     pub adjacency_reach: u8,
+
     /// The maximum level that will obey its player if it originates from a different trainer.
     pub obedience_cap: u8,
+
+    /// Whether or not players can use items from their bag.
+    pub bag_items: bool,
 }
 
 impl Default for FormatOptions {
@@ -49,6 +53,7 @@ impl Default for FormatOptions {
         Self {
             adjacency_reach: 2,
             obedience_cap: u8::MAX,
+            bag_items: false,
         }
     }
 }

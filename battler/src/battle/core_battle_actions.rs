@@ -1025,14 +1025,14 @@ fn hit_targets(
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
             core_battle_effects::run_active_move_event_expecting_move_event_result(
                 context,
-                fxlang::BattleEvent::TryHitField,
+                fxlang::BattleEvent::TryHitSide,
                 core_battle_effects::MoveTargetForEvent::Side(context.side().index),
             )
         }
         MoveTarget::FoeSide => {
             core_battle_effects::run_active_move_event_expecting_move_event_result(
                 context,
-                fxlang::BattleEvent::TryHitField,
+                fxlang::BattleEvent::TryHitSide,
                 core_battle_effects::MoveTargetForEvent::Side(context.foe_side().index),
             )
         }
@@ -1499,7 +1499,6 @@ mod direct_move_step {
 
     use ahash::HashMapExt;
 
-    use super::check_immunity;
     use crate::{
         battle::{
             core_battle_actions,
@@ -1620,7 +1619,9 @@ mod direct_move_step {
                 core_battle_effects::MoveTargetForEvent::Mon(target.handle),
             )
             .unwrap_or(true)
-                || check_immunity(&mut context.applying_effect_context_for_target(target.handle)?)?;
+                || core_battle_actions::check_immunity(
+                    &mut context.applying_effect_context_for_target(target.handle)?,
+                )?;
 
             if immune {
                 core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
@@ -1911,7 +1912,9 @@ mod direct_move_step {
             if target != source && result.hit() {
                 let turn = context.battle().turn();
                 let source_side = context.side().index;
-                let source_position = Mon::position_on_side(context.as_mon_context())?;
+                let source_position =
+                    Mon::position_on_side_or_previous(context.as_mon_context())
+                        .wrap_error_with_message("expected attacker to have a position")?;
                 context
                     .target_mon_context(target)?
                     .mon_mut()
@@ -2071,6 +2074,7 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
                 amount,
                 Some(target_handle),
                 Some(&EffectHandle::Condition(Id::from_known("drain"))),
+                false,
             )?;
         }
     }
@@ -2078,34 +2082,12 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
     Ok(())
 }
 
-/// Heals a Mon.
-pub fn heal(
+fn apply_heal(
     context: &mut MonContext,
     damage: u16,
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
 ) -> Result<u16, Error> {
-    if damage == 0
-        || context.mon().hp == 0
-        || !context.mon().active
-        || context.mon().hp > context.mon().max_hp
-    {
-        return Ok(0);
-    }
-
-    let damage = match effect {
-        Some(effect) => core_battle_effects::run_event_for_applying_effect_expecting_u16(
-            &mut context.applying_effect_context(effect.clone(), source, None)?,
-            fxlang::BattleEvent::TryHeal,
-            damage,
-        ),
-        None => core_battle_effects::run_event_for_mon_expecting_u16(
-            context,
-            fxlang::BattleEvent::TryHeal,
-            damage,
-        ),
-    };
-
     if damage == 0 {
         return Ok(0);
     }
@@ -2114,8 +2096,39 @@ pub fn heal(
     if healed > 0 {
         core_battle_logs::heal(context, effect.cloned(), source)?;
     }
-    // TODO: Heal event.
     Ok(healed)
+}
+
+/// Heals a Mon.
+pub fn heal(
+    context: &mut MonContext,
+    damage: u16,
+    source: Option<MonHandle>,
+    effect: Option<&EffectHandle>,
+    force: bool,
+) -> Result<u16, Error> {
+    if damage == 0 || context.mon().hp == 0 || context.mon().hp > context.mon().max_hp {
+        return Ok(0);
+    }
+
+    let damage = if force {
+        damage
+    } else {
+        match effect {
+            Some(effect) => core_battle_effects::run_event_for_applying_effect_expecting_u16(
+                &mut context.applying_effect_context(effect.clone(), source, None)?,
+                fxlang::BattleEvent::TryHeal,
+                damage,
+            ),
+            None => core_battle_effects::run_event_for_mon_expecting_u16(
+                context,
+                fxlang::BattleEvent::TryHeal,
+                damage,
+            ),
+        }
+    };
+
+    apply_heal(context, damage, source, effect)
 }
 
 /// Drags a random Mon into a player's position.
@@ -2193,10 +2206,8 @@ fn apply_move_effects(
                 if !target_context.target_mon().fainted {
                     if let Some(boosts) = hit_effect.boosts {
                         let outcome = boost(
-                            &mut target_context.target_mon_context()?,
+                            &mut target_context.applying_effect_context()?,
                             boosts,
-                            Some(source_handle),
-                            Some(&effect_handle),
                             is_secondary,
                             is_self,
                         )?;
@@ -2218,6 +2229,7 @@ fn apply_move_effects(
                                 damage,
                                 Some(source_handle),
                                 Some(&effect_handle),
+                                false,
                             )?;
                             hit_effect_outcome = MoveOutcomeOnTarget::Success;
                         }
@@ -2260,7 +2272,8 @@ fn apply_move_effects(
                 }
 
                 if let Some(slot_condition) = hit_effect.slot_condition {
-                    let slot = Mon::position_on_side(&target_context.target_mon_context()?)?;
+                    let slot = Mon::position_on_side(&target_context.target_mon_context()?)
+                        .wrap_error_with_message("expected target to be active")?;
                     let added_slot_condition = add_slot_condition(
                         &mut target_context
                             .applying_effect_context()?
@@ -2433,37 +2446,50 @@ fn apply_move_effects(
     Ok(())
 }
 
-/// Boosts the stats of a Mon.
-pub fn boost(
-    context: &mut MonContext,
-    original_boosts: BoostTable,
-    source: Option<MonHandle>,
-    effect: Option<&EffectHandle>,
-    is_secondary: bool,
-    is_self: bool,
-) -> Result<bool, Error> {
+/// Checks if the given stat boosts can be applied to the Mon.
+pub fn can_boost(context: &mut MonContext, boosts: BoostTable) -> Result<bool, Error> {
     if context.mon().hp == 0
         || !context.mon().active
         || Side::mons_left(context.as_side_context()) == 0
     {
         return Ok(false);
     }
-    // TODO: ChangeBoost event.
-    let capped_boosts = Mon::cap_boosts(context, original_boosts.clone());
-    let boosts = match effect {
-        Some(effect_handle) => {
-            core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
-                &mut context.applying_effect_context(effect_handle.clone(), source, None)?,
-                fxlang::BattleEvent::TryBoost,
-                capped_boosts.clone(),
-            )
-        }
-        None => core_battle_effects::run_event_for_mon_expecting_boost_table(
-            context,
-            fxlang::BattleEvent::TryBoost,
-            capped_boosts.clone(),
-        ),
-    };
+
+    let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+        context,
+        fxlang::BattleEvent::ChangeBoosts,
+        boosts,
+    );
+
+    Ok(Mon::cap_boosts(context, boosts).non_zero_iter().count() > 0)
+}
+
+/// Boosts the stats of a Mon.
+pub fn boost(
+    context: &mut ApplyingEffectContext,
+    original_boosts: BoostTable,
+    is_secondary: bool,
+    is_self: bool,
+) -> Result<bool, Error> {
+    if context.target().hp == 0
+        || !context.target().active
+        || Side::mons_left(&context.target_context()?.as_side_context()) == 0
+    {
+        return Ok(false);
+    }
+
+    let original_boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+        &mut context.target_context()?,
+        fxlang::BattleEvent::ChangeBoosts,
+        original_boosts.clone(),
+    );
+
+    let capped_boosts = Mon::cap_boosts(&mut context.target_context()?, original_boosts.clone());
+    let boosts = core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
+        context,
+        fxlang::BattleEvent::TryBoost,
+        capped_boosts.clone(),
+    );
 
     let mut success = false;
     for (boost, value) in BoostTableEntries::new(&boosts) {
@@ -2472,22 +2498,22 @@ pub fn boost(
         let capped = original_delta != 0 && capped_boosts.get(boost) == 0;
         let suppressed = value == 0;
 
-        let delta = Mon::boost_stat(context, boost, value);
+        let delta = Mon::boost_stat(&mut context.target_context()?, boost, value);
         success = success || delta != 0;
 
         // We are careful to only log stat changes that should be visible to the user.
         if delta != 0 || capped || (!is_secondary && !is_self && user_intended && !suppressed) {
-            core_battle_logs::boost(context, boost, delta, original_delta)?;
+            core_battle_logs::boost(&mut context.target_context()?, boost, delta, original_delta)?;
         }
     }
 
     // TODO: AfterBoost event.
     if success {
         if boosts.values().any(|val| val > 0) {
-            context.mon_mut().stats_raised_this_turn = true;
+            context.target_mut().stats_raised_this_turn = true;
         }
         if boosts.values().any(|val| val < 0) {
-            context.mon_mut().stats_lowered_this_turn = true;
+            context.target_mut().stats_lowered_this_turn = true;
         }
         Ok(true)
     } else {
@@ -3814,7 +3840,7 @@ pub fn set_ability(
 
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
-        priority: ability_order,
+        order: ability_order,
         effect_state: fxlang::EffectState::new(),
     };
 
@@ -4157,6 +4183,16 @@ pub fn take_item(
     Ok(Some(item_id))
 }
 
+fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool, Error> {
+    context.target_mut().item_used_this_turn = true;
+    context.target_mut().last_item = Some(item);
+    context.target_mut().item = None;
+
+    // TODO: AfterUseItem event.
+
+    Ok(true)
+}
+
 /// Makes the target Mon eat its held item (berries).
 pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
     if context.target().hp == 0 || !context.target().active {
@@ -4167,6 +4203,9 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         Some(item) => item.id.clone(),
         None => return Ok(false),
     };
+
+    let mut context =
+        context.forward_applying_effect_context(EffectHandle::Item(item_id.clone()))?;
 
     // TODO: UseItem event.
     // TODO: TryEatItem event.
@@ -4180,14 +4219,123 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         true,
     )?;
 
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Eat);
+    core_battle_effects::run_mon_item_event(
+        &mut context
+            .source_applying_effect_context()?
+            .wrap_error_with_message("expected source applying effect")?,
+        fxlang::BattleEvent::Eat,
+    );
     // TODO: EatItem event.
 
-    context.target_mut().item_used_this_turn = true;
-    context.target_mut().last_item = Some(item_id);
-    context.target_mut().item = None;
+    after_use_item(&mut context, item_id)
+}
 
-    // TODO: AfterUseItem event.
+/// Makes the target Mon use its held item.
+pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+    if context.target().hp == 0 || !context.target().active {
+        return Ok(false);
+    }
+
+    let item_id = match &context.target().item {
+        Some(item) => item.id.clone(),
+        None => return Ok(false),
+    };
+
+    let mut context =
+        context.forward_applying_effect_context(EffectHandle::Item(item_id.clone()))?;
+
+    // TODO: UseItem event.
+
+    core_battle_logs::item_end(
+        &mut context.target_context()?,
+        &item_id,
+        None,
+        None,
+        false,
+        false,
+    )?;
+
+    core_battle_effects::run_mon_item_event(
+        &mut context
+            .source_applying_effect_context()?
+            .wrap_error_with_message("expected source applying effect")?,
+        fxlang::BattleEvent::Use,
+    );
+
+    after_use_item(&mut context, item_id)
+}
+
+/// Uses an item from the player.
+pub fn player_use_item(
+    context: &mut PlayerContext,
+    item: &Id,
+    target: Option<isize>,
+) -> Result<bool, Error> {
+    if !context.battle().format.options.bag_items {
+        return Ok(false);
+    }
+
+    let target = CoreBattle::get_item_target(context, item, target)?;
+    core_battle_logs::use_item(context, item, target)?;
+    if !player_use_item_internal(context, item, target)? {
+        core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+        return Ok(false);
+    }
+
+    Ok(true)
+}
+
+/// Uses an item from the player.
+pub fn player_use_item_internal(
+    context: &mut PlayerContext,
+    item: &Id,
+    target: Option<MonHandle>,
+) -> Result<bool, Error> {
+    let item = context.battle().dex.items.get_by_id(item)?;
+    let item_id = item.id().clone();
+    let item_target = item.data.target;
+
+    match item_target {
+        Some(_) => {
+            if target.is_none() {
+                core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+                return Ok(false);
+            }
+        }
+        None => {
+            core_battle_logs::fail_use_item(
+                context,
+                &item_id,
+                Some(EffectHandle::NonExistent(Id::from_known("unusable"))),
+            )?;
+            return Ok(false);
+        }
+    }
+
+    if !Player::use_item_from_bag(context, &item_id, false) {
+        core_battle_logs::fail_use_item(
+            context,
+            &item_id,
+            Some(EffectHandle::NonExistent(Id::from_known("unavailable"))),
+        )?;
+    }
+
+    match target {
+        Some(target) => core_battle_effects::run_applying_effect_event(
+            &mut context.as_battle_context_mut().applying_effect_context(
+                EffectHandle::Item(item_id),
+                None,
+                target,
+                None,
+            )?,
+            fxlang::BattleEvent::PlayerUse,
+        ),
+        None => (),
+    }
+
+    // TODO: Catch mechanics.
+    //
+    // After an item is used, if it is a ball, we attempt to catch the targeted Mon.
 
     Ok(true)
 }

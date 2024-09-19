@@ -63,6 +63,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ClearTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::CanEscape, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ChangeBoosts, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::CopyVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::CriticalHit, callbacks)?;
@@ -128,6 +129,8 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::MoveFailed, callbacks)?;
             parsed.parse_and_save(BattleEvent::NegateImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::OverrideMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::PlayerChooseItem, callbacks)?;
+            parsed.parse_and_save(BattleEvent::PlayerUse, callbacks)?;
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::PriorityChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::RedirectTarget, callbacks)?;
@@ -179,6 +182,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::TypeImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Types, callbacks)?;
             parsed.parse_and_save(BattleEvent::Update, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Use, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::UseMoveMessage, callbacks)?;
             parsed.parse_and_save(BattleEvent::Weather, callbacks)?;

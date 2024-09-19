@@ -14,6 +14,7 @@ use zone_alloc::ElementRef;
 
 use crate::{
     abilities::Ability,
+    battle::BagData,
     common::{
         Error,
         FastHashMap,
@@ -901,6 +902,13 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ));
         }
 
+        result.into()
+    }
+
+    /// Validates an entire bag for a battle.
+    pub fn validate_bag(&self, _bag: &mut BagData) -> Result<(), TeamValidationError> {
+        let result = TeamValidationError::new();
+        // TODO: Bag validation. Players cannot bring illegal items.
         result.into()
     }
 }

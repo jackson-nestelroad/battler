@@ -211,6 +211,32 @@ pub struct ForfeitAction {
     pub order: u32,
 }
 
+/// An item action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ItemActionInput {
+    pub mon: MonHandle,
+    pub item: Id,
+    pub target: Option<isize>,
+}
+
+/// An item action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ItemAction {
+    pub mon_action: MonAction,
+    pub item: Id,
+    pub target: Option<isize>,
+}
+
+impl ItemAction {
+    pub fn new(input: ItemActionInput) -> Self {
+        Self {
+            mon_action: MonAction::new(input.mon),
+            item: input.item,
+            target: input.target,
+        }
+    }
+}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -235,6 +261,7 @@ pub enum Action {
     LearnMove(LearnMoveAction),
     Escape(EscapeAction),
     Forfeit(ForfeitAction),
+    Item(ItemAction),
 }
 
 impl Action {
@@ -248,6 +275,7 @@ impl Action {
             Self::PriorityChargeMove(action) => Some(&mut action.mon_action),
             Self::MegaEvo(action) => Some(action),
             Self::Escape(action) => Some(&mut action.mon_action),
+            Self::Item(action) => Some(&mut action.mon_action),
             _ => None,
         }
     }
@@ -271,7 +299,8 @@ impl SpeedOrderable for Action {
             Self::End(_) => 7,
             Self::Forfeit(_) => 8,
             Self::BeforeTurn => 9,
-            Self::BeforeTurnMove(_) => 10,
+            Self::Item(_) => 10,
+            Self::BeforeTurnMove(_) => 11,
             Self::Escape(_) => 101,
             Self::SwitchEvents(_) => 102,
             Self::MegaEvo(_) => 103,
@@ -297,10 +326,13 @@ impl SpeedOrderable for Action {
         match self {
             Self::Team(action) => action.mon_action.speed,
             Self::Switch(action) => action.mon_action.speed,
+            Self::SwitchEvents(action) => action.mon_action.speed,
             Self::Move(action) => action.mon_action.speed,
             Self::BeforeTurnMove(action) => action.mon_action.speed,
             Self::PriorityChargeMove(action) => action.mon_action.speed,
             Self::MegaEvo(action) => action.speed,
+            Self::Escape(action) => action.mon_action.speed,
+            Self::Item(action) => action.mon_action.speed,
             _ => 1,
         }
     }

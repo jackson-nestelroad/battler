@@ -124,12 +124,15 @@ impl EventLoggable for ActiveMonDetails {
 pub struct MonPositionDetails {
     pub name: String,
     pub player_id: String,
-    pub side_position: usize,
+    pub side_position: Option<usize>,
 }
 
 impl Display for MonPositionDetails {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{},{},{}", self.name, self.player_id, self.side_position)
+        match self.side_position {
+            Some(position) => write!(f, "{},{},{}", self.name, self.player_id, position),
+            None => write!(f, "{},{}", self.name, self.player_id),
+        }
     }
 }
 
@@ -190,7 +193,7 @@ impl MoveSlot {
 #[derive(Clone)]
 pub struct AbilitySlot {
     pub id: Id,
-    pub priority: u32,
+    pub order: u32,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -481,7 +484,7 @@ impl Mon {
 
         let ability = AbilitySlot {
             id: Id::from(data.ability),
-            priority: 0,
+            order: 0,
             effect_state: fxlang::EffectState::new(),
         };
 
@@ -676,7 +679,9 @@ impl Mon {
             public_details: Self::public_details(context)?,
             name: context.mon().name.clone(),
             player_id: context.player().id.clone(),
-            side_position: Self::position_on_side(context)? + 1,
+            side_position: Self::position_on_side(context)
+                .wrap_error_with_message("expected mon to be active")?
+                + 1,
             health: if secret {
                 context.mon().actual_health()
             } else {
@@ -701,7 +706,17 @@ impl Mon {
         Ok(MonPositionDetails {
             name: context.mon().name.clone(),
             player_id: context.player().id.clone(),
-            side_position: Self::position_on_side(context)? + 1,
+            side_position: Self::position_on_side(context).map(|position| position + 1),
+        })
+    }
+
+    /// Same as [`Self::position_details`], but it also considers the previous active position of
+    /// the Mon.
+    pub fn position_details_or_previous(context: &MonContext) -> Result<MonPositionDetails, Error> {
+        Ok(MonPositionDetails {
+            name: context.mon().name.clone(),
+            player_id: context.player().id.clone(),
+            side_position: Self::position_on_side_or_previous(context).map(|position| position + 1),
         })
     }
 
@@ -768,6 +783,13 @@ impl Mon {
         Self::moves_and_locked_move(context).map(|(moves, _)| moves)
     }
 
+    fn position_on_side_by_active_position(context: &MonContext, active_position: usize) -> usize {
+        let player = context.player();
+        let position = active_position
+            + player.position * context.battle().format.battle_type.active_per_player();
+        position
+    }
+
     /// The Mon's current position on its side.
     ///
     /// A side is shared by multiple players, who each can have multiple Mons active at a time. This
@@ -777,16 +799,22 @@ impl Mon {
     /// Side position is a zero-based integer index in the range `[0, active_mons)`, where
     /// `active_mons` is the number of active Mons on the side. This is calculated by
     /// `players_on_side * active_per_player`.
-    pub fn position_on_side(context: &MonContext) -> Result<usize, Error> {
-        let mon = context.mon();
-        let active_position = mon
-            .active_position
-            .or(mon.old_active_position)
-            .wrap_error_with_message("mon has no active position")?;
-        let player = context.player();
-        let position = active_position
-            + player.position * context.battle().format.battle_type.active_per_player();
-        Ok(position)
+    pub fn position_on_side(context: &MonContext) -> Option<usize> {
+        Some(Self::position_on_side_by_active_position(
+            context,
+            context.mon().active_position?,
+        ))
+    }
+
+    /// Same as [`Self::position_on_side`], but also returns the previous position of the Mon.
+    pub fn position_on_side_or_previous(context: &MonContext) -> Option<usize> {
+        Some(Self::position_on_side_by_active_position(
+            context,
+            context
+                .mon()
+                .active_position
+                .or(context.mon().old_active_position)?,
+        ))
     }
 
     fn relative_location(
@@ -819,7 +847,8 @@ impl Mon {
     ) -> Result<isize, Error> {
         let mon = context.mon();
         let mon_side = mon.side;
-        let mon_position = Self::position_on_side(context)?;
+        let mon_position = Self::position_on_side(context)
+            .wrap_error_with_message("expected mon to have a position")?;
 
         // Note that this calculation assumes that both sides have the same amount of players,
         // but battles are not required to validate this. Nonetheless, this calculation is still
@@ -864,7 +893,9 @@ impl Mon {
     ) -> Result<isize, Error> {
         let target_context = context.as_battle_context_mut().mon_context(target)?;
         let target_side = target_context.mon().side;
-        let target_position = Self::position_on_side(&target_context)? + 1;
+        let target_position = Self::position_on_side(&target_context)
+            .wrap_error_with_message("expected target to have a position")?
+            + 1;
         if target_side == context.mon().side {
             Ok(-(target_position as isize))
         } else {
@@ -880,10 +911,16 @@ impl Mon {
     /// Checks if the given Mon is adjacent to this Mon.
     pub fn is_adjacent(context: &mut MonContext, other: MonHandle) -> Result<bool, Error> {
         let side = context.mon().side;
-        let position = Self::position_on_side(context)?;
+        let position = match Self::position_on_side(context) {
+            Some(position) => position,
+            None => return Ok(false),
+        };
         let other_context = context.as_battle_context_mut().mon_context(other)?;
         let other_side = other_context.mon().side;
-        let mut other_position = Self::position_on_side(&other_context)?;
+        let mut other_position = match Self::position_on_side(&other_context) {
+            Some(position) => position,
+            None => return Ok(false),
+        };
 
         if side != other_side {
             let mons_per_side = context.battle().max_side_length();
@@ -1145,11 +1182,7 @@ impl Mon {
 
     /// Generates battle request data.
     pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleRequestData, Error> {
-        let side_position = if context.mon().active {
-            Some(Self::position_on_side(context)?)
-        } else {
-            None
-        };
+        let side_position = Self::position_on_side(context);
         let species = context
             .battle()
             .dex
@@ -1451,7 +1484,7 @@ impl Mon {
         let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
         context.mon_mut().base_ability = AbilitySlot {
             id: ability.id().clone(),
-            priority: 0,
+            order: 0,
             effect_state: fxlang::EffectState::initial_effect_state(
                 &mut context
                     .as_battle_context_mut()
@@ -1576,7 +1609,7 @@ impl Mon {
             move_slot.used = false;
         }
         let ability_order = context.battle_mut().next_ability_order();
-        context.mon_mut().ability.priority = ability_order;
+        context.mon_mut().ability.order = ability_order;
         Ok(())
     }
 

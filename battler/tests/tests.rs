@@ -57,6 +57,20 @@ mod abilities {
     }
 }
 
+mod items {
+    mod berries {
+        mod cheri_berry_test;
+    }
+
+    mod gen5 {
+        mod cell_battery_test;
+    }
+
+    mod medicine {
+        mod potion_test;
+    }
+}
+
 mod moves {
     mod gen1 {
         mod accuracy_check_test;

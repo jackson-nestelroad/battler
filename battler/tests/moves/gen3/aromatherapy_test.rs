@@ -162,9 +162,9 @@ fn aromatherapy_cures_all_statuses_on_side() {
             "move|mon:Miltank,player-1,1|name:Aromatherapy",
             "activate|move:Aromatherapy|of:Miltank,player-1,1",
             "curestatus|mon:Miltank,player-1,1|status:Bad Poison",
-            "curestatus|mon:Sceptile,player-1,1|status:Paralysis",
-            "curestatus|mon:Blaziken,player-1,1|status:Sleep",
-            "curestatus|mon:Swampert,player-1,1|status:Bad Poison",
+            "curestatus|mon:Sceptile,player-1|status:Paralysis",
+            "curestatus|mon:Blaziken,player-1|status:Sleep",
+            "curestatus|mon:Swampert,player-1|status:Bad Poison",
             "residual",
             "turn|turn:6"
         ]"#,

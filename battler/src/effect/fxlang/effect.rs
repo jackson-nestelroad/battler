@@ -29,6 +29,7 @@ pub mod CallbackFlag {
     pub const TakesSourceEffect: u32 = 1 << 8;
     pub const TakesSide: u32 = 1 << 9;
     pub const TakesOptionalEffect: u32 = 1 << 10;
+    pub const TakesItem: u32 = 1 << 11;
 
     pub const ReturnsSecondaryEffects: u32 = 1 << 23;
     pub const ReturnsTypes: u32 = 1 << 24;
@@ -154,6 +155,12 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsSecondaryEffects
+        | CallbackFlag::ReturnsVoid,
+
+    ItemResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesItem
+        | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
     MonModifier =
@@ -355,6 +362,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "CanEscape"]
     CanEscape,
+    /// Runs when a group of stat boosts is being applied to a Mon.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "ChangeBoosts"]
+    ChangeBoosts,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
     /// Runs in the context of an active move from the user.
@@ -732,6 +744,16 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "OverrideMove"]
     OverrideMove,
+    /// Runs when a player chooses to use an item.
+    ///
+    /// Runs on the item itself and in the context of an item on the target.
+    #[string = "PlayerChooseItem"]
+    PlayerChooseItem,
+    /// Runs when an item is used on a Mon by a player.
+    ///
+    /// Runs on the item itself.
+    #[string = "PlayerUse"]
+    PlayerUse,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -1035,6 +1057,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Update"]
     Update,
+    /// Runs when an item is used.
+    ///
+    /// Runs on the item itself.
+    #[string = "Use"]
+    Use,
     /// Runs when a Mon uses a move.
     ///
     /// Can be used to modify a move when it is used.
@@ -1089,6 +1116,7 @@ impl BattleEvent {
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
+            Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
@@ -1156,6 +1184,8 @@ impl BattleEvent {
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
+            Self::PlayerChooseItem => CommonCallbackType::ItemResult as u32,
+            Self::PlayerUse => CommonCallbackType::MonVoid as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
@@ -1207,6 +1237,7 @@ impl BattleEvent {
             Self::TypeImmunity => CommonCallbackType::MonResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::Update => CommonCallbackType::MonVoid as u32,
+            Self::Use => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
             Self::Weather => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1228,6 +1259,7 @@ impl BattleEvent {
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
             }
+            Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage | Self::AnyDamage => &[("damage", ValueType::UFraction, true)],
             Self::DeductPp | Self::FoeDeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
@@ -1565,6 +1597,7 @@ pub struct Callbacks {
     pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
     pub on_can_escape: Callback,
+    pub on_change_boosts: Callback,
     pub on_charge_move: Callback,
     pub on_clear_terrain: Callback,
     pub on_clear_weather: Callback,
@@ -1621,6 +1654,8 @@ pub struct Callbacks {
     pub on_move_failed: Callback,
     pub on_negate_immunity: Callback,
     pub on_override_move: Callback,
+    pub on_player_choose_item: Callback,
+    pub on_player_use: Callback,
     pub on_prepare_hit: Callback,
     pub on_priority_charge_move: Callback,
     pub on_redirect_target: Callback,
@@ -1667,6 +1702,7 @@ pub struct Callbacks {
     pub on_type_immunity: Callback,
     pub on_types: Callback,
     pub on_update: Callback,
+    pub on_use: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
     pub on_weather: Callback,
@@ -1705,6 +1741,7 @@ impl Callbacks {
             BattleEvent::ClearTerrain => Some(&self.on_clear_terrain),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::CanEscape => Some(&self.on_can_escape),
+            BattleEvent::ChangeBoosts => Some(&self.on_change_boosts),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::CopyVolatile => Some(&self.on_copy_volatile),
             BattleEvent::CriticalHit => Some(&self.on_critical_hit),
@@ -1770,6 +1807,8 @@ impl Callbacks {
             BattleEvent::MoveFailed => Some(&self.on_move_failed),
             BattleEvent::NegateImmunity => Some(&self.on_negate_immunity),
             BattleEvent::OverrideMove => Some(&self.on_override_move),
+            BattleEvent::PlayerChooseItem => Some(&self.on_player_choose_item),
+            BattleEvent::PlayerUse => Some(&self.on_player_use),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
             BattleEvent::PriorityChargeMove => Some(&self.on_priority_charge_move),
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
@@ -1821,6 +1860,7 @@ impl Callbacks {
             BattleEvent::TypeImmunity => Some(&self.on_type_immunity),
             BattleEvent::Types => Some(&self.on_types),
             BattleEvent::Update => Some(&self.on_update),
+            BattleEvent::Use => Some(&self.on_use),
             BattleEvent::UseMove => Some(&self.on_use_move),
             BattleEvent::UseMoveMessage => Some(&self.on_use_move_message),
             BattleEvent::Weather => Some(&self.on_weather),

@@ -57,7 +57,7 @@ impl EffectState {
             effect_state.set_source(source_handle);
             let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
             effect_state.set_source_side(context.mon().side);
-            if let Ok(source_position) = Mon::position_on_side(&mut context) {
+            if let Some(source_position) = Mon::position_on_side(&mut context) {
                 effect_state.set_source_position(source_position)?;
             }
         }

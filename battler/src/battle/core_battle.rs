@@ -39,6 +39,7 @@ use crate::{
         MoveHandle,
         Player,
         PlayerBattleRequestData,
+        PlayerContext,
         Request,
         RequestType,
         Side,
@@ -66,6 +67,7 @@ use crate::{
         EffectHandle,
         EffectManager,
     },
+    items::ItemTarget,
     log::{
         Event,
         EventLog,
@@ -1203,6 +1205,15 @@ impl<'d> CoreBattle<'d> {
             Action::Forfeit(action) => {
                 core_battle_actions::forfeit(&mut context.player_context(action.player)?)?;
             }
+            Action::Item(action) => {
+                core_battle_actions::player_use_item(
+                    &mut context
+                        .mon_context(action.mon_action.mon)?
+                        .as_player_context_mut(),
+                    &action.item,
+                    action.target,
+                )?;
+            }
         }
 
         Self::after_action(context)?;
@@ -1585,6 +1596,43 @@ impl<'d> CoreBattle<'d> {
         }
     }
 
+    /// Gets the selected target of the move.
+    pub fn get_item_target(
+        context: &mut PlayerContext,
+        item: &Id,
+        target: Option<isize>,
+    ) -> Result<Option<MonHandle>, Error> {
+        let item = context.battle().dex.items.get_by_id(item).into_result()?;
+        let item_target = item
+            .data
+            .target
+            .wrap_error_with_message("item is not usable")?;
+
+        match item_target {
+            ItemTarget::IsolatedFoe => {
+                let foes = context
+                    .battle()
+                    .active_mon_handles_on_side(context.foe_side().index)
+                    .collect::<Vec<_>>();
+                if foes.len() != 1 {
+                    return Ok(None);
+                }
+                return Ok(foes.first().cloned());
+            }
+            _ => (),
+        }
+
+        if let Some(target) = target {
+            if Self::valid_item_target(context, item_target, target)? {
+                if let Some(target_mon_handle) = Player::get_item_target(context, target)? {
+                    return Ok(Some(target_mon_handle));
+                }
+            }
+        }
+
+        Ok(None)
+    }
+
     /// Checks if the selected target position is valid for the move.
     pub fn valid_target(
         context: &mut MonContext,
@@ -1613,6 +1661,47 @@ impl<'d> CoreBattle<'d> {
             return Ok(false);
         }
         Ok(true)
+    }
+
+    /// Checks if the selected target position is valid for the move.
+    pub fn valid_item_target(
+        context: &mut PlayerContext,
+        item_target: ItemTarget,
+        target_location: isize,
+    ) -> Result<bool, Error> {
+        match item_target {
+            ItemTarget::Party => {
+                if target_location >= 0 {
+                    return Ok(false);
+                }
+                let team_slot = (-target_location) as usize;
+                let team_slot = team_slot - 1;
+                Ok(team_slot < context.player().mons.len())
+            }
+            ItemTarget::Foe => {
+                if target_location <= 0 {
+                    return Ok(false);
+                }
+                Ok(Side::mon_in_position(
+                    &mut context.foe_side_context()?,
+                    target_location as usize,
+                )?
+                .is_some())
+            }
+            ItemTarget::IsolatedFoe => {
+                if target_location <= 0 {
+                    return Ok(false);
+                }
+                if Side::active_mons_count(&mut context.foe_side_context()?) != 0 {
+                    return Ok(false);
+                }
+                Ok(Side::mon_in_position(
+                    &mut context.foe_side_context()?,
+                    target_location as usize,
+                )?
+                .is_some())
+            }
+        }
     }
 
     /// Registers a new active move, returning its handle.

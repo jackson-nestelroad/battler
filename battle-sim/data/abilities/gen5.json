@@ -1,7 +1,22 @@
 {
   "pickpocket": { "name": "Pickpocket", "flags": [] },
   "sheerforce": { "name": "Sheer Force", "flags": [] },
-  "contrary": { "name": "Contrary", "flags": [] },
+  "contrary": {
+    "name": "Contrary",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_change_boosts": [
+          "foreach $boost in func_call(boostable_stats):",
+          [
+            "$val = func_call(get_boost: $boosts $boost)",
+            "$boosts = func_call(set_boost: $boosts $boost expr(-1 * $val))"
+          ],
+          "return $boosts"
+        ]
+      }
+    }
+  },
   "unnerve": { "name": "Unnerve", "flags": [] },
   "defiant": { "name": "Defiant", "flags": [] },
   "defeatist": { "name": "Defeatist", "flags": [] },

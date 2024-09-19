@@ -36,6 +36,7 @@ pub struct EffectActivationContext {
     pub effect: Option<EffectHandle>,
     pub side: Option<usize>,
     pub slot: Option<usize>,
+    pub player: Option<usize>,
     pub target: Option<MonHandle>,
     pub ignore_active_move_source_effect: bool,
     pub source_effect: Option<EffectHandle>,
@@ -66,6 +67,10 @@ fn effect_activation_internal(
 
     if let Some(slot) = activation_context.slot {
         event.set("slot", slot);
+    }
+
+    if let Some(player) = activation_context.player {
+        event.set("player", &context.player_context(player)?.player().id);
     }
 
     if let Some(target) = activation_context.target {
@@ -716,7 +721,7 @@ where
     for target in targets {
         target_positions.push(format!(
             "{}",
-            Mon::position_details(&context.mon_context(target)?)?
+            Mon::position_details_or_previous(&context.mon_context(target)?)?
         ));
     }
     context
@@ -815,4 +820,44 @@ pub fn forfeited(context: &mut PlayerContext) -> Result<(), Error> {
     let event = log_event!("forfeited", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
+}
+
+pub fn use_item(
+    context: &mut PlayerContext,
+    item: &Id,
+    target: Option<MonHandle>,
+) -> Result<(), Error> {
+    let item = context.battle().dex.items.get_by_id(item)?;
+    let mut event = log_event!(
+        "useitem",
+        ("player", &context.player().id),
+        ("name", item.data.name.clone())
+    );
+    if let Some(target) = target {
+        event.extend(&(
+            "target",
+            Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?,
+        ));
+    }
+    context.battle_mut().log_move(event);
+    Ok(())
+}
+
+pub fn fail_use_item(
+    context: &mut PlayerContext,
+    item: &Id,
+    from: Option<EffectHandle>,
+) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        effect_flag_name: Some("what".to_owned()),
+        effect: Some(EffectHandle::Item(item.clone())),
+        player: Some(context.player().index),
+        source_effect: from,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "fail".to_owned(),
+        activation,
+    )
 }
