@@ -59,6 +59,7 @@ mod abilities {
 
 mod items {
     mod berries {
+        mod aguav_berry_test;
         mod cheri_berry_test;
     }
 

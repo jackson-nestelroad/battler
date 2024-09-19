@@ -5,31 +5,161 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_choose_item": [
+        "on_player_try_use_item": [
           "if $target.fainted or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
-        "on_player_use": ["heal: $mon 20 force"]
+        "on_player_use": ["heal: $mon 20"]
       }
     }
   },
-  "antidote": { "name": "Antidote", "flags": ["Medicine"] },
-  "burnheal": { "name": "Burn Heal", "flags": ["Medicine"] },
-  "iceheal": { "name": "Ice Heal", "flags": ["Medicine"] },
-  "awakening": { "name": "Awakening", "flags": ["Medicine"] },
-  "paralyzeheal": { "name": "Paralyze Heal", "flags": ["Medicine"] },
-  "fullrestore": { "name": "Full Restore", "flags": ["Medicine"] },
-  "maxpotion": { "name": "Max Potion", "flags": ["Medicine"] },
-  "hyperpotion": { "name": "Hyper Potion", "flags": ["Medicine"] },
-  "superpotion": { "name": "Super Potion", "flags": ["Medicine"] },
-  "fullheal": { "name": "Full Heal", "flags": ["Medicine"] },
+  "antidote": {
+    "name": "Antidote",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != psn && $target.status != tox:",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "if $mon.status == psn or $mon.status == tox:",
+          ["cure_status: $mon"]
+        ]
+      }
+    }
+  },
+  "burnheal": {
+    "name": "Burn Heal",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != brn:",
+          ["return false"]
+        ],
+        "on_player_use": ["if $mon.status == brn:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "iceheal": {
+    "name": "Ice Heal",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != frz:",
+          ["return false"]
+        ],
+        "on_player_use": ["if $mon.status == frz:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "awakening": {
+    "name": "Awakening",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != slp:",
+          ["return false"]
+        ],
+        "on_player_use": ["if $mon.status == slp:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "paralyzeheal": {
+    "name": "Paralyze Heal",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != par:",
+          ["return false"]
+        ],
+        "on_player_use": ["if $mon.status == par:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "fullrestore": {
+    "name": "Full Restore",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or (!$target.status and $target.hp >= $target.max_hp):",
+          ["return false"]
+        ],
+        "on_player_use": ["cure_status: $mon", "heal: $mon $mon.max_hp"]
+      }
+    }
+  },
+  "maxpotion": {
+    "name": "Max Potion",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon $mon.max_hp"]
+      }
+    }
+  },
+  "hyperpotion": {
+    "name": "Hyper Potion",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 120"]
+      }
+    }
+  },
+  "superpotion": {
+    "name": "Super Potion",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 60"]
+      }
+    }
+  },
+  "fullheal": {
+    "name": "Full Heal",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": ["if !$target.status:", ["return false"]],
+        "on_player_use": ["cure_status: $mon"]
+      }
+    }
+  },
   "revive": {
     "name": "Revive",
     "target": "Party",
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_choose_item": ["if !$target.fainted:", ["return false"]],
+        "on_player_try_use_item": ["if !$target.fainted:", ["return false"]],
         "on_player_use": ["revive: $mon expr($mon.max_hp / 2)"]
       }
     }
@@ -40,7 +170,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_choose_item": ["if !$target.fainted:", ["return false"]],
+        "on_player_try_use_item": ["if !$target.fainted:", ["return false"]],
         "on_player_use": ["revive: $mon $mon.max_hp"]
       }
     }

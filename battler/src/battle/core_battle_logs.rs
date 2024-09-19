@@ -340,16 +340,12 @@ pub fn damage(
     Ok(())
 }
 
-pub fn heal(
-    context: &mut MonContext,
-    effect: Option<EffectHandle>,
-    source: Option<MonHandle>,
-) -> Result<(), Error> {
+pub fn heal(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     let activation = EffectActivationContext {
-        target: Some(context.mon_handle()),
+        target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
-        source_effect: effect,
-        source,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
         ..Default::default()
     };
     let mut private_event = effect_activation_internal(
@@ -359,8 +355,9 @@ pub fn heal(
     )?;
     let mut public_event = private_event.clone();
 
-    private_event.set("health", Mon::secret_health(context));
-    public_event.set("health", Mon::public_health(context));
+    let context = &mut context.target_context()?;
+    private_event.set("health", Mon::secret_health(&context));
+    public_event.set("health", Mon::public_health(&context));
 
     let side = context.mon().side;
     context

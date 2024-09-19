@@ -1346,18 +1346,14 @@ impl Player {
                 EffectHandle::Item(item_id),
                 None,
                 target_handle,
-                None,
+                Some(EffectHandle::Condition(Id::from_known("playerchoice"))),
             )?;
-            if !core_battle_effects::run_applying_effect_event_expecting_bool(
-                &mut context,
-                fxlang::BattleEvent::PlayerChooseItem,
-            )
-            .unwrap_or(true)
-                || !core_battle_effects::run_event_for_applying_effect(
+            if context.target().cannot_receive_items
+                || !core_battle_effects::run_applying_effect_event_expecting_bool(
                     &mut context,
-                    fxlang::BattleEvent::PlayerChooseItem,
-                    fxlang::VariableInput::default(),
+                    fxlang::BattleEvent::PlayerTryUseItem,
                 )
+                .unwrap_or(true)
             {
                 return Err(battler_error!(
                     "{item_name} cannot be used on {}",

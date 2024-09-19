@@ -60,9 +60,11 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeSwitchOut, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
+            parsed.parse_and_save(BattleEvent::BerryEatingHealth, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::ClearWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::CanEscape, callbacks)?;
+            parsed.parse_and_save(BattleEvent::CanHeal, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChangeBoosts, callbacks)?;
             parsed.parse_and_save(BattleEvent::ChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::CopyVolatile, callbacks)?;
@@ -129,9 +131,10 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::MoveFailed, callbacks)?;
             parsed.parse_and_save(BattleEvent::NegateImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::OverrideMove, callbacks)?;
-            parsed.parse_and_save(BattleEvent::PlayerChooseItem, callbacks)?;
+            parsed.parse_and_save(BattleEvent::PlayerTryUseItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::PlayerUse, callbacks)?;
             parsed.parse_and_save(BattleEvent::PrepareHit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::PreventUsedItems, callbacks)?;
             parsed.parse_and_save(BattleEvent::PriorityChargeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::RedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::Residual, callbacks)?;
@@ -171,6 +174,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::TakeItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::TrapMon, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryBoost, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TryEatItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHeal, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryHitField, callbacks)?;

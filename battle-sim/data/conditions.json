@@ -31,6 +31,14 @@
     "name": "Struggle Recoil",
     "condition_type": "Built-in"
   },
+  "playerchoice": {
+    "name": "Player Choice",
+    "condition_type": "Built-in"
+  },
+  "playeruseditem": {
+    "name": "Player Used Item",
+    "condition_type": "Built-in"
+  },
   "mon": {
     "name": "Mon",
     "condition_type": "Built-in",

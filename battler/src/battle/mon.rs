@@ -413,6 +413,7 @@ pub struct Mon {
     pub skip_before_switch_out: bool,
     pub being_called_back: bool,
     pub trapped: bool,
+    pub cannot_receive_items: bool,
     pub can_mega_evo: bool,
     pub transformed: bool,
 
@@ -554,6 +555,7 @@ impl Mon {
             skip_before_switch_out: false,
             being_called_back: false,
             trapped: false,
+            cannot_receive_items: false,
             can_mega_evo: false,
             transformed: false,
 
@@ -762,6 +764,7 @@ impl Mon {
         if locked_move.is_some() {
             // A Mon with a locked move is trapped.
             context.mon_mut().trapped = true;
+            context.mon_mut().cannot_receive_items = true;
         }
         Ok(locked_move)
     }
@@ -1863,12 +1866,22 @@ impl Mon {
         );
 
         context.mon_mut().trapped = false;
+        context.mon_mut().cannot_receive_items = false;
+
         if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
             context,
             fxlang::BattleEvent::TrapMon,
             false,
         ) {
             core_battle_actions::trap_mon(context)?;
+        }
+
+        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+            context,
+            fxlang::BattleEvent::PreventUsedItems,
+            false,
+        ) {
+            context.mon_mut().cannot_receive_items = true;
         }
 
         Ok(())

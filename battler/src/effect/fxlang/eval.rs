@@ -638,7 +638,16 @@ where
                             "being_called_back" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.being_called_back)
                             }
+                            "berry_eating_health" => ValueRef::UFraction(
+                                mon_states::berry_eating_health(
+                                    &mut context.mon_context(mon_handle)?,
+                                )
+                                .into(),
+                            ),
                             "boosts" => ValueRef::BoostTable(&context.mon(mon_handle)?.boosts),
+                            "can_heal" => ValueRef::Boolean(mon_states::can_heal(
+                                &mut context.mon_context(mon_handle)?,
+                            )),
                             "effective_item" => {
                                 match mon_states::effective_item(
                                     &mut context.mon_context(mon_handle)?,
@@ -759,6 +768,7 @@ where
                                     .unwrap_or(false),
                             ),
                             "name" => ValueRef::String(&context.mon(mon_handle)?.name),
+                            "nature" => ValueRef::Nature(context.mon(mon_handle)?.nature),
                             "needs_switch" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.needs_switch.is_some())
                             }
@@ -1156,6 +1166,22 @@ where
                             "spa" => ValueRef::Fraction(stats.spa.into()),
                             "spd" => ValueRef::Fraction(stats.spd.into()),
                             "spe" => ValueRef::Fraction(stats.spe.into()),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::Nature(nature) = value {
+                        value = match *member {
+                            "boosts" => ValueRef::Boost(
+                                nature
+                                    .boosts()
+                                    .try_into()
+                                    .wrap_error_with_message("invalid nature boost")?,
+                            ),
+                            "drops" => ValueRef::Boost(
+                                nature
+                                    .drops()
+                                    .try_into()
+                                    .wrap_error_with_message("invalid nature drop")?,
+                            ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::EffectState(connector) = value {
@@ -1569,31 +1595,21 @@ impl Evaluator {
                 None => (),
             }
         }
-        if event.has_flag(CallbackFlag::TakesEffect) {
+        if event.has_flag(CallbackFlag::TakesEffect | CallbackFlag::TakesSourceEffect) {
+            let effect_name = if event.has_flag(CallbackFlag::TakesEffect) {
+                "effect"
+            } else if event.has_flag(CallbackFlag::TakesSourceEffect) {
+                "source_effect"
+            } else {
+                "???"
+            };
             self.vars.set(
-                "effect",
+                effect_name,
                 Value::Effect(
                     context
                         .source_effect_handle()
                         .cloned()
                         .wrap_error_with_message("context has no effect")?,
-                ),
-            )?;
-        }
-        if event.has_flag(CallbackFlag::TakesOptionalEffect) {
-            if let Some(source_effect_handle) = context.source_effect_handle().cloned() {
-                self.vars
-                    .set("effect", Value::Effect(source_effect_handle))?;
-            }
-        }
-        if event.has_flag(CallbackFlag::TakesSourceEffect) {
-            self.vars.set(
-                "source_effect",
-                Value::Effect(
-                    context
-                        .source_effect_handle()
-                        .cloned()
-                        .wrap_error_with_message("context has no source effect")?,
                 ),
             )?;
         }
@@ -1607,16 +1623,11 @@ impl Evaluator {
                 ),
             )?;
         }
-        if event.has_flag(CallbackFlag::TakesItem) {
-            self.vars.set(
-                "item",
-                Value::Effect(
-                    context
-                        .source_effect_handle()
-                        .cloned()
-                        .wrap_error_with_message("context has no item")?,
-                ),
-            )?;
+        if event.has_flag(CallbackFlag::TakesOptionalEffect) {
+            if let Some(source_effect_handle) = context.source_effect_handle().cloned() {
+                self.vars
+                    .set("effect", Value::Effect(source_effect_handle))?;
+            }
         }
         if event.has_flag(CallbackFlag::TakesSide) {
             self.vars.set(

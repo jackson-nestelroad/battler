@@ -2070,11 +2070,12 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
             let amount = drain_percent * damage;
             let amount = amount.round();
             heal(
-                &mut context,
+                &mut context.applying_effect_context(
+                    EffectHandle::Condition(Id::from_known("drain")),
+                    Some(target_handle),
+                    None,
+                )?,
                 amount,
-                Some(target_handle),
-                Some(&EffectHandle::Condition(Id::from_known("drain"))),
-                false,
             )?;
         }
     }
@@ -2082,53 +2083,39 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
     Ok(())
 }
 
-fn apply_heal(
-    context: &mut MonContext,
-    damage: u16,
-    source: Option<MonHandle>,
-    effect: Option<&EffectHandle>,
-) -> Result<u16, Error> {
+fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Error> {
     if damage == 0 {
         return Ok(0);
     }
 
-    let healed = Mon::heal(context, damage)?;
+    let healed = Mon::heal(&mut context.target_context()?, damage)?;
     if healed > 0 {
-        core_battle_logs::heal(context, effect.cloned(), source)?;
+        core_battle_logs::heal(context)?;
     }
     Ok(healed)
 }
 
 /// Heals a Mon.
-pub fn heal(
-    context: &mut MonContext,
-    damage: u16,
-    source: Option<MonHandle>,
-    effect: Option<&EffectHandle>,
-    force: bool,
-) -> Result<u16, Error> {
-    if damage == 0 || context.mon().hp == 0 || context.mon().hp > context.mon().max_hp {
+pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Error> {
+    if damage == 0 || context.target().hp == 0 || context.target().hp > context.target().max_hp {
         return Ok(0);
     }
 
+    let force = context
+        .source_effect_handle()
+        .map(|effect_handle| effect_handle.try_id() == Some(&Id::from_known("playeruseditem")))
+        .unwrap_or(false);
     let damage = if force {
         damage
     } else {
-        match effect {
-            Some(effect) => core_battle_effects::run_event_for_applying_effect_expecting_u16(
-                &mut context.applying_effect_context(effect.clone(), source, None)?,
-                fxlang::BattleEvent::TryHeal,
-                damage,
-            ),
-            None => core_battle_effects::run_event_for_mon_expecting_u16(
-                context,
-                fxlang::BattleEvent::TryHeal,
-                damage,
-            ),
-        }
+        core_battle_effects::run_event_for_applying_effect_expecting_u16(
+            context,
+            fxlang::BattleEvent::TryHeal,
+            damage,
+        )
     };
 
-    apply_heal(context, damage, source, effect)
+    apply_heal(context, damage)
 }
 
 /// Drags a random Mon into a player's position.
@@ -2224,13 +2211,7 @@ fn apply_move_effects(
                         } else {
                             let damage = heal_percent * target_context.mon().max_hp;
                             let damage = damage.round();
-                            heal(
-                                &mut target_context.target_mon_context()?,
-                                damage,
-                                Some(source_handle),
-                                Some(&effect_handle),
-                                false,
-                            )?;
+                            heal(&mut target_context.applying_effect_context()?, damage)?;
                             hit_effect_outcome = MoveOutcomeOnTarget::Success;
                         }
                     }
@@ -4203,11 +4184,20 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         None => return Ok(false),
     };
 
-    let mut context =
-        context.forward_applying_effect_context(EffectHandle::Item(item_id.clone()))?;
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item_id)?
+        .clone();
 
     // TODO: UseItem event.
-    // TODO: TryEatItem event.
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::TryEatItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    ) {
+        return Ok(false);
+    }
 
     core_battle_logs::item_end(
         &mut context.target_context()?,
@@ -4218,15 +4208,24 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         true,
     )?;
 
-    core_battle_effects::run_mon_item_event(
-        &mut context
-            .source_applying_effect_context()?
-            .wrap_error_with_message("expected source applying effect")?,
-        fxlang::BattleEvent::Eat,
-    );
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Eat);
     // TODO: EatItem event.
 
-    after_use_item(&mut context, item_id)
+    after_use_item(context, item_id)
+}
+
+/// Makes the target Mon eat the given item.
+pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, Error> {
+    if context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    core_battle_effects::run_applying_effect_event(
+        &mut context.forward_applying_effect_context(EffectHandle::Item(item.clone()))?,
+        fxlang::BattleEvent::Eat,
+    );
+
+    Ok(true)
 }
 
 /// Makes the target Mon use its held item.
@@ -4240,9 +4239,6 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         None => return Ok(false),
     };
 
-    let mut context =
-        context.forward_applying_effect_context(EffectHandle::Item(item_id.clone()))?;
-
     // TODO: UseItem event.
 
     core_battle_logs::item_end(
@@ -4254,14 +4250,9 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         false,
     )?;
 
-    core_battle_effects::run_mon_item_event(
-        &mut context
-            .source_applying_effect_context()?
-            .wrap_error_with_message("expected source applying effect")?,
-        fxlang::BattleEvent::Use,
-    );
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Use);
 
-    after_use_item(&mut context, item_id)
+    after_use_item(context, item_id)
 }
 
 /// Uses an item from the player.
@@ -4325,7 +4316,7 @@ pub fn player_use_item_internal(
                 EffectHandle::Item(item_id),
                 None,
                 target,
-                None,
+                Some(EffectHandle::Condition(Id::from_known("playeruseditem"))),
             )?,
             fxlang::BattleEvent::PlayerUse,
         ),

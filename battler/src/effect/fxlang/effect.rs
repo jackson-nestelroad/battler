@@ -29,7 +29,6 @@ pub mod CallbackFlag {
     pub const TakesSourceEffect: u32 = 1 << 8;
     pub const TakesSide: u32 = 1 << 9;
     pub const TakesOptionalEffect: u32 = 1 << 10;
-    pub const TakesItem: u32 = 1 << 11;
 
     pub const ReturnsSecondaryEffects: u32 = 1 << 23;
     pub const ReturnsTypes: u32 = 1 << 24;
@@ -155,12 +154,6 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsSecondaryEffects
-        | CallbackFlag::ReturnsVoid,
-
-    ItemResult = CallbackFlag::TakesTargetMon
-        | CallbackFlag::TakesSourceMon
-        | CallbackFlag::TakesItem
-        | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
     MonModifier =
@@ -357,11 +350,21 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon (the user of the move).
     #[string = "BeforeTurn"]
     BeforeTurn,
+    /// Runs when determining the health at which the Mon should eat berries.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "BerryEatingHealth"]
+    BerryEatingHealth,
     /// Runs when a Mon is attempting to escape from battle.
     ///
     /// Runs in the context of the target Mon.
     #[string = "CanEscape"]
     CanEscape,
+    /// Runs when determining if a Mon can heal.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "CanHeal"]
+    CanHeal,
     /// Runs when a group of stat boosts is being applied to a Mon.
     ///
     /// Runs in the context of the target Mon.
@@ -744,11 +747,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "OverrideMove"]
     OverrideMove,
-    /// Runs when a player chooses to use an item.
+    /// Runs when a player tries to choose to use an item.
     ///
-    /// Runs on the item itself and in the context of an item on the target.
-    #[string = "PlayerChooseItem"]
-    PlayerChooseItem,
+    /// Runs on the item itself.
+    #[string = "PlayerTryUseItem"]
+    PlayerTryUseItem,
     /// Runs when an item is used on a Mon by a player.
     ///
     /// Runs on the item itself.
@@ -761,6 +764,11 @@ pub enum BattleEvent {
     /// Runs on the active move itself and in the context of an active move from the user.
     #[string = "PrepareHit"]
     PrepareHit,
+    /// Runs when determining if a Mon can have items used on it.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "PreventUsedItems"]
+    PreventUsedItems,
     /// Runs before at the start of the turn, when a move is charging for the turn.
     ///
     ///Runs in the context of the target Mon (the user of the move).
@@ -985,9 +993,14 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "TryBoost"]
     TryBoost,
+    /// Runs when a Mon tries to eat its item.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "TryEatItem"]
+    TryEatItem,
     /// Runs before a Mon is healed for some amount of damage.
     ///
-    /// Runs in the context of the target Mon or an applying effect.
+    /// Runs in the context of an applying effect on the target.
     #[string = "TryHeal"]
     TryHeal,
     /// Runs when a move is trying to hit a set of targets.
@@ -1115,7 +1128,9 @@ impl BattleEvent {
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
+            Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
+            Self::CanHeal => CommonCallbackType::MonResult as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
@@ -1184,9 +1199,10 @@ impl BattleEvent {
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
-            Self::PlayerChooseItem => CommonCallbackType::ItemResult as u32,
+            Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::PreventUsedItems => CommonCallbackType::MonResult as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1212,7 +1228,7 @@ impl BattleEvent {
             Self::SourceModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::SourceModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::SourceTryHeal => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::SourceTryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
@@ -1226,7 +1242,8 @@ impl BattleEvent {
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
-            Self::TryHeal => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::TryEatItem => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::TryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
             Self::TryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
@@ -1259,6 +1276,7 @@ impl BattleEvent {
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
             }
+            Self::BerryEatingHealth => &[("hp", ValueType::UFraction, true)],
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage | Self::AnyDamage => &[("damage", ValueType::UFraction, true)],
             Self::DeductPp | Self::FoeDeductPp => &[("pp", ValueType::UFraction, true)],
@@ -1302,6 +1320,7 @@ impl BattleEvent {
             Self::SlotStart => &[("slot", ValueType::UFraction, true)],
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
+            Self::TryEatItem => &[("item", ValueType::Effect, true)],
             Self::TryHeal | Self::SourceTryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types => &[("types", ValueType::List, true)],
@@ -1596,7 +1615,9 @@ pub struct Callbacks {
     pub on_before_move: Callback,
     pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
+    pub on_berry_eating_health: Callback,
     pub on_can_escape: Callback,
+    pub on_can_heal: Callback,
     pub on_change_boosts: Callback,
     pub on_charge_move: Callback,
     pub on_clear_terrain: Callback,
@@ -1654,9 +1675,10 @@ pub struct Callbacks {
     pub on_move_failed: Callback,
     pub on_negate_immunity: Callback,
     pub on_override_move: Callback,
-    pub on_player_choose_item: Callback,
+    pub on_player_try_use_item: Callback,
     pub on_player_use: Callback,
     pub on_prepare_hit: Callback,
+    pub on_prevent_used_items: Callback,
     pub on_priority_charge_move: Callback,
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
@@ -1691,6 +1713,7 @@ pub struct Callbacks {
     pub on_take_item: Callback,
     pub on_trap_mon: Callback,
     pub on_try_boost: Callback,
+    pub on_try_eat_item: Callback,
     pub on_try_heal: Callback,
     pub on_try_hit: Callback,
     pub on_try_hit_field: Callback,
@@ -1738,9 +1761,11 @@ impl Callbacks {
             BattleEvent::BeforeMove => Some(&self.on_before_move),
             BattleEvent::BeforeSwitchOut => Some(&self.on_before_switch_out),
             BattleEvent::BeforeTurn => Some(&self.on_before_turn),
+            BattleEvent::BerryEatingHealth => Some(&self.on_berry_eating_health),
             BattleEvent::ClearTerrain => Some(&self.on_clear_terrain),
             BattleEvent::ClearWeather => Some(&self.on_clear_weather),
             BattleEvent::CanEscape => Some(&self.on_can_escape),
+            BattleEvent::CanHeal => Some(&self.on_can_heal),
             BattleEvent::ChangeBoosts => Some(&self.on_change_boosts),
             BattleEvent::ChargeMove => Some(&self.on_charge_move),
             BattleEvent::CopyVolatile => Some(&self.on_copy_volatile),
@@ -1807,9 +1832,10 @@ impl Callbacks {
             BattleEvent::MoveFailed => Some(&self.on_move_failed),
             BattleEvent::NegateImmunity => Some(&self.on_negate_immunity),
             BattleEvent::OverrideMove => Some(&self.on_override_move),
-            BattleEvent::PlayerChooseItem => Some(&self.on_player_choose_item),
+            BattleEvent::PlayerTryUseItem => Some(&self.on_player_try_use_item),
             BattleEvent::PlayerUse => Some(&self.on_player_use),
             BattleEvent::PrepareHit => Some(&self.on_prepare_hit),
+            BattleEvent::PreventUsedItems => Some(&self.on_prevent_used_items),
             BattleEvent::PriorityChargeMove => Some(&self.on_priority_charge_move),
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),
@@ -1849,6 +1875,7 @@ impl Callbacks {
             BattleEvent::TakeItem => Some(&self.on_take_item),
             BattleEvent::TrapMon => Some(&self.on_trap_mon),
             BattleEvent::TryBoost => Some(&self.on_try_boost),
+            BattleEvent::TryEatItem => Some(&self.on_try_eat_item),
             BattleEvent::TryHeal => Some(&self.on_try_heal),
             BattleEvent::TryHit => Some(&self.on_try_hit),
             BattleEvent::TryHitField => Some(&self.on_try_hit_field),

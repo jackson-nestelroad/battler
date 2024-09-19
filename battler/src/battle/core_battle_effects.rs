@@ -735,12 +735,19 @@ fn run_applying_effect_event_internal(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
-    let effect_handle = context.effect_handle().clone();
-    run_callback_under_applying_effect(
-        context,
-        input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::None),
-    )
+    let effect = context.effect_handle().clone();
+    match context.source_applying_effect_context().ok()? {
+        Some(mut context) => run_callback_under_applying_effect(
+            &mut context,
+            input,
+            CallbackHandle::new(effect, event, EffectOrigin::None),
+        ),
+        None => run_callback_under_applying_effect(
+            context,
+            input,
+            CallbackHandle::new(effect, event, EffectOrigin::None),
+        ),
+    }
 }
 
 fn run_effect_event_internal(
@@ -748,12 +755,19 @@ fn run_effect_event_internal(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
-    let effect_handle = context.effect_handle().clone();
-    run_callback_under_effect(
-        context,
-        input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::None),
-    )
+    let effect = context.effect_handle().clone();
+    match context.source_effect_context().ok()? {
+        Some(mut context) => run_callback_under_effect(
+            &mut context,
+            input,
+            CallbackHandle::new(effect, event, EffectOrigin::None),
+        ),
+        None => run_callback_under_effect(
+            context,
+            input,
+            CallbackHandle::new(effect, event, EffectOrigin::None),
+        ),
+    }
 }
 
 fn find_callbacks_on_mon(

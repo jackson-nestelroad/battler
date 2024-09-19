@@ -119,6 +119,7 @@ pub fn run_function(
         "do_move" => do_move(context).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "eat_item" => eat_item(context).map(|val| Some(val)),
+        "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
@@ -1492,7 +1493,6 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
 }
 
 fn heal(mut context: FunctionContext) -> Result<Value, Error> {
-    let force = context.has_flag("force");
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -1503,14 +1503,9 @@ fn heal(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("missing damage")?
         .integer_u16()
         .wrap_error_with_message("invalid damage")?;
-    let source_handle = context.source_handle();
-    let effect = context.effect_handle()?;
     core_battle_actions::heal(
-        &mut context.evaluation_context_mut().mon_context(mon_handle)?,
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         damage,
-        source_handle,
-        Some(&effect),
-        force,
     )
     .map(|val| Value::UFraction(val.into()))
 }
@@ -2839,6 +2834,25 @@ fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::eat_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
         .map(|val| Value::Boolean(val))
+}
+
+fn eat_given_item(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let item = context
+        .pop_front()
+        .wrap_error_with_message("missing item")?
+        .string()
+        .wrap_error_with_message("invalid item")?;
+    let item = Id::from(item);
+    core_battle_actions::eat_given_item(
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
+        &item,
+    )
+    .map(|val| Value::Boolean(val))
 }
 
 fn use_item(mut context: FunctionContext) -> Result<Value, Error> {

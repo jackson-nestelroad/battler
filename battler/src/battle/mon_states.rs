@@ -10,6 +10,27 @@ use crate::{
     moves::MoveFlags,
 };
 
+/// The health at which the [`Mon`][`crate::battle::Mon`] eats berries.
+pub fn berry_eating_health(context: &mut MonContext) -> u16 {
+    let health = context.mon().max_hp / 4;
+    core_battle_effects::run_event_for_mon_expecting_u16(
+        context,
+        fxlang::BattleEvent::BerryEatingHealth,
+        health,
+    )
+}
+
+/// Checks if the [`Mon`][`crate::battle::Mon`] can heal.
+///
+/// Does not necessarily check if the Mon needs to heal.
+pub fn can_heal(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::CanHeal,
+        true,
+    )
+}
+
 /// Checks if the [`Mon`][`crate::battle::Mon`] is asleep.
 pub fn is_asleep(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
@@ -73,7 +94,7 @@ pub fn is_semi_invulnerable(context: &mut MonContext) -> bool {
     )
 }
 
-/// Checks if the [`Mon`][`crate::battle::Mon`] is sky-dropped..
+/// Checks if the [`Mon`][`crate::battle::Mon`] is sky-dropped.
 pub fn is_sky_dropped(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,

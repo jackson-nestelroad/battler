@@ -4,7 +4,15 @@
   "rivalry": { "name": "Rivalry", "flags": [] },
   "steadfast": { "name": "Steadfast", "flags": [] },
   "snowcloak": { "name": "Snow Cloak", "flags": [] },
-  "gluttony": { "name": "Gluttony", "flags": [] },
+  "gluttony": {
+    "name": "Gluttony",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_berry_eating_health": ["return $hp * 2"]
+      }
+    }
+  },
   "angerpoint": { "name": "Anger Point", "flags": [] },
   "unburden": { "name": "Unburden", "flags": [] },
   "heatproof": { "name": "Heatproof", "flags": [] },
