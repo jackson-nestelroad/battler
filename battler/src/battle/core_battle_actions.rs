@@ -3188,7 +3188,7 @@ fn calculate_exp_gain(
         exp
     };
 
-    core_battle_effects::run_event_for_mon_expecting_u32(
+    let exp = core_battle_effects::run_event_for_mon_expecting_u32(
         context,
         fxlang::BattleEvent::ModifyExperience,
         exp,
@@ -3210,7 +3210,7 @@ pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<(), Error>
     core_battle_logs::level_up(context)?;
 
     for level in old_level..target_level {
-        context.mon_mut().increase_friendship([3, 2, 1]);
+        Mon::increase_friendship(context, [3, 2, 1]);
         learn_moves_at_level(context, level + 1)?;
     }
     return Ok(());
@@ -4202,11 +4202,17 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         .get_effect_handle_by_id(&item_id)?
         .clone();
 
-    // TODO: UseItem event.
-
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::TryEatItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
+    ) {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::TryUseItem,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
     ) {
         return Ok(false);
@@ -4257,7 +4263,18 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
         None => return Ok(false),
     };
 
-    // TODO: UseItem event.
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item_id)?
+        .clone();
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::TryUseItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    ) {
+        return Ok(false);
+    }
 
     core_battle_logs::item_end(
         &mut context.target_context()?,

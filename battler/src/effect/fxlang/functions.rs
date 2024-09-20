@@ -3146,11 +3146,10 @@ fn increase_friendship(mut context: FunctionContext) -> Result<(), Error> {
         .wrap_error_with_message("missing level 3 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 3 delta")?;
-    context
-        .evaluation_context_mut()
-        .mon_context(mon_handle)?
-        .mon_mut()
-        .increase_friendship([delta_1, delta_2, delta_3]);
+    Mon::increase_friendship(
+        &mut context.evaluation_context_mut().mon_context(mon_handle)?,
+        [delta_1, delta_2, delta_3],
+    );
     Ok(())
 }
 
@@ -3175,11 +3174,10 @@ fn decrease_friendship(mut context: FunctionContext) -> Result<(), Error> {
         .wrap_error_with_message("missing level 3 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 3 delta")?;
-    context
-        .evaluation_context_mut()
-        .mon_context(mon_handle)?
-        .mon_mut()
-        .decrease_friendship([delta_1, delta_2, delta_3]);
+    Mon::decrease_friendship(
+        &mut context.evaluation_context_mut().mon_context(mon_handle)?,
+        [delta_1, delta_2, delta_3],
+    );
     Ok(())
 }
 

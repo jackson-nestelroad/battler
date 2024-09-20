@@ -1019,6 +1019,9 @@ where
                             "thaws_target" => ValueRef::Boolean(
                                 context.active_move(active_move_handle)?.data.thaws_target,
                             ),
+                            "total_damage" => ValueRef::UFraction(
+                                context.active_move(active_move_handle)?.total_damage.into(),
+                            ),
                             "type" => ValueRef::Type(
                                 context.active_move(active_move_handle)?.data.primary_type,
                             ),
@@ -1333,6 +1336,9 @@ where
                         ),
                         "target" => ValueRefMut::MoveTarget(
                             &mut context.active_move_mut(**active_move_handle)?.data.target,
+                        ),
+                        "total_damage" => ValueRefMut::U64(
+                            &mut context.active_move_mut(**active_move_handle)?.total_damage,
                         ),
                         "type" => ValueRefMut::Type(
                             &mut context

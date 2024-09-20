@@ -2433,6 +2433,7 @@
           "if $damage > $effect_state.hp:",
           ["$damage = $effect_state.hp"],
           "$effect_state.hp = $effect_state.hp - $damage",
+          "$move.total_damage = $move.total_damage + $damage",
           "# Break the substitute when HP falls to 0.",
           "if $effect_state.hp == 0:",
           [

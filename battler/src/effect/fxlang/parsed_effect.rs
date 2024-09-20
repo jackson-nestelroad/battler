@@ -121,6 +121,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDef, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyExperience, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyFriendshipIncrease, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySecondaryEffects, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
@@ -185,6 +186,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::TryImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryPrimaryHit, callbacks)?;
+            parsed.parse_and_save(BattleEvent::TryUseItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::TryUseMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::TypeImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Types, callbacks)?;

@@ -80,6 +80,19 @@ mod items {
         mod stat_boosting_berry_test;
     }
 
+    mod gen2 {
+        mod berry_juice_test;
+        mod focus_band_test;
+        mod kings_rock_test;
+        mod leftovers_test;
+        mod light_ball_test;
+        mod quick_claw_test;
+    }
+
+    mod gen3 {
+        mod shell_bell_test;
+    }
+
     mod gen5 {
         mod cell_battery_test;
     }

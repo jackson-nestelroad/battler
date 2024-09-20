@@ -208,5 +208,7 @@
   "freeze": "frz",
   "poison": "psn",
   "badpoison": "tox",
-  "faint": "fnt"
+  "faint": "fnt",
+
+  "pokdoll": "pokedoll"
 }

@@ -165,7 +165,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $mon.fainted or (!$mon.status and !func_call(has_volatile: $target confusion)):",
+          "if $target.fainted or (!$target.status and !func_call(has_volatile: $target confusion)):",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],

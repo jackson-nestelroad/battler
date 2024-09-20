@@ -691,6 +691,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifyExperience"]
     ModifyExperience,
+    /// Runs when calculating the amount of friendship gained by a Mon.
+    ///
+    /// Runs in the context of the target Mon.
+    #[string = "ModifyFriendshipIncrease"]
+    ModifyFriendshipIncrease,
     /// Runs before applying secondary move effects.
     ///
     /// Runs in the context of an active move against the target.
@@ -1063,6 +1068,11 @@ pub enum BattleEvent {
     /// Runs in the context of an active move on the target.
     #[string = "TryPrimaryHit"]
     TryPrimaryHit,
+    /// Runs when a Mon tries to use an item.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "PlayerTryUseItem"]
+    TryUseItem,
     /// Runs when a Mon is trying to use a move on a set of targets.
     ///
     /// Can fail the move.
@@ -1204,6 +1214,7 @@ impl BattleEvent {
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
+            Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1268,6 +1279,7 @@ impl BattleEvent {
             Self::TryImmunity => CommonCallbackType::MoveResult as u32,
             Self::TryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
+            Self::TryUseItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::TypeImmunity => CommonCallbackType::MonResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
@@ -1318,6 +1330,7 @@ impl BattleEvent {
             | Self::WeatherModifyDamage => &[("damage", ValueType::UFraction, true)],
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
+            Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
             Self::ModifySpA | Self::SourceModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
@@ -1344,6 +1357,7 @@ impl BattleEvent {
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::TryEatItem => &[("item", ValueType::Effect, true)],
+            Self::TryUseItem => &[("item", ValueType::Effect, true)],
             Self::TryHeal | Self::SourceTryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types => &[("types", ValueType::List, true)],
@@ -1692,6 +1706,7 @@ pub struct Callbacks {
     pub on_modify_damage: Callback,
     pub on_modify_def: Callback,
     pub on_modify_experience: Callback,
+    pub on_modify_friendship_increase: Callback,
     pub on_modify_secondary_effects: Callback,
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
@@ -1751,6 +1766,7 @@ pub struct Callbacks {
     pub on_try_immunity: Callback,
     pub on_try_move: Callback,
     pub on_try_primary_hit: Callback,
+    pub on_try_use_item: Callback,
     pub on_try_use_move: Callback,
     pub on_type_immunity: Callback,
     pub on_types: Callback,
@@ -1852,6 +1868,7 @@ impl Callbacks {
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),
             BattleEvent::ModifyDef => Some(&self.on_modify_def),
             BattleEvent::ModifyExperience => Some(&self.on_modify_experience),
+            BattleEvent::ModifyFriendshipIncrease => Some(&self.on_modify_friendship_increase),
             BattleEvent::ModifySecondaryEffects => Some(&self.on_modify_secondary_effects),
             BattleEvent::ModifySpA => Some(&self.on_modify_spa),
             BattleEvent::ModifySpD => Some(&self.on_modify_spd),
@@ -1916,6 +1933,7 @@ impl Callbacks {
             BattleEvent::TryImmunity => Some(&self.on_try_immunity),
             BattleEvent::TryMove => Some(&self.on_try_move),
             BattleEvent::TryPrimaryHit => Some(&self.on_try_primary_hit),
+            BattleEvent::TryUseItem => Some(&self.on_try_use_item),
             BattleEvent::TryUseMove => Some(&self.on_try_use_move),
             BattleEvent::TypeImmunity => Some(&self.on_type_immunity),
             BattleEvent::Types => Some(&self.on_types),

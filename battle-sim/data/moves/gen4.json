@@ -250,7 +250,33 @@
     "pp": 15,
     "accuracy": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "volatile_status": "healblock"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if func_call(move_has_flag: $move_slot.id heal):",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ],
+        "on_before_move": {
+          "priority": 6,
+          "program": [
+            "if func_call(move_has_flag: $move.id heal):",
+            ["log_cant", "return false"]
+          ]
+        },
+        "on_can_heal": ["return false"],
+        "on_try_heal": ["return 0"],
+        "on_end": ["log_end"]
+      }
+    }
   },
   "wringout": {
     "name": "Wring Out",

@@ -123,6 +123,7 @@ fn make_wild_singles_battle(
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_bag_items(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_protagonist_to_side_1("protagonist", "Protagonist")
         .add_wild_mon_to_side_2("wild", "Wild", wild_options)
@@ -270,6 +271,67 @@ fn player_escapes_with_lower_speed() {
             "residual",
             "turn|turn:5",
             ["time"],
+            "escaped|player:protagonist",
+            "win|side:1"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn player_escapes_with_smoke_ball() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team = low_level_pikachu().unwrap();
+    team.members[0].item = Some("Smoke Ball".to_owned());
+    let mut battle = make_wild_singles_battle(
+        &data,
+        3245467,
+        team,
+        primeape().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "activate|mon:Pikachu,protagonist,1|item:Smoke Ball",
+            "escaped|player:protagonist",
+            "win|side:1"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn player_escapes_with_poke_doll() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team = low_level_pikachu().unwrap();
+    team.bag.items.insert("Poke Doll".to_owned(), 1);
+    let mut battle = make_wild_singles_battle(
+        &data,
+        3245467,
+        team,
+        primeape().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(
+        battle.set_player_choice("protagonist", "item pokedoll"),
+        Ok(())
+    );
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "useitem|player:protagonist|name:Poké Doll|target:Pikachu,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,

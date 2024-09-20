@@ -82,7 +82,6 @@ fn lum_berry_heals_status_and_confusion() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
             "useitem|player:player-1|name:Lum Berry|target:Crobat,player-1,1",
             "curestatus|mon:Crobat,player-1,1|status:Paralysis|from:item:Lum Berry",
             "end|mon:Crobat,player-1,1|condition:Confusion",

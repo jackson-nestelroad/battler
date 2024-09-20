@@ -1,6 +1,23 @@
 {
-  "pokedoll": { "name": "Poké Doll", "flags": [] },
-  "fluffytail": { "name": "Fluffy Tail", "flags": [] },
+  "pokedoll": {
+    "name": "Poké Doll",
+    "target": "Active",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_player_use": ["if $mon.player.can_escape:", ["escape: $mon"]]
+      }
+    }
+  },
+  "fluffytail": {
+    "name": "Fluffy Tail",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_player_use": ["if $mon.player.can_escape:", ["escape: $mon"]]
+      }
+    }
+  },
   "adamantorb": {
     "name": "Adamant Orb",
     "fling": { "power": 60 },
@@ -14,17 +31,51 @@
   "brightpowder": {
     "name": "Bright Powder",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_accuracy": ["return $acc * 9/10"]
+      }
+    }
   },
   "whiteherb": { "name": "White Herb", "fling": { "power": 10 }, "flags": [] },
   "machobrace": {
     "name": "Macho Brace",
     "fling": { "power": 60 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"]
+      }
+    }
   },
   "expshare": { "name": "Exp. Share", "flags": [] },
-  "quickclaw": { "name": "Quick Claw", "fling": { "power": 80 }, "flags": [] },
-  "soothebell": { "name": "Soothe Bell", "flags": [] },
+  "quickclaw": {
+    "name": "Quick Claw",
+    "fling": { "power": 80 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_sub_priority": {
+          "order": 1,
+          "priority": -1,
+          "program": [
+            "if func_call(chance: 1 5):",
+            ["log_activate: with_target", "return 1"]
+          ]
+        }
+      }
+    }
+  },
+  "soothebell": {
+    "name": "Soothe Bell",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_friendship_increase": ["return $friendship * 3/2"]
+      }
+    }
+  },
   "mentalherb": {
     "name": "Mental Herb",
     "fling": { "power": 10 },
@@ -45,109 +96,465 @@
   "kingsrock": {
     "name": "King's Rock",
     "fling": { "power": 30, "volatile_status": "flinch" },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": {
+          "priority": -1,
+          "program": [
+            "if $move.category == status:",
+            ["return"],
+            "foreach $secondary in $move.secondary_effects:",
+            [
+              "if $secondary.target.is_defined and $secondary.target.volatile_status == flinch:",
+              ["return"]
+            ],
+            "$added_secondary = func_call(secondary_hit_effect)",
+            "$added_secondary.chance = 1/10",
+            "$added_secondary.target = func_call(hit_effect)",
+            "$added_secondary.target.volatile_status = flinch",
+            "add_secondary_effect_to_move: $move $added_secondary"
+          ]
+        }
+      }
+    }
   },
   "silverpowder": {
     "name": "Silver Powder",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == bug:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
   "amuletcoin": { "name": "Amulet Coin", "flags": [] },
   "cleansetag": { "name": "Cleanse Tag", "flags": [] },
-  "souldew": { "name": "Soul Dew", "fling": { "power": 30 }, "flags": [] },
+  "souldew": {
+    "name": "Soul Dew",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effects": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if ($source.base_species == latias or $source.base_species == latios) and ($move.type == psychic or $move.type == dragon):",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
   "deepseatooth": {
     "name": "Deep Sea Tooth",
     "fling": { "power": 90 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spd": [
+          "if $target.base_species == clamperl:",
+          ["return $spd * 2"]
+        ]
+      }
+    }
   },
   "deepseascale": {
     "name": "Deep Sea Scale",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spd": [
+          "if $target.base_species == clamperl:",
+          ["return $spd * 2"]
+        ]
+      }
+    }
   },
-  "smokeball": { "name": "Smoke Ball", "flags": [] },
+  "smokeball": {
+    "name": "Smoke Ball",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_force_escape": ["log_activate: with_target", "return false"]
+      }
+    }
+  },
   "everstone": { "name": "Everstone", "flags": [] },
-  "focusband": { "name": "Focus Band", "fling": { "power": 10 }, "flags": [] },
-  "luckyegg": { "name": "Lucky Egg", "flags": [] },
-  "scopelens": { "name": "Scope Lens", "fling": { "power": 30 }, "flags": [] },
-  "metalcoat": { "name": "Metal Coat", "fling": { "power": 30 }, "flags": [] },
-  "leftovers": { "name": "Leftovers", "fling": { "power": 10 }, "flags": [] },
-  "dragonscale": {
-    "name": "Dragon Scale",
+  "focusband": {
+    "name": "Focus Band",
+    "fling": { "power": 10 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damage": {
+          "priority": -40,
+          "program": [
+            "if func_call(chance: 1 10) and $damage >= $target.hp and $effect.is_move:",
+            ["log_activate: with_target", "return $target.hp - 1"]
+          ]
+        }
+      }
+    }
+  },
+  "luckyegg": {
+    "name": "Lucky Egg",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_experience": ["return $exp * 2"]
+      }
+    }
+  },
+  "scopelens": {
+    "name": "Scope Lens",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_crit_ratio": ["return $crit_ratio + 1"]
+      }
+    }
+  },
+  "metalcoat": {
+    "name": "Metal Coat",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == steel:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
+  "berryjuice": {
+    "name": "Berry Juice",
+    "fling": { "power": 30 },
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["use_given_item: $mon $this.id"],
+        "on_update": ["if $mon.hp <= $mon.max_hp / 2:", ["use_item: $mon"]],
+        "on_try_use_item": ["if !$target.can_heal:", ["return false"]],
+        "on_use": ["heal: $mon 20"]
+      }
+    }
+  },
+  "leftovers": {
+    "name": "Leftovers",
+    "fling": { "power": 10 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": ["heal: $target expr($target.base_max_hp / 16)"]
+      }
+    }
   },
   "lightball": {
     "name": "Light Ball",
     "fling": { "power": 30, "status": "par" },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $target.base_species == pikachu:",
+          ["return $atk * 2"]
+        ],
+        "on_modify_spa": [
+          "if $target.base_species == pikachu:",
+          ["return $spa * 2"]
+        ]
+      }
+    }
   },
-  "softsand": { "name": "Soft Sand", "fling": { "power": 10 }, "flags": [] },
-  "hardstone": { "name": "Hard Stone", "fling": { "power": 100 }, "flags": [] },
+  "softsand": {
+    "name": "Soft Sand",
+    "fling": { "power": 10 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == ground:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
+  "hardstone": {
+    "name": "Hard Stone",
+    "fling": { "power": 100 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == rock:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
   "miracleseed": {
     "name": "Miracle Seed",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == grass:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
   "blackglasses": {
     "name": "Black Glasses",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == dark:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
-  "blackbelt": { "name": "Black Belt", "fling": { "power": 30 }, "flags": [] },
-  "magnet": { "name": "Magnet", "fling": { "power": 30 }, "flags": [] },
+  "blackbelt": {
+    "name": "Black Belt",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == fighting:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
+  "magnet": {
+    "name": "Magnet",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == electric:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
   "mysticwater": {
     "name": "Mystic Water",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == water:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
-  "sharpbeak": { "name": "Sharp Beak", "fling": { "power": 50 }, "flags": [] },
+  "sharpbeak": {
+    "name": "Sharp Beak",
+    "fling": { "power": 50 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == flying:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
   "poisonbarb": {
     "name": "Poison Barb",
     "fling": { "power": 70, "status": "psn" },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == poison:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
   "nevermeltice": {
     "name": "Never-Melt Ice",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == ice:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
-  "spelltag": { "name": "Spell Tag", "fling": { "power": 30 }, "flags": [] },
+  "spelltag": {
+    "name": "Spell Tag",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == ghost:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
   "twistedspoon": {
     "name": "Twisted Spoon",
     "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == psychic:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
-  "charcoal": { "name": "Charcoal", "fling": { "power": 30 }, "flags": [] },
+  "charcoal": {
+    "name": "Charcoal",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == fire:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
   "dragonfang": {
     "name": "Dragon Fang",
     "fling": { "power": 70 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == dragon:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
-  "silkscarf": { "name": "Silk Scarf", "fling": { "power": 10 }, "flags": [] },
-  "shellbell": { "name": "Shell Bell", "fling": { "power": 30 }, "flags": [] },
+  "silkscarf": {
+    "name": "Silk Scarf",
+    "fling": { "power": 10 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == normal:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
+  "shellbell": {
+    "name": "Shell Bell",
+    "fling": { "power": 30 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_move": [
+          "if $move.total_damage > 0:",
+          ["heal: $user expr($move.total_damage / 8)"]
+        ]
+      }
+    }
+  },
   "seaincense": {
     "name": "Sea Incense",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == water:",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
   "laxincense": {
     "name": "Lax Incense",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_accuracy": ["return $acc * 9/10"]
+      }
+    }
   },
   "luckypunch": {
     "name": "Lucky Punch",
     "fling": { "power": 40 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_crit_ratio": [
+          "if $user.base_species == chansey:",
+          ["return $crit_ratio * 2"]
+        ]
+      }
+    }
   },
   "metalpowder": {
     "name": "Metal Powder",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_def": ["if $target.species == ditto:", ["return $def * 2"]]
+      }
+    }
   },
-  "thickclub": { "name": "Thick Club", "fling": { "power": 90 }, "flags": [] },
-  "stick": { "name": "Leek", "fling": { "power": 60 }, "flags": [] },
+  "thickclub": {
+    "name": "Thick Club",
+    "fling": { "power": 90 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $target.base_species == cubone or $target.base_species == marowak:",
+          ["return $atk * 2"]
+        ]
+      }
+    }
+  },
+  "stick": {
+    "name": "Stick",
+    "fling": { "power": 60 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_crit_ratio": [
+          "if $user.base_species == farfetchd:",
+          ["return $crit_ratio + 2"]
+        ]
+      }
+    }
+  },
   "redscarf": { "name": "Red Scarf", "flags": [] },
   "bluescarf": { "name": "Blue Scarf", "flags": [] },
   "pinkscarf": { "name": "Pink Scarf", "flags": [] },
@@ -488,11 +895,6 @@
     "name": "Absorb Bulb",
     "fling": { "power": 30 },
     "flags": []
-  },
-  "berryjuice": {
-    "name": "Berry Juice",
-    "fling": { "power": 30 },
-    "flags": ["Medicine"]
   },
   "cellbattery": {
     "name": "Cell Battery",

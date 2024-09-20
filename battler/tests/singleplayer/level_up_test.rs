@@ -283,7 +283,7 @@ fn massive_level_up_before_battle_ends() {
             "damage|mon:Pikachu,player-2,1|health:0",
             "damage|mon:Pikachu,player-2,1|health:0",
             "faint|mon:Pikachu,player-2,1",
-            "exp|mon:Gastly,player-1,1|exp:9",
+            "exp|mon:Gastly,player-1,1|exp:10",
             "win|side:0"
         ]"#,
     )
@@ -375,7 +375,7 @@ fn inactive_mon_levels_up_directly_to_level() {
             "damage|mon:Pikachu,player-2,1|health:0",
             "damage|mon:Pikachu,player-2,1|health:0",
             "faint|mon:Pikachu,player-2,1",
-            "exp|mon:Gastly,player-1,1|exp:9",
+            "exp|mon:Gastly,player-1,1|exp:10",
             "win|side:0"
         ]"#,
     )

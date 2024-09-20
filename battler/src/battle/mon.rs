@@ -1487,7 +1487,7 @@ impl Mon {
                 .unwrap_or(Id::from_known("noability"));
         }
 
-        context.mon_mut().base_species = species.id().clone();
+        context.mon_mut().base_species = Id::from(species.data.base_species.clone());
 
         let mon_handle = context.mon_handle();
         let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
@@ -1745,27 +1745,22 @@ impl Mon {
     }
 
     /// Increases friendship based on the current friendship level.
-    pub fn increase_friendship(&mut self, delta: [u8; 3]) {
-        let max_delta = u8::MAX - self.friendship;
-        if self.friendship < 100 {
-            self.friendship += max_delta.min(delta[0]);
-        } else if self.friendship < 200 {
-            self.friendship += max_delta.min(delta[1]);
-        } else {
-            self.friendship += max_delta.min(delta[2]);
-        }
+    pub fn increase_friendship(context: &mut MonContext, delta: [u8; 3]) {
+        let delta = delta[(context.mon().friendship / 100) as usize];
+        let delta = core_battle_effects::run_event_for_mon_expecting_u8(
+            context,
+            fxlang::BattleEvent::ModifyFriendshipIncrease,
+            delta,
+        );
+        let max_delta = u8::MAX - context.mon().friendship;
+        context.mon_mut().friendship += delta.min(max_delta);
     }
 
     /// Increases friendship based on the current friendship level.
-    pub fn decrease_friendship(&mut self, delta: [u8; 3]) {
-        let max_delta = self.friendship;
-        if self.friendship < 100 {
-            self.friendship -= max_delta.min(delta[0]);
-        } else if self.friendship < 200 {
-            self.friendship -= max_delta.min(delta[1]);
-        } else {
-            self.friendship -= max_delta.min(delta[2]);
-        }
+    pub fn decrease_friendship(context: &mut MonContext, delta: [u8; 3]) {
+        let delta = delta[(context.mon().friendship / 100) as usize];
+        let max_delta = context.mon().friendship;
+        context.mon_mut().friendship -= delta.min(max_delta);
     }
 
     /// Checks if the Mon is immune to the given type.

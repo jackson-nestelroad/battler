@@ -77,6 +77,11 @@
   "dawnstone": { "name": "Dawn Stone", "fling": { "power": 80 }, "flags": [] },
   "ovalstone": { "name": "Oval Stone", "fling": { "power": 80 }, "flags": [] },
   "oddkeystone": { "name": "Odd Keystone", "flags": [] },
+  "dragonscale": {
+    "name": "Dragon Scale",
+    "fling": { "power": 30 },
+    "flags": []
+  },
   "upgrade": { "name": "Upgrade", "fling": { "power": 30 }, "flags": [] },
   "protector": { "name": "Protector", "fling": { "power": 80 }, "flags": [] },
   "electirizer": {
