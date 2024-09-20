@@ -38,7 +38,26 @@
       }
     }
   },
-  "whiteherb": { "name": "White Herb", "fling": { "power": 10 }, "flags": [] },
+  "whiteherb": {
+    "name": "White Herb",
+    "fling": { "power": 10 },
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "$activate = false",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if func_call(get_boost: $mon.boosts $stat) < 0:",
+            ["$activate = true"]
+          ],
+          "if $activate:",
+          ["use_item: $mon"]
+        ],
+        "on_use": ["clear_negative_boosts: $mon"]
+      }
+    }
+  },
   "machobrace": {
     "name": "Macho Brace",
     "fling": { "power": 60 },
@@ -79,7 +98,27 @@
   "mentalherb": {
     "name": "Mental Herb",
     "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "$activate = false",
+          "$conditions = [attract, taunt, encore, torment, disable, healblock]",
+          "foreach $condition in $conditions:",
+          [
+            "if func_call(has_volatile: $mon $condition):",
+            ["$activate = true"]
+          ],
+          "if $activate:",
+          ["use_item: $mon"]
+        ],
+        "on_use": [
+          "$conditions = [attract, taunt, encore, torment, disable, healblock]",
+          "foreach $condition in $conditions:",
+          ["remove_volatile: $mon $condition"]
+        ]
+      }
+    }
   },
   "choiceband": {
     "name": "Choice Band",

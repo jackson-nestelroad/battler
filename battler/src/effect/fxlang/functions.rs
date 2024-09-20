@@ -109,6 +109,7 @@ pub fn run_function(
         "check_immunity" => check_immunity(context).map(|val| Some(val)),
         "clamp_number" => clamp_number(context).map(|val| Some(val)),
         "clear_boosts" => clear_boosts(context).map(|()| None),
+        "clear_negative_boosts" => clear_negative_boosts(context).map(|()| None),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
         "cure_status" => cure_status(context).map(|val| Some(val)),
         "damage" => damage(context).map(|val| Some(val)),
@@ -2126,6 +2127,17 @@ fn clear_boosts(mut context: FunctionContext) -> Result<(), Error> {
         .mon_mut()
         .clear_boosts();
     Ok(())
+}
+
+fn clear_negative_boosts(mut context: FunctionContext) -> Result<(), Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_actions::clear_negative_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+    )
 }
 
 fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {

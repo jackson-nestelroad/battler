@@ -90,7 +90,9 @@ mod items {
     }
 
     mod gen3 {
+        mod mental_herb_test;
         mod shell_bell_test;
+        mod white_herb_test;
     }
 
     mod gen5 {

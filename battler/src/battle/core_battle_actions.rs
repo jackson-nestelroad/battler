@@ -4437,3 +4437,15 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
     core_battle_logs::set_pp(context, move_id, pp)?;
     Ok(pp)
 }
+
+/// Clears all negative boosts on the target Mon.
+pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+    context.target_mut().boosts = context
+        .target()
+        .boosts
+        .non_zero_iter()
+        .filter(|(_, val)| *val > 0)
+        .collect();
+    core_battle_logs::clear_negative_boosts(context)?;
+    Ok(())
+}

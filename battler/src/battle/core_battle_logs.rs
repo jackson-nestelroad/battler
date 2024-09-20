@@ -965,3 +965,19 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
         activation,
     )
 }
+
+pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        effect: None,
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "clearnegativeboosts".to_owned(),
+        activation,
+    )
+}
