@@ -936,6 +936,11 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon or an applying effect.
     #[string = "SourceTryHeal"]
     SourceTryHeal,
+    /// Runs when a Mon's move's primary hit is being applied to a target.
+    ///
+    /// Runs in the context of an active move on the target.
+    #[string = "SourceTryPrimaryHit"]
+    SourceTryPrimaryHit,
     /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
     /// apply against it).
     ///
@@ -1257,6 +1262,7 @@ impl BattleEvent {
             Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::SourceModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceTryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
+            Self::SourceTryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
@@ -1497,6 +1503,7 @@ impl BattleEvent {
             Self::ModifyDamage => Some(Self::SourceModifyDamage),
             Self::ModifySpA => Some(Self::SourceModifySpA),
             Self::TryHeal => Some(Self::SourceTryHeal),
+            Self::TryPrimaryHit => Some(Self::SourceTryPrimaryHit),
             Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
             _ => None,
         }
@@ -1749,6 +1756,7 @@ pub struct Callbacks {
     pub on_source_modify_damage: Callback,
     pub on_source_modify_spa: Callback,
     pub on_source_try_heal: Callback,
+    pub on_source_try_primary_hit: Callback,
     pub on_source_weather_modify_damage: Callback,
     pub on_stall_move: Callback,
     pub on_start: Callback,
@@ -1911,6 +1919,7 @@ impl Callbacks {
             BattleEvent::SourceModifyDamage => Some(&self.on_source_modify_damage),
             BattleEvent::SourceModifySpA => Some(&self.on_source_modify_spa),
             BattleEvent::SourceTryHeal => Some(&self.on_source_try_heal),
+            BattleEvent::SourceTryPrimaryHit => Some(&self.on_source_try_primary_hit),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
             BattleEvent::StallMove => Some(&self.on_stall_move),
             BattleEvent::Start => Some(&self.on_start),

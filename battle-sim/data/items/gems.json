@@ -1,20 +1,326 @@
 {
-  "firegem": { "name": "Fire Gem", "flags": ["Gem"] },
-  "watergem": { "name": "Water Gem", "flags": ["Gem"] },
-  "electricgem": { "name": "Electric Gem", "flags": ["Gem"] },
-  "grassgem": { "name": "Grass Gem", "flags": ["Gem"] },
-  "icegem": { "name": "Ice Gem", "flags": ["Gem"] },
-  "fightinggem": { "name": "Fighting Gem", "flags": ["Gem"] },
-  "poisongem": { "name": "Poison Gem", "flags": ["Gem"] },
-  "groundgem": { "name": "Ground Gem", "flags": ["Gem"] },
-  "flyinggem": { "name": "Flying Gem", "flags": ["Gem"] },
-  "psychicgem": { "name": "Psychic Gem", "flags": ["Gem"] },
-  "buggem": { "name": "Bug Gem", "flags": ["Gem"] },
-  "rockgem": { "name": "Rock Gem", "flags": ["Gem"] },
-  "ghostgem": { "name": "Ghost Gem", "flags": ["Gem"] },
-  "darkgem": { "name": "Dark Gem", "flags": ["Gem"] },
-  "steelgem": { "name": "Steel Gem", "flags": ["Gem"] },
-  "dragongem": { "name": "Dragon Gem", "flags": ["Gem"] },
-  "normalgem": { "name": "Normal Gem", "flags": ["Gem"] },
-  "fairygem": { "name": "Fairy Gem", "flags": ["Gem"] }
+  "firegem": {
+    "name": "Fire Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == fire:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "watergem": {
+    "name": "Water Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == water:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "electricgem": {
+    "name": "Electric Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == electric:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "grassgem": {
+    "name": "Grass Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == grass:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "icegem": {
+    "name": "Ice Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == ice:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "fightinggem": {
+    "name": "Fighting Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == fighting:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "poisongem": {
+    "name": "Poison Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == poison:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "groundgem": {
+    "name": "Ground Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == ground:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "flyinggem": {
+    "name": "Flying Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == flying:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "psychicgem": {
+    "name": "Psychic Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == psychic:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "buggem": {
+    "name": "Bug Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == bug:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "rockgem": {
+    "name": "Rock Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == rock:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "ghostgem": {
+    "name": "Ghost Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == ghost:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "darkgem": {
+    "name": "Dark Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == dark:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "steelgem": {
+    "name": "Steel Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == steel:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "dragongem": {
+    "name": "Dragon Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == dragon:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "normalgem": {
+    "name": "Normal Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == normal:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  },
+  "fairygem": {
+    "name": "Fairy Gem",
+    "flags": ["Gem"],
+    "effect": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == fairy:",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  }
 }

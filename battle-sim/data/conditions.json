@@ -962,5 +962,15 @@
         ]
       }
     }
+  },
+  "gem": {
+    "name": "Gem",
+    "condition_type": "Volatile",
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_source_base_power": ["return $base_power * 13/10"]
+      }
+    }
   }
 }

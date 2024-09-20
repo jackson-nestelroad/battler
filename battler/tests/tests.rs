@@ -97,6 +97,7 @@ mod items {
 
     mod gen5 {
         mod cell_battery_test;
+        mod gem_test;
     }
 
     mod medicine {
