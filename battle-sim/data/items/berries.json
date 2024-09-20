@@ -400,7 +400,7 @@
   },
   "occaberry": {
     "name": "Occa Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -418,7 +418,7 @@
   },
   "passhoberry": {
     "name": "Passho Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -436,7 +436,7 @@
   },
   "wacanberry": {
     "name": "Wacan Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -454,7 +454,7 @@
   },
   "rindoberry": {
     "name": "Rindo Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -472,7 +472,7 @@
   },
   "yacheberry": {
     "name": "Yache Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -490,7 +490,7 @@
   },
   "chopleberry": {
     "name": "Chople Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -508,7 +508,7 @@
   },
   "kebiaberry": {
     "name": "Kebia Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -526,7 +526,7 @@
   },
   "shucaberry": {
     "name": "Shuca Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -544,7 +544,7 @@
   },
   "cobaberry": {
     "name": "Coba Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -562,7 +562,7 @@
   },
   "payapaberry": {
     "name": "Payapa Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -580,7 +580,7 @@
   },
   "tangaberry": {
     "name": "Tanga Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -598,7 +598,7 @@
   },
   "chartiberry": {
     "name": "Charti Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -616,7 +616,7 @@
   },
   "kasibberry": {
     "name": "Kasib Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -634,7 +634,7 @@
   },
   "habanberry": {
     "name": "Haban Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -652,7 +652,7 @@
   },
   "colburberry": {
     "name": "Colbur Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -670,7 +670,7 @@
   },
   "babiriberry": {
     "name": "Babiri Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -688,7 +688,7 @@
   },
   "chilanberry": {
     "name": "Chilan Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -810,7 +810,7 @@
   },
   "enigmaberry": {
     "name": "Enigma Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -902,7 +902,7 @@
   },
   "roseliberry": {
     "name": "Roseli Berry",
-    "flags": ["Berry"],
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [

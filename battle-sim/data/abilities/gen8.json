@@ -12,7 +12,51 @@
   "punkrock": { "name": "Punk Rock", "flags": [] },
   "sandspit": { "name": "Sand Spit", "flags": [] },
   "icescales": { "name": "Ice Scales", "flags": [] },
-  "ripen": { "name": "Ripen", "flags": [] },
+  "ripen": {
+    "name": "Ripen",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_try_heal": [
+          "if $effect.id == berryjuice or $effect.id == leftovers or ($effect.is_item and func_call(item_has_flag: $effect.id berry)):",
+          ["log_activate: with_target", "return $damage * 2"]
+        ],
+        "on_try_boost": [
+          "if $effect.is_item and func_call(item_has_flag: $effect.id berry):",
+          [
+            "foreach $stat in func_call(boostable_stats):",
+            [
+              "$boosts = func_call(set_boost: $boosts $stat expr(func_call(get_boost: $boosts $stat) * 2))"
+            ],
+            "return $boosts"
+          ]
+        ],
+        "on_try_eat_item": {
+          "priority": -1,
+          "program": ["log_activate: with_target"]
+        },
+        "on_eat_item": [
+          "if func_call(item_has_flag: $item.id damagereducingberry):",
+          ["$effect_state.berry_weaken = true"]
+        ],
+        "on_source_modify_damage": {
+          "priority": -1,
+          "program": [
+            "if $effect_state.berry_weaken:",
+            ["$effect_state.berry_weaken = false", "return $damage / 2"]
+          ]
+        },
+        "on_damage": [
+          "if $effect.is_item and func_call(item_has_flag: $effect.id berry):",
+          ["return $damage * 2"]
+        ],
+        "on_restore_pp": [
+          "if $effect.is_item and func_call(item_has_flag: $effect.id berry):",
+          ["return $pp * 2"]
+        ]
+      }
+    }
+  },
   "iceface": { "name": "Ice Face", "flags": ["Permanent"] },
   "powerspot": { "name": "Power Spot", "flags": [] },
   "mimicry": { "name": "Mimicry", "flags": [] },

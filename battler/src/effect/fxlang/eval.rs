@@ -850,6 +850,7 @@ where
                                 .infiltrates(),
                             ),
                             "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
+                            "is_item" => ValueRef::Boolean(effect_handle.is_item()),
                             "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
                             "is_move_secondary" => {
                                 ValueRef::Boolean(effect_handle.is_active_move_secondary())

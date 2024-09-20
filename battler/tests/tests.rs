@@ -55,6 +55,10 @@ mod abilities {
     mod gen4 {
         mod aftermath_test;
     }
+
+    mod gen8 {
+        mod ripen_test;
+    }
 }
 
 mod items {

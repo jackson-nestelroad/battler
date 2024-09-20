@@ -21,6 +21,9 @@ pub enum ItemFlags {
     /// Locks the holder's move choice.
     #[string = "ChoiceLocking"]
     ChoiceLocking,
+    /// A damage-reducing berry.
+    #[string = "DamageReducingBerry"]
+    DamageReducingBerry,
     /// Raises the user's evasion.
     #[string = "EvasionRaising"]
     EvasionRaising,

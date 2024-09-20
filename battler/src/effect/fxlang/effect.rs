@@ -452,6 +452,11 @@ pub enum BattleEvent {
     /// Runs on the item itself.
     #[string = "Eat"]
     Eat,
+    /// Runs when a Mon eats its item.
+    ///
+    /// Runs in the context of an applying effect (the item) on the target.
+    #[string = "EatItem"]
+    EatItem,
     /// Runs when determining the type effectiveness of a move.
     ///
     /// Runs on the active move itself and in the context of an active move on the target.
@@ -790,6 +795,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Restart"]
     Restart,
+    /// Runs when restoring PP to a move.
+    ///
+    /// Runs in the context of an applying effect on the target.
+    #[string = "RestorePp"]
+    RestorePp,
     /// Runs when a Mon's ability is being set.
     ///
     /// Runs before the ability is changed. Can be used to fail the ability change.
@@ -1152,6 +1162,7 @@ impl BattleEvent {
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
             Self::Eat => CommonCallbackType::MonVoid as u32,
+            Self::EatItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::EndBattle => CommonCallbackType::MonVoid as u32,
             Self::EntryHazard => CommonCallbackType::MonVoid as u32,
@@ -1212,6 +1223,7 @@ impl BattleEvent {
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
+            Self::RestorePp => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::SetAbility => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1288,6 +1300,7 @@ impl BattleEvent {
             Self::DeductPp | Self::FoeDeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
+            Self::EatItem => &[("item", ValueType::Effect, true)],
             Self::Effectiveness => &[
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
@@ -1316,6 +1329,7 @@ impl BattleEvent {
             Self::RedirectTarget | Self::AnyRedirectTarget | Self::FoeRedirectTarget => {
                 &[("target", ValueType::Mon, true)]
             }
+            Self::RestorePp => &[("pp", ValueType::UFraction, true)],
             Self::SetAbility => &[("ability", ValueType::Effect, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
@@ -1646,6 +1660,7 @@ pub struct Callbacks {
     pub on_drag_out: Callback,
     pub on_duration: Callback,
     pub on_eat: Callback,
+    pub on_eat_item: Callback,
     pub on_effectiveness: Callback,
     pub on_end: Callback,
     pub on_end_battle: Callback,
@@ -1696,6 +1711,7 @@ pub struct Callbacks {
     pub on_redirect_target: Callback,
     pub on_residual: Callback,
     pub on_restart: Callback,
+    pub on_restore_pp: Callback,
     pub on_set_ability: Callback,
     pub on_set_last_move: Callback,
     pub on_set_status: Callback,
@@ -1793,6 +1809,7 @@ impl Callbacks {
             BattleEvent::DragOut => Some(&self.on_drag_out),
             BattleEvent::Duration => Some(&self.on_duration),
             BattleEvent::Eat => Some(&self.on_eat),
+            BattleEvent::EatItem => Some(&self.on_eat_item),
             BattleEvent::Effectiveness => Some(&self.on_effectiveness),
             BattleEvent::End => Some(&self.on_end),
             BattleEvent::EndBattle => Some(&self.on_end_battle),
@@ -1854,6 +1871,7 @@ impl Callbacks {
             BattleEvent::RedirectTarget => Some(&self.on_redirect_target),
             BattleEvent::Residual => Some(&self.on_residual),
             BattleEvent::Restart => Some(&self.on_restart),
+            BattleEvent::RestorePp => Some(&self.on_restore_pp),
             BattleEvent::SetAbility => Some(&self.on_set_ability),
             BattleEvent::SetLastMove => Some(&self.on_set_last_move),
             BattleEvent::SetStatus => Some(&self.on_set_status),

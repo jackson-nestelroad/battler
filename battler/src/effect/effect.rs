@@ -116,8 +116,7 @@ impl EffectHandle {
     /// Is the effect handle an ability?
     pub fn is_ability(&self) -> bool {
         match self {
-            Self::Ability(_) => true,
-            Self::AbilityCondition(_) => true,
+            Self::Ability(_) | Self::AbilityCondition(_) => true,
             _ => false,
         }
     }
@@ -134,6 +133,13 @@ impl EffectHandle {
     pub fn is_active_move_secondary(&self) -> bool {
         match self {
             Self::ActiveMove(_, MoveHitEffectType::SecondaryEffect(_, _, _)) => true,
+            _ => false,
+        }
+    }
+    /// Is the effect handle an item?
+    pub fn is_item(&self) -> bool {
+        match self {
+            Self::Item(_) | Self::ItemCondition(_) => true,
             _ => false,
         }
     }

@@ -4207,7 +4207,7 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::TryEatItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
     ) {
         return Ok(false);
     }
@@ -4222,7 +4222,11 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
     )?;
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Eat);
-    // TODO: EatItem event.
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::EatItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    );
 
     after_use_item(context, item_id)
 }
@@ -4398,6 +4402,11 @@ pub fn restore_pp(
     move_id: &Id,
     amount: u8,
 ) -> Result<u8, Error> {
+    let amount = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+        context,
+        fxlang::BattleEvent::RestorePp,
+        amount,
+    );
     let delta = context.target_mut().restore_pp(move_id, amount);
     if delta != 0 {
         core_battle_logs::restore_pp(context, move_id, delta)?;
