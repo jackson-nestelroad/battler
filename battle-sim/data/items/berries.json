@@ -18,20 +18,56 @@
   },
   "chestoberry": {
     "name": "Chesto Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
-  },
-  "pechaberry": {
-    "name": "Pecha Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
-  },
-  "rawstberry": {
-    "name": "Rawst Berry",
+    "target": "Party",
     "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != slp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": ["if $mon.status == slp:", ["eat_item: $mon"]],
+        "on_eat": ["if $mon.status == slp:", ["cure_status: $mon"]]
+      }
+    }
+  },
+  "pechaberry": {
+    "name": "Pecha Berry",
+    "target": "Party",
+    "fling": { "power": 10 },
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != psn and $target.status != tox:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": [
+          "if $mon.status == psn or $mon.status == tox:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": [
+          "if $mon.status == psn or $mon.status == tox:",
+          ["cure_status: $mon"]
+        ]
+      }
+    }
+  },
+  "rawstberry": {
+    "name": "Rawst Berry",
+    "target": "Party",
+    "fling": { "power": 10 },
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != brn:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_update": ["if $mon.status == brn:", ["eat_item: $mon"]],
         "on_eat": ["if $mon.status == brn:", ["cure_status: $mon"]]
       }
@@ -39,48 +75,213 @@
   },
   "aspearberry": {
     "name": "Aspear Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.status != frz:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": ["if $mon.status == frz:", ["eat_item: $mon"]],
+        "on_eat": ["if $mon.status == frz:", ["cure_status: $mon"]]
+      }
+    }
   },
   "leppaberry": {
     "name": "Leppa Berry",
+    "target": "Party",
+    "input": "MoveSlot",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.hp == 0 or !$input.move:",
+          ["return false"],
+          "$index = func_call(move_slot_index: $target $input.move)",
+          "if $index.is_undefined:",
+          ["return false"],
+          "$move_slot = func_call(move_slot_at_index: $target $index)",
+          "if !$move_slot or $move_slot.pp >= $move_slot.max_pp:",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "if !$input.move:",
+          ["return"],
+          "restore_pp: $mon $input.move 10"
+        ],
+        "on_update": [
+          "if $mon.hp == 0:",
+          ["return"],
+          "foreach $move_slot in $mon.move_slots:",
+          ["if $move_slot.pp == 0:", ["eat_item: $mon", "return"]]
+        ],
+        "on_eat": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.pp == 0:",
+            ["restore_pp: $mon $move_slot.id 10", "return"]
+          ]
+        ]
+      }
+    }
   },
   "oranberry": {
     "name": "Oran Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": ["if $mon.hp <= $mon.max_hp / 2:", ["eat_item: $mon"]],
+        "on_eat": ["heal: $mon 10"]
+      }
+    }
   },
   "persimberry": {
     "name": "Persim Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(has_volatile: $target confusion):",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": [
+          "if func_call(has_volatile: $target confusion):",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["remove_volatile: $mon confusion"]
+      }
+    }
   },
   "lumberry": {
     "name": "Lum Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $mon.fainted or (!$mon.status and !func_call(has_volatile: $target confusion)):",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_after_set_status": {
+          "priority": -1,
+          "program": ["eat_item: $target use_target_as_source"]
+        },
+        "on_update": [
+          "if $mon.status.is_defined or func_call(has_volatile: $mon confusion):",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["cure_status: $mon", "remove_volatile: $mon confusion"]
+      }
+    }
   },
   "sitrusberry": {
     "name": "Sitrus Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": ["if $mon.hp <= $mon.max_hp / 2:", ["eat_item: $mon"]],
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
+        "on_eat": ["heal: $mon expr($mon.base_max_hp / 4)"]
+      }
+    }
   },
   "figyberry": {
     "name": "Figy Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
+        "on_eat": [
+          "heal: $mon expr($mon.base_max_hp / 3)",
+          "if $mon.nature.drops == atk:",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
   },
   "wikiberry": {
     "name": "Wiki Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
+        "on_eat": [
+          "heal: $mon expr($mon.base_max_hp / 3)",
+          "if $mon.nature.drops == spa:",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
   },
   "magoberry": {
     "name": "Mago Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
+        "on_eat": [
+          "heal: $mon expr($mon.base_max_hp / 3)",
+          "if $mon.nature.drops == spe:",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
   },
   "aguavberry": {
     "name": "Aguav Berry",
@@ -90,7 +291,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.hp >= $target.max_hp:",
+          "if $target.fainted or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -109,8 +310,28 @@
   },
   "iapapaberry": {
     "name": "Iapapa Berry",
+    "target": "Party",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["eat_given_item: $mon $this.id"],
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
+        "on_eat": [
+          "heal: $mon expr($mon.base_max_hp / 3)",
+          "if $mon.nature.drops == def:",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
   },
   "razzberry": {
     "name": "Razz Berry",
@@ -215,7 +436,15 @@
   "occaberry": {
     "name": "Occa Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == fire and func_call(type_modifier_against_target: $move $target) > 0:",
+          ["if func_call(eat_item: $target):", ["return $damage / 2"]]
+        ]
+      }
+    }
   },
   "passhoberry": {
     "name": "Passho Berry",
@@ -300,47 +529,149 @@
   "liechiberry": {
     "name": "Liechi Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["boost: $mon 'atk:1'"]
+      }
+    }
   },
   "ganlonberry": {
     "name": "Ganlon Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["boost: $mon 'def:1'"]
+      }
+    }
   },
   "salacberry": {
     "name": "Salac Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["boost: $mon 'spe:1'"]
+      }
+    }
   },
   "petayaberry": {
     "name": "Petaya Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["boost: $mon 'spa:1'"]
+      }
+    }
   },
   "apicotberry": {
     "name": "Apicot Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["boost: $mon 'spd:1'"]
+      }
+    }
   },
   "lansatberry": {
     "name": "Lansat Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["add_volatile: $mon focusenergy"]
+      }
+    }
   },
   "starfberry": {
     "name": "Starf Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": [
+          "$potential = []",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if $stat != acc and $stat != eva and func_call(get_boost: $mon.boosts $stat) < 6:",
+            ["$potential = func_call(append: $potential $stat)"]
+          ],
+          "if $potential.is_empty:",
+          ["return"],
+          "$stat = func_call(sample: $potential)",
+          "$boosts = func_call(boost_table)",
+          "$boosts = func_call(set_boost: $boosts $stat 2)",
+          "boost: $mon $boosts"
+        ]
+      }
+    }
   },
   "enigmaberry": {
     "name": "Enigma Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if func_call(type_modifier_against_target: $move $target) > 0:",
+          ["if func_call(eat_item: $target):", ["return $damage / 2"]]
+        ]
+      }
+    }
   },
   "micleberry": {
     "name": "Micle Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ],
+        "on_eat": ["add_volatile: $mon $this.id"]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_source_modify_accuracy": [
+          "if !$move.ohko:",
+          ["remove_volatile: $source $this.id", "return $acc * 6/5"]
+        ]
+      }
+    }
   },
   "custapberry": {
     "name": "Custap Berry",
@@ -350,7 +681,20 @@
   "jabocaberry": {
     "name": "Jaboca Berry",
     "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.category == physical and $source.hp > 0 and $source.active:",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "damage: $source expr($source.base_max_hp / 8) use_target_as_source"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "rowapberry": {
     "name": "Rowap Berry",

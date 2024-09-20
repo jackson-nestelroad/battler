@@ -11,6 +11,9 @@ pub enum ItemTarget {
     /// A Mon in the player's party.
     #[string = "Party"]
     Party,
+    /// The active Mon that the player is controlling.
+    #[string = "Active"]
+    Active,
     /// A foe on the battle field.
     #[string = "Foe"]
     Foe,

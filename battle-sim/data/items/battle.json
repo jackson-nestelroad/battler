@@ -1,11 +1,155 @@
 {
-  "guardspec": { "name": "Guard Spec.", "flags": ["Battle"] },
-  "direhit": { "name": "Dire Hit", "flags": ["Battle"] },
-  "xattack": { "name": "X Attack", "flags": ["Battle"] },
-  "xdefense": { "name": "X Defense", "flags": ["Battle"] },
-  "xspeed": { "name": "X Speed", "flags": ["Battle"] },
-  "xaccuracy": { "name": "X Accuracy", "flags": ["Battle"] },
-  "xspatk": { "name": "X Sp. Atk", "flags": ["Battle"] },
-  "xspdef": { "name": "X Sp. Def", "flags": ["Battle"] },
-  "maxmushrooms": { "name": "Max Mushrooms", "flags": ["Battle"] }
+  "guardspec": {
+    "name": "Guard Spec.",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if func_call(has_side_condition: $target.side mist):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "add_side_condition: $mon.side mist",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "direhit": {
+    "name": "Dire Hit",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if func_call(has_volatile: $target focusenergy):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "add_volatile: $mon focusenergy",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "xattack": {
+    "name": "X Attack",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'atk:2'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'atk:2'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "xdefense": {
+    "name": "X Defense",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'def:2'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'def:2'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "xspeed": {
+    "name": "X Speed",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'spe:2'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'spe:2'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "xaccuracy": {
+    "name": "X Accuracy",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'acc:2'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'acc:2'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "xspatk": {
+    "name": "X Sp. Atk",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'spa:2'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'spa:2'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "xspdef": {
+    "name": "X Sp. Def",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'spd:2'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'spd:2'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  },
+  "maxmushrooms": {
+    "name": "Max Mushrooms",
+    "target": "Active",
+    "flags": ["Battle"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if !func_call(can_boost: $target 'atk:1' 'def:1' 'spa:1' 'spd:1' 'spe:1'):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "boost: $mon 'atk:1' 'def:1' 'spa:1' 'spd:1' 'spe:1'",
+          "increase_friendship: $mon 1 1 0"
+        ]
+      }
+    }
+  }
 }

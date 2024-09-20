@@ -2312,16 +2312,21 @@ pub fn run_pseudo_weather_event_expecting_u8(
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
-pub fn run_applying_effect_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
-    run_applying_effect_event_internal(context, event, fxlang::VariableInput::default());
+pub fn run_applying_effect_event(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) {
+    run_applying_effect_event_internal(context, event, input);
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
 pub fn run_applying_effect_event_expecting_bool(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
 ) -> Option<bool> {
-    run_applying_effect_event_internal(context, event, fxlang::VariableInput::default())?
+    run_applying_effect_event_internal(context, event, input)?
         .boolean()
         .ok()
 }

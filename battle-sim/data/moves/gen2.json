@@ -330,8 +330,7 @@
           ["return false"],
           "$pp = func_call(deduct_pp: $target $last_move.id 4)",
           "if $pp == 0:",
-          ["return false"],
-          "log_activate: str('lastmove:{}', $last_move.name) str('pp:{}', $pp)"
+          ["return false"]
         ]
       }
     }
@@ -1105,7 +1104,7 @@
     "effect": {
       "callbacks": {
         "on_move_base_power": [
-          "return func_call(max: 1 expr($source.happiness * 10 / 25))"
+          "return func_call(max: 1 expr($source.friendship * 10 / 25))"
         ]
       }
     }
@@ -1149,7 +1148,7 @@
     "effect": {
       "callbacks": {
         "on_move_base_power": [
-          "return func_call(max: 1 expr((255 - $source.happiness) * 10 / 25))"
+          "return func_call(max: 1 expr((255 - $source.friendship) * 10 / 25))"
         ]
       }
     }

@@ -6,6 +6,7 @@ use std::{
     iter,
     mem,
     ops::Mul,
+    u8,
 };
 
 use ahash::{
@@ -382,7 +383,7 @@ pub struct Mon {
     pub evs: StatTable,
     pub level: u8,
     pub experience: u32,
-    pub happiness: u8,
+    pub friendship: u8,
     pub nature: Nature,
     pub gender: Gender,
     pub shiny: bool,
@@ -453,7 +454,7 @@ impl Mon {
         let evs = data.evs;
         let level = data.level;
         let experience = data.experience;
-        let happiness = data.happiness;
+        let friendship = data.friendship;
         let nature = data.nature;
         let gender = data.gender;
         let shiny = data.shiny;
@@ -524,7 +525,7 @@ impl Mon {
             evs,
             level,
             experience,
-            happiness,
+            friendship,
             nature,
             gender,
             shiny,
@@ -1347,9 +1348,9 @@ impl Mon {
         }
     }
 
-    /// The affection level of the Mon, based on its happiness.
+    /// The affection level of the Mon, based on its friendship.
     pub fn affection_level(&self) -> u8 {
-        match self.happiness {
+        match self.friendship {
             0 => 0,
             1..=49 => 1,
             50..=99 => 2,
@@ -1685,12 +1686,45 @@ impl Mon {
         delta
     }
 
+    /// Restores PP for the given move.
+    pub fn restore_pp(&mut self, move_id: &Id, amount: u8) -> u8 {
+        let mut move_slot_index = None;
+        let mut pp = 0;
+        let mut delta = 0;
+        if let Some((i, move_slot)) = self.indexed_move_slot_mut(move_id) {
+            let before = move_slot.pp;
+            let max_diff = move_slot.max_pp - move_slot.pp;
+            if amount > max_diff {
+                move_slot.pp = move_slot.max_pp;
+            } else {
+                move_slot.pp += amount;
+            }
+            if !move_slot.simulated {
+                move_slot_index = Some(i);
+                pp = move_slot.pp;
+            }
+            delta = move_slot.pp - before;
+        }
+
+        if let Some(index) = move_slot_index {
+            if let Some(base_move_slot) = self.base_move_slots.get_mut(index) {
+                base_move_slot.pp = pp;
+            }
+        }
+
+        delta
+    }
+
     /// Sets the PP for a given move.
-    pub fn set_pp(&mut self, move_id: &Id, amount: u8) {
+    pub fn set_pp(&mut self, move_id: &Id, amount: u8) -> u8 {
         let mut move_slot_index = None;
         let mut pp = 0;
         if let Some((i, move_slot)) = self.indexed_move_slot_mut(move_id) {
             move_slot.pp = amount;
+            if move_slot.pp > move_slot.max_pp {
+                move_slot.pp = move_slot.max_pp;
+            }
+
             if !move_slot.simulated {
                 move_slot_index = Some(i);
                 pp = move_slot.pp;
@@ -1701,6 +1735,32 @@ impl Mon {
             if let Some(base_move_slot) = self.base_move_slots.get_mut(index) {
                 base_move_slot.pp = pp;
             }
+        }
+
+        pp
+    }
+
+    /// Increases friendship based on the current friendship level.
+    pub fn increase_friendship(&mut self, delta: [u8; 3]) {
+        let max_delta = u8::MAX - self.friendship;
+        if self.friendship < 100 {
+            self.friendship += max_delta.min(delta[0]);
+        } else if self.friendship < 200 {
+            self.friendship += max_delta.min(delta[1]);
+        } else {
+            self.friendship += max_delta.min(delta[2]);
+        }
+    }
+
+    /// Increases friendship based on the current friendship level.
+    pub fn decrease_friendship(&mut self, delta: [u8; 3]) {
+        let max_delta = self.friendship;
+        if self.friendship < 100 {
+            self.friendship -= max_delta.min(delta[0]);
+        } else if self.friendship < 200 {
+            self.friendship -= max_delta.min(delta[1]);
+        } else {
+            self.friendship -= max_delta.min(delta[2]);
         }
     }
 

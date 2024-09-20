@@ -3138,7 +3138,7 @@ fn calculate_exp_gain(
 ) -> Result<u32, Error> {
     let mon_handle = context.mon_handle();
     let mon_level = context.mon().level as u32;
-    let mon_happiness = context.mon().happiness;
+    let mon_friendship = context.mon().friendship;
     let fainted_mon = context.as_battle_context_mut().mon(fainted_mon_handle)?;
     let species = fainted_mon.base_species.clone();
     let target_level = fainted_mon.level as u32;
@@ -3158,7 +3158,7 @@ fn calculate_exp_gain(
     let exp = dynamic_scaling * exp;
     let exp = exp.floor() + 1;
 
-    let exp = if mon_happiness > 220 {
+    let exp = if mon_friendship > 220 {
         exp * 6 / 5
     } else {
         exp
@@ -3192,12 +3192,7 @@ pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<(), Error>
     core_battle_logs::level_up(context)?;
 
     for level in old_level..target_level {
-        context.mon_mut().happiness += match context.mon().happiness {
-            0..=99 => 3,
-            100..=199 => 2,
-            200..=254 => 1,
-            255 => 0,
-        };
+        context.mon_mut().increase_friendship([3, 2, 1]);
         learn_moves_at_level(context, level + 1)?;
     }
     return Ok(());
@@ -4223,6 +4218,7 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
     core_battle_effects::run_applying_effect_event(
         &mut context.forward_applying_effect_context(EffectHandle::Item(item.clone()))?,
         fxlang::BattleEvent::Eat,
+        fxlang::VariableInput::default(),
     );
 
     Ok(true)
@@ -4257,17 +4253,18 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
 
 /// Uses an item from the player.
 pub fn player_use_item(
-    context: &mut PlayerContext,
+    context: &mut MonContext,
     item: &Id,
     target: Option<isize>,
+    input: PlayerUseItemInput,
 ) -> Result<bool, Error> {
     if !context.battle().format.options.bag_items {
         return Ok(false);
     }
 
     let target = CoreBattle::get_item_target(context, item, target)?;
-    core_battle_logs::use_item(context, item, target)?;
-    if !player_use_item_internal(context, item, target)? {
+    core_battle_logs::use_item(context.as_player_context_mut(), item, target)?;
+    if !player_use_item_internal(context.as_player_context_mut(), item, target, input)? {
         core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
         return Ok(false);
     }
@@ -4275,11 +4272,30 @@ pub fn player_use_item(
     Ok(true)
 }
 
+/// Input for [`player_use_item`].
+pub struct PlayerUseItemInput {
+    pub move_slot: Option<Id>,
+}
+
+impl PlayerUseItemInput {
+    pub fn input_for_fxlang_callback(&self) -> fxlang::Value {
+        let mut input = FastHashMap::new();
+        if let Some(move_slot) = &self.move_slot {
+            input.insert(
+                "move".to_owned(),
+                fxlang::Value::String(move_slot.to_string()),
+            );
+        }
+        fxlang::Value::Object(input)
+    }
+}
+
 /// Uses an item from the player.
 pub fn player_use_item_internal(
     context: &mut PlayerContext,
     item: &Id,
     target: Option<MonHandle>,
+    input: PlayerUseItemInput,
 ) -> Result<bool, Error> {
     let item = context.battle().dex.items.get_by_id(item)?;
     let item_id = item.id().clone();
@@ -4319,6 +4335,7 @@ pub fn player_use_item_internal(
                 Some(EffectHandle::Condition(Id::from_known("playeruseditem"))),
             )?,
             fxlang::BattleEvent::PlayerUse,
+            fxlang::VariableInput::from_iter([input.input_for_fxlang_callback()]),
         ),
         None => (),
     }
@@ -4342,4 +4359,37 @@ pub fn revive(context: &mut ApplyingEffectContext, hp: u16) -> Result<u16, Error
     let hp = Mon::revive(&mut context.target_context()?, hp)?;
 
     Ok(hp)
+}
+
+/// Deducts PP from the given move.
+pub fn deduct_pp(
+    context: &mut ApplyingEffectContext,
+    move_id: &Id,
+    amount: u8,
+) -> Result<u8, Error> {
+    let delta = context.target_mut().deduct_pp(move_id, amount);
+    if delta != 0 {
+        core_battle_logs::deduct_pp(context, move_id, delta)?;
+    }
+    Ok(delta)
+}
+
+/// Restores PP to the given move.
+pub fn restore_pp(
+    context: &mut ApplyingEffectContext,
+    move_id: &Id,
+    amount: u8,
+) -> Result<u8, Error> {
+    let delta = context.target_mut().restore_pp(move_id, amount);
+    if delta != 0 {
+        core_battle_logs::restore_pp(context, move_id, delta)?;
+    }
+    Ok(delta)
+}
+
+/// Restores PP to the given move.
+pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Result<u8, Error> {
+    let pp = context.target_mut().set_pp(move_id, pp);
+    core_battle_logs::set_pp(context, move_id, pp)?;
+    Ok(pp)
 }

@@ -61,9 +61,9 @@ pub struct MonData {
     /// Shiny?
     #[serde(default)]
     pub shiny: bool,
-    /// Happiness value.
+    /// friendship value.
     #[serde(default)]
-    pub happiness: u8,
+    pub friendship: u8,
     /// Type of ball the Mon is stored in.
     #[serde(default = "default_ball")]
     pub ball: String,

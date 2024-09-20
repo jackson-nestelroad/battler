@@ -722,7 +722,7 @@
             ]
           ],
           "if $activated:",
-          ["log_activate: str('mon:{}', $target.position_details)"],
+          ["log_activate: with_target"],
           "return $boosts"
         ],
         "on_side_start": ["log_side_start"],

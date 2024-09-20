@@ -12,6 +12,7 @@ use crate::{
     effect::fxlang,
     items::{
         ItemFlags,
+        ItemInput,
         ItemTarget,
     },
     mons::Type,
@@ -44,6 +45,8 @@ pub struct ItemData {
     pub name: String,
     /// Target of the item if used by a player.
     pub target: Option<ItemTarget>,
+    /// Type of input received alongside the item.
+    pub input: Option<ItemInput>,
     /// Data for what happens when Fling is used with this item.
     pub fling: Option<FlingItemData>,
     /// Data for special item effects associated with individual moves.

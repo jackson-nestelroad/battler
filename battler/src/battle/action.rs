@@ -225,6 +225,7 @@ pub struct ItemAction {
     pub mon_action: MonAction,
     pub item: Id,
     pub target: Option<isize>,
+    pub move_slot: Option<Id>,
 }
 
 impl ItemAction {
@@ -233,6 +234,7 @@ impl ItemAction {
             mon_action: MonAction::new(input.mon),
             item: input.item,
             target: input.target,
+            move_slot: None,
         }
     }
 }

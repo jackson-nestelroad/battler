@@ -906,3 +906,62 @@ pub fn fail_use_item(
         activation,
     )
 }
+
+pub fn deduct_pp(
+    context: &mut ApplyingEffectContext,
+    move_id: &Id,
+    delta: u8,
+) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        effect: Some(EffectHandle::InactiveMove(move_id.clone())),
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: vec![format!("by:{delta}")],
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "deductpp".to_owned(),
+        activation,
+    )
+}
+
+pub fn restore_pp(
+    context: &mut ApplyingEffectContext,
+    move_id: &Id,
+    delta: u8,
+) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        effect: Some(EffectHandle::InactiveMove(move_id.clone())),
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: vec![format!("by:{delta}")],
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "restorepp".to_owned(),
+        activation,
+    )
+}
+
+pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Result<(), Error> {
+    let activation = EffectActivationContext {
+        effect: Some(EffectHandle::InactiveMove(move_id.clone())),
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: vec![format!("to:{pp}")],
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "setpp".to_owned(),
+        activation,
+    )
+}

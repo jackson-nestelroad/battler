@@ -124,4 +124,9 @@ impl Side {
             .map(|player| player.active_mon_handles().count())
             .sum()
     }
+
+    /// Checks if the side has the given condition.
+    pub fn has_condition(context: &SideContext, condition: &Id) -> bool {
+        context.side().conditions.contains_key(condition)
+    }
 }

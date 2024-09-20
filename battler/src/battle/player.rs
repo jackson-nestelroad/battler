@@ -15,6 +15,7 @@ use serde::{
 
 use crate::{
     battle::{
+        core_battle_actions,
         core_battle_effects,
         Action,
         BattleRegistry,
@@ -56,6 +57,7 @@ use crate::{
         fxlang,
         EffectHandle,
     },
+    items::ItemInput,
     teams::TeamData,
 };
 
@@ -320,6 +322,7 @@ impl LearnMoveChoice {
 struct ItemChoice {
     pub item: Id,
     pub target: Option<isize>,
+    pub additional_input: VecDeque<String>,
 }
 
 impl ItemChoice {
@@ -331,7 +334,12 @@ impl ItemChoice {
         let item = args.pop_front().wrap_error_with_message("missing item")?;
         let item = Id::from(item);
         let target = args.pop_front().map(|target| target.parse().ok()).flatten();
-        Ok(Self { item, target })
+        let additional_input = args.into_iter().map(|arg| arg.to_owned()).collect();
+        Ok(Self {
+            item,
+            target,
+            additional_input,
+        })
     }
 }
 
@@ -1298,7 +1306,7 @@ impl Player {
             Some(RequestType::Turn) => (),
             _ => return Err(battler_error!("you cannot use an item out of turn")),
         }
-        let choice = ItemChoice::new(data.wrap_error_with_message("missing item choice")?)?;
+        let mut choice = ItemChoice::new(data.wrap_error_with_message("missing item choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(battler_error!("you sent more choices than active Mons"));
@@ -1309,6 +1317,7 @@ impl Player {
             .wrap_error_with_format(format_args!(
                 "expected an active mon in position {active_position}"
             ))?;
+        let mut context = context.mon_context(mon_handle)?;
 
         let item = context
             .battle()
@@ -1323,8 +1332,9 @@ impl Player {
             .data
             .target
             .wrap_error_with_format(format_args!("{item_name} cannot be used"))?;
+        let item_input = item.data.input;
 
-        if !Self::use_item_from_bag(context, &item_id, true) {
+        if !Self::use_item_from_bag(context.as_player_context_mut(), &item_id, true) {
             return Err(battler_error!("bag contains no {item_name}"));
         }
 
@@ -1333,14 +1343,48 @@ impl Player {
                 return Err(battler_error!("{item_name} requires a target"));
             }
             (_, Some(target)) => {
-                if !CoreBattle::valid_item_target(context, item_target, target)? {
+                if !CoreBattle::valid_item_target(
+                    context.as_player_context_mut(),
+                    item_target,
+                    target,
+                )? {
                     return Err(battler_error!("invalid target for {item_name}"));
                 }
             }
             _ => (),
         }
 
-        let target_handle = CoreBattle::get_item_target(context, &item_id, choice.target)?;
+        let target_handle = CoreBattle::get_item_target(&mut context, &item_id, choice.target)?;
+
+        let mut action = ItemAction::new(ItemActionInput {
+            mon: mon_handle,
+            item: choice.item,
+            target: choice.target,
+        });
+
+        match item_input {
+            Some(ItemInput::MoveSlot) => {
+                let target_handle = target_handle.wrap_error_with_message(
+                    "item requiring move slot input requires a target mon",
+                )?;
+                let move_slot = Id::from(
+                    choice
+                        .additional_input
+                        .pop_front()
+                        .wrap_error_with_message("missing move slot")?,
+                );
+                let context = context.as_battle_context_mut().mon_context(target_handle)?;
+                if context.mon().move_slot_index(&move_slot).is_none() {
+                    return Err(battler_error!(
+                        "{} does not have the given move",
+                        context.mon().name
+                    ));
+                }
+                action.move_slot = Some(move_slot);
+            }
+            _ => (),
+        }
+
         if let Some(target_handle) = target_handle {
             let mut context = context.as_battle_context_mut().applying_effect_context(
                 EffectHandle::Item(item_id),
@@ -1348,10 +1392,16 @@ impl Player {
                 target_handle,
                 Some(EffectHandle::Condition(Id::from_known("playerchoice"))),
             )?;
+
+            let input = core_battle_actions::PlayerUseItemInput {
+                move_slot: action.move_slot.clone(),
+            };
+
             if context.target().cannot_receive_items
                 || !core_battle_effects::run_applying_effect_event_expecting_bool(
                     &mut context,
                     fxlang::BattleEvent::PlayerTryUseItem,
+                    fxlang::VariableInput::from_iter([input.input_for_fxlang_callback()]),
                 )
                 .unwrap_or(true)
             {
@@ -1366,11 +1416,7 @@ impl Player {
             .player_mut()
             .choice
             .actions
-            .push(Action::Item(ItemAction::new(ItemActionInput {
-                mon: mon_handle,
-                item: choice.item,
-                target: choice.target,
-            })));
+            .push(Action::Item(action));
 
         Ok(())
     }

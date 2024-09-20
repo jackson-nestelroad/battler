@@ -686,10 +686,10 @@ where
                             "foe_side" => {
                                 ValueRef::Side(context.mon_context(mon_handle)?.foe_side().index)
                             }
-                            "gender" => ValueRef::Gender(context.mon(mon_handle)?.gender),
-                            "happiness" => {
-                                ValueRef::UFraction(context.mon(mon_handle)?.happiness.into())
+                            "friendship" => {
+                                ValueRef::UFraction(context.mon(mon_handle)?.friendship.into())
                             }
+                            "gender" => ValueRef::Gender(context.mon(mon_handle)?.gender),
                             "hidden_power_type" => {
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
@@ -1049,6 +1049,8 @@ where
                     } else if let ValueRef::MoveSlot(move_slot) = value {
                         value = match *member {
                             "id" => ValueRef::Str(move_slot.id.as_ref()),
+                            "max_pp" => ValueRef::UFraction(move_slot.max_pp.into()),
+                            "name" => ValueRef::String(&move_slot.name),
                             "pp" => ValueRef::UFraction(move_slot.pp.into()),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }

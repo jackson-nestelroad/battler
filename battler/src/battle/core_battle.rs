@@ -1133,6 +1133,7 @@ impl<'d> CoreBattle<'d> {
                         None,
                     )?,
                     fxlang::BattleEvent::BeforeTurn,
+                    fxlang::VariableInput::default(),
                 );
             }
             Action::PriorityChargeMove(action) => {
@@ -1147,6 +1148,7 @@ impl<'d> CoreBattle<'d> {
                         None,
                     )?,
                     fxlang::BattleEvent::PriorityChargeMove,
+                    fxlang::VariableInput::default(),
                 );
             }
             Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
@@ -1203,11 +1205,12 @@ impl<'d> CoreBattle<'d> {
             }
             Action::Item(action) => {
                 core_battle_actions::player_use_item(
-                    &mut context
-                        .mon_context(action.mon_action.mon)?
-                        .as_player_context_mut(),
+                    &mut context.mon_context(action.mon_action.mon)?,
                     &action.item,
                     action.target,
+                    core_battle_actions::PlayerUseItemInput {
+                        move_slot: action.move_slot.clone(),
+                    },
                 )?;
             }
         }
@@ -1594,7 +1597,7 @@ impl<'d> CoreBattle<'d> {
 
     /// Gets the selected target of the move.
     pub fn get_item_target(
-        context: &mut PlayerContext,
+        context: &mut MonContext,
         item: &Id,
         target: Option<isize>,
     ) -> Result<Option<MonHandle>, Error> {
@@ -1605,6 +1608,9 @@ impl<'d> CoreBattle<'d> {
             .wrap_error_with_message("item is not usable")?;
 
         match item_target {
+            ItemTarget::Active => {
+                return Ok(Some(context.mon_handle()));
+            }
             ItemTarget::IsolatedFoe => {
                 let foes = context
                     .battle()
@@ -1619,8 +1625,10 @@ impl<'d> CoreBattle<'d> {
         }
 
         if let Some(target) = target {
-            if Self::valid_item_target(context, item_target, target)? {
-                if let Some(target_mon_handle) = Player::get_item_target(context, target)? {
+            if Self::valid_item_target(context.as_player_context_mut(), item_target, target)? {
+                if let Some(target_mon_handle) =
+                    Player::get_item_target(context.as_player_context_mut(), target)?
+                {
                     return Ok(Some(target_mon_handle));
                 }
             }
@@ -1674,6 +1682,7 @@ impl<'d> CoreBattle<'d> {
                 let team_slot = team_slot - 1;
                 Ok(team_slot < context.player().mons.len())
             }
+            ItemTarget::Active => Ok(false),
             ItemTarget::Foe => {
                 if target_location <= 0 {
                     return Ok(false);

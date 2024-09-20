@@ -58,9 +58,17 @@ mod abilities {
 }
 
 mod items {
+    mod battle {
+        mod dire_hit_test;
+        mod guard_spec_test;
+        mod x_item_test;
+    }
+
     mod berries {
         mod aguav_berry_test;
         mod cheri_berry_test;
+        mod leppa_berry_test;
+        mod lum_berry_test;
     }
 
     mod gen5 {

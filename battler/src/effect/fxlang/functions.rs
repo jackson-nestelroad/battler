@@ -113,6 +113,7 @@ pub fn run_function(
         "cure_status" => cure_status(context).map(|val| Some(val)),
         "damage" => damage(context).map(|val| Some(val)),
         "debug_log" => debug_log(context).map(|()| None),
+        "decrease_friendship" => decrease_friendship(context).map(|()| None),
         "deduct_pp" => deduct_pp(context).map(|val| Some(val)),
         "direct_damage" => direct_damage(context).map(|()| None),
         "disable_move" => disable_move(context).map(|()| None),
@@ -131,10 +132,12 @@ pub fn run_function(
         "has_ability" => has_ability(context).map(|val| Some(val)),
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
+        "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
         "has_type" => has_type(context).map(|val| Some(val)),
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
         "heal" => heal(context).map(|val| Some(val)),
         "hit_effect" => hit_effect().map(|val| Some(val)),
+        "increase_friendship" => increase_friendship(context).map(|()| None),
         "index" => index(context),
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
@@ -184,6 +187,7 @@ pub fn run_function(
         "remove" => remove(context).map(|val| Some(val)),
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
+        "restore_pp" => restore_pp(context).map(|val| Some(val)),
         "revive" => revive(context).map(|val| Some(val)),
         "run_event" => run_event(context).map(|val| Some(val)),
         "run_event_for_each_active_mon" => run_event_for_each_active_mon(context).map(|()| None),
@@ -197,7 +201,7 @@ pub fn run_function(
         "set_boost" => set_boost(context).map(|val| Some(val)),
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
-        "set_pp" => set_pp(context).map(|()| None),
+        "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
@@ -2681,17 +2685,15 @@ fn deduct_pp(mut context: FunctionContext) -> Result<Value, Error> {
         .wrap_error_with_message("missing pp")?
         .integer_u8()
         .wrap_error_with_message("invalid pp")?;
-    Ok(Value::UFraction(
-        context
-            .evaluation_context_mut()
-            .mon_context(mon_handle)?
-            .mon_mut()
-            .deduct_pp(&move_id, pp)
-            .into(),
-    ))
+    core_battle_actions::deduct_pp(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        &move_id,
+        pp,
+    )
+    .map(|val| Value::UFraction(val.into()))
 }
 
-fn set_pp(mut context: FunctionContext) -> Result<(), Error> {
+fn restore_pp(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
         .wrap_error_with_message("missing mon")?
@@ -2708,12 +2710,37 @@ fn set_pp(mut context: FunctionContext) -> Result<(), Error> {
         .wrap_error_with_message("missing pp")?
         .integer_u8()
         .wrap_error_with_message("invalid pp")?;
-    context
-        .evaluation_context_mut()
-        .mon_context(mon_handle)?
-        .mon_mut()
-        .set_pp(&move_id, pp);
-    Ok(())
+    core_battle_actions::restore_pp(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        &move_id,
+        pp,
+    )
+    .map(|val| Value::UFraction(val.into()))
+}
+
+fn set_pp(mut context: FunctionContext) -> Result<Value, Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let move_id = context
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    let pp = context
+        .pop_front()
+        .wrap_error_with_message("missing pp")?
+        .integer_u8()
+        .wrap_error_with_message("invalid pp")?;
+    core_battle_actions::set_pp(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        &move_id,
+        pp,
+    )
+    .map(|val| Value::UFraction(val.into()))
 }
 
 fn add_slot_condition(mut context: FunctionContext) -> Result<Value, Error> {
@@ -3018,4 +3045,83 @@ fn forme_change(mut context: FunctionContext) -> Result<Value, Error> {
         },
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn increase_friendship(mut context: FunctionContext) -> Result<(), Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let delta_1 = context
+        .pop_front()
+        .wrap_error_with_message("missing level 1 delta")?
+        .integer_u8()
+        .wrap_error_with_message("invalid level 1 delta")?;
+    let delta_2 = context
+        .pop_front()
+        .wrap_error_with_message("missing level 2 delta")?
+        .integer_u8()
+        .wrap_error_with_message("invalid level 2 delta")?;
+    let delta_3 = context
+        .pop_front()
+        .wrap_error_with_message("missing level 3 delta")?
+        .integer_u8()
+        .wrap_error_with_message("invalid level 3 delta")?;
+    context
+        .evaluation_context_mut()
+        .mon_context(mon_handle)?
+        .mon_mut()
+        .increase_friendship([delta_1, delta_2, delta_3]);
+    Ok(())
+}
+
+fn decrease_friendship(mut context: FunctionContext) -> Result<(), Error> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let delta_1 = context
+        .pop_front()
+        .wrap_error_with_message("missing level 1 delta")?
+        .integer_u8()
+        .wrap_error_with_message("invalid level 1 delta")?;
+    let delta_2 = context
+        .pop_front()
+        .wrap_error_with_message("missing level 2 delta")?
+        .integer_u8()
+        .wrap_error_with_message("invalid level 2 delta")?;
+    let delta_3 = context
+        .pop_front()
+        .wrap_error_with_message("missing level 3 delta")?
+        .integer_u8()
+        .wrap_error_with_message("invalid level 3 delta")?;
+    context
+        .evaluation_context_mut()
+        .mon_context(mon_handle)?
+        .mon_mut()
+        .decrease_friendship([delta_1, delta_2, delta_3]);
+    Ok(())
+}
+
+fn has_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
+    let side_index = context
+        .pop_front()
+        .wrap_error_with_message("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let condition = context
+        .pop_front()
+        .wrap_error_with_message("missing condition")?
+        .string()
+        .wrap_error_with_message("invalid condition")?;
+    let condition = Id::from(condition);
+    Ok(Value::Boolean(Side::has_condition(
+        &context
+            .evaluation_context_mut()
+            .battle_context_mut()
+            .side_context(side_index)?,
+        &condition,
+    )))
 }

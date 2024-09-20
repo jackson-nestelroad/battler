@@ -20,7 +20,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn typhlosion_low_happiness() -> Result<TeamData, Error> {
+fn typhlosion_low_friendship() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -34,7 +34,7 @@ fn typhlosion_low_happiness() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "level": 50,
-                    "happiness": 100
+                    "friendship": 100
                 }
             ]
         }"#,
@@ -42,7 +42,7 @@ fn typhlosion_low_happiness() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn typhlosion_max_happiness() -> Result<TeamData, Error> {
+fn typhlosion_max_friendship() -> Result<TeamData, Error> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -56,7 +56,7 @@ fn typhlosion_max_happiness() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "level": 50,
-                    "happiness": 255
+                    "friendship": 255
                 }
             ]
         }"#,
@@ -84,13 +84,13 @@ fn make_battle(
 }
 
 #[test]
-fn return_power_depends_on_happiness() {
+fn return_power_depends_on_friendship() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
         &data,
         0,
-        typhlosion_low_happiness().unwrap(),
-        typhlosion_max_happiness().unwrap(),
+        typhlosion_low_friendship().unwrap(),
+        typhlosion_max_friendship().unwrap(),
     )
     .unwrap();
     assert_eq!(battle.start(), Ok(()));
@@ -117,13 +117,13 @@ fn return_power_depends_on_happiness() {
 }
 
 #[test]
-fn frustration_power_depends_on_happiness() {
+fn frustration_power_depends_on_friendship() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
         &data,
         0,
-        typhlosion_low_happiness().unwrap(),
-        typhlosion_max_happiness().unwrap(),
+        typhlosion_low_friendship().unwrap(),
+        typhlosion_max_friendship().unwrap(),
     )
     .unwrap();
     assert_eq!(battle.start(), Ok(()));

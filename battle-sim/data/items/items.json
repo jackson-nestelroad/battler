@@ -489,6 +489,11 @@
     "fling": { "power": 30 },
     "flags": []
   },
+  "berryjuice": {
+    "name": "Berry Juice",
+    "fling": { "power": 30 },
+    "flags": ["Medicine"]
+  },
   "cellbattery": {
     "name": "Cell Battery",
     "fling": { "power": 30 },

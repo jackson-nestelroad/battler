@@ -1305,6 +1305,8 @@ impl BattleEvent {
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
+            Self::PlayerTryUseItem => &[("input", ValueType::Object, true)],
+            Self::PlayerUse => &[("input", ValueType::Object, true)],
             Self::RedirectTarget | Self::AnyRedirectTarget | Self::FoeRedirectTarget => {
                 &[("target", ValueType::Mon, true)]
             }

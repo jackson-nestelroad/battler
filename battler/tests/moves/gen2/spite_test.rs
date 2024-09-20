@@ -94,7 +94,7 @@ fn spite_deducts_pp_from_targets_last_move() {
             "turn|turn:3",
             ["time"],
             "move|mon:Misdreavus,player-1,1|name:Spite|target:Misdreavus,player-2,1",
-            "activate|move:Spite|lastmove:Dark Pulse|pp:4",
+            "deductpp|mon:Misdreavus,player-2,1|move:Dark Pulse|by:4",
             "residual",
             "turn|turn:4"
         ]"#,

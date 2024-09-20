@@ -988,8 +988,7 @@
           "if !$effect.is_move or func_call(move_has_flag: $effect future) or !$source.last_move.is_defined:",
           ["return"],
           "$last_move = $source.last_move",
-          "set_pp: $source $last_move.id 0",
-          "log_activate: with_source str('affected:{}', $last_move.name)"
+          "set_pp: $source $last_move.id 0 use_effect_state_source_as_source"
         ],
         "on_before_move": ["remove_volatile: $user $this.id"]
       }

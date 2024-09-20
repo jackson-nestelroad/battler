@@ -93,10 +93,14 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or (!$target.status and $target.hp >= $target.max_hp):",
+          "if $target.fainted or (!$target.status and !func_call(has_volatile: $target confusion) and $target.hp >= $target.max_hp):",
           ["return false"]
         ],
-        "on_player_use": ["cure_status: $mon", "heal: $mon $mon.max_hp"]
+        "on_player_use": [
+          "cure_status: $mon",
+          "remove_volatile: $mon confusion",
+          "heal: $mon $mon.max_hp"
+        ]
       }
     }
   },
@@ -148,8 +152,14 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["if !$target.status:", ["return false"]],
-        "on_player_use": ["cure_status: $mon"]
+        "on_player_try_use_item": [
+          "if !$target.status and !func_call(has_volatile: $target confusion):",
+          ["return false"]
+        ],
+        "on_player_use": [
+          "cure_status: $mon",
+          "remove_volatile: $mon confusion"
+        ]
       }
     }
   },
@@ -175,10 +185,62 @@
       }
     }
   },
-  "freshwater": { "name": "Fresh Water", "flags": ["Medicine"] },
-  "sodapop": { "name": "Soda Pop", "flags": ["Medicine"] },
-  "lemonade": { "name": "Lemonade", "flags": ["Medicine"] },
-  "moomoomilk": { "name": "Moomoo Milk", "flags": ["Medicine"] },
+  "freshwater": {
+    "name": "Fresh Water",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 30"]
+      }
+    }
+  },
+  "sodapop": {
+    "name": "Soda Pop",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 50"]
+      }
+    }
+  },
+  "lemonade": {
+    "name": "Lemonade",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 70"]
+      }
+    }
+  },
+  "moomoomilk": {
+    "name": "Moomoo Milk",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "callbacks": {
+        "on_player_try_use_item": [
+          "if $target.fainted or $target.hp >= $target.max_hp:",
+          ["return false"]
+        ],
+        "on_player_use": ["heal: $mon 100"]
+      }
+    }
+  },
   "energypowder": { "name": "Energy Powder", "flags": ["Medicine"] },
   "energyroot": { "name": "Energy Root", "flags": ["Medicine"] },
   "healpowder": { "name": "Heal Powder", "flags": ["Medicine"] },
@@ -188,11 +250,6 @@
   "elixir": { "name": "Elixir", "flags": ["Medicine"] },
   "maxelixir": { "name": "Max Elixir", "flags": ["Medicine"] },
   "lavacookie": { "name": "Lava Cookie", "flags": ["Medicine"] },
-  "berryjuice": {
-    "name": "Berry Juice",
-    "fling": { "power": 30 },
-    "flags": ["Medicine"]
-  },
   "sacredash": { "name": "Sacred Ash", "flags": ["Medicine"] },
   "hpup": { "name": "HP Up", "flags": ["Medicine"] },
   "protein": { "name": "Protein", "flags": ["Medicine"] },
