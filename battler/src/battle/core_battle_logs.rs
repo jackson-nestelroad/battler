@@ -93,7 +93,7 @@ fn effect_activation_internal(
                 Effect::Ability(ability) | Effect::AbilityCondition(ability) => {
                     event.set("ability", &ability.data.name);
                 }
-                Effect::Item(item) => {
+                Effect::Item(item) | Effect::ItemCondition(item) => {
                     event.set("item", &item.data.name);
                 }
                 Effect::Condition(condition) => {

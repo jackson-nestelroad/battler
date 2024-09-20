@@ -171,6 +171,9 @@ pub fn run_function(
         "move_at_move_slot_index" => move_at_move_slot_index(context),
         "move_crit_target" => move_crit_target(context).map(|val| Some(val)),
         "move_has_flag" => move_has_flag(context).map(|val| Some(val)),
+        "move_hit_data_has_flag_against_target" => {
+            move_hit_data_has_flag_against_target(context).map(|val| Some(val))
+        }
         "move_makes_contact" => move_makes_contact(context).map(|val| Some(val)),
         "move_slot" => move_slot(context).map(|val| Some(val)),
         "move_slot_at_index" => move_slot_at_index(context),
@@ -196,6 +199,9 @@ pub fn run_function(
         "run_event_on_mon_item" => run_event_on_mon_item(context).map(|()| None),
         "run_event_on_move" => run_event_on_move(context).map(|()| None),
         "sample" => sample(context),
+        "save_move_hit_data_flag_against_target" => {
+            save_move_hit_data_flag_against_target(context).map(|()| None)
+        }
         "secondary_hit_effect" => secondary_hit_effect().map(|val| Some(val)),
         "set_ability" => set_ability(context).map(|val| Some(val)),
         "set_boost" => set_boost(context).map(|val| Some(val)),
@@ -213,6 +219,7 @@ pub fn run_function(
         "type_effectiveness" => type_effectiveness(context).map(|val| Some(val)),
         "type_has_no_effect_against" => type_has_no_effect_against(context).map(|val| Some(val)),
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
+        "type_modifier_against_target" => type_modifier_against_target(context),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
         "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
@@ -1953,8 +1960,79 @@ fn move_crit_target(mut context: FunctionContext) -> Result<Value, Error> {
         context
             .evaluation_context()
             .active_move(active_move_handle)?
-            .maybe_hit_data(mon_handle)
+            .hit_data(mon_handle)
             .map(|hit_data| hit_data.crit)
+            .unwrap_or(false),
+    ))
+}
+
+fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+    let active_move_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    Ok(context
+        .evaluation_context()
+        .active_move(active_move_handle)?
+        .hit_data(mon_handle)
+        .map(|hit_data| Value::Fraction(hit_data.type_modifier.into())))
+}
+
+fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Result<(), Error> {
+    let active_move_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let flag = context
+        .pop_front()
+        .wrap_error_with_message("missing flag")?
+        .string()
+        .wrap_error_with_message("invalid flag")?;
+    let flag = Id::from(flag);
+    context
+        .evaluation_context_mut()
+        .active_move_mut(active_move_handle)?
+        .hit_data_mut(mon_handle)
+        .flags
+        .insert(flag);
+    Ok(())
+}
+
+fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result<Value, Error> {
+    let active_move_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let mon_handle = context
+        .pop_front()
+        .wrap_error_with_message("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let flag = context
+        .pop_front()
+        .wrap_error_with_message("missing flag")?
+        .string()
+        .wrap_error_with_message("invalid flag")?;
+    let flag = Id::from(flag);
+    Ok(Value::Boolean(
+        context
+            .evaluation_context()
+            .active_move(active_move_handle)?
+            .hit_data(mon_handle)
+            .map(|hit_data| hit_data.flags.contains(&flag))
             .unwrap_or(false),
     ))
 }

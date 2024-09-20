@@ -771,7 +771,7 @@ pub enum BattleEvent {
     PreventUsedItems,
     /// Runs before at the start of the turn, when a move is charging for the turn.
     ///
-    ///Runs in the context of the target Mon (the user of the move).
+    /// Runs in the context of the target Mon (the user of the move).
     #[string = "PriorityChargeMove"]
     PriorityChargeMove,
     /// Runs when a move is going to target one Mon but can be redirected towards a different
@@ -941,6 +941,11 @@ pub enum BattleEvent {
     /// Runs on the effect itself.
     #[string = "Start"]
     Start,
+    /// Runs when determining the sub-priority of a move.
+    ///
+    /// Runs in the context of the target Mon (the user of the move).
+    #[string = "SubPriority"]
+    SubPriority,
     /// Runs when determining if terrain on the field is suppressed, for some other active effect.
     ///
     /// Runs on the effect itslf.
@@ -1230,8 +1235,9 @@ impl BattleEvent {
             Self::SourceModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::SourceTryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
-            Self::Start => CommonCallbackType::EffectResult as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
+            Self::Start => CommonCallbackType::EffectResult as u32,
+            Self::SubPriority => CommonCallbackType::MonModifier as u32,
             Self::SuppressFieldTerrain => CommonCallbackType::NoContextResult as u32,
             Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
             Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
@@ -1320,6 +1326,7 @@ impl BattleEvent {
             Self::SlotEnd => &[("slot", ValueType::UFraction, true)],
             Self::SlotRestart => &[("slot", ValueType::UFraction, true)],
             Self::SlotStart => &[("slot", ValueType::UFraction, true)],
+            Self::SubPriority => &[("move", ValueType::Effect, true)],
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::TryEatItem => &[("item", ValueType::Effect, true)],
@@ -1569,6 +1576,10 @@ impl SpeedOrderable for Callback {
         }
     }
 
+    fn sub_priority(&self) -> i32 {
+        0
+    }
+
     fn speed(&self) -> u32 {
         0
     }
@@ -1708,8 +1719,9 @@ pub struct Callbacks {
     pub on_source_modify_spa: Callback,
     pub on_source_try_heal: Callback,
     pub on_source_weather_modify_damage: Callback,
-    pub on_start: Callback,
     pub on_stall_move: Callback,
+    pub on_start: Callback,
+    pub on_sub_priority: Callback,
     pub on_switch_in: Callback,
     pub on_switch_out: Callback,
     pub on_take_item: Callback,
@@ -1865,8 +1877,9 @@ impl Callbacks {
             BattleEvent::SourceModifySpA => Some(&self.on_source_modify_spa),
             BattleEvent::SourceTryHeal => Some(&self.on_source_try_heal),
             BattleEvent::SourceWeatherModifyDamage => Some(&self.on_source_weather_modify_damage),
-            BattleEvent::Start => Some(&self.on_start),
             BattleEvent::StallMove => Some(&self.on_stall_move),
+            BattleEvent::Start => Some(&self.on_start),
+            BattleEvent::SubPriority => Some(&self.on_sub_priority),
             BattleEvent::SuppressFieldTerrain => Some(&self.suppress_field_terrain),
             BattleEvent::SuppressFieldWeather => Some(&self.suppress_field_weather),
             BattleEvent::SuppressMonItem => Some(&self.suppress_mon_item),

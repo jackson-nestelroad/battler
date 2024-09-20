@@ -1,6 +1,9 @@
 use std::collections::hash_map::Entry;
 
-use ahash::HashMapExt;
+use ahash::{
+    HashMapExt,
+    HashSetExt,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -246,6 +249,8 @@ pub struct MoveHitData {
     pub crit: bool,
     /// Type modifier on the damage calculation.
     pub type_modifier: i8,
+    /// Arbitrary flags that can be set by moves.
+    pub flags: FastHashSet<Id>,
 }
 
 impl MoveHitData {
@@ -253,6 +258,7 @@ impl MoveHitData {
         Self {
             crit: false,
             type_modifier: 0,
+            flags: FastHashSet::new(),
         }
     }
 }
@@ -320,7 +326,7 @@ pub struct Move {
     /// Secondary effects can be modified by effects on the user and the individual target.
     pub secondary_effects: FastHashMap<(MonHandle, u8), Vec<SecondaryEffect>>,
 
-    hit_data: FastHashMap<MonHandle, MoveHitData>,
+    hit_data: FastHashMap<(MonHandle, u8), MoveHitData>,
 }
 
 impl Move {
@@ -367,15 +373,16 @@ impl Move {
             reflected: false,
         }
     }
-
-    /// Returns the hit data for the target.
-    pub fn hit_data(&mut self, target: MonHandle) -> &mut MoveHitData {
-        self.hit_data.entry(target).or_insert(MoveHitData::new())
+    /// Returns the hit data for the target, if any.
+    pub fn hit_data(&self, target: MonHandle) -> Option<&MoveHitData> {
+        self.hit_data.get(&(target, self.hit))
     }
 
-    /// Returns the hit data for the target, if any.
-    pub fn maybe_hit_data(&self, target: MonHandle) -> Option<&MoveHitData> {
-        self.hit_data.get(&target)
+    /// Returns the hit data for the target.
+    pub fn hit_data_mut(&mut self, target: MonHandle) -> &mut MoveHitData {
+        self.hit_data
+            .entry((target, self.hit))
+            .or_insert(MoveHitData::new())
     }
 
     /// Returns a reference to the hit effect.

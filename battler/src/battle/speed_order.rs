@@ -14,6 +14,8 @@ pub trait SpeedOrderable {
     fn order(&self) -> u32;
     /// Priority. Highest priority goes first.
     fn priority(&self) -> i32;
+    /// Sub-priority. Highest priority goes first.
+    fn sub_priority(&self) -> i32;
     /// Speed. Highest speed goes first.
     fn speed(&self) -> u32;
     /// Sub-order. Lowest order goes first.
@@ -31,6 +33,10 @@ where
     #[inline]
     fn priority(&self) -> i32 {
         (*self).priority()
+    }
+    #[inline]
+    fn sub_priority(&self) -> i32 {
+        (*self).sub_priority()
     }
     #[inline]
     fn speed(&self) -> u32 {
@@ -51,11 +57,14 @@ where
     a.order().cmp(&b.order()).then_with(|| {
         // Higher priority first.
         b.priority().cmp(&a.priority()).then_with(|| {
-            // Higher speed first.
-            b.speed()
-                .cmp(&a.speed())
-                // Lower sub order first.
-                .then_with(|| a.sub_order().cmp(&b.sub_order()))
+            // Higher sub-priority first.
+            b.sub_priority().cmp(&a.sub_priority()).then_with(|| {
+                // Higher speed first.
+                b.speed()
+                    .cmp(&a.speed())
+                    // Lower sub-order first.
+                    .then_with(|| a.sub_order().cmp(&b.sub_order()))
+            })
         })
     })
 }

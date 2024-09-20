@@ -331,6 +331,10 @@ impl SpeedOrderable for SpeedOrderableMon {
         0
     }
 
+    fn sub_priority(&self) -> i32 {
+        0
+    }
+
     fn speed(&self) -> u32 {
         self.speed
     }

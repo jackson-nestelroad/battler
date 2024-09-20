@@ -162,8 +162,9 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SourceModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceTryHeal, callbacks)?;
             parsed.parse_and_save(BattleEvent::SourceWeatherModifyDamage, callbacks)?;
-            parsed.parse_and_save(BattleEvent::Start, callbacks)?;
             parsed.parse_and_save(BattleEvent::StallMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::Start, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SubPriority, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressFieldTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressFieldWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonItem, callbacks)?;

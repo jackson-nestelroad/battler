@@ -166,7 +166,13 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "user_effect": {
+      "boosts": {
+        "def": -1,
+        "spa": -1
+      }
+    }
   },
   "payback": {
     "name": "Payback",

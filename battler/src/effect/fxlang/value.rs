@@ -253,6 +253,13 @@ impl Value {
         }
     }
 
+    /// Consumes the value into an [`i32`].
+    pub fn integer_i32(self) -> Result<i32, Error> {
+        self.integer_i64()?
+            .try_into()
+            .wrap_error_with_message("integer overflow")
+    }
+
     /// Consumes the value into an [`i8`].
     pub fn integer_i8(self) -> Result<i8, Error> {
         self.integer_i64()?

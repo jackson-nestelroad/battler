@@ -94,7 +94,7 @@ pub struct MoveAction {
     pub original_target: Option<MonHandle>,
     pub mega: bool,
     pub priority: i32,
-    pub sub_priority: u32,
+    pub sub_priority: i32,
 }
 
 impl MoveAction {
@@ -125,7 +125,7 @@ pub struct BeforeMoveAction {
     pub id: Id,
     pub mon_action: MonAction,
     pub priority: i32,
-    pub sub_priority: u32,
+    pub sub_priority: i32,
 }
 
 impl BeforeMoveAction {
@@ -324,6 +324,15 @@ impl SpeedOrderable for Action {
         }
     }
 
+    fn sub_priority(&self) -> i32 {
+        match self {
+            Self::Move(action) => action.sub_priority,
+            Self::BeforeTurnMove(action) => action.sub_priority,
+            Self::PriorityChargeMove(action) => action.sub_priority,
+            _ => 0,
+        }
+    }
+
     fn speed(&self) -> u32 {
         match self {
             Self::Team(action) => action.mon_action.speed,
@@ -341,9 +350,6 @@ impl SpeedOrderable for Action {
 
     fn sub_order(&self) -> u32 {
         match self {
-            Self::Move(action) => action.sub_priority,
-            Self::BeforeTurnMove(action) => action.sub_priority,
-            Self::PriorityChargeMove(action) => action.sub_priority,
             Self::Experience(action) => {
                 // Active Mons should get experience before inactive Mons.
                 if action.active {

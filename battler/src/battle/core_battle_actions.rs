@@ -1247,18 +1247,27 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         0
     };
 
-    context.active_move_mut().hit_data(target_mon_handle).crit =
-        context.active_move().data.will_crit
-            || (crit_chance > 0
-                && rand_util::chance(context.battle_mut().prng.as_mut(), 1, crit_chance as u64));
+    context
+        .active_move_mut()
+        .hit_data_mut(target_mon_handle)
+        .crit = context.active_move().data.will_crit
+        || (crit_chance > 0
+            && rand_util::chance(context.battle_mut().prng.as_mut(), 1, crit_chance as u64));
 
-    if context.active_move_mut().hit_data(target_mon_handle).crit {
+    if context
+        .active_move_mut()
+        .hit_data_mut(target_mon_handle)
+        .crit
+    {
         if !core_battle_effects::run_event_for_applying_effect(
             &mut context.applying_effect_context()?,
             fxlang::BattleEvent::CriticalHit,
             fxlang::VariableInput::default(),
         ) {
-            context.active_move_mut().hit_data(target_mon_handle).crit = false;
+            context
+                .active_move_mut()
+                .hit_data_mut(target_mon_handle)
+                .crit = false;
         }
     }
 
@@ -1288,9 +1297,15 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         .get(defense_stat.try_into()?);
 
     let ignore_offensive = context.active_move().data.ignore_offensive
-        || context.active_move_mut().hit_data(target_mon_handle).crit;
+        || context
+            .active_move_mut()
+            .hit_data_mut(target_mon_handle)
+            .crit;
     let ignore_defensive = context.active_move().data.ignore_defensive
-        || context.active_move_mut().hit_data(target_mon_handle).crit;
+        || context
+            .active_move_mut()
+            .hit_data_mut(target_mon_handle)
+            .crit;
 
     if ignore_offensive {
         attack_boosts = 0;
@@ -1388,7 +1403,10 @@ fn modify_damage(
 
     // Critical hit.
     let target_mon_handle = context.target_mon_handle();
-    let crit = context.active_move_mut().hit_data(target_mon_handle).crit;
+    let crit = context
+        .active_move_mut()
+        .hit_data_mut(target_mon_handle)
+        .crit;
     if crit {
         let crit_modifier = Fraction::new(3, 2);
         base_damage = modify_32(base_damage, crit_modifier);
@@ -1415,7 +1433,7 @@ fn modify_damage(
     let type_modifier = type_modifier.max(-6).min(6);
     context
         .active_move_mut()
-        .hit_data(target_mon_handle)
+        .hit_data_mut(target_mon_handle)
         .type_modifier = type_modifier;
     if type_modifier > 0 {
         core_battle_logs::super_effective(&mut context.target_mon_context()?)?;

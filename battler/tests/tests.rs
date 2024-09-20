@@ -67,8 +67,13 @@ mod items {
     mod berries {
         mod aguav_berry_test;
         mod cheri_berry_test;
+        mod custap_berry_test;
+        mod damage_reducing_berry_test;
+        mod damaging_berry_test;
         mod leppa_berry_test;
         mod lum_berry_test;
+        mod micle_berry_test;
+        mod stat_boosting_berry_test;
     }
 
     mod gen5 {

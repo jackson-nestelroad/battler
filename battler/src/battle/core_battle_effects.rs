@@ -1242,6 +1242,10 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
         self.priority
     }
 
+    fn sub_priority(&self) -> i32 {
+        0
+    }
+
     fn speed(&self) -> u32 {
         self.speed
     }
@@ -2700,6 +2704,27 @@ pub fn run_event_for_mon_expecting_bool_quick_return(
     .map(|value| value.boolean().ok())
     .flatten()
     .unwrap_or(default)
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects an integer that can fit in an [`i32`]. Returns the value of the first callback that
+/// returns a value.
+pub fn run_event_for_mon_expecting_i32_quick_return(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<i32> {
+    run_event_for_mon_internal(
+        context,
+        event,
+        input,
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )
+    .map(|value| value.integer_i32().ok())
+    .flatten()
 }
 
 /// Runs an event on the [`CoreBattle`] for the residual effect, which

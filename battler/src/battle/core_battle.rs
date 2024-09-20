@@ -1446,8 +1446,17 @@ impl<'d> CoreBattle<'d> {
                 .moves
                 .get_by_id(&action.id)
                 .into_result()?;
+            let move_id = mov.id().clone();
             action.priority = mov.data.priority as i32;
-            // TODO: Run priority modification events for the move and Mon.
+            action.sub_priority =
+                core_battle_effects::run_event_for_mon_expecting_i32_quick_return(
+                    &mut context.mon_context(action.mon_action.mon)?,
+                    fxlang::BattleEvent::SubPriority,
+                    fxlang::VariableInput::from_iter([fxlang::Value::Effect(
+                        EffectHandle::InactiveMove(move_id),
+                    )]),
+                )
+                .unwrap_or(0);
         }
         if let Action::Switch(action) = action {
             // The priority of switch actions are determined by the speed of the Mon switching out.
@@ -1885,7 +1894,7 @@ impl<'d> CoreBattle<'d> {
             return EffectHandle::AbilityCondition(id);
         }
         if self.dex.items.get_by_id(&id).into_option().is_some() {
-            return EffectHandle::Item(id);
+            return EffectHandle::ItemCondition(id);
         }
         EffectHandle::NonExistent(id)
     }
@@ -1925,6 +1934,9 @@ impl<'d> CoreBattle<'d> {
                     .into_result()?,
             )),
             EffectHandle::Item(id) => Ok(Effect::for_item(
+                context.battle().dex.items.get_by_id(id).into_result()?,
+            )),
+            EffectHandle::ItemCondition(id) => Ok(Effect::for_item_condition(
                 context.battle().dex.items.get_by_id(id).into_result()?,
             )),
             EffectHandle::NonExistent(id) => Ok(Effect::for_non_existent(id.clone())),

@@ -2425,6 +2425,7 @@
           "# Some moves can hit through substitute.",
           "if $target == $source or func_call(move_has_flag: $move bypasssubstitute) or $move.infiltrates:",
           ["return"],
+          "save_move_hit_data_flag_against_target: $move $target hitsubstitute",
           "# Calculate and apply damage.",
           "$damage = func_call(calculate_damage: $target)",
           "if $damage.is_boolean and !$damage:",

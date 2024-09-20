@@ -2,7 +2,6 @@
   "cheriberry": {
     "name": "Cheri Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -19,7 +18,6 @@
   "chestoberry": {
     "name": "Chesto Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -36,7 +34,6 @@
   "pechaberry": {
     "name": "Pecha Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -59,7 +56,6 @@
   "rawstberry": {
     "name": "Rawst Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -76,7 +72,6 @@
   "aspearberry": {
     "name": "Aspear Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -94,7 +89,6 @@
     "name": "Leppa Berry",
     "target": "Party",
     "input": "MoveSlot",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -132,7 +126,6 @@
   "oranberry": {
     "name": "Oran Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -149,7 +142,6 @@
   "persimberry": {
     "name": "Persim Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -169,7 +161,6 @@
   "lumberry": {
     "name": "Lum Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -193,7 +184,6 @@
   "sitrusberry": {
     "name": "Sitrus Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -211,7 +201,6 @@
   "figyberry": {
     "name": "Figy Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -236,7 +225,6 @@
   "wikiberry": {
     "name": "Wiki Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -261,7 +249,6 @@
   "magoberry": {
     "name": "Mago Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -286,7 +273,6 @@
   "aguavberry": {
     "name": "Aguav Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -311,7 +297,6 @@
   "iapapaberry": {
     "name": "Iapapa Berry",
     "target": "Party",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -335,200 +320,392 @@
   },
   "razzberry": {
     "name": "Razz Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "blukberry": {
     "name": "Bluk Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "nanabberry": {
     "name": "Nanab Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "wepearberry": {
     "name": "Wepear Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "pinapberry": {
     "name": "Pinap Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "pomegberry": {
     "name": "Pomeg Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "kelpsyberry": {
     "name": "Kelpsy Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "qualotberry": {
     "name": "Qualot Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "hondewberry": {
     "name": "Hondew Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "grepaberry": {
     "name": "Grepa Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "tamatoberry": {
     "name": "Tamato Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "cornnberry": {
     "name": "Cornn Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "magostberry": {
     "name": "Magost Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "rabutaberry": {
     "name": "Rabuta Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "nomelberry": {
     "name": "Nomel Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "spelonberry": {
     "name": "Spelon Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "pamtreberry": {
     "name": "Pamtre Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "watmelberry": {
     "name": "Watmel Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "durinberry": {
     "name": "Durin Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "belueberry": {
     "name": "Belue Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"]
   },
   "occaberry": {
     "name": "Occa Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
-          "if $move.type == fire and func_call(type_modifier_against_target: $move $target) > 0:",
-          ["if func_call(eat_item: $target):", ["return $damage / 2"]]
+          "if $move.type == fire and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
         ]
       }
     }
   },
   "passhoberry": {
     "name": "Passho Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == water and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "wacanberry": {
     "name": "Wacan Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == electric and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "rindoberry": {
     "name": "Rindo Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == grass and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "yacheberry": {
     "name": "Yache Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == ice and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "chopleberry": {
     "name": "Chople Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == fighting and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "kebiaberry": {
     "name": "Kebia Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == poison and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "shucaberry": {
     "name": "Shuca Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == ground and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "cobaberry": {
     "name": "Coba Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == flying and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "payapaberry": {
     "name": "Payapa Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == psychic and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "tangaberry": {
     "name": "Tanga Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == bug and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "chartiberry": {
     "name": "Charti Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == rock and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "kasibberry": {
     "name": "Kasib Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == ghost and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "habanberry": {
     "name": "Haban Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == dragon and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "colburberry": {
     "name": "Colbur Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == dark and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "babiriberry": {
     "name": "Babiri Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == steel and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "chilanberry": {
     "name": "Chilan Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == normal and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "liechiberry": {
     "name": "Liechi Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -542,7 +719,6 @@
   },
   "ganlonberry": {
     "name": "Ganlon Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -556,7 +732,6 @@
   },
   "salacberry": {
     "name": "Salac Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -570,7 +745,6 @@
   },
   "petayaberry": {
     "name": "Petaya Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -584,7 +758,6 @@
   },
   "apicotberry": {
     "name": "Apicot Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -598,7 +771,6 @@
   },
   "lansatberry": {
     "name": "Lansat Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -612,7 +784,6 @@
   },
   "starfberry": {
     "name": "Starf Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -639,20 +810,24 @@
   },
   "enigmaberry": {
     "name": "Enigma Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
-          "if func_call(type_modifier_against_target: $move $target) > 0:",
-          ["if func_call(eat_item: $target):", ["return $damage / 2"]]
+          "if func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
         ]
       }
     }
   },
   "micleberry": {
     "name": "Micle Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -664,7 +839,6 @@
       }
     },
     "condition": {
-      "duration": 2,
       "callbacks": {
         "on_source_modify_accuracy": [
           "if !$move.ohko:",
@@ -675,12 +849,25 @@
   },
   "custapberry": {
     "name": "Custap Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_sub_priority": {
+          "order": 1,
+          "priority": -1,
+          "program": [
+            "if $mon.hp <= $mon.berry_eating_health:",
+            [
+              "if func_call(eat_item: $mon):",
+              ["log_activate: with_target", "return 1"]
+            ]
+          ]
+        }
+      }
+    }
   },
   "jabocaberry": {
     "name": "Jaboca Berry",
-    "fling": { "power": 10 },
     "flags": ["Berry"],
     "effect": {
       "callbacks": {
@@ -698,22 +885,63 @@
   },
   "rowapberry": {
     "name": "Rowap Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.category == special and $source.hp > 0 and $source.active:",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "damage: $source expr($source.base_max_hp / 8) use_target_as_source"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "roseliberry": {
     "name": "Roseli Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $move.type == fairy and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "keeberry": {
     "name": "Kee Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $move.category == physical:",
+          ["eat_item: $target"]
+        ],
+        "on_eat": ["boost: $mon 'def:1'"]
+      }
+    }
   },
   "marangaberry": {
     "name": "Maranga Berry",
-    "fling": { "power": 10 },
-    "flags": ["Berry"]
+    "flags": ["Berry"],
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $move.category == special:",
+          ["eat_item: $target"]
+        ],
+        "on_eat": ["boost: $mon 'spd:1'"]
+      }
+    }
   }
 }

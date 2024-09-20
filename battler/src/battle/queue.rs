@@ -296,7 +296,7 @@ mod queue_tests {
         })
     }
 
-    fn move_action(id: Id, priority: i32, speed: u32, sub_priority: u32) -> Action {
+    fn move_action(id: Id, priority: i32, speed: u32, sub_priority: i32) -> Action {
         Action::Move(MoveAction {
             id,
             mon_action: MonAction {
