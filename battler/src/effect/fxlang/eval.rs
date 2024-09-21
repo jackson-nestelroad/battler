@@ -24,6 +24,7 @@ use crate::{
         FieldEffectContext,
         Mon,
         MonContext,
+        MonExitType,
         MonHandle,
         MoveHandle,
         Player,
@@ -682,7 +683,12 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
-                            "fainted" => ValueRef::Boolean(context.mon(mon_handle)?.fainted),
+                            "exited" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.exited.is_some())
+                            }
+                            "fainted" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.exited == Some(MonExitType::Fainted),
+                            ),
                             "foe_side" => {
                                 ValueRef::Side(context.mon_context(mon_handle)?.foe_side().index)
                             }

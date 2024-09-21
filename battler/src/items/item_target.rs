@@ -23,12 +23,17 @@ pub enum ItemTarget {
 }
 
 impl ItemTarget {
-    /// Does the item require a single target?
-    pub fn requires_target(&self) -> bool {
+    /// Is the item target choosable?
+    pub fn choosable(&self) -> bool {
         match self {
             Self::Party | Self::Foe => true,
             _ => false,
         }
+    }
+
+    /// Does the item require a single target?
+    pub fn requires_target(&self) -> bool {
+        true
     }
 }
 

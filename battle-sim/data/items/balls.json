@@ -1,8 +1,39 @@
 {
-  "masterball": { "name": "Master Ball", "flags": ["Ball"] },
-  "ultraball": { "name": "Ultra Ball", "flags": ["Ball"] },
-  "greatball": { "name": "Great Ball", "flags": ["Ball"] },
-  "pokeball": { "name": "Poké Ball", "flags": ["Ball"] },
+  "masterball": {
+    "name": "Master Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": ["return $catch_rate * 255"]
+      }
+    }
+  },
+  "ultraball": {
+    "name": "Ultra Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": ["return $catch_rate * 2"]
+      }
+    }
+  },
+  "greatball": {
+    "name": "Great Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
+      }
+    }
+  },
+  "pokeball": {
+    "name": "Poké Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"]
+  },
   "safariball": { "name": "Safari Ball", "flags": ["Ball"] },
   "netball": { "name": "Net Ball", "flags": ["Ball"] },
   "diveball": { "name": "Dive Ball", "flags": ["Ball"] },

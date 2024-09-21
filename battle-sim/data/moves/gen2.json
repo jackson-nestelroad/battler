@@ -1893,7 +1893,7 @@
           "$effect_state.mons = []",
           "foreach $mon in func_call(all_mons_in_party: $user.player):",
           [
-            "if $mon == $user or (!$mon.fainted and !$mon.status):",
+            "if $mon == $user or (!$mon.exited and !$mon.status):",
             ["$effect_state.mons = func_call(append: $effect_state.mons $mon)"]
           ],
           "$move.multihit = $effect_state.mons.length"

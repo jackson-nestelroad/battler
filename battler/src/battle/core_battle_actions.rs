@@ -26,6 +26,7 @@ use crate::{
         LevelUpAction,
         Mon,
         MonContext,
+        MonExitType,
         MonHandle,
         MoveEventResult,
         MoveHandle,
@@ -52,6 +53,7 @@ use crate::{
         fxlang,
         EffectHandle,
     },
+    items::ItemFlags,
     mons::{
         MoveSource,
         Stat,
@@ -220,24 +222,23 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
     if context.mon().hp == 0 {
         return Ok(false);
     }
-    if !context.mon().fainted {
-        core_battle_effects::run_mon_ability_event(
-            &mut context.applying_effect_context(
-                EffectHandle::Condition(Id::from_known("switchin")),
-                None,
-                None,
-            )?,
-            fxlang::BattleEvent::Start,
-        );
-        core_battle_effects::run_mon_item_event(
-            &mut context.applying_effect_context(
-                EffectHandle::Condition(Id::from_known("switchin")),
-                None,
-                None,
-            )?,
-            fxlang::BattleEvent::Start,
-        );
-    }
+
+    core_battle_effects::run_mon_ability_event(
+        &mut context.applying_effect_context(
+            EffectHandle::Condition(Id::from_known("switchin")),
+            None,
+            None,
+        )?,
+        fxlang::BattleEvent::Start,
+    );
+    core_battle_effects::run_mon_item_event(
+        &mut context.applying_effect_context(
+            EffectHandle::Condition(Id::from_known("switchin")),
+            None,
+            None,
+        )?,
+        fxlang::BattleEvent::Start,
+    );
 
     Ok(true)
 }
@@ -731,7 +732,7 @@ fn get_move_targets(
                 Some(target) => {
                     let mon = context.mon_handle();
                     let target_context = context.target_mon_context(target)?;
-                    if target_context.mon().fainted
+                    if target_context.mon().exited.is_some()
                         && !target_context
                             .mon()
                             .is_ally(target_context.as_battle_context().mon(mon)?)
@@ -1985,7 +1986,7 @@ pub fn direct_damage(
     let damage = damage.max(1);
     let damage = Mon::damage(context, damage, source, effect)?;
     core_battle_logs::damage(context, effect.cloned(), source)?;
-    if context.mon().fainted {
+    if context.mon().exited.is_some() {
         faint(context, source, effect)?;
     }
     Ok(damage)
@@ -2208,7 +2209,7 @@ fn apply_move_effects(
             //
             // In other words, this check skips applying effects to substitutes.
             if target.outcome.hit_target() {
-                if !target_context.target_mon().fainted {
+                if !target_context.target_mon().exited.is_some() {
                     if let Some(boosts) = hit_effect.boosts {
                         let outcome = boost(
                             &mut target_context.applying_effect_context()?,
@@ -3317,7 +3318,7 @@ pub fn give_out_experience(
         .collect::<Vec<_>>()
     {
         let mut context = context.mon_context(foe_handle)?;
-        if !context.player().player_type.gains_experience() || context.mon().fainted {
+        if !context.player().player_type.gains_experience() || context.mon().exited.is_some() {
             continue;
         }
 
@@ -3858,7 +3859,7 @@ pub fn transform_into(
     }
 
     let target_context = context.as_battle_context_mut().mon_context(target)?;
-    if target_context.mon().fainted || target_context.mon().transformed {
+    if target_context.mon().exited.is_some() || target_context.mon().transformed {
         return Ok(false);
     }
 
@@ -4303,7 +4304,7 @@ pub fn player_use_item(
 
     let target = CoreBattle::get_item_target(context, item, target)?;
     core_battle_logs::use_item(context.as_player_context_mut(), item, target)?;
-    if !player_use_item_internal(context.as_player_context_mut(), item, target, input)? {
+    if !player_use_item_internal(context, item, target, input)? {
         core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
         return Ok(false);
     }
@@ -4331,7 +4332,7 @@ impl PlayerUseItemInput {
 
 /// Uses an item from the player.
 pub fn player_use_item_internal(
-    context: &mut PlayerContext,
+    context: &mut MonContext,
     item: &Id,
     target: Option<MonHandle>,
     input: PlayerUseItemInput,
@@ -4339,17 +4340,18 @@ pub fn player_use_item_internal(
     let item = context.battle().dex.items.get_by_id(item)?;
     let item_id = item.id().clone();
     let item_target = item.data.target;
+    let item_is_ball = item.data.flags.contains(&ItemFlags::Ball);
 
     match item_target {
-        Some(_) => {
-            if target.is_none() {
+        Some(item_target) => {
+            if target.is_none() && item_target.requires_target() {
                 core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
                 return Ok(false);
             }
         }
         None => {
             core_battle_logs::fail_use_item(
-                context,
+                context.as_player_context_mut(),
                 &item_id,
                 Some(EffectHandle::NonExistent(Id::from_known("unusable"))),
             )?;
@@ -4357,9 +4359,9 @@ pub fn player_use_item_internal(
         }
     }
 
-    if !Player::use_item_from_bag(context, &item_id, false) {
+    if !Player::use_item_from_bag(context.as_player_context_mut(), &item_id, false) {
         core_battle_logs::fail_use_item(
-            context,
+            context.as_player_context_mut(),
             &item_id,
             Some(EffectHandle::NonExistent(Id::from_known("unavailable"))),
         )?;
@@ -4368,7 +4370,7 @@ pub fn player_use_item_internal(
     match target {
         Some(target) => core_battle_effects::run_applying_effect_event(
             &mut context.as_battle_context_mut().applying_effect_context(
-                EffectHandle::Item(item_id),
+                EffectHandle::Item(item_id.clone()),
                 None,
                 target,
                 Some(EffectHandle::Condition(Id::from_known("playeruseditem"))),
@@ -4379,16 +4381,18 @@ pub fn player_use_item_internal(
         None => (),
     }
 
-    // TODO: Catch mechanics.
-    //
-    // After an item is used, if it is a ball, we attempt to catch the targeted Mon.
+    if let Some(target) = target {
+        if item_is_ball {
+            try_catch(context, target, &item_id)?;
+        }
+    }
 
     Ok(true)
 }
 
 /// Revives a fainted Mon.
 pub fn revive(context: &mut ApplyingEffectContext, hp: u16) -> Result<u16, Error> {
-    if !context.target().fainted {
+    if context.target().exited != Some(MonExitType::Fainted) {
         return Ok(0);
     }
 
@@ -4448,4 +4452,130 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), 
         .collect();
     core_battle_logs::clear_negative_boosts(context)?;
     Ok(())
+}
+
+/// Tries to catch the target Mon in the given ball.
+pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Result<bool, Error> {
+    let item = context.battle().dex.items.get_by_id(item)?;
+    if !item.data.flags.contains(&ItemFlags::Ball) {
+        return Ok(false);
+    }
+
+    let item_id = item.id().clone();
+
+    let player_type = context
+        .as_battle_context_mut()
+        .mon_context(target)?
+        .player()
+        .player_type;
+    if !player_type.catchable() {
+        core_battle_logs::uncatchable(context.as_player_context_mut(), target, player_type.wild())?;
+        Player::put_item_in_bag(context.as_player_context_mut(), item_id);
+        return Ok(false);
+    }
+
+    let source = context.mon_handle();
+    let catch_rate = calculate_modified_catch_rate(
+        &mut context.as_battle_context_mut().applying_effect_context(
+            EffectHandle::Item(item_id.clone()),
+            Some(source),
+            target,
+            None,
+        )?,
+    )?;
+
+    let shake_probability = calculate_shake_probability(catch_rate);
+    let critical = check_critical_capture(context.as_player_context_mut(), shake_probability);
+    let total_shakes = if critical { 2 } else { 4 };
+    let mut shakes = 0;
+    for _ in 0..total_shakes {
+        let rand = rand_util::range(context.battle_mut().prng.as_mut(), 0, 65536);
+        if rand < shake_probability {
+            shakes += 1;
+        } else {
+            break;
+        }
+    }
+
+    if shakes != total_shakes {
+        core_battle_logs::catch_failed(
+            context.as_player_context_mut(),
+            target,
+            &item_id,
+            shakes,
+            critical,
+        )?;
+        return Ok(false);
+    }
+
+    let player = context.player().index;
+    Mon::catch(
+        &mut context.as_battle_context_mut().mon_context(target)?,
+        player,
+        item_id,
+        shakes,
+        critical,
+    )?;
+
+    Ok(true)
+}
+
+fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<u64, Error> {
+    let max_hp_factor = Fraction::from(3 * context.target().max_hp as u64);
+    let hp_factor = max_hp_factor - 2 * context.target().hp as u64;
+    let hp_factor = hp_factor / max_hp_factor;
+    let a = hp_factor * 4096;
+    let catch_rate = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.target().base_species)?
+        .data
+        .catch_rate;
+    let a = a * catch_rate as u64;
+
+    let a = core_battle_effects::run_applying_effect_event_expecting_fraction_u64(
+        context,
+        fxlang::BattleEvent::ModifyCatchRate,
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(a.into())]),
+    )
+    .unwrap_or(a);
+
+    let a = a.floor();
+    let a = core_battle_effects::run_event_for_applying_effect_expecting_u64(
+        context,
+        fxlang::BattleEvent::ModifyCatchRate,
+        a,
+    );
+
+    Ok(a)
+}
+
+fn calculate_shake_probability(catch_rate: u64) -> u64 {
+    let b = Fraction::new(catch_rate, 1044480);
+    let b = b.nth_root(4);
+    let b = b * 65536;
+    b.floor()
+}
+
+fn check_critical_capture(context: &mut PlayerContext, catch_rate: u64) -> bool {
+    let mons_caught = context.player().player_options.mons_caught;
+    let multiplier = if mons_caught > 600 {
+        5
+    } else if mons_caught > 450 {
+        4
+    } else if mons_caught > 300 {
+        3
+    } else if mons_caught > 150 {
+        2
+    } else if mons_caught > 30 {
+        1
+    } else {
+        0
+    };
+    let c = Fraction::new(multiplier, 2) * catch_rate;
+    let c = c / 6;
+    let c = c.floor();
+    let rand = rand_util::range(context.battle_mut().prng.as_mut(), 0, 65536);
+    rand < c
 }

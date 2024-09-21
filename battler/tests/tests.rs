@@ -241,6 +241,7 @@ mod moves {
 
 mod singleplayer {
     mod affection_test;
+    mod catching_test;
     mod disobedience_test;
     mod escape_test;
     mod horde_test;

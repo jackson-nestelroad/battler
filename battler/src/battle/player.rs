@@ -178,9 +178,16 @@ pub struct PlayerOptions {
     /// If the player has affection mechanics enabled.
     #[serde(default)]
     pub has_affection: bool,
+
     /// If the player requires strict bag checks for using items.
     #[serde(default)]
     pub has_strict_bag: bool,
+
+    /// The number of Mons caught by the player.
+    ///
+    /// Used for critical capture calculations.
+    #[serde(default)]
+    pub mons_caught: u32,
 }
 
 /// Data for a single player of a battle.
@@ -551,8 +558,11 @@ impl Player {
     pub fn switchable_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
     ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
-        Self::inactive_mon_handles(context)
-            .filter(|mon_handle| context.mon(**mon_handle).is_ok_and(|mon| !mon.fainted))
+        Self::inactive_mon_handles(context).filter(|mon_handle| {
+            context
+                .mon(**mon_handle)
+                .is_ok_and(|mon| mon.exited.is_none())
+        })
     }
 
     /// Counts the number of Mons left that the player owns.
@@ -562,7 +572,7 @@ impl Player {
         }
         let mut count = 0;
         for mon in context.player().mons.clone() {
-            if !context.mon(mon)?.fainted {
+            if context.mon(mon)?.exited.is_none() {
                 count += 1;
             }
         }
@@ -640,7 +650,11 @@ impl Player {
         Self::switchable_mon_handles(context)
             .collect::<Vec<_>>()
             .into_iter()
-            .map(|mon_handle| context.mon(*mon_handle).is_ok_and(|mon| !mon.fainted))
+            .map(|mon_handle| {
+                context
+                    .mon(*mon_handle)
+                    .is_ok_and(|mon| mon.exited.is_none())
+            })
             .count()
     }
 
@@ -917,7 +931,7 @@ impl Player {
         let target_context = context
             .as_battle_context_mut()
             .mon_context(target_mon_handle)?;
-        if target_context.mon().fainted {
+        if target_context.mon().exited.is_some() {
             return Err(battler_error!("you cannot switch to a fainted Mon"));
         }
 
@@ -978,7 +992,9 @@ impl Player {
                 Some(RequestType::Turn) => {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
                         mon.is_none()
-                            || mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| mon.fainted))
+                            || mon.is_some_and(|mon| {
+                                context.mon(mon).is_ok_and(|mon| mon.exited.is_some())
+                            })
                     }) {
                         Self::choose_pass(context)?;
                         next_mon += 1;
@@ -1038,7 +1054,7 @@ impl Player {
             Some(RequestType::Turn) => {
                 if let Some(mon) = context.player().active_mon_handle(position) {
                     let context = context.mon_context(mon)?;
-                    if !context.mon().fainted
+                    if context.mon().exited.is_none()
                         && !context.battle().engine_options.allow_pass_for_unfainted_mon
                     {
                         return Err(battler_error!(
@@ -1338,7 +1354,7 @@ impl Player {
             return Err(battler_error!("bag contains no {item_name}"));
         }
 
-        match (item_target.requires_target(), choice.target) {
+        match (item_target.choosable(), choice.target) {
             (true, None) => {
                 return Err(battler_error!("{item_name} requires a target"));
             }
@@ -1355,6 +1371,9 @@ impl Player {
         }
 
         let target_handle = CoreBattle::get_item_target(&mut context, &item_id, choice.target)?;
+        if item_target.requires_target() && target_handle.is_none() {
+            return Err(battler_error!("{item_name} requires one target"));
+        }
 
         let mut action = ItemAction::new(ItemActionInput {
             mon: mon_handle,
@@ -1483,6 +1502,11 @@ impl Player {
                 true
             }
         }
+    }
+
+    /// Puts an item in the player's bag.
+    pub fn put_item_in_bag(context: &mut PlayerContext, item: Id) {
+        *context.player_mut().bag.entry(item).or_default() += 1;
     }
 }
 

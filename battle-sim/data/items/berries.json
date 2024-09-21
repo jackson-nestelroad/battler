@@ -130,7 +130,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -165,7 +165,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or (!$target.status and !func_call(has_volatile: $target confusion)):",
+          "if $target.exited or (!$target.status and !func_call(has_volatile: $target confusion)):",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -188,7 +188,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -205,7 +205,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -229,7 +229,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -253,7 +253,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -277,7 +277,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
@@ -301,7 +301,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],

@@ -657,6 +657,12 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "ModifyBoosts"]
     ModifyBoosts,
+    /// Runs when calculating the modified catch rate of a Mon.
+    ///
+    /// Runs in the context of the item itself and in the context of an applying effect on the
+    /// target.
+    #[string = "ModifyCatchRate"]
+    ModifyCatchRate,
     /// Runs when calculating a move's critical hit chance.
     ///
     /// Runs in the context of an active move from the user.
@@ -1214,6 +1220,7 @@ impl BattleEvent {
             Self::ModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::ModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyBoosts => CommonCallbackType::MonBoostModifier as u32,
+            Self::ModifyCatchRate => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyCritChance => CommonCallbackType::MoveModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
@@ -1328,6 +1335,7 @@ impl BattleEvent {
             }
             Self::ModifyAtk | Self::SourceModifyAtk => &[("atk", ValueType::UFraction, true)],
             Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
+            Self::ModifyCatchRate => &[("catch_rate", ValueType::UFraction, true)],
             Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
             Self::ModifyDamage
@@ -1708,6 +1716,7 @@ pub struct Callbacks {
     pub on_modify_accuracy: Callback,
     pub on_modify_atk: Callback,
     pub on_modify_boosts: Callback,
+    pub on_modify_catch_rate: Callback,
     pub on_modify_crit_chance: Callback,
     pub on_modify_crit_ratio: Callback,
     pub on_modify_damage: Callback,
@@ -1871,6 +1880,7 @@ impl Callbacks {
             BattleEvent::ModifyAccuracy => Some(&self.on_modify_accuracy),
             BattleEvent::ModifyAtk => Some(&self.on_modify_atk),
             BattleEvent::ModifyBoosts => Some(&self.on_modify_boosts),
+            BattleEvent::ModifyCatchRate => Some(&self.on_modify_catch_rate),
             BattleEvent::ModifyCritChance => Some(&self.on_modify_crit_chance),
             BattleEvent::ModifyCritRatio => Some(&self.on_modify_crit_ratio),
             BattleEvent::ModifyDamage => Some(&self.on_modify_damage),

@@ -39,6 +39,10 @@
     "name": "Player Used Item",
     "condition_type": "Built-in"
   },
+  "catch": {
+    "name": "Catch",
+    "condition_type": "Built-in"
+  },
   "mon": {
     "name": "Mon",
     "condition_type": "Built-in",
@@ -212,7 +216,8 @@
             "if $move.category == physical and !func_call(has_ability: $user guts) and $move.id != facade:",
             ["return $damage / 2"]
           ]
-        }
+        },
+        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
       }
     }
   },
@@ -237,7 +242,8 @@
         "on_modify_spe": [
           "if !func_call(has_ability: $target quickfeet):",
           ["return $spe / 2"]
-        ]
+        ],
+        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
       }
     }
   },
@@ -267,7 +273,8 @@
             ["return"],
             "return false"
           ]
-        }
+        },
+        "on_modify_catch_rate": ["return $catch_rate * 5/2"]
       }
     }
   },
@@ -304,7 +311,8 @@
         "on_damaging_hit": [
           "if $move.type == fire and $move.category != status:",
           ["cure_status: $target use_source_effect"]
-        ]
+        ],
+        "on_modify_catch_rate": ["return $catch_rate * 5/2"]
       }
     }
   },
@@ -322,7 +330,8 @@
         "on_residual": {
           "order": 9,
           "program": ["damage: $target expr($target.base_max_hp / 8)"]
-        }
+        },
+        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
       }
     }
   },
@@ -346,7 +355,8 @@
             ["$effect_state.stage = $effect_state.stage + 1"],
             "damage: $target expr($target.base_max_hp / 16 * $effect_state.stage)"
           ]
-        }
+        },
+        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
       }
     }
   },
@@ -404,7 +414,7 @@
             [
               "# The last target selected no longer exists or fainted.",
               "$last_target = func_call(mon_at_target_location: $target $target.last_target_location)",
-              "$need_new_target = expr(!$last_target or $last_target.fainted)"
+              "$need_new_target = expr(!$last_target or !$last_target.active)"
             ],
             "if $need_new_target:",
             [
@@ -576,7 +586,7 @@
         "on_slot_end": [
           "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id)",
           "$target = func_call(mon_in_position: $side $slot)",
-          "if !$target or $target.fainted or $target == $effect_state.source:",
+          "if !$target or !$target.active or $target == $effect_state.source:",
           ["return"],
           "log_end: no_effect str('mon:{}', $target.position_details) str('move:{}', $effect_state.source_effect.name) str('of:{}', $effect_state.source.position_details)",
           "remove_volatile: $target protect",

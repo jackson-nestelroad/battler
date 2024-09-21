@@ -35,6 +35,7 @@ use crate::{
         LearnMoveRequest,
         Mon,
         MonContext,
+        MonExitType,
         MonHandle,
         MoveHandle,
         Player,
@@ -208,6 +209,15 @@ pub struct FaintEntry {
     pub effect: Option<EffectHandle>,
 }
 
+/// An entry in the catch queue.
+pub struct CatchEntry {
+    pub target: MonHandle,
+    pub player: usize,
+    pub item: Id,
+    pub shakes: u8,
+    pub critical: bool,
+}
+
 /// An instance of a battle.
 ///
 /// A battle has the following properties:
@@ -229,6 +239,7 @@ pub struct CoreBattle<'d> {
     pub dex: Dex<'d>,
     pub queue: BattleQueue,
     pub faint_queue: VecDeque<FaintEntry>,
+    pub catch_queue: VecDeque<CatchEntry>,
     pub engine_options: CoreBattleEngineOptions,
     pub format: Format,
     pub field: Field,
@@ -250,7 +261,7 @@ pub struct CoreBattle<'d> {
     next_ability_order: u32,
     next_forfeit_order: u32,
     last_move_log: Option<usize>,
-    last_fainted: Option<FaintEntry>,
+    last_exited: Option<MonHandle>,
 
     input_log: FastHashMap<usize, FastHashMap<u64, String>>,
 
@@ -287,6 +298,7 @@ impl<'d> CoreBattle<'d> {
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
         let faint_queue = VecDeque::new();
+        let catch_queue = VecDeque::new();
         let field = Field::new(options.field);
         let (side_1, mut players) =
             Side::new(options.side_1, 0, &format.battle_type, &dex, &registry)?;
@@ -314,6 +326,7 @@ impl<'d> CoreBattle<'d> {
             dex,
             queue,
             faint_queue,
+            catch_queue,
             engine_options,
             format,
             field,
@@ -333,7 +346,7 @@ impl<'d> CoreBattle<'d> {
             next_ability_order: 0,
             next_forfeit_order: 0,
             last_move_log: None,
-            last_fainted: None,
+            last_exited: None,
             input_log,
             _pin: PhantomPinned,
         };
@@ -1111,7 +1124,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::Move(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || context.mon().fainted {
+                if !context.mon().active || context.mon().exited.is_some() {
                     return Ok(());
                 }
                 core_battle_actions::do_move(
@@ -1123,7 +1136,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::BeforeTurnMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || context.mon().fainted {
+                if !context.mon().active || context.mon().exited.is_some() {
                     return Ok(());
                 }
                 core_battle_effects::run_applying_effect_event(
@@ -1138,7 +1151,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::PriorityChargeMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || context.mon().fainted {
+                if !context.mon().active || context.mon().exited.is_some() {
                     return Ok(());
                 }
                 core_battle_effects::run_applying_effect_event(
@@ -1221,6 +1234,7 @@ impl<'d> CoreBattle<'d> {
 
     fn after_action(context: &mut Context) -> Result<(), Error> {
         Self::faint_messages(context)?;
+        Self::catch_messages(context)?;
 
         let mut some_move_can_be_learned = false;
         for mon in context.battle().all_mon_handles().collect::<Vec<_>>() {
@@ -1344,7 +1358,7 @@ impl<'d> CoreBattle<'d> {
                 .collect::<Vec<_>>()
             {
                 let mut context = context.mon_context(mon)?;
-                if context.mon().fainted {
+                if context.mon().exited.is_some() {
                     context.mon_mut().status = Some(Id::from_known("fnt"));
                     context.mon_mut().needs_switch = Some(SwitchType::Normal);
                 }
@@ -1409,9 +1423,8 @@ impl<'d> CoreBattle<'d> {
 
         if side.is_none() {
             // Resolve ties, if possible, using the last Mon that fainted.
-            if let Some(last_fainted) = &context.battle().last_fainted {
-                let mon = context.mon(last_fainted.target)?;
-                side = Some(mon.side);
+            if let Some(last_exited) = context.battle().last_exited {
+                side = Some(context.mon(last_exited)?.side);
             }
         }
         BattleQueue::insert_action_into_sorted_position(
@@ -1584,7 +1597,7 @@ impl<'d> CoreBattle<'d> {
                     let target_context = context
                         .as_battle_context_mut()
                         .mon_context(target_mon_handle)?;
-                    if !target_context.mon().fainted
+                    if !target_context.mon().exited.is_some()
                         || target_context
                             .mon()
                             .is_ally(target_context.as_battle_context().mon(mon)?)
@@ -1801,7 +1814,7 @@ impl<'d> CoreBattle<'d> {
 
         while let Some(entry) = context.battle_mut().faint_queue.pop_front() {
             let mut context = context.mon_context(entry.target)?;
-            if context.mon().fainted {
+            if context.mon().exited.is_some() {
                 continue;
             }
 
@@ -1824,14 +1837,51 @@ impl<'d> CoreBattle<'d> {
                 ),
             };
 
-            Mon::clear_state_on_faint(&mut context)?;
-            context.battle_mut().last_fainted = Some(entry);
+            Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
+            context.battle_mut().last_exited = Some(context.mon_handle());
 
             core_battle_effects::run_event_for_mon(
                 &mut context,
                 fxlang::BattleEvent::Exit,
                 fxlang::VariableInput::default(),
             );
+        }
+
+        Self::check_win(context)?;
+
+        Ok(())
+    }
+
+    /// Logs all catch messages.
+    ///
+    /// A Mon is considered truly caught only after this method runs.
+    pub fn catch_messages(context: &mut Context) -> Result<(), Error> {
+        while let Some(entry) = context.battle_mut().catch_queue.pop_front() {
+            let mut context = context.mon_context(entry.target)?;
+
+            core_battle_logs::catch(
+                &mut context
+                    .as_battle_context_mut()
+                    .player_context(entry.player)?,
+                entry.target,
+                &entry.item,
+                entry.shakes,
+                entry.critical,
+            )?;
+
+            let mon_handle = context.mon_handle();
+            core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
+
+            Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
+            context.battle_mut().last_exited = Some(context.mon_handle());
+
+            core_battle_effects::run_event_for_mon(
+                &mut context,
+                fxlang::BattleEvent::Exit,
+                fxlang::VariableInput::default(),
+            );
+
+            // TODO: Record caught Mon.
         }
 
         Self::check_win(context)?;

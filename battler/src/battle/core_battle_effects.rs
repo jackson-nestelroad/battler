@@ -27,6 +27,7 @@ use crate::{
     common::{
         Error,
         FastHashSet,
+        Fraction,
         Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
@@ -2335,6 +2336,17 @@ pub fn run_applying_effect_event_expecting_bool(
         .ok()
 }
 
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+pub fn run_applying_effect_event_expecting_fraction_u64(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<Fraction<u64>> {
+    run_applying_effect_event_internal(context, event, input)?
+        .fraction_u64()
+        .ok()
+}
+
 /// Runs an event on the [`Effect`][`crate::effect::Effect`].
 ///
 /// Expects a [`bool`].
@@ -2397,6 +2409,25 @@ pub fn run_event_for_applying_effect_expecting_u32(
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u32().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects an integer that can fit in a [`u64`].
+pub fn run_event_for_applying_effect_expecting_u64(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: u64,
+) -> u64 {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u64().unwrap_or(input),
         None => input,
     }
 }

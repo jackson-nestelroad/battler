@@ -615,7 +615,7 @@
         "on_slot_start": ["$effect_state.hp = $source.max_hp / 2"],
         "on_slot_end": [
           "$target = func_call(mon_in_position: $side $slot)",
-          "if $target.is_defined and !$target.fainted:",
+          "if $target.is_defined and $target.active:",
           ["heal: $target $effect_state.hp"]
         ]
       }
@@ -983,7 +983,7 @@
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
         "on_faint": [
-          "if !$source or $source.fainted or !$effect:",
+          "if !$source or $source.exited or !$effect:",
           ["return"],
           "if !$effect.is_move or func_call(move_has_flag: $effect future) or !$source.last_move.is_defined:",
           ["return"],

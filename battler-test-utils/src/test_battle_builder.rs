@@ -194,6 +194,7 @@ impl TestBattleBuilder {
             player_options: PlayerOptions {
                 has_affection: true,
                 has_strict_bag: true,
+                mons_caught: 151,
             },
         });
         self

@@ -116,6 +116,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifyAccuracy, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyBoosts, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyCatchRate, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyCritChance, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyCritRatio, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyDamage, callbacks)?;

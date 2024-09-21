@@ -6,7 +6,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 20"]
@@ -93,7 +93,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or (!$target.status and !func_call(has_volatile: $target confusion) and $target.hp >= $target.max_hp):",
+          "if $target.exited or (!$target.status and !func_call(has_volatile: $target confusion) and $target.hp >= $target.max_hp):",
           ["return false"]
         ],
         "on_player_use": [
@@ -111,7 +111,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon $mon.max_hp"]
@@ -125,7 +125,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 120"]
@@ -139,7 +139,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 60"]
@@ -192,7 +192,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 30"]
@@ -206,7 +206,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 50"]
@@ -220,7 +220,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 70"]
@@ -234,7 +234,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["heal: $mon 100"]

@@ -277,7 +277,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.fainted or $target.hp >= $target.max_hp:",
+          "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["use_given_item: $mon $this.id"],

@@ -220,6 +220,10 @@ where
     pub fn sqrt(&self) -> Self {
         Self::new(self.numerator().sqrt(), self.denominator().sqrt()).simplify()
     }
+
+    pub fn nth_root(&self, n: u32) -> Self {
+        Self::new(self.numerator().nth_root(n), self.denominator().nth_root(n)).simplify()
+    }
 }
 
 impl<I> Fraction<I>

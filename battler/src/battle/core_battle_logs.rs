@@ -968,7 +968,6 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
 
 pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     let activation = EffectActivationContext {
-        effect: None,
         target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
@@ -978,6 +977,78 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), 
     effect_activation(
         context.as_battle_context_mut(),
         "clearnegativeboosts".to_owned(),
+        activation,
+    )
+}
+
+pub fn uncatchable(
+    context: &mut PlayerContext,
+    target: MonHandle,
+    wild: bool,
+) -> Result<(), Error> {
+    let mut additional = Vec::new();
+    if !wild {
+        additional.push("thief".to_owned());
+    }
+    let activation = EffectActivationContext {
+        player: Some(context.player().index),
+        target: Some(target),
+        additional,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "uncatchable".to_owned(),
+        activation,
+    )
+}
+
+pub fn catch_failed(
+    context: &mut PlayerContext,
+    target: MonHandle,
+    item: &Id,
+    shakes: u8,
+    critical: bool,
+) -> Result<(), Error> {
+    let mut additional = vec![format!("shakes:{shakes}")];
+    if critical {
+        additional.push("critical".to_owned());
+    }
+    let activation = EffectActivationContext {
+        player: Some(context.player().index),
+        effect: Some(EffectHandle::Item(item.clone())),
+        target: Some(target),
+        additional,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "catchfailed".to_owned(),
+        activation,
+    )
+}
+
+pub fn catch(
+    context: &mut PlayerContext,
+    target: MonHandle,
+    item: &Id,
+    shakes: u8,
+    critical: bool,
+) -> Result<(), Error> {
+    let mut additional = vec![format!("shakes:{shakes}")];
+    if critical {
+        additional.push("critical".to_owned());
+    }
+    let activation = EffectActivationContext {
+        player: Some(context.player().index),
+        effect: Some(EffectHandle::Item(item.clone())),
+        target: Some(target),
+        additional,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "catch".to_owned(),
         activation,
     )
 }

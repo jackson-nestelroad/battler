@@ -24,7 +24,10 @@ use crate::{
     battle::{
         calculate_hidden_power_type,
         calculate_mon_stats,
-        core_battle::FaintEntry,
+        core_battle::{
+            CatchEntry,
+            FaintEntry,
+        },
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
@@ -361,6 +364,13 @@ pub struct CalculateStatContext {
     pub source: MonHandle,
 }
 
+/// How a Mon exited the battle.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MonExitType {
+    Fainted,
+    Caught,
+}
+
 /// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -411,7 +421,7 @@ pub struct Mon {
     pub max_hp: u16,
     pub speed: u16,
     pub weight: u32,
-    pub fainted: bool,
+    pub exited: Option<MonExitType>,
     pub newly_switched: bool,
     pub needs_switch: Option<SwitchType>,
     pub force_switch: Option<SwitchType>,
@@ -553,7 +563,7 @@ impl Mon {
             max_hp: 0,
             speed: 0,
             weight: 1,
-            fainted: false,
+            exited: None,
             newly_switched: false,
             needs_switch: None,
             force_switch: None,
@@ -1765,7 +1775,7 @@ impl Mon {
 
     /// Checks if the Mon is immune to the given type.
     pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
-        if context.mon().fainted {
+        if context.mon().exited.is_some() {
             return Ok(false);
         }
 
@@ -1815,7 +1825,7 @@ impl Mon {
         source: Option<MonHandle>,
         effect: Option<&EffectHandle>,
     ) -> Result<(), Error> {
-        if context.mon().fainted {
+        if context.mon().exited.is_some() {
             return Ok(());
         }
         context.mon_mut().hp = 0;
@@ -1825,6 +1835,29 @@ impl Mon {
             target: mon_handle,
             source,
             effect: effect.cloned(),
+        });
+        Ok(())
+    }
+
+    /// Faints the Mon.
+    pub fn catch(
+        context: &mut MonContext,
+        player: usize,
+        item: Id,
+        shakes: u8,
+        critical: bool,
+    ) -> Result<(), Error> {
+        if context.mon().exited.is_some() {
+            return Ok(());
+        }
+        context.mon_mut().needs_switch = None;
+        let mon_handle = context.mon_handle();
+        context.battle_mut().catch_queue.push_back(CatchEntry {
+            target: mon_handle,
+            player,
+            item,
+            shakes,
+            critical,
         });
         Ok(())
     }
@@ -1842,25 +1875,35 @@ impl Mon {
         Ok(damage)
     }
 
-    /// Clears the Mon's state when it faints.
-    pub fn clear_state_on_faint(context: &mut MonContext) -> Result<(), Error> {
+    /// Clears the Mon's state when it exits the battle.
+    pub fn clear_state_on_exit(
+        context: &mut MonContext,
+        exit_type: MonExitType,
+    ) -> Result<(), Error> {
+        let effect = match exit_type {
+            MonExitType::Fainted => EffectHandle::Condition(Id::from_known("faint")),
+            MonExitType::Caught => EffectHandle::Condition(Id::from_known("catch")),
+        };
         core_battle_effects::run_mon_ability_event(
-            &mut context.applying_effect_context(
-                EffectHandle::Condition(Id::from_known("faint")),
-                None,
-                None,
-            )?,
+            &mut context.applying_effect_context(effect, None, None)?,
             fxlang::BattleEvent::End,
         );
+
         Self::clear_volatile(context, false)?;
-        context.mon_mut().fainted = true;
+
+        context.mon_mut().exited = Some(exit_type);
+
         Self::switch_out(context)?;
         Ok(())
     }
 
     /// Revives the Mon so that it can be used again.
     pub fn revive(context: &mut MonContext, hp: u16) -> Result<u16, Error> {
-        context.mon_mut().fainted = false;
+        if context.mon().exited != Some(MonExitType::Fainted) {
+            return Ok(0);
+        }
+
+        context.mon_mut().exited = None;
         context.mon_mut().status = None;
         context.mon_mut().hp = 1;
         Self::set_hp(context, hp)?;

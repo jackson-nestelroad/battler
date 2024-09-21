@@ -101,6 +101,7 @@ pub use mon::{
     Mon,
     MonBaseRequestData,
     MonBattleRequestData,
+    MonExitType,
     MonLearnMoveRequest,
     MonMoveRequest,
     MonMoveSlotData,
