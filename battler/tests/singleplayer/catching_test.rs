@@ -56,7 +56,8 @@ fn magikarp() -> Result<TeamData, Error> {
                     "species": "Magikarp",
                     "ability": "Swift Swim",
                     "moves": [
-                        "Splash"
+                        "Splash",
+                        "Bounce"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -664,4 +665,26 @@ fn trainer_mons_are_uncatchable() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn cannot_throw_ball_at_semi_invulnerable_mon() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_wild_singles_battle(
+        &data,
+        65535,
+        pikachu().unwrap(),
+        magikarp().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "move 1"), Ok(()));
+    assert_error_message(
+        battle.set_player_choice("protagonist", "item pokeball"),
+        "cannot use item: Poké Ball cannot be used on Magikarp",
+    );
+    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
 }

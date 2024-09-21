@@ -17,6 +17,7 @@ use crate::{
     battle::{
         core_battle_actions,
         core_battle_effects,
+        mon_states,
         Action,
         BattleRegistry,
         BattleType,
@@ -58,7 +59,10 @@ use crate::{
         fxlang,
         EffectHandle,
     },
-    items::ItemInput,
+    items::{
+        ItemFlags,
+        ItemInput,
+    },
     teams::TeamData,
 };
 
@@ -1366,6 +1370,7 @@ impl Player {
             .target
             .wrap_error_with_format(format_args!("{item_name} cannot be used"))?;
         let item_input = item.data.input;
+        let item_is_ball = item.data.flags.contains(&ItemFlags::Ball);
 
         if !Self::use_item_from_bag(context.as_player_context_mut(), &item_id, true) {
             return Err(battler_error!("bag contains no {item_name}"));
@@ -1433,14 +1438,18 @@ impl Player {
                 move_slot: action.move_slot.clone(),
             };
 
-            if context.target().cannot_receive_items
+            let cannot_be_used = context.target().cannot_receive_items;
+            let cannot_be_used = cannot_be_used
+                || (item_is_ball
+                    && mon_states::is_semi_invulnerable(&mut context.target_context()?));
+            let cannot_be_used = cannot_be_used
                 || !core_battle_effects::run_applying_effect_event_expecting_bool(
                     &mut context,
                     fxlang::BattleEvent::PlayerTryUseItem,
                     fxlang::VariableInput::from_iter([input.input_for_fxlang_callback()]),
                 )
-                .unwrap_or(true)
-            {
+                .unwrap_or(true);
+            if cannot_be_used {
                 return Err(battler_error!(
                     "{item_name} cannot be used on {}",
                     context.as_battle_context().mon(target_handle)?.name
