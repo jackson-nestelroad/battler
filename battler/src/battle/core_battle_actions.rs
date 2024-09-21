@@ -4535,14 +4535,13 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
         .catch_rate;
     let a = a * catch_rate as u64;
 
-    let a = core_battle_effects::run_applying_effect_event_expecting_fraction_u64(
+    let a = core_battle_effects::run_applying_effect_event_expecting_u64(
         context,
         fxlang::BattleEvent::ModifyCatchRate,
         fxlang::VariableInput::from_iter([fxlang::Value::UFraction(a.into())]),
     )
-    .unwrap_or(a);
+    .unwrap_or(a.floor());
 
-    let a = a.floor();
     let a = core_battle_effects::run_event_for_applying_effect_expecting_u64(
         context,
         fxlang::BattleEvent::ModifyCatchRate,

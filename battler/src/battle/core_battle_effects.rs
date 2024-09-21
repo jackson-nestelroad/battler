@@ -27,7 +27,6 @@ use crate::{
     common::{
         Error,
         FastHashSet,
-        Fraction,
         Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
@@ -2337,13 +2336,13 @@ pub fn run_applying_effect_event_expecting_bool(
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
-pub fn run_applying_effect_event_expecting_fraction_u64(
+pub fn run_applying_effect_event_expecting_u64(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-) -> Option<Fraction<u64>> {
+) -> Option<u64> {
     run_applying_effect_event_internal(context, event, input)?
-        .fraction_u64()
+        .integer_u64()
         .ok()
 }
 
