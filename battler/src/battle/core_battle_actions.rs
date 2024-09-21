@@ -4494,11 +4494,11 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
         }
     }
 
-    if critical && shakes == 0 {
-        shakes += 1;
-    }
-
     if shakes != total_shakes {
+        if critical && shakes == 0 {
+            shakes += 1;
+        }
+
         core_battle_logs::catch_failed(
             context.as_player_context_mut(),
             target,
