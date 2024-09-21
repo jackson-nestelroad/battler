@@ -3315,7 +3315,7 @@ pub fn give_out_experience(
         .collect::<Vec<_>>()
     {
         let mut context = context.mon_context(foe_handle)?;
-        if !context.player().player_type.gains_experience() || !context.mon().active {
+        if !context.player().player_type.gains_experience() || context.mon().exited.is_some() {
             continue;
         }
 
