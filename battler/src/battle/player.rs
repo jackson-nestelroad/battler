@@ -1281,6 +1281,13 @@ impl Player {
                 "expected an active Mon in position {active_position}"
             ))?;
 
+        {
+            let mut context = context.mon_context(mon_handle)?;
+            if Mon::locked_move(&mut context)?.is_some() {
+                return Err(battler_error!("{} must use a move", context.mon().name));
+            }
+        }
+
         let can_escape = Self::can_escape(context) && Self::all_mons_can_escape(context)?;
         if !can_escape {
             return Err(battler_error!("you cannot escape"));
@@ -1340,6 +1347,10 @@ impl Player {
                 "expected an active mon in position {active_position}"
             ))?;
         let mut context = context.mon_context(mon_handle)?;
+
+        if Mon::locked_move(&mut context)?.is_some() {
+            return Err(battler_error!("{} must use a move", context.mon().name));
+        }
 
         let item = context
             .battle()

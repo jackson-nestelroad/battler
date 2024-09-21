@@ -16,6 +16,7 @@ use battler::{
     teams::TeamData,
 };
 use battler_test_utils::{
+    assert_error_message,
     assert_error_message_contains,
     assert_logs_since_turn_eq,
     LogMatch,
@@ -32,7 +33,8 @@ fn jolteon() -> Result<TeamData, Error> {
                     "ability": "No Ability",
                     "moves": [
                         "Tackle",
-                        "Bind"
+                        "Bind",
+                        "Dig"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -201,6 +203,28 @@ fn player_escapes_with_higher_speed() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn mon_cannot_escape_with_locked_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_wild_singles_battle(
+        &data,
+        0,
+        jolteon().unwrap(),
+        primeape().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_error_message(
+        battle.set_player_choice("protagonist", "escape"),
+        "cannot escape: Jolteon must use a move",
+    );
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
 }
 
 #[test]

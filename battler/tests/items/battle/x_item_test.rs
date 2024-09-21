@@ -30,7 +30,8 @@ fn team() -> Result<TeamData, Error> {
                     "species": "Pikachu",
                     "ability": "Static",
                     "moves": [
-                        "Tackle"
+                        "Tackle",
+                        "Dig"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -157,4 +158,18 @@ fn max_mushrooms_boost_multiple_stats() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn x_attack_cannot_be_used_with_locked_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_error_message(
+        battle.set_player_choice("player-1", "item xattack,-1"),
+        "cannot use item: Pikachu must use a move",
+    );
 }
