@@ -30,11 +30,12 @@ fn pikachu() -> Result<TeamData, Error> {
                 {
                     "name": "Pikachu",
                     "species": "Pikachu",
-                    "ability": "Static",
+                    "ability": "Lightning Rod",
                     "moves": [
                         "False Swipe",
                         "Glare",
-                        "Thunderbolt"
+                        "Thunderbolt",
+                        "Sleep Powder"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -92,6 +93,37 @@ fn magikarp_gyarados() -> Result<TeamData, Error> {
                     "nature": "Hardy",
                     "gender": "M",
                     "level": 30
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn blissey() -> Result<TeamData, Error> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Blissey",
+                    "species": "Blissey",
+                    "ability": "Natural Cure",
+                    "moves": [
+                        "False Swipe",
+                        "Belly Drum",
+                        "Sleep Powder"
+                    ],
+                    "nature": "Lonely",
+                    "gender": "M",
+                    "level": 100,
+                    "ivs": {
+                        "hp": 31,
+                        "atk": 31
+                    },
+                    "evs": {
+                        "hp": 252,
+                        "atk": 252
+                    }
                 }
             ]
         }"#,
@@ -190,7 +222,7 @@ fn make_trainer_singles_battle(
 }
 
 #[test]
-fn level_5_magikarp_caught_in_pokeball() {
+fn level_5_magikarp_caught_in_poke_ball() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
         &data,
@@ -265,7 +297,7 @@ fn catching_mon_continues_battle() {
     assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
     assert_error_message(
         battle.set_player_choice("wild", "switch 0"),
-        "cannot switch: you cannot switch to a fainted Mon",
+        "cannot switch: you cannot switch to a caught Mon",
     );
     assert_eq!(battle.set_player_choice("wild", "switch 1"), Ok(()));
     assert_error_message(
@@ -370,7 +402,7 @@ fn ball_can_only_be_used_on_isolated_foe() {
 }
 
 #[test]
-fn level_100_metagross_caught_in_masterball() {
+fn level_100_metagross_caught_in_master_ball() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
         &data,
@@ -392,6 +424,40 @@ fn level_100_metagross_caught_in_masterball() {
         r#"[
             "useitem|player:protagonist|name:Master Ball|target:Metagross,wild,1",
             "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4",
+            "exp|mon:Pikachu,protagonist,1|exp:12059",
+            "win|side:0"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn level_100_metagross_critical_capture() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_wild_singles_battle(
+        &data,
+        65535,
+        pikachu().unwrap(),
+        metagross().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 0)]);
+
+    assert_eq!(
+        battle.set_player_choice("protagonist", "item masterball"),
+        Ok(())
+    );
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "useitem|player:protagonist|name:Master Ball|target:Metagross,wild,1",
+            "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical",
             "exp|mon:Pikachu,protagonist,1|exp:12059",
             "win|side:0"
         ]"#,
@@ -427,13 +493,118 @@ fn level_50_magikarp_critical_capture() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "useitem|player:protagonist|name:Poké Ball|target:Magikarp,wild,1",
-            "catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:2|critical",
+            "catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1|critical",
             "exp|mon:Pikachu,protagonist,1|exp:401",
             "win|side:0"
         ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn level_100_sleeping_blissey_in_master_ball() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_wild_singles_battle(
+        &data,
+        65535,
+        blissey().unwrap(),
+        blissey().unwrap(),
+        WildPlayerOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_eq!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_eq!(
+        battle.set_player_choice("protagonist", "item masterball"),
+        Ok(())
+    );
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Blissey,protagonist,1|name:False Swipe|target:Blissey,wild,1",
+            "split|side:1",
+            "damage|mon:Blissey,wild,1|health:420/714",
+            "damage|mon:Blissey,wild,1|health:59/100",
+            "move|mon:Blissey,wild,1|name:Belly Drum|target:Blissey,wild,1",
+            "split|side:1",
+            "damage|mon:Blissey,wild,1|health:63/714",
+            "damage|mon:Blissey,wild,1|health:9/100",
+            "boost|mon:Blissey,wild,1|stat:atk|by:6",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Blissey,protagonist,1|name:False Swipe|target:Blissey,wild,1",
+            "split|side:1",
+            "damage|mon:Blissey,wild,1|health:1/714",
+            "damage|mon:Blissey,wild,1|health:1/100",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Blissey,protagonist,1|name:Sleep Powder|target:Blissey,wild,1",
+            "status|mon:Blissey,wild,1|status:Sleep",
+            "residual",
+            "turn|turn:4",
+            ["time"],
+            "useitem|player:protagonist|name:Master Ball|target:Blissey,wild,1",
+            "catch|player:protagonist|mon:Blissey,wild,1|item:Master Ball|shakes:4",
+            "win|side:0"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn level_100_sleeping_magikarp_critical_in_master_ball() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team = pikachu().unwrap();
+    team.members[0].level = 100;
+    let mut wild = magikarp().unwrap();
+    wild.members[0].level = 100;
+    wild.members[0].moves.clear();
+    let mut battle =
+        make_wild_singles_battle(&data, 65535, team, wild, WildPlayerOptions::default()).unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    for _ in 0..5 {
+        assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+        assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    }
+
+    assert_eq!(battle.set_player_choice("protagonist", "move 3"), Ok(()));
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 0)]);
+
+    assert_eq!(
+        battle.set_player_choice("protagonist", "item masterball"),
+        Ok(())
+    );
+    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Pikachu,protagonist,1|name:Sleep Powder|target:Magikarp,wild,1",
+            "status|mon:Magikarp,wild,1|status:Sleep",
+            "residual",
+            "turn|turn:7",
+            ["time"],
+            "useitem|player:protagonist|name:Master Ball|target:Magikarp,wild,1",
+            "catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical",
+            "win|side:0"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 6, &expected_logs);
 }
 
 #[test]

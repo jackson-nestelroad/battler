@@ -29,6 +29,7 @@ use crate::{
         LearnMoveAction,
         Mon,
         MonBattleRequestData,
+        MonExitType,
         MonHandle,
         MoveAction,
         MoveActionInput,
@@ -378,10 +379,10 @@ pub struct Player {
 
     pub mons: Vec<MonHandle>,
     active: Vec<Option<MonHandle>>,
-    /// A mirror of the above list, but fainted Mons are not unset.
+    /// A mirror of the above list, but exited Mons are not unset.
     ///
-    /// This is helpful for locating and switching out fainted Mons.
-    active_or_fainted: Vec<Option<MonHandle>>,
+    /// This is helpful for locating and switching out exited Mons.
+    active_or_exited: Vec<Option<MonHandle>>,
 
     pub escape_attempts: u16,
     pub escaped: bool,
@@ -428,7 +429,7 @@ impl Player {
             mons,
             choice: ChoiceState::new(),
             active: active.clone(),
-            active_or_fainted: active,
+            active_or_exited: active,
             request: None,
             escape_attempts: 0,
             escaped: false,
@@ -485,7 +486,7 @@ impl Player {
         if mon.is_some() {
             // Keep track of fainted Mons for switching.
             *self
-                .active_or_fainted
+                .active_or_exited
                 .get_mut(position)
                 .wrap_error_with_format(format_args!(
                     "mon cannot be in active position {position}"
@@ -509,11 +510,11 @@ impl Player {
             .filter_map(|mon_handle| mon_handle.as_ref())
     }
 
-    /// Creates an iterator over all active or fainted Mons owned by the player.
+    /// Creates an iterator over all active or exited Mons owned by the player.
     ///
-    /// Fainted Mons will continue to be associated with the active position until switched out.
-    pub fn active_or_fainted_mon_handles(&self) -> impl Iterator<Item = &MonHandle> {
-        self.active_or_fainted
+    /// Exited Mons will continue to be associated with the active position until switched out.
+    pub fn active_or_exited_mon_handles(&self) -> impl Iterator<Item = &MonHandle> {
+        self.active_or_exited
             .iter()
             .filter_map(|mon_handle| mon_handle.as_ref())
     }
@@ -527,11 +528,11 @@ impl Player {
     }
 
     /// Creates an iterator over all positions used by the player with an active or fainted Mon. See
-    /// [`active_or_fainted_mon_handles`][`Self::active_or_fainted_mon_handles`].
-    pub fn field_positions_with_active_or_fainted_mon(
+    /// [`active_or_exited_mon_handles`][`Self::active_or_exited_mon_handles`].
+    pub fn field_positions_with_active_or_exited_mon(
         &self,
     ) -> impl Iterator<Item = (usize, &MonHandle)> {
-        self.active_or_fainted
+        self.active_or_exited
             .iter()
             .enumerate()
             .filter_map(|(i, slot)| slot.as_ref().and_then(|slot| Some((i, slot))))
@@ -636,7 +637,7 @@ impl Player {
     pub fn count_must_switch_out(context: &mut PlayerContext) -> usize {
         context
             .player()
-            .active_or_fainted_mon_handles()
+            .active_or_exited_mon_handles()
             .filter(|mon_handle| {
                 context
                     .mon(**mon_handle)
@@ -894,7 +895,7 @@ impl Player {
         }
         let active_mon_handle = context
             .player()
-            .active_or_fainted
+            .active_or_exited
             .get(active_position)
             .cloned()
             .flatten()
@@ -931,8 +932,15 @@ impl Player {
         let target_context = context
             .as_battle_context_mut()
             .mon_context(target_mon_handle)?;
-        if target_context.mon().exited.is_some() {
-            return Err(battler_error!("you cannot switch to a fainted Mon"));
+
+        match target_context.mon().exited {
+            Some(MonExitType::Fainted) => {
+                return Err(battler_error!("you cannot switch to a fainted Mon"))
+            }
+            Some(MonExitType::Caught) => {
+                return Err(battler_error!("you cannot switch to a caught Mon"))
+            }
+            None => (),
         }
 
         let active_mon = context.mon(active_mon_handle)?;
@@ -992,9 +1000,7 @@ impl Player {
                 Some(RequestType::Turn) => {
                     while context.player().active.get(next_mon).is_some_and(|mon| {
                         mon.is_none()
-                            || mon.is_some_and(|mon| {
-                                context.mon(mon).is_ok_and(|mon| mon.exited.is_some())
-                            })
+                            || mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| !mon.active))
                     }) {
                         Self::choose_pass(context)?;
                         next_mon += 1;
@@ -1003,7 +1009,7 @@ impl Player {
                 Some(RequestType::Switch) => {
                     while context
                         .player()
-                        .active_or_fainted
+                        .active_or_exited
                         .get(next_mon)
                         .is_some_and(|mon| {
                             mon.is_none()
@@ -1442,7 +1448,7 @@ impl Player {
 
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
-        for mon in context.player().active_or_fainted_mon_handles() {
+        for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.needs_switch.is_some() {
                 return Ok(true);
             }

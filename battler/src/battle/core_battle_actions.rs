@@ -732,7 +732,7 @@ fn get_move_targets(
                 Some(target) => {
                     let mon = context.mon_handle();
                     let target_context = context.target_mon_context(target)?;
-                    if target_context.mon().exited.is_some()
+                    if !target_context.mon().active
                         && !target_context
                             .mon()
                             .is_ally(target_context.as_battle_context().mon(mon)?)
@@ -1986,9 +1986,6 @@ pub fn direct_damage(
     let damage = damage.max(1);
     let damage = Mon::damage(context, damage, source, effect)?;
     core_battle_logs::damage(context, effect.cloned(), source)?;
-    if context.mon().exited.is_some() {
-        faint(context, source, effect)?;
-    }
     Ok(damage)
 }
 
@@ -2209,7 +2206,7 @@ fn apply_move_effects(
             //
             // In other words, this check skips applying effects to substitutes.
             if target.outcome.hit_target() {
-                if !target_context.target_mon().exited.is_some() {
+                if target_context.target_mon().active {
                     if let Some(boosts) = hit_effect.boosts {
                         let outcome = boost(
                             &mut target_context.applying_effect_context()?,
@@ -3318,7 +3315,7 @@ pub fn give_out_experience(
         .collect::<Vec<_>>()
     {
         let mut context = context.mon_context(foe_handle)?;
-        if !context.player().player_type.gains_experience() || context.mon().exited.is_some() {
+        if !context.player().player_type.gains_experience() || !context.mon().active {
             continue;
         }
 
@@ -3859,7 +3856,7 @@ pub fn transform_into(
     }
 
     let target_context = context.as_battle_context_mut().mon_context(target)?;
-    if target_context.mon().exited.is_some() || target_context.mon().transformed {
+    if !target_context.mon().active || target_context.mon().transformed {
         return Ok(false);
     }
 
@@ -4484,9 +4481,9 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
         )?,
     )?;
 
-    let shake_probability = calculate_shake_probability(catch_rate);
+    let shake_probability = calculate_shake_probability(catch_rate)?;
     let critical = check_critical_capture(context.as_player_context_mut(), shake_probability);
-    let total_shakes = if critical { 2 } else { 4 };
+    let total_shakes = if critical { 1 } else { 4 };
     let mut shakes = 0;
     for _ in 0..total_shakes {
         let rand = rand_util::range(context.battle_mut().prng.as_mut(), 0, 65536);
@@ -4495,6 +4492,10 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
         } else {
             break;
         }
+    }
+
+    if critical && shakes == 0 {
+        shakes += 1;
     }
 
     if shakes != total_shakes {
@@ -4548,14 +4549,18 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
         a,
     );
 
+    let a = a.min(1044480);
+
     Ok(a)
 }
 
-fn calculate_shake_probability(catch_rate: u64) -> u64 {
+fn calculate_shake_probability(catch_rate: u64) -> Result<u64, Error> {
     let b = Fraction::new(catch_rate, 1044480);
-    let b = b.nth_root(4);
+    let b = b
+        .pow(Fraction::new(3u32, 16u32))
+        .wrap_error_with_message("integer overflow")?;
     let b = b * 65536;
-    b.floor()
+    Ok(b.floor())
 }
 
 fn check_critical_capture(context: &mut PlayerContext, catch_rate: u64) -> bool {

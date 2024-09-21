@@ -652,7 +652,7 @@ impl Mon {
         if self.hp == 0 || self.max_hp == 0 {
             return "0".to_owned();
         }
-        let ratio = Fraction::new(self.hp, self.max_hp);
+        let ratio = Fraction::new(self.hp as u32, self.max_hp as u32);
         // Always round up to avoid returning 0 when the Mon is not fainted.
         let mut percentage = (ratio * 100).ceil();
         if percentage == 100 && ratio < Fraction::new(1, 1) {
@@ -1423,13 +1423,16 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        let current_health = if context.mon().max_hp > 0 {
-            Fraction::new(context.mon().hp, context.mon().max_hp)
+        let mut current_health = if context.mon().max_hp > 0 {
+            Fraction::new(context.mon().hp as u32, context.mon().max_hp as u32)
         } else {
-            Fraction::from(1u16)
+            Fraction::from(1u32)
         };
+        if current_health > 1 {
+            current_health = Fraction::from(1u32);
+        }
         context.mon_mut().max_hp = stats.hp;
-        context.mon_mut().hp = (current_health * context.mon().max_hp).floor();
+        context.mon_mut().hp = (current_health * context.mon().max_hp as u32).floor() as u16;
 
         context.mon_mut().base_max_hp = stats.hp;
         context.mon_mut().base_stored_stats = stats.clone();
@@ -1775,7 +1778,7 @@ impl Mon {
 
     /// Checks if the Mon is immune to the given type.
     pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
-        if context.mon().exited.is_some() {
+        if !context.mon().active {
             return Ok(false);
         }
 
@@ -1825,7 +1828,7 @@ impl Mon {
         source: Option<MonHandle>,
         effect: Option<&EffectHandle>,
     ) -> Result<(), Error> {
-        if context.mon().exited.is_some() {
+        if !context.mon().active {
             return Ok(());
         }
         context.mon_mut().hp = 0;
@@ -1847,7 +1850,7 @@ impl Mon {
         shakes: u8,
         critical: bool,
     ) -> Result<(), Error> {
-        if context.mon().exited.is_some() {
+        if !context.mon().active {
             return Ok(());
         }
         context.mon_mut().needs_switch = None;
@@ -1892,6 +1895,14 @@ impl Mon {
         Self::clear_volatile(context, false)?;
 
         context.mon_mut().exited = Some(exit_type);
+        match exit_type {
+            MonExitType::Fainted => {
+                context.mon_mut().status = Some(Id::from_known("fnt"));
+            }
+            MonExitType::Caught => {
+                // TODO: Consider how we communicate that a Mon was caught.
+            }
+        }
 
         Self::switch_out(context)?;
         Ok(())
