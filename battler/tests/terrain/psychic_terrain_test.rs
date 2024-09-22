@@ -132,7 +132,6 @@ fn psychic_terrain_fails_priority_moves() {
             ["time"],
             "move|mon:Furfrou,player-1,1|name:Quick Attack|noanim",
             "activate|mon:Furfrou,player-2,1|move:Psychic Terrain",
-            "fail|mon:Furfrou,player-1,1",
             "residual",
             "turn|turn:4"
         ]"#,

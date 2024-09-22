@@ -1201,7 +1201,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::LearnMove(action) => {
                 let mut context = context.mon_context(action.mon)?;
-                let request = Mon::learn_move_request(&mut context)?.wrap_error_with_format(format_args!("mon {} has no move to learn, even though we allowed the player to choose to learn a move", action.mon))?;
+                let request = Mon::learn_move_request(&mut context)?.wrap_error_with_format(format_args!("mon {} has no move to learn, even though we allowed the player to choose to learn a move", context.mon().name))?;
                 Mon::learn_move(&mut context, &request.id, action.forget_move_slot)?;
             }
             Action::Escape(action) => {
@@ -1332,7 +1332,7 @@ impl<'d> CoreBattle<'d> {
 
                     // At this point, maybe the Mon that was going to switch fainted, so we should
                     // double check if the player still needs a switch.
-                    some_switch_needed |= Player::needs_switch(&context)?;
+                    some_switch_needed = some_switch_needed || Player::needs_switch(&context)?;
                 }
             }
         }
@@ -1367,10 +1367,7 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().turn += 1;
 
         if context.battle().turn >= 1000 {
-            context.battle_mut().log(log_event!(
-                "message",
-                ("message", "It is turn 1000. You have hit the turn limit!"),
-            ));
+            context.battle_mut().log(log_event!("turnlimit"));
             Self::schedule_tie(context)?;
             return Ok(());
         }
@@ -1418,7 +1415,7 @@ impl<'d> CoreBattle<'d> {
         }
 
         if side.is_none() {
-            // Resolve ties, if possible, using the last Mon that fainted.
+            // Resolve ties, if possible, using the last Mon that exited.
             if let Some(last_exited) = context.battle().last_exited {
                 side = Some(context.mon(last_exited)?.side);
             }
@@ -1562,7 +1559,6 @@ impl<'d> CoreBattle<'d> {
             .get_by_id(move_id)
             .into_result()?;
         let tracks_target = mov.data.tracks_target;
-        let smart_target = mov.data.smart_target;
         let move_target = mov.data.target.clone();
 
         if tracks_target {
@@ -1571,15 +1567,6 @@ impl<'d> CoreBattle<'d> {
                 if context.mon().active {
                     // Move's original target is on the field.
                     return Ok(Some(original_target));
-                }
-            }
-        }
-
-        if smart_target {
-            let mut context = context.mon_context(mon)?;
-            if let Some(target) = target {
-                if let Some(target) = Mon::get_target(&mut context, target)? {
-                    return Ok(Some(target));
                 }
             }
         }

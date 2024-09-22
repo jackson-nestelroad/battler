@@ -17,6 +17,7 @@ use battler::{
 use battler_test_utils::{
     assert_logs_since_turn_eq,
     assert_turn_logs_eq,
+    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
 };
@@ -62,6 +63,7 @@ fn make_battle(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle, Erro
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_controlled_rng(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -117,11 +119,15 @@ fn multihit_number_in_range() {
             "split|side:1",
             "damage|mon:Bulbasaur,player-2,1|health:78/105",
             "damage|mon:Bulbasaur,player-2,1|health:75/100",
-            "hitcount|hits:2",
+            "animatemove|mon:Bulbasaur,player-1,1|name:Fury Attack|target:Bulbasaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Bulbasaur,player-2,1|health:71/105",
+            "damage|mon:Bulbasaur,player-2,1|health:68/100",
+            "hitcount|hits:3",
             "move|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
             "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:78/105",
-            "damage|mon:Bulbasaur,player-1,1|health:75/100",
+            "damage|mon:Bulbasaur,player-1,1|health:79/105",
+            "damage|mon:Bulbasaur,player-1,1|health:76/100",
             "animatemove|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
             "split|side:0",
             "damage|mon:Bulbasaur,player-1,1|health:72/105",
@@ -130,41 +136,22 @@ fn multihit_number_in_range() {
             "split|side:0",
             "damage|mon:Bulbasaur,player-1,1|health:65/105",
             "damage|mon:Bulbasaur,player-1,1|health:62/100",
-            "animatemove|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
+            "hitcount|hits:3",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Bulbasaur,player-1,1|name:Fury Attack|noanim",
+            "miss|mon:Bulbasaur,player-2,1",
+            "move|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
             "split|side:0",
             "damage|mon:Bulbasaur,player-1,1|health:58/105",
             "damage|mon:Bulbasaur,player-1,1|health:56/100",
             "animatemove|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
+            "crit|mon:Bulbasaur,player-1,1",
             "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:51/105",
-            "damage|mon:Bulbasaur,player-1,1|health:49/100",
-            "hitcount|hits:5",
-            "residual",
-            "turn|turn:3",
-            ["time"],
-            "move|mon:Bulbasaur,player-1,1|name:Fury Attack|target:Bulbasaur,player-2,1",
-            "split|side:1",
-            "damage|mon:Bulbasaur,player-2,1|health:71/105",
-            "damage|mon:Bulbasaur,player-2,1|health:68/100",
-            "animatemove|mon:Bulbasaur,player-1,1|name:Fury Attack|target:Bulbasaur,player-2,1",
-            "crit|mon:Bulbasaur,player-2,1",
-            "split|side:1",
-            "damage|mon:Bulbasaur,player-2,1|health:61/105",
-            "damage|mon:Bulbasaur,player-2,1|health:59/100",
+            "damage|mon:Bulbasaur,player-1,1|health:48/105",
+            "damage|mon:Bulbasaur,player-1,1|health:46/100",
             "hitcount|hits:2",
-            "move|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:45/105",
-            "damage|mon:Bulbasaur,player-1,1|health:43/100",
-            "animatemove|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:38/105",
-            "damage|mon:Bulbasaur,player-1,1|health:37/100",
-            "animatemove|mon:Bulbasaur,player-2,1|name:Fury Attack|target:Bulbasaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Bulbasaur,player-1,1|health:31/105",
-            "damage|mon:Bulbasaur,player-1,1|health:30/100",
-            "hitcount|hits:3",
             "residual",
             "turn|turn:4"
         ]"#,
@@ -247,6 +234,10 @@ fn hit_count_logs_after_faint() {
     assert_eq!(battle.start(), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 17)]);
+
     assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 

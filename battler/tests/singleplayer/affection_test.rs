@@ -154,7 +154,8 @@ fn affection_survives_multiple_hits() {
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([
         (4, 0),
-        (6, 18),
+        (5, 18),
+        (6, 0),
         (7, 0),
         (9, 0),
         (11, 0),

@@ -45,6 +45,16 @@ impl From<bool> for MoveOutcome {
     }
 }
 
+impl From<MoveEventResult> for MoveOutcome {
+    fn from(value: MoveEventResult) -> Self {
+        match value {
+            MoveEventResult::Advance => Self::Success,
+            MoveEventResult::Fail => Self::Failed,
+            MoveEventResult::Stop => Self::Skipped,
+        }
+    }
+}
+
 /// The outcome of a move used on a single target in a single turn of battle.
 ///
 /// Differs from [`MoveOutcome`] in that it roughly tracks the effect a move had on a single target,

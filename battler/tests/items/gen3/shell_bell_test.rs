@@ -16,6 +16,7 @@ use battler::{
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,
+    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
 };
@@ -74,6 +75,7 @@ fn make_battle(
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_controlled_rng(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -125,6 +127,10 @@ fn shell_bell_activates_after_multi_hit_move() {
 
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 17)]);
+
     assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 

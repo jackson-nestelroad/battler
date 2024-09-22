@@ -16,6 +16,7 @@ use battler::{
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,
+    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
 };
@@ -55,6 +56,7 @@ fn make_battle(
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_controlled_rng(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -73,8 +75,16 @@ fn rage_increases_attack_on_hit() {
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 17)]);
+
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 17)]);
+
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -102,6 +112,11 @@ fn rage_increases_attack_on_hit() {
             "residual",
             "turn|turn:3",
             ["time"],
+            "move|mon:Gyarados,player-2,1|name:Fury Attack|noanim",
+            "miss|mon:Gyarados,player-1,1",
+            "residual",
+            "turn|turn:4",
+            ["time"],
             "move|mon:Gyarados,player-2,1|name:Fury Attack|target:Gyarados,player-1,1",
             "split|side:0",
             "damage|mon:Gyarados,player-1,1|health:92/155",
@@ -114,36 +129,27 @@ fn rage_increases_attack_on_hit() {
             "boost|mon:Gyarados,player-1,1|stat:atk|by:1",
             "animatemove|mon:Gyarados,player-2,1|name:Fury Attack|target:Gyarados,player-1,1",
             "split|side:0",
-            "damage|mon:Gyarados,player-1,1|health:72/155",
-            "damage|mon:Gyarados,player-1,1|health:47/100",
+            "damage|mon:Gyarados,player-1,1|health:71/155",
+            "damage|mon:Gyarados,player-1,1|health:46/100",
             "boost|mon:Gyarados,player-1,1|stat:atk|by:1",
             "animatemove|mon:Gyarados,player-2,1|name:Fury Attack|target:Gyarados,player-1,1",
             "split|side:0",
             "damage|mon:Gyarados,player-1,1|health:61/155",
             "damage|mon:Gyarados,player-1,1|health:40/100",
             "boost|mon:Gyarados,player-1,1|stat:atk|by:1",
-            "hitcount|hits:4",
-            "residual",
-            "turn|turn:4",
-            ["time"],
-            "move|mon:Gyarados,player-2,1|name:Fury Attack|target:Gyarados,player-1,1",
+            "animatemove|mon:Gyarados,player-2,1|name:Fury Attack|target:Gyarados,player-1,1",
             "split|side:0",
             "damage|mon:Gyarados,player-1,1|health:51/155",
             "damage|mon:Gyarados,player-1,1|health:33/100",
             "boost|mon:Gyarados,player-1,1|stat:atk|by:0",
-            "animatemove|mon:Gyarados,player-2,1|name:Fury Attack|target:Gyarados,player-1,1",
-            "split|side:0",
-            "damage|mon:Gyarados,player-1,1|health:40/155",
-            "damage|mon:Gyarados,player-1,1|health:26/100",
-            "boost|mon:Gyarados,player-1,1|stat:atk|by:0",
-            "hitcount|hits:2",
+            "hitcount|hits:5",
             "residual",
             "turn|turn:5",
             ["time"],
             "move|mon:Gyarados,player-1,1|name:Rage|target:Gyarados,player-2,1",
             "split|side:1",
-            "damage|mon:Gyarados,player-2,1|health:88/155",
-            "damage|mon:Gyarados,player-2,1|health:57/100",
+            "damage|mon:Gyarados,player-2,1|health:92/155",
+            "damage|mon:Gyarados,player-2,1|health:60/100",
             "residual",
             "turn|turn:6"
         ]"#,

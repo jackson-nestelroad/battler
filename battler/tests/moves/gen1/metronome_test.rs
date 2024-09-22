@@ -136,7 +136,12 @@ fn metronome_uses_random_move() {
             "split|side:0",
             "damage|mon:Togepi,player-1,1|health:70/95",
             "damage|mon:Togepi,player-1,1|health:74/100",
-            "hitcount|hits:2",
+            "animatemove|mon:Togepi,player-2,2|name:Pin Missile|target:Togepi,player-1,1",
+            "resisted|mon:Togepi,player-1,1",
+            "split|side:0",
+            "damage|mon:Togepi,player-1,1|health:68/95",
+            "damage|mon:Togepi,player-1,1|health:72/100",
+            "hitcount|hits:3",
             "residual",
             "turn|turn:2"
         ]"#,

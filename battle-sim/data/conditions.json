@@ -274,6 +274,12 @@
             "return false"
           ]
         },
+        "on_source_try_hit": [
+          "if $move.source_effect.is_defined and $move.source_effect.id == sleeptalk:",
+          ["return"],
+          "if !func_call(move_has_flag: $move.id sleepusable):",
+          ["return false"]
+        ],
         "on_modify_catch_rate": ["return $catch_rate * 5/2"]
       }
     }
@@ -980,6 +986,35 @@
       "duration": 1,
       "callbacks": {
         "on_source_base_power": ["return $base_power * 13/10"]
+      }
+    }
+  },
+  "breakprotect": {
+    "name": "Break Protect",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": [
+          "$activate = false",
+          "$target_volatiles = [protect]",
+          "$side_conditions = [quickguard, wideguard]",
+          "foreach $volatile in $target_volatiles:",
+          [
+            "if func_call(remove_volatile: $target $volatile):",
+            ["$activate = true"]
+          ],
+          "if !func_call(is_ally: $target $source):",
+          [
+            "foreach $condition in $side_conditions:",
+            [
+              "if func_call(remove_side_condition: $target.side $condition:",
+              ["$activate = true"]
+            ]
+          ],
+          "if $activate:",
+          ["log_activate: with_target broken", "remove_volatile: $target stall"]
+        ]
       }
     }
   }

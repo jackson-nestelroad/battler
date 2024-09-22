@@ -1,4 +1,7 @@
-use std::ops::Deref;
+use std::{
+    collections::hash_map::Entry,
+    ops::Deref,
+};
 
 use ahash::HashMapExt;
 use lazy_static::lazy_static;
@@ -34,6 +37,7 @@ use crate::{
         MoveOutcomeOnTarget,
         Player,
         PlayerContext,
+        ReceivedAttackEntry,
         Side,
         SideEffectContext,
         SwitchEventsAction,
@@ -64,6 +68,7 @@ use crate::{
         MoveCategory,
         MoveFlags,
         MoveTarget,
+        MultihitType,
         SelfDestructType,
         SwitchType,
     },
@@ -611,7 +616,7 @@ fn use_active_move_internal(
             core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
-        return Ok(MoveOutcome::Failed);
+        return Ok(MoveOutcome::from(try_move_result));
     }
 
     core_battle_effects::run_active_move_event_expecting_void(
@@ -652,7 +657,7 @@ fn use_active_move_internal(
         )?;
     }
 
-    if outcome == MoveOutcome::Failed {
+    if outcome.failed() {
         core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
 
         core_battle_effects::run_active_move_event_expecting_void(
@@ -784,7 +789,7 @@ fn get_move_targets(
 }
 
 /// Runs all events prior to a move hitting any targets.
-fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<Option<MoveOutcome>, Error> {
+fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcome, Error> {
     let move_event_result = core_battle_effects::run_active_move_event_expecting_move_event_result(
         context,
         fxlang::BattleEvent::TryUseMove,
@@ -809,15 +814,13 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<Option<Mov
         .combine(move_prepare_hit_result)
         .combine(event_prepare_hit_result);
 
-    if !move_event_result.advance() {
-        if move_event_result.failed() {
-            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
-            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-            return Ok(Some(MoveOutcome::Failed));
-        }
-        return Ok(Some(MoveOutcome::Skipped));
+    let outcome = MoveOutcome::from(move_event_result);
+
+    if outcome.failed() {
+        core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
     }
-    return Ok(None);
+
+    Ok(outcome)
 }
 
 /// Tries to use an indirect move against some aspect of the battle field, such as a side or the
@@ -826,7 +829,8 @@ fn try_indirect_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<MoveOutcome, Error> {
-    if let Some(try_use_move_outcome) = run_try_use_move_events(context)? {
+    let try_use_move_outcome = run_try_use_move_events(context)?;
+    if !try_use_move_outcome.success() {
         return Ok(try_use_move_outcome);
     }
 
@@ -855,12 +859,7 @@ fn try_indirect_move(
     };
 
     if !try_move_result.advance() {
-        if try_move_result.failed() {
-            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
-            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-            return Ok(MoveOutcome::Failed);
-        }
-        return Ok(MoveOutcome::Skipped);
+        return Ok(MoveOutcome::from(try_move_result));
     }
 
     // Hit the first target, as a representative of the side.
@@ -872,33 +871,25 @@ fn try_indirect_move(
     move_hit_determine_success(context, &targets[0..1])
 }
 
-struct MoveStepResult {
-    targets: Vec<direct_move_step::MoveStepTarget>,
-    at_least_one_failure: bool,
+/// The outcome of a move step against a target.
+struct MoveStepOutcomeOnTarget {
+    pub handle: MonHandle,
+    pub outcome: MoveOutcome,
 }
 
-fn apply_move_step_against_targets(
-    context: &mut ActiveMoveContext,
-    mut result: MoveStepResult,
-    move_step: direct_move_step::DirectMoveStep,
-) -> Result<MoveStepResult, Error> {
-    move_step(context, result.targets.as_mut_slice())?;
-    let at_least_one_failure = result.targets.iter().any(|target| target.outcome.failed());
-    let targets = result
-        .targets
-        .into_iter()
-        .filter(|target| target.outcome.success())
-        .collect();
-    Ok(MoveStepResult {
-        targets,
-        at_least_one_failure: result.at_least_one_failure | at_least_one_failure,
-    })
+impl MoveStepOutcomeOnTarget {
+    pub fn new(handle: MonHandle) -> Self {
+        Self {
+            handle,
+            outcome: MoveOutcome::Success,
+        }
+    }
 }
 
 fn prepare_direct_move_against_targets(
     context: &mut ActiveMoveContext,
-    targets: &[MonHandle],
-) -> Result<MoveStepResult, Error> {
+    targets: &mut [MoveStepOutcomeOnTarget],
+) -> Result<(), Error> {
     lazy_static! {
         static ref STEPS: Vec<direct_move_step::DirectMoveStep> = vec![
             direct_move_step::check_targets_invulnerability,
@@ -906,41 +897,39 @@ fn prepare_direct_move_against_targets(
             direct_move_step::check_type_immunity,
             direct_move_step::check_general_immunity,
             direct_move_step::handle_accuracy,
-            direct_move_step::break_protect,
-            // TODO: Boost stealing would happen at this stage.
         ];
     }
 
-    let mut result = MoveStepResult {
-        targets: targets
-            .iter()
-            .map(|target| direct_move_step::MoveStepTarget {
-                handle: *target,
-                outcome: MoveOutcome::Success,
-            })
-            .collect(),
-        at_least_one_failure: false,
-    };
     for step in &*STEPS {
-        result = apply_move_step_against_targets(context, result, *step)?;
-        if result.targets.is_empty() {
-            break;
-        }
+        step(context, targets)?;
     }
 
-    Ok(result)
+    Ok(())
 }
 
 /// Prepares to use a move directly against several target Mons.
+///
+/// Includes invulnerability, immunity, and accuracy checks.
+///
+/// Returns targets that can then be hit by the move.
 pub fn prepare_direct_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<Vec<MonHandle>, Error> {
-    let result = prepare_direct_move_against_targets(context, targets)?;
-    Ok(result
-        .targets
+    let mut targets = targets
+        .iter()
+        .map(|target| MoveStepOutcomeOnTarget::new(*target))
+        .collect::<Vec<_>>();
+    prepare_direct_move_against_targets(context, &mut targets)?;
+    Ok(targets
         .into_iter()
-        .map(|target| target.handle)
+        .filter_map(|target| {
+            if target.outcome.success() {
+                Some(target.handle)
+            } else {
+                None
+            }
+        })
         .collect())
 }
 
@@ -949,39 +938,232 @@ fn try_direct_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<MoveOutcome, Error> {
-    if targets.len() > 1 && !context.active_move().data.smart_target {
+    if targets.len() > 1 {
         context.active_move_mut().spread_hit = true;
     }
 
-    if let Some(try_use_move_outcome) = run_try_use_move_events(context)? {
+    let try_use_move_outcome = run_try_use_move_events(context)?;
+    if !try_use_move_outcome.success() {
         return Ok(try_use_move_outcome);
     }
 
-    let prepare_result = prepare_direct_move_against_targets(context, targets)?;
-    let result = if !prepare_result.targets.is_empty() {
-        apply_move_step_against_targets(context, prepare_result, *&direct_move_step::move_hit_loop)?
-    } else {
-        prepare_result
-    };
+    let targets = move_hit_loop(context, targets)?;
 
-    let outcome = if result.targets.is_empty() {
-        if result.at_least_one_failure {
-            MoveOutcome::Failed
-        } else {
-            MoveOutcome::Skipped
-        }
-    } else {
+    let success = targets.iter().all(|target| target.outcome.success());
+    let at_least_one_success = targets.iter().any(|target| target.outcome.success());
+    let at_least_one_failure = targets.iter().any(|target| target.outcome.failed());
+    let outcome = if success {
         MoveOutcome::Success
+    } else if !at_least_one_success && at_least_one_failure {
+        MoveOutcome::Failed
+    } else {
+        MoveOutcome::Skipped
     };
-
-    if context.active_move().spread_hit && !outcome.failed() {
-        core_battle_logs::last_move_spread_targets(
-            context.as_battle_context_mut(),
-            result.targets.into_iter().map(|target| target.handle),
-        )?;
-    }
 
     Ok(outcome)
+}
+
+/// Hits each target for each hit of the move.
+///
+/// Multi-hit moves hit each target multiple times.
+fn move_hit_loop(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+) -> Result<Vec<MoveStepOutcomeOnTarget>, Error> {
+    context.active_move_mut().total_damage = 0;
+
+    let hits = match context.active_move().data.multihit {
+        None => 1,
+        Some(MultihitType::Static(hits)) => hits,
+        Some(MultihitType::Range(min, max)) => {
+            if min == 2 && max == 5 {
+                // 35-35-15-15 for 2-3-4-5 hits.
+                *rand_util::sample_slice(
+                    context.battle_mut().prng.as_mut(),
+                    &[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5],
+                )
+                .wrap_error()?
+            } else {
+                rand_util::range(context.battle_mut().prng.as_mut(), min as u64, max as u64) as u8
+            }
+        }
+    };
+
+    // TODO: Consider Loaded Dice item.
+
+    let mut targets = targets
+        .iter()
+        .map(|target| MoveStepOutcomeOnTarget::new(*target))
+        .collect::<Vec<_>>();
+    let mut target_hit_results = FastHashMap::new();
+
+    for hit in 0..hits {
+        // No more targets.
+        if targets.iter().all(|target| !target.outcome.success()) {
+            break;
+        }
+        if targets.iter().all(|target| {
+            context
+                .target_context(target.handle)
+                .map(|context| context.target_mon().hp)
+                .unwrap_or(0)
+                == 0
+        }) {
+            break;
+        }
+
+        // Record number of hits.
+        //
+        // We do this now so that damage and base power callbacks can use this value.
+        context.active_move_mut().hit = hit + 1;
+
+        // Additional hits trigger a new move animation.
+        if context.active_move().hit > 1 {
+            let target = if context.active_move().data.target.has_single_target() {
+                targets.first().map(|target| target.handle)
+            } else {
+                None
+            };
+            let move_name = context.active_move().data.name.clone();
+            core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target, true)?;
+        }
+
+        // Prepare to directly hit targets.
+        //
+        // Includes invulnerability, immunity, and accuracy checks.
+        prepare_direct_move_against_targets(context, &mut targets)?;
+
+        // Only hit targets that were prepared successfully.
+        let hit_targets = targets
+            .iter()
+            .filter_map(|target| target.outcome.success().then_some(target.handle))
+            .collect::<Vec<_>>();
+        let mut hit_targets_state =
+            hit_targets_state_from_targets(hit_targets.iter().map(|target_handle| *target_handle));
+
+        // Here is where the hit happens. All hit effects occur under this method, and we get the
+        // outcome for each target saved to our list.
+        move_hit(context, &mut hit_targets_state)?;
+
+        // Update the outcome for the target as soon as possible.
+        for (i, _) in hit_targets.iter().enumerate() {
+            let new_outcome = MoveOutcome::from(
+                !hit_targets_state
+                    .get(i)
+                    .wrap_error_with_format(format_args!("expected target hit state at index {i}"))?
+                    .outcome
+                    .failed(),
+            );
+            targets
+                .get_mut(i)
+                .wrap_error_with_format(format_args!("expected target at index {i}"))?
+                .outcome = new_outcome;
+        }
+
+        if hit_targets_state
+            .iter()
+            .all(|target| target.outcome.failed())
+        {
+            // This hit failed.
+            context.active_move_mut().hit -= 1;
+            break;
+        }
+
+        if context.active_move().spread_hit {
+            core_battle_logs::last_move_spread_targets(
+                context.as_battle_context_mut(),
+                hit_targets_state.iter().filter_map(|target| {
+                    if target.outcome.hit() {
+                        Some(target.handle)
+                    } else {
+                        None
+                    }
+                }),
+            )?;
+        }
+
+        context.active_move_mut().total_damage += hit_targets_state
+            .iter()
+            .filter_map(|target| {
+                if let MoveOutcomeOnTarget::Damage(damage) = target.outcome {
+                    Some(damage as u64)
+                } else {
+                    None
+                }
+            })
+            .sum::<u64>();
+
+        for state in hit_targets_state.iter() {
+            match target_hit_results.entry(state.handle) {
+                Entry::Vacant(entry) => {
+                    entry.insert(state.outcome);
+                }
+                Entry::Occupied(mut entry) => *entry.get_mut() = entry.get().combine(state.outcome),
+            }
+        }
+
+        // Run effects between move hits.
+        CoreBattle::update(context.as_battle_context_mut())?;
+    }
+
+    // Log OHKOs.
+    for target in targets.iter() {
+        let mut context = context.target_context(target.handle)?;
+        if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
+            core_battle_logs::ohko(&mut context.target_mon_context()?)?;
+        }
+    }
+
+    CoreBattle::faint_messages(context.as_battle_context_mut())?;
+
+    let hits = context.active_move().hit;
+    if context.active_move().data.multihit.is_some() && hits > 0 {
+        core_battle_logs::hit_count(context.as_battle_context_mut(), hits)?;
+    }
+
+    apply_recoil_damage(context, context.active_move().total_damage)?;
+
+    // Record received attacks. Multihit moves are folded into one attack at this point.
+    for (target, result) in target_hit_results {
+        let source = context.mon_handle();
+        if target != source && result.hit() {
+            let turn = context.battle().turn();
+            let source_side = context.side().index;
+            let source_position = Mon::position_on_side_or_previous(context.as_mon_context())
+                .wrap_error_with_message("expected attacker to have a position")?;
+            context
+                .target_mon_context(target)?
+                .mon_mut()
+                .received_attacks
+                .push(ReceivedAttackEntry {
+                    source,
+                    source_side,
+                    source_position,
+                    damage: result.damage(),
+                    turn,
+                });
+        }
+    }
+
+    // Trigger effects at the end of each move.
+    CoreBattle::update(context.as_battle_context_mut())?;
+
+    for target in targets.iter().filter(|target| target.outcome.success()) {
+        core_battle_effects::run_active_move_event_expecting_void(
+            context,
+            fxlang::BattleEvent::AfterMoveSecondaryEffects,
+            core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+            fxlang::VariableInput::default(),
+        );
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context.applying_effect_context_for_target(target.handle)?,
+            fxlang::BattleEvent::AfterMoveSecondaryEffects,
+            fxlang::VariableInput::default(),
+        );
+    }
+
+    // At this point, all hits have been applied.
+    Ok(targets)
 }
 
 /// Hits all targets and determines if the move was a success.
@@ -989,10 +1171,8 @@ fn move_hit_determine_success(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<MoveOutcome, Error> {
-    let targets = move_hit(
-        context,
-        hit_targets_state_from_targets(targets.iter().cloned()),
-    )?;
+    let mut targets = hit_targets_state_from_targets(targets.iter().cloned());
+    move_hit(context, &mut targets)?;
     if targets.into_iter().all(|target| target.outcome.failed()) {
         Ok(MoveOutcome::Failed)
     } else {
@@ -1003,10 +1183,9 @@ fn move_hit_determine_success(
 /// Hits the given targets with a move, recording the state of the hit.
 fn move_hit(
     context: &mut ActiveMoveContext,
-    mut hit_targets_state: Vec<HitTargetState>,
-) -> Result<Vec<HitTargetState>, Error> {
-    hit_targets(context, hit_targets_state.as_mut_slice())?;
-    Ok(hit_targets_state)
+    hit_targets_state: &mut [HitTargetState],
+) -> Result<(), Error> {
+    hit_targets(context, hit_targets_state)
 }
 
 /// Hits all targets with a move, recording the state of the hit.
@@ -1511,13 +1690,9 @@ pub fn apply_recoil_damage(
 }
 
 mod direct_move_step {
-    use std::{
-        collections::hash_map::Entry,
-        ops::Mul,
-    };
+    use std::ops::Mul;
 
-    use ahash::HashMapExt;
-
+    use super::MoveStepOutcomeOnTarget;
     use crate::{
         battle::{
             core_battle_actions,
@@ -1526,46 +1701,33 @@ mod direct_move_step {
             mon_states,
             ActiveMoveContext,
             ActiveTargetContext,
-            CoreBattle,
             Mon,
-            MonHandle,
             MoveOutcome,
-            MoveOutcomeOnTarget,
-            ReceivedAttackEntry,
         },
         common::{
             Error,
-            FastHashMap,
             Fraction,
-            WrapResultError,
         },
         effect::fxlang,
         moves::{
             Accuracy,
             MoveCategory,
             MoveTarget,
-            MultihitType,
             OhkoType,
         },
         rng::rand_util,
     };
 
-    /// The outcome of a move step against a target.
-    pub struct MoveStepTarget {
-        pub handle: MonHandle,
-        pub outcome: MoveOutcome,
-    }
-
     /// The interface for any direct move step.
     pub type DirectMoveStep =
-        fn(&mut ActiveMoveContext, &mut [MoveStepTarget]) -> Result<(), Error>;
+        fn(&mut ActiveMoveContext, &mut [MoveStepOutcomeOnTarget]) -> Result<(), Error>;
 
     /// Checks if targets are invulnerable.
     pub fn check_targets_invulnerability(
         context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
+        targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<(), Error> {
-        for target in targets {
+        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             if !core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
@@ -1581,9 +1743,9 @@ mod direct_move_step {
     /// Checks the "TryHit" event for each target.
     pub fn check_try_hit_event(
         context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
+        targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<(), Error> {
-        for target in targets.iter_mut() {
+        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             let result =
                 core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
                     &mut context.applying_effect_context_for_target(target.handle)?,
@@ -1597,20 +1759,16 @@ mod direct_move_step {
                 }
             }
         }
-        if targets.iter().all(|target| target.outcome.failed()) {
-            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
-            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
-        }
         Ok(())
     }
 
     /// Checks for type immunity.
     pub fn check_type_immunity(
         context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
+        targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<(), Error> {
         let move_type = context.active_move().data.primary_type;
-        for target in targets {
+        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             // TODO: IgnoreImmunity event for the move (Thousand Arrows has a special rule).
             let immune = !context.active_move().data.ignore_immunity();
             let mut target_context = context.target_mon_context(target.handle)?;
@@ -1629,9 +1787,9 @@ mod direct_move_step {
     /// to powder moves).
     pub fn check_general_immunity(
         context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
+        targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<(), Error> {
-        for target in targets {
+        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             let immune = !core_battle_effects::run_active_move_event_expecting_bool(
                 context,
                 fxlang::BattleEvent::TryImmunity,
@@ -1653,9 +1811,13 @@ mod direct_move_step {
     /// Applies an accuracy check to each target.
     pub fn handle_accuracy(
         context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
+        targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<(), Error> {
-        for target in targets {
+        if !context.active_move().data.multiaccuracy && context.active_move().hit > 1 {
+            return Ok(());
+        }
+
+        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             let mut context = context.target_context(target.handle)?;
             if !accuracy_check(&mut context)? {
                 target.outcome = MoveOutcome::Failed;
@@ -1754,219 +1916,6 @@ mod direct_move_step {
             core_battle_logs::miss(&mut context.target_mon_context()?)?;
         }
         Ok(hit)
-    }
-
-    /// Breaks protect for each target.
-    pub fn break_protect(
-        context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
-    ) -> Result<(), Error> {
-        if context.active_move().data.breaks_protect {
-            for _ in targets {
-                // TODO: Break protect volatile conditions.
-            }
-        }
-        Ok(())
-    }
-
-    /// Hits each target for each hit of the move.
-    ///
-    /// Multi-hit moves hit each target multiple times.
-    pub fn move_hit_loop(
-        context: &mut ActiveMoveContext,
-        targets: &mut [MoveStepTarget],
-    ) -> Result<(), Error> {
-        context.active_move_mut().total_damage = 0;
-
-        let hits = match context.active_move().data.multihit {
-            None => 1,
-            Some(MultihitType::Static(hits)) => hits,
-            Some(MultihitType::Range(min, max)) => {
-                if min == 2 && max == 5 {
-                    // 35-35-15-15 for 2-3-4-5 hits.
-                    *rand_util::sample_slice(
-                        context.battle_mut().prng.as_mut(),
-                        &[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5],
-                    )
-                    .wrap_error()?
-                } else {
-                    rand_util::range(context.battle_mut().prng.as_mut(), min as u64, max as u64)
-                        as u8
-                }
-            }
-        };
-
-        // TODO: Consider Loaded Dice item.
-
-        let mut target_hit_results = FastHashMap::new();
-
-        for hit in 0..hits {
-            // No more targets.
-            if targets.iter().all(|target| !target.outcome.success()) {
-                break;
-            }
-            if targets.iter().all(|target| {
-                context
-                    .target_context(target.handle)
-                    .map(|context| context.target_mon().hp)
-                    .unwrap_or(0)
-                    == 0
-            }) {
-                break;
-            }
-
-            // Record number of hits.
-            //
-            // We do this now so that damage and base power callbacks can use this value.
-            context.active_move_mut().hit = hit + 1;
-
-            if context.active_move().hit > 1 {
-                let target = if context.active_move().data.target.has_single_target() {
-                    targets.first().map(|target| target.handle)
-                } else {
-                    None
-                };
-                let move_name = context.active_move().data.name.clone();
-                core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target, true)?;
-            }
-
-            // Of all the eligible targets, determine which ones we will actually hit.
-            for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-                let mut context = context.target_context(target.handle)?;
-                if context.active_move().data.multiaccuracy && hit > 0 {
-                    if !accuracy_check(&mut context)? {
-                        target.outcome = MoveOutcome::Failed;
-                        continue;
-                    }
-                }
-            }
-
-            let hit_targets = targets
-                .iter()
-                .enumerate()
-                .filter_map(|(i, target)| target.outcome.success().then_some((i, target.handle)))
-                .collect::<Vec<_>>();
-            let hit_targets_state = core_battle_actions::move_hit(
-                context,
-                core_battle_actions::hit_targets_state_from_targets(
-                    hit_targets
-                        .iter()
-                        .map(|(_, target_handle)| target_handle)
-                        .cloned(),
-                ),
-            )?;
-
-            // Update the outcome for the target as soon as possible.
-            for (i, _) in hit_targets {
-                let new_outcome = MoveOutcome::from(
-                    !hit_targets_state
-                        .get(i)
-                        .wrap_error_with_format(format_args!(
-                            "expected target hit state at index {i}"
-                        ))?
-                        .outcome
-                        .failed(),
-                );
-                targets
-                    .get_mut(i)
-                    .wrap_error_with_format(format_args!("expected target at index {i}"))?
-                    .outcome = new_outcome;
-            }
-
-            if hit_targets_state
-                .iter()
-                .all(|target| target.outcome.failed())
-            {
-                // This hit failed.
-                context.active_move_mut().hit -= 1;
-                break;
-            }
-
-            context.active_move_mut().total_damage += hit_targets_state
-                .iter()
-                .filter_map(|target| {
-                    if let MoveOutcomeOnTarget::Damage(damage) = target.outcome {
-                        Some(damage as u64)
-                    } else {
-                        None
-                    }
-                })
-                .sum::<u64>();
-
-            for state in hit_targets_state.iter() {
-                match target_hit_results.entry(state.handle) {
-                    Entry::Vacant(entry) => {
-                        entry.insert(state.outcome);
-                    }
-                    Entry::Occupied(mut entry) => {
-                        *entry.get_mut() = entry.get().combine(state.outcome)
-                    }
-                }
-            }
-
-            // Run effects between move hits.
-            CoreBattle::update(context.as_battle_context_mut())?;
-        }
-
-        // Log OHKOs.
-        for target in targets.iter() {
-            let mut context = context.target_context(target.handle)?;
-            if context.active_move().data.ohko_type.is_some() && context.target_mon().hp == 0 {
-                core_battle_logs::ohko(&mut context.target_mon_context()?)?;
-            }
-        }
-
-        CoreBattle::faint_messages(context.as_battle_context_mut())?;
-
-        let hits = context.active_move().hit;
-        if context.active_move().data.multihit.is_some() {
-            core_battle_logs::hit_count(context.as_battle_context_mut(), hits)?;
-        }
-
-        core_battle_actions::apply_recoil_damage(context, context.active_move().total_damage)?;
-
-        // Record received attacks. Multihit moves are folded into one attack at this point.
-        for (target, result) in target_hit_results {
-            let source = context.mon_handle();
-            if target != source && result.hit() {
-                let turn = context.battle().turn();
-                let source_side = context.side().index;
-                let source_position =
-                    Mon::position_on_side_or_previous(context.as_mon_context())
-                        .wrap_error_with_message("expected attacker to have a position")?;
-                context
-                    .target_mon_context(target)?
-                    .mon_mut()
-                    .received_attacks
-                    .push(ReceivedAttackEntry {
-                        source,
-                        source_side,
-                        source_position,
-                        damage: result.damage(),
-                        turn,
-                    });
-            }
-        }
-
-        // Trigger effects at the end of each move.
-        CoreBattle::update(context.as_battle_context_mut())?;
-
-        for target in targets.iter().filter(|target| target.outcome.success()) {
-            core_battle_effects::run_active_move_event_expecting_void(
-                context,
-                fxlang::BattleEvent::AfterMoveSecondaryEffects,
-                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                fxlang::VariableInput::default(),
-            );
-            core_battle_effects::run_event_for_applying_effect(
-                &mut context.applying_effect_context_for_target(target.handle)?,
-                fxlang::BattleEvent::AfterMoveSecondaryEffects,
-                fxlang::VariableInput::default(),
-            );
-        }
-
-        // At this point, all hits have been applied.
-        Ok(())
     }
 }
 
@@ -2551,16 +2500,25 @@ fn apply_user_effect(
                     chance.denominator() as u64,
                 );
                 if user_effect_roll {
-                    move_hit(&mut context, hit_targets_state_from_targets([mon_handle]))?;
+                    move_hit(
+                        &mut context,
+                        &mut hit_targets_state_from_targets([mon_handle]),
+                    )?;
                 }
                 if context.active_move().data.multihit.is_some() {
                     context.active_move_mut().primary_user_effect_applied = true;
                 }
             } else {
-                move_hit(&mut context, hit_targets_state_from_targets([mon_handle]))?;
+                move_hit(
+                    &mut context,
+                    &mut hit_targets_state_from_targets([mon_handle]),
+                )?;
             }
         } else {
-            move_hit(&mut context, hit_targets_state_from_targets([mon_handle]))?;
+            move_hit(
+                &mut context,
+                &mut hit_targets_state_from_targets([mon_handle]),
+            )?;
         }
     }
 
@@ -2611,7 +2569,7 @@ fn apply_secondary_effects(
             };
             if secondary_roll {
                 let mut context = context.secondary_active_move_context(target.handle, i);
-                move_hit(&mut context, Vec::from_iter([target.clone()]))?;
+                move_hit(&mut context, &mut [target.clone()])?;
             }
         }
     }

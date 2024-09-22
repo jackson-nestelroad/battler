@@ -211,9 +211,6 @@ pub struct MoveData {
     pub multihit: Option<MultihitType>,
     /// Target used if the user is not Ghost type (used for Curse).
     pub non_ghost_target: Option<MoveTarget>,
-    /// Does the move target automatically adjust when the original target is gone?
-    #[serde(default)]
-    pub smart_target: bool,
     /// Does the move track the target, even if they have moved?
     #[serde(default)]
     pub tracks_target: bool,

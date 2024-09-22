@@ -48,7 +48,8 @@ fn mudkip() -> Result<TeamData, Error> {
                     "species": "Mudkip",
                     "ability": "Torrent",
                     "moves": [
-                        "Tackle"
+                        "Tackle",
+                        "Arm Thrust"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -101,6 +102,35 @@ fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
             "split|side:0",
             "damage|mon:Mudkip,player-1,1|from:status:Poison|health:97/110",
             "damage|mon:Mudkip,player-1,1|from:status:Poison|health:89/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn effect_spore_causing_attacker_to_fall_asleep_cancels_multi_hit_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, mudkip().unwrap(), shroomish().unwrap()).unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(5, 10)]);
+
+    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Mudkip,player-1,1|name:Arm Thrust|target:Shroomish,player-2,1",
+            "split|side:1",
+            "damage|mon:Shroomish,player-2,1|health:112/120",
+            "damage|mon:Shroomish,player-2,1|health:94/100",
+            "status|mon:Mudkip,player-1,1|status:Sleep|from:ability:Effect Spore|of:Shroomish,player-2,1",
+            "animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim",
+            "hitcount|hits:1",
             "residual",
             "turn|turn:2"
         ]"#,
