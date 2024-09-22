@@ -2057,12 +2057,6 @@ fn apply_spread_damage(
         )?;
         context.target_mut().hurt_this_turn = context.target().hp;
 
-        core_battle_effects::run_event_for_applying_effect(
-            &mut context,
-            fxlang::BattleEvent::DamageReceived,
-            fxlang::VariableInput::from_iter([fxlang::Value::UFraction((*damage).into())]),
-        );
-
         core_battle_logs::damage(
             &mut context.target_context()?,
             Some(effect_handle),

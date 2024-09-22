@@ -411,11 +411,6 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the target.
     #[string = "Damage"]
     Damage,
-    /// Runs after a Mon receives damage, regardless of the source.
-    ///
-    /// Runs in the context of an applying effect on the target.
-    #[string = "DamageReceived"]
-    DamageReceived,
     /// Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.
     ///
     /// Run for each target. Run once per hit (i.e., multi-hit moves execute one event per hit).
@@ -1175,7 +1170,6 @@ impl BattleEvent {
             Self::CriticalHit => CommonCallbackType::MoveResult as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
-            Self::DamageReceived => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
             Self::DeductPp => CommonCallbackType::MonModifier as u32,
@@ -1323,7 +1317,6 @@ impl BattleEvent {
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage | Self::AnyDamage => &[("damage", ValueType::UFraction, true)],
             Self::DeductPp | Self::FoeDeductPp => &[("pp", ValueType::UFraction, true)],
-            Self::DamageReceived => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
             Self::EatItem => &[("item", ValueType::Effect, true)],
             Self::Effectiveness => &[
@@ -1835,7 +1828,6 @@ impl Callbacks {
             BattleEvent::CriticalHit => Some(&self.on_critical_hit),
             BattleEvent::CureStatus => Some(&self.on_cure_status),
             BattleEvent::Damage => Some(&self.on_damage),
-            BattleEvent::DamageReceived => Some(&self.on_damage_received),
             BattleEvent::DamagingHit => Some(&self.on_damaging_hit),
             BattleEvent::DeductPp => Some(&self.on_deduct_pp),
             BattleEvent::DisableMove => Some(&self.on_disable_move),

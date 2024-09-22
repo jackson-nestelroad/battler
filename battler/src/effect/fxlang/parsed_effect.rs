@@ -71,7 +71,6 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::CriticalHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::CureStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::Damage, callbacks)?;
-            parsed.parse_and_save(BattleEvent::DamageReceived, callbacks)?;
             parsed.parse_and_save(BattleEvent::DamagingHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::DeductPp, callbacks)?;
             parsed.parse_and_save(BattleEvent::DisableMove, callbacks)?;

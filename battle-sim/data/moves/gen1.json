@@ -1688,7 +1688,7 @@
         "on_start": ["$effect_state.total_damage = 0", "log_start"],
         "on_restart": ["return true"],
         "on_lock_move": ["return $this.id"],
-        "on_damage_received": [
+        "on_damaging_hit": [
           "if $source.is_defined and $source != $target:",
           ["$effect_state.last_damage_source = $source"],
           "$effect_state.total_damage = $effect_state.total_damage + $damage"
