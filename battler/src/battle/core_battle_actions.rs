@@ -1482,15 +1482,17 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         .get(defense_stat.try_into()?);
 
     let ignore_offensive = context.active_move().data.ignore_offensive
-        || context
+        || (context
             .active_move_mut()
             .hit_data_mut(target_mon_handle)
-            .crit;
+            .crit
+            && attack_boosts < 0);
     let ignore_defensive = context.active_move().data.ignore_defensive
-        || context
+        || (context
             .active_move_mut()
             .hit_data_mut(target_mon_handle)
-            .crit;
+            .crit
+            && defense_boosts > 0);
 
     if ignore_offensive {
         attack_boosts = 0;
