@@ -483,7 +483,12 @@ pub fn use_active_move(
     }
 
     let mut context = context.active_move_context(active_move_handle)?;
-    context.active_move_mut().source_effect = source_effect.cloned();
+    context.active_move_mut().source_effect = match source_effect {
+        Some(source_effect) => {
+            Some(source_effect.stable_effect_handle(context.as_battle_context())?)
+        }
+        None => None,
+    };
     context.active_move_mut().used_by = Some(context.mon_handle());
     context.active_move_mut().external = external;
 
