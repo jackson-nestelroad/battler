@@ -66,7 +66,7 @@ fn make_battle(
 #[test]
 fn psych_up_copies_target_boosts() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, espeon().unwrap(), espeon().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 123123123, espeon().unwrap(), espeon().unwrap()).unwrap();
     assert_eq!(battle.start(), Ok(()));
 
     assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -89,12 +89,10 @@ fn psych_up_copies_target_boosts() {
             "turn|turn:5",
             ["time"],
             "move|mon:Espeon,player-1,1|name:Tackle|target:Espeon,player-2,1",
-            "crit|mon:Espeon,player-2,1",
             "split|side:1",
-            "damage|mon:Espeon,player-2,1|health:96/125",
-            "damage|mon:Espeon,player-2,1|health:77/100",
+            "damage|mon:Espeon,player-2,1|health:98/125",
+            "damage|mon:Espeon,player-2,1|health:79/100",
             "move|mon:Espeon,player-2,1|name:Tackle|target:Espeon,player-1,1",
-            "crit|mon:Espeon,player-1,1",
             "split|side:0",
             "damage|mon:Espeon,player-1,1|health:98/125",
             "damage|mon:Espeon,player-1,1|health:79/100",
