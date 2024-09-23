@@ -128,7 +128,6 @@ A very important part of the battle engine is logging. The battle log represents
 
 - `log: mustrecharge turn:2 reason:Unknown` - Adds the log `mustrecharge|turn:2|reason:Unknown` to the battle log.
 - `log_activate` - Logs the "activate" event for the applying effect.
-- `log_cant: Flinch` - Logs that the target of the effect's callback cannot move due to the "Flinch" effect.
 - `log_status: Burn with_source_effect` - Logs that the target of the effect's callback has the "Burn" status, with the source effect added to the log. Note that `with_source_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
 
 Note that nearly all the logging functions such as the ones above use the context of the event callback to add information to the logs. For instance, `log_activate` on its own (with no arguments) will include the applying effect that the event callback is attached to.
@@ -206,7 +205,7 @@ Expressions can be chained together using operators. The following list describe
 
 In expressions where operators are arbitrarily written, certain groupings will be preferred to be evaluated before others. For example, `a + b * c` will unambiguously evaluate `b * c` before adding the result to `a`.
 
-1. `!`
+1. `!`, `+` (unary)
 1. `^`
 1. `*`, `/`, `%`
 1. `+`, `-`
@@ -229,7 +228,7 @@ Operator precedence can be manually broken by using parenthesis. For example, `(
 It is often desired to use the result of an expression like a value, for function calls or variable assignment. Just like the `func_call` built-in wraps a function call statement into a value, the `expr` built-in wraps an expression into a value.
 
 - `$damage = expr($damage / 2)` - Divides `$damage` by 2.
-- `damage: expr($target.base_max_hp / 16)` - Applies damage to the target of the effect equal to 1/16 of their base maximum HP.
+- `damage: $target expr($target.base_max_hp / 16)` - Applies damage to the target of the effect equal to 1/16 of their base maximum HP.
 - `$something = func_call(max: expr($target.hp / 2), 1)` - Takes the maximum of `$target.hp / 2` and `1`, and assigns the result to `$something`.
 
 #### Returning Values
@@ -240,8 +239,8 @@ A return statement signals that the program should terminate immediately and opt
 
 - `return` - Exits the program with no return value.
 - `return 100` - Returns the number `100` from the program.
-- `return expr($damage * 2)` - Returns twice the amount of damage previously stored.
-- `return expr(func_call(random: 50 151) * $user.level / 100)` - Returns the damage calculation for the move "Psywave."
+- `return $damage * 2` - Returns twice the amount of damage previously stored.
+- `return func_call(random: 50 151) * $user.level / 100` - Returns the damage calculation for the move "Psywave."
 
 Return statements terminate the program immediately. Any following statements are ignored. This allows programs to conditionally exit at different times.
 
@@ -251,7 +250,7 @@ Return statements terminate the program immediately. Any following statements ar
   ["return"],
   "if func_call(chance: 1 5):",
   ["cure_status: $user", "return"],
-  "log_cant: $this.name",
+  "log_cant",
   ["return false"]
 ]
 ```
@@ -449,8 +448,8 @@ Some events exclusively trigger on a single effect, so it does not make sense to
 
 Most often, an event needs to trigger globally and run all associated event callbacks. In this case, some special things happen during the evaluation:
 
-1. All active effects for the scope of the event (i.e., target of the applying effect, which can be a Mon, side, or the whole battle field) are collected.
-1. The active effects are filtered based on whether or not they have a callback for the triggering event.
+1. All active effects for the scope of the event (i.e., target of the applying effect, which can be a Mon, side, or the whole battlefield) are collected.
+1. The active effects are filtered based on if they have a callback for the triggering event.
 1. The event callbacks are speed sorted (lower order first, then higher priority first, then lower sub-order first). This involves using RNG to break ties.
 1. Callbacks are run under the evaluation context for the triggered event (i.e., a single Mon or an applying effect (which can also be an active move)).
 
@@ -519,9 +518,7 @@ Psywave has its own custom damage calculation formula:
 {
   "effect": {
     "callbacks": {
-      "on_damage": [
-        "return expr(func_call(random: 50 151) * $source.level / 100)"
-      ]
+      "on_damage": ["return func_call(random: 50 151) * $source.level / 100"]
     }
   }
 }
@@ -624,15 +621,16 @@ Burn applies residual damage and also halves damage dealt by physical moves.
       ],
       "on_residual": {
         "order": 10,
-        "program": ["damage: expr($target.base_max_hp / 16)"]
+        "program": ["damage: $target expr($target.base_max_hp / 16)"]
       },
       "on_modify_damage": {
         "order": 1,
         "program": [
           "if $move.category == physical and !func_call(has_ability: $user guts) and $move.id != facade:",
-          ["return expr($damage / 2)"]
+          ["return $damage / 2"]
         ]
-      }
+      },
+      "on_modify_catch_rate": ["return $catch_rate * 3/2"]
     }
   }
 }
@@ -658,23 +656,24 @@ Freeze completely immobilizes the target until it is thawed at the beginning of 
           "if func_call(move_has_flag: $move thawing):",
           ["return"],
           "if func_call(chance: 1 5):",
-          ["cure_status: $user", "return"],
-          "log_cant: $this.name",
+          ["cure_status: $user no_effect", "return"],
+          "log_cant",
           ["return false"]
         ]
       },
       "on_use_move": [
         "if func_call(move_has_flag: $move thawing):",
-        ["cure_status: $user use_source log_effect"]
+        ["cure_status: $user use_source_effect"]
       ],
       "on_after_move_secondary_effects": [
         "if $move.thaws_target:",
-        ["cure_status: $target use_source"]
+        ["cure_status: $target use_source_effect"]
       ],
       "on_damaging_hit": [
         "if $move.type == fire and $move.category != status:",
-        ["cure_status: $target use_source"]
-      ]
+        ["cure_status: $target use_source_effect"]
+      ],
+      "on_modify_catch_rate": ["return $catch_rate * 5/2"]
     }
   }
 }
@@ -710,7 +709,7 @@ We use a custom time state variable because confusion does not wear off at the e
           "if !func_call(chance: 33 100):",
           ["return"],
           "$damage = func_call(calculate_confusion_damage: $user 40)",
-          "damage: no_source $user $damage $this",
+          "damage: no_source $user $damage",
           "return false"
         ]
       }
@@ -730,7 +729,7 @@ Moves like Thrash or Outrage lock the user into a move for 2-3 turns and confuse
       "on_duration": ["return func_call(random: 2 4)"],
       "on_start": ["$effect_state.move = $source_effect.id"],
       "on_after_move": [
-        "if $user.move_this_turn_failed:",
+        "if $user.move_this_turn_failed and $effect_state.duration > 1:",
         ["remove_volatile: $user $this.id no_events"],
         "else if $effect_state.duration == 1:",
         ["remove_volatile: $user $this.id"]
@@ -772,7 +771,7 @@ Mist protects all Mons on the user's side from stat drops from opposing Mons.
           ]
         ],
         "if $activated:",
-        ["log_activate: str('mon:{}', $target.position_details)"],
+        ["log_activate: with_target"],
         "return $boosts"
       ],
       "on_side_start": ["log_side_start"],
@@ -818,10 +817,63 @@ The special `prepare_direct_move` function runs all the pre-move logic that is n
     "duration": 4,
     "callbacks": {
       "on_residual": ["log_start: str('perish:{}', $effect_state.duration)"],
-      "on_end": ["log_start: perish:0", "faint: $target"]
+      "on_end": ["log_start: 'perish:0'", "faint: $target"]
     }
   }
 }
+```
+
+### Abilities
+
+#### Intimidate
+
+When the Intimidate ability activates, all adjacent foes have their attack lowered by one stage.
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_start": [
+        "$activated = false",
+        "foreach $mon in func_call(adjacent_foes: $target):",
+        [
+          "if !$activated:",
+          ["log_activate: with_target", "$activated = true"],
+          "boost: $mon 'atk:-1' use_target_as_source"
+        ]
+      ]
+    }
+  }
+}
+```
+
+#### Own Tempo
+
+The Own Tempo ability protects from confusion and Intimidate, so we add hooks to cancel the associated effects.
+
+```json
+"effect": {
+      "callbacks": {
+        "on_update": [
+          "if func_call(has_volatile: $mon confusion):",
+          ["log_activate: with_target", "remove_volatile: $mon confusion"]
+        ],
+        "on_immunity": ["if $effect.id == confusion:", ["return false"]],
+        "on_add_volatile": ["if $volatile.id == confusion:", ["return false"]],
+        "on_try_hit": [
+          "if $move.hit_effect.volatile_status == confusion:",
+          ["log_immune: $target from_effect", "return stop"]
+        ],
+        "on_try_boost": [
+          "if $effect.id == intimidate and $boosts.atk != 0:",
+          [
+            "$boosts.atk = 0",
+            "log_fail_unboost: $target from_effect atk",
+            "return $boosts"
+          ]
+        ]
+      }
+    }
 ```
 
 ### Weather
@@ -847,9 +899,9 @@ Rain is fairly straightforward to implement:
       "on_source_weather_modify_damage": [
         "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
         "if $move.type == water:",
-        ["return expr($damage * 3/2)"],
+        ["return $damage * 3/2"],
         "if $move.type == fire:",
-        ["return expr($damage * 1/2)"]
+        ["return $damage * 1/2"]
       ],
       "on_field_start": [
         "if $source_effect.is_ability:",
@@ -859,10 +911,12 @@ Rain is fairly straightforward to implement:
       ],
       "on_field_residual": {
         "order": 1,
-        "program": [
-          "log_weather: $this.name residual",
-          "run_event_for_each_active_mon: Weather"
-        ]
+        "priority": 1,
+        "program": ["log_weather: $this.name residual"]
+      },
+      "on_residual": {
+        "order": 1,
+        "program": ["run_event: Weather"]
       },
       "on_field_end": ["log_weather"]
     }
@@ -963,8 +1017,8 @@ Sandstorm applies residual damage to Mons on the field.
       "on_modify_spd": {
         "priority": 10,
         "program": [
-          "if func_call(has_type: $mon rock):",
-          ["return expr($spd * 3/2)"]
+          "if func_call(has_type: $target rock):",
+          ["return $spd * 3/2"]
         ]
       },
       "on_field_start": [
@@ -975,10 +1029,12 @@ Sandstorm applies residual damage to Mons on the field.
       ],
       "on_field_residual": {
         "order": 1,
-        "program": [
-          "log_weather: $this.name residual",
-          "run_event_for_each_active_mon: Weather"
-        ]
+        "priority": 1,
+        "program": ["log_weather: $this.name residual"]
+      },
+      "on_residual": {
+        "order": 1,
+        "program": ["run_event: Weather"]
       },
       "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
       "on_field_end": ["log_weather"]
@@ -1020,7 +1076,7 @@ Dig's condition looks very similar, with some other changes shown for fun:
       ],
       "on_source_modify_damage": [
         "if [earthquake, magnitude] has $move.id:",
-        ["return expr($damage * 2)"]
+        ["return $damage * 2"]
       ]
     }
   }
@@ -1040,20 +1096,19 @@ The affection condition is added to Mons when affection is explicitly enabled fo
   "condition": {
     "callbacks": {
       "on_damage": {
-        "order": 999,
+        "priority": -999,
         "program": [
           "if $target.affection_level == 3:",
           ["$chance = 10"],
           "else if $target.affection_level >= 4:",
           [
             "# Range of 15% to 25% (since max is 255).",
-            "$chance = $target.happiness / 10"
+            "$chance = $target.friendship / 10"
           ],
           "if $chance.is_defined and func_call(chance: $chance 100) and $damage >= $target.hp:",
-          ["log_activate: with_target tough", "return expr($target.hp - 1)"]
+          ["log_activate: with_target tough", "return $target.hp - 1"]
         ]
       }
-    }
   }
 }
 ```
@@ -1080,7 +1135,7 @@ Take a close look and see how we use one random value for determining if the Mon
         [
           "log_activate: with_target confusion",
           "$damage = func_call(calculate_confusion_damage: $user 40)",
-          "damage: no_source $user $damage $this"
+          "damage: no_source $user $damage"
         ],
         "else:",
         ["log_activate: with_target"],
@@ -1107,6 +1162,7 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
     "duration": 2,
     "callbacks": {
       "on_start": [
+        "# Note that the $target here is the user of the move (target of this condition).",
         "$effect_state.move = $source_effect.id",
         "add_volatile: $target $source_effect.id",
         "do_not_animate_last_move",
@@ -1115,7 +1171,7 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
       ],
       "on_set_last_move": ["if $effect_state.duration > 1:", ["return false"]],
       "on_deduct_pp": {
-        "order": 999,
+        "priority": -999,
         "program": [
           "# Run last, to ensure no PP is deducted while charging.",
           "if $effect_state.duration > 1:",
@@ -1123,7 +1179,7 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
         ]
       },
       "on_lock_move": ["return $effect_state.move"],
-      "on_move_aborted": ["remove_volatile: $target $effect_state.move"],
+      "on_move_aborted": ["remove_volatile: $user $effect_state.move"],
       "on_end": ["remove_volatile: $target $effect_state.move"]
     }
   }
@@ -1159,6 +1215,7 @@ Finally, a Mon in the "flying" state has some special invulnerability and damage
   "condition": {
     "duration": 2,
     "callbacks": {
+      "is_semi_invulnerable": ["return true"],
       "on_invulnerability": [
         "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
         ["return"],
@@ -1166,7 +1223,7 @@ Finally, a Mon in the "flying" state has some special invulnerability and damage
       ],
       "on_source_modify_damage": [
         "if [gust, twister] has $move.id:",
-        ["return expr($damage * 2)"]
+        ["return $damage * 2"]
       ]
     }
   }
@@ -1184,7 +1241,7 @@ Metronome executes a random move. This is actually simpler than you might think,
   "effect": {
     "callbacks": {
       "on_hit": [
-        "$moves = func_call(get_all_moves: without_flag:nometronome)",
+        "$moves = func_call(get_all_moves: 'without_flag:nometronome')",
         "$random_move = func_call(sample: $moves)",
         "if !$random_move:",
         ["return false"],
@@ -1212,8 +1269,8 @@ The benefit here is that the modified move can be written statically in the cond
       "on_start": ["$effect_state.total_damage = 0", "log_start"],
       "on_restart": ["return true"],
       "on_lock_move": ["return $this.id"],
-      "on_damage_received": [
-        "if func_call(is_defined: $source) and $source != $target:",
+      "on_damaging_hit": [
+        "if $source.is_defined and $source != $target:",
         ["$effect_state.last_damage_source = $source"],
         "$effect_state.total_damage = $effect_state.total_damage + $damage"
       ],
@@ -1225,7 +1282,7 @@ The benefit here is that the modified move can be written statically in the cond
         "log_end",
         "$target = $effect_state.last_damage_source",
         "# Create a new active move that deals the damage to the target, and use it directly.",
-        "$move = func_call(new_active_move_from_local_data: $this.id)",
+        "$move = func_call(new_active_move_from_local_data: $this $this.id)",
         "$move.damage = expr($effect_state.total_damage * 2)",
         "# Remove this volatile effect before using the new move, or else this callback gets triggered endlessly.",
         "remove_volatile: $user $this.id",
@@ -1273,20 +1330,19 @@ Here is the code in all of its glory:
 
 ```json
 {
-  "hit_effect": {
-    "volatile_status": "substitute"
-  },
+  "hit_effect": { "volatile_status": "substitute" },
   "effect": {
     "callbacks": {
       "on_try_hit": [
         "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
         ["log_fail: $source", "return stop"]
       ],
-      "on_hit": ["direct_damage: expr($target.max_hp / 4)"]
+      "on_hit": ["direct_damage: $target expr($target.max_hp / 4)"]
     }
   },
   "condition": {
     "callbacks": {
+      "is_behind_substitute": ["return true"],
       "on_start": [
         "log_start",
         "$effect_state.hp = func_call(floor: expr($target.max_hp / 4))",
@@ -1297,13 +1353,15 @@ Here is the code in all of its glory:
         "# Some moves can hit through substitute.",
         "if $target == $source or func_call(move_has_flag: $move bypasssubstitute) or $move.infiltrates:",
         ["return"],
+        "save_move_hit_data_flag_against_target: $move $target hitsubstitute",
         "# Calculate and apply damage.",
         "$damage = func_call(calculate_damage: $target)",
-        "if func_call(is_boolean: $damage) and !$damage:",
+        "if $damage.is_boolean and !$damage:",
         ["log_fail: $source", "do_not_animate_last_move", "return false"],
         "if $damage > $effect_state.hp:",
         ["$damage = $effect_state.hp"],
         "$effect_state.hp = $effect_state.hp - $damage",
+        "$move.total_damage = $move.total_damage + $damage",
         "# Break the substitute when HP falls to 0.",
         "if $effect_state.hp == 0:",
         [
@@ -1312,7 +1370,7 @@ Here is the code in all of its glory:
           "remove_volatile: $target substitute"
         ],
         "else:",
-        ["log_activate: damage"],
+        ["log_activate: with_target damage"],
         "# Some move effects still apply.",
         "apply_recoil_damage: $damage",
         "apply_drain: $source $target $damage",
@@ -1320,7 +1378,13 @@ Here is the code in all of its glory:
         "run_event: AfterSubstituteDamage",
         "return 0"
       ],
-      "on_end": ["log_end: $this.name"]
+      "on_try_boost": [
+        "if $target == $source:",
+        ["return"],
+        "log_fail_unboost: $target from_effect",
+        "return func_call(boost_table)"
+      ],
+      "on_end": ["log_end"]
     }
   }
 }
@@ -1355,9 +1419,24 @@ For instance, here is the code for Protect:
   "effect": {
     "callbacks": {
       "on_prepare_hit": [
-        "return expr(func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove))"
+        "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
       ],
       "on_hit": ["add_volatile: $target stall"]
+    }
+  },
+  "condition": {
+    "duration": 1,
+    "callbacks": {
+      "on_start": ["log_single_turn: with_target"],
+      "on_try_hit": {
+        "priority": 3,
+        "program": [
+          "if !func_call(move_has_flag: $move protect):",
+          ["return"],
+          "log_activate",
+          "return stop"
+        ]
+      }
     }
   }
 }
@@ -1399,7 +1478,7 @@ Counter works by adding a volatile condition to the user at the beginning of the
 {
   "effect": {
     "callbacks": {
-      "on_before_turn": ["add_volatile: $target $this.id"],
+      "on_before_turn": ["add_volatile: $mon $this.id"],
       "on_try_use_move": [
         "$effect_state = func_call(volatile_effect_state: $user $this.id)",
         "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
@@ -1450,15 +1529,15 @@ Pursuit gets its own event (`BeforeSwitchOut`) that activates when any Mon switc
     "callbacks": {
       "on_move_base_power": [
         "if $target.being_called_back or $target.needs_switch:",
-        ["return expr($move.base_power * 2)"]
+        ["return $move.base_power * 2"]
       ],
       "on_before_turn": [
-        "$side = $target.foe_side",
+        "$side = $mon.foe_side",
         "add_side_condition: $side $this.id use_target_as_source",
         "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
         "if !$pursuit_state.sources:",
         ["$pursuit_state.sources = []"],
-        "$pursuit_state.sources = func_call(append: $pursuit_state.sources $target)"
+        "$pursuit_state.sources = func_call(append: $pursuit_state.sources $mon)"
       ],
       "on_use_move": [
         "if $target.being_called_back or $target.needs_switch:",
