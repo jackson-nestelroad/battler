@@ -127,8 +127,8 @@ Function calls can optionally return a value. In our examples above `random: 1 1
 A very important part of the battle engine is logging. The battle log represents the public output of a battle. Anything that should be visible to participants of a battle should be put in the output log. Consequentially, there are many functions defined specifically for logging in a common a way.
 
 - `log: mustrecharge turn:2 reason:Unknown` - Adds the log `mustrecharge|turn:2|reason:Unknown` to the battle log.
-- `log_activate` - Logs the "activate" event for the applying effect.
-- `log_status: Burn with_source_effect` - Logs that the target of the effect's callback has the "Burn" status, with the source effect added to the log. Note that `with_source_effect` here is a string literal interpreted by the `log_status` function to specialize behavior.
+- `log_status` - Logs that the target of the effect's callback has the "Burn" status.
+- `log_activate: with_target` - Logs the "activate" event for the applying effect with the target of the effect added to the log. Note that `with_target` here is a string literal interpreted by the `log_activate` function to specialize behavior.
 
 Note that nearly all the logging functions such as the ones above use the context of the event callback to add information to the logs. For instance, `log_activate` on its own (with no arguments) will include the applying effect that the event callback is attached to.
 
@@ -184,6 +184,7 @@ The simplest expression is simply a value. `$mon.base_max_hp` is an expression t
 Expressions can be chained together using operators. The following list describes all operators:
 
 1. `!a` - Negates `a` (`true` becomes `false`, and vice versa).
+1. `+a` - Makes `a` into a signed number.
 1. `a ^ b` - Exponentiates `a` by `b` (i.e., `a` to the power of `b`)
 1. `a * b` - Multiplies `a` and `b`.
 1. `a / b` - Divides `a` and `b`. Note that if both `a` and `b` are number literals, the result is coerced into a fraction at parsing time.
@@ -227,7 +228,7 @@ Operator precedence can be manually broken by using parenthesis. For example, `(
 
 It is often desired to use the result of an expression like a value, for function calls or variable assignment. Just like the `func_call` built-in wraps a function call statement into a value, the `expr` built-in wraps an expression into a value.
 
-- `$damage = expr($damage / 2)` - Divides `$damage` by 2.
+- `$damage = $damage / 2` - Divides `$damage` by 2.
 - `damage: $target expr($target.base_max_hp / 16)` - Applies damage to the target of the effect equal to 1/16 of their base maximum HP.
 - `$something = func_call(max: expr($target.hp / 2), 1)` - Takes the maximum of `$target.hp / 2` and `1`, and assigns the result to `$something`.
 
@@ -613,12 +614,7 @@ Burn applies residual damage and also halves damage dealt by physical moves.
 {
   "condition": {
     "callbacks": {
-      "on_start": [
-        "if $source_effect.is_ability:",
-        ["log_status: $this.name with_source_effect"],
-        "else:",
-        ["log_status: $this.name"]
-      ],
+      "on_start": ["log_status: $this.name"],
       "on_residual": {
         "order": 10,
         "program": ["damage: $target expr($target.base_max_hp / 16)"]
@@ -644,12 +640,7 @@ Freeze completely immobilizes the target until it is thawed at the beginning of 
 {
   "condition": {
     "callbacks": {
-      "on_start": [
-        "if $source_effect.is_ability:",
-        ["log_status: $this.name with_source_effect"],
-        "else:",
-        ["log_status: $this.name"]
-      ],
+      "on_start": ["log_status: $this.name"],
       "on_before_move": {
         "priority": 10,
         "program": [
@@ -903,12 +894,7 @@ Rain is fairly straightforward to implement:
         "if $move.type == fire:",
         ["return $damage * 1/2"]
       ],
-      "on_field_start": [
-        "if $source_effect.is_ability:",
-        ["log_weather: $this.name with_source_effect"],
-        "else:",
-        ["log_weather: $this.name"]
-      ],
+      "on_field_start": ["log_weather: $this.name with_source_effect"],
       "on_field_residual": {
         "order": 1,
         "priority": 1,
@@ -1021,12 +1007,7 @@ Sandstorm applies residual damage to Mons on the field.
           ["return $spd * 3/2"]
         ]
       },
-      "on_field_start": [
-        "if $source_effect.is_ability:",
-        ["log_weather: $this.name with_source_effect"],
-        "else:",
-        ["log_weather: $this.name"]
-      ],
+      "on_field_start": ["log_weather: $this.name with_source_effect"],
       "on_field_residual": {
         "order": 1,
         "priority": 1,
@@ -1283,7 +1264,7 @@ The benefit here is that the modified move can be written statically in the cond
         "$target = $effect_state.last_damage_source",
         "# Create a new active move that deals the damage to the target, and use it directly.",
         "$move = func_call(new_active_move_from_local_data: $this $this.id)",
-        "$move.damage = expr($effect_state.total_damage * 2)",
+        "$move.damage = $effect_state.total_damage * 2",
         "# Remove this volatile effect before using the new move, or else this callback gets triggered endlessly.",
         "remove_volatile: $user $this.id",
         "use_active_move: $user $move $target",

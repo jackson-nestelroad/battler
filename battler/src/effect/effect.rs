@@ -362,17 +362,6 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    /// The source effect handle, if any.
-    ///
-    /// This is only applicable for active moves, since only active moves manually keep track of
-    /// their source effect.
-    pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
-        match self {
-            Self::ActiveMove(active_move, _) => active_move.source_effect.as_ref(),
-            _ => None,
-        }
-    }
-
     /// The associated [`fxlang::Effect`].
     pub fn fxlang_effect<'effect>(&'effect self) -> Option<&'effect fxlang::Effect> {
         match self {

@@ -149,7 +149,7 @@ fn safeguard_does_not_protect_previous_yawn() {
             "move|mon:Ledian,player-1,1|name:Safeguard",
             "sidestart|side:0|move:Safeguard",
             "end|mon:Ledian,player-1,1|move:Yawn|silent",
-            "status|mon:Ledian,player-1,1|status:Sleep",
+            "status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn",
             "residual",
             "turn|turn:3"
         ]"#,

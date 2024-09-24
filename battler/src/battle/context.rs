@@ -1081,7 +1081,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
 
     /// Returns the source [`EffectHandle`] for the active [`Move`], if any.
     pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
-        self.active_move.source_effect.as_ref()
+        self.active_move.move_source.as_ref()
     }
 
     /// Returns the [`MoveHandle`] for the active [`Move`].

@@ -84,7 +84,7 @@ fn battle_starts_with_rain() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "weather|weather:Rain",
+            "weather|weather:Rain|from:Start",
             "turn|turn:1"
         ]"#,
     )
@@ -113,7 +113,7 @@ fn battle_starts_with_harsh_sunlight() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "weather|weather:Harsh Sunlight",
+            "weather|weather:Harsh Sunlight|from:Start",
             "turn|turn:1"
         ]"#,
     )
@@ -142,7 +142,7 @@ fn battle_starts_with_sandstorm() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "weather|weather:Sandstorm",
+            "weather|weather:Sandstorm|from:Start",
             "turn|turn:1"
         ]"#,
     )
@@ -171,7 +171,7 @@ fn battle_starts_with_hail() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "weather|weather:Hail",
+            "weather|weather:Hail|from:Start",
             "turn|turn:1"
         ]"#,
     )
@@ -200,7 +200,7 @@ fn battle_starts_with_snow() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "weather|weather:Snow",
+            "weather|weather:Snow|from:Start",
             "turn|turn:1"
         ]"#,
     )
@@ -240,7 +240,7 @@ fn battle_goes_back_to_default_weather() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "weather|weather:Rain",
+            "weather|weather:Rain|from:Start",
             "turn|turn:1",
             ["time"],
             "move|mon:Pikachu,protagonist,1|name:Sunny Day",
@@ -262,7 +262,7 @@ fn battle_goes_back_to_default_weather() {
             "turn|turn:5",
             ["time"],
             "weather|weather:Clear",
-            "weather|weather:Rain",
+            "weather|weather:Rain|from:Start",
             "residual",
             "turn|turn:6"
         ]"#,

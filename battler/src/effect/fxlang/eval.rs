@@ -870,6 +870,20 @@ where
                             "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
                                 context.effect_context_for_handle(effect_handle)?.as_mut(),
                             )),
+                            "move_source" => {
+                                match CoreBattle::get_effect_by_handle(
+                                    context.battle_context(),
+                                    &effect_handle,
+                                )?
+                                .move_effect()
+                                .wrap_error_with_message("effect is not a move")?
+                                .move_source
+                                .as_ref()
+                                {
+                                    Some(effect) => ValueRef::TempEffect(effect.clone()),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "move_target" => ValueRef::MoveTarget(
                                 CoreBattle::get_effect_by_handle(
                                     context.battle_context(),
@@ -888,15 +902,6 @@ where
                                 .name()
                                 .to_owned(),
                             ),
-                            "source_effect" => match CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
-                            .source_effect_handle()
-                            {
-                                Some(effect) => ValueRef::TempEffect(effect.clone()),
-                                None => ValueRef::Undefined,
-                            },
                             "type" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -1009,10 +1014,10 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
-                            "source_effect" => {
+                            "move_source" => {
                                 match context
                                     .active_move(active_move_handle)?
-                                    .source_effect
+                                    .move_source
                                     .as_ref()
                                 {
                                     Some(effect) => ValueRef::TempEffect(effect.clone()),

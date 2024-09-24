@@ -296,7 +296,7 @@ pub struct Move {
     /// Whether or not the move infiltrates effects.
     pub infiltrates: bool,
     /// The source of the move, if any.
-    pub source_effect: Option<EffectHandle>,
+    pub move_source: Option<EffectHandle>,
     /// Whether or not this move hit multiple targets.
     pub spread_hit: bool,
     /// Number of hits dealt by the move.
@@ -336,7 +336,7 @@ impl Move {
             stab_modifier: None,
             external: false,
             infiltrates: false,
-            source_effect: None,
+            move_source: None,
             spread_hit: false,
             hit: 0,
             total_damage: 0,
@@ -358,7 +358,7 @@ impl Move {
             stab_modifier: None,
             external: false,
             infiltrates: false,
-            source_effect: None,
+            move_source: None,
             spread_hit: false,
             hit: 0,
             total_damage: 0,

@@ -401,6 +401,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("with_source_effect")
     }
 
+    fn set_with_source_effect(&mut self, val: bool) {
+        self.set_flag("with_source_effect", val)
+    }
+
     fn with_target(&mut self) -> bool {
         self.has_flag("with_target")
     }
@@ -605,6 +609,8 @@ fn log_effect_activation_base(
         } else {
             None
         },
+        ignore_active_move_source_effect: true,
+        ignore_source_effect_equal_to_effect: true,
         source_effect: if context.with_source_effect() {
             context.set_with_source(true);
             context.source_effect_handle().cloned()
@@ -788,6 +794,7 @@ fn log_status(mut context: FunctionContext) -> Result<(), Error> {
 
     context.set_no_effect(true);
     context.set_with_target(true);
+    context.set_with_source_effect(true);
     log_effect_activation_base(
         context,
         "status",

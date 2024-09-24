@@ -39,6 +39,7 @@ pub struct EffectActivationContext {
     pub player: Option<usize>,
     pub target: Option<MonHandle>,
     pub ignore_active_move_source_effect: bool,
+    pub ignore_source_effect_equal_to_effect: bool,
     pub source_effect: Option<EffectHandle>,
     pub source: Option<MonHandle>,
     pub additional: Vec<String>,
@@ -77,8 +78,8 @@ fn effect_activation_internal(
         event.set("mon", Mon::position_details(&context.mon_context(target)?)?);
     }
 
-    if let Some(effect) = activation_context.effect {
-        let effect = CoreBattle::get_effect_by_handle(context, &effect)?;
+    if let Some(effect) = &activation_context.effect {
+        let effect = CoreBattle::get_effect_by_handle(context, effect)?;
         match activation_context.effect_flag_name {
             Some(effect_flag_name) => {
                 event.set(effect_flag_name, effect.full_name());
@@ -114,21 +115,23 @@ fn effect_activation_internal(
         }
     }
 
+    let mut ignore_source = false;
     if let Some(source_effect) = activation_context.source_effect.as_ref() {
-        if !source_effect.is_active_move() || !activation_context.ignore_active_move_source_effect {
+        let ignore_source_effect = (activation_context.ignore_active_move_source_effect
+            && source_effect.is_active_move())
+            || (activation_context.ignore_source_effect_equal_to_effect
+                && activation_context
+                    .effect
+                    .as_ref()
+                    .is_some_and(|effect| effect == source_effect));
+        ignore_source = ignore_source_effect;
+        if !ignore_source_effect {
             let effect = CoreBattle::get_effect_by_handle(context, &source_effect)?;
             event.set("from", effect.full_name());
         }
     }
 
-    if activation_context.target != activation_context.source
-        && activation_context
-            .source_effect
-            .is_none_or(|source_effect| {
-                !source_effect.is_active_move()
-                    || !activation_context.ignore_active_move_source_effect
-            })
-    {
+    if activation_context.target != activation_context.source && !ignore_source {
         if let Some(source) = activation_context.source {
             event.set("of", Mon::position_details(&context.mon_context(source)?)?);
         }

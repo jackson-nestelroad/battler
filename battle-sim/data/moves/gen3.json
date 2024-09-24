@@ -1017,7 +1017,7 @@
       "callbacks": {
         "log_start": ["log_single_turn"],
         "on_any_prepare_hit": [
-          "if !func_call(move_has_flag: $move snatch) or ($move.source_effect.is_defined and $move.source_effect.id == $this.id):",
+          "if !func_call(move_has_flag: $move snatch) or ($move.move_source.is_defined and $move.move_source.id == $this.id):",
           ["return"],
           "$snatch_user = $effect_state.source",
           "log_activate: with_target use_effect_state_source",

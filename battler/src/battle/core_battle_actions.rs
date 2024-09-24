@@ -483,7 +483,7 @@ pub fn use_active_move(
     }
 
     let mut context = context.active_move_context(active_move_handle)?;
-    context.active_move_mut().source_effect = match source_effect {
+    context.active_move_mut().move_source = match source_effect {
         Some(source_effect) => {
             Some(source_effect.stable_effect_handle(context.as_battle_context())?)
         }
@@ -3516,7 +3516,14 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
     context.battle_mut().field.weather_state = fxlang::EffectState::new();
 
     if let Some(default_weather) = context.battle().field.default_weather.clone() {
-        set_weather(context, &default_weather)?;
+        set_weather(
+            &mut context.as_battle_context_mut().field_effect_context(
+                EffectHandle::Condition(Id::from_known("start")),
+                None,
+                None,
+            )?,
+            &default_weather,
+        )?;
     }
 
     core_battle_effects::run_event_for_each_active_mon_with_effect(
