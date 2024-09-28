@@ -8,6 +8,8 @@ The battle engine is designed off of a few principles:
 1. Separation between battle engine and battle clients. This engine is focused on generating a battle log, which can be easily displayed and replayed by battle clients.
 1. Support for high level of customization for all sorts of effects through an interpreted language written directly on effect data.
 
+All moves, abilities, and items through **Generation 3** have been implemented and validated to work on the battle engine.
+
 ## Features
 
 - Battle types.
@@ -46,24 +48,27 @@ The battle engine is designed off of a few principles:
   - Transformation.
   - Substitute.
   - Protection.
+- Abilities.
+- Items.
+  - Held items.
+  - Berries.
+  - Gems.
+- Forme changes.
 - Status conditions (burn, paralysis, sleep, freeze, poison, bad poison).
-- Volatile conditions (e.g., confusion, partially-trapped, flinch, recharge).
+- Volatile conditions (e.g., confusion, partially-trapped, flinch, recharge, and more).
 - Side conditions.
 - Entry hazards.
 - Slot conditions (e.g., Future Sight).
 - Weather.
+- Pseudo-weather.
+- Terrains.
+- Battle environments.
 - Single-player mechanics.
   - Experience.
   - Level up and move learning.
-  - EVs.
   - Fleeing.
   - Affection.
   - Disobedience.
+  - Bag items.
+  - Catching.
 - Horde battle support.
-
-### Roadmap
-
-- Catch mechanics.
-- Abilities.
-- Field effects.
-- Items.
