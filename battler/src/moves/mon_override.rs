@@ -9,7 +9,7 @@ pub enum MonOverride {
     /// Use the target for stat calculations.
     #[string = "Target"]
     Target,
-    ///Use the user for stat calculations.
+    /// Use the user for stat calculations.
     #[string = "User"]
     User,
 }
