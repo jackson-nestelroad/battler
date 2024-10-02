@@ -50,20 +50,21 @@ pub enum CoreBattleEngineSpeedSortTieResolution {
 /// options will be common across all battle instances.
 #[derive(Debug)]
 pub struct CoreBattleEngineOptions {
-    /// Should the [`Battle`][`crate::battle::CoreBattle`] automatically continue when it is able
-    /// to?
+    /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] automatically continue when it is
+    /// able to?
     ///
-    /// If set to `true`, a [`Battle`][`crate::battle::CoreBattle`] object will continue the battle
-    /// as soon as it finds that it is able to. The best example of this is when a player makes
-    /// a choice: if all players have made responded to their request, then the battle can
-    /// automatically continue in the same method as the last player's choice.
+    /// If set to `true`, a [`CoreBattle`][`crate::battle::CoreBattle`] object will continue the
+    /// battle as soon as it finds that it is able to. The best example of this is when a
+    /// player makes a choice: if all players have made responded to their request, then the
+    /// battle can automatically continue in the same method as the last player's choice.
     ///
-    /// If set to `false`, [`Battle::continue_battle`] must be called to manually continue the
-    /// battle (even at the start of the battle).
+    /// If set to `false`,
+    /// [`CoreBattle::continue_battle`][`crate::battle::CoreBattle::continue_battle`] must be
+    /// called to manually continue the battle (even at the start of the battle).
     pub auto_continue: bool,
 
-    /// Should the [`Battle`][`crate::battle::CoreBattle`] reveal the actual health of all Mons in
-    /// the public battle logs?
+    /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] reveal the actual health of all Mons
+    /// in the public battle logs?
     ///
     /// By default, the public logs will show the health of all Mons as a percentage (fraction out
     /// of 100). If this option is set to `true`, the battle will show the actual HP stat of each
