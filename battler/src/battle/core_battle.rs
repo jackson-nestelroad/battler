@@ -39,7 +39,7 @@ use crate::{
         MonHandle,
         MoveHandle,
         Player,
-        PlayerBattleRequestData,
+        PlayerBattleData,
         PlayerContext,
         Request,
         RequestType,
@@ -182,7 +182,7 @@ impl<'d> PublicCoreBattle<'d> {
     ///
     /// Individual requests to players also contain this data, but this method can be useful for
     /// viewing for the player's team at other points in the battle and even after the battle ends.
-    pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleRequestData, Error> {
+    pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleData, Error> {
         self.internal.player_data(player)
     }
 
@@ -568,7 +568,7 @@ impl<'d> CoreBattle<'d> {
         Self::continue_battle_internal(&mut self.context())
     }
 
-    fn player_data(&mut self, player: &str) -> Result<PlayerBattleRequestData, Error> {
+    fn player_data(&mut self, player: &str) -> Result<PlayerBattleData, Error> {
         let player = self.player_index_by_id(player)?;
         Player::request_data(&mut self.context().player_context(player)?)
     }

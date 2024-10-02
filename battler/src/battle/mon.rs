@@ -252,10 +252,10 @@ impl MonMoveSlotData {
     }
 }
 
-/// Data about a single [`Mon`], shared across [`MonBattleRequestData`] and
-/// [`MonSummaryRequestData`].
+/// Data about a single [`Mon`], shared across [`MonBattleData`] and
+/// [`MonSummaryData`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonBaseRequestData {
+pub struct MonBaseData {
     pub name: String,
     pub level: u8,
     pub gender: Gender,
@@ -263,12 +263,11 @@ pub struct MonBaseRequestData {
     pub ball: String,
 }
 
-/// Data about a single [`Mon`]'s battle state when a player is requested an action on their entire
-/// team.
+/// Data about a single [`Mon`]'s battle state/
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonBattleRequestData {
+pub struct MonBattleData {
     #[serde(flatten)]
-    pub base_data: MonBaseRequestData,
+    pub base_data: MonBaseData,
     pub species: String,
     pub health: String,
     pub types: Vec<Type>,
@@ -285,15 +284,15 @@ pub struct MonBattleRequestData {
 /// Data about a single [`Mon`]'s base, unmodified state when a player is requested an action that
 /// acts on base state (such as learning a move) or requests a summary of their team.
 ///
-/// Very similar to [`MonBattleRequestData`], but some fields related to battle state are removed.
+/// Very similar to [`MonBattleData`], but some fields related to battle state are removed.
 ///
 /// In most cases, clients should have their own external view of Mons in a battle. However, since
 /// we make requests for things like learning moves that can alter that external state, we also
 /// supply our own simple view of this type of data for convenience.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonSummaryRequestData {
+pub struct MonSummaryData {
     #[serde(flatten)]
-    pub base_data: MonBaseRequestData,
+    pub base_data: MonBaseData,
     pub species: String,
     pub stats: StatTable,
     pub moves: Vec<MonMoveSlotData>,
@@ -1189,8 +1188,8 @@ impl Mon {
 
 // Request getters.
 impl Mon {
-    fn base_request_data(&self) -> MonBaseRequestData {
-        MonBaseRequestData {
+    fn base_request_data(&self) -> MonBaseData {
+        MonBaseData {
             name: self.name.clone(),
             level: self.level,
             gender: self.gender.clone(),
@@ -1200,7 +1199,7 @@ impl Mon {
     }
 
     /// Generates battle request data.
-    pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleRequestData, Error> {
+    pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData, Error> {
         let side_position = Self::position_on_side(context);
         let species = context
             .battle()
@@ -1232,7 +1231,7 @@ impl Mon {
         } else {
             None
         };
-        Ok(MonBattleRequestData {
+        Ok(MonBattleData {
             base_data: context.mon().base_request_data(),
             species,
             health: context.mon().actual_health(),
@@ -1260,7 +1259,7 @@ impl Mon {
     }
 
     /// Generates summary request data.
-    pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryRequestData, Error> {
+    pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryData, Error> {
         let mut stats = context.mon().base_stored_stats.clone();
         stats.hp = context.mon().base_max_hp;
         let species = context
@@ -1279,7 +1278,7 @@ impl Mon {
             .data
             .name
             .clone();
-        Ok(MonSummaryRequestData {
+        Ok(MonSummaryData {
             base_data: context.mon().base_request_data(),
             species,
             stats,

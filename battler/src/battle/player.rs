@@ -29,7 +29,7 @@ use crate::{
         ItemActionInput,
         LearnMoveAction,
         Mon,
-        MonBattleRequestData,
+        MonBattleData,
         MonExitType,
         MonHandle,
         MoveAction,
@@ -355,16 +355,16 @@ impl ItemChoice {
     }
 }
 
-/// Request data for a single player in a battle.
+/// Battle data for a single player.
 ///
 /// Contains all information for a player in a battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PlayerBattleRequestData {
+pub struct PlayerBattleData {
     pub name: String,
     pub id: String,
     pub side: usize,
     pub position: usize,
-    pub mons: Vec<MonBattleRequestData>,
+    pub mons: Vec<MonBattleData>,
 }
 
 /// A single player of a battle.
@@ -585,9 +585,9 @@ impl Player {
     }
 
     /// Request data for the player in a battle.
-    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleRequestData, Error> {
+    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleData, Error> {
         let mon_handles = context.player().mon_handles().cloned().collect::<Vec<_>>();
-        Ok(PlayerBattleRequestData {
+        Ok(PlayerBattleData {
             name: context.player().name.clone(),
             id: context.player().id.clone(),
             side: context.player().side,
