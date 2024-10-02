@@ -36,7 +36,6 @@ fn singles_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Adamant",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -68,7 +67,6 @@ fn singles_team_no_moves() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Adamant",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -229,7 +227,6 @@ fn triples_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Adamant",
                     "gender": "U",
-                    "ball": "Normal",
                     "level": 100
                 },
                 {
@@ -244,7 +241,6 @@ fn triples_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Adamant",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 },
                 {
@@ -259,7 +255,6 @@ fn triples_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Adamant",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]

@@ -49,7 +49,6 @@ fn status_moves_ignore_immunity() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -66,7 +65,6 @@ fn status_moves_ignore_immunity() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -104,7 +102,6 @@ fn move_can_bypass_default_immunity_behavior() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -121,7 +118,6 @@ fn move_can_bypass_default_immunity_behavior() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

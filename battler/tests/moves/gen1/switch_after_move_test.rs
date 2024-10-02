@@ -51,7 +51,6 @@ fn move_can_force_switch_random_target() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -61,7 +60,6 @@ fn move_can_force_switch_random_target() {
                     "moves": ["Tackle"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -71,7 +69,6 @@ fn move_can_force_switch_random_target() {
                     "moves": ["Tackle"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -155,7 +152,6 @@ fn move_can_switch_user() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -165,7 +161,6 @@ fn move_can_switch_user() {
                     "moves": ["Tackle"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -175,7 +170,6 @@ fn move_can_switch_user() {
                     "moves": ["Tackle"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

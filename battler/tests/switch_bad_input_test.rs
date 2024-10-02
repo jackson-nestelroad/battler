@@ -31,7 +31,6 @@ fn team() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -41,7 +40,6 @@ fn team() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 1
                 },
                 {
@@ -51,7 +49,6 @@ fn team() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 1
                 },
                 {
@@ -61,7 +58,6 @@ fn team() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 1
                 },
                 {
@@ -71,7 +67,6 @@ fn team() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 1
                 },
                 {
@@ -81,7 +76,6 @@ fn team() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 1
                 }
             ]

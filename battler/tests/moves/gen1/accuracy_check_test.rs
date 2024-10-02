@@ -38,7 +38,6 @@ fn pikachu_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -62,7 +61,6 @@ fn doubles_pikachu_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -76,7 +74,6 @@ fn doubles_pikachu_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

@@ -34,7 +34,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -47,7 +46,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

@@ -34,7 +34,6 @@ fn test_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -57,7 +56,6 @@ fn foe_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

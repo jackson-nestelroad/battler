@@ -33,7 +33,6 @@ fn houndoom() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -55,7 +54,6 @@ fn two_ralts() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -67,7 +65,6 @@ fn two_ralts() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

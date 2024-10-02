@@ -37,7 +37,6 @@ fn team(pp_boosts: Vec<u8>) -> Result<TeamData, Error> {
                     ],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]

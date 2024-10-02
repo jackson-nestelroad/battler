@@ -33,7 +33,6 @@ fn venusaur() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -55,7 +54,6 @@ fn charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -77,7 +75,6 @@ fn two_charizards() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -89,7 +86,6 @@ fn two_charizards() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -109,7 +105,6 @@ fn steelix() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

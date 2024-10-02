@@ -35,7 +35,6 @@ fn gengar() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -55,7 +54,6 @@ fn charizard() -> Result<TeamData, Error> {
                 "moves": [],
                 "nature": "Hardy",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]

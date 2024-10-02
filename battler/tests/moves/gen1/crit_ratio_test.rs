@@ -51,7 +51,6 @@ fn increased_crit_ratio() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -98,7 +97,6 @@ fn moves_can_force_crit() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -148,7 +146,6 @@ fn crit_ignores_stat_modifiers() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

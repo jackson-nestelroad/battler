@@ -37,7 +37,6 @@ fn cloyster() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -60,7 +59,6 @@ fn mewtwo() -> Result<TeamData, Error> {
                 ],
                 "nature": "Hardy",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]

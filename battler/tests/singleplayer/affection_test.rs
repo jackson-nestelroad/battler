@@ -34,7 +34,6 @@ fn pikachu() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "friendship": 255
                 }
@@ -59,7 +58,6 @@ fn eevee() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "friendship": 255
                 }

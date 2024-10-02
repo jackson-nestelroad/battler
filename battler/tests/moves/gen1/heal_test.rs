@@ -52,7 +52,6 @@ fn heals_percent_of_user_hp() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -133,7 +132,6 @@ fn heals_all_allies() {
                     "moves": ["Life Dew"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 },
                 {
@@ -143,7 +141,6 @@ fn heals_all_allies() {
                     "moves": ["Earthquake"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]

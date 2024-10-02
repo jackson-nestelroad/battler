@@ -35,7 +35,6 @@ fn ditto() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -60,7 +59,6 @@ fn charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -203,8 +201,7 @@ fn transform_transforms_into_target() {
                                         "disabled": false
                                     }
                                 ],
-                                "ability": "No Ability",
-                                "ball": "Normal"
+                                "ability": "No Ability"
                             }
                         ]
                     }

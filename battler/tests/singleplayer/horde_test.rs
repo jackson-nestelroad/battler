@@ -35,7 +35,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 20
                 },
                 {
@@ -47,7 +46,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 10
                 }
             ]
@@ -69,7 +67,6 @@ fn rattata() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 5
                 }
             ]

@@ -72,7 +72,6 @@ fn boost_stops_at_max_6() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -155,7 +154,6 @@ fn drop_stops_at_max_6() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -239,7 +237,6 @@ fn boosts_and_drops_cancel_out() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -326,7 +323,6 @@ fn multi_stat_boost() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -367,7 +363,6 @@ fn raise_all_stats_at_once() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -421,7 +416,6 @@ fn drop_stats_of_all_targets() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -433,7 +427,6 @@ fn drop_stats_of_all_targets() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -476,7 +469,6 @@ fn modified_speed_impacts_order() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -496,7 +488,6 @@ fn modified_speed_impacts_order() {
                 ],
                 "nature": "Timid",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]

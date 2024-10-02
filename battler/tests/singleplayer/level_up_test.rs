@@ -34,7 +34,6 @@ fn level_5_gastly_and_gengar() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "experience": 140
                 },
                 {
@@ -46,7 +45,6 @@ fn level_5_gastly_and_gengar() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -68,7 +66,6 @@ fn level_100_blissey_and_pikachu() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 },
                 {
@@ -80,7 +77,6 @@ fn level_100_blissey_and_pikachu() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 5
                 }
             ]
@@ -141,8 +137,7 @@ fn massive_level_up_before_battle_ends() {
                         "level": 19,
                         "gender": "M",
                         "shiny": false,
-                        "ball": "Normal",
-                        "stats": {
+                            "stats": {
                             "hp": 40,
                             "atk": 18,
                             "def": 16,

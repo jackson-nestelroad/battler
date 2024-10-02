@@ -50,7 +50,6 @@ fn drain_moves_heal_a_percent_of_damage_dealt() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -69,7 +68,6 @@ fn drain_moves_heal_a_percent_of_damage_dealt() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]

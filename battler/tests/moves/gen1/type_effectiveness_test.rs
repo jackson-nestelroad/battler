@@ -51,7 +51,6 @@ fn quad_super_effective() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -68,7 +67,6 @@ fn quad_super_effective() {
                 "moves": [],
                 "nature": "Hardy",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]
@@ -111,7 +109,6 @@ fn quad_resisted() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -128,7 +125,6 @@ fn quad_resisted() {
                 "moves": [],
                 "nature": "Hardy",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]
@@ -171,7 +167,6 @@ fn type_immune() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -188,7 +183,6 @@ fn type_immune() {
                 "moves": [],
                 "nature": "Hardy",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]

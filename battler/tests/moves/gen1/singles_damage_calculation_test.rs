@@ -37,7 +37,6 @@ fn venusaur() -> Result<TeamData, Error> {
                     ],
                     "nature": "Serious",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 100,
                     "ivs": {
                         "hp": 31,
@@ -75,7 +74,6 @@ fn charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Timid",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 100,
                     "ivs": {
                         "hp": 31,
@@ -113,7 +111,6 @@ fn level_60_charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Timid",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 60,
                     "ivs": {
                         "hp": 31,

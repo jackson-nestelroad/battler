@@ -11,7 +11,7 @@ use crate::mons::{
 };
 
 fn default_ball() -> String {
-    return "Normal".to_owned();
+    return "Poké Ball".to_owned();
 }
 
 /// Data about a specific Mon on a team.

@@ -34,7 +34,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50,
                     "ivs": {
                         "spe": 31
@@ -51,7 +50,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50,
                     "ivs": {
                         "spe": 0
@@ -68,7 +66,6 @@ fn team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50,
                     "ivs": {
                         "spe": 16

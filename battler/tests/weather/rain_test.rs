@@ -38,7 +38,6 @@ fn blastoise() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -63,7 +62,6 @@ fn blastoise_with_damp_rock() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "item": "Damp Rock"
                 }
@@ -87,7 +85,6 @@ fn blastoise_with_drizzle() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -110,7 +107,6 @@ fn charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -133,7 +129,6 @@ fn charizard_with_utility_umbrella() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "item": "Utility Umbrella"
                 }
@@ -156,7 +151,6 @@ fn rayquaza() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -178,7 +172,6 @@ fn rayquaza_kyogre() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -188,7 +181,6 @@ fn rayquaza_kyogre() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

@@ -36,7 +36,6 @@ fn sandslash() -> Result<TeamData, Error> {
                 "pp_boosts": [0, 3],
                 "nature": "Hardy",
                 "gender": "M",
-                "ball": "Normal",
                 "level": 50
             }
         ]

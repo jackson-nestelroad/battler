@@ -38,7 +38,6 @@ fn make_team() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 },
                 {
@@ -48,7 +47,6 @@ fn make_team() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

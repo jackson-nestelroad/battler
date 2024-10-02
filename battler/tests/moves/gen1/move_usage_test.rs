@@ -31,7 +31,6 @@ fn team_1() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -51,7 +50,6 @@ fn team_2() -> Result<TeamData, Error> {
                     "moves": ["Tackle"],
                     "nature": "Modest",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

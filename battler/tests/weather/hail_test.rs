@@ -34,7 +34,6 @@ fn dewgong() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -56,7 +55,6 @@ fn dewgong_with_icy_rock() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "item": "Icy Rock"
                 }
@@ -77,7 +75,6 @@ fn dewgong_with_hail_warning() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -100,7 +97,6 @@ fn blastoise() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -122,7 +118,6 @@ fn blastoise_with_utility_umbrella() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "item": "Utility Umbrella"
                 }
@@ -143,7 +138,6 @@ fn rayquaza() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

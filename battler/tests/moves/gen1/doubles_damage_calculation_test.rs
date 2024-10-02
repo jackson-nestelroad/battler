@@ -34,7 +34,6 @@ fn blastoise() -> Result<TeamData, Error> {
                     ],
                     "nature": "Impish",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50,
                     "ivs": {
                         "hp": 31,
@@ -71,7 +70,6 @@ fn venusaur_charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Serious",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50,
                     "ivs": {
                         "hp": 31,
@@ -99,7 +97,6 @@ fn venusaur_charizard() -> Result<TeamData, Error> {
                     ],
                     "nature": "Timid",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 50,
                     "ivs": {
                         "hp": 31,

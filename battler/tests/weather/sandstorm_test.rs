@@ -35,7 +35,6 @@ fn golem() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -58,7 +57,6 @@ fn golem_with_smooth_rock() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "item": "Smooth Rock"
                 }
@@ -79,7 +77,6 @@ fn golem_with_sand_stream() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -99,7 +96,6 @@ fn steelix() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -122,7 +118,6 @@ fn blastoise() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -144,7 +139,6 @@ fn blastoise_with_utility_umbrella() -> Result<TeamData, Error> {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50,
                     "item": "Utility Umbrella"
                 }
@@ -165,7 +159,6 @@ fn rayquaza() -> Result<TeamData, Error> {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

@@ -34,7 +34,6 @@ fn squirtle() -> Result<TeamData, Error> {
                     ],
                     "nature": "Adamant",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 40
                 }
             ]
@@ -56,7 +55,6 @@ fn pikachu() -> Result<TeamData, Error> {
                     ],
                     "nature": "Bold",
                     "gender": "F",
-                    "ball": "Normal",
                     "level": 40
                 }
             ]

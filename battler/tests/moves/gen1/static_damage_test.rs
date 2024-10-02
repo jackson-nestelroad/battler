@@ -49,7 +49,6 @@ fn moves_can_deal_static_damage() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]

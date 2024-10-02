@@ -47,7 +47,6 @@ fn struggle_deals_recoil() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -136,7 +135,6 @@ fn struggle_is_typeless() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]

@@ -49,7 +49,6 @@ fn recoils_based_on_damage_dealt() {
                     "moves": ["Double-Edge"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]
@@ -99,7 +98,6 @@ fn recoils_based_on_user_hp() {
                     "moves": ["Chloroblast"],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 100
                 }
             ]

@@ -51,7 +51,6 @@ fn ohko_lower_level_target() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -68,7 +67,6 @@ fn ohko_lower_level_target() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 20
                 }
             ]
@@ -111,7 +109,6 @@ fn ohko_fails_for_higher_level_target() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 40
                 }
             ]
@@ -128,7 +125,6 @@ fn ohko_fails_for_higher_level_target() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -168,7 +164,6 @@ fn ohko_for_specific_type() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -185,7 +180,6 @@ fn ohko_for_specific_type() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -228,7 +222,6 @@ fn ohko_fails_against_specific_type() {
                     ],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
@@ -245,7 +238,6 @@ fn ohko_fails_against_specific_type() {
                     "moves": [],
                     "nature": "Hardy",
                     "gender": "M",
-                    "ball": "Normal",
                     "level": 50
                 }
             ]
