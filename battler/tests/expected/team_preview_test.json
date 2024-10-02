@@ -38,7 +38,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -68,7 +68,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -98,7 +98,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -128,7 +128,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -158,7 +158,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -188,7 +188,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         }
@@ -230,7 +230,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -260,7 +260,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -290,7 +290,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -320,7 +320,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -350,7 +350,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -380,7 +380,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         }
@@ -422,7 +422,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -452,7 +452,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -482,7 +482,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -512,7 +512,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -542,7 +542,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -572,7 +572,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         }
@@ -614,7 +614,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -644,7 +644,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -674,7 +674,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -704,7 +704,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -734,7 +734,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -764,7 +764,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         }
@@ -826,7 +826,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -856,7 +856,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -886,7 +886,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -927,7 +927,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -957,7 +957,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -987,7 +987,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -1048,7 +1048,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -1078,7 +1078,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -1108,7 +1108,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -1149,7 +1149,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -1179,7 +1179,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -1209,7 +1209,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -1270,7 +1270,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -1300,7 +1300,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur F",
@@ -1330,7 +1330,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -1371,7 +1371,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander M",
@@ -1401,7 +1401,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur M",
@@ -1431,7 +1431,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -1492,7 +1492,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -1522,7 +1522,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -1552,7 +1552,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -1593,7 +1593,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle M",
@@ -1623,7 +1623,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur F",
@@ -1653,7 +1653,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -1714,7 +1714,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -1746,7 +1746,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -1776,7 +1776,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -1815,7 +1815,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -1847,7 +1847,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -1877,7 +1877,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -1936,7 +1936,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -1968,7 +1968,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -1998,7 +1998,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -2037,7 +2037,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -2069,7 +2069,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -2099,7 +2099,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -2158,7 +2158,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -2190,7 +2190,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur F",
@@ -2220,7 +2220,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -2259,7 +2259,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander M",
@@ -2291,7 +2291,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur M",
@@ -2321,7 +2321,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -2380,7 +2380,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -2412,7 +2412,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -2442,7 +2442,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -2481,7 +2481,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle M",
@@ -2513,7 +2513,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur F",
@@ -2543,7 +2543,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -2604,7 +2604,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -2634,7 +2634,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -2666,7 +2666,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -2705,7 +2705,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -2735,7 +2735,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -2767,7 +2767,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -2826,7 +2826,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -2856,7 +2856,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -2888,7 +2888,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -2927,7 +2927,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -2957,7 +2957,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -2989,7 +2989,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -3048,7 +3048,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -3078,7 +3078,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur F",
@@ -3110,7 +3110,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -3149,7 +3149,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander M",
@@ -3179,7 +3179,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur M",
@@ -3211,7 +3211,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -3270,7 +3270,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -3300,7 +3300,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -3332,7 +3332,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -3371,7 +3371,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle M",
@@ -3401,7 +3401,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur F",
@@ -3433,7 +3433,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -3496,7 +3496,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -3526,7 +3526,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -3556,7 +3556,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -3597,7 +3597,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -3627,7 +3627,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -3657,7 +3657,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -3718,7 +3718,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander F",
@@ -3748,7 +3748,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle F",
@@ -3778,7 +3778,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -3819,7 +3819,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander F",
@@ -3849,7 +3849,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle F",
@@ -3879,7 +3879,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -3940,7 +3940,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Squirtle M",
@@ -3970,7 +3970,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur F",
@@ -4000,7 +4000,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -4041,7 +4041,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Charmander M",
@@ -4071,7 +4071,7 @@
                   }
                 ],
                 "ability": "Blaze",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur M",
@@ -4101,7 +4101,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
@@ -4162,7 +4162,7 @@
                 }
               ],
               "ability": "Torrent",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Charmander M",
@@ -4192,7 +4192,7 @@
                 }
               ],
               "ability": "Blaze",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             },
             {
               "name": "Bulbasaur M",
@@ -4222,7 +4222,7 @@
                 }
               ],
               "ability": "Chlorophyll",
-              "ball": "Normal"
+              "ball": "Poké Ball"
             }
           ]
         },
@@ -4263,7 +4263,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Squirtle M",
@@ -4293,7 +4293,7 @@
                   }
                 ],
                 "ability": "Torrent",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               },
               {
                 "name": "Bulbasaur F",
@@ -4323,7 +4323,7 @@
                   }
                 ],
                 "ability": "Chlorophyll",
-                "ball": "Normal"
+                "ball": "Poké Ball"
               }
             ]
           }
