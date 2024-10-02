@@ -310,7 +310,7 @@ pub struct MonMoveRequest {
     pub can_mega_evo: bool,
 }
 
-/// Request for a single [`Mon`] to learn one or more moves.
+/// Request for a single [`Mon`] to learn a move.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonLearnMoveRequest {
     pub team_position: usize,

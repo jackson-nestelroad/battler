@@ -66,6 +66,7 @@ pub enum Request {
     /// A request for one or more Mons to be switched in.
     #[serde(rename = "switch")]
     Switch(SwitchRequest),
+    /// A request for a single Mon to learn a move.
     #[serde(rename = "learnmove")]
     LearnMove(LearnMoveRequest),
 }
