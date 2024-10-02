@@ -906,14 +906,13 @@ impl<'d> CoreBattle<'d> {
                 for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
                     if let Some(request) = Mon::learn_move_request(&mut context.mon_context(mon)?)?
                     {
-                        learn_move_request = Some((mon, request));
+                        learn_move_request = Some(request);
                         break;
                     }
                 }
                 match learn_move_request {
-                    Some((mon, request)) => Ok(Some(Request::LearnMove(LearnMoveRequest {
+                    Some(request) => Ok(Some(Request::LearnMove(LearnMoveRequest {
                         can_learn_move: request,
-                        team_position: context.mon(mon)?.team_position,
                     }))),
                     None => Ok(None),
                 }

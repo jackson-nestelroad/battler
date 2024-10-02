@@ -129,56 +129,6 @@ fn massive_level_up_before_battle_ends() {
                         "team_position": 0,
                         "id": "confuseray",
                         "name": "Confuse Ray"
-                    },
-                    "mon_summary": {
-                        "name": "Gastly",
-                        "species": "Gastly",
-                        "ability": "No Ability",
-                        "level": 19,
-                        "gender": "M",
-                        "shiny": false,
-                            "stats": {
-                            "hp": 40,
-                            "atk": 18,
-                            "def": 16,
-                            "spa": 43,
-                            "spd": 18,
-                            "spe": 35
-                        },
-                        "moves": [
-                            {
-                                "name": "Lick",
-                                "id": "lick",
-                                "pp": 30,
-                                "max_pp": 30,
-                                "target": "Normal",
-                                "disabled": false
-                            },
-                            {
-                                "name": "Mean Look",
-                                "id": "meanlook",
-                                "pp": 5,
-                                "max_pp": 5,
-                                "target": "Normal",
-                                "disabled": false
-                            },
-                            {
-                                "name": "Curse",
-                                "id": "curse",
-                                "pp": 10,
-                                "max_pp": 10,
-                                "target": "Normal",
-                                "disabled": false
-                            },
-                            {
-                                "name": "Night Shade",
-                                "id": "nightshade",
-                                "pp": 15,
-                                "max_pp": 15,
-                                "target": "Normal",
-                                "disabled": false
-                            }
-                        ]
                     }
                 }"#
             )

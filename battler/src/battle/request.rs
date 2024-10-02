@@ -50,7 +50,6 @@ pub struct SwitchRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LearnMoveRequest {
     pub can_learn_move: MonLearnMoveRequest,
-    pub team_position: usize,
 }
 
 /// A request for an action that a [`Player`][`crate::battle::Player`] must make before the battle
