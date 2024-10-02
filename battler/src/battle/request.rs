@@ -6,7 +6,6 @@ use serde::{
 use crate::battle::{
     MonLearnMoveRequest,
     MonMoveRequest,
-    MonSummaryData,
     PlayerBattleData,
 };
 
@@ -29,14 +28,12 @@ pub enum RequestType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TeamPreviewRequest {
     pub max_team_size: Option<usize>,
-    pub player: PlayerBattleData,
 }
 
 /// A request for a player to command their Mons for the next turn.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TurnRequest {
     pub active: Vec<MonMoveRequest>,
-    pub player: PlayerBattleData,
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub allies: Vec<PlayerBattleData>,
@@ -47,14 +44,13 @@ pub struct TurnRequest {
 pub struct SwitchRequest {
     /// Team slots that need to be switched out.
     pub needs_switch: Vec<usize>,
-    pub player: PlayerBattleData,
 }
 
 /// A request for a Mon to learn one or more moves.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LearnMoveRequest {
     pub can_learn_move: MonLearnMoveRequest,
-    pub mon_summary: MonSummaryData,
+    pub team_position: usize,
 }
 
 /// A request for an action that a [`Player`][`crate::battle::Player`] must make before the battle

@@ -4,7 +4,6 @@ use battler::{
         BattleType,
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
-        Request,
     },
     common::{
         Error,
@@ -139,8 +138,8 @@ fn switch_out_preserves_health() {
     .unwrap();
     assert_logs_since_turn_eq(&mut battle, 1, &expected_logs);
 
-    assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
-        assert_eq!(request.player.mons[0].health, "71/105");
-        assert_eq!(request.player.mons[1].health, "62/99");
+    assert_matches!(battle.player_data("player-2"), Ok(data) => {
+        assert_eq!(data.mons[0].health, "71/105");
+        assert_eq!(data.mons[1].health, "62/99");
     });
 }

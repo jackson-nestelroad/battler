@@ -4,7 +4,6 @@ use battler::{
         BattleType,
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
-        Request,
     },
     common::{
         Error,
@@ -86,7 +85,7 @@ fn pressure_deducts_extra_pp_from_opponent() {
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
-        assert_eq!(request.player.mons[0].moves[0].pp, 13);
+    assert_matches!(battle.player_data("player-1"), Ok(data) => {
+        assert_eq!(data.mons[0].moves[0].pp, 13);
     });
 }

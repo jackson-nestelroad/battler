@@ -4,7 +4,6 @@ use battler::{
         CoreBattleEngineRandomizeBaseDamage,
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
-        Request,
     },
     common::{
         Error,
@@ -299,15 +298,9 @@ fn transform_copies_type_change() {
 
     assert_eq!(
         battle
-            .request_for_player("player-1")
-            .map(|request| {
-                if let Request::Turn(request) = request {
-                    request.player.mons.get(0).map(|mon| mon.types.clone())
-                } else {
-                    None
-                }
-            })
-            .flatten(),
+            .player_data("player-1")
+            .map(|data| { data.mons.get(0).map(|mon| mon.types.clone()) })
+            .unwrap(),
         Some(vec![Type::Normal])
     );
 

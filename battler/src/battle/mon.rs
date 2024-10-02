@@ -214,8 +214,9 @@ pub struct ItemSlot {
 /// Makes a copy of underlying data so that it can be stored on move requests.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonMoveSlotData {
-    pub name: String,
+    #[serde(skip)]
     pub id: Id,
+    pub name: String,
     pub pp: u8,
     pub max_pp: u8,
     pub target: Option<MoveTarget>,

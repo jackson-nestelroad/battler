@@ -853,10 +853,8 @@ impl<'d> CoreBattle<'d> {
                     .numeric_rules
                     .picked_team_size
                     .map(|size| size as usize);
-                let mut context = context.player_context(player)?;
                 Ok(Some(Request::TeamPreview(TeamPreviewRequest {
                     max_team_size,
-                    player: Player::request_data(&mut context)?,
                 })))
             }
             RequestType::Turn => {
@@ -872,7 +870,6 @@ impl<'d> CoreBattle<'d> {
                         Mon::move_request(&mut context)
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let player_request_data = Player::request_data(&mut context)?;
                 let ally_indices = context
                     .battle()
                     .player_indices_on_side(context.side().index)
@@ -883,15 +880,11 @@ impl<'d> CoreBattle<'d> {
                     let mut context = context.as_battle_context_mut().player_context(player)?;
                     allies.push(Player::request_data(&mut context)?);
                 }
-                Ok(Some(Request::Turn(TurnRequest {
-                    active,
-                    player: player_request_data,
-                    allies,
-                })))
+                Ok(Some(Request::Turn(TurnRequest { active, allies })))
             }
             RequestType::Switch => {
                 // We only make a request if there are Mons that need to switch out.
-                let mut context = context.player_context(player)?;
+                let context = context.player_context(player)?;
                 if Player::mons_left(&context)? == 0 {
                     return Ok(None);
                 }
@@ -902,10 +895,7 @@ impl<'d> CoreBattle<'d> {
                     }
                 }
                 if !needs_switch.is_empty() {
-                    Ok(Some(Request::Switch(SwitchRequest {
-                        needs_switch,
-                        player: Player::request_data(&mut context)?,
-                    })))
+                    Ok(Some(Request::Switch(SwitchRequest { needs_switch })))
                 } else {
                     Ok(None)
                 }
@@ -923,7 +913,7 @@ impl<'d> CoreBattle<'d> {
                 match learn_move_request {
                     Some((mon, request)) => Ok(Some(Request::LearnMove(LearnMoveRequest {
                         can_learn_move: request,
-                        mon_summary: Mon::summary_request_data(&mut context.mon_context(mon)?)?,
+                        team_position: context.mon(mon)?.team_position,
                     }))),
                     None => Ok(None),
                 }
