@@ -50,7 +50,7 @@ fn charizard() -> Result<TeamData, Error> {
                 {
                     "name": "Charizard",
                     "species": "Charizard",
-                    "ability": "No Ability",
+                    "ability": "Blaze",
                     "moves": [
                         "Tackle",
                         "Drill Peck",
@@ -141,74 +141,119 @@ fn transform_transforms_into_target() {
                                 }
                             ]
                         }
-                    ],
-                    "player": {
-                        "name": "Player 1",
-                        "id": "player-1",
-                        "side": 0,
-                        "position": 0,
-                        "mons": [
-                            {
-                                "name": "Ditto",
-                                "species": "Charizard",
-                                "level": 50,
-                                "gender": "Male",
-                                "shiny": false,
-                                "health": "108/108",
-                                "types": ["Fire", "Flying"],
-                                "status": "",
-                                "active": true,
-                                "player_active_position": 0,
-                                "side_position": 0,
-                                "stats": {
-                                    "atk": 89,
-                                    "def": 83,
-                                    "spa": 114,
-                                    "spd": 90,
-                                    "spe": 105
-                                },
-                                "moves": [
-                                    {
-                                        "name": "Tackle",
-                                        "id": "tackle",
-                                        "pp": 5,
-                                        "max_pp": 5,
-                                        "target": "Normal",
-                                        "disabled": false
-                                    },
-                                    {
-                                        "name": "Drill Peck",
-                                        "id": "drillpeck",
-                                        "pp": 5,
-                                        "max_pp": 5,
-                                        "target": "Any",
-                                        "disabled": false
-                                    },
-                                    {
-                                        "name": "Growth",
-                                        "id": "growth",
-                                        "pp": 5,
-                                        "max_pp": 5,
-                                        "target": "User",
-                                        "disabled": false
-                                    },
-                                    {
-                                        "name": "Conversion",
-                                        "id": "conversion",
-                                        "pp": 5,
-                                        "max_pp": 5,
-                                        "target": "User",
-                                        "disabled": false
-                                    }
-                                ],
-                                "ability": "No Ability"
-                            }
-                        ]
-                    }
+                    ]
                 }"#
             )
             .unwrap()
         )
+    );
+
+    pretty_assertions::assert_eq!(
+        battle.player_data("player-1").unwrap(),
+        serde_json::from_str(
+            r#"{
+                "name": "Player 1",
+                "id": "player-1",
+                "side": 0,
+                "position": 0,
+                "mons": [
+                    {
+                        "summary": {
+                            "name": "Ditto",
+                            "species": "Ditto",
+                            "level": 50,
+                            "gender": "M",
+                            "shiny": false,
+                            "ball": "Poké Ball",
+                            "hp": 108,
+                            "friendship": 0,
+                            "experience": 0,
+                            "stats": {
+                                "hp": 108,
+                                "atk": 53,
+                                "def": 53,
+                                "spa": 53,
+                                "spd": 53,
+                                "spe": 53
+                            },
+                            "evs": {
+                                "hp": 0,
+                                "atk": 0,
+                                "def": 0,
+                                "spa": 0,
+                                "spd": 0,
+                                "spe": 0
+                            },
+                            "moves": [
+                                {
+                                    "name": "Transform",
+                                    "pp": 10
+                                }
+                            ],
+                            "ability": "No Ability",
+                            "item": null,
+                            "status": null
+                        },
+                        "species": "Charizard",
+                        "hp": 108,
+                        "max_hp": 108,
+                        "health": "108/108",
+                        "types": [
+                            "Fire",
+                            "Flying"
+                        ],
+                        "active": true,
+                        "player_active_position": 0,
+                        "side_position": 0,
+                        "stats": {
+                            "atk": 89,
+                            "def": 83,
+                            "spa": 114,
+                            "spd": 90,
+                            "spe": 105
+                        },
+                        "moves": [
+                            {
+                                "name": "Tackle",
+                                "id": "tackle",
+                                "pp": 5,
+                                "max_pp": 5,
+                                "target": "Normal",
+                                "disabled": false
+                            },
+                            {
+                                "name": "Drill Peck",
+                                "id": "drillpeck",
+                                "pp": 5,
+                                "max_pp": 5,
+                                "target": "Any",
+                                "disabled": false
+                            },
+                            {
+                                "name": "Growth",
+                                "id": "growth",
+                                "pp": 5,
+                                "max_pp": 5,
+                                "target": "User",
+                                "disabled": false
+                            },
+                            {
+                                "name": "Conversion",
+                                "id": "conversion",
+                                "pp": 5,
+                                "max_pp": 5,
+                                "target": "User",
+                                "disabled": false
+                            }
+                        ],
+                        "ability": "Blaze",
+                        "item": null,
+                        "status": null
+                    }
+                ]
+            }"#
+        )
+        .unwrap()
     );
 
     assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));

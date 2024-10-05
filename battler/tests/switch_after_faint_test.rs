@@ -151,14 +151,14 @@ fn must_switch_after_faint() {
     assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-1").unwrap();
         assert_eq!(request.active.len(), 2);
-        assert_eq!(player_data.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
-        assert_eq!(player_data.mons[request.active[1].team_position].base_data.name, "Charmander");
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
+        assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Charmander");
     });
     assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-2").unwrap();
         assert_eq!(request.active.len(), 2);
-        assert_eq!(player_data.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
-        assert_eq!(player_data.mons[request.active[1].team_position].base_data.name, "Squirtle");
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
+        assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Squirtle");
     });
 
     assert_eq!(
@@ -192,13 +192,13 @@ fn must_switch_after_faint() {
     assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-1").unwrap();
         assert_eq!(request.active.len(), 2);
-        assert_eq!(player_data.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
-        assert_eq!(player_data.mons[request.active[1].team_position].base_data.name, "Charmander");
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
+        assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Charmander");
     });
     assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-2").unwrap();
         assert_eq!(request.active.len(), 1);
-        assert_eq!(player_data.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
     });
 }
 
@@ -299,12 +299,12 @@ fn must_switch_one_after_two_faint() {
     assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-1").unwrap();
         assert_eq!(request.active.len(), 2);
-        assert_eq!(player_data.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
-        assert_eq!(player_data.mons[request.active[1].team_position].base_data.name, "Charmander");
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
+        assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Charmander");
     });
     assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-2").unwrap();
         assert_eq!(request.active.len(), 1);
-        assert_eq!(player_data.mons[request.active[0].team_position].base_data.name, "Bulbasaur");
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
     });
 }

@@ -252,26 +252,42 @@ impl MonMoveSlotData {
     }
 }
 
-/// Data about a single [`Mon`], shared across [`MonBattleData`] and
-/// [`MonSummaryData`].
+/// Persistent battle state for a single [`Move`] on a [`Mon`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonBaseData {
+pub struct MonPersistentMoveData {
     pub name: String,
+    pub pp: u8,
+}
+
+/// Data about a single [`Mon`]'s summary, which is its out-of-battle state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MonSummaryData {
+    pub name: String,
+    pub species: String,
     pub level: u8,
     pub gender: Gender,
     pub shiny: bool,
     pub ball: String,
+    pub hp: u16,
+    pub friendship: u8,
+    pub experience: u32,
+    pub stats: StatTable,
+    pub evs: StatTable,
+    pub moves: Vec<MonPersistentMoveData>,
+    pub ability: String,
+    pub item: Option<String>,
+    pub status: Option<String>,
 }
 
-/// Data about a single [`Mon`]'s battle state/
+/// Data about a single [`Mon`]'s battle state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonBattleData {
-    #[serde(flatten)]
-    pub base_data: MonBaseData,
+    pub summary: MonSummaryData,
     pub species: String,
+    pub hp: u16,
+    pub max_hp: u16,
     pub health: String,
     pub types: Vec<Type>,
-    pub status: String,
     pub active: bool,
     pub player_active_position: Option<usize>,
     pub side_position: Option<usize>,
@@ -279,24 +295,7 @@ pub struct MonBattleData {
     pub moves: Vec<MonMoveSlotData>,
     pub ability: String,
     pub item: Option<String>,
-}
-
-/// Data about a single [`Mon`]'s base, unmodified state when a player is requested an action that
-/// acts on base state (such as learning a move) or requests a summary of their team.
-///
-/// Very similar to [`MonBattleData`], but some fields related to battle state are removed.
-///
-/// In most cases, clients should have their own external view of Mons in a battle. However, since
-/// we make requests for things like learning moves that can alter that external state, we also
-/// supply our own simple view of this type of data for convenience.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MonSummaryData {
-    #[serde(flatten)]
-    pub base_data: MonBaseData,
-    pub species: String,
-    pub stats: StatTable,
-    pub moves: Vec<MonMoveSlotData>,
-    pub ability: String,
+    pub status: Option<String>,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -1188,16 +1187,6 @@ impl Mon {
 
 // Request getters.
 impl Mon {
-    fn base_request_data(&self) -> MonBaseData {
-        MonBaseData {
-            name: self.name.clone(),
-            level: self.level,
-            gender: self.gender.clone(),
-            shiny: self.shiny,
-            ball: self.ball.clone(),
-        }
-    }
-
     /// Generates battle request data.
     pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData, Error> {
         let side_position = Self::position_on_side(context);
@@ -1232,16 +1221,12 @@ impl Mon {
             None
         };
         Ok(MonBattleData {
-            base_data: context.mon().base_request_data(),
+            summary: Self::summary_request_data(context)?,
             species,
+            hp: context.mon().hp,
+            max_hp: context.mon().max_hp,
             health: context.mon().actual_health(),
             types: context.mon().types.clone(),
-            status: context
-                .mon()
-                .status
-                .as_ref()
-                .map(|id| id.to_string())
-                .unwrap_or(String::default()),
             active: context.mon().active,
             player_active_position: context.mon().active_position,
             side_position,
@@ -1255,13 +1240,16 @@ impl Mon {
                 .collect::<Result<Vec<_>, Error>>()?,
             ability,
             item,
+            status: context
+                .mon()
+                .status
+                .as_ref()
+                .map(|status| status.to_string()),
         })
     }
 
     /// Generates summary request data.
     pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryData, Error> {
-        let mut stats = context.mon().base_stored_stats.clone();
-        stats.hp = context.mon().base_max_hp;
         let species = context
             .battle()
             .dex
@@ -1278,18 +1266,48 @@ impl Mon {
             .data
             .name
             .clone();
+        let item = match &context.mon().item {
+            Some(item) => Some(
+                context
+                    .battle()
+                    .dex
+                    .items
+                    .get_by_id(&item.id)?
+                    .data
+                    .name
+                    .clone(),
+            ),
+            None => None,
+        };
         Ok(MonSummaryData {
-            base_data: context.mon().base_request_data(),
+            name: context.mon().name.clone(),
             species,
-            stats,
+            level: context.mon().level,
+            gender: context.mon().gender,
+            shiny: context.mon().shiny,
+            ball: context.mon().ball.clone(),
+            hp: context.mon().hp,
+            friendship: context.mon().friendship,
+            experience: context.mon().experience,
+            stats: context.mon().base_stored_stats.clone(),
+            evs: context.mon().evs.clone(),
             moves: context
                 .mon()
                 .base_move_slots
                 .clone()
                 .into_iter()
-                .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
-                .collect::<Result<Vec<_>, Error>>()?,
+                .map(|move_slot| MonPersistentMoveData {
+                    name: move_slot.name.clone(),
+                    pp: move_slot.pp,
+                })
+                .collect::<Vec<_>>(),
             ability,
+            item,
+            status: context
+                .mon()
+                .status
+                .as_ref()
+                .map(|status| status.to_string()),
         })
     }
 
