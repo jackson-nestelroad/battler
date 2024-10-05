@@ -14,6 +14,17 @@ fn default_ball() -> String {
     return "Poké Ball".to_owned();
 }
 
+/// Pre-battle data for a specific Mon on a team.
+///
+/// Data here is meant to carry from battle to battle and is cleared when a Mon is healed. In
+/// competitive battles, this data would be completely unused.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MonPersistentBattleData {
+    pub hp: u16,
+    pub move_pp: Vec<u8>,
+    pub status: Option<String>,
+}
+
 /// Data about a specific Mon on a team.
 ///
 /// Data here is consistent across many battles and should not be modified inside of a battle. For
@@ -72,4 +83,7 @@ pub struct MonData {
     /// Different original trainer.
     #[serde(default)]
     pub different_original_trainer: bool,
+    /// Persistent battle data.
+    #[serde(default)]
+    pub persistent_battle_data: MonPersistentBattleData,
 }

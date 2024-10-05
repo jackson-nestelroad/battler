@@ -180,7 +180,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     Some(&MonMoveSlotData {
                         name: "Mimic".to_owned(),
                         id: Id::from("mimic"),
-                        pp: 9,
+                        pp: 8,
                         max_pp: 10,
                         target: Some(MoveTarget::Normal),
                         disabled: false,
@@ -222,6 +222,14 @@ fn mimic_overwrites_move_slot_as_volatile() {
         Ok(())
     );
     assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    assert_eq!(
+        battle.player_data("player-1").unwrap().mons[0]
+            .summary
+            .moves[1]
+            .pp,
+        7
+    );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
