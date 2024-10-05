@@ -148,7 +148,6 @@ pub struct MoveSlot {
     pub name: String,
     pub pp: u8,
     pub max_pp: u8,
-    pub pp_boosts: u8,
     pub target: MoveTarget,
     pub disabled: bool,
     pub used: bool,
@@ -157,20 +156,12 @@ pub struct MoveSlot {
 
 impl MoveSlot {
     /// Creates a new move slot.
-    pub fn new(
-        id: Id,
-        name: String,
-        pp: u8,
-        max_pp: u8,
-        pp_boosts: u8,
-        target: MoveTarget,
-    ) -> Self {
+    pub fn new(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget) -> Self {
         Self {
             id,
             name,
             pp,
             max_pp,
-            pp_boosts,
             target,
             disabled: false,
             used: false,
@@ -185,7 +176,6 @@ impl MoveSlot {
             name,
             pp,
             max_pp,
-            pp_boosts: 0,
             target,
             disabled: false,
             used: false,
@@ -414,6 +404,7 @@ pub struct Mon {
     pub item: Option<ItemSlot>,
     pub last_item: Option<Id>,
 
+    pub initial_hp: Option<u16>,
     pub hp: u16,
     pub base_max_hp: u16,
     pub max_hp: u16,
@@ -476,21 +467,24 @@ impl Mon {
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {
             let mov = dex.moves.get(move_name)?;
-            let (max_pp, pp_boosts) = if mov.data.no_pp_boosts {
-                (mov.data.pp, 0)
+            let max_pp = if mov.data.no_pp_boosts {
+                mov.data.pp
             } else {
                 let pp_boosts = data.pp_boosts.get(i).cloned().unwrap_or(0).min(3);
-                (
-                    ((mov.data.pp as u32) * (pp_boosts as u32 + 5) / 5) as u8,
-                    pp_boosts,
-                )
+                ((mov.data.pp as u32) * (pp_boosts as u32 + 5) / 5) as u8
             };
+            let pp = data
+                .persistent_battle_data
+                .move_pp
+                .get(i)
+                .cloned()
+                .unwrap_or(max_pp);
+            let pp = pp.min(max_pp);
             base_move_slots.push(MoveSlot::new(
                 mov.id().clone(),
                 mov.data.name.clone(),
+                pp,
                 max_pp,
-                max_pp,
-                pp_boosts,
                 mov.data.target.clone(),
             ));
         }
@@ -514,6 +508,12 @@ impl Mon {
         let hidden_power_type = data
             .hidden_power_type
             .unwrap_or(calculate_hidden_power_type(&ivs));
+
+        let initial_hp = data.persistent_battle_data.hp;
+        let status = data
+            .persistent_battle_data
+            .status
+            .map(|status| Id::from(status));
 
         Ok(Self {
             player: usize::MAX,
@@ -556,6 +556,7 @@ impl Mon {
             item,
             last_item: None,
 
+            initial_hp,
             hp: 0,
             base_max_hp: 0,
             max_hp: 0,
@@ -586,7 +587,7 @@ impl Mon {
             foes_fought_while_active: FastHashSet::new(),
             received_attacks: Vec::new(),
 
-            status: None,
+            status,
             status_state: fxlang::EffectState::new(),
             volatiles: FastHashMap::new(),
 
@@ -618,7 +619,15 @@ impl Mon {
                 .level_from_exp(context.mon().experience);
         }
 
-        context.mon_mut().hp = context.mon().max_hp;
+        // Set the initial HP, which may signal that the Mon is already fainted.
+        let mut hp = context.mon().initial_hp.unwrap_or(context.mon().max_hp);
+        if hp > context.mon().max_hp {
+            hp = context.mon().max_hp;
+        }
+        context.mon_mut().hp = hp;
+        if context.mon().hp == 0 {
+            context.mon_mut().exited = Some(MonExitType::Fainted);
+        }
 
         context.mon_mut().ability.effect_state = context.mon().base_ability.effect_state.clone();
 
@@ -2096,7 +2105,6 @@ impl Mon {
                         String::new(),
                         0,
                         0,
-                        0,
                         MoveTarget::Normal,
                     ));
                     let index = context.mon().base_move_slots.len() - 1;
@@ -2114,7 +2122,6 @@ impl Mon {
             mov.data.name.clone(),
             mov.data.pp,
             mov.data.pp,
-            0,
             mov.data.target.clone(),
         );
 

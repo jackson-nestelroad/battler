@@ -20,7 +20,7 @@ fn default_ball() -> String {
 /// competitive battles, this data would be completely unused.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonPersistentBattleData {
-    pub hp: u16,
+    pub hp: Option<u16>,
     pub move_pp: Vec<u8>,
     pub status: Option<String>,
 }

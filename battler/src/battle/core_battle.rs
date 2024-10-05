@@ -1047,7 +1047,7 @@ impl<'d> CoreBattle<'d> {
 
                 context.battle_mut().log(log_event!("start"));
 
-                let switch_ins = context
+                let player_switch_in_orders = context
                     .battle()
                     .players()
                     .sorted_by(|a, b| match (a.player_type.wild(), b.player_type.wild()) {
@@ -1055,15 +1055,23 @@ impl<'d> CoreBattle<'d> {
                         (false, true) => Ordering::Greater,
                         _ => Ordering::Equal,
                     })
-                    .flat_map(|player| {
-                        player
-                            .field_positions()
-                            .filter_map(|(i, _)| player.mons.get(i).cloned().map(|mon| (i, mon)))
-                    })
+                    .map(|player| player.index)
                     .collect::<Vec<_>>();
-                for (position, mon) in switch_ins {
-                    let mut context = context.mon_context(mon)?;
-                    core_battle_actions::switch_in(&mut context, position, None, false)?;
+                for player in player_switch_in_orders {
+                    let mut context = context.player_context(player)?;
+                    let field_positions = context
+                        .player()
+                        .field_positions()
+                        .map(|(pos, _)| pos)
+                        .collect::<Vec<_>>();
+                    for (mon, position) in Player::switchable_mon_handles(&context)
+                        .cloned()
+                        .zip(field_positions.into_iter())
+                        .collect::<Vec<_>>()
+                    {
+                        let mut context = context.mon_context(mon)?;
+                        core_battle_actions::switch_in(&mut context, position, None, false)?;
+                    }
                 }
 
                 // TODO: Start event for species. Some forms changes happen at the very beginning of
