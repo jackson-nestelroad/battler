@@ -187,7 +187,7 @@ fn transform_transforms_into_target() {
                             "moves": [
                                 {
                                     "name": "Transform",
-                                    "pp": 10
+                                    "pp": 9
                                 }
                             ],
                             "ability": "No Ability",

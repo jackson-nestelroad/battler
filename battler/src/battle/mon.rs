@@ -1165,8 +1165,20 @@ impl Mon {
             .find(|(_, move_slot)| &move_slot.id == move_id)
     }
 
+    fn indexed_base_move_slot_mut(&mut self, move_id: &Id) -> Option<(usize, &mut MoveSlot)> {
+        self.base_move_slots
+            .iter_mut()
+            .enumerate()
+            .find(|(_, move_slot)| &move_slot.id == move_id)
+    }
+
     fn move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
         self.indexed_move_slot_mut(move_id)
+            .map(|(_, move_slot)| move_slot)
+    }
+
+    fn base_move_slot_mut(&mut self, move_id: &Id) -> Option<&mut MoveSlot> {
+        self.indexed_base_move_slot_mut(move_id)
             .map(|(_, move_slot)| move_slot)
     }
 
@@ -1691,30 +1703,38 @@ impl Mon {
         return false;
     }
 
+    fn deduct_pp_from_move_slot(move_slot: &mut MoveSlot, amount: u8) -> u8 {
+        let before = move_slot.pp;
+        move_slot.used = true;
+        if amount > move_slot.pp {
+            move_slot.pp = 0;
+        } else {
+            move_slot.pp -= amount;
+        }
+        before - move_slot.pp
+    }
+
     /// Deducts PP from the given move.
     pub fn deduct_pp(&mut self, move_id: &Id, amount: u8) -> u8 {
         let mut move_slot_index = None;
         let mut pp = 0;
         let mut delta = 0;
         if let Some((i, move_slot)) = self.indexed_move_slot_mut(move_id) {
-            let before = move_slot.pp;
-            move_slot.used = true;
-            if amount > move_slot.pp {
-                move_slot.pp = 0;
-            } else {
-                move_slot.pp -= amount;
-            }
+            delta = Self::deduct_pp_from_move_slot(move_slot, amount);
             if !move_slot.simulated {
                 move_slot_index = Some(i);
                 pp = move_slot.pp;
             }
-            delta = before - move_slot.pp;
         }
 
         if let Some(index) = move_slot_index {
             if let Some(base_move_slot) = self.base_move_slots.get_mut(index) {
                 base_move_slot.pp = pp;
             }
+        } else if let Some(move_slot) = self.base_move_slot_mut(move_id) {
+            // Required for cases where the Mon's moveset changes after it uses the move, such as
+            // Transform.
+            delta = Self::deduct_pp_from_move_slot(move_slot, amount);
         }
 
         delta
