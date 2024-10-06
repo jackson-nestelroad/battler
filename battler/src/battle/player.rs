@@ -366,6 +366,7 @@ pub struct PlayerBattleData {
     pub side: usize,
     pub position: usize,
     pub mons: Vec<MonBattleData>,
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub caught: Vec<MonSummaryData>,
 }

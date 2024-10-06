@@ -168,7 +168,7 @@ fn transform_transforms_into_target() {
                             "ball": "Poké Ball",
                             "hp": 108,
                             "friendship": 0,
-                            "experience": 0,
+                            "experience": 125000,
                             "stats": {
                                 "hp": 108,
                                 "atk": 53,
