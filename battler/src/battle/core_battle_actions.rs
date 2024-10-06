@@ -795,31 +795,34 @@ fn get_move_targets(
 
 /// Runs all events prior to a move hitting any targets.
 fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcome, Error> {
-    let move_event_result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+    let result = core_battle_effects::run_active_move_event_expecting_move_event_result(
         context,
         fxlang::BattleEvent::TryUseMove,
         core_battle_effects::MoveTargetForEvent::User,
     );
 
-    let move_prepare_hit_result =
+    let result = if result.advance() {
         core_battle_effects::run_active_move_event_expecting_move_event_result(
             context,
             fxlang::BattleEvent::PrepareHit,
             core_battle_effects::MoveTargetForEvent::User,
-        );
+        )
+    } else {
+        result
+    };
 
-    let event_prepare_hit_result = MoveEventResult::from(
-        core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
-            &mut context.user_applying_effect_context(None)?,
-            fxlang::BattleEvent::PrepareHit,
-        ),
-    );
+    let result = if result.advance() {
+        MoveEventResult::from(
+            core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
+                &mut context.user_applying_effect_context(None)?,
+                fxlang::BattleEvent::PrepareHit,
+            ),
+        )
+    } else {
+        result
+    };
 
-    let move_event_result = move_event_result
-        .combine(move_prepare_hit_result)
-        .combine(event_prepare_hit_result);
-
-    let outcome = MoveOutcome::from(move_event_result);
+    let outcome = MoveOutcome::from(result);
 
     if outcome.failed() {
         core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
