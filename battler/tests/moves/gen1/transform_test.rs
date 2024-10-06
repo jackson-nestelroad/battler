@@ -163,6 +163,7 @@ fn transform_transforms_into_target() {
                             "species": "Ditto",
                             "level": 50,
                             "gender": "M",
+                            "nature": "Hardy",
                             "shiny": false,
                             "ball": "Poké Ball",
                             "hp": 108,
@@ -177,6 +178,14 @@ fn transform_transforms_into_target() {
                                 "spe": 53
                             },
                             "evs": {
+                                "hp": 0,
+                                "atk": 0,
+                                "def": 0,
+                                "spa": 0,
+                                "spd": 0,
+                                "spe": 0
+                            },
+                            "ivs": {
                                 "hp": 0,
                                 "atk": 0,
                                 "def": 0,

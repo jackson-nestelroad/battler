@@ -256,6 +256,7 @@ pub struct MonSummaryData {
     pub species: String,
     pub level: u8,
     pub gender: Gender,
+    pub nature: Nature,
     pub shiny: bool,
     pub ball: String,
     pub hp: u16,
@@ -263,6 +264,7 @@ pub struct MonSummaryData {
     pub experience: u32,
     pub stats: StatTable,
     pub evs: StatTable,
+    pub ivs: StatTable,
     pub moves: Vec<MonPersistentMoveData>,
     pub ability: String,
     pub item: Option<String>,
@@ -1305,6 +1307,7 @@ impl Mon {
             species,
             level: context.mon().level,
             gender: context.mon().gender,
+            nature: context.mon().nature,
             shiny: context.mon().shiny,
             ball: context.mon().ball.clone(),
             hp: context.mon().hp,
@@ -1312,6 +1315,7 @@ impl Mon {
             experience: context.mon().experience,
             stats: context.mon().base_stored_stats.clone(),
             evs: context.mon().evs.clone(),
+            ivs: context.mon().ivs.clone(),
             moves: context
                 .mon()
                 .base_move_slots
