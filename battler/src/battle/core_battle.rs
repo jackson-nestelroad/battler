@@ -1861,7 +1861,21 @@ impl<'d> CoreBattle<'d> {
                 fxlang::VariableInput::default(),
             );
 
-            // TODO: Record caught Mon.
+            context.mon_mut().ball = context
+                .battle()
+                .dex
+                .items
+                .get_by_id(&entry.item)?
+                .data
+                .name
+                .clone();
+
+            context
+                .as_battle_context_mut()
+                .player_context(entry.player)?
+                .player_mut()
+                .caught
+                .push(entry.target);
         }
 
         Self::check_win(context)?;

@@ -609,7 +609,7 @@ impl Mon {
         Self::recalculate_base_stats(context)?;
 
         // Generate level from experience points if needed.
-        if context.mon().level == u8::default() {
+        if context.mon().level == 0 {
             let species = context
                 .battle()
                 .dex
@@ -619,6 +619,14 @@ impl Mon {
                 .data
                 .leveling_rate
                 .level_from_exp(context.mon().experience);
+        } else if context.mon().experience == 0 {
+            let species = context
+                .battle()
+                .dex
+                .species
+                .get_by_id(&context.mon().species)?;
+            context.mon_mut().experience =
+                species.data.leveling_rate.exp_at_level(context.mon().level);
         }
 
         // Set the initial HP, which may signal that the Mon is already fainted.
@@ -1872,7 +1880,7 @@ impl Mon {
         Ok(damage)
     }
 
-    /// Faints the Mon.
+    /// Faints the Mon, placing it in the queue to be processed.
     pub fn faint(
         context: &mut MonContext,
         source: Option<MonHandle>,
@@ -1892,7 +1900,7 @@ impl Mon {
         Ok(())
     }
 
-    /// Faints the Mon.
+    /// Catches the Mon, placing it in the queue to be processed.
     pub fn catch(
         context: &mut MonContext,
         player: usize,

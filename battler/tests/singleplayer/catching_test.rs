@@ -2,6 +2,7 @@ use battler::{
     battle::{
         BattleType,
         CoreBattleEngineSpeedSortTieResolution,
+        MonSummaryData,
         PublicCoreBattle,
         WildPlayerOptions,
     },
@@ -274,6 +275,64 @@ fn level_5_magikarp_caught_in_poke_ball() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+
+    pretty_assertions::assert_eq!(
+        battle.player_data("protagonist").unwrap().caught,
+        serde_json::from_str::<Vec<MonSummaryData>>(
+            r#"[
+                {
+                    "name": "Magikarp",
+                    "species": "Magikarp",
+                    "level": 5,
+                    "gender": "M",
+                    "nature": "Hardy",
+                    "shiny": false,
+                    "ball": "Poké Ball",
+                    "hp": 1,
+                    "friendship": 0,
+                    "experience": 156,
+                    "stats": {
+                        "hp": 17,
+                        "atk": 6,
+                        "def": 10,
+                        "spa": 6,
+                        "spd": 7,
+                        "spe": 13
+                    },
+                    "evs": {
+                        "hp": 0,
+                        "atk": 0,
+                        "def": 0,
+                        "spa": 0,
+                        "spd": 0,
+                        "spe": 0
+                    },
+                    "ivs": {
+                        "hp": 0,
+                        "atk": 0,
+                        "def": 0,
+                        "spa": 0,
+                        "spd": 0,
+                        "spe": 0
+                    },
+                    "moves": [
+                        {
+                            "name": "Splash",
+                            "pp": 38
+                        },
+                        {
+                            "name": "Bounce",
+                            "pp": 5
+                        }
+                    ],
+                    "ability": "Swift Swim",
+                    "item": null,
+                    "status": null
+                }
+            ]"#
+        )
+        .unwrap(),
+    );
 }
 
 #[test]
@@ -426,11 +485,61 @@ fn level_100_metagross_caught_in_master_ball() {
             "useitem|player:protagonist|name:Master Ball|target:Metagross,wild,1",
             "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4",
             "exp|mon:Pikachu,protagonist,1|exp:12059",
+            "levelup|mon:Pikachu,protagonist,1|level:51|hp:96|atk:61|def:45|spa:56|spd:56|spe:96",
             "win|side:0"
         ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+
+    pretty_assertions::assert_eq!(
+        battle.player_data("protagonist").unwrap().caught,
+        serde_json::from_str::<Vec<MonSummaryData>>(
+            r#"[
+                {
+                    "name": "Metagross",
+                    "species": "Metagross",
+                    "level": 100,
+                    "gender": "U",
+                    "nature": "Hardy",
+                    "shiny": false,
+                    "ball": "Master Ball",
+                    "hp": 270,
+                    "friendship": 0,
+                    "experience": 1250000,
+                    "stats": {
+                        "hp": 270,
+                        "atk": 275,
+                        "def": 265,
+                        "spa": 195,
+                        "spd": 185,
+                        "spe": 145
+                    },
+                    "evs": {
+                        "hp": 0,
+                        "atk": 0,
+                        "def": 0,
+                        "spa": 0,
+                        "spd": 0,
+                        "spe": 0
+                    },
+                    "ivs": {
+                        "hp": 0,
+                        "atk": 0,
+                        "def": 0,
+                        "spa": 0,
+                        "spd": 0,
+                        "spe": 0
+                    },
+                    "moves": [],
+                    "ability": "Clear Body",
+                    "item": null,
+                    "status": null
+                }
+            ]"#
+        )
+        .unwrap(),
+    );
 }
 
 #[test]
@@ -460,6 +569,7 @@ fn level_100_metagross_critical_capture() {
             "useitem|player:protagonist|name:Master Ball|target:Metagross,wild,1",
             "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical",
             "exp|mon:Pikachu,protagonist,1|exp:12059",
+            "levelup|mon:Pikachu,protagonist,1|level:51|hp:96|atk:61|def:45|spa:56|spd:56|spe:96",
             "win|side:0"
         ]"#,
     )

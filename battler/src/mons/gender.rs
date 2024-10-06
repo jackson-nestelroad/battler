@@ -17,10 +17,10 @@ use serde_string_enum::{
 pub enum Gender {
     #[string = "U"]
     #[alias = "Unknown"]
+    #[default]
     Unknown,
     #[string = "F"]
     #[alias = "Female"]
-    #[default]
     Female,
     #[string = "M"]
     #[alias = "Male"]

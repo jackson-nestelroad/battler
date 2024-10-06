@@ -13,6 +13,7 @@ use serde::{
     Serialize,
 };
 
+use super::MonSummaryData;
 use crate::{
     battle::{
         core_battle_actions,
@@ -365,6 +366,8 @@ pub struct PlayerBattleData {
     pub side: usize,
     pub position: usize,
     pub mons: Vec<MonBattleData>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub caught: Vec<MonSummaryData>,
 }
 
 /// A single player of a battle.
@@ -392,6 +395,7 @@ pub struct Player {
     pub escaped: bool,
 
     pub bag: FastHashMap<Id, u16>,
+    pub caught: Vec<MonHandle>,
 }
 
 // Construction and initialization logic.
@@ -438,6 +442,7 @@ impl Player {
             escape_attempts: 0,
             escaped: false,
             bag,
+            caught: Vec::new(),
         })
     }
 
@@ -587,6 +592,7 @@ impl Player {
     /// Request data for the player in a battle.
     pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleData, Error> {
         let mon_handles = context.player().mon_handles().cloned().collect::<Vec<_>>();
+        let caught = context.player().caught.iter().cloned().collect::<Vec<_>>();
         Ok(PlayerBattleData {
             name: context.player().name.clone(),
             id: context.player().id.clone(),
@@ -595,6 +601,10 @@ impl Player {
             mons: mon_handles
                 .into_iter()
                 .map(|mon_handle| Mon::battle_request_data(&mut context.mon_context(mon_handle)?))
+                .collect::<Result<_, _>>()?,
+            caught: caught
+                .into_iter()
+                .map(|mon_handle| Mon::summary_request_data(&mut context.mon_context(mon_handle)?))
                 .collect::<Result<_, _>>()?,
         })
     }
