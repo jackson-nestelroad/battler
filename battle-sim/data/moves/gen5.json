@@ -396,7 +396,48 @@
       "NoAssist",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if !func_call(has_volatile: $user $this.id):",
+          ["$move.accuracy = exempt", "remove_move_flag: $move contact"]
+        ],
+        "on_try_immunity": [
+          "if func_call(has_volatile: $source $this.id):",
+          ["if func_call(has_type: $target flying):", ["return false"]],
+          "else:",
+          ["if $target.weight >= 2000:", ["return false"]]
+        ],
+        "on_try_hit": [
+          "if func_call(has_volatile: $source immobilizingmove):",
+          [
+            "# Ensure we are targeting the original target.",
+            "$immobilizing_effect_state = func_call(volatile_effect_state: $source immobilizingmove)",
+            "if !$immobilizing_effect_state or $target != $immobilizing_effect_state.source:",
+            ["return false"],
+            "remove_volatile: $source immobilizingmove"
+          ],
+          "else:",
+          [
+            "if $target.is_behind_substitute or func_call(is_ally: $source $target):",
+            ["return false"],
+            "log_prepare_move: $target",
+            "add_volatile: $source immobilizingmove use_target_as_source",
+            "return stop"
+          ]
+        ],
+        "on_hit": ["remove_volatile: $source immobilizingmove"],
+        "on_move_failed": ["remove_volatile: $user immobilizingmove"]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": ["add_volatile: $target fly"],
+        "on_end": ["remove_volatile: $target fly"]
+      }
+    }
   },
   "shiftgear": {
     "name": "Shift Gear",

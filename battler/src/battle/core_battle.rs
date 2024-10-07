@@ -1817,14 +1817,14 @@ impl<'d> CoreBattle<'d> {
                 ),
             };
 
-            Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
-            context.battle_mut().last_exited = Some(context.mon_handle());
-
             core_battle_effects::run_event_for_mon(
                 &mut context,
                 fxlang::BattleEvent::Exit,
                 fxlang::VariableInput::default(),
             );
+
+            Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
+            context.battle_mut().last_exited = Some(context.mon_handle());
         }
 
         Self::check_win(context)?;
@@ -1852,14 +1852,14 @@ impl<'d> CoreBattle<'d> {
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
-            Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
-            context.battle_mut().last_exited = Some(context.mon_handle());
-
             core_battle_effects::run_event_for_mon(
                 &mut context,
                 fxlang::BattleEvent::Exit,
                 fxlang::VariableInput::default(),
             );
+
+            Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
+            context.battle_mut().last_exited = Some(context.mon_handle());
 
             context.mon_mut().ball = context
                 .battle()

@@ -237,6 +237,10 @@ mod moves {
         mod miracle_eye_test;
         mod toxic_spikes_test;
     }
+
+    mod gen5 {
+        mod sky_drop_test;
+    }
 }
 
 mod singleplayer {

@@ -189,6 +189,7 @@ pub fn run_function(
         "random_target" => random_target(context),
         "received_attack" => received_attack(context).map(|val| Some(val)),
         "remove" => remove(context).map(|val| Some(val)),
+        "remove_move_flag" => remove_move_flag(context).map(|()| None),
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
         "restore_pp" => restore_pp(context).map(|val| Some(val)),
@@ -504,8 +505,9 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         target_handle: MonHandle,
     ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>, Error> {
         if self.use_source_effect() {
+            let source = self.source_handle();
             self.evaluation_context_mut()
-                .forward_source_effect_to_applying_effect(target_handle)
+                .forward_source_effect_to_applying_effect(target_handle, source)
         } else {
             let source = self.source_handle();
             self.evaluation_context_mut()
@@ -518,8 +520,9 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         side: usize,
     ) -> Result<SideEffectContext<'function, 'function, 'battle, 'data>, Error> {
         if self.use_source_effect() {
+            let source = self.source_handle();
             self.evaluation_context_mut()
-                .forward_source_effect_to_side_effect(side)
+                .forward_source_effect_to_side_effect(side, source)
         } else {
             let source = self.source_handle();
             self.evaluation_context_mut()
@@ -531,8 +534,9 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         &'function mut self,
     ) -> Result<FieldEffectContext<'function, 'function, 'battle, 'data>, Error> {
         if self.use_source_effect() {
+            let source = self.source_handle();
             self.evaluation_context_mut()
-                .forward_source_effect_to_field_effect()
+                .forward_source_effect_to_field_effect(source)
         } else {
             let source = self.source_handle();
             self.evaluation_context_mut()
@@ -758,15 +762,29 @@ fn log_field_end(context: FunctionContext) -> Result<(), Error> {
 }
 
 fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
+    let target = match context.pop_front() {
+        Some(value) => Some(
+            value
+                .mon_handle()
+                .wrap_error_with_message("invalid target")?,
+        ),
+        None => None,
+    };
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
         .wrap_error_with_message("source effect is not an active move")?;
-    let event = log_event!(
+    let mut event = log_event!(
         "prepare",
         ("mon", Mon::position_details(context.as_mon_context())?),
         ("move", context.active_move().data.name.to_owned())
     );
+    if let Some(target) = target {
+        event.set(
+            "target",
+            Mon::position_details(&mut context.as_battle_context_mut().mon_context(target)?)?,
+        );
+    }
     context.battle_mut().log(event);
     Ok(())
 }
@@ -1235,6 +1253,27 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
             .flags
             .contains(&ability_flag),
     ))
+}
+
+fn remove_move_flag(mut context: FunctionContext) -> Result<(), Error> {
+    let active_move = context
+        .pop_front()
+        .wrap_error_with_message("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let move_flag = context
+        .pop_front()
+        .wrap_error_with_message("missing move flag")?
+        .string()
+        .wrap_error_with_message("invalid move flag")?;
+    let move_flag = MoveFlags::from_str(&move_flag).wrap_error_with_message("invalid move flag")?;
+    context
+        .evaluation_context_mut()
+        .active_move_mut(active_move)?
+        .data
+        .flags
+        .remove(&move_flag);
+    Ok(())
 }
 
 fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {

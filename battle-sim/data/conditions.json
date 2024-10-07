@@ -376,7 +376,7 @@
         "on_start": [
           "# Note that the $target here is the user of the move (target of this condition).",
           "$effect_state.move = $source_effect.id",
-          "add_volatile: $target $source_effect.id",
+          "add_volatile: $target $effect_state.move",
           "# If this move is called by another move, we may need to modify the targer that the user will be locked into.",
           "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
           "if $source_effect.is_move and $source_effect.move_source.is_defined and $source_effect.move_source != user:",
@@ -429,7 +429,7 @@
       "callbacks": {
         "on_duration": ["return func_call(random: 5 7)"],
         "on_start": [
-          "log_activate: with_target with_source no_effect str('move:{}', $effect_state.source_effect.name)",
+          "log_activate: with_target with_source use_effect_state_source_effect",
           "$effect_state.divisor = 8"
         ],
         "on_residual": {
@@ -438,7 +438,7 @@
             "$source = $effect_state.source",
             "if !$source.active or $source.hp == 0:",
             [
-              "log_end: no_effect str('move:{}', $effect_state.source_effect.name) silent",
+              "log_end: use_effect_state_source_effect silent",
               "remove_volatile: $target $this.id no_events",
               "return"
             ],
@@ -563,7 +563,7 @@
           "$target = func_call(mon_in_position: $side $slot)",
           "if !$target or !$target.active or $target == $effect_state.source:",
           ["return"],
-          "log_end: no_effect str('mon:{}', $target.position_details) str('move:{}', $effect_state.source_effect.name) str('of:{}', $effect_state.source.position_details)",
+          "log_end: use_effect_state_source_effect use_effect_state_source_as_source",
           "remove_volatile: $target protect",
           "remove_volatile: $target endure",
           "use_active_move: $effect_state.source $move $target indirect"
@@ -959,6 +959,69 @@
           "if $activate:",
           ["log_activate: with_target broken", "remove_volatile: $target stall"]
         ]
+      }
+    }
+  },
+  "immobilizingmove": {
+    "name": "Immobilizing Move",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": [
+          "add_volatile: $target twoturnmove use_source_effect",
+          "add_volatile: $source immobilized use_target_as_source use_source_effect"
+        ],
+        "on_end": [
+          "if $effect_state.immobilizing_move_ending:",
+          ["return"],
+          "$effect_state.immobilizing_move_ending = true",
+          "remove_volatile: $effect_state.source immobilized",
+          "remove_volatile: $target twoturnmove"
+        ],
+        "on_drag_out": ["return false"],
+        "on_trap_mon": ["return true"],
+        "on_redirect_target": {
+          "order": 1,
+          "program": ["return $effect_state.source"]
+        },
+        "on_exit": ["remove_volatile: $effect_state.source immobilized"]
+      }
+    }
+  },
+  "immobilized": {
+    "name": "Immobilized",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.move = $source_effect.id",
+          "add_volatile: $target $effect_state.move use_source_effect"
+        ],
+        "on_end": [
+          "if $effect_state.immobilizing_ending:",
+          ["return"],
+          "$effect_state.immobilizing_ending = true",
+          "log_end: use_effect_state_source_effect",
+          "remove_volatile: $effect_state.source immobilizingmove",
+          "remove_volatile: $target $effect_state.move"
+        ],
+        "on_drag_out": ["return false"],
+        "on_trap_mon": ["return true"],
+        "on_before_move": {
+          "priority": 12,
+          "program": ["return false"]
+        },
+        "on_exit": ["remove_volatile: $effect_state.source immobilizingmove"],
+        "on_invulnerability": {
+          "order": 1,
+          "program": [
+            "# Allow the targeting move to hit on its second turn.",
+            "if $move.id == $effect_state.move and $source == $effect_state.source:",
+            ["return true"]
+          ]
+        }
       }
     }
   }

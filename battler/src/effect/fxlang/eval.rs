@@ -147,8 +147,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_source_effect_to_applying_effect<'eval>(
         &'eval mut self,
         target_handle: MonHandle,
+        source_handle: Option<MonHandle>,
     ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = self.source_handle();
         let source_effect = self
             .source_effect_handle()
             .wrap_error_with_message("context has no source effect")?
@@ -179,8 +179,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_source_effect_to_side_effect<'eval>(
         &'eval mut self,
         side: usize,
+        source_handle: Option<MonHandle>,
     ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = self.source_handle();
         let source_effect = self
             .source_effect_handle()
             .wrap_error_with_message("context has no source effect")?
@@ -205,8 +205,8 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn forward_source_effect_to_field_effect<'eval>(
         &'eval mut self,
+        source_handle: Option<MonHandle>,
     ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
-        let source_handle = self.source_handle();
         let source_effect = self
             .source_effect_handle()
             .wrap_error_with_message("context has no source effect")?

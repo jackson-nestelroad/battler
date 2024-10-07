@@ -131,13 +131,13 @@ fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<b
             fxlang::BattleEvent::End,
         );
 
-        Mon::clear_volatile(context, true)?;
-
         core_battle_effects::run_event_for_mon(
             context,
             fxlang::BattleEvent::Exit,
             fxlang::VariableInput::default(),
         );
+
+        Mon::clear_volatile(context, true)?;
     }
 
     Mon::switch_out(context)?;
