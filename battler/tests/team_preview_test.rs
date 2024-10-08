@@ -261,12 +261,12 @@ fn team_preview_orders_all_player_teams() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             ["time"],
-            "split|side:0",
-            "switch|player:player-2|position:2|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
-            "switch|player:player-2|position:2|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
             "split|side:1",
             "switch|player:player-4|position:2|name:Bulbasaur M|health:200/200|species:Bulbasaur|level:100|gender:M",
             "switch|player:player-4|position:2|name:Bulbasaur M|health:100/100|species:Bulbasaur|level:100|gender:M",
+            "split|side:0",
+            "switch|player:player-2|position:2|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
+            "switch|player:player-2|position:2|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
             "split|side:0",
             "switch|player:player-1|position:1|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
             "switch|player:player-1|position:1|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",

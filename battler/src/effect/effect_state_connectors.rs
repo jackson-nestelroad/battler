@@ -8,7 +8,10 @@ use crate::{
         Error,
         Id,
     },
-    effect::fxlang,
+    effect::{
+        fxlang,
+        AppliedEffectLocation,
+    },
 };
 
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for an
@@ -36,6 +39,10 @@ impl fxlang::EffectStateConnector for ActiveMoveEffectStateConnector {
         Ok(Some(
             &mut context.active_move_mut(self.active_move)?.effect_state,
         ))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::None
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
@@ -66,6 +73,10 @@ impl fxlang::EffectStateConnector for MonAbilityEffectStateConnector {
         context: &'a mut Context,
     ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
         Ok(Some(&mut context.mon_mut(self.mon)?.ability.effect_state))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::MonAbility(self.mon)
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
@@ -102,6 +113,10 @@ impl fxlang::EffectStateConnector for MonItemEffectStateConnector {
             .map(|item| &mut item.effect_state))
     }
 
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::MonItem(self.mon)
+    }
+
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
         fxlang::DynamicEffectStateConnector::new(self.clone())
     }
@@ -130,6 +145,10 @@ impl fxlang::EffectStateConnector for MonStatusEffectStateConnector {
         context: &'a mut Context,
     ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
         Ok(Some(&mut context.mon_mut(self.mon)?.status_state))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::MonStatus(self.mon)
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
@@ -164,6 +183,10 @@ impl fxlang::EffectStateConnector for MonVolatileStatusEffectStateConnector {
         context: &'a mut Context,
     ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
         Ok(context.mon_mut(self.mon)?.volatiles.get_mut(&self.volatile))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::MonVolatile(self.mon)
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
@@ -203,6 +226,10 @@ impl fxlang::EffectStateConnector for SideConditionEffectStateConnector {
             .side_mut(self.side)?
             .conditions
             .get_mut(&self.condition))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::SideCondition(self.side)
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
@@ -254,6 +281,10 @@ impl fxlang::EffectStateConnector for SlotConditionEffectStateConnector {
         }
     }
 
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::SlotCondition(self.side, self.slot)
+    }
+
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
         fxlang::DynamicEffectStateConnector::new(self.clone())
     }
@@ -282,6 +313,10 @@ impl fxlang::EffectStateConnector for TerrainEffectStateConnector {
         Ok(Some(&mut context.battle_mut().field.terrain_state))
     }
 
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Terrain
+    }
+
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
         fxlang::DynamicEffectStateConnector::new(self.clone())
     }
@@ -308,6 +343,10 @@ impl fxlang::EffectStateConnector for WeatherEffectStateConnector {
         context: &'a mut Context,
     ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
         Ok(Some(&mut context.battle_mut().field.weather_state))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Weather
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
@@ -346,6 +385,10 @@ impl fxlang::EffectStateConnector for PseudoWeatherEffectStateConnector {
             .field
             .pseudo_weathers
             .get_mut(&self.pseudo_weather))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::PseudoWeather
     }
 
     fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {

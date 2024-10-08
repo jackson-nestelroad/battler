@@ -57,7 +57,9 @@ use crate::{
     dex::Dex,
     effect::{
         fxlang,
+        AppliedEffectLocation,
         EffectHandle,
+        LinkedEffectsManager,
     },
     log::{
         Event,
@@ -1444,6 +1446,24 @@ impl Mon {
         context.mon_mut().ability = context.mon_mut().base_ability.clone();
 
         context.mon_mut().move_slots = context.mon().base_move_slots.clone();
+
+        {
+            let mon_handle = context.mon_handle();
+            let volatiles = context.mon().volatiles.keys().cloned().collect::<Vec<_>>();
+            // TODO: We are not necessarily fainting here, but it's unlikely this effect handle is
+            // used for anything.
+            let mut context = context
+                .as_battle_context_mut()
+                .effect_context(EffectHandle::Condition(Id::from_known("faint")), None)?;
+            for volatile in volatiles {
+                LinkedEffectsManager::remove_by_id(
+                    &mut context,
+                    &volatile,
+                    AppliedEffectLocation::MonVolatile(mon_handle),
+                )?;
+            }
+        }
+
         context.mon_mut().volatiles.clear();
 
         let species = context.mon().base_species.clone();

@@ -1,8 +1,14 @@
+mod applied_effect_handle;
 mod effect;
 mod effect_manager;
 mod effect_state_connectors;
 pub mod fxlang;
+mod linked_effects_manager;
 
+pub use applied_effect_handle::{
+    AppliedEffectHandle,
+    AppliedEffectLocation,
+};
 pub use effect::{
     Effect,
     EffectHandle,
@@ -21,3 +27,4 @@ pub use effect_state_connectors::{
     TerrainEffectStateConnector,
     WeatherEffectStateConnector,
 };
+pub use linked_effects_manager::LinkedEffectsManager;

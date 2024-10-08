@@ -67,6 +67,7 @@ use crate::{
         Effect,
         EffectHandle,
         EffectManager,
+        LinkedEffectsManager,
     },
     items::ItemTarget,
     log::{
@@ -246,6 +247,7 @@ pub struct CoreBattle<'d> {
     pub sides: [Side; 2],
     pub players: Vec<Player>,
     pub effect_manager: EffectManager,
+    pub linked_effects_manager: LinkedEffectsManager,
 
     registry: BattleRegistry,
     player_ids: FastHashMap<String, usize>,
@@ -319,6 +321,7 @@ impl<'d> CoreBattle<'d> {
         );
 
         let effect_manager = EffectManager::new();
+        let linked_effects_manager = LinkedEffectsManager::new();
 
         let mut battle = Self {
             log,
@@ -333,6 +336,7 @@ impl<'d> CoreBattle<'d> {
             sides: [side_1, side_2],
             players,
             effect_manager,
+            linked_effects_manager,
             registry,
             player_ids,
             effect_handle_cache: FastHashMap::new(),

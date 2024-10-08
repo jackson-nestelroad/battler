@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use ahash::HashMapExt;
+use uuid::Uuid;
 
 use crate::{
     battle::{
@@ -17,6 +18,7 @@ use crate::{
     },
     effect::{
         fxlang::Value,
+        AppliedEffectLocation,
         EffectHandle,
     },
 };
@@ -27,6 +29,8 @@ use crate::{
 #[derive(Clone)]
 pub struct EffectState {
     values: FastHashMap<String, Value>,
+    linked_id: Option<Uuid>,
+    linked_to: Vec<Uuid>,
 }
 
 impl EffectState {
@@ -74,6 +78,8 @@ impl EffectState {
     pub fn new() -> Self {
         Self {
             values: FastHashMap::new(),
+            linked_id: None,
+            linked_to: Vec::new(),
         }
     }
 
@@ -177,10 +183,30 @@ impl EffectState {
             .unwrap_or(false)
     }
 
-    /// Sets wherher or not the effect is ending and should be ignored.
+    /// Sets whether or not the effect is ending and should be ignored.
     pub fn set_ending(&mut self, ending: bool) {
         self.values
             .insert(Self::ENDING.to_owned(), Value::Boolean(ending));
+    }
+
+    /// The unique ID for linking this effect to another.
+    pub fn linked_id(&self) -> Option<Uuid> {
+        self.linked_id
+    }
+
+    /// Sets the unique ID for linking this effect to another
+    pub fn set_linked_id(&mut self, linked_id: Uuid) {
+        self.linked_id = Some(linked_id);
+    }
+
+    /// The unique IDs of effects this effect is linked to.
+    pub fn linked_to(&self) -> &[Uuid] {
+        &self.linked_to
+    }
+
+    /// Adds the unique ID of a linked effect.
+    pub fn add_link(&mut self, linked_id: Uuid) {
+        self.linked_to.push(linked_id);
     }
 }
 
@@ -193,6 +219,9 @@ pub trait EffectStateConnector: Debug {
 
     /// Gets a mutable reference to the effect state, for reading and assignment.
     fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut EffectState>, Error>;
+
+    /// The applied effect location.
+    fn applied_effect_location(&self) -> AppliedEffectLocation;
 
     /// Clones the connection into a dynamic value.
     fn make_dynamic(&self) -> DynamicEffectStateConnector;
@@ -222,6 +251,11 @@ impl DynamicEffectStateConnector {
             .0
             .get_mut(context)?
             .wrap_error_with_message("effect state is not defined")?)
+    }
+
+    /// The applied effect location.
+    pub fn applied_effect_location(&self) -> AppliedEffectLocation {
+        self.0.applied_effect_location()
     }
 }
 

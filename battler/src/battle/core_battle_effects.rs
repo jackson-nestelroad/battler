@@ -4,7 +4,6 @@ use ahash::HashSetExt;
 
 use crate::{
     battle::{
-        core_battle_actions,
         core_battle_logs,
         mon_states,
         ActiveMoveContext,
@@ -38,17 +37,10 @@ use crate::{
             EffectStateConnector,
         },
         ActiveMoveEffectStateConnector,
+        AppliedEffectHandle,
+        AppliedEffectLocation,
         EffectHandle,
         EffectManager,
-        MonAbilityEffectStateConnector,
-        MonItemEffectStateConnector,
-        MonStatusEffectStateConnector,
-        MonVolatileStatusEffectStateConnector,
-        PseudoWeatherEffectStateConnector,
-        SideConditionEffectStateConnector,
-        SlotConditionEffectStateConnector,
-        TerrainEffectStateConnector,
-        WeatherEffectStateConnector,
     },
     mons::Type,
     moves::SecondaryEffect,
@@ -349,49 +341,10 @@ pub enum MoveTargetForEvent {
     Field,
 }
 
-/// The origin of an effect, which is important for reading and writing the
-/// [`EffectState`][`fxlang::EffectState`] of the effect.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum EffectOrigin {
-    None,
-    Mon(MonHandle),
-    MonAbility(MonHandle),
-    MonItem(MonHandle),
-    MonPseudoWeather(MonHandle),
-    MonSideCondition(usize, MonHandle),
-    MonSlotCondition(usize, usize, MonHandle),
-    MonStatus(MonHandle),
-    MonTerrain(MonHandle),
-    MonType(MonHandle),
-    MonVolatileStatus(MonHandle),
-    MonWeather(MonHandle),
-    PseudoWeather,
-    SideCondition(usize),
-    SlotCondition(usize, usize),
-    Terrain,
-    Weather,
-}
-
-impl EffectOrigin {
-    /// The effect origin for running the residual event, which should only decrease the effect's
-    /// counter a single time.
-    pub fn origin_for_residual(&self) -> Self {
-        match self {
-            Self::MonPseudoWeather(_) => Self::PseudoWeather,
-            Self::MonSideCondition(side, _) => Self::SideCondition(*side),
-            Self::MonSlotCondition(side, slot, _) => Self::SlotCondition(*side, *slot),
-            Self::MonTerrain(_) => Self::Terrain,
-            Self::MonWeather(_) => Self::Weather,
-            _ => *self,
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct CallbackHandle {
-    pub effect_handle: EffectHandle,
+    pub applied_effect_handle: AppliedEffectHandle,
     pub event: fxlang::BattleEvent,
-    pub origin: EffectOrigin,
     pub suppressed: bool,
 }
 
@@ -399,78 +352,18 @@ impl CallbackHandle {
     pub fn new(
         effect_handle: EffectHandle,
         event: fxlang::BattleEvent,
-        origin: EffectOrigin,
+        location: AppliedEffectLocation,
     ) -> Self {
         Self {
-            effect_handle,
+            applied_effect_handle: AppliedEffectHandle::new(effect_handle, location),
             event,
-            origin,
             suppressed: false,
-        }
-    }
-
-    /// Creates a dynamic connector for retrieving the effect state of the callback.
-    pub fn effect_state_connector(&self) -> Option<fxlang::DynamicEffectStateConnector> {
-        match self.origin {
-            EffectOrigin::None => None,
-            EffectOrigin::Mon(_) => None,
-            EffectOrigin::MonAbility(mon) => {
-                Some(MonAbilityEffectStateConnector::new(mon).make_dynamic())
-            }
-            EffectOrigin::MonItem(mon) => {
-                Some(MonItemEffectStateConnector::new(mon).make_dynamic())
-            }
-            EffectOrigin::MonStatus(mon) => {
-                Some(MonStatusEffectStateConnector::new(mon).make_dynamic())
-            }
-            EffectOrigin::MonType(_) => None,
-            EffectOrigin::MonVolatileStatus(mon) => self.effect_handle.try_id().map(|id| {
-                MonVolatileStatusEffectStateConnector::new(mon, id.clone()).make_dynamic()
-            }),
-            EffectOrigin::PseudoWeather | EffectOrigin::MonPseudoWeather(_) => self
-                .effect_handle
-                .try_id()
-                .map(|id| PseudoWeatherEffectStateConnector::new(id.clone()).make_dynamic()),
-            EffectOrigin::SideCondition(side) | EffectOrigin::MonSideCondition(side, _) => self
-                .effect_handle
-                .try_id()
-                .map(|id| SideConditionEffectStateConnector::new(side, id.clone()).make_dynamic()),
-            EffectOrigin::SlotCondition(side, slot)
-            | EffectOrigin::MonSlotCondition(side, slot, _) => {
-                self.effect_handle.try_id().map(|id| {
-                    SlotConditionEffectStateConnector::new(side, slot, id.clone()).make_dynamic()
-                })
-            }
-            EffectOrigin::Terrain | EffectOrigin::MonTerrain(_) => {
-                Some(TerrainEffectStateConnector::new().make_dynamic())
-            }
-            EffectOrigin::Weather | EffectOrigin::MonWeather(_) => {
-                Some(WeatherEffectStateConnector::new().make_dynamic())
-            }
-        }
-    }
-
-    /// The associated [`MonHandle`] that the callback originates from.
-    pub fn mon_handle(&self) -> Option<MonHandle> {
-        match self.origin {
-            EffectOrigin::Mon(mon)
-            | EffectOrigin::MonAbility(mon)
-            | EffectOrigin::MonItem(mon)
-            | EffectOrigin::MonPseudoWeather(mon)
-            | EffectOrigin::MonSideCondition(_, mon)
-            | EffectOrigin::MonSlotCondition(_, _, mon)
-            | EffectOrigin::MonStatus(mon)
-            | EffectOrigin::MonTerrain(mon)
-            | EffectOrigin::MonType(mon)
-            | EffectOrigin::MonVolatileStatus(mon)
-            | EffectOrigin::MonWeather(mon) => Some(mon),
-            _ => None,
         }
     }
 
     /// The speed of the callback.
     pub fn speed(&self, context: &mut Context) -> Result<u32, Error> {
-        if let Some(mon_handle) = self.mon_handle() {
+        if let Some(mon_handle) = self.applied_effect_handle.location.mon_handle() {
             return Ok(context.mon(mon_handle)?.speed as u32);
         }
         Ok(0)
@@ -485,10 +378,12 @@ fn run_callback_with_errors(
     // Run the event callback for the event.
     let result = run_effect_event_by_handle(
         &mut context,
-        &callback_handle.effect_handle,
+        &callback_handle.applied_effect_handle.effect_handle,
         callback_handle.event,
         input,
-        callback_handle.effect_state_connector(),
+        callback_handle
+            .applied_effect_handle
+            .effect_state_connector(),
         callback_handle.suppressed,
     );
 
@@ -566,7 +461,11 @@ fn run_mon_status_event_internal(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::MonStatus(target_handle)),
+        CallbackHandle::new(
+            effect_handle,
+            event,
+            AppliedEffectLocation::MonStatus(target_handle),
+        ),
     )
 }
 
@@ -588,7 +487,7 @@ fn run_mon_volatile_event_internal(
         CallbackHandle::new(
             effect_handle,
             event,
-            EffectOrigin::MonVolatileStatus(target_handle),
+            AppliedEffectLocation::MonVolatile(target_handle),
         ),
     )
 }
@@ -606,7 +505,7 @@ fn run_mon_ability_event_internal(
         CallbackHandle::new(
             EffectHandle::Ability(ability),
             event,
-            EffectOrigin::MonAbility(target_handle),
+            AppliedEffectLocation::MonAbility(target_handle),
         ),
     )
 }
@@ -624,7 +523,7 @@ fn run_mon_item_event_internal(
         CallbackHandle::new(
             EffectHandle::Item(item),
             event,
-            EffectOrigin::MonItem(target_handle),
+            AppliedEffectLocation::MonItem(target_handle),
         ),
     )
 }
@@ -647,7 +546,7 @@ fn run_side_condition_event_internal(
         CallbackHandle::new(
             effect_handle,
             event,
-            EffectOrigin::SideCondition(side_index),
+            AppliedEffectLocation::SideCondition(side_index),
         ),
     )
 }
@@ -671,7 +570,7 @@ fn run_slot_condition_event_internal(
         CallbackHandle::new(
             effect_handle,
             event,
-            EffectOrigin::SlotCondition(side_index, slot),
+            AppliedEffectLocation::SlotCondition(side_index, slot),
         ),
     )
 }
@@ -690,7 +589,7 @@ fn run_terrain_event_internal(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::Terrain),
+        CallbackHandle::new(effect_handle, event, AppliedEffectLocation::Terrain),
     )
 }
 
@@ -708,7 +607,7 @@ fn run_weather_event_internal(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::Weather),
+        CallbackHandle::new(effect_handle, event, AppliedEffectLocation::Weather),
     )
 }
 
@@ -726,7 +625,7 @@ fn run_pseudo_weather_event_internal(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new(effect_handle, event, EffectOrigin::PseudoWeather),
+        CallbackHandle::new(effect_handle, event, AppliedEffectLocation::PseudoWeather),
     )
 }
 
@@ -740,12 +639,12 @@ fn run_applying_effect_event_internal(
         Some(mut context) => run_callback_under_applying_effect(
             &mut context,
             input,
-            CallbackHandle::new(effect, event, EffectOrigin::None),
+            CallbackHandle::new(effect, event, AppliedEffectLocation::None),
         ),
         None => run_callback_under_applying_effect(
             context,
             input,
-            CallbackHandle::new(effect, event, EffectOrigin::None),
+            CallbackHandle::new(effect, event, AppliedEffectLocation::None),
         ),
     }
 }
@@ -760,12 +659,12 @@ fn run_effect_event_internal(
         Some(mut context) => run_callback_under_effect(
             &mut context,
             input,
-            CallbackHandle::new(effect, event, EffectOrigin::None),
+            CallbackHandle::new(effect, event, AppliedEffectLocation::None),
         ),
         None => run_callback_under_effect(
             context,
             input,
-            CallbackHandle::new(effect, event, EffectOrigin::None),
+            CallbackHandle::new(effect, event, AppliedEffectLocation::None),
         ),
     }
 }
@@ -781,7 +680,7 @@ fn find_callbacks_on_mon(
     callbacks.push(CallbackHandle::new(
         EffectHandle::Condition(Id::from_known("mon")),
         event,
-        EffectOrigin::None,
+        AppliedEffectLocation::None,
     ));
 
     if event.callback_lookup_layer() > fxlang::BattleEvent::Types.callback_lookup_layer() {
@@ -790,7 +689,7 @@ fn find_callbacks_on_mon(
             callbacks.push(CallbackHandle::new(
                 EffectHandle::Condition(typ.id()),
                 event,
-                EffectOrigin::MonType(mon),
+                AppliedEffectLocation::MonType(mon),
             ));
         }
     }
@@ -800,7 +699,7 @@ fn find_callbacks_on_mon(
         callbacks.push(CallbackHandle::new(
             status_effect_handle.clone(),
             event,
-            EffectOrigin::MonStatus(mon),
+            AppliedEffectLocation::MonStatus(mon),
         ));
     }
     for volatile in context.mon().volatiles.clone().keys() {
@@ -808,7 +707,7 @@ fn find_callbacks_on_mon(
         callbacks.push(CallbackHandle::new(
             status_effect_handle.clone(),
             event,
-            EffectOrigin::MonVolatileStatus(mon),
+            AppliedEffectLocation::MonVolatile(mon),
         ));
     }
 
@@ -816,7 +715,7 @@ fn find_callbacks_on_mon(
         callbacks.push(CallbackHandle::new(
             EffectHandle::Ability(ability),
             event,
-            EffectOrigin::MonAbility(mon),
+            AppliedEffectLocation::MonAbility(mon),
         ));
     }
 
@@ -826,7 +725,7 @@ fn find_callbacks_on_mon(
             callbacks.push(CallbackHandle::new(
                 EffectHandle::Item(item),
                 event,
-                EffectOrigin::MonItem(mon),
+                AppliedEffectLocation::MonItem(mon),
             ));
         }
     }
@@ -839,7 +738,7 @@ fn find_callbacks_on_mon(
         callbacks.push(CallbackHandle::new(
             EffectHandle::Condition(Id::from_known("disobedience")),
             event,
-            EffectOrigin::Mon(context.mon_handle()),
+            AppliedEffectLocation::Mon(context.mon_handle()),
         ));
     }
 
@@ -847,7 +746,7 @@ fn find_callbacks_on_mon(
         callbacks.push(CallbackHandle::new(
             EffectHandle::Condition(Id::from_known("affection")),
             event,
-            EffectOrigin::Mon(context.mon_handle()),
+            AppliedEffectLocation::Mon(context.mon_handle()),
         ));
     }
 
@@ -869,7 +768,7 @@ fn find_callbacks_on_side(
         callbacks.push(CallbackHandle::new(
             side_condition_handle.clone(),
             event,
-            EffectOrigin::SideCondition(side),
+            AppliedEffectLocation::SideCondition(side),
         ));
     }
 
@@ -881,7 +780,7 @@ fn find_callbacks_on_side(
             callbacks.push(CallbackHandle::new(
                 slot_condition_handle.clone(),
                 event,
-                EffectOrigin::SlotCondition(side, slot),
+                AppliedEffectLocation::SlotCondition(side, slot),
             ));
         }
     }
@@ -905,7 +804,7 @@ fn find_callbacks_on_side_on_mon(
         callbacks.push(CallbackHandle::new(
             side_condition_handle.clone(),
             event,
-            EffectOrigin::MonSideCondition(side, mon),
+            AppliedEffectLocation::MonSideCondition(side, mon),
         ));
     }
 
@@ -920,7 +819,7 @@ fn find_callbacks_on_side_on_mon(
                 callbacks.push(CallbackHandle::new(
                     slot_condition_handle.clone(),
                     event,
-                    EffectOrigin::MonSlotCondition(side, slot, mon),
+                    AppliedEffectLocation::MonSlotCondition(side, slot, mon),
                 ));
             }
         }
@@ -945,8 +844,11 @@ fn find_callbacks_on_field(
                 let weather_handle = context
                     .battle_mut()
                     .get_effect_handle_by_id(&effective_weather.unwrap_or(weather))?;
-                let mut callback_handle =
-                    CallbackHandle::new(weather_handle.clone(), event, EffectOrigin::Weather);
+                let mut callback_handle = CallbackHandle::new(
+                    weather_handle.clone(),
+                    event,
+                    AppliedEffectLocation::Weather,
+                );
                 callback_handle.suppressed = suppressed;
                 callbacks.push(callback_handle);
             }
@@ -963,8 +865,11 @@ fn find_callbacks_on_field(
                 let terrain_handle = context
                     .battle_mut()
                     .get_effect_handle_by_id(&effective_terrain.unwrap_or(terrain))?;
-                let mut callback_handle =
-                    CallbackHandle::new(terrain_handle.clone(), event, EffectOrigin::Terrain);
+                let mut callback_handle = CallbackHandle::new(
+                    terrain_handle.clone(),
+                    event,
+                    AppliedEffectLocation::Terrain,
+                );
                 callback_handle.suppressed = suppressed;
                 callbacks.push(callback_handle);
             }
@@ -978,7 +883,7 @@ fn find_callbacks_on_field(
         callbacks.push(CallbackHandle::new(
             pseudo_weather_handle.clone(),
             event,
-            EffectOrigin::PseudoWeather,
+            AppliedEffectLocation::PseudoWeather,
         ));
     }
 
@@ -1006,7 +911,7 @@ fn find_callbacks_on_field_on_mon(
                 let mut callback_handle = CallbackHandle::new(
                     terrain_handle.clone(),
                     event,
-                    EffectOrigin::MonTerrain(mon),
+                    AppliedEffectLocation::MonTerrain(mon),
                 );
                 callback_handle.suppressed = suppressed;
                 callbacks.push(callback_handle);
@@ -1027,7 +932,7 @@ fn find_callbacks_on_field_on_mon(
                 let mut callback_handle = CallbackHandle::new(
                     weather_handle.clone(),
                     event,
-                    EffectOrigin::MonWeather(mon),
+                    AppliedEffectLocation::MonWeather(mon),
                 );
                 callback_handle.suppressed = suppressed;
                 callbacks.push(callback_handle);
@@ -1042,7 +947,7 @@ fn find_callbacks_on_field_on_mon(
         callbacks.push(CallbackHandle::new(
             pseudo_weather_handle.clone(),
             event,
-            EffectOrigin::MonPseudoWeather(mon),
+            AppliedEffectLocation::MonPseudoWeather(mon),
         ));
     }
 
@@ -1260,7 +1165,10 @@ fn get_speed_orderable_effect_handle_internal(
     callback_handle: CallbackHandle,
 ) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
     // Ensure the effect is not ending.
-    if let Some(effect_state) = callback_handle.effect_state_connector() {
+    if let Some(effect_state) = callback_handle
+        .applied_effect_handle
+        .effect_state_connector()
+    {
         if effect_state.exists(context).unwrap_or(false) {
             if effect_state
                 .get_mut(context)
@@ -1274,7 +1182,10 @@ fn get_speed_orderable_effect_handle_internal(
     let speed = callback_handle.speed(context)?;
 
     // Ensure the effect exists.
-    let effect = match CoreBattle::get_effect_by_handle(context, &callback_handle.effect_handle) {
+    let effect = match CoreBattle::get_effect_by_handle(
+        context,
+        &callback_handle.applied_effect_handle.effect_handle,
+    ) {
         Ok(effect) => effect,
         Err(_) => return Ok(None),
     };
@@ -1486,18 +1397,26 @@ fn run_residual_callbacks_with_errors(
             break;
         }
 
-        let mut context = match context.effect_context(callback_handle.effect_handle.clone(), None)
-        {
+        let mut context = match context.effect_context(
+            callback_handle.applied_effect_handle.effect_handle.clone(),
+            None,
+        ) {
             Ok(context) => context,
             Err(_) => continue,
         };
 
         let mut ended = false;
         if duration_decreased.insert((
-            callback_handle.effect_handle.clone(),
-            callback_handle.origin.origin_for_residual(),
+            callback_handle.applied_effect_handle.effect_handle.clone(),
+            callback_handle
+                .applied_effect_handle
+                .location
+                .for_residual(),
         )) {
-            if let Some(effect_state_connector) = callback_handle.effect_state_connector() {
+            if let Some(effect_state_connector) = callback_handle
+                .applied_effect_handle
+                .effect_state_connector()
+            {
                 if effect_state_connector.exists(context.as_battle_context_mut())? {
                     let effect_state =
                         effect_state_connector.get_mut(context.as_battle_context_mut())?;
@@ -1512,15 +1431,21 @@ fn run_residual_callbacks_with_errors(
             }
         }
 
-        match callback_handle.origin {
-            EffectOrigin::None => {
+        if ended {
+            if callback_handle.applied_effect_handle.end(&mut context)? {
+                continue;
+            }
+        }
+
+        match callback_handle.applied_effect_handle.location {
+            AppliedEffectLocation::None => {
                 run_callback_with_errors(
                     UpcomingEvaluationContext::Effect(context.into()),
                     fxlang::VariableInput::default(),
                     callback_handle,
                 )?;
             }
-            EffectOrigin::MonAbility(mon) => {
+            AppliedEffectLocation::MonAbility(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
@@ -1528,7 +1453,7 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
-            EffectOrigin::MonItem(mon) => {
+            AppliedEffectLocation::MonItem(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
@@ -1536,37 +1461,7 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
-            EffectOrigin::MonPseudoWeather(mon) => {
-                let mut context = context.applying_effect_context(None, mon)?;
-                if ended {
-                    core_battle_actions::remove_pseudo_weather(
-                        &mut context.field_effect_context()?,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected pseudo-weather to have an id")?,
-                    )?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
-            }
-            EffectOrigin::MonStatus(mon) => {
-                let mut context = context.applying_effect_context(None, mon)?;
-                if ended {
-                    core_battle_actions::clear_status(&mut context, false)?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
-            }
-            EffectOrigin::Mon(mon) | EffectOrigin::MonType(mon) => {
+            AppliedEffectLocation::MonPseudoWeather(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
@@ -1574,164 +1469,101 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
-            EffectOrigin::MonSideCondition(side, mon) => {
-                if ended {
-                    core_battle_actions::remove_side_condition(
-                        &mut context.side_effect_context(side, None)?,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected side condition to have an id")?,
-                    )?;
-                } else {
-                    let context = context.applying_effect_context(None, mon)?;
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::MonStatus(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::MonSlotCondition(side, slot, mon) => {
-                if ended {
-                    core_battle_actions::remove_slot_condition(
-                        &mut context.side_effect_context(side, None)?,
-                        slot,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected side condition to have an id")?,
-                    )?;
-                } else {
-                    let context = context.applying_effect_context(None, mon)?;
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::Mon(mon) | AppliedEffectLocation::MonType(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::MonTerrain(mon) => {
-                if ended {
-                    core_battle_actions::clear_terrain(&mut context.field_effect_context(None)?)?;
-                } else {
-                    let context = context.applying_effect_context(None, mon)?;
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::MonSideCondition(_, mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::MonVolatileStatus(mon) => {
-                let mut context = context.applying_effect_context(None, mon)?;
-                if ended {
-                    core_battle_actions::remove_volatile(
-                        &mut context,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected volatile to have an id")?,
-                        false,
-                    )?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::MonSlotCondition(_, _, mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::MonWeather(mon) => {
-                if ended {
-                    core_battle_actions::clear_terrain(&mut context.field_effect_context(None)?)?;
-                } else {
-                    let context = context.applying_effect_context(None, mon)?;
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::MonTerrain(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::PseudoWeather => {
-                let mut context = context.field_effect_context(None)?;
-                if ended {
-                    core_battle_actions::remove_pseudo_weather(
-                        &mut context,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected pseudo-weather to have an id")?,
-                    )?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::FieldEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::MonVolatile(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::SideCondition(side) => {
-                let mut context = context.side_effect_context(side, None)?;
-                if ended {
-                    core_battle_actions::remove_side_condition(
-                        &mut context,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected side condition to have an id")?,
-                    )?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::SideEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::MonWeather(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::SlotCondition(side, slot) => {
-                let mut context = context.side_effect_context(side, None)?;
-                if ended {
-                    core_battle_actions::remove_slot_condition(
-                        &mut context,
-                        slot,
-                        callback_handle
-                            .effect_handle
-                            .try_id()
-                            .wrap_error_with_message("expected side condition to have an id")?,
-                    )?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::SideEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::PseudoWeather => {
+                let context = context.field_effect_context(None)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::FieldEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::Terrain => {
-                let mut context = context.field_effect_context(None)?;
-                if ended {
-                    core_battle_actions::clear_terrain(&mut context)?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::FieldEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::SideCondition(side) => {
+                let context = context.side_effect_context(side, None)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::SideEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
-            EffectOrigin::Weather => {
-                let mut context = context.field_effect_context(None)?;
-                if ended {
-                    core_battle_actions::clear_weather(&mut context)?;
-                } else {
-                    run_callback_with_errors(
-                        UpcomingEvaluationContext::FieldEffect(context.into()),
-                        fxlang::VariableInput::default(),
-                        callback_handle,
-                    )?;
-                }
+            AppliedEffectLocation::SlotCondition(side, _) => {
+                let context = context.side_effect_context(side, None)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::SideEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
+            }
+            AppliedEffectLocation::Terrain => {
+                let context = context.field_effect_context(None)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::FieldEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
+            }
+            AppliedEffectLocation::Weather => {
+                let context = context.field_effect_context(None)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::FieldEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
             }
         }
     }
@@ -1753,7 +1585,7 @@ fn run_event_with_errors(
             callbacks.push(CallbackHandle::new(
                 source_effect.clone(),
                 event,
-                EffectOrigin::None,
+                AppliedEffectLocation::None,
             ));
         }
     }

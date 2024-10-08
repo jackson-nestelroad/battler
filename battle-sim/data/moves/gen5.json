@@ -410,7 +410,7 @@
           ["if $target.weight >= 2000:", ["return false"]]
         ],
         "on_try_hit": [
-          "if func_call(has_volatile: $source immobilizingmove):",
+          "if func_call(has_volatile: $source $this.id):",
           [
             "# Ensure we are targeting the original target.",
             "$immobilizing_effect_state = func_call(volatile_effect_state: $source immobilizingmove)",
@@ -427,8 +427,7 @@
             "return stop"
           ]
         ],
-        "on_hit": ["remove_volatile: $source immobilizingmove"],
-        "on_move_failed": ["remove_volatile: $user immobilizingmove"]
+        "on_move_failed": ["remove_volatile: $user $this.id"]
       }
     },
     "condition": {

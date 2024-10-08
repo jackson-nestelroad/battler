@@ -376,7 +376,7 @@
         "on_start": [
           "# Note that the $target here is the user of the move (target of this condition).",
           "$effect_state.move = $source_effect.id",
-          "add_volatile: $target $effect_state.move",
+          "add_volatile: $target $effect_state.move link",
           "# If this move is called by another move, we may need to modify the targer that the user will be locked into.",
           "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
           "if $source_effect.is_move and $source_effect.move_source.is_defined and $source_effect.move_source != user:",
@@ -417,8 +417,7 @@
           ]
         },
         "on_lock_move": ["return $effect_state.move"],
-        "on_move_aborted": ["remove_volatile: $user $effect_state.move"],
-        "on_end": ["remove_volatile: $target $effect_state.move"]
+        "on_move_aborted": ["remove_volatile: $user $effect_state.move"]
       }
     }
   },
@@ -969,23 +968,20 @@
       "duration": 2,
       "callbacks": {
         "on_start": [
-          "add_volatile: $target twoturnmove use_source_effect",
-          "add_volatile: $source immobilized use_target_as_source use_source_effect"
+          "add_volatile: $target twoturnmove use_source_effect link",
+          "add_volatile: $source immobilized use_target_as_source use_source_effect link"
         ],
         "on_end": [
           "if $effect_state.immobilizing_move_ending:",
           ["return"],
-          "$effect_state.immobilizing_move_ending = true",
-          "remove_volatile: $effect_state.source immobilized",
-          "remove_volatile: $target twoturnmove"
+          "$effect_state.immobilizing_move_ending = true"
         ],
         "on_drag_out": ["return false"],
         "on_trap_mon": ["return true"],
         "on_redirect_target": {
           "order": 1,
           "program": ["return $effect_state.source"]
-        },
-        "on_exit": ["remove_volatile: $effect_state.source immobilized"]
+        }
       }
     }
   },
@@ -997,15 +993,13 @@
       "callbacks": {
         "on_start": [
           "$effect_state.move = $source_effect.id",
-          "add_volatile: $target $effect_state.move use_source_effect"
+          "add_volatile: $target $effect_state.move use_source_effect link"
         ],
         "on_end": [
           "if $effect_state.immobilizing_ending:",
           ["return"],
           "$effect_state.immobilizing_ending = true",
-          "log_end: use_effect_state_source_effect",
-          "remove_volatile: $effect_state.source immobilizingmove",
-          "remove_volatile: $target $effect_state.move"
+          "log_end: use_effect_state_source_effect"
         ],
         "on_drag_out": ["return false"],
         "on_trap_mon": ["return true"],
@@ -1013,7 +1007,6 @@
           "priority": 12,
           "program": ["return false"]
         },
-        "on_exit": ["remove_volatile: $effect_state.source immobilizingmove"],
         "on_invulnerability": {
           "order": 1,
           "program": [

@@ -51,6 +51,7 @@ use crate::{
             ValueType,
             VariableInput,
         },
+        AppliedEffectHandle,
         EffectHandle,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
@@ -268,6 +269,17 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.effect_state.clone()
     }
 
+    fn applied_effect_handle(&mut self) -> Result<Option<AppliedEffectHandle>, Error> {
+        let effect_state = match self.effect_state() {
+            Some(effect_state) => effect_state,
+            None => return Ok(None),
+        };
+        Ok(Some(AppliedEffectHandle::new(
+            self.evaluation_context().effect_handle().clone(),
+            effect_state.applied_effect_location(),
+        )))
+    }
+
     fn front(&self) -> Option<&Value> {
         self.args.front()
     }
@@ -332,6 +344,18 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn from_effect(&mut self) -> bool {
         self.has_flag("from_effect")
+    }
+
+    fn link(&mut self) -> bool {
+        self.has_flag("link")
+    }
+
+    fn link_handle(&mut self) -> Result<Option<AppliedEffectHandle>, Error> {
+        if self.link() {
+            self.applied_effect_handle()
+        } else {
+            Ok(None)
+        }
     }
 
     fn no_effect(&mut self) -> bool {
@@ -1169,9 +1193,7 @@ fn cure_status(mut context: FunctionContext) -> Result<Value, Error> {
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
-    Ok(Value::Boolean(
-        core_battle_actions::cure_status(&mut context, !no_effect)?.success(),
-    ))
+    core_battle_actions::cure_status(&mut context, !no_effect).map(|val| Value::Boolean(val))
 }
 
 fn move_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
@@ -1288,11 +1310,13 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
+    let link_to = context.link_handle()?;
 
     core_battle_actions::try_add_volatile(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &volatile,
         false,
+        link_to.as_ref(),
     )
     .map(|val| Value::Boolean(val))
 }
