@@ -1145,7 +1145,7 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
       "on_start": [
         "# Note that the $target here is the user of the move (target of this condition).",
         "$effect_state.move = $source_effect.id",
-        "add_volatile: $target $source_effect.id",
+        "add_volatile: $target $source_effect.id link",
         "do_not_animate_last_move",
         "# Still run events associated with the user preparing to hit the target, since they are locked into this move.",
         "run_event: PrepareHit"
@@ -1160,8 +1160,7 @@ A Mon with the "Two Turn Move" volatile status gets a volatile condition for the
         ]
       },
       "on_lock_move": ["return $effect_state.move"],
-      "on_move_aborted": ["remove_volatile: $user $effect_state.move"],
-      "on_end": ["remove_volatile: $target $effect_state.move"]
+      "on_move_aborted": ["remove_volatile: $user $effect_state.move"]
     }
   }
 }
@@ -1552,3 +1551,144 @@ Pursuit gets its own event (`BeforeSwitchOut`) that activates when any Mon switc
   }
 }
 ```
+
+#### Sky Drop
+
+Sky Drop is one of the most complex moves. On the turn its selected, the user takes the target into the air. While in the air, the target cannot act, and both Mons are invulnerable as if they used Fly. The user is locked into the move, so on the next turn, the user throws the target into the ground to receive damage, ending the move and all of its effects.
+
+Sky Drop is so complicated, in fact, that it suffered from its own glitch in Generation V, causing it to be banned in game. If Gravity brought the user down from the sky, the target would be stuck in an immobilized state.
+
+The complexity is boiled down to many volatile effects being applied to two Mons at the same time, and they are all tightly coupled to one another. The user and target are in the same states, with only differences in who is attacking.
+
+To make managing these effects easier, battler has the ability to link effects to one another inherently. When an effect ends, all effects linked to it also end.
+
+First, Sky Drop is generalized into two effects: "Immobilizing Move" and "Immobilized."
+
+"Immobilizing Move" is applied to a Mon that is locked into a move that immobilizes itself and its target by taking them away from the battlefield. It uses "Two Turn Move" to reuse behavior from traditional charge moves, and it applies the "Immobilized" effect to the target.
+
+```json
+{
+  "name": "Immobilizing Move",
+  "condition_type": "Built-in",
+  "condition": {
+    "duration": 2,
+    "callbacks": {
+      "on_start": [
+        "add_volatile: $target twoturnmove use_source_effect link",
+        "add_volatile: $source immobilized use_target_as_source use_source_effect link"
+      ],
+      "on_end": [
+        "if $effect_state.immobilizing_move_ending:",
+        ["return"],
+        "$effect_state.immobilizing_move_ending = true"
+      ],
+      "on_drag_out": ["return false"],
+      "on_trap_mon": ["return true"],
+      "on_redirect_target": {
+        "order": 1,
+        "program": ["return $effect_state.source"]
+      }
+    }
+  }
+}
+```
+
+The "Immobilized" effect is applied to a Mon that is the target of an immobilizing move. It receives the volatile from the move as well, without being locked into that move. It can always be hit by the move that put it into this state, and it cannot move in this state.
+
+```json
+{
+  "condition": {
+    "duration": 2,
+    "callbacks": {
+      "on_start": [
+        "$effect_state.move = $source_effect.id",
+        "add_volatile: $target $effect_state.move use_source_effect link"
+      ],
+      "on_end": [
+        "if $effect_state.immobilizing_ending:",
+        ["return"],
+        "$effect_state.immobilizing_ending = true",
+        "log_end: use_effect_state_source_effect"
+      ],
+      "on_drag_out": ["return false"],
+      "on_trap_mon": ["return true"],
+      "on_before_move": {
+        "priority": 12,
+        "program": ["return false"]
+      },
+      "on_invulnerability": {
+        "order": 1,
+        "program": [
+          "# Allow the targeting move to hit on its second turn.",
+          "if $move.id == $effect_state.move and $source == $effect_state.source:",
+          ["return true"]
+        ]
+      }
+    }
+  }
+}
+```
+
+Notice that both the user and the target receive the volatile effect associated with the move itself. In this case, both the user and target will have the "Sky Drop" effect applied to them. Let's see how this move is defined and makes use of these effects.
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_use_move": [
+        "if !func_call(has_volatile: $user $this.id):",
+        ["$move.accuracy = exempt", "remove_move_flag: $move contact"]
+      ],
+      "on_try_immunity": [
+        "if func_call(has_volatile: $source $this.id):",
+        ["if func_call(has_type: $target flying):", ["return false"]],
+        "else:",
+        ["if $target.weight >= 2000:", ["return false"]]
+      ],
+      "on_try_hit": [
+        "if func_call(has_volatile: $source $this.id):",
+        [
+          "# Ensure we are targeting the original target.",
+          "$immobilizing_effect_state = func_call(volatile_effect_state: $source immobilizingmove)",
+          "if !$immobilizing_effect_state or $target != $immobilizing_effect_state.source:",
+          ["return false"],
+          "remove_volatile: $source immobilizingmove"
+        ],
+        "else:",
+        [
+          "if $target.is_behind_substitute or func_call(is_ally: $source $target):",
+          ["return false"],
+          "log_prepare_move: $target",
+          "add_volatile: $source immobilizingmove use_target_as_source",
+          "return stop"
+        ]
+      ],
+      "on_move_failed": ["remove_volatile: $user $this.id"]
+    }
+  },
+  "condition": {
+    "duration": 2,
+    "callbacks": {
+      "on_start": ["add_volatile: $target fly link"]
+    }
+  }
+}
+```
+
+The Sky Drop move has logic for handling the two different turns of the move. The condition simply delegates to the "Fly" effect, since Sky Drop and Fly produce the same effects on the Mon (avoiding most attacks, double damage from moves like Gust).
+
+All in all, these three effects produce the following behavior:
+
+1. Turn 1 - Hawlucha uses Sky Drop against Samurott.
+   1. Hawlucha receives the "Immobilizing Move" volatile.
+   1. Hawlucha receives the "Two Turn Move" volatile.
+   1. Hawlucha receives the "Sky Drop" volatile.
+   1. Hawlucha receives the "Fly" volatile.
+   1. Samurott receives the "Immobilized" volatile.
+   1. Samurott receives the "Sky Drop" volatile.
+   1. Samurott receives the "Fly" volatile.
+2. Turn 2 - Hawlucha uses Sky Drop, locked into Samurott.
+   1. Hawlucha's "Immobilizing Move" volatile is removed.
+   1. All linked effects are removed.
+
+Turn 2 simply boils down to removing one effect, which cascade removes all linked effects. This has the benefit that if the move fails at any time between the move is used and the move finishes (such as if the user or target faints), all the volatile effects from the move are cleaned up.

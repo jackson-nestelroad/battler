@@ -433,8 +433,7 @@
     "condition": {
       "duration": 2,
       "callbacks": {
-        "on_start": ["add_volatile: $target fly"],
-        "on_end": ["remove_volatile: $target fly"]
+        "on_start": ["add_volatile: $target fly link"]
       }
     }
   },
