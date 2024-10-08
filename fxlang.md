@@ -1597,32 +1597,36 @@ The "Immobilized" effect is applied to a Mon that is the target of an immobilizi
 
 ```json
 {
-  "condition": {
-    "duration": 2,
-    "callbacks": {
-      "on_start": [
-        "$effect_state.move = $source_effect.id",
-        "add_volatile: $target $effect_state.move use_source_effect link"
-      ],
-      "on_end": [
-        "if $effect_state.immobilizing_ending:",
-        ["return"],
-        "$effect_state.immobilizing_ending = true",
-        "log_end: use_effect_state_source_effect"
-      ],
-      "on_drag_out": ["return false"],
-      "on_trap_mon": ["return true"],
-      "on_before_move": {
-        "priority": 12,
-        "program": ["return false"]
-      },
-      "on_invulnerability": {
-        "order": 1,
-        "program": [
-          "# Allow the targeting move to hit on its second turn.",
-          "if $move.id == $effect_state.move and $source == $effect_state.source:",
-          ["return true"]
-        ]
+  "immobilized": {
+    "name": "Immobilized",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.move = $source_effect.id",
+          "add_volatile: $target $effect_state.move use_source_effect link"
+        ],
+        "on_end": [
+          "if $effect_state.immobilizing_ending:",
+          ["return"],
+          "$effect_state.immobilizing_ending = true",
+          "log_end: use_effect_state_source_effect"
+        ],
+        "on_drag_out": ["return false"],
+        "on_trap_mon": ["return true"],
+        "on_before_move": {
+          "priority": 12,
+          "program": ["return false"]
+        },
+        "on_invulnerability": {
+          "order": 1,
+          "program": [
+            "# Allow the targeting move to hit on its second turn.",
+            "if $move.id == $effect_state.move and $source == $effect_state.source:",
+            ["return true"]
+          ]
+        }
       }
     }
   }
