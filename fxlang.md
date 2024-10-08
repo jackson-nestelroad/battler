@@ -1577,11 +1577,6 @@ First, Sky Drop is generalized into two effects: "Immobilizing Move" and "Immobi
         "add_volatile: $target twoturnmove use_source_effect link",
         "add_volatile: $source immobilized use_target_as_source use_source_effect link"
       ],
-      "on_end": [
-        "if $effect_state.immobilizing_move_ending:",
-        ["return"],
-        "$effect_state.immobilizing_move_ending = true"
-      ],
       "on_drag_out": ["return false"],
       "on_trap_mon": ["return true"],
       "on_redirect_target": {
@@ -1607,12 +1602,7 @@ The "Immobilized" effect is applied to a Mon that is the target of an immobilizi
           "$effect_state.move = $source_effect.id",
           "add_volatile: $target $effect_state.move use_source_effect link"
         ],
-        "on_end": [
-          "if $effect_state.immobilizing_ending:",
-          ["return"],
-          "$effect_state.immobilizing_ending = true",
-          "log_end: use_effect_state_source_effect"
-        ],
+        "on_end": ["log_end: use_effect_state_source_effect"],
         "on_drag_out": ["return false"],
         "on_trap_mon": ["return true"],
         "on_before_move": {
