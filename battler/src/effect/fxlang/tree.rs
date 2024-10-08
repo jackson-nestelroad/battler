@@ -56,8 +56,6 @@ pub struct FormattedString {
     pub args: Values,
 }
 
-// str("magnitude = {}", $num)
-
 /// Var -> "$" Identifier ("." Identifier)*
 #[derive(Debug, PartialEq, Eq)]
 pub struct Var {
