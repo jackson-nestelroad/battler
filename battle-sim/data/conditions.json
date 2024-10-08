@@ -555,14 +555,14 @@
           "order": 3
         },
         "on_slot_start": [
-          "log_start: no_effect with_source str('move:{}', $effect_state.source_effect.name)"
+          "log_start: use_effect_state_source_effect with_source"
         ],
         "on_slot_end": [
           "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id)",
           "$target = func_call(mon_in_position: $side $slot)",
           "if !$target or !$target.active or $target == $effect_state.source:",
           ["return"],
-          "log_end: use_effect_state_source_effect use_effect_state_source_as_source",
+          "log_end: use_effect_state_source_effect with_source use_effect_state_source_as_source str('mon:{}', $target.position_details)",
           "remove_volatile: $target protect",
           "remove_volatile: $target endure",
           "use_active_move: $effect_state.source $move $target indirect"
