@@ -612,6 +612,13 @@ where
                         effect_matched = true;
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "category" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::MoveCategory(mov.data.category))
+                            .unwrap_or(ValueRef::Undefined),
                             "condition" => ValueRef::TempEffect(
                                 effect_handle
                                     .condition_handle(context.battle_context())?
@@ -643,6 +650,13 @@ where
                             "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
                                 context.effect_context_for_handle(&effect_handle)?.as_mut(),
                             )),
+                            "move_target" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::MoveTarget(mov.data.target))
+                            .unwrap_or(ValueRef::Undefined),
                             "name" => ValueRef::TempString(
                                 CoreBattle::get_effect_by_handle(
                                     context.battle_context(),
@@ -651,6 +665,13 @@ where
                                 .name()
                                 .to_owned(),
                             ),
+                            "type" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Type(mov.data.primary_type))
+                            .unwrap_or(ValueRef::Undefined),
                             _ => {
                                 if effect_handle.is_active_move() {
                                     // Allow active move to fall through.

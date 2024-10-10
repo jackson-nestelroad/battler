@@ -1125,7 +1125,7 @@
           [
             "$move.hit_effect = func_call(hit_effect)",
             "$move.hit_effect.heal_percent = 1/4",
-            "$move.infiltrates = true"
+            "$move.effect_state.infiltrates = true"
           ],
           "else if $rand < 6:",
           ["$move.base_power = 40"],
