@@ -1375,6 +1375,7 @@ impl BattleEvent {
             Self::SlotEnd => &[("slot", ValueType::UFraction, true)],
             Self::SlotRestart => &[("slot", ValueType::UFraction, true)],
             Self::SlotStart => &[("slot", ValueType::UFraction, true)],
+            Self::SubPriority => &[("sub_priority", ValueType::Fraction, true)],
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::TryEatItem => &[("item", ValueType::Effect, true)],

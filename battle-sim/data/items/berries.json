@@ -856,9 +856,9 @@
           "order": 1,
           "priority": -1,
           "program": [
-            "if $mon.hp <= $mon.berry_eating_health:",
+            "if $user.hp <= $user.berry_eating_health:",
             [
-              "if func_call(eat_item: $mon):",
+              "if func_call(eat_item: $user):",
               ["log_activate: with_target", "return 1"]
             ]
           ]
