@@ -44,7 +44,15 @@
     "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
   "imposter": { "name": "Imposter", "flags": ["NoRolePlay", "NoTrace"] },
-  "infiltrator": { "name": "Infiltrator", "flags": [] },
+  "infiltrator": {
+    "name": "Infiltrator",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": ["$move.effect_state.infiltrates = true"]
+      }
+    }
+  },
   "mummy": { "name": "Mummy", "flags": [] },
   "moxie": { "name": "Moxie", "flags": [] },
   "justified": { "name": "Justified", "flags": [] },
