@@ -433,6 +433,7 @@
     "condition": {
       "duration": 2,
       "callbacks": {
+        "is_away_from_field": ["return true"],
         "on_start": ["add_volatile: $target fly link"]
       }
     }

@@ -20,11 +20,7 @@ pub struct ParsedCallbacks {
 
 impl ParsedCallbacks {
     fn parse_and_save(&mut self, event: BattleEvent, callbacks: &Callbacks) -> Result<(), Error> {
-        if let Some(program) = callbacks
-            .event(event)
-            .map(|callback| callback.program())
-            .flatten()
-        {
+        if let Some(program) = callbacks.event(event).program() {
             self.callbacks.insert(
                 event,
                 ParsedProgram::from(program)
@@ -101,13 +97,13 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
+            parsed.parse_and_save(BattleEvent::IsAwayFromField, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsBehindSubstitute, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsContactProof, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsGrounded, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsImmuneToEntryHazards, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsRaining, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSemiInvulnerable, callbacks)?;
-            parsed.parse_and_save(BattleEvent::IsSkyDropped, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSnowing, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSoundproof, callbacks)?;
             parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;
@@ -122,6 +118,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifyDef, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyExperience, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifyFriendshipIncrease, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyPriority, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySecondaryEffects, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;

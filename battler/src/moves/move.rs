@@ -23,10 +23,7 @@ use crate::{
         Id,
         Identifiable,
     },
-    effect::{
-        fxlang,
-        EffectHandle,
-    },
+    effect::fxlang,
     mons::{
         Stat,
         Type,
@@ -293,10 +290,6 @@ pub struct Move {
     pub used_by: Option<MonHandle>,
     /// The move was used externally, rather than directly by a Mon through its moveset.
     pub external: bool,
-    /// Whether or not the move infiltrates effects.
-    pub infiltrates: bool,
-    /// The source of the move, if any.
-    pub move_source: Option<EffectHandle>,
     /// Whether or not this move hit multiple targets.
     pub spread_hit: bool,
     /// Number of hits dealt by the move.
@@ -305,8 +298,6 @@ pub struct Move {
     pub total_damage: u64,
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
-    /// Has the move been reflected back at the user?
-    pub reflected: bool,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -335,8 +326,6 @@ impl Move {
             used_by: None,
             stab_modifier: None,
             external: false,
-            infiltrates: false,
-            move_source: None,
             spread_hit: false,
             hit: 0,
             total_damage: 0,
@@ -345,7 +334,6 @@ impl Move {
             unlinked: false,
             secondary_effects: FastHashMap::new(),
             hit_data: FastHashMap::new(),
-            reflected: false,
         }
     }
 
@@ -357,8 +345,6 @@ impl Move {
             used_by: None,
             stab_modifier: None,
             external: false,
-            infiltrates: false,
-            move_source: None,
             spread_hit: false,
             hit: 0,
             total_damage: 0,
@@ -367,9 +353,19 @@ impl Move {
             unlinked: true,
             secondary_effects: FastHashMap::new(),
             hit_data: FastHashMap::new(),
-            reflected: false,
         }
     }
+
+    /// Clones an active move for use in battle.
+    ///
+    /// Only some fields are truly cloned.
+    pub fn clone_for_battle(&self) -> Self {
+        let mut clone = Self::new(self.id.clone(), self.data.clone());
+        clone.total_damage = self.total_damage;
+        clone.effect_state = self.effect_state.clone();
+        clone
+    }
+
     /// Returns the hit data for the target, if any.
     pub fn hit_data(&self, target: MonHandle) -> Option<&MoveHitData> {
         self.hit_data.get(&(target, self.hit))

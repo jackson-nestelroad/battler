@@ -56,6 +56,10 @@ mod abilities {
         mod aftermath_test;
     }
 
+    mod gen5 {
+        mod prankster_test;
+    }
+
     mod gen8 {
         mod ripen_test;
     }

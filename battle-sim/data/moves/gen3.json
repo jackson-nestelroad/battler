@@ -374,7 +374,7 @@
         "on_foe_redirect_target": {
           "priority": 1,
           "program": [
-            "if $effect_state.target.is_sky_dropped:",
+            "if $effect_state.target.is_away_from_field:",
             ["return"],
             "if !func_call(valid_target: $user $effect_state.target $move.target):",
             ["return"],
@@ -713,22 +713,22 @@
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_try_hit": [
-          "if $target == $source or $move.reflected or !func_call(move_has_flag: $move reflectable):",
+          "if $target == $source or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
           "log_activate: with_target",
           "do_not_animate_last_move",
-          "$reflected_move = func_call(new_active_move: $move.id)",
-          "$reflected_move.reflected = true",
+          "$reflected_move = func_call(clone_active_move: $move)",
+          "$reflected_move.effect_state.reflected = true",
           "use_active_move: $target $reflected_move $source",
           "return stop"
         ],
         "on_side_try_hit_side": [
-          "if $source.side == $side or $move.reflected or !func_call(move_has_flag: $move reflectable):",
+          "if $source.side == $side or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
           "log_activate: with_target use_effect_state_source",
           "do_not_animate_last_move",
-          "$reflected_move = func_call(new_active_move: $move.id)",
-          "$reflected_move.reflected = true",
+          "$reflected_move = func_call(clone_active_move: $move)",
+          "$reflected_move.effect_state.reflected = true",
           "use_active_move: $effect_state.source $reflected_move $source",
           "return stop"
         ]
@@ -1017,7 +1017,7 @@
       "callbacks": {
         "log_start": ["log_single_turn"],
         "on_any_prepare_hit": [
-          "if !func_call(move_has_flag: $move snatch) or ($move.move_source.is_defined and $move.move_source.id == $this.id):",
+          "if !func_call(move_has_flag: $move snatch) or ($move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == $this.id):",
           ["return"],
           "$snatch_user = $effect_state.source",
           "log_activate: with_target use_effect_state_source",
@@ -1544,7 +1544,7 @@
           "$success = false",
           "foreach $ally in func_call(all_mons_on_side: $source.side):",
           [
-            "if $ally == $source or !$ally.is_behind_substitute or $move.infiltrates:",
+            "if $ally == $source or !$ally.is_behind_substitute or $move.effect_state.infiltrates:",
             [
               "$cured = func_call(cure_status: $ally)",
               "$success = $success or $cured"

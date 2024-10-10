@@ -114,3 +114,33 @@ fn magic_coat_reflects_status_moves_for_the_turn() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn magic_coat_cannot_reflect_reflected_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_eq!(
+        battle.set_player_choice("player-2", "move 0;move 1"),
+        Ok(())
+    );
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Grumpig,player-1,1|name:Magic Coat|target:Grumpig,player-1,1",
+            "singleturn|mon:Grumpig,player-1,1|move:Magic Coat",
+            "move|mon:Grumpig,player-2,1|name:Magic Coat|target:Grumpig,player-2,1",
+            "singleturn|mon:Grumpig,player-2,1|move:Magic Coat",
+            "move|mon:Seviper,player-2,2|name:Spikes|noanim",
+            "activate|mon:Grumpig,player-1,1|move:Magic Coat",
+            "move|mon:Grumpig,player-1,1|name:Spikes",
+            "sidestart|side:1|move:Spikes",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}

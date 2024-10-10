@@ -73,7 +73,18 @@
       }
     }
   },
-  "prankster": { "name": "Prankster", "flags": [] },
+  "prankster": {
+    "name": "Prankster",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_priority": [
+          "if $move.category == status:",
+          ["$move.effect_state.prankster = true", "return $priority + 1"]
+        ]
+      }
+    }
+  },
   "sandforce": { "name": "Sand Force", "flags": [] },
   "ironbarbs": { "name": "Iron Barbs", "flags": [] },
   "zenmode": { "name": "Zen Mode", "flags": ["Permanent"] },

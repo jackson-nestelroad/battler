@@ -58,6 +58,7 @@ use crate::{
             ValueRefToStoredValue,
             ValueType,
         },
+        ActiveMoveEffectStateConnector,
         EffectHandle,
         MonStatusEffectStateConnector,
     },
@@ -606,7 +607,192 @@ where
                     }
                 }
                 _ => {
-                    if let Some(mon_handle) = value.mon_handle() {
+                    let mut effect_matched = false;
+                    if let Some(effect_handle) = value.effect_handle() {
+                        effect_matched = true;
+                        let context = unsafe { context.unsafely_detach_borrow_mut() };
+                        value = match *member {
+                            "condition" => ValueRef::TempEffect(
+                                effect_handle
+                                    .condition_handle(context.battle_context())?
+                                    .wrap_error_with_message(
+                                        "effect has no associated condition",
+                                    )?,
+                            ),
+                            "id" => ValueRef::TempString(
+                                CoreBattle::get_effect_by_handle(
+                                    context.battle_context(),
+                                    &effect_handle,
+                                )?
+                                .id()
+                                .as_ref()
+                                .to_owned(),
+                            ),
+                            "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
+                            "is_item" => ValueRef::Boolean(effect_handle.is_item()),
+                            "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
+                            "is_move_secondary" => {
+                                ValueRef::Boolean(effect_handle.is_active_move_secondary())
+                            }
+                            "is_raining" => ValueRef::Boolean(weather_states::is_raining(
+                                context.effect_context_for_handle(&effect_handle)?.as_mut(),
+                            )),
+                            "is_snowing" => ValueRef::Boolean(weather_states::is_snowing(
+                                context.effect_context_for_handle(&effect_handle)?.as_mut(),
+                            )),
+                            "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
+                                context.effect_context_for_handle(&effect_handle)?.as_mut(),
+                            )),
+                            "name" => ValueRef::TempString(
+                                CoreBattle::get_effect_by_handle(
+                                    context.battle_context(),
+                                    &effect_handle,
+                                )?
+                                .name()
+                                .to_owned(),
+                            ),
+                            _ => {
+                                if effect_handle.is_active_move() {
+                                    // Allow active move to fall through.
+                                    effect_matched = false;
+                                    value
+                                } else {
+                                    return Err(Self::bad_member_access(member, value_type));
+                                }
+                            }
+                        }
+                    }
+
+                    if effect_matched {
+                        continue;
+                    }
+
+                    if let Some(active_move_handle) = value.active_move_handle() {
+                        let context = unsafe { context.unsafely_detach_borrow_mut() };
+                        value = match *member {
+                            "accuracy" => ValueRef::Accuracy(
+                                context.active_move(active_move_handle)?.data.accuracy,
+                            ),
+                            "base_power" => ValueRef::UFraction(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .base_power
+                                    .into(),
+                            ),
+                            "category" => ValueRef::MoveCategory(
+                                context.active_move(active_move_handle)?.data.category,
+                            ),
+                            "damage" => {
+                                match context.active_move(active_move_handle)?.data.damage {
+                                    Some(damage) => ValueRef::UFraction(damage.into()),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
+                            "drain_percent" => ValueRef::UFraction(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .drain_percent
+                                    .unwrap_or(Fraction::from(0u16))
+                                    .convert(),
+                            ),
+                            "effect_state" => ValueRef::EffectState(
+                                ActiveMoveEffectStateConnector::new(active_move_handle)
+                                    .make_dynamic(),
+                            ),
+                            "hit" => ValueRef::UFraction(
+                                context.active_move(active_move_handle)?.hit.into(),
+                            ),
+                            "hit_effect" => context
+                                .active_move(active_move_handle)?
+                                .data
+                                .hit_effect
+                                .as_ref()
+                                .map(ValueRef::HitEffect)
+                                .unwrap_or(ValueRef::Undefined),
+                            "non_ghost_target" => {
+                                let active_move = context.active_move(active_move_handle)?;
+                                ValueRef::MoveTarget(
+                                    active_move
+                                        .data
+                                        .non_ghost_target
+                                        .unwrap_or(active_move.data.target),
+                                )
+                            }
+                            "ohko" => ValueRef::Boolean(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .ohko_type
+                                    .is_some(),
+                            ),
+                            "priority" => ValueRef::Fraction(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .priority
+                                    .into(),
+                            ),
+                            "recoil_percent" => ValueRef::UFraction(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .recoil_percent
+                                    .unwrap_or(Fraction::from(0u16))
+                                    .convert(),
+                            ),
+                            "secondary_effects" => ValueRef::TempList(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .secondary_effects
+                                    .iter()
+                                    .map(|val| {
+                                        ValueRefToStoredValue::new(
+                                            self.stored.clone(),
+                                            ValueRef::SecondaryHitEffect(val),
+                                        )
+                                    })
+                                    .collect(),
+                            ),
+                            "source" | "user" => {
+                                match context.active_move(active_move_handle)?.used_by {
+                                    Some(mon) => ValueRef::Mon(mon),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
+                            "target" => ValueRef::MoveTarget(
+                                context.active_move(active_move_handle)?.data.target,
+                            ),
+                            "thaws_target" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.data.thaws_target,
+                            ),
+                            "total_damage" => ValueRef::UFraction(
+                                context.active_move(active_move_handle)?.total_damage.into(),
+                            ),
+                            "type" => ValueRef::Type(
+                                context.active_move(active_move_handle)?.data.primary_type,
+                            ),
+                            "typeless" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.data.typeless,
+                            ),
+                            "user_effect" => context
+                                .active_move(active_move_handle)?
+                                .data
+                                .user_effect
+                                .as_ref()
+                                .map(ValueRef::HitEffect)
+                                .unwrap_or(ValueRef::Undefined),
+                            "user_effect_chance" => context
+                                .active_move(active_move_handle)?
+                                .data
+                                .user_effect_chance
+                                .map(|val| ValueRef::UFraction(val.convert()))
+                                .unwrap_or(ValueRef::Undefined),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let Some(mon_handle) = value.mon_handle() {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
                             "ability" => ValueRef::TempString(
@@ -711,9 +897,11 @@ where
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),
-                            "is_sky_dropped" => ValueRef::Boolean(mon_states::is_sky_dropped(
-                                &mut context.mon_context(mon_handle)?,
-                            )),
+                            "is_away_from_field" => {
+                                ValueRef::Boolean(mon_states::is_away_from_field(
+                                    &mut context.mon_context(mon_handle)?,
+                                ))
+                            }
                             "is_soundproof" => ValueRef::Boolean(mon_states::is_soundproof(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -817,241 +1005,6 @@ where
                                     .queue
                                     .will_move_this_turn(mon_handle),
                             ),
-                            _ => return Err(Self::bad_member_access(member, value_type)),
-                        }
-                    } else if let Some(effect_handle) = value.effect_handle() {
-                        let context = unsafe { context.unsafely_detach_borrow_mut() };
-                        value = match *member {
-                            "category" => ValueRef::MoveCategory(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .move_effect()
-                                .wrap_error_with_message("effect is not a move")?
-                                .data
-                                .category,
-                            ),
-                            "condition" => ValueRef::TempEffect(
-                                effect_handle
-                                    .condition_handle(context.battle_context())?
-                                    .wrap_error_with_message(
-                                        "effect has no associated condition",
-                                    )?,
-                            ),
-                            "id" => ValueRef::TempString(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .id()
-                                .as_ref()
-                                .to_owned(),
-                            ),
-                            "infiltrates" => ValueRef::Boolean(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .infiltrates(),
-                            ),
-                            "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
-                            "is_item" => ValueRef::Boolean(effect_handle.is_item()),
-                            "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
-                            "is_move_secondary" => {
-                                ValueRef::Boolean(effect_handle.is_active_move_secondary())
-                            }
-                            "is_raining" => ValueRef::Boolean(weather_states::is_raining(
-                                context.effect_context_for_handle(effect_handle)?.as_mut(),
-                            )),
-                            "is_snowing" => ValueRef::Boolean(weather_states::is_snowing(
-                                context.effect_context_for_handle(effect_handle)?.as_mut(),
-                            )),
-                            "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
-                                context.effect_context_for_handle(effect_handle)?.as_mut(),
-                            )),
-                            "move_source" => {
-                                match CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .move_effect()
-                                .wrap_error_with_message("effect is not a move")?
-                                .move_source
-                                .as_ref()
-                                {
-                                    Some(effect) => ValueRef::TempEffect(effect.clone()),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
-                            "move_target" => ValueRef::MoveTarget(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .move_effect()
-                                .wrap_error_with_message("effect is not a move")?
-                                .data
-                                .target,
-                            ),
-                            "name" => ValueRef::TempString(
-                                CoreBattle::get_effect_by_handle(
-                                    context.battle_context(),
-                                    &effect_handle,
-                                )?
-                                .name()
-                                .to_owned(),
-                            ),
-                            "type" => CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
-                            .move_effect()
-                            .map(|move_effect| ValueRef::Type(move_effect.data.primary_type))
-                            .unwrap_or(ValueRef::Undefined),
-                            _ => return Err(Self::bad_member_access(member, value_type)),
-                        }
-                    } else if let Some(active_move_handle) = value.active_move_handle() {
-                        let context = unsafe { context.unsafely_detach_borrow_mut() };
-                        value = match *member {
-                            "accuracy" => ValueRef::Accuracy(
-                                context.active_move(active_move_handle)?.data.accuracy,
-                            ),
-                            "base_power" => ValueRef::UFraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .base_power
-                                    .into(),
-                            ),
-                            "category" => ValueRef::MoveCategory(
-                                context.active_move(active_move_handle)?.data.category,
-                            ),
-                            "damage" => {
-                                match context.active_move(active_move_handle)?.data.damage {
-                                    Some(damage) => ValueRef::UFraction(damage.into()),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
-                            "drain_percent" => ValueRef::UFraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .drain_percent
-                                    .unwrap_or(Fraction::from(0u16))
-                                    .convert(),
-                            ),
-                            "hit" => ValueRef::UFraction(
-                                context.active_move(active_move_handle)?.hit.into(),
-                            ),
-                            "hit_effect" => context
-                                .active_move(active_move_handle)?
-                                .data
-                                .hit_effect
-                                .as_ref()
-                                .map(ValueRef::HitEffect)
-                                .unwrap_or(ValueRef::Undefined),
-                            "id" => ValueRef::Str(
-                                context.active_move(active_move_handle)?.id().as_ref(),
-                            ),
-                            "infiltrates" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.infiltrates,
-                            ),
-                            "name" => ValueRef::Str(
-                                context.active_move(active_move_handle)?.data.name.as_ref(),
-                            ),
-                            "non_ghost_target" => {
-                                let active_move = context.active_move(active_move_handle)?;
-                                ValueRef::MoveTarget(
-                                    active_move
-                                        .data
-                                        .non_ghost_target
-                                        .unwrap_or(active_move.data.target),
-                                )
-                            }
-                            "ohko" => ValueRef::Boolean(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .ohko_type
-                                    .is_some(),
-                            ),
-                            "priority" => ValueRef::Fraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .priority
-                                    .into(),
-                            ),
-                            "recoil_percent" => ValueRef::UFraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .recoil_percent
-                                    .unwrap_or(Fraction::from(0u16))
-                                    .convert(),
-                            ),
-                            "reflected" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.reflected,
-                            ),
-                            "secondary_effects" => ValueRef::TempList(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .secondary_effects
-                                    .iter()
-                                    .map(|val| {
-                                        ValueRefToStoredValue::new(
-                                            self.stored.clone(),
-                                            ValueRef::SecondaryHitEffect(val),
-                                        )
-                                    })
-                                    .collect(),
-                            ),
-                            "source" | "user" => {
-                                match context.active_move(active_move_handle)?.used_by {
-                                    Some(mon) => ValueRef::Mon(mon),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
-                            "move_source" => {
-                                match context
-                                    .active_move(active_move_handle)?
-                                    .move_source
-                                    .as_ref()
-                                {
-                                    Some(effect) => ValueRef::TempEffect(effect.clone()),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
-                            "target" => ValueRef::MoveTarget(
-                                context.active_move(active_move_handle)?.data.target,
-                            ),
-                            "thaws_target" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.data.thaws_target,
-                            ),
-                            "total_damage" => ValueRef::UFraction(
-                                context.active_move(active_move_handle)?.total_damage.into(),
-                            ),
-                            "type" => ValueRef::Type(
-                                context.active_move(active_move_handle)?.data.primary_type,
-                            ),
-                            "typeless" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.data.typeless,
-                            ),
-                            "user_effect" => context
-                                .active_move(active_move_handle)?
-                                .data
-                                .user_effect
-                                .as_ref()
-                                .map(ValueRef::HitEffect)
-                                .unwrap_or(ValueRef::Undefined),
-                            "user_effect_chance" => context
-                                .active_move(active_move_handle)?
-                                .data
-                                .user_effect_chance
-                                .map(|val| ValueRef::UFraction(val.convert()))
-                                .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Player(player) = value {
@@ -1318,6 +1271,10 @@ where
                         "damage" => ValueRefMut::OptionalU16(
                             &mut context.active_move_mut(**active_move_handle)?.data.damage,
                         ),
+                        "effect_state" => ValueRefMut::TempEffectState(
+                            ActiveMoveEffectStateConnector::new(**active_move_handle)
+                                .make_dynamic(),
+                        ),
                         "hit_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
@@ -1330,14 +1287,8 @@ where
                                 .data
                                 .ignore_immunity,
                         ),
-                        "infiltrates" => ValueRefMut::Boolean(
-                            &mut context.active_move_mut(**active_move_handle)?.infiltrates,
-                        ),
                         "multihit" => ValueRefMut::OptionalMultihitType(
                             &mut context.active_move_mut(**active_move_handle)?.data.multihit,
-                        ),
-                        "reflected" => ValueRefMut::Boolean(
-                            &mut context.active_move_mut(**active_move_handle)?.reflected,
                         ),
                         "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
                             &mut context

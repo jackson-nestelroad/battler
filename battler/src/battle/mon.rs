@@ -649,9 +649,8 @@ impl Mon {
             context.mon_mut().item = Some(ItemSlot {
                 id: item.id().clone(),
                 effect_state: fxlang::EffectState::initial_effect_state(
-                    &mut context
-                        .as_battle_context_mut()
-                        .effect_context(EffectHandle::Condition(Id::from_known("start")), None)?,
+                    context.as_battle_context_mut(),
+                    Some(&EffectHandle::Condition(Id::from_known("start"))),
                     Some(mon_handle),
                     None,
                 )?,
@@ -1578,9 +1577,8 @@ impl Mon {
             id: ability.id().clone(),
             order: 0,
             effect_state: fxlang::EffectState::initial_effect_state(
-                &mut context
-                    .as_battle_context_mut()
-                    .effect_context(EffectHandle::Condition(Id::from_known("start")), None)?,
+                context.as_battle_context_mut(),
+                Some(&EffectHandle::Condition(Id::from_known("start"))),
                 Some(mon_handle),
                 None,
             )?,

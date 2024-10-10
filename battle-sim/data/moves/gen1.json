@@ -708,7 +708,7 @@
       "duration": 5,
       "callbacks": {
         "on_try_boost": [
-          "if $effect.infiltrates and !func_call(is_ally: $target $source):",
+          "if $effect.is_move and $effect.effect_state.infiltrates and !func_call(is_ally: $target $source):",
           ["return"],
           "if !$source or $source == $target:",
           ["return"],
@@ -1601,7 +1601,7 @@
         "on_source_modify_damage": [
           "if $target == $user or $move.category != special:",
           ["return"],
-          "if func_call(move_crit_target: $move $target) or $move.infiltrates:",
+          "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
           ["return"],
           "if $format.mons_per_side > 1:",
           ["return $damage * 2 / 3"],
@@ -1645,7 +1645,7 @@
         "on_source_modify_damage": [
           "if $target == $user or $move.category != physical:",
           ["return"],
-          "if func_call(move_crit_target: $move $target) or $move.infiltrates:",
+          "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
           ["return"],
           "if $format.mons_per_side > 1:",
           ["return $damage * 2 / 3"],
@@ -2423,7 +2423,7 @@
         ],
         "on_try_primary_hit": [
           "# Some moves can hit through substitute.",
-          "if $target == $source or func_call(move_has_flag: $move bypasssubstitute) or $move.infiltrates:",
+          "if $target == $source or func_call(move_has_flag: $move bypasssubstitute) or $move.effect_state.infiltrates:",
           ["return"],
           "save_move_hit_data_flag_against_target: $move $target hitsubstitute",
           "# Calculate and apply damage.",

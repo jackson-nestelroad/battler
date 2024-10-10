@@ -6,7 +6,6 @@ use uuid::Uuid;
 use crate::{
     battle::{
         Context,
-        EffectContext,
         Mon,
         MonHandle,
     },
@@ -28,6 +27,7 @@ use crate::{
 /// Allows fxlang variables to be persisted across multiple callbacks.
 #[derive(Clone)]
 pub struct EffectState {
+    initialized: bool,
     values: FastHashMap<String, Value>,
     linked_id: Option<Uuid>,
     linked_to: Vec<Uuid>,
@@ -44,28 +44,40 @@ impl EffectState {
 
     /// Creates an initial effect state for a new effect.
     pub fn initial_effect_state(
-        context: &mut EffectContext,
+        context: &mut Context,
+        source_effect: Option<&EffectHandle>,
         target: Option<MonHandle>,
         source: Option<MonHandle>,
     ) -> Result<Self, Error> {
         let mut effect_state = Self::new();
-        effect_state.set_source_effect(
-            context
-                .effect_handle()
-                .stable_effect_handle(context.as_battle_context())?,
-        );
+        effect_state.initialize(context, source_effect, target, source)?;
+        Ok(effect_state)
+    }
+
+    /// Initializes an existing effect state object.
+    pub fn initialize(
+        &mut self,
+        context: &mut Context,
+        source_effect: Option<&EffectHandle>,
+        target: Option<MonHandle>,
+        source: Option<MonHandle>,
+    ) -> Result<(), Error> {
+        if let Some(source_effect) = source_effect {
+            self.set_source_effect(source_effect.stable_effect_handle(context)?);
+        }
         if let Some(target_handle) = target {
-            effect_state.set_target(target_handle);
+            self.set_target(target_handle);
         }
         if let Some(source_handle) = source {
-            effect_state.set_source(source_handle);
-            let mut context = context.as_battle_context_mut().mon_context(source_handle)?;
-            effect_state.set_source_side(context.mon().side);
+            self.set_source(source_handle);
+            let mut context = context.mon_context(source_handle)?;
+            self.set_source_side(context.mon().side);
             if let Some(source_position) = Mon::position_on_side(&mut context) {
-                effect_state.set_source_position(source_position)?;
+                self.set_source_position(source_position)?;
             }
         }
-        Ok(effect_state)
+        self.initialized = true;
+        Ok(())
     }
 
     /// Creates a new, default instance.
@@ -77,10 +89,16 @@ impl EffectState {
     /// battle initialization.
     pub fn new() -> Self {
         Self {
+            initialized: false,
             values: FastHashMap::new(),
             linked_id: None,
             linked_to: Vec::new(),
         }
+    }
+
+    /// Returns true if the state is initialized.
+    pub fn initialized(&self) -> bool {
+        self.initialized
     }
 
     /// Gets the value associated with the given key.

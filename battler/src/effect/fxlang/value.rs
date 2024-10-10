@@ -46,6 +46,7 @@ use crate::{
         Accuracy,
         HitEffect,
         MoveCategory,
+        MoveHitEffectType,
         MoveTarget,
         MultihitType,
         SecondaryEffect,
@@ -951,10 +952,14 @@ impl<'eval> ValueRef<'eval> {
     }
 
     /// Returns the [`EffectHandle`] associated with an effect reference.
-    pub fn effect_handle(&self) -> Option<&EffectHandle> {
+    pub fn effect_handle(&self) -> Option<EffectHandle> {
         match self {
-            Self::Effect(effect_handle) => Some(effect_handle),
-            Self::TempEffect(effect_handle) => Some(effect_handle),
+            Self::ActiveMove(move_handle) => Some(EffectHandle::ActiveMove(
+                *move_handle,
+                MoveHitEffectType::PrimaryEffect,
+            )),
+            Self::Effect(effect_handle) => Some((*effect_handle).clone()),
+            Self::TempEffect(effect_handle) => Some((*effect_handle).clone()),
             _ => None,
         }
     }
@@ -963,6 +968,8 @@ impl<'eval> ValueRef<'eval> {
     pub fn active_move_handle(&self) -> Option<MoveHandle> {
         match self {
             Self::ActiveMove(move_handle) => Some(*move_handle),
+            Self::Effect(EffectHandle::ActiveMove(move_handle, _)) => Some(*move_handle),
+            Self::TempEffect(EffectHandle::ActiveMove(move_handle, _)) => Some(*move_handle),
             _ => None,
         }
     }
@@ -1908,6 +1915,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     /// Implements boolean conjunction.
     pub fn and(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
+            (Self::Undefined, Self::Undefined) => false,
+            (Self::Undefined, Self::Boolean(_)) => false,
+            (Self::Boolean(_), Self::Undefined) => false,
             (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs && rhs,
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(
@@ -1923,6 +1933,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     /// Implements boolean disjunction.
     pub fn or(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
+            (Self::Undefined, Self::Undefined) => false,
+            (Self::Undefined, Self::Boolean(rhs)) => rhs,
+            (Self::Boolean(lhs), Self::Undefined) => lhs,
             (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs || rhs,
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(

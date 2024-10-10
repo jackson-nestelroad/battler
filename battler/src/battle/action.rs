@@ -1,6 +1,7 @@
 use crate::{
     battle::{
         MonHandle,
+        MoveHandle,
         SpeedOrderable,
     },
     common::Id,
@@ -95,6 +96,11 @@ pub struct MoveAction {
     pub mega: bool,
     pub priority: i32,
     pub sub_priority: i32,
+
+    // The active move that will be executed by this action.
+    //
+    // Only available after resolving the action and adding it to the battle queue.
+    pub active_move_handle: Option<MoveHandle>,
 }
 
 impl MoveAction {
@@ -108,6 +114,7 @@ impl MoveAction {
             mega: input.mega,
             priority: 0,
             sub_priority: 0,
+            active_move_handle: None,
         }
     }
 }

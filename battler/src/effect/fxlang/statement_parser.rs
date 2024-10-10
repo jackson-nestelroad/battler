@@ -1377,7 +1377,7 @@ mod statement_parser_tests {
     fn parses_vars() {
         assert_eq!(
             StatementParser::new(
-                "vars: $source $target $source.hp $a.b.c.d9.e $ident_with-000more_chars123"
+                "vars: $source $target $source.hp $a.b.c.d9.e $ident_with-000more_chars123 $move.effect_state.infiltrates"
             )
             .parse(),
             Ok(tree::Statement::FunctionCall(tree::FunctionCall {
@@ -1407,6 +1407,12 @@ mod statement_parser_tests {
                     tree::Value::Var(tree::Var {
                         name: tree::Identifier("ident_with-000more_chars123".to_owned()),
                         member_access: vec![],
+                    }),
+                    tree::Value::Var(tree::Var {
+                        name: tree::Identifier("move".to_owned()),
+                        member_access: vec![
+                            tree::Identifier("effect_state".to_owned()),
+                            tree::Identifier("infiltrates".to_owned()),],
                     }),
                 ])
             }))

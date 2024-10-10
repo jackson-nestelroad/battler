@@ -1127,7 +1127,9 @@ impl<'d> CoreBattle<'d> {
                 }
                 core_battle_actions::do_move(
                     &mut context,
-                    &action.id,
+                    action
+                        .active_move_handle
+                        .wrap_error_with_message("expected move action to have an active move")?,
                     action.target,
                     action.original_target,
                 )?;
@@ -1453,17 +1455,27 @@ impl<'d> CoreBattle<'d> {
                 .moves
                 .get_by_id(&action.id)
                 .into_result()?;
-            let move_id = mov.id().clone();
-            action.priority = mov.data.priority as i32;
-            action.sub_priority =
-                core_battle_effects::run_event_for_mon_expecting_i32_quick_return(
-                    &mut context.mon_context(action.mon_action.mon)?,
-                    fxlang::BattleEvent::SubPriority,
-                    fxlang::VariableInput::from_iter([fxlang::Value::Effect(
-                        EffectHandle::InactiveMove(move_id),
-                    )]),
-                )
-                .unwrap_or(0);
+            let priority = mov.data.priority as i32;
+
+            let mut context = context.mon_context(action.mon_action.mon)?;
+            let mut context =
+                context.active_move_context(action.active_move_handle.wrap_error_with_message(
+                    "expected active move to exist on action for priority calculation",
+                )?)?;
+            let mut context = context.user_applying_effect_context(None)?;
+
+            let priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
+                &mut context,
+                fxlang::BattleEvent::ModifyPriority,
+                priority,
+            );
+            action.priority = priority;
+
+            action.sub_priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
+                &mut context,
+                fxlang::BattleEvent::SubPriority,
+                0,
+            );
         }
         if let Action::Switch(action) = action {
             // The priority of switch actions are determined by the speed of the Mon switching out.
@@ -1476,6 +1488,22 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    pub fn register_active_move(
+        context: &mut Context,
+        active_move: Move,
+    ) -> Result<MoveHandle, Error> {
+        let active_move_handle = context.battle_mut().register_move(active_move);
+        Ok(active_move_handle)
+    }
+
+    pub fn register_active_move_by_id(
+        context: &mut Context,
+        move_id: &Id,
+    ) -> Result<MoveHandle, Error> {
+        let active_move = (*context.battle_mut().dex.moves.get_by_id(move_id)?).clone();
+        Self::register_active_move(context, active_move)
+    }
+
     /// Resolves the given action by calculating its priority in the context of the battle.
     pub fn resolve_action(context: &mut Context, action: &mut Action) -> Result<(), Error> {
         if let Action::Move(action) = action {
@@ -1483,6 +1511,10 @@ impl<'d> CoreBattle<'d> {
             if let Some(target) = action.target {
                 action.original_target = Mon::get_target(&mut context, target)?;
             }
+            action.active_move_handle = Some(Self::register_active_move_by_id(
+                context.as_battle_context_mut(),
+                &action.id,
+            )?);
         }
         Self::calculate_action_priority(context, action)?;
         Ok(())

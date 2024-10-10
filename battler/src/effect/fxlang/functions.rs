@@ -112,6 +112,7 @@ pub fn run_function(
         "clear_boosts" => clear_boosts(context).map(|()| None),
         "clear_negative_boosts" => clear_negative_boosts(context).map(|()| None),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
+        "clone_active_move" => clone_active_move(context).map(|val| Some(val)),
         "cure_status" => cure_status(context).map(|val| Some(val)),
         "damage" => damage(context).map(|val| Some(val)),
         "debug_log" => debug_log(context).map(|()| None),
@@ -180,7 +181,6 @@ pub fn run_function(
         "move_slot" => move_slot(context).map(|val| Some(val)),
         "move_slot_at_index" => move_slot_at_index(context),
         "move_slot_index" => move_slot_index(context),
-        "new_active_move" => new_active_move(context).map(|val| Some(val)),
         "new_active_move_from_local_data" => {
             new_active_move_from_local_data(context).map(|val| Some(val))
         }
@@ -2230,24 +2230,17 @@ fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     .map(|mon| Value::Mon(mon)))
 }
 
-fn new_active_move(mut context: FunctionContext) -> Result<Value, Error> {
-    let move_id = context
+fn clone_active_move(mut context: FunctionContext) -> Result<Value, Error> {
+    let active_move = context
         .pop_front()
         .wrap_error_with_message("missing move")?
-        .string()
+        .active_move()
         .wrap_error_with_message("invalid move")?;
-    let move_id = Id::from(move_id);
-    let move_data = context
+    let active_move = context
         .evaluation_context()
-        .battle_context()
-        .battle()
-        .dex
-        .moves
-        .get_by_id(&move_id)?
-        .data
-        .clone();
-    let active_move = Move::new(move_id, move_data);
-    let active_move_handle = core_battle_actions::register_active_move(
+        .active_move(active_move)?
+        .clone_for_battle();
+    let active_move_handle = CoreBattle::register_active_move(
         context.evaluation_context_mut().battle_context_mut(),
         active_move,
     )?;
@@ -2280,7 +2273,7 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
     ))?
     .clone();
     let active_move = Move::new_unlinked(move_id, move_data);
-    let active_move_handle = core_battle_actions::register_active_move(
+    let active_move_handle = CoreBattle::register_active_move(
         context.evaluation_context_mut().battle_context_mut(),
         active_move,
     )?;
@@ -2389,7 +2382,7 @@ fn do_move(mut context: FunctionContext) -> Result<(), Error> {
         ),
         None => None,
     };
-    core_battle_actions::do_move(
+    core_battle_actions::do_move_by_id(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         &move_id,
         target_position,

@@ -948,7 +948,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         &'active_move mut self,
     ) -> Result<EffectContext<'active_move, 'battle, 'data>, Error> {
         let effect_handle = self.effect_handle();
-        let source_effect_handle = self.source_effect_handle().cloned();
+        let source_effect_handle = self.source_effect_handle();
         self.as_battle_context_mut()
             .effect_context(effect_handle, source_effect_handle)
     }
@@ -1080,8 +1080,8 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
     }
 
     /// Returns the source [`EffectHandle`] for the active [`Move`], if any.
-    pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
-        self.active_move.move_source.as_ref()
+    pub fn source_effect_handle(&self) -> Option<EffectHandle> {
+        self.active_move.effect_state.source_effect()
     }
 
     /// Returns the [`MoveHandle`] for the active [`Move`].
@@ -1421,7 +1421,7 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     }
 
     /// Returns a reference to the source [`EffectHandle`], if any.
-    pub fn source_effect_handle(&mut self) -> Option<&EffectHandle> {
+    pub fn source_effect_handle(&mut self) -> Option<EffectHandle> {
         self.context.source_effect_handle()
     }
 

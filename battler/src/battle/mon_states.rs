@@ -40,6 +40,16 @@ pub fn is_asleep(context: &mut MonContext) -> bool {
     )
 }
 
+/// Checks if the [`Mon`][`crate::battle::Mon`] is away from the field (e.g., immobilized by Sky
+/// Drop).
+pub fn is_away_from_field(context: &mut MonContext) -> bool {
+    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::IsAwayFromField,
+        false,
+    )
+}
+
 /// Checks if the [`Mon`][`crate::battle::Mon`] is behind a substitute.
 pub fn is_behind_substitute(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
@@ -90,15 +100,6 @@ pub fn is_semi_invulnerable(context: &mut MonContext) -> bool {
     core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
         context,
         fxlang::BattleEvent::IsSemiInvulnerable,
-        false,
-    )
-}
-
-/// Checks if the [`Mon`][`crate::battle::Mon`] is sky-dropped.
-pub fn is_sky_dropped(context: &mut MonContext) -> bool {
-    core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
-        context,
-        fxlang::BattleEvent::IsSkyDropped,
         false,
     )
 }

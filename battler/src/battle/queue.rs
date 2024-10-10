@@ -308,6 +308,7 @@ mod queue_tests {
             mega: false,
             priority,
             sub_priority,
+            active_move_handle: None,
         })
     }
 

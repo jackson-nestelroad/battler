@@ -178,7 +178,10 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["# TODO: Prankster immunity"]
+        "on_immunity": [
+          "if $effect.is_move and $effect.effect_state.prankster and !func_call(is_ally: $target $source):",
+          ["return false"]
+        ]
       }
     }
   },
@@ -262,7 +265,8 @@
           ]
         },
         "on_source_try_hit": [
-          "if $move.move_source.is_defined and $move.move_source.id == sleeptalk:",
+          "if $move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == sleeptalk:",
+
           ["return"],
           "if !func_call(move_has_flag: $move.id sleepusable):",
           ["return false"]
@@ -379,7 +383,7 @@
           "add_volatile: $target $effect_state.move link",
           "# If this move is called by another move, we may need to modify the targer that the user will be locked into.",
           "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
-          "if $source_effect.is_move and $source_effect.move_source.is_defined and $source_effect.move_source != user:",
+          "if $source_effect.is_move and $source_effect.effect_state.source_effect.is_defined and $source_effect.move_target != user:",
           [
             "$need_new_target = false",
             "if !$target.last_target_location:",

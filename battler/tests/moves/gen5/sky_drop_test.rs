@@ -42,7 +42,8 @@ fn team() -> Result<TeamData, Error> {
                     "species": "Samurott",
                     "ability": "No Ability",
                     "moves": [
-                        "Tackle"
+                        "Tackle",
+                        "Follow Me"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -310,6 +311,36 @@ fn sky_drop_fails_on_second_turn_for_flying_type_target() {
             "damage|mon:Hawlucha,player-1,1|health:83/100",
             "residual",
             "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn follow_me_fails_during_sky_drop() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    assert_eq!(battle.start(), Ok(()));
+
+    assert_eq!(
+        battle.set_player_choice("player-1", "move 0,1;move 0,1"),
+        Ok(())
+    );
+    assert_eq!(battle.set_player_choice("player-2", "pass;move 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Samurott,player-2,2|name:Follow Me|target:Samurott,player-2,2",
+            "singleturn|mon:Samurott,player-2,2|move:Follow Me",
+            "move|mon:Hawlucha,player-1,1|name:Sky Drop|noanim",
+            "prepare|mon:Hawlucha,player-1,1|move:Sky Drop|target:Samurott,player-2,2",
+            "move|mon:Samurott,player-1,2|name:Tackle|target:Hawlucha,player-2,1",
+            "split|side:1",
+            "damage|mon:Hawlucha,player-2,1|health:114/138",
+            "damage|mon:Hawlucha,player-2,1|health:83/100",
+            "residual",
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

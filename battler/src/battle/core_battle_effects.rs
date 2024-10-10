@@ -703,9 +703,9 @@ fn find_callbacks_on_mon(
         ));
     }
     for volatile in context.mon().volatiles.clone().keys() {
-        let status_effect_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
+        let volatile_effect_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
         callbacks.push(CallbackHandle::new(
-            status_effect_handle.clone(),
+            volatile_effect_handle.clone(),
             event,
             AppliedEffectLocation::MonVolatile(mon),
         ));
@@ -1192,10 +1192,13 @@ fn get_speed_orderable_effect_handle_internal(
 
     // Ensure the event callback exists. An empty callback is ignored.
     let callback = match effect.fxlang_effect() {
-        Some(effect) => match effect.callbacks.event(callback_handle.event) {
-            Some(callback) => callback,
-            None => return Ok(None),
-        },
+        Some(effect) => {
+            let callback = effect.callbacks.event(callback_handle.event);
+            if !callback.has_program() {
+                return Ok(None);
+            }
+            callback
+        }
         None => return Ok(None),
     };
 
@@ -2284,7 +2287,7 @@ pub fn run_event_for_applying_effect_expecting_u8(
 
 /// Runs an event on the [`CoreBattle`] for an applying effect.
 ///
-/// Expects an integer that can fit in a [`i8`].
+/// Expects an integer that can fit in an [`i8`].
 pub fn run_event_for_applying_effect_expecting_i8(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -2300,6 +2303,25 @@ pub fn run_event_for_applying_effect_expecting_i8(
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_i8().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects an integer that can fit in an [`i32`].
+pub fn run_event_for_applying_effect_expecting_i32(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: i32,
+) -> i32 {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::Fraction(input.into())]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_i32().unwrap_or(input),
         None => input,
     }
 }

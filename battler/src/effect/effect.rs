@@ -390,14 +390,6 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    /// Whether the effect is marked as infiltrating other side and field effects.
-    pub fn infiltrates(&self) -> bool {
-        match self {
-            Self::ActiveMove(active_move, _) => active_move.infiltrates,
-            _ => false,
-        }
-    }
-
     /// Whether the effect is marked as unlinked from its static data.
     pub fn unlinked(&self) -> bool {
         match self {

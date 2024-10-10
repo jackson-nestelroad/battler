@@ -1,7 +1,4 @@
-use std::{
-    collections::hash_map::Entry,
-    ops::Deref,
-};
+use std::collections::hash_map::Entry;
 
 use ahash::HashMapExt;
 use lazy_static::lazy_static;
@@ -67,7 +64,6 @@ use crate::{
         Type,
     },
     moves::{
-        Move,
         MoveCategory,
         MoveFlags,
         MoveTarget,
@@ -288,33 +284,38 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
     Ok(())
 }
 
-fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<MoveHandle, Error> {
-    let active_move = context
-        .battle_mut()
-        .dex
-        .moves
-        .get_by_id(move_id)?
-        .deref()
-        .clone();
-    register_active_move(context, active_move)
-}
-
-/// Registers a new active move.
-pub fn register_active_move(context: &mut Context, active_move: Move) -> Result<MoveHandle, Error> {
-    let active_move_handle = context.battle_mut().register_move(active_move);
-    Ok(active_move_handle)
-}
-
-/// Executes the given move selected by a Mon.
-pub fn do_move(
+/// Executes the given move selected by a Mon by ID.
+pub fn do_move_by_id(
     context: &mut MonContext,
     move_id: &Id,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<(), Error> {
+    let active_move_handle =
+        CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    do_move(
+        context,
+        active_move_handle,
+        target_location,
+        original_target,
+    )
+}
+
+/// Executes the given move selected by a Mon.
+pub fn do_move(
+    context: &mut MonContext,
+    active_move_handle: MoveHandle,
+    target_location: Option<isize>,
+    original_target: Option<MonHandle>,
+) -> Result<(), Error> {
     context.mon_mut().active_move_actions += 1;
 
-    do_move_internal(context, move_id, target_location, original_target)?;
+    do_move_internal(
+        context,
+        active_move_handle,
+        target_location,
+        original_target,
+    )?;
 
     context.mon_mut().clear_active_move();
 
@@ -323,30 +324,33 @@ pub fn do_move(
 
 fn do_move_internal(
     context: &mut MonContext,
-    move_id: &Id,
+    mut active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<(), Error> {
+    let move_id = context
+        .as_battle_context()
+        .active_move(active_move_handle)?
+        .id()
+        .clone();
     let mon_handle = context.mon_handle();
     let mut target = CoreBattle::get_target(
         context.as_battle_context_mut(),
         mon_handle,
-        move_id,
+        &move_id,
         target_location,
         original_target,
     )?;
-
-    // Make a copy of the move so we can work with it and modify it for the turn.
-    let mut active_move_handle =
-        register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
 
     if let Some(change_move) = core_battle_effects::run_event_for_mon_expecting_string(
         context,
         fxlang::BattleEvent::OverrideMove,
         fxlang::VariableInput::from_iter([fxlang::Value::ActiveMove(active_move_handle)]),
     ) {
-        active_move_handle =
-            register_active_move_by_id(context.as_battle_context_mut(), &Id::from(change_move))?;
+        active_move_handle = CoreBattle::register_active_move_by_id(
+            context.as_battle_context_mut(),
+            &Id::from(change_move),
+        )?;
         let mon_handle = context.mon_handle();
         let move_target = context
             .as_battle_context()
@@ -458,7 +462,8 @@ pub fn use_move(
     source_effect: Option<&EffectHandle>,
     external: bool,
 ) -> Result<bool, Error> {
-    let active_move_handle = register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    let active_move_handle =
+        CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
     use_active_move(
         context,
         active_move_handle,
@@ -486,12 +491,12 @@ pub fn use_active_move(
     }
 
     let mut context = context.active_move_context(active_move_handle)?;
-    context.active_move_mut().move_source = match source_effect {
-        Some(source_effect) => {
-            Some(source_effect.stable_effect_handle(context.as_battle_context())?)
-        }
-        None => None,
-    };
+
+    // Initialize the effect state, which most importantly saves the source effect.
+    let mut effect_state = context.active_move().effect_state.clone();
+    effect_state.initialize(context.as_battle_context_mut(), source_effect, target, None)?;
+    context.active_move_mut().effect_state = effect_state;
+
     context.active_move_mut().used_by = Some(context.mon_handle());
     context.active_move_mut().external = external;
 
@@ -2720,10 +2725,12 @@ pub fn try_set_status(
     // Set the status so that the following effects can use it.
     context.target_mut().status = Some(status);
 
+    let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
     context.target_mut().status_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         Some(target_handle),
         source_handle,
     )?;
@@ -2851,10 +2858,12 @@ pub fn try_add_volatile(
         return Ok(false);
     }
 
+    let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
     let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         Some(target_handle),
         source_handle,
     )?;
@@ -3036,9 +3045,11 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         );
     }
 
+    let effect_handle = context.effect_handle().clone();
     let source_handle = context.source_handle();
     let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         None,
         source_handle,
     )?;
@@ -3497,9 +3508,12 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
     let previous_weather_state = context.battle().field.weather_state.clone();
 
     context.battle_mut().field.weather = Some(weather.clone());
+
+    let effect_handle = context.effect_handle().clone();
     let source_handle = context.source_handle();
     context.battle_mut().field.weather_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         None,
         source_handle,
     )?;
@@ -3621,9 +3635,12 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
     let previous_terrain_state = context.battle().field.terrain_state.clone();
 
     context.battle_mut().field.terrain = Some(terrain.clone());
+
+    let effect_handle = context.effect_handle().clone();
     let source_handle = context.source_handle();
     context.battle_mut().field.terrain_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         None,
         source_handle,
     )?;
@@ -3730,9 +3747,11 @@ pub fn add_pseudo_weather(
         return Ok(false);
     }
 
+    let effect_handle = context.effect_handle().clone();
     let source_handle = context.source_handle();
     let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         None,
         source_handle,
     )?;
@@ -4016,9 +4035,11 @@ pub fn add_slot_condition(
         );
     }
 
+    let effect_handle = context.effect_handle().clone();
     let source_handle = context.source_handle();
     let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_effect_context_mut(),
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
         None,
         source_handle,
     )?;
@@ -4143,25 +4164,27 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, 
 
     let item = context.battle().dex.items.get_by_id(item)?;
     let item_id = item.id().clone();
-    let target = context.target_handle();
-    let source = context.source_handle();
+
+    let effect_handle = context.effect_handle().clone();
+    let target_handle = context.target_handle();
+    let source_handle = context.source_handle();
     context.target_mut().item = Some(ItemSlot {
         id: item.id().clone(),
         effect_state: fxlang::EffectState::initial_effect_state(
-            context.as_effect_context_mut(),
-            Some(target),
-            source,
+            context.as_battle_context_mut(),
+            Some(&effect_handle),
+            Some(target_handle),
+            source_handle,
         )?,
     });
 
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
 
-    let effect = context.effect_handle().clone();
     core_battle_logs::item(
         &mut context.target_context()?,
         &item_id,
-        Some(effect),
-        source,
+        Some(effect_handle),
+        source_handle,
     )?;
 
     Ok(true)
