@@ -86,6 +86,13 @@ impl Into<SideData> for BattleBuilderSideData {
 }
 
 /// Options for building a new battle.
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct BattleBuilderFlags {
+    /// Whether or not teams are validated prior to being updated.
+    pub validate_team: bool,
+}
+
+/// Battle options for a [`BattleBuilder`].
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BattleBuilderOptions {
     /// The initial seed for random number generation.
@@ -101,6 +108,9 @@ pub struct BattleBuilderOptions {
     pub side_1: BattleBuilderSideData,
     /// The other side of the battle.
     pub side_2: BattleBuilderSideData,
+    /// Flags for the battle builder itself.
+    #[serde(default)]
+    pub flags: BattleBuilderFlags,
 }
 
 /// Object for dynamically building a battle prior to starting it.
@@ -113,6 +123,7 @@ pub struct BattleBuilder<'d> {
     dex: Dex<'d>,
     format: Format,
     options: CoreBattleOptions,
+    flags: BattleBuilderFlags,
 
     player_ids: FastHashMap<String, (usize, usize)>,
 }
@@ -122,6 +133,7 @@ impl<'d> BattleBuilder<'d> {
     pub fn new(options: BattleBuilderOptions, data: &'d dyn DataStore) -> Result<Self, Error> {
         let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
+        let flags = options.flags;
         let options = CoreBattleOptions {
             seed: options.seed,
             format: None,
@@ -148,6 +160,7 @@ impl<'d> BattleBuilder<'d> {
             format,
             options,
             player_ids,
+            flags,
         })
     }
 
@@ -192,8 +205,12 @@ impl<'d> BattleBuilder<'d> {
 
     /// Updates a player's team.
     ///
-    /// If validation should be done, [`Self::validate_team`] should be called first.
-    pub fn update_team(&mut self, player: &str, team: TeamData) -> Result<(), Error> {
+    /// Validation is performed if the battle builder is configured to use validation.
+    pub fn update_team(&mut self, player: &str, mut team: TeamData) -> Result<(), Error> {
+        if self.flags.validate_team {
+            self.validate_team(&mut team)
+                .wrap_error_with_message("invalid team")?;
+        }
         let (side, player) = self
             .player_ids
             .get(player)

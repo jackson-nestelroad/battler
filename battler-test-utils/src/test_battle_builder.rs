@@ -7,6 +7,7 @@ use ahash::{
 use battler::{
     battle::{
         BattleBuilder,
+        BattleBuilderFlags,
         BattleBuilderOptions,
         BattleBuilderPlayerData,
         BattleBuilderSideData,
@@ -21,7 +22,6 @@ use battler::{
         PublicCoreBattle,
         WildPlayerOptions,
     },
-    battler_error,
     common::{
         Error,
         FastHashMap,
@@ -43,7 +43,6 @@ pub struct TestBattleBuilder {
     options: BattleBuilderOptions,
     engine_options: CoreBattleEngineOptions,
     teams: FastHashMap<String, TeamData>,
-    validate_team: bool,
     controlled_rng: bool,
     infinite_bags: bool,
 }
@@ -68,10 +67,12 @@ impl TestBattleBuilder {
                     name: "Side 2".to_string(),
                     players: Vec::new(),
                 },
+                flags: BattleBuilderFlags {
+                    validate_team: true,
+                },
             },
             engine_options: CoreBattleEngineOptions::default(),
             teams: FastHashMap::new(),
-            validate_team: true,
             controlled_rng: false,
             infinite_bags: false,
         }
@@ -91,15 +92,7 @@ impl TestBattleBuilder {
 
         let mut builder = BattleBuilder::new(self.options, data)?;
 
-        for (player_id, mut team) in self.teams {
-            if self.validate_team {
-                let validation = builder.validate_team(&mut team);
-                if let Err(error) = validation {
-                    return Err(battler_error!(
-                        "team for player {player_id} is invalid: {error}"
-                    ));
-                }
-            }
+        for (player_id, team) in self.teams {
             builder.update_team(&player_id, team)?;
         }
 
@@ -156,7 +149,7 @@ impl TestBattleBuilder {
     }
 
     pub fn with_team_validation(mut self, team_validation: bool) -> Self {
-        self.validate_team = team_validation;
+        self.options.flags.validate_team = team_validation;
         self
     }
 

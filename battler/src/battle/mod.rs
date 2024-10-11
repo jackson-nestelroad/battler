@@ -46,6 +46,7 @@ pub use action::{
 };
 pub use battle_builder::{
     BattleBuilder,
+    BattleBuilderFlags,
     BattleBuilderOptions,
     BattleBuilderPlayerData,
     BattleBuilderSideData,
