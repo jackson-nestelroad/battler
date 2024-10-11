@@ -148,19 +148,6 @@ impl<'d> PublicCoreBattle<'d> {
         self.internal.new_logs()
     }
 
-    /// Logs a new battle event to the battle log.
-    pub fn log(&mut self, event: Event) {
-        self.internal.log(event)
-    }
-
-    /// Logs many battle events to the battle log.
-    pub fn log_many<I>(&mut self, events: I)
-    where
-        I: IntoIterator<Item = Event>,
-    {
-        self.internal.log_many(events)
-    }
-
     /// Starts the battle.
     pub fn start(&mut self) -> Result<(), Error> {
         self.internal.start()
