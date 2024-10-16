@@ -16,10 +16,10 @@ use zone_alloc_strong_handle_derive::StrongHandle;
 
 use crate::{
     battle::Mon,
-    battler_error,
-    common::{
+    error::{
+        general_error,
+        ConvertError,
         Error,
-        WrapResultError,
     },
     moves::Move,
 };
@@ -89,14 +89,14 @@ impl BattleRegistry {
     pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>, Error> {
         self.mons
             .get(mon)
-            .wrap_error_with_format(format_args!("failed to access Mon {mon}"))
+            .map_err(|err| err.convert_error_with_message(format!("mon {mon}")))
     }
 
     /// Returns a mutable reference to the [`Mon`] by [`MonHandle`].
     pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>, Error> {
         self.mons
             .get_mut(mon)
-            .wrap_error_with_format(format_args!("failed to access Mon {mon}"))
+            .map_err(|err| err.convert_error_with_message(format!("mon {mon}")))
     }
 
     fn next_active_move_handle(&mut self) -> MoveHandle {
@@ -120,9 +120,9 @@ impl BattleRegistry {
             Ok(active_move) => Ok(active_move),
             _ => match self.last_turn_moves.get(&mov) {
                 Ok(active_move) => Ok(active_move),
-                _ => Err(battler_error!(
-                    "access move {mov} does not exist in this turn or last turn"
-                )),
+                _ => Err(general_error(format!(
+                    "active move {mov} does not exist in this turn or last turn",
+                ))),
             },
         }
     }
@@ -135,9 +135,9 @@ impl BattleRegistry {
             Ok(active_move) => Ok(active_move),
             _ => match self.last_turn_moves.get_mut(&mov) {
                 Ok(active_move) => Ok(active_move),
-                _ => Err(battler_error!(
-                    "access move {mov} does not exist in this turn or last turn"
-                )),
+                _ => Err(general_error(format!(
+                    "active move {mov} does not exist in this turn or last turn",
+                ))),
             },
         }
     }
@@ -152,7 +152,7 @@ impl BattleRegistry {
             result @ _ => {
                 return result
                     .map(|_| ())
-                    .wrap_error_with_format(format_args!("failed to borrow active move {mov}"))
+                    .map_err(|err| err.convert_error_with_message(format!("active move {mov}")))
             }
         }
         Ok(())
@@ -166,7 +166,7 @@ impl BattleRegistry {
         // We detach element references in context chains, so we must check at runtime that no
         // dangling references will exist.
         if !self.last_turn_moves.safe_to_drop() {
-            return Err(battler_error!("cannot advance battle registry to the next turn: last_turn_moves is not safe to drop"));
+            return Err(general_error("cannot advance battle registry to the next turn: last_turn_moves is not safe to drop"));
         }
         mem::swap(&mut self.last_turn_moves, &mut self.this_turn_moves);
         self.this_turn_moves = MoveRegistry::new();

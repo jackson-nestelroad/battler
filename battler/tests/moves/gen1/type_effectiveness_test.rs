@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::Error,
+    error::Error,
     dex::{
         DataStore,
         LocalDataStore,
@@ -75,9 +75,9 @@ fn quad_super_effective() {
     .unwrap();
     let mut battle = make_battle(&data, team_1, team_2, 0).unwrap();
 
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -133,9 +133,9 @@ fn quad_resisted() {
     .unwrap();
     let mut battle = make_battle(&data, team_1, team_2, 0).unwrap();
 
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -191,9 +191,9 @@ fn type_immune() {
     .unwrap();
     let mut battle = make_battle(&data, team_1, team_2, 0).unwrap();
 
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

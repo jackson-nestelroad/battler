@@ -14,9 +14,9 @@ use serde::{
     Serializer,
 };
 
-use crate::{
-    battler_error,
-    common::Error,
+use crate::error::{
+    general_error,
+    Error,
 };
 
 /// How the user self destructs after a move.
@@ -42,7 +42,9 @@ impl FromStr for SelfDestructType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "ifhit" => Ok(Self::IfHit),
-            _ => Err(battler_error!("invalid self destruct type: \"{s}\"")),
+            _ => Err(general_error(format!(
+                "invalid self destruct type: \"{s}\""
+            ))),
         }
     }
 }

@@ -11,9 +11,9 @@ use serde::{
     Serializer,
 };
 
-use crate::{
-    battler_error,
-    common::Error,
+use crate::error::{
+    general_error,
+    Error,
 };
 
 /// The number of hits done by a multihit move.
@@ -44,8 +44,8 @@ impl TryFrom<&[u8]> for MultihitType {
     type Error = Error;
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         if value.len() != 2 {
-            return Err(battler_error!(
-                "multihit range must contain exactly 2 elements"
+            return Err(general_error(
+                "multihit range must contain exactly 2 elements",
             ));
         }
         Ok(Self::Range(value[0], value[1]))

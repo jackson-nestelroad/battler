@@ -5,7 +5,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -90,10 +90,10 @@ fn aguav_berry_heals_one_third_hp() {
     let mut team = blaziken().unwrap();
     team.members[0].item = Some("Aguav Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -121,10 +121,10 @@ fn aguav_berry_causes_confusion_to_special_defense_dropping_natures() {
     team.members[0].item = Some("Aguav Berry".to_owned());
     team.members[0].nature = Nature::Naughty;
     let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -153,12 +153,12 @@ fn gluttony_eats_aguav_berry_early() {
     team.members[0].item = Some("Aguav Berry".to_owned());
     team.members[0].ability = "Gluttony".to_owned();
     let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -184,15 +184,15 @@ fn aguav_berry_can_be_used_from_bag() {
     let mut team = blaziken().unwrap();
     team.members[0].nature = Nature::Naughty;
     let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item aguavberry,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

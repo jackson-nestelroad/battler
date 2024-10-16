@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -85,16 +85,16 @@ fn make_battle(
 fn protect_gives_user_invulnerability_with_decreasing_chance() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -135,12 +135,12 @@ fn protect_gives_user_invulnerability_with_decreasing_chance() {
 fn protect_cancels_outrage() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, aggron().unwrap(), aggron().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

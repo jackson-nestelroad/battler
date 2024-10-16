@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -106,18 +106,18 @@ fn aromatherapy_cures_all_statuses_on_side() {
         team().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -182,15 +182,15 @@ fn aromatherapy_activates_ally_sap_sipper() {
     user.members[1].ability = "Sap Sipper".to_owned();
     user.members[2].ability = "Sap Sipper".to_owned();
     let mut battle = make_battle(&data, BattleType::Doubles, 0, user, team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

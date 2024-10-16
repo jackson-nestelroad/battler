@@ -1,17 +1,16 @@
-use assert_matches::assert_matches;
 use battler::{
     battle::{
         BattleType,
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
     teams::TeamData,
 };
@@ -64,7 +63,7 @@ fn make_battle(
 fn pressure_deducts_extra_pp_from_opponent() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, dusclops().unwrap(), dusclops().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -82,10 +81,10 @@ fn pressure_deducts_extra_pp_from_opponent() {
     .unwrap();
     assert_logs_since_start_eq(&battle, &expected_logs);
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    assert_matches!(battle.player_data("player-1"), Ok(data) => {
+    assert_matches::assert_matches!(battle.player_data("player-1"), Ok(data) => {
         assert_eq!(data.mons[0].moves[0].pp, 13);
     });
 }

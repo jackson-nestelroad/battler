@@ -44,15 +44,12 @@ use crate::{
         Side,
         SpeedOrderable,
     },
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
         Fraction,
         Id,
         Identifiable,
-        WrapResultError,
     },
     dex::Dex,
     effect::{
@@ -60,6 +57,12 @@ use crate::{
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
     },
     log::{
         Event,
@@ -716,7 +719,7 @@ impl Mon {
             name: context.mon().name.clone(),
             player_id: context.player().id.clone(),
             side_position: Self::position_on_side(context)
-                .wrap_error_with_message("expected mon to be active")?
+                .wrap_expectation("expected mon to be active")?
                 + 1,
             health: if secret {
                 context.mon().actual_health()
@@ -884,8 +887,8 @@ impl Mon {
     ) -> Result<isize, Error> {
         let mon = context.mon();
         let mon_side = mon.side;
-        let mon_position = Self::position_on_side(context)
-            .wrap_error_with_message("expected mon to have a position")?;
+        let mon_position =
+            Self::position_on_side(context).wrap_expectation("expected mon to have a position")?;
 
         // Note that this calculation assumes that both sides have the same amount of players,
         // but battles are not required to validate this. Nonetheless, this calculation is still
@@ -900,9 +903,9 @@ impl Mon {
         let mons_per_side = context.battle().max_side_length();
 
         if target_position >= mons_per_side {
-            return Err(battler_error!(
-                "target position {target_position} is out of bounds"
-            ));
+            return Err(general_error(format!(
+                "target position {target_position} is out of bounds",
+            )));
         }
 
         Ok(Self::relative_location(
@@ -916,7 +919,7 @@ impl Mon {
     /// Gets the target Mon based on this Mon's position.
     pub fn get_target(context: &mut MonContext, target: isize) -> Result<Option<MonHandle>, Error> {
         if target == 0 {
-            return Err(battler_error!("target cannot be 0"));
+            return Err(general_error("target cannot be 0"));
         }
         let mut side_context = context.pick_side_context(target < 0)?;
         let position = (target.abs() - 1) as usize;
@@ -931,7 +934,7 @@ impl Mon {
         let target_context = context.as_battle_context_mut().mon_context(target)?;
         let target_side = target_context.mon().side;
         let target_position = Self::position_on_side(&target_context)
-            .wrap_error_with_message("expected target to have a position")?
+            .wrap_expectation("expected target to have a position")?
             + 1;
         if target_side == context.mon().side {
             Ok(-(target_position as isize))
@@ -962,7 +965,9 @@ impl Mon {
         if side != other_side {
             let mons_per_side = context.battle().max_side_length();
             if position >= mons_per_side {
-                return Err(battler_error!("mon position {position} is out of bounds"));
+                return Err(general_error(format!(
+                    "mon position {position} is out of bounds"
+                )));
             }
             // Flip the position.
             other_position = mons_per_side - other_position - 1;
@@ -1048,8 +1053,8 @@ impl Mon {
         let stat_user = stat_user.unwrap_or(context.mon_handle());
 
         if stat == Stat::HP {
-            return Err(battler_error!(
-                "HP should be read directly, not by calling get_stat"
+            return Err(general_error(
+                "HP should be read directly, not by calling get_stat",
             ));
         }
 
@@ -1395,7 +1400,6 @@ impl Mon {
                     .dex
                     .moves
                     .get_by_id(learnable_move)
-                    .into_result()
                     .wrap_error_with_format(format_args!(
                         "move id {} was not found in the move dex for learning a move",
                         learnable_move,
@@ -1619,13 +1623,14 @@ impl Mon {
             *self
                 .base_move_slots
                 .get_mut(index)
-                .wrap_error_with_format(format_args!("no move slot in index {index}"))? =
+                .wrap_not_found_error_with_format(format_args!("move slot in index {index}"))? =
                 new_move_slot.clone();
         }
         *self
             .move_slots
             .get_mut(index)
-            .wrap_error_with_format(format_args!("no move slot in index {index}"))? = new_move_slot;
+            .wrap_not_found_error_with_format(format_args!("move slot in index {index}"))? =
+            new_move_slot;
         Ok(())
     }
 
@@ -1669,8 +1674,8 @@ impl Mon {
                     disabled: false,
                 }]));
             }
-            return Err(battler_error!(
-                "Mon's locked move {locked_move} does not exist in its moveset"
+            return Err(general_error(
+                "Mon's locked move {locked_move} does not exist in its moveset",
             ));
         }
 

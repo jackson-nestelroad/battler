@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -84,13 +84,13 @@ fn make_battle(
 fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, mudkip().unwrap(), shroomish().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(4, 29)]);
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -114,13 +114,13 @@ fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
 fn effect_spore_causing_attacker_to_fall_asleep_cancels_multi_hit_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, mudkip().unwrap(), shroomish().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(5, 10)]);
 
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

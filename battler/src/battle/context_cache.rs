@@ -13,10 +13,10 @@ use crate::{
         MonHandle,
         MoveHandle,
     },
-    common::{
+    common::FastHashMap,
+    error::{
         Error,
-        FastHashMap,
-        WrapResultError,
+        WrapOptionError,
     },
     moves::Move,
 };
@@ -58,7 +58,9 @@ impl<'borrow> ContextCache<'borrow> {
         if mons.contains_key(&mon_handle) {
             return mons
                 .get_mut(&mon_handle)
-                .wrap_error_with_format(format_args!("expected Mon {mon_handle} to exist in cache"))
+                .wrap_expectation_with_format(format_args!(
+                    "expected Mon {mon_handle} to exist in cache"
+                ))
                 .map(|mon| mon.as_mut());
         }
         // SAFETY: This should always succeed, assuming that a Mon was not incorrectly borrowed
@@ -73,7 +75,7 @@ impl<'borrow> ContextCache<'borrow> {
         mons.insert(mon_handle, mon);
         let mon = mons
             .get_mut(&mon_handle)
-            .wrap_error_with_format(format_args!(
+            .wrap_expectation_with_format(format_args!(
                 "expected Mon {mon_handle} to have been inserted"
             ))?;
         Ok(mon.as_mut())
@@ -91,7 +93,7 @@ impl<'borrow> ContextCache<'borrow> {
         if moves.contains_key(&move_handle) {
             return moves
                 .get_mut(&move_handle)
-                .wrap_error_with_format(format_args!(
+                .wrap_expectation_with_format(format_args!(
                     "expected active move {move_handle} to exist in cache"
                 ))
                 .map(|mov| mov.as_mut());
@@ -108,7 +110,7 @@ impl<'borrow> ContextCache<'borrow> {
         moves.insert(move_handle, mov);
         let mov = moves
             .get_mut(&move_handle)
-            .wrap_error_with_format(format_args!(
+            .wrap_expectation_with_format(format_args!(
                 "expected active move {move_handle} to have been inserted"
             ))?;
         Ok(mov.as_mut())

@@ -7,12 +7,12 @@ use serde::{
 
 use crate::{
     battle::BattleType,
-    common::Error,
     config::{
         RuleSet,
         SerializedRuleSet,
     },
     dex::Dex,
+    error::Error,
 };
 
 /// Customizable options for any format.

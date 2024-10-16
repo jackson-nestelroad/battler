@@ -6,15 +6,16 @@ use zone_alloc::{
 };
 
 use crate::{
-    battler_error,
-    common::{
-        Error,
-        Id,
-    },
+    common::Id,
     dex::{
-        DataLookupResult,
         DataStore,
         DataTable,
+    },
+    error::{
+        general_error,
+        ConvertError,
+        Error,
+        NotFoundError,
     },
 };
 
@@ -31,13 +32,13 @@ pub trait ResourceLookup<'d, T> {
     /// Looks up a resource by ID.
     ///
     /// The ID is guaranteed to not be an alias.
-    fn lookup(&self, id: &Id) -> DataLookupResult<T>;
+    fn lookup(&self, id: &Id) -> Result<T, Error>;
 
     /// Looks up a resource by alias and its real ID.
     ///
     /// `alias` is the original input. `real_id` is the end of the alias chain, as defined in
     /// [`DataStore`].
-    fn lookup_alias(&self, _alias: &Id, real_id: &Id) -> DataLookupResult<T> {
+    fn lookup_alias(&self, _alias: &Id, real_id: &Id) -> Result<T, Error> {
         self.lookup(real_id)
     }
 }
@@ -104,46 +105,58 @@ where
         }
     }
 
-    fn cache_data(&self, id: &Id) -> DataLookupResult<()> {
+    fn cache_data(&self, id: &Id) -> Result<(), Error> {
         let data = self.lookup_data_by_id(id)?;
         let resource = W::wrap(id.clone(), data);
         if !self.cache.save(id, resource) {
-            DataLookupResult::Error(battler_error!("failed to save data for {id} in cache"))
+            Err(general_error(format!(
+                "failed to save data for {id} in cache"
+            )))
         } else {
-            DataLookupResult::Found(())
+            Ok(())
         }
     }
 
     /// Retrieves a resource by name.
-    pub fn get(&self, name: &str) -> DataLookupResult<ElementRef<T>> {
+    pub fn get(&self, name: &str) -> Result<ElementRef<T>, Error> {
         self.get_by_id(&Id::from(name))
     }
 
     /// Retrieves a resource by ID.
-    pub fn get_by_id(&self, id: &Id) -> DataLookupResult<ElementRef<T>> {
+    pub fn get_by_id(&self, id: &Id) -> Result<ElementRef<T>, Error> {
         let id = self.resolve_alias(id.clone())?;
         // The borrow checker struggles if we use pattern matching here, so we have to do two
         // lookups.
         if self.cache.is_cached(&id) {
-            return self.cache.get(&id).into();
+            return self
+                .cache
+                .get(&id)
+                .map_err(|err| err.convert_error_with_message(format!("cached resource {id}")));
         }
         self.cache_data(&id)?;
-        self.cache.get(&id).into()
+        self.cache
+            .get(&id)
+            .map_err(|err| err.convert_error_with_message(format!("cached resource {id}")))
     }
 
-    fn resolve_alias(&self, mut id: Id) -> DataLookupResult<Id> {
+    fn resolve_alias(&self, mut id: Id) -> Result<Id, Error> {
         loop {
             match self.data.translate_alias(&id) {
-                DataLookupResult::NotFound => return DataLookupResult::Found(id),
-                DataLookupResult::Found(alias) => id = alias,
-                DataLookupResult::Error(error) => return DataLookupResult::Error(error),
+                Ok(alias) => id = alias,
+                Err(error) => {
+                    if error.as_ref().is::<NotFoundError>() {
+                        return Ok(id);
+                    } else {
+                        return Err(error);
+                    }
+                }
             }
         }
     }
 
     /// Looks up a resource by ID using the internal [`ResourceLookup`] implementation.
-    fn lookup_data_by_id(&self, id: &Id) -> DataLookupResult<D> {
-        DataLookupResult::Found(self.lookup.lookup(&id)?)
+    fn lookup_data_by_id(&self, id: &Id) -> Result<D, Error> {
+        self.lookup.lookup(&id)
     }
 }
 
@@ -212,16 +225,15 @@ mod dex_tests {
         common::{
             FastHashMap,
             Id,
-            LookupResult,
         },
         dex::{
-            DataLookupResult,
             DataStore,
             FakeDataStore,
             ResourceDex,
             ResourceLookup,
             ResourceWrapper,
         },
+        error::Error,
     };
 
     #[derive(Debug, Clone, PartialEq)]
@@ -247,13 +259,13 @@ mod dex_tests {
             }
         }
 
-        fn lookup(&self, id: &Id) -> DataLookupResult<TestData> {
+        fn lookup(&self, id: &Id) -> Result<TestData, Error> {
             *self
                 .lookup_calls
                 .borrow_mut()
                 .entry(id.clone())
                 .or_default() += 1;
-            LookupResult::Found(TestData {
+            Ok(TestData {
                 id: id.clone(),
                 numeric_id: random(),
             })

@@ -6,18 +6,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -110,10 +109,10 @@ fn forfeit_ends_singles_battle() {
         team().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "forfeit"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -136,13 +135,13 @@ fn forfeit_ends_doubles_battle() {
         team().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1;forfeit"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,1;move 0,1"),
         Ok(())
     );
@@ -170,19 +169,19 @@ fn forfeit_ends_multi_battle() {
         team().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "forfeit"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0,2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-3", "move 0,1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-4", "move 0,1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1"),
-        "cannot move: you left the battle",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you left the battle")
     );
-    assert_eq!(battle.set_player_choice("player-2", "forfeit"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-3", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-4", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -223,15 +222,15 @@ fn forfeit_order_determined_by_time() {
         team().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "forfeit"), Ok(()));
     std::thread::sleep(Duration::from_secs(1));
-    assert_eq!(battle.set_player_choice("player-3", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "forfeit"), Ok(()));
     std::thread::sleep(Duration::from_secs(1));
-    assert_eq!(battle.set_player_choice("player-4", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "forfeit"), Ok(()));
     std::thread::sleep(Duration::from_secs(1));
-    assert_eq!(battle.set_player_choice("player-2", "forfeit"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "forfeit"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

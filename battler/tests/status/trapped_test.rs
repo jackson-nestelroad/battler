@@ -4,18 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -108,18 +107,18 @@ fn make_battle(
 fn trapped_mon_cannot_switch_out_while_source_is_active() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        "cannot switch: Pikachu is trapped",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: Pikachu is trapped")
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -149,12 +148,12 @@ fn trapped_mon_cannot_switch_out_while_source_is_active() {
 fn ghost_types_resist_trapping() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

@@ -1,13 +1,13 @@
 use crate::{
-    battler_error,
-    common::{
-        Error,
-        WrapResultError,
-    },
     effect::fxlang::{
         effect::Program,
         statement_parser::StatementParser,
         tree,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapResultError,
     },
 };
 
@@ -63,10 +63,10 @@ impl ProgramParser {
 
     fn down_one_level(&mut self) -> Result<(), Error> {
         if self.depth == Self::MAX_DEPTH {
-            Err(battler_error!(
+            Err(general_error(format!(
                 "exceeded maximum depth of {}",
-                Self::MAX_DEPTH
-            ))
+                Self::MAX_DEPTH,
+            )))
         } else {
             self.depth += 1;
             Ok(())
@@ -81,10 +81,10 @@ impl ProgramParser {
 
     fn down_one_line(&mut self) -> Result<(), Error> {
         if self.line > Self::MAX_LENGTH {
-            Err(battler_error!(
+            Err(general_error(format!(
                 "program too long: exceeded maximum length of {}",
-                Self::MAX_LENGTH
-            ))
+                Self::MAX_LENGTH,
+            )))
         } else {
             self.line += 1;
             Ok(())
@@ -95,7 +95,7 @@ impl ProgramParser {
         let block = self.parse_program(program)?;
         match block {
             ParsedProgramBlock::Leaf(tree::Statement::Empty) => {
-                return Err(battler_error!("program cannot be empty"))
+                return Err(general_error("program cannot be empty"))
             }
             _ => (),
         }
@@ -139,10 +139,7 @@ mod program_parser_tests {
     use pretty_assertions::assert_eq;
 
     use crate::{
-        common::{
-            assert_error_message,
-            Fraction,
-        },
+        common::Fraction,
         effect::fxlang::{
             tree,
             ParsedProgram,
@@ -152,15 +149,15 @@ mod program_parser_tests {
 
     #[test]
     fn fails_empty_program() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             ParsedProgram::from(&serde_json::from_str(r#""""#).unwrap()),
-            "program cannot be empty",
+            Err(err) => assert_eq!(err.full_description(), "program cannot be empty")
         )
     }
 
     #[test]
     fn fails_comment_only() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             ParsedProgram::from(
                 &serde_json::from_str(
                     r#"
@@ -169,7 +166,7 @@ mod program_parser_tests {
                 )
                 .unwrap(),
             ),
-            "program cannot be empty",
+            Err(err) => assert_eq!(err.full_description(), "program cannot be empty")
         )
     }
 
@@ -183,15 +180,16 @@ mod program_parser_tests {
                     "#
                 )
                 .unwrap()
-            ),
-            Ok(ParsedProgram {
+            )
+            .unwrap(),
+            ParsedProgram {
                 block: ParsedProgramBlock::Leaf(tree::Statement::FunctionCall(
                     tree::FunctionCall {
                         function: tree::Identifier("function_call".to_owned()),
                         args: tree::Values(vec![]),
                     }
                 ))
-            })
+            }
         )
     }
 
@@ -210,8 +208,9 @@ mod program_parser_tests {
                     "#
                 )
                 .unwrap()
-            ),
-            Ok(ParsedProgram {
+            )
+            .unwrap(),
+            ParsedProgram {
                 block: ParsedProgramBlock::Branch(vec![
                     ParsedProgramBlock::Leaf(tree::Statement::FunctionCall(tree::FunctionCall {
                         function: tree::Identifier("function_1".to_owned()),
@@ -234,7 +233,7 @@ mod program_parser_tests {
                         })]),
                     })),
                 ])
-            })
+            }
         )
     }
 
@@ -259,8 +258,9 @@ mod program_parser_tests {
                     "#
                 )
                 .unwrap()
-            ),
-            Ok(ParsedProgram {
+            )
+            .unwrap(),
+            ParsedProgram {
                 block: ParsedProgramBlock::Branch(vec![
                     ParsedProgramBlock::Leaf(tree::Statement::IfStatement(tree::IfStatement(
                         tree::Expr::BinaryExpr(tree::BinaryExpr {
@@ -324,7 +324,7 @@ mod program_parser_tests {
                         ])
                     }))
                 ])
-            })
+            }
         )
     }
 
@@ -353,8 +353,9 @@ mod program_parser_tests {
                     "#
                 )
                 .unwrap()
-            ),
-            Ok(ParsedProgram {
+            )
+            .unwrap(),
+            ParsedProgram {
                 block: ParsedProgramBlock::Branch(vec![
                     ParsedProgramBlock::Leaf(tree::Statement::IfStatement(tree::IfStatement(
                         tree::Expr::Value(tree::Value::BoolLiteral(tree::BoolLiteral(true)))
@@ -410,13 +411,13 @@ mod program_parser_tests {
                         ]),
                     ])
                 ])
-            })
+            }
         )
     }
 
     #[test]
     fn fails_maximum_depth_exceeded() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             ParsedProgram::from(
                 &serde_json::from_str(
                     r#"
@@ -442,13 +443,13 @@ mod program_parser_tests {
                 )
                 .unwrap(),
             ),
-            "exceeded maximum depth of 6",
+            Err(err) => assert_eq!(err.full_description(), "exceeded maximum depth of 6")
         )
     }
 
     #[test]
     fn reports_invalid_statement() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             ParsedProgram::from(
                 &serde_json::from_str(
                     r#"
@@ -464,7 +465,7 @@ mod program_parser_tests {
                 )
                 .unwrap(),
             ),
-            "invalid statement on line 3: unexpected token at index 3: == (expected =)",
+            Err(err) => assert_eq!(err.full_description(), "invalid statement on line 3: unexpected token at index 3: == (expected =)")
         )
     }
 }

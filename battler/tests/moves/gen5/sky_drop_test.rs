@@ -4,18 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -77,19 +76,19 @@ fn make_battle(
 fn sky_drop_lifts_target_into_air_and_damages_on_next_turn() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,1;pass"),
-        "cannot move: Hawlucha does not have a move in slot 1",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: Hawlucha does not have a move in slot 1")
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -115,18 +114,18 @@ fn sky_drop_lifts_target_into_air_and_damages_on_next_turn() {
 fn sky_drop_prevents_target_from_moving() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 0,2"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 0,2"),
         Ok(())
     );
@@ -159,15 +158,15 @@ fn sky_drop_prevents_target_from_moving() {
 fn sky_drop_makes_target_and_user_invulnerable() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "move 1;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -207,13 +206,13 @@ fn sky_drop_makes_target_and_user_invulnerable() {
 fn sky_drop_target_and_user_vulnerable_to_gust() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 2,1;pass"),
         Ok(())
     );
@@ -239,18 +238,18 @@ fn sky_drop_target_and_user_vulnerable_to_gust() {
 fn sky_drop_canceled_if_user_faints_in_air() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 2,1;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 2,1;move 0,2"),
         Ok(())
     );
@@ -282,15 +281,15 @@ fn sky_drop_canceled_if_user_faints_in_air() {
 fn sky_drop_fails_on_second_turn_for_flying_type_target() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 0,1"),
         Ok(())
     );
@@ -321,13 +320,13 @@ fn sky_drop_fails_on_second_turn_for_flying_type_target() {
 fn follow_me_fails_during_sky_drop() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1;move 0,1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

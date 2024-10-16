@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -104,22 +104,22 @@ fn make_battle(
 fn spikes_damages_opposing_side_on_switch_in() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;switch 3"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1;switch 4"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;switch 3"),
         Ok(())
     );
@@ -188,12 +188,12 @@ fn spikes_damages_opposing_side_on_switch_in() {
 fn flying_types_avoid_spikes() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 4;pass"),
         Ok(())
     );
@@ -220,12 +220,12 @@ fn flying_types_avoid_spikes() {
 fn heavy_duty_boots_avoid_spikes() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 5;pass"),
         Ok(())
     );

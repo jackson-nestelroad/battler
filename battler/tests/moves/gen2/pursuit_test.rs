@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -115,13 +115,13 @@ fn make_battle(
 fn pursuit_works_without_switch() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -143,17 +143,17 @@ fn pursuit_runs_before_switch() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_battle(&data, 100, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;pass"),
         Ok(())
     );
@@ -184,17 +184,17 @@ fn multiple_pursuits_at_the_same_time() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_battle(&data, 100, dark_team().unwrap(), psychic_team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;move 0,2"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;switch 3"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

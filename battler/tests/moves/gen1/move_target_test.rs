@@ -4,12 +4,12 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    common::Id,
+    dex::DataStore,
+    error::{
         Error,
-        Id,
         WrapResultError,
     },
-    dex::DataStore,
     moves::{
         MoveData,
         MoveTarget,
@@ -91,10 +91,10 @@ fn can_hit_adjacent_ally() {
         test_move(MoveTarget::AdjacentAlly).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0,-2;pass"),
         Ok(())
     );
@@ -121,10 +121,10 @@ fn can_hit_adjacent_ally_or_user() {
         test_move(MoveTarget::AdjacentAllyOrUser).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0,-1;pass"),
         Ok(())
     );
@@ -151,10 +151,10 @@ fn can_hit_adjacent_foe() {
         test_move(MoveTarget::AdjacentFoe).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0,2;pass"),
         Ok(())
     );
@@ -181,10 +181,10 @@ fn can_hit_all_adjacent() {
         test_move(MoveTarget::AllAdjacent).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0;pass"),
         Ok(())
     );
@@ -217,10 +217,10 @@ fn can_hit_all_adjacent_foes() {
         test_move(MoveTarget::AllAdjacentFoes).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0;pass"),
         Ok(())
     );
@@ -250,10 +250,10 @@ fn can_hit_allies() {
         test_move(MoveTarget::Allies).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0;pass"),
         Ok(())
     );
@@ -280,10 +280,10 @@ fn can_hit_any() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     data.add_fake_move(Id::from("Test Move"), test_move(MoveTarget::Any).unwrap());
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0,1;pass"),
         Ok(())
     );
@@ -310,10 +310,10 @@ fn can_hit_normal() {
         test_move(MoveTarget::Normal).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0,2;pass"),
         Ok(())
     );
@@ -340,10 +340,10 @@ fn can_hit_random_normal() {
         test_move(MoveTarget::RandomNormal).unwrap(),
     );
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0;pass"),
         Ok(())
     );
@@ -367,10 +367,10 @@ fn can_hit_user() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     data.add_fake_move(Id::from("Test Move"), test_move(MoveTarget::User).unwrap());
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0;pass"),
         Ok(())
     );

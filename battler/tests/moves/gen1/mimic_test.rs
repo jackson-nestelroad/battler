@@ -6,14 +6,14 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
-        Error,
-        Id,
-        WrapResultError,
-    },
+    common::Id,
     dex::{
         DataStore,
         LocalDataStore,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
     moves::MoveTarget,
     teams::TeamData,
@@ -91,18 +91,18 @@ fn make_battle(
 fn mimic_overwrites_move_slot_as_volatile() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 2,1"),
         Ok(())
     );
@@ -127,11 +127,11 @@ fn mimic_overwrites_move_slot_as_volatile() {
             _ => false,
         }));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 2,1"),
         Ok(())
     );
@@ -156,20 +156,20 @@ fn mimic_overwrites_move_slot_as_volatile() {
             _ => false,
         }));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 1,1"),
         Ok(())
     );
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 0;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     assert!(battle
         .request_for_player("player-1")
@@ -191,11 +191,11 @@ fn mimic_overwrites_move_slot_as_volatile() {
             _ => false,
         }));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     assert!(battle
         .request_for_player("player-1")
@@ -217,13 +217,13 @@ fn mimic_overwrites_move_slot_as_volatile() {
             _ => false,
         }));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.player_data("player-1").unwrap().mons[0]
             .summary
             .moves[1]
@@ -296,28 +296,28 @@ fn mimic_overwrites_move_slot_as_volatile() {
 fn mimic_fails_on_moves_marked_fail_mimic() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "pass;move 1,1"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;switch 2"),
         Ok(())
     );
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,1;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

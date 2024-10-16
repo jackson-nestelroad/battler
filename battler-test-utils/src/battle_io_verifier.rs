@@ -10,7 +10,7 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },

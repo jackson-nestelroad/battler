@@ -49,13 +49,10 @@ use crate::{
         TeamPreviewRequest,
         TurnRequest,
     },
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         Id,
         Identifiable,
-        WrapResultError,
     },
     config::Format,
     dex::{
@@ -68,6 +65,12 @@ use crate::{
         EffectHandle,
         EffectManager,
         LinkedEffectsManager,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
     },
     items::ItemTarget,
     log::{
@@ -270,7 +273,7 @@ impl<'d> CoreBattle<'d> {
         let dex = Dex::new(data)?;
         let format_data = mem::replace(&mut options.format, None);
         let format = Format::new(
-            format_data.wrap_error_with_message("missing format field for new battle")?,
+            format_data.wrap_expectation("missing format field for new battle")?,
             &dex,
         )?;
         Self::from_builder(options, dex, format, engine_options)
@@ -367,13 +370,13 @@ impl<'d> CoreBattle<'d> {
     pub fn side(&self, side: usize) -> Result<&Side, Error> {
         self.sides
             .get(side)
-            .wrap_error_with_format(format_args!("side {side} does not exist"))
+            .wrap_not_found_error_with_format(format_args!("side {side}"))
     }
 
     pub fn side_mut(&mut self, side: usize) -> Result<&mut Side, Error> {
         self.sides
             .get_mut(side)
-            .wrap_error_with_format(format_args!("side {side} does not exist"))
+            .wrap_not_found_error_with_format(format_args!("side {side}"))
     }
 
     pub fn player_indices(&self) -> impl Iterator<Item = usize> {
@@ -391,13 +394,13 @@ impl<'d> CoreBattle<'d> {
     pub fn player(&self, player: usize) -> Result<&Player, Error> {
         self.players
             .get(player)
-            .wrap_error_with_format(format_args!("player {player} does not exist"))
+            .wrap_not_found_error_with_format(format_args!("player {player}"))
     }
 
     pub fn player_mut(&mut self, player: usize) -> Result<&mut Player, Error> {
         self.players
             .get_mut(player)
-            .wrap_error_with_format(format_args!("player {player} does not exist"))
+            .wrap_not_found_error_with_format(format_args!("player {player}"))
     }
 
     pub fn player_indices_on_side<'b>(&'b self, side: usize) -> impl Iterator<Item = usize> + 'b {
@@ -415,7 +418,7 @@ impl<'d> CoreBattle<'d> {
     fn player_index_by_id(&self, player_id: &str) -> Result<usize, Error> {
         self.player_ids
             .get(player_id)
-            .wrap_error_with_format(format_args!("{player_id} does not exist"))
+            .wrap_not_found_error_with_format(format_args!("player {player_id}"))
             .cloned()
     }
 
@@ -554,7 +557,7 @@ impl<'d> CoreBattle<'d> {
 
     fn continue_battle(&mut self) -> Result<(), Error> {
         if !self.ready_to_continue()? {
-            return Err(battler_error!("battle is not ready to continue"));
+            return Err(general_error("battle is not ready to continue"));
         }
         Self::continue_battle_internal(&mut self.context())
     }
@@ -659,7 +662,7 @@ impl<'d> CoreBattle<'d> {
 
     fn start_internal(context: &mut Context) -> Result<(), Error> {
         if context.battle().started {
-            return Err(battler_error!("battle already started"));
+            return Err(general_error("battle already started"));
         }
         context.battle_mut().started = true;
         context.battle_mut().in_pre_battle = true;
@@ -683,7 +686,7 @@ impl<'d> CoreBattle<'d> {
                         .format
                         .rules
                         .value(clause.id())
-                        .wrap_error_with_format(format_args!(
+                        .wrap_expectation_with_format(format_args!(
                             "expected {} to be present in ruleset",
                             clause.data.name
                         ))?;
@@ -691,7 +694,7 @@ impl<'d> CoreBattle<'d> {
                     Ok(rule_log)
                 })
             })
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<Vec<_>, Error>>()?;
         rule_logs.sort();
         context.battle_mut().log_many(
             rule_logs
@@ -818,7 +821,7 @@ impl<'d> CoreBattle<'d> {
                     Mon::public_details(&context)?,
                 ))
             })
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<Vec<_>, Error>>()?;
         context.battle_mut().log_many(events);
         match context.battle().format.rules.numeric_rules.picked_team_size {
             Some(picked_team_size) => context
@@ -923,7 +926,7 @@ impl<'d> CoreBattle<'d> {
             .battle_mut()
             .input_log
             .get_mut(&player)
-            .wrap_error_with_format(format_args!("input_log for player {player} does not exist"))?
+            .wrap_not_found_error_with_format(format_args!("input_log for player {player}"))?
             .insert(turn, input.to_owned());
 
         if context.battle().engine_options.auto_continue && Self::all_player_choices_done(context)?
@@ -989,8 +992,8 @@ impl<'d> CoreBattle<'d> {
     fn continue_battle_internal(context: &mut Context) -> Result<(), Error> {
         if !context.battle().engine_options.auto_continue {
             if !Self::all_player_choices_done(context)? {
-                return Err(battler_error!(
-                    "cannot continue: all players have not made their choice"
+                return Err(general_error(
+                    "cannot continue: all players have not made their choice",
                 ));
             }
             Self::commit_choices(context)?;
@@ -1116,7 +1119,7 @@ impl<'d> CoreBattle<'d> {
                     &mut context,
                     action
                         .active_move_handle
-                        .wrap_error_with_message("expected move action to have an active move")?,
+                        .wrap_expectation("expected move action to have an active move")?,
                     action.target,
                     action.original_target,
                 )?;
@@ -1191,7 +1194,7 @@ impl<'d> CoreBattle<'d> {
             }
             Action::LearnMove(action) => {
                 let mut context = context.mon_context(action.mon)?;
-                let request = Mon::learn_move_request(&mut context)?.wrap_error_with_format(format_args!("mon {} has no move to learn, even though we allowed the player to choose to learn a move", context.mon().name))?;
+                let request = Mon::learn_move_request(&mut context)?.wrap_expectation_with_format(format_args!("mon {} has no move to learn, even though we allowed the player to choose to learn a move", context.mon().name))?;
                 Mon::learn_move(&mut context, &request.id, action.forget_move_slot)?;
             }
             Action::Escape(action) => {
@@ -1436,17 +1439,12 @@ impl<'d> CoreBattle<'d> {
 
     fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<(), Error> {
         if let Action::Move(action) = action {
-            let mov = context
-                .battle()
-                .dex
-                .moves
-                .get_by_id(&action.id)
-                .into_result()?;
+            let mov = context.battle().dex.moves.get_by_id(&action.id)?;
             let priority = mov.data.priority as i32;
 
             let mut context = context.mon_context(action.mon_action.mon)?;
             let mut context =
-                context.active_move_context(action.active_move_handle.wrap_error_with_message(
+                context.active_move_context(action.active_move_handle.wrap_expectation(
                     "expected active move to exist on action for priority calculation",
                 )?)?;
             let mut context = context.user_applying_effect_context(None)?;
@@ -1572,12 +1570,7 @@ impl<'d> CoreBattle<'d> {
         target: Option<isize>,
         original_target: Option<MonHandle>,
     ) -> Result<Option<MonHandle>, Error> {
-        let mov = context
-            .battle()
-            .dex
-            .moves
-            .get_by_id(move_id)
-            .into_result()?;
+        let mov = context.battle().dex.moves.get_by_id(move_id)?;
         let tracks_target = mov.data.tracks_target;
         let move_target = mov.data.target.clone();
 
@@ -1626,11 +1619,8 @@ impl<'d> CoreBattle<'d> {
         item: &Id,
         target: Option<isize>,
     ) -> Result<Option<MonHandle>, Error> {
-        let item = context.battle().dex.items.get_by_id(item).into_result()?;
-        let item_target = item
-            .data
-            .target
-            .wrap_error_with_message("item is not usable")?;
+        let item = context.battle().dex.items.get_by_id(item)?;
+        let item_target = item.data.target.wrap_expectation("item is not usable")?;
 
         match item_target {
             ItemTarget::Active => {
@@ -1669,7 +1659,7 @@ impl<'d> CoreBattle<'d> {
         target_location: isize,
     ) -> Result<bool, Error> {
         if target_location == 0 {
-            return Err(battler_error!("target position cannot be 0"));
+            return Err(general_error("target position cannot be 0"));
         }
         let target_side = if target_location > 0 {
             context.foe_side().index
@@ -1938,29 +1928,30 @@ impl<'d> CoreBattle<'d> {
     /// handles the caching of this translation.
     pub fn get_effect_handle_by_id(&mut self, id: &Id) -> Result<&EffectHandle, Error> {
         if self.effect_handle_cache.contains_key(id) {
-            return self.effect_handle_cache.get(id).wrap_error_with_message(
-                "effect handle not found in cache after its key was found",
-            );
+            return self
+                .effect_handle_cache
+                .get(id)
+                .wrap_expectation("effect handle not found in cache after its key was found");
         }
 
         let effect_handle = Self::lookup_effect_in_dex(self, id.clone());
         self.effect_handle_cache.insert(id.clone(), effect_handle);
         self.effect_handle_cache
             .get(id)
-            .wrap_error_with_message("effect handle not found in cache after insertion")
+            .wrap_expectation("effect handle not found in cache after insertion")
     }
 
     fn lookup_effect_in_dex(&self, id: Id) -> EffectHandle {
-        if self.dex.conditions.get_by_id(&id).into_option().is_some() {
+        if self.dex.conditions.get_by_id(&id).is_ok() {
             return EffectHandle::Condition(id);
         }
-        if self.dex.moves.get_by_id(&id).into_option().is_some() {
+        if self.dex.moves.get_by_id(&id).is_ok() {
             return EffectHandle::MoveCondition(id);
         }
-        if self.dex.abilities.get_by_id(&id).into_option().is_some() {
+        if self.dex.abilities.get_by_id(&id).is_ok() {
             return EffectHandle::AbilityCondition(id);
         }
-        if self.dex.items.get_by_id(&id).into_option().is_some() {
+        if self.dex.items.get_by_id(&id).is_ok() {
             return EffectHandle::ItemCondition(id);
         }
         EffectHandle::NonExistent(id)
@@ -1981,30 +1972,25 @@ impl<'d> CoreBattle<'d> {
                 ))
             }
             EffectHandle::MoveCondition(id) => Ok(Effect::for_move_condition(
-                context.battle().dex.moves.get_by_id(id).into_result()?,
+                context.battle().dex.moves.get_by_id(id)?,
             )),
             EffectHandle::InactiveMove(id) => Ok(Effect::for_inactive_move(
-                context.battle().dex.moves.get_by_id(id).into_result()?,
+                context.battle().dex.moves.get_by_id(id)?,
             )),
             EffectHandle::Ability(id) => Ok(Effect::for_ability(
-                context.battle().dex.abilities.get_by_id(id).into_result()?,
+                context.battle().dex.abilities.get_by_id(id)?,
             )),
             EffectHandle::AbilityCondition(id) => Ok(Effect::for_ability_condition(
-                context.battle().dex.abilities.get_by_id(id).into_result()?,
+                context.battle().dex.abilities.get_by_id(id)?,
             )),
             EffectHandle::Condition(id) => Ok(Effect::for_condition(
-                context
-                    .battle()
-                    .dex
-                    .conditions
-                    .get_by_id(id)
-                    .into_result()?,
+                context.battle().dex.conditions.get_by_id(id)?,
             )),
-            EffectHandle::Item(id) => Ok(Effect::for_item(
-                context.battle().dex.items.get_by_id(id).into_result()?,
-            )),
+            EffectHandle::Item(id) => {
+                Ok(Effect::for_item(context.battle().dex.items.get_by_id(id)?))
+            }
             EffectHandle::ItemCondition(id) => Ok(Effect::for_item_condition(
-                context.battle().dex.items.get_by_id(id).into_result()?,
+                context.battle().dex.items.get_by_id(id)?,
             )),
             EffectHandle::NonExistent(id) => Ok(Effect::for_non_existent(id.clone())),
         }

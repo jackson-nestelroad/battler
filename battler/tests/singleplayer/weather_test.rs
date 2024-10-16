@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -73,7 +73,7 @@ fn battle_starts_with_rain() {
         pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -102,7 +102,7 @@ fn battle_starts_with_harsh_sunlight() {
         pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -131,7 +131,7 @@ fn battle_starts_with_sandstorm() {
         pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -160,7 +160,7 @@ fn battle_starts_with_hail() {
         pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -189,7 +189,7 @@ fn battle_starts_with_snow() {
         pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -218,18 +218,18 @@ fn battle_goes_back_to_default_weather() {
         pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

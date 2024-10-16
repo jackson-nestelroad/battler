@@ -1,15 +1,15 @@
 use ahash::HashMapExt;
 
 use crate::{
-    common::{
-        Error,
-        FastHashMap,
-        WrapResultError,
-    },
+    common::FastHashMap,
     effect::fxlang::{
         BattleEvent,
         Callbacks,
         ParsedProgram,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
 };
 

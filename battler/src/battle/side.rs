@@ -15,12 +15,12 @@ use crate::{
         SideContext,
     },
     common::{
-        Error,
         FastHashMap,
         Id,
     },
     dex::Dex,
     effect::fxlang,
+    error::Error,
 };
 
 /// Data about a single side of a battle.

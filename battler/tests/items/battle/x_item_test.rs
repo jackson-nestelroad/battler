@@ -4,18 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -77,10 +76,10 @@ fn make_battle(
 fn x_attack_boosts_attack() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -98,17 +97,17 @@ fn x_attack_boosts_attack() {
 fn x_attack_cannot_be_used_if_attack_is_maxed() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "item xattack"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack"),
-        "cannot use item: X Attack cannot be used on Pikachu",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: X Attack cannot be used on Pikachu")
     );
 }
 
@@ -116,19 +115,19 @@ fn x_attack_cannot_be_used_if_attack_is_maxed() {
 fn x_attack_cannot_target_another_mon() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,-1"),
-        "cannot use item: invalid target for X Attack",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for X Attack")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,0"),
-        "cannot use item: invalid target for X Attack",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for X Attack")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,1"),
-        "cannot use item: invalid target for X Attack",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for X Attack")
     );
 }
 
@@ -136,13 +135,13 @@ fn x_attack_cannot_target_another_mon() {
 fn max_mushrooms_boost_multiple_stats() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item Max Mushrooms"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -164,12 +163,12 @@ fn max_mushrooms_boost_multiple_stats() {
 fn x_attack_cannot_be_used_with_locked_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,-1"),
-        "cannot use item: Pikachu must use a move",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Pikachu must use a move")
     );
 }

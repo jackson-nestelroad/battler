@@ -16,9 +16,9 @@ use serde::{
     Serializer,
 };
 
-use crate::{
-    battler_error,
-    common::Error,
+use crate::error::{
+    general_error,
+    Error,
 };
 
 /// The type of user switch performed when using a move.
@@ -45,7 +45,7 @@ impl FromStr for SwitchType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "copyvolatile" => Ok(Self::CopyVolatile),
-            _ => Err(battler_error!("invalid user switch type: \"{s}\"")),
+            _ => Err(general_error(format!("invalid user switch type: \"{s}\""))),
         }
     }
 }

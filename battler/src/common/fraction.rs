@@ -36,7 +36,7 @@ use serde::{
     Serializer,
 };
 
-use crate::common::{
+use crate::error::{
     Error,
     WrapResultError,
 };
@@ -274,6 +274,7 @@ impl<I> FromStr for Fraction<I>
 where
     I: FractionInteger + FromStr + Display,
     <I as FromStr>::Err: Display,
+    <I as FromStr>::Err: Into<anyhow::Error>,
 {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {

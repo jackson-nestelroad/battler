@@ -20,14 +20,11 @@ use crate::{
         MoveOutcomeOnTarget,
         MoveSlot,
     },
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         Fraction,
         Id,
         Identifiable,
-        WrapResultError,
     },
     effect::{
         fxlang::{
@@ -35,6 +32,12 @@ use crate::{
             EvaluationContext,
         },
         EffectHandle,
+    },
+    error::{
+        general_error,
+        integer_overflow_error,
+        Error,
+        WrapOptionError,
     },
     mons::{
         Gender,
@@ -171,11 +174,11 @@ impl Value {
     }
 
     fn invalid_type(got: ValueType, expected: ValueType) -> Error {
-        battler_error!("got {got}, expected {expected}")
+        general_error(format!("got {got}, expected {expected}"))
     }
 
     fn incompatible_type(from: ValueType, to: ValueType) -> Error {
-        battler_error!("cannot convert from {from} to {to}")
+        general_error(format!("cannot convert from {from} to {to}"))
     }
 
     /// Checks if the value signals an early exit from an event perspective.
@@ -199,31 +202,29 @@ impl Value {
 
         match (self, value_type) {
             (Self::Fraction(val), ValueType::UFraction) => Ok(Value::UFraction(
-                val.try_convert()
-                    .wrap_error_with_message("integer overflow")?,
+                val.try_convert().map_err(integer_overflow_error)?,
             )),
             (Self::Fraction(val), ValueType::Accuracy) => {
                 Ok(Value::Accuracy(Accuracy::from(val.floor() as u8)))
             }
             (Self::UFraction(val), ValueType::Fraction) => Ok(Value::Fraction(
-                val.try_convert()
-                    .wrap_error_with_message("integer overflow")?,
+                val.try_convert().map_err(integer_overflow_error)?,
             )),
             (Self::UFraction(val), ValueType::Accuracy) => {
                 Ok(Value::Accuracy(Accuracy::from(val.floor() as u8)))
             }
             (Self::String(val), ValueType::MoveCategory) => Ok(Value::MoveCategory(
-                MoveCategory::from_str(val).wrap_error_with_message("invalid move category")?,
+                MoveCategory::from_str(val).map_err(general_error)?,
             )),
             (Self::String(val), ValueType::MoveTarget) => Ok(Value::MoveTarget(
-                MoveTarget::from_str(val).wrap_error_with_message("invalid move target")?,
+                MoveTarget::from_str(val).map_err(general_error)?,
             )),
-            (Self::String(val), ValueType::Type) => Ok(Value::Type(
-                Type::from_str(val).wrap_error_with_message("invalid type")?,
-            )),
-            (Self::String(val), ValueType::Accuracy) => Ok(Value::Accuracy(
-                Accuracy::from_str(val).wrap_error_with_message("invalid accuracy")?,
-            )),
+            (Self::String(val), ValueType::Type) => {
+                Ok(Value::Type(Type::from_str(val).map_err(general_error)?))
+            }
+            (Self::String(val), ValueType::Accuracy) => {
+                Ok(Value::Accuracy(Accuracy::from_str(val)?))
+            }
             _ => Err(Self::incompatible_type(self.value_type(), value_type)),
         }
     }
@@ -258,57 +259,55 @@ impl Value {
     pub fn integer_i32(self) -> Result<i32, Error> {
         self.integer_i64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into an [`i8`].
     pub fn integer_i8(self) -> Result<i8, Error> {
         self.integer_i64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u8`].
     pub fn integer_u8(self) -> Result<u8, Error> {
         self.integer_u64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u16`].
     pub fn integer_u16(self) -> Result<u16, Error> {
         self.integer_u64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u32`].
     pub fn integer_u32(self) -> Result<u32, Error> {
         self.integer_u64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into an [`isize`].
     pub fn integer_isize(self) -> Result<isize, Error> {
         self.integer_i64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`usize`].
     pub fn integer_usize(self) -> Result<usize, Error> {
         self.integer_u64()?
             .try_into()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`Fraction<u64>`].
     pub fn fraction_u64(self) -> Result<Fraction<u64>, Error> {
         match self {
-            Self::Fraction(val) => val
-                .try_convert()
-                .wrap_error_with_message("integer overflow"),
+            Self::Fraction(val) => val.try_convert().map_err(integer_overflow_error),
             Self::UFraction(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::UFraction)),
         }
@@ -318,7 +317,7 @@ impl Value {
     pub fn fraction_u16(self) -> Result<Fraction<u16>, Error> {
         self.fraction_u64()?
             .try_convert()
-            .wrap_error_with_message("integer overflow")
+            .map_err(integer_overflow_error)
     }
 
     /// Checks if the value is undefined.
@@ -359,12 +358,11 @@ impl Value {
     pub fn move_result(self) -> Result<MoveEventResult, Error> {
         match self {
             Self::Boolean(val) => Ok(MoveEventResult::from(val)),
-            Self::String(val) => MoveEventResult::from_str(&val)
-                .wrap_error_with_message("invalid move event result string"),
-            val @ _ => Err(battler_error!(
+            Self::String(val) => MoveEventResult::from_str(&val).map_err(general_error),
+            val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to a move event result",
-                val.value_type()
-            )),
+                val.value_type(),
+            ))),
         }
     }
 
@@ -384,10 +382,10 @@ impl Value {
             }
             Self::Effect(EffectHandle::InactiveMove(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(battler_error!(
+            val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to a move id",
-                val.value_type()
-            )),
+                val.value_type(),
+            ))),
         }
     }
 
@@ -396,10 +394,10 @@ impl Value {
         match self {
             Self::Effect(EffectHandle::Ability(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(battler_error!(
+            val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to an ability id",
-                val.value_type()
-            )),
+                val.value_type(),
+            ))),
         }
     }
 
@@ -408,10 +406,10 @@ impl Value {
         match self {
             Self::Effect(EffectHandle::Item(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(battler_error!(
+            val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to a item id",
-                val.value_type()
-            )),
+                val.value_type(),
+            ))),
         }
     }
 
@@ -427,9 +425,7 @@ impl Value {
     pub fn boost(self) -> Result<Boost, Error> {
         match self {
             Self::Boost(val) => Ok(val),
-            Self::String(val) => {
-                Boost::from_str(&val).wrap_error_with_message("invalid boost from string")
-            }
+            Self::String(val) => Boost::from_str(&val).map_err(general_error),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boost)),
         }
     }
@@ -446,9 +442,7 @@ impl Value {
     pub fn mon_type(self) -> Result<Type, Error> {
         match self {
             Self::Type(val) => Ok(val),
-            Self::String(val) => {
-                Type::from_str(&val).wrap_error_with_message("invalid type from string")
-            }
+            Self::String(val) => Type::from_str(&val).map_err(general_error),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Type)),
         }
     }
@@ -1384,11 +1378,11 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     fn invalid_unary_operation(operation: &str, val: ValueType) -> Error {
-        battler_error!("cannot apply {operation} on value of type {val}")
+        general_error(format!("cannot apply {operation} on value of type {val}"))
     }
 
     fn invalid_binary_operation(operation: &str, lhs: ValueType, rhs: ValueType) -> Error {
-        battler_error!("cannot {operation} {lhs} and {rhs}")
+        general_error(format!("cannot {operation} {lhs} and {rhs}"))
     }
 
     /// Implements negation.
@@ -1414,8 +1408,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         match self {
             Self::Fraction(val) => Ok(MaybeReferenceValue::Fraction(val)),
             Self::UFraction(val) => Ok(MaybeReferenceValue::Fraction(
-                val.try_convert()
-                    .wrap_error_with_message("integer overflow")?,
+                val.try_convert().map_err(integer_overflow_error)?,
             )),
             val @ _ => Err(Self::invalid_unary_operation(
                 "unary plus",
@@ -1428,32 +1421,20 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     pub fn pow(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.pow(
-                    rhs.try_convert::<u32>()
-                        .wrap_error_with_message("integer overflow")?,
-                )
-                .wrap_error_with_message("integer overflow")?,
+                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                    .map_err(integer_overflow_error)?,
             ),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.pow(
-                    rhs.try_convert::<u32>()
-                        .wrap_error_with_message("integer overflow")?,
-                )
-                .wrap_error_with_message("integer overflow")?,
+                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                    .map_err(integer_overflow_error)?,
             ),
             (Self::UFraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::UFraction(
-                lhs.pow(
-                    rhs.try_convert::<u32>()
-                        .wrap_error_with_message("integer overflow")?,
-                )
-                .wrap_error_with_message("integer overflow")?,
+                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                    .map_err(integer_overflow_error)?,
             ),
             (Self::UFraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
-                lhs.pow(
-                    rhs.try_convert::<u32>()
-                        .wrap_error_with_message("integer overflow")?,
-                )
-                .wrap_error_with_message("integer overflow")?,
+                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                    .map_err(integer_overflow_error)?,
             ),
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(
@@ -1472,11 +1453,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(lhs.wrapping_mul(&rhs))
             }
-            (Self::Fraction(lhs), Self::UFraction(rhs)) => {
-                MaybeReferenceValue::Fraction(lhs.wrapping_mul(
-                    &Fraction::try_convert(rhs).wrap_error_with_message("integer overflow")?,
-                ))
-            }
+            (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
+                lhs.wrapping_mul(&Fraction::try_convert(rhs).map_err(integer_overflow_error)?),
+            ),
             (Self::UFraction(lhs), Self::UFraction(rhs)) => {
                 MaybeReferenceValue::UFraction(lhs.wrapping_mul(&rhs))
             }
@@ -1496,14 +1475,10 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(lhs / rhs),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs / rhs
-                    .try_convert()
-                    .wrap_error_with_message("integer overflow")?,
+                lhs / rhs.try_convert().map_err(integer_overflow_error)?,
             ),
             (Self::UFraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.try_convert()
-                    .wrap_error_with_message("integer overflow")?
-                    / rhs,
+                lhs.try_convert().map_err(integer_overflow_error)? / rhs,
             ),
             (Self::UFraction(lhs), Self::UFraction(rhs)) => {
                 MaybeReferenceValue::UFraction(lhs / rhs)
@@ -1528,14 +1503,12 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Fraction(lhs), Self::UFraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(
                     lhs.floor()
-                        % TryInto::<i64>::try_into(rhs.floor())
-                            .wrap_error_with_message("integer overflow")?,
+                        % TryInto::<i64>::try_into(rhs.floor()).map_err(integer_overflow_error)?,
                 ))
             }
             (Self::UFraction(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(
-                    TryInto::<i64>::try_into(lhs.floor())
-                        .wrap_error_with_message("integer overflow")?
+                    TryInto::<i64>::try_into(lhs.floor()).map_err(integer_overflow_error)?
                         % rhs.floor(),
                 ))
             }
@@ -1560,10 +1533,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 MaybeReferenceValue::Fraction(lhs.wrapping_add(&rhs))
             }
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.wrapping_add(
-                    &rhs.try_convert()
-                        .wrap_error_with_message("integer overflow")?,
-                ),
+                lhs.wrapping_add(&rhs.try_convert().map_err(integer_overflow_error)?),
             ),
             (Self::UFraction(lhs), Self::UFraction(rhs)) => {
                 MaybeReferenceValue::UFraction(lhs.wrapping_add(&rhs))
@@ -1586,14 +1556,11 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 MaybeReferenceValue::Fraction(lhs.wrapping_sub(&rhs))
             }
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.wrapping_sub(
-                    &rhs.try_convert()
-                        .wrap_error_with_message("integer overflow")?,
-                ),
+                lhs.wrapping_sub(&rhs.try_convert().map_err(integer_overflow_error)?),
             ),
             (Self::UFraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 lhs.try_convert()
-                    .wrap_error_with_message("integer overflow")?
+                    .map_err(integer_overflow_error)?
                     .wrapping_sub(&rhs),
             ),
             (Self::UFraction(lhs), Self::UFraction(rhs)) => {
@@ -1640,7 +1607,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 ))
             }
         };
-        result.wrap_error_with_message("comparison yielded no result")
+        result.wrap_expectation("comparison yielded no result")
     }
 
     /// Implements less than comparison.
@@ -1873,8 +1840,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::StoredList(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
             (Self::TempList(lhs), rhs @ _) => Self::list_has_value(&lhs, rhs),
             _ => {
-                return Err(battler_error!(
-                    "left-hand side of has operator must be a list"
+                return Err(general_error(
+                    "left-hand side of has operator must be a list",
                 ));
             }
         };
@@ -1904,8 +1871,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempList(lhs), Self::StoredList(rhs)) => Self::list_has_any_value(&lhs, rhs),
             (Self::TempList(lhs), Self::TempList(rhs)) => Self::list_has_any_value(&lhs, &rhs),
             _ => {
-                return Err(battler_error!(
-                    "both operands to hasany operator must be a list"
+                return Err(general_error(
+                    "both operands to hasany operator must be a list",
                 ));
             }
         };
@@ -1964,10 +1931,10 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Str(val) => val.to_string(),
             Self::TempString(val) => val.clone(),
             _ => {
-                return Err(battler_error!(
+                return Err(general_error(format!(
                     "{} value is not string formattable",
-                    self.value_type()
-                ))
+                    self.value_type(),
+                )))
             }
         };
         Ok(string)

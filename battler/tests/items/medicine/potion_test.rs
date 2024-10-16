@@ -4,18 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -81,15 +80,15 @@ fn make_battle(
 fn potion_heals_20_hp() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -116,24 +115,24 @@ fn potion_heals_20_hp() {
 fn using_item_removes_from_bag() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        "cannot use item: bag contains no Potion",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: bag contains no Potion")
     );
 }
 
@@ -141,17 +140,17 @@ fn using_item_removes_from_bag() {
 fn potion_can_heal_inactive_mon() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -184,11 +183,11 @@ fn potion_can_heal_inactive_mon() {
 fn potion_fails_at_max_hp() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        "cannot use item: Potion cannot be used on Pikachu",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Potion cannot be used on Pikachu")
     );
 }
 
@@ -196,22 +195,22 @@ fn potion_fails_at_max_hp() {
 fn potion_fails_on_fainted_mon() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        "cannot use item: Potion cannot be used on Pikachu",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Potion cannot be used on Pikachu")
     );
 }
 
@@ -219,11 +218,11 @@ fn potion_fails_on_fainted_mon() {
 fn potion_fails_on_foe() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,1"),
-        "cannot use item: invalid target for Potion",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Potion")
     );
 }
 
@@ -231,14 +230,14 @@ fn potion_fails_on_foe() {
 fn embargo_prevents_potion_usage_from_bag() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        "cannot use item: Potion cannot be used on Pikachu",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Potion cannot be used on Pikachu")
     );
 }

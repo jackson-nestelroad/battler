@@ -24,12 +24,10 @@ use crate::{
         SpeedOrderable,
     },
     common::{
-        Error,
         FastHashSet,
         Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
-        WrapResultError,
     },
     effect::{
         fxlang::{
@@ -41,6 +39,10 @@ use crate::{
         AppliedEffectLocation,
         EffectHandle,
         EffectManager,
+    },
+    error::{
+        Error,
+        WrapOptionError,
     },
     mons::Type,
     moves::SecondaryEffect,
@@ -281,7 +283,7 @@ fn run_active_move_event(
                 context.as_battle_context_mut(),
                 event,
                 active_move_name,
-                &error.message(),
+                &error.to_string(),
             );
             None
         }
@@ -315,7 +317,7 @@ fn run_effect_event_by_handle(
                 context.battle_context_mut(),
                 event,
                 &effect_name,
-                &error.message(),
+                &error.to_string(),
             );
             fxlang::ProgramEvalResult::default()
         }
@@ -809,8 +811,8 @@ fn find_callbacks_on_side_on_mon(
     }
 
     if context.mon().active {
-        let slot = Mon::position_on_side(&context)
-            .wrap_error_with_message("expected target to be active")?;
+        let slot =
+            Mon::position_on_side(&context).wrap_expectation("expected target to be active")?;
         if let Some(slot_conditions) = context.side().slot_conditions.get(&slot).cloned() {
             for slot_condition in slot_conditions.keys() {
                 let slot_condition_handle = context
@@ -1649,7 +1651,7 @@ fn run_event_for_applying_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.message(),
+                &error.to_string(),
             );
             None
         }
@@ -1677,7 +1679,7 @@ fn run_event_for_mon_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.message(),
+                &error.to_string(),
             );
             None
         }
@@ -1707,7 +1709,7 @@ fn run_event_for_side_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.message(),
+                &error.to_string(),
             );
             None
         }
@@ -1737,7 +1739,7 @@ fn run_event_for_field_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.message(),
+                &error.to_string(),
             );
             None
         }
@@ -1761,7 +1763,7 @@ fn run_event_for_battle_internal(
     ) {
         Ok(value) => value,
         Err(error) => {
-            core_battle_logs::debug_full_event_failure(context, event, &error.message());
+            core_battle_logs::debug_full_event_failure(context, event, &error.to_string());
             None
         }
     }
@@ -1779,7 +1781,7 @@ fn run_event_for_residual_internal(context: &mut Context, event: fxlang::BattleE
     ) {
         Ok(_) => (),
         Err(error) => {
-            core_battle_logs::debug_full_event_failure(context, event, &error.message());
+            core_battle_logs::debug_full_event_failure(context, event, &error.to_string());
         }
     }
 }

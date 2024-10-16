@@ -4,18 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -79,23 +78,23 @@ fn make_battle(
 fn revive_revives_fainted_mon_to_half_health() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item revive,-2"),
-        "cannot use item: Revive cannot be used on Pichu",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Revive cannot be used on Pichu")
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item revive,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -147,23 +146,23 @@ fn revive_revives_fainted_mon_to_half_health() {
 fn max_revive_revives_fainted_mon_to_full_health() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item maxrevive,-2"),
-        "cannot use item: Max Revive cannot be used on Pichu",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Max Revive cannot be used on Pichu")
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item maxrevive,-1"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

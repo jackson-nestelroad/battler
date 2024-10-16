@@ -10,9 +10,11 @@ use crate::{
         PlayerData,
         SideData,
     },
-    battler_error,
-    common::Error,
     config::FormatData,
+    error::{
+        general_error,
+        Error,
+    },
     rng::{
         PseudoRandomNumberGenerator,
         RealPseudoRandomNumberGenerator,
@@ -174,23 +176,23 @@ impl CoreBattleOptions {
     fn validate_side(&self, format: &FormatData, side: &SideData) -> Result<(), Error> {
         let players_on_side = side.players.len();
         if players_on_side == 0 {
-            return Err(battler_error!("side {} has no players", side.name));
+            return Err(general_error(format!("side {} has no players", side.name)));
         }
         match format.battle_type {
             BattleType::Singles => {
                 if players_on_side > 1 {
-                    return Err(battler_error!(
+                    return Err(general_error(format!(
                         "side {} has too many players for a singles battle",
                         side.name
-                    ));
+                    )));
                 }
             }
             BattleType::Doubles => {
                 if players_on_side > 1 {
-                    return Err(battler_error!(
+                    return Err(general_error(format!(
                         "side {} has too many players for a doubles battle (did you mean to start a multi battle?)",
                         side.name
-                    ));
+                    )));
                 }
             }
             _ => (),
@@ -208,7 +210,7 @@ impl CoreBattleOptions {
         player: &PlayerData,
     ) -> Result<(), Error> {
         if player.team.members.is_empty() {
-            return Err(battler_error!("a player has an empty team"));
+            return Err(general_error("a player has an empty team"));
         }
         Ok(())
     }
@@ -218,7 +220,7 @@ impl BattleOptions for CoreBattleOptions {
     fn validate(&self) -> Result<(), Error> {
         match &self.format {
             Some(format) => self.validate_with_format(format),
-            None => Err(battler_error!("battle options has no format data")),
+            None => Err(general_error("battle options has no format data")),
         }
     }
 
@@ -261,14 +263,9 @@ mod battle_options_tests {
                 "Invalid result for {test_name}: {result:?}"
             );
             if let Some(expected_error_susbtr) = test_case.expected_error_substr {
-                assert!(
-                    result
-                        .clone()
-                        .err()
-                        .unwrap()
-                        .to_string()
-                        .contains(&expected_error_susbtr),
-                    "Missing error substring for {test_name}: {result:?}"
+                assert_matches::assert_matches!(
+                    result,
+                    Err(err) => assert!(err.full_description().contains(&expected_error_susbtr))
                 );
             }
         }

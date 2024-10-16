@@ -1,8 +1,5 @@
 use crate::{
-    common::{
-        Error,
-        Id,
-    },
+    common::Id,
     dex::{
         AbilityDex,
         ClauseDex,
@@ -13,6 +10,7 @@ use crate::{
         SingleValueDex,
         SpeciesDex,
     },
+    error::Error,
     mons::TypeChart,
     moves::MoveData,
 };

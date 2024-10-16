@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -93,10 +93,10 @@ fn make_battle(
 fn seismic_toss_does_damage_equal_to_level() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -114,10 +114,10 @@ fn seismic_toss_does_damage_equal_to_level() {
     let mut team = pikachu().unwrap();
     team.members[0].level = 75;
     let mut battle = make_battle(&data, 0, team, pikachu().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -139,17 +139,17 @@ fn psywave_applies_custom_damage_formula() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_battle(&data, 777294920103, pikachu().unwrap(), pikachu().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // These special boosts should do nothing.
-    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -168,19 +168,19 @@ fn psywave_applies_custom_damage_formula() {
 fn super_fang_does_half_hp_damge() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // These defense boosts should do nothing.
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -217,10 +217,10 @@ fn low_kick_deals_damage_based_on_weight() {
         mon_by_species("Chespin").unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Pikachu,player-1,1|name:Low Kick|target:Chespin,player-2,1",
@@ -241,10 +241,10 @@ fn low_kick_deals_damage_based_on_weight() {
         mon_by_species("Turtwig").unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Pikachu,player-1,1|name:Low Kick|target:Turtwig,player-2,1",
@@ -265,10 +265,10 @@ fn low_kick_deals_damage_based_on_weight() {
         mon_by_species("Serperior").unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Pikachu,player-1,1|name:Low Kick|target:Serperior,player-2,1",
@@ -289,10 +289,10 @@ fn low_kick_deals_damage_based_on_weight() {
         mon_by_species("Wailord").unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Pikachu,player-1,1|name:Low Kick|target:Wailord,player-2,1",

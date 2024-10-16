@@ -5,12 +5,12 @@ use crate::{
     },
     common::Id,
     dex::{
-        DataLookupResult,
         DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
+    error::Error,
 };
 
 /// Lookup type for [`AbilityDex`].
@@ -23,7 +23,7 @@ impl<'d> ResourceLookup<'d, AbilityData> for AbilityLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> DataLookupResult<AbilityData> {
+    fn lookup(&self, id: &Id) -> Result<AbilityData, Error> {
         self.data.get_ability(id)
     }
 }

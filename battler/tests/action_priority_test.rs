@@ -3,12 +3,12 @@ use battler::{
         BattleType,
         PublicCoreBattle,
     },
-    common::{
+    common::Id,
+    dex::DataStore,
+    error::{
         Error,
-        Id,
         WrapResultError,
     },
-    dex::DataStore,
     moves::MoveData,
     teams::TeamData,
 };
@@ -126,14 +126,14 @@ fn switch_occurs_before_move() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // Switching out slow Mon occurs before high priority move.
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "pass;switch 2"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;pass"),
         Ok(())
     );
@@ -157,13 +157,13 @@ fn switches_ordered_by_speed() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "pass;switch 2"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;pass"),
         Ok(())
     );
@@ -189,13 +189,13 @@ fn moves_ordered_by_speed() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "pass;move 1,1"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;pass"),
         Ok(())
     );
@@ -217,13 +217,13 @@ fn moves_ordered_by_priority() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2,2;move 0,1"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;move 1,1"),
         Ok(())
     );
@@ -251,31 +251,31 @@ fn speed_ties_broken_randomly() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle_with_seed(&data, 12345).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;pass"),
         Ok(())
     );
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;pass"),
         Ok(())
     );
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1,2;pass"),
         Ok(())
     );

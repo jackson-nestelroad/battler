@@ -4,20 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
-use battler_test_utils::{
-    assert_error_message,
-    TestBattleBuilder,
-};
+use battler_test_utils::TestBattleBuilder;
 
 fn wobbuffet() -> Result<TeamData, Error> {
     serde_json::from_str(
@@ -70,11 +67,11 @@ fn shadow_trap_traps_foes() {
     let mut team = wobbuffet().unwrap();
     team.members[0].ability = "Shadow Tag".to_owned();
     let mut battle = make_battle(&data, 0, team, wobbuffet().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        "cannot switch: Wobbuffet is trapped",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: Wobbuffet is trapped")
     );
 }

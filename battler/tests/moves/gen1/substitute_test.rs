@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -91,22 +91,22 @@ fn substitute_avoids_hit_effects_until_broken() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_battle(&data, 1434343, wobbuffet().unwrap(), wobbuffet().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 5"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -179,10 +179,10 @@ fn substitute_avoids_hit_effects_until_broken() {
 fn shedinja_cant_substitute() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, shedinja().unwrap(), shedinja().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

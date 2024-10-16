@@ -8,6 +8,6 @@ pub use team::{
     TeamData,
 };
 pub use validator::{
-    TeamValidationError,
+    TeamValidationProblems,
     TeamValidator,
 };

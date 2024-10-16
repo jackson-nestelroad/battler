@@ -18,17 +18,20 @@ use zone_alloc::ElementRef;
 
 use crate::{
     battle::BattleType,
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
         Id,
         Identifiable,
-        WrapResultError,
     },
     config::Clause,
     dex::Dex,
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
+    },
 };
 
 /// A single rule that must be validated before a battle starts.
@@ -171,83 +174,77 @@ impl NumericRules {
         let battle_type_min_team_size = battle_type.min_team_size() as u32;
 
         if self.max_team_size > 6 {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "Max Team Size = {} is unsupported (maximum is 6)",
-                self.max_team_size
-            ));
+                self.max_team_size,
+            )));
         }
         if self.max_level > 255 {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "Max Level = {} is unsupported (maximum is 255)",
-                self.max_level
-            ));
+                self.max_level,
+            )));
         }
 
         if self.min_team_size > 0 && self.min_team_size < battle_type_min_team_size {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "Min Team Size = {} is too small for {battle_type}",
-                self.min_team_size
-            ));
+                self.min_team_size,
+            )));
         }
         if self
             .picked_team_size
             .is_some_and(|val| val < battle_type_min_team_size)
         {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "Picked Team Size = {} is too small for {battle_type}",
-                self.picked_team_size.unwrap()
-            ));
+                self.picked_team_size.unwrap(),
+            )));
         }
         if self.min_team_size > 0
             && self
                 .picked_team_size
                 .is_some_and(|val| val > self.min_team_size)
         {
-            return Err(battler_error!(
-                "Min Team Size is smaller than Picked Team Size"
+            return Err(general_error(
+                "Min Team Size is smaller than Picked Team Size",
             ));
         }
         if self.max_team_size < self.min_team_size {
-            return Err(battler_error!(
-                "Max Team Size is smaller than Min Team Size"
-            ));
+            return Err(general_error("Max Team Size is smaller than Min Team Size"));
         }
         if self.max_level < self.min_level {
-            return Err(battler_error!("Max Level is smaller than Min Level"));
+            return Err(general_error("Max Level is smaller than Min Level"));
         }
         if self.default_level < self.min_level {
-            return Err(battler_error!("Default Level is smaller than Min Level"));
+            return Err(general_error("Default Level is smaller than Min Level"));
         }
         if self.default_level > self.max_level {
-            return Err(battler_error!("Default Level is greater than Max Level"));
+            return Err(general_error("Default Level is greater than Max Level"));
         }
         if self.force_level.is_some_and(|val| val < self.min_level) {
-            return Err(battler_error!("Force Level is smaller than Min Level"));
+            return Err(general_error("Force Level is smaller than Min Level"));
         }
         if self.force_level.is_some_and(|val| val > self.max_level) {
-            return Err(battler_error!("Force Level is greater than Max Level"));
+            return Err(general_error("Force Level is greater than Max Level"));
         }
         if self
             .adjust_level_down
             .is_some_and(|val| val < self.min_level)
         {
-            return Err(battler_error!(
-                "Adjust Level Down is smaller than Min Level"
-            ));
+            return Err(general_error("Adjust Level Down is smaller than Min Level"));
         }
         if self
             .adjust_level_down
             .is_some_and(|val| val > self.max_level)
         {
-            return Err(battler_error!(
-                "Adjust Level Down is greater than Max Level"
-            ));
+            return Err(general_error("Adjust Level Down is greater than Max Level"));
         }
         if self.ev_limit >= 1512 {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "EV Limit = {} has no effect because it is not less than 1512 (252 x 6)",
-                self.ev_limit
-            ));
+                self.ev_limit,
+            )));
         }
         Ok(())
     }
@@ -390,7 +387,7 @@ impl RuleSet {
                         if repeals.contains(&name) {
                             continue;
                         }
-                        if let Some(clause) = dex.clauses.get_by_id(&name).into_option() {
+                        if let Some(clause) = dex.clauses.get_by_id(&name).ok() {
                             if !clause.data.rules.is_empty() {
                                 next_layer.extend(clause.data.rules.clone());
                                 continue;
@@ -416,15 +413,13 @@ impl RuleSet {
         for clause in self.clauses(dex) {
             let value = self
                 .value(clause.id())
-                .wrap_error_with_format(format_args!(
+                .wrap_expectation_with_format(format_args!(
                     "expected {} to be present in ruleset",
                     clause.data.name
                 ))?;
             clause
                 .validate_value(value)
-                .wrap_error_with_format(format_args!("rule {} is invalid", clause.data.name))?;
-            clause
-                .on_validate_rule(self, value)
+                .and_then(|_| clause.on_validate_rule(self, value))
                 .wrap_error_with_format(format_args!("rule {} is invalid", clause.data.name))?;
         }
         Ok(())
@@ -442,7 +437,7 @@ impl RuleSet {
         'd: 's,
     {
         self.rules()
-            .filter_map(move |rule| dex.clauses.get_by_id(rule).into_option())
+            .filter_map(move |rule| dex.clauses.get_by_id(rule).ok())
     }
 
     /// Checks if the given resource is allowed.
@@ -529,7 +524,6 @@ mod rule_set_tests {
     use crate::{
         battle::BattleType,
         common::{
-            Error,
             FastHashMap,
             FastHashSet,
             Id,
@@ -544,6 +538,7 @@ mod rule_set_tests {
             Dex,
             LocalDataStore,
         },
+        error::Error,
     };
 
     fn construct_ruleset(serialized: &str, battle_type: &BattleType) -> Result<RuleSet, Error> {
@@ -749,7 +744,7 @@ mod rule_set_tests {
         assert!(construct_ruleset(input, &battle_type)
             .err()
             .unwrap()
-            .to_string()
+            .full_description()
             .contains(error));
     }
 
@@ -860,7 +855,7 @@ mod rule_set_tests {
         )
         .err()
         .unwrap()
-        .to_string()
+        .full_description()
         .contains("Adjust Level Down is invalid: missing value"));
     }
 
@@ -874,8 +869,8 @@ mod rule_set_tests {
         )
         .err()
         .unwrap()
-        .to_string()
-        .contains("Adjust Level Down is invalid: \"abc\" is not a positive integer"));
+        .full_description()
+        .contains("rule Adjust Level Down is invalid"));
     }
 
     #[test]

@@ -5,18 +5,17 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -113,10 +112,10 @@ fn razor_wind_uses_two_turns() {
         two_pidgeot().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_lock_move_request = serde_json::from_str(
         r#"{
@@ -146,19 +145,19 @@ fn razor_wind_uses_two_turns() {
         Some(expected_lock_move_request)
     );
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        "cannot move: Pidgeot does not have a move in slot 1",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: Pidgeot does not have a move in slot 1")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        "cannot switch: Pidgeot is trapped",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: Pidgeot is trapped")
     );
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle
             .request_for_player("player-1")
             .map(|req| {
@@ -206,10 +205,10 @@ fn fly_grants_invulnerability() {
         two_pidgeot().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_lock_move_request = serde_json::from_str(
         r#"{
@@ -239,19 +238,19 @@ fn fly_grants_invulnerability() {
         Some(expected_lock_move_request)
     );
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        "cannot move: Pidgeot does not have a move in slot 1",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: Pidgeot does not have a move in slot 1")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        "cannot switch: Pidgeot is trapped",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: Pidgeot is trapped")
     );
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle
             .request_for_player("player-1")
             .map(|req| {
@@ -266,8 +265,8 @@ fn fly_grants_invulnerability() {
     );
 
     // Show Gust can hit Mons in Fly, and gains double power.
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -316,13 +315,13 @@ fn fly_locks_target() {
         two_pidgeot().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_lock_move_request = serde_json::from_str(
         r#"{
@@ -353,11 +352,11 @@ fn fly_locks_target() {
     );
 
     // This target is ignored.
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -393,13 +392,13 @@ fn skull_bash_also_boosts_defense() {
         blastoise().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

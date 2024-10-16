@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -65,10 +65,10 @@ fn role_play_copies_target_ability() {
     let mut target = banette().unwrap();
     target.members[0].ability = "Soundproof".to_owned();
     let mut battle = make_battle(&data, 0, banette().unwrap(), target).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Banette,player-1,1|name:Role Play|target:Banette,player-2,1",
@@ -88,10 +88,10 @@ fn role_play_fails_against_illegal_ability() {
     let mut target = banette().unwrap();
     target.members[0].ability = "Wonder Guard".to_owned();
     let mut battle = make_battle(&data, 0, banette().unwrap(), target).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Banette,player-1,1|name:Role Play|noanim",

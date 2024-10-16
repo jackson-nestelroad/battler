@@ -7,15 +7,17 @@ use crate::{
         EffectContext,
     },
     common::{
-        Error,
         FastHashMap,
         Id,
-        WrapResultError,
     },
     effect::{
         AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
+    },
+    error::{
+        Error,
+        WrapOptionError,
     },
 };
 
@@ -73,15 +75,11 @@ impl LinkedEffectsManager {
             None => return Ok(false),
         };
         from.effect_state_connector()
-            .wrap_error_with_message(
-                "expected applied effectto have effect state after getting link id",
-            )?
+            .wrap_expectation("expected applied effectto have effect state after getting link id")?
             .get_mut(context)?
             .add_link(to_uuid);
         to.effect_state_connector()
-            .wrap_error_with_message(
-                "expected applied effectto have effect state after getting link id",
-            )?
+            .wrap_expectation("expected applied effectto have effect state after getting link id")?
             .get_mut(context)?
             .add_link(from_uuid);
         Ok(true)

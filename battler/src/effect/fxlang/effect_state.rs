@@ -10,15 +10,18 @@ use crate::{
         MonHandle,
     },
     common::{
-        Error,
         FastHashMap,
         Fraction,
-        WrapResultError,
     },
     effect::{
         fxlang::Value,
         AppliedEffectLocation,
         EffectHandle,
+    },
+    error::{
+        integer_overflow_error,
+        Error,
+        WrapOptionError,
     },
 };
 
@@ -185,8 +188,7 @@ impl EffectState {
         self.values.insert(
             Self::SOURCE_POSITION.to_owned(),
             Value::UFraction(Fraction::from(
-                TryInto::<u32>::try_into(source_position)
-                    .wrap_error_with_message("integer overflow")?,
+                TryInto::<u32>::try_into(source_position).map_err(integer_overflow_error)?,
             )),
         );
         Ok(())
@@ -268,7 +270,7 @@ impl DynamicEffectStateConnector {
         Ok(self
             .0
             .get_mut(context)?
-            .wrap_error_with_message("effect state is not defined")?)
+            .wrap_expectation("effect state is not defined")?)
     }
 
     /// The applied effect location.

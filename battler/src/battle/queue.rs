@@ -15,7 +15,7 @@ use crate::{
         CoreBattleEngineSpeedSortTieResolution,
         MonHandle,
     },
-    common::Error,
+    error::Error,
     rng::{
         rand_util,
         PseudoRandomNumberGenerator,

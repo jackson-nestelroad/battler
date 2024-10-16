@@ -10,8 +10,10 @@ use serde_string_enum::{
 };
 
 use crate::{
-    battler_error,
-    common::Error,
+    error::{
+        general_error,
+        Error,
+    },
     mons::Stat,
 };
 
@@ -58,7 +60,7 @@ impl TryFrom<Stat> for Boost {
     type Error = Error;
     fn try_from(value: Stat) -> Result<Self, Self::Error> {
         match value {
-            Stat::HP => Err(battler_error!("HP cannot be boosted")),
+            Stat::HP => Err(general_error("HP cannot be boosted")),
             Stat::Atk => Ok(Self::Atk),
             Stat::Def => Ok(Self::Def),
             Stat::SpAtk => Ok(Self::SpAtk),

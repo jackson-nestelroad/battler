@@ -3,19 +3,18 @@ use battler::{
         BattleType,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        FastHashMap,
-        WrapResultError,
-    },
+    common::FastHashMap,
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_new_logs_eq,
     LogMatch,
     TestBattleBuilder,
@@ -113,9 +112,9 @@ fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
 fn team_preview_orders_all_player_teams() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_multi_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.ready_to_continue(), Ok(false));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -165,29 +164,29 @@ fn team_preview_orders_all_player_teams() {
     assert_new_logs_eq(&mut battle, &expected_logs);
 
     // Player 1 made their choice.
-    assert_eq!(battle.set_player_choice("player-1", "team 0 1 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "team 0 1 2"), Ok(()));
     assert!(!battle
         .active_requests()
         .collect::<FastHashMap<_, _>>()
         .contains_key("player-1"));
-    assert_eq!(battle.ready_to_continue(), Ok(false));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
     assert!(!battle.has_new_logs());
 
     // Auto choose.
-    assert_eq!(battle.set_player_choice("player-2", "team"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "team"), Ok(()));
     // Not enough Mons, auto choose the rest.
-    assert_eq!(battle.set_player_choice("player-3", "team 1 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "team 1 2"), Ok(()));
     // Reselect Mons.
-    assert_eq!(battle.set_player_choice("player-3", "team 2 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "team 2 5"), Ok(()));
     // Too many Mons, truncate the list.
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-4", "team 5 4 3 2 1 0"),
         Ok(())
     );
     // No more active requests.
     assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
-    assert_eq!(battle.ready_to_continue(), Ok(true));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(true));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     // New logs show updated team size and selected team leads.
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -217,14 +216,14 @@ fn team_preview_orders_all_player_teams() {
     assert_new_logs_eq(&mut battle, &expected_logs);
 
     // Turn 1: each player switches to Mon 1.
-    assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-3", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-4", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "switch 1"), Ok(()));
 
     assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
-    assert_eq!(battle.ready_to_continue(), Ok(true));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(true));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -249,14 +248,14 @@ fn team_preview_orders_all_player_teams() {
     assert_new_logs_eq(&mut battle, &expected_logs);
 
     // Turn 2: each player switches to Mon 2.
-    assert_eq!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-3", "switch 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-4", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "switch 2"), Ok(()));
 
     assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
-    assert_eq!(battle.ready_to_continue(), Ok(true));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(true));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -281,46 +280,46 @@ fn team_preview_orders_all_player_teams() {
     assert_new_logs_eq(&mut battle, &expected_logs);
 
     // Turn 3: each player tries to switch to Mon 3.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 3"),
-        "cannot switch: you do not have a Mon in slot 3 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 3"),
-        "cannot switch: you do not have a Mon in slot 3 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-3", "switch 3"),
-        "cannot switch: you do not have a Mon in slot 3 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-4", "switch 3"),
-        "cannot switch: you do not have a Mon in slot 3 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
 
     // Verify other slots fail for good measure.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 4"),
-        "cannot switch: you do not have a Mon in slot 4 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 4 to switch to")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 5"),
-        "cannot switch: you do not have a Mon in slot 5 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 5 to switch to")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 6"),
-        "cannot switch: you do not have a Mon in slot 6 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 6 to switch to")
     );
 
     // Switch back to Mon 0 (the lead that started the battle).
-    assert_eq!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-3", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-4", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "switch 0"), Ok(()));
 
     assert!(battle.active_requests().collect::<Vec<_>>().is_empty());
-    assert_eq!(battle.ready_to_continue(), Ok(true));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(true));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

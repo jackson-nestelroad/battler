@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -66,10 +66,10 @@ fn ripen_doubles_damage_healed_by_oran_berry() {
     let mut team = applin().unwrap();
     team.members[0].item = Some("Oran Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, applin().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -98,10 +98,10 @@ fn ripen_doubles_damage_healed_by_sitrus_berry() {
     let mut team = applin().unwrap();
     team.members[0].item = Some("Sitrus Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, applin().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -130,10 +130,10 @@ fn ripen_doubles_damage_reduced_by_haban_berry() {
     let mut team = applin().unwrap();
     team.members[0].item = Some("Haban Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, applin().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -159,10 +159,10 @@ fn ripen_doubles_stat_boost_by_kee_berry() {
     let mut team = applin().unwrap();
     team.members[0].item = Some("Kee Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, applin().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -188,10 +188,10 @@ fn ripen_doubles_damage_dealt_by_jaboca_berry() {
     let mut team = applin().unwrap();
     team.members[0].item = Some("Jaboca Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, applin().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -219,11 +219,11 @@ fn ripen_doubles_pp_restored_by_leppa_berry() {
     let mut team = applin().unwrap();
     team.members[0].item = Some("Leppa Berry".to_owned());
     let mut battle = make_battle(&data, 0, team, applin().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     for _ in 0..40 {
-        assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-        assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+        assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+        assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     }
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

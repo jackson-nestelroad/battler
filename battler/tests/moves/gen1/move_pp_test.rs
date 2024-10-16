@@ -1,4 +1,3 @@
-use assert_matches::assert_matches;
 use battler::{
     battle::{
         BattleType,
@@ -6,17 +5,16 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
+    common::Id,
+    dex::DataStore,
+    error::{
         Error,
-        Id,
         WrapResultError,
     },
-    dex::DataStore,
     moves::MoveData,
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     TestBattleBuilder,
     TestDataStore,
 };
@@ -93,10 +91,10 @@ fn using_move_reduces_pp() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data, Vec::new()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -107,11 +105,11 @@ fn using_move_reduces_pp() {
         );
     });
 
-    assert_eq!(battle.set_player_choice("foe", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("test-player", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 0"), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -122,11 +120,11 @@ fn using_move_reduces_pp() {
         );
     });
 
-    assert_eq!(battle.set_player_choice("foe", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("test-player", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 0"), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {assert_eq!(
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {assert_eq!(
         request.active[0]
             .moves
             .iter()
@@ -136,11 +134,11 @@ fn using_move_reduces_pp() {
     );
     });
 
-    assert_eq!(battle.set_player_choice("foe", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("test-player", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("foe", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 1"), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {assert_eq!(
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {assert_eq!(
             request.active[0]
                 .moves
                 .iter()
@@ -156,10 +154,10 @@ fn pp_boosts_increase_pp() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data, vec![1, 1, 1, 1]).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -171,10 +169,10 @@ fn pp_boosts_increase_pp() {
     });
 
     let mut battle = make_battle(&data, vec![2, 2, 2, 2]).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -186,10 +184,10 @@ fn pp_boosts_increase_pp() {
     });
 
     let mut battle = make_battle(&data, vec![3, 3, 3, 3]).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -202,10 +200,10 @@ fn pp_boosts_increase_pp() {
 
     // PP boosts max out at 3.
     let mut battle = make_battle(&data, vec![4, 4, 4, 4]).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -222,16 +220,16 @@ fn move_runs_out_of_pp() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
     let mut battle = make_battle(&data, Vec::new()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // Use all the PP for the first move.
     for _ in 0..5 {
-        assert_eq!(battle.set_player_choice("foe", "pass"), Ok(()));
-        assert_eq!(battle.set_player_choice("test-player", "move 0"), Ok(()));
+        assert_matches::assert_matches!(battle.set_player_choice("foe", "pass"), Ok(()));
+        assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 0"), Ok(()));
     }
 
     let request = battle.request_for_player("test-player");
-    assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -242,9 +240,9 @@ fn move_runs_out_of_pp() {
         );
     });
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0"),
-        "cannot move: Venusaur's Test Move 1 is disabled",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: Venusaur's Test Move 1 is disabled")
     );
-    assert_eq!(battle.ready_to_continue(), Ok(false));
+    assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
 }

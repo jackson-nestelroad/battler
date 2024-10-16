@@ -11,9 +11,7 @@ use serde_string_enum::{
 
 use crate::{
     battle::CoreBattleOptions,
-    battler_error,
     common::{
-        Error,
         Id,
         Identifiable,
     },
@@ -22,10 +20,14 @@ use crate::{
         RuleSet,
         SerializedRuleSet,
     },
+    error::{
+        general_error,
+        Error,
+    },
     mons::Type,
     teams::{
         MonData,
-        TeamValidationError,
+        TeamValidationProblems,
         TeamValidator,
     },
 };
@@ -67,9 +69,9 @@ pub struct ClauseData {
 
 type ValidateRuleCallack = dyn Fn(&RuleSet, &str) -> Result<(), Error> + Send + Sync;
 type ValidateMonCallback =
-    dyn Fn(&TeamValidator, &mut MonData) -> Result<(), TeamValidationError> + Send + Sync;
+    dyn Fn(&TeamValidator, &mut MonData) -> TeamValidationProblems + Send + Sync;
 type ValidateTeamCallback =
-    dyn Fn(&TeamValidator, &mut [&mut MonData]) -> Result<(), TeamValidationError> + Send + Sync;
+    dyn Fn(&TeamValidator, &mut [&mut MonData]) -> TeamValidationProblems + Send + Sync;
 type ValidateCoreBattleOptionsCallback =
     dyn Fn(&RuleSet, &mut CoreBattleOptions) -> Result<(), Error> + Send + Sync;
 
@@ -111,23 +113,26 @@ impl Clause {
     pub fn validate_value(&self, value: &str) -> Result<(), Error> {
         if value.is_empty() {
             if self.data.requires_value {
-                return Err(battler_error!("missing value"));
+                return Err(general_error("missing value"));
             }
             Ok(())
         } else {
             match self.data.value_type {
-                Some(ClauseValueType::Type) => Type::from_str(value)
-                    .map_err(|_| battler_error!("\"{value}\" is not a type"))
-                    .map(|_| ()),
-                Some(ClauseValueType::PositiveInteger) => value
-                    .parse::<u32>()
-                    .map_err(|_| ())
-                    .and_then(|val| if val > 0 { Ok(()) } else { Err(()) })
-                    .map_err(|_| battler_error!("\"{value}\" is not a positive integer")),
-                Some(ClauseValueType::NonNegativeInteger) => value
-                    .parse::<u32>()
-                    .map_err(|_| battler_error!("\"{value}\" is not a non-negative integer"))
-                    .map(|_| ()),
+                Some(ClauseValueType::Type) => {
+                    Type::from_str(value).map_err(general_error).map(|_| ())
+                }
+                Some(ClauseValueType::PositiveInteger) => {
+                    value.parse::<u32>().map_err(general_error).and_then(|val| {
+                        if val > 0 {
+                            Ok(())
+                        } else {
+                            Err(general_error("integer cannot be 0"))
+                        }
+                    })
+                }
+                Some(ClauseValueType::NonNegativeInteger) => {
+                    value.parse::<u32>().map_err(general_error).map(|_| ())
+                }
                 _ => Ok(()),
             }
         }
@@ -146,11 +151,11 @@ impl Clause {
         &self,
         validator: &TeamValidator,
         mon: &mut MonData,
-    ) -> Result<(), TeamValidationError> {
+    ) -> TeamValidationProblems {
         self.hooks
             .on_validate_mon
             .as_ref()
-            .map_or(Ok(()), |f| f(validator, mon))
+            .map_or(TeamValidationProblems::default(), |f| f(validator, mon))
     }
 
     /// Runs the hook for team validation.
@@ -158,11 +163,11 @@ impl Clause {
         &self,
         validator: &TeamValidator,
         team: &mut [&mut MonData],
-    ) -> Result<(), TeamValidationError> {
+    ) -> TeamValidationProblems {
         self.hooks
             .on_validate_team
             .as_ref()
-            .map_or(Ok(()), |f| f(validator, team))
+            .map_or(TeamValidationProblems::default(), |f| f(validator, team))
     }
 
     /// Runs the hook for [`CoreBattleOptions`] validation.
@@ -223,12 +228,7 @@ mod clause_tests {
             PlayerType,
             SideData,
         },
-        battler_error,
-        common::{
-            Error,
-            Id,
-            WrapResultError,
-        },
+        common::Id,
         config::{
             Clause,
             ClauseData,
@@ -242,10 +242,15 @@ mod clause_tests {
             Dex,
             LocalDataStore,
         },
+        error::{
+            general_error,
+            Error,
+            WrapOptionError,
+        },
         teams::{
             MonData,
             TeamData,
-            TeamValidationError,
+            TeamValidationProblems,
             TeamValidator,
         },
     };
@@ -265,14 +270,14 @@ mod clause_tests {
             .validate_value("")
             .err()
             .unwrap()
-            .to_string()
+            .full_description()
             .contains("missing value"));
         assert!(clause
             .validate_value("bird")
             .err()
             .unwrap()
-            .to_string()
-            .contains("is not a type"));
+            .full_description()
+            .contains("invalid"));
         assert!(clause.validate_value("grass").is_ok());
     }
 
@@ -292,20 +297,20 @@ mod clause_tests {
             .validate_value("bad")
             .err()
             .unwrap()
-            .to_string()
-            .contains("is not a positive integer"));
+            .full_description()
+            .contains("invalid digit"));
         assert!(clause
             .validate_value("-1")
             .err()
             .unwrap()
-            .to_string()
-            .contains("is not a positive integer"));
+            .full_description()
+            .contains("invalid digit"));
         assert!(clause
             .validate_value("0")
             .err()
             .unwrap()
-            .to_string()
-            .contains("is not a positive integer"));
+            .full_description()
+            .contains("integer cannot be 0"));
         assert!(clause.validate_value("10").is_ok());
     }
 
@@ -325,14 +330,14 @@ mod clause_tests {
             .validate_value("bad")
             .err()
             .unwrap()
-            .to_string()
-            .contains("is not a non-negative integer"));
+            .full_description()
+            .contains("invalid digit"));
         assert!(clause
             .validate_value("-20")
             .err()
             .unwrap()
-            .to_string()
-            .contains("is not a non-negative integer"));
+            .full_description()
+            .contains("invalid digit"));
         assert!(clause.validate_value("0").is_ok());
         assert!(clause.validate_value("10").is_ok());
     }
@@ -365,7 +370,7 @@ mod clause_tests {
                         .value(&Id::from_known("otherrule"))
                         .is_some_and(|other_value| other_value == value)
                     {
-                        return Err(battler_error!("expected error"));
+                        return Err(general_error("expected error"));
                     }
                     Ok(())
                 })),
@@ -382,7 +387,7 @@ mod clause_tests {
             .on_validate_rule(&ruleset, "value")
             .err()
             .unwrap()
-            .to_string()
+            .full_description()
             .contains("expected error"));
     }
 
@@ -410,9 +415,9 @@ mod clause_tests {
             static ref HOOKS: ClauseStaticHooks = ClauseStaticHooks {
                 on_validate_mon: Some(Box::new(|_, mon| {
                     if mon.level != 1 {
-                        return Err(TeamValidationError::problem("level 1 required".to_owned()));
+                        return TeamValidationProblems::problem("level 1 required".to_owned());
                     }
-                    Ok(())
+                    TeamValidationProblems::default()
                 })),
                 ..Default::default()
             };
@@ -436,13 +441,14 @@ mod clause_tests {
         .unwrap();
         assert!(clause
             .on_validate_mon(&validator, &mut mon)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("level 1 required"));
+            .problems
+            .contains(&"level 1 required".to_owned()));
 
         mon.level = 1;
-        assert!(clause.on_validate_mon(&validator, &mut mon).is_ok());
+        assert!(clause
+            .on_validate_mon(&validator, &mut mon)
+            .problems
+            .is_empty());
     }
 
     #[test]
@@ -455,11 +461,11 @@ mod clause_tests {
             static ref HOOKS: ClauseStaticHooks = ClauseStaticHooks {
                 on_validate_team: Some(Box::new(|_, team| {
                     if team.len() <= 1 {
-                        return Err(TeamValidationError::problem(
+                        return TeamValidationProblems::problem(
                             "must have more than 1 Mon".to_owned(),
-                        ));
+                        );
                     }
-                    Ok(())
+                    TeamValidationProblems::default()
                 })),
                 ..Default::default()
             };
@@ -483,15 +489,14 @@ mod clause_tests {
         .unwrap();
         assert!(clause
             .on_validate_team(&validator, &mut [&mut mon])
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("must have more than 1 Mon"));
+            .problems
+            .contains(&"must have more than 1 Mon".to_owned()));
 
         let mut mon2 = mon.clone();
         assert!(clause
             .on_validate_team(&validator, &mut [&mut mon, &mut mon2])
-            .is_ok());
+            .problems
+            .is_empty());
     }
 
     #[test]
@@ -511,18 +516,18 @@ mod clause_tests {
                 on_validate_core_battle_options: Some(Box::new(|rules, options| {
                     let players_per_side = rules
                         .numeric_value(&Id::from_known("playersperside"))
-                        .wrap_error_with_format(format_args!(
+                        .wrap_expectation_with_format(format_args!(
                             "Players Per Side must be an integer"
                         ))? as usize;
                     if options.side_1.players.len() != players_per_side {
-                        return Err(battler_error!(
-                            "Side 1 does not have {players_per_side} players"
-                        ));
+                        return Err(general_error(format!(
+                            "Side 1 does not have {players_per_side} players",
+                        )));
                     }
                     if options.side_2.players.len() != players_per_side {
-                        return Err(battler_error!(
-                            "Side 2 does not have {players_per_side} players"
-                        ));
+                        return Err(general_error(format!(
+                            "Side 2 does not have {players_per_side} players",
+                        )));
                     }
                     Ok(())
                 })),
@@ -552,7 +557,7 @@ mod clause_tests {
             .on_validate_core_battle_options(&ruleset, &mut bad_options)
             .err()
             .unwrap()
-            .to_string()
+            .full_description()
             .contains("does not have 2 players"));
 
         let mut good_options = CoreBattleOptions {
@@ -631,7 +636,13 @@ mod clause_tests {
         .unwrap();
         assert!(clause.validate_value("value").is_ok());
         assert!(clause.on_validate_rule(&format.rules, "value").is_ok());
-        assert!(clause.on_validate_mon(&validator, &mut mon).is_ok());
-        assert!(clause.on_validate_team(&validator, &mut [&mut mon]).is_ok());
+        assert!(clause
+            .on_validate_mon(&validator, &mut mon)
+            .problems
+            .is_empty());
+        assert!(clause
+            .on_validate_team(&validator, &mut [&mut mon])
+            .problems
+            .is_empty());
     }
 }

@@ -5,19 +5,17 @@ use battler::{
         PublicCoreBattle,
         WildPlayerOptions,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
-    assert_error_message_contains,
     assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
@@ -186,10 +184,10 @@ fn player_escapes_with_higher_speed() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -212,15 +210,15 @@ fn mon_cannot_escape_with_locked_move() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "escape"),
-        "cannot escape: Jolteon must use a move",
+        Err(err) => assert_eq!(err.full_description(), "cannot escape: Jolteon must use a move")
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 }
 
 #[test]
@@ -234,10 +232,10 @@ fn wild_player_can_escape() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "escape"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -260,18 +258,18 @@ fn player_escapes_with_lower_speed() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -312,10 +310,10 @@ fn player_escapes_with_smoke_ball() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -341,13 +339,13 @@ fn player_escapes_with_poke_doll() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokedoll"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -373,10 +371,10 @@ fn run_away_escapes_immediately() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -393,15 +391,15 @@ fn cannot_escape_trainer_battle() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_trainer_singles_battle(&data, 0, jolteon().unwrap(), primeape().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_error_message_contains(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "escape"),
-        "you cannot escape",
+        Err(err) => assert!(err.full_description().contains("you cannot escape"))
     );
-    assert_error_message_contains(
+    assert_matches::assert_matches!(
         battle.set_player_choice("trainer", "escape"),
-        "you cannot escape",
+        Err(err) => assert!(err.full_description().contains("you cannot escape"))
     );
 }
 
@@ -420,16 +418,16 @@ fn wild_players_escape_individually() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0,1"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-0", "escape"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 0,2"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-2", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-0", "escape"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0,2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-2", "escape"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -473,10 +471,10 @@ fn teleport_escapes_wild_battle() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -500,16 +498,16 @@ fn cannot_escape_partially_trapping_move() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_error_message_contains(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("wild", "escape"),
-        "you cannot escape",
+        Err(err) => assert!(err.full_description().contains("you cannot escape"))
     );
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

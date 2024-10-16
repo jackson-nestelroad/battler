@@ -4,14 +4,12 @@ use crate::{
         MonHandle,
         MoveHandle,
     },
-    common::{
-        Error,
-        Id,
-    },
+    common::Id,
     effect::{
         fxlang,
         AppliedEffectLocation,
     },
+    error::Error,
 };
 
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for an

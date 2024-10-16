@@ -6,18 +6,17 @@ use battler::{
         PublicCoreBattle,
         WildPlayerOptions,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
     LogMatch,
@@ -234,20 +233,20 @@ fn level_5_magikarp_caught_in_poke_ball() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokeball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokeball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -276,7 +275,7 @@ fn level_5_magikarp_caught_in_poke_ball() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
-    pretty_assertions::assert_eq!(
+    assert_eq!(
         battle.player_data("protagonist").unwrap().caught,
         serde_json::from_str::<Vec<MonSummaryData>>(
             r#"[
@@ -346,23 +345,23 @@ fn catching_mon_continues_battle() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item ultraball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("wild", "switch 0"),
-        "cannot switch: you cannot switch to a caught Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a caught mon")
     );
-    assert_eq!(battle.set_player_choice("wild", "switch 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("wild", "item revive,-1"),
-        "cannot use item: Revive cannot be used on Magikarp",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Revive cannot be used on Magikarp")
     );
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -401,34 +400,34 @@ fn ball_can_only_be_used_on_isolated_foe() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball"),
-        "cannot use item: Great Ball requires one target",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Great Ball requires one target")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,1"),
-        "cannot use item: invalid target for Great Ball",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Great Ball")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,2"),
-        "cannot use item: invalid target for Great Ball",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Great Ball")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,-1"),
-        "cannot use item: invalid target for Great Ball",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Great Ball")
     );
-    assert_eq!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -472,13 +471,13 @@ fn level_100_metagross_caught_in_master_ball() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item masterball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -492,7 +491,7 @@ fn level_100_metagross_caught_in_master_ball() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
-    pretty_assertions::assert_eq!(
+    assert_eq!(
         battle.player_data("protagonist").unwrap().caught,
         serde_json::from_str::<Vec<MonSummaryData>>(
             r#"[
@@ -553,16 +552,16 @@ fn level_100_metagross_critical_capture() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(1, 0)]);
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item masterball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -590,16 +589,16 @@ fn level_50_magikarp_critical_capture() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(1, 0), (2, 0), (3, 0)]);
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokeball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -624,19 +623,19 @@ fn level_100_sleeping_blissey_in_master_ball() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item masterball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -683,24 +682,24 @@ fn level_100_sleeping_magikarp_critical_in_master_ball() {
     wild.members[0].moves.clear();
     let mut battle =
         make_wild_singles_battle(&data, 65535, team, wild, WildPlayerOptions::default()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     for _ in 0..5 {
-        assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-        assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+        assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+        assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
     }
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 3"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(1, 0)]);
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item masterball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -732,13 +731,13 @@ fn uncatchable_wild_player_fails_catch() {
         },
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item masterball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("wild", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -757,13 +756,13 @@ fn trainer_mons_are_uncatchable() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_trainer_singles_battle(&data, 65535, pikachu().unwrap(), magikarp().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item masterball"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -788,13 +787,13 @@ fn cannot_throw_ball_at_semi_invulnerable_mon() {
         WildPlayerOptions::default(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild", "move 1"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 1"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokeball"),
-        "cannot use item: Poké Ball cannot be used on Magikarp",
+        Err(err) => assert_eq!(err.full_description(), "cannot use item: Poké Ball cannot be used on Magikarp")
     );
-    assert_eq!(battle.set_player_choice("wild", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 }

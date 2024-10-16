@@ -5,12 +5,12 @@ use crate::{
         ClauseData,
     },
     dex::{
-        DataLookupResult,
         DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
+    error::Error,
 };
 
 /// Lookup type for [`ClauseDex`].
@@ -23,7 +23,7 @@ impl<'d> ResourceLookup<'d, ClauseData> for ClauseLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> DataLookupResult<ClauseData> {
+    fn lookup(&self, id: &Id) -> Result<ClauseData, Error> {
         self.data.get_clause(id)
     }
 }

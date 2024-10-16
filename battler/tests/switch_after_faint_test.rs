@@ -1,4 +1,3 @@
-use assert_matches::assert_matches;
 use battler::{
     battle::{
         BattleType,
@@ -6,18 +5,17 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_error_message,
     assert_logs_since_turn_eq,
     assert_new_logs_eq,
     LogMatch,
@@ -84,13 +82,13 @@ fn make_battle(data: &dyn DataStore, auto_continue: bool) -> Result<PublicCoreBa
 fn must_switch_after_faint() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, true).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;move 0,1"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 0,1"),
         Ok(())
     );
@@ -113,28 +111,28 @@ fn must_switch_after_faint() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     let _ = battle.new_logs();
 
-    assert_matches!(battle.request_for_player("player-1"), None);
-    assert_matches!(battle.request_for_player("player-2"), Some(Request::Switch(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), None);
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Switch(request)) => {
         assert_eq!(request.needs_switch, vec![1]);
     });
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2"),
-        "you cannot do anything: no action requested",
+        Err(err) => assert_eq!(err.full_description(), "you cannot do anything: no action requested")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;move 0,1"),
-        "cannot move: you cannot move out of turn",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot move out of turn")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0"),
-        "cannot switch: you cannot switch to an active Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to an active mon")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        "cannot switch: you cannot switch to a fainted Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a fainted mon")
     );
-    assert_eq!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -148,24 +146,24 @@ fn must_switch_after_faint() {
     .unwrap();
     assert_new_logs_eq(&mut battle, &expected_logs);
 
-    assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-1").unwrap();
         assert_eq!(request.active.len(), 2);
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
         assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Charmander");
     });
-    assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-2").unwrap();
         assert_eq!(request.active.len(), 2);
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
         assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Squirtle");
     });
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;move 0,1"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;move 0,1"),
         Ok(())
     );
@@ -189,13 +187,13 @@ fn must_switch_after_faint() {
     .unwrap();
     assert_new_logs_eq(&mut battle, &expected_logs);
 
-    assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-1").unwrap();
         assert_eq!(request.active.len(), 2);
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
         assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Charmander");
     });
-    assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-2").unwrap();
         assert_eq!(request.active.len(), 1);
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
@@ -206,18 +204,18 @@ fn must_switch_after_faint() {
 fn must_switch_one_after_two_faint() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, false).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1;move 0,1"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2;move 0,1"),
         Ok(())
     );
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -243,46 +241,46 @@ fn must_switch_one_after_two_faint() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
     let _ = battle.new_logs();
 
-    assert_matches!(battle.request_for_player("player-1"), None);
-    assert_matches!(battle.request_for_player("player-2"), Some(Request::Switch(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), None);
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Switch(request)) => {
         assert_eq!(request.needs_switch, vec![0, 1]);
     });
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2"),
-        "you cannot do anything: no action requested",
+        Err(err) => assert_eq!(err.full_description(), "you cannot do anything: no action requested")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;move 0,1"),
-        "cannot move: you cannot move out of turn",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot move out of turn")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        "cannot switch: you cannot switch to a fainted Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a fainted mon")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;switch 2"),
-        "cannot switch: you cannot switch to a fainted Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a fainted mon")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;switch 0"),
-        "cannot switch: the Mon in slot 0 can only switch in once",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: the mon in slot 0 can only switch in once")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0"),
-        "incomplete choice: missing actions for Mons",
+        Err(err) => assert_eq!(err.full_description(), "incomplete choice: missing actions for mons")
     );
 
     // We have a choice as to where the single Mon can be switched into.
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;pass"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "pass;switch 0"),
         Ok(())
     );
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -296,13 +294,13 @@ fn must_switch_one_after_two_faint() {
     .unwrap();
     assert_new_logs_eq(&mut battle, &expected_logs);
 
-    assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-1").unwrap();
         assert_eq!(request.active.len(), 2);
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
         assert_eq!(player_data.mons[request.active[1].team_position].summary.name, "Charmander");
     });
-    assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
         let player_data = battle.player_data("player-2").unwrap();
         assert_eq!(request.active.len(), 1);
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");

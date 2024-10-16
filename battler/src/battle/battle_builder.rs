@@ -15,12 +15,7 @@ use crate::{
         PublicCoreBattle,
         SideData,
     },
-    battler_error,
-    common::{
-        Error,
-        FastHashMap,
-        WrapResultError,
-    },
+    common::FastHashMap,
     config::{
         Format,
         FormatData,
@@ -29,9 +24,15 @@ use crate::{
         DataStore,
         Dex,
     },
+    error::{
+        Error,
+        GeneralError,
+        WrapError,
+        WrapOptionError,
+        WrapResultError,
+    },
     teams::{
         TeamData,
-        TeamValidationError,
         TeamValidator,
     },
 };
@@ -190,16 +191,16 @@ impl<'d> BattleBuilder<'d> {
     ///
     /// Note that team validation can modify the team (for example, when forcing forme changes), so
     /// callers should be sure that the modified team is recorded properly.
-    pub fn validate_team(&self, team: &mut TeamData) -> Result<(), TeamValidationError> {
+    pub fn validate_team(&self, team: &mut TeamData) -> Result<(), Error> {
         let validator = TeamValidator::new(&self.format, &self.dex);
-        validator.validate_team(team)
+        validator.validate_team(team).wrap_error()
     }
 
     fn side_mut(&mut self, side: usize) -> Result<&mut SideData, Error> {
         match side {
             0 => Ok(&mut self.options.side_1),
             1 => Ok(&mut self.options.side_2),
-            _ => Err(battler_error!("side {side} is invalid")),
+            _ => Err(GeneralError::new(format!("side {side} is invalid")).wrap_error()),
         }
     }
 
@@ -208,19 +209,18 @@ impl<'d> BattleBuilder<'d> {
     /// Validation is performed if the battle builder is configured to use validation.
     pub fn update_team(&mut self, player: &str, mut team: TeamData) -> Result<(), Error> {
         if self.flags.validate_team {
-            self.validate_team(&mut team)
-                .wrap_error_with_message("invalid team")?;
+            self.validate_team(&mut team)?;
         }
         let (side, player) = self
             .player_ids
             .get(player)
-            .wrap_error_with_format(format_args!("player {player} does not exist"))?
+            .wrap_not_found_error_with_format(format_args!("player {player}"))?
             .clone();
         let player = self
             .side_mut(side)?
             .players
             .get_mut(player)
-            .wrap_error_with_format(format_args!("index {player} is invalid for side {side}"))?;
+            .wrap_not_found_error_with_format(format_args!("index {player} on side {side}"))?;
         player.team = team;
         Ok(())
     }
@@ -243,6 +243,7 @@ mod battle_builder_tests {
             FastHashMap,
         },
         dex::LocalDataStore,
+        error::TeamValidationError,
         teams::TeamData,
     };
 
@@ -329,8 +330,8 @@ mod battle_builder_tests {
             .update_team("unknown", team)
             .err()
             .unwrap()
-            .to_string()
-            .contains("player unknown does not exist"));
+            .full_description()
+            .contains("player unknown not found"));
     }
 
     #[test]
@@ -354,8 +355,13 @@ mod battle_builder_tests {
         )
         .unwrap();
         let result = builder.validate_team(&mut team);
+        let error = result.err().unwrap();
+        let error = error
+            .as_ref()
+            .downcast_ref::<TeamValidationError>()
+            .unwrap();
         assert_eq!(
-            result.err().unwrap().problems,
+            error.problems().collect::<Vec<_>>(),
             vec!["You must bring at least 4 Mons (your team has 1)."]
         );
         let new_members = iter::repeat_with(|| team.members[0].clone())

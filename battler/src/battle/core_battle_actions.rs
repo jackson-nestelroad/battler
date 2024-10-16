@@ -39,15 +39,12 @@ use crate::{
         SideEffectContext,
         SwitchEventsAction,
     },
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         Fraction,
         Id,
         Identifiable,
         UnsafelyDetachBorrow,
-        WrapResultError,
     },
     conditions::ConditionType,
     effect::{
@@ -56,6 +53,12 @@ use crate::{
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
+    },
+    error::{
+        general_error,
+        integer_overflow_error,
+        Error,
+        WrapOptionError,
     },
     items::ItemFlags,
     mons::{
@@ -156,9 +159,9 @@ pub fn switch_in(
 
     let active_len = context.player().total_active_positions();
     if position >= active_len {
-        return Err(battler_error!(
-            "invalid switch position {position} / {active_len}"
-        ));
+        return Err(general_error(format!(
+            "invalid switch position {position} / {active_len}",
+        )));
     }
 
     let mon_handle = context.mon_handle();
@@ -871,7 +874,7 @@ fn try_indirect_move(
                 fxlang::VariableInput::default(),
             )
         }
-        _ => return Err(battler_error!("move against target {move_target} applied indirectly, but it should directly hit target mons"))
+        _ => return Err(general_error(format!("move against target {move_target} applied indirectly, but it should directly hit target mons")))
     };
 
     if !try_move_result.advance() {
@@ -998,7 +1001,7 @@ fn move_hit_loop(
                     context.battle_mut().prng.as_mut(),
                     &[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5],
                 )
-                .wrap_error()?
+                .wrap_expectation("expected sample_slice to produce a value")?
             } else {
                 rand_util::range(context.battle_mut().prng.as_mut(), min as u64, max as u64) as u8
             }
@@ -1066,13 +1069,15 @@ fn move_hit_loop(
             let new_outcome = MoveOutcome::from(
                 !hit_targets_state
                     .get(i)
-                    .wrap_error_with_format(format_args!("expected target hit state at index {i}"))?
+                    .wrap_expectation_with_format(format_args!(
+                        "expected target hit state at index {i}"
+                    ))?
                     .outcome
                     .failed(),
             );
             targets
                 .get_mut(i)
-                .wrap_error_with_format(format_args!("expected target at index {i}"))?
+                .wrap_expectation_with_format(format_args!("expected target at index {i}"))?
                 .outcome = new_outcome;
         }
 
@@ -1146,7 +1151,7 @@ fn move_hit_loop(
             let turn = context.battle().turn();
             let source_side = context.side().index;
             let source_position = Mon::position_on_side_or_previous(context.as_mon_context())
-                .wrap_error_with_message("expected attacker to have a position")?;
+                .wrap_expectation("expected attacker to have a position")?;
             context
                 .target_mon_context(target)?
                 .mon_mut()
@@ -1722,11 +1727,9 @@ mod direct_move_step {
             Mon,
             MoveOutcome,
         },
-        common::{
-            Error,
-            Fraction,
-        },
+        common::Fraction,
         effect::fxlang,
+        error::Error,
         moves::{
             Accuracy,
             MoveCategory,
@@ -1969,7 +1972,7 @@ pub fn damage(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, E
     apply_spread_damage(context.as_effect_context_mut(), source, &mut targets)?;
     Ok(targets
         .get(0)
-        .wrap_error_with_message("expected target result to exist after applying spread damage")?
+        .wrap_expectation("expected target result to exist after applying spread damage")?
         .outcome
         .damage())
 }
@@ -2100,7 +2103,7 @@ pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Err
     let old = context
         .player()
         .active_mon_handle(position)
-        .wrap_error_with_message("nothing to drag out")?;
+        .wrap_expectation("nothing to drag out")?;
 
     let mut old_context = context.mon_context(old)?;
     if old_context.mon().hp == 0 {
@@ -2232,7 +2235,7 @@ fn apply_move_effects(
 
                 if let Some(slot_condition) = hit_effect.slot_condition {
                     let slot = Mon::position_on_side(&target_context.target_mon_context()?)
-                        .wrap_error_with_message("expected target to be active")?;
+                        .wrap_expectation("expected target to be active")?;
                     let added_slot_condition = add_slot_condition(
                         &mut target_context
                             .applying_effect_context()?
@@ -2507,7 +2510,12 @@ fn apply_user_effect(
         // times (since there is a little bit more control over how secondary effects run,
         // since there can be any number of them and they can be guarded behind a chance).
         if !context.is_secondary() && !context.active_move().primary_user_effect_applied {
-            if context.hit_effect().wrap_error()?.boosts.is_some() {
+            if context
+                .hit_effect()
+                .wrap_expectation("expected hit effect")?
+                .boosts
+                .is_some()
+            {
                 let chance = context
                     .active_move()
                     .data
@@ -2699,7 +2707,7 @@ pub fn try_set_status(
         .clone();
     let status = status_effect_handle
         .try_id()
-        .wrap_error_with_message("status must have an id")?
+        .wrap_expectation("status must have an id")?
         .clone();
 
     if check_immunity(&mut context.forward_applying_effect_context(status_effect_handle.clone())?)?
@@ -2830,7 +2838,7 @@ pub fn try_add_volatile(
         .clone();
     let volatile = volatile_effect_handle
         .try_id()
-        .wrap_error_with_message("volatile must have an id")?
+        .wrap_expectation("volatile must have an id")?
         .clone();
 
     if context.target().volatiles.contains_key(&volatile) {
@@ -2881,7 +2889,7 @@ pub fn try_add_volatile(
                 .target_mut()
                 .volatiles
                 .get_mut(&volatile)
-                .wrap_error_with_message("expected volatile state to exist")?
+                .wrap_expectation("expected volatile state to exist")?
                 .set_duration(duration);
         }
 
@@ -2894,7 +2902,7 @@ pub fn try_add_volatile(
                 .target_mut()
                 .volatiles
                 .get_mut(&volatile)
-                .wrap_error_with_message("expected volatile state to exist")?
+                .wrap_expectation("expected volatile state to exist")?
                 .set_duration(duration);
         }
     }
@@ -2943,7 +2951,7 @@ pub fn remove_volatile(
         .clone();
     let volatile = volatile_effect_handle
         .try_id()
-        .wrap_error_with_message("volatile must have an id")?
+        .wrap_expectation("volatile must have an id")?
         .clone();
 
     if !context.target().volatiles.contains_key(&volatile) {
@@ -3031,7 +3039,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         .clone();
     let condition = side_condition_handle
         .try_id()
-        .wrap_error_with_message("side condition must have an id")?
+        .wrap_expectation("side condition must have an id")?
         .clone();
 
     if context.side().conditions.contains_key(&condition) {
@@ -3067,7 +3075,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
                 .side_mut()
                 .conditions
                 .get_mut(&condition)
-                .wrap_error_with_message("expected side condition state to exist")?
+                .wrap_expectation("expected side condition state to exist")?
                 .set_duration(duration);
         }
 
@@ -3080,7 +3088,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
                 .side_mut()
                 .conditions
                 .get_mut(&condition)
-                .wrap_error_with_message("expected side condition state to exist")?
+                .wrap_expectation("expected side condition state to exist")?
                 .set_duration(duration);
         }
     }
@@ -3118,7 +3126,7 @@ pub fn remove_side_condition(
         .clone();
     let condition = side_condition_handle
         .try_id()
-        .wrap_error_with_message("side condition must have an id")?
+        .wrap_expectation("side condition must have an id")?
         .clone();
 
     if !context.side().conditions.contains_key(&condition) {
@@ -3178,8 +3186,7 @@ fn calculate_exp_gain(
         .battle()
         .dex
         .species
-        .get_by_id(&species)
-        .into_result()?
+        .get_by_id(&species)?
         .data
         .base_exp_yield;
     let exp = ((base_exp_yield as u32) * (target_level as u32)) / 5;
@@ -3234,8 +3241,7 @@ fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<(), Error
         .battle()
         .dex
         .species
-        .get_by_id(&context.mon().species)
-        .into_result()?
+        .get_by_id(&context.mon().species)?
         .data
         .learnset
         .iter()
@@ -3285,8 +3291,7 @@ pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> 
         .battle()
         .dex
         .species
-        .get_by_id(&context.mon().species)
-        .into_result()?
+        .get_by_id(&context.mon().species)?
         .data
         .leveling_rate;
     let new_level = leveling_rate.level_from_exp(context.mon().experience);
@@ -3483,7 +3488,7 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         .clone();
     let weather = weather_handle
         .try_id()
-        .wrap_error_with_message("weather must have an id")?
+        .wrap_expectation("weather must have an id")?
         .clone();
 
     if context
@@ -3610,7 +3615,7 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
         .clone();
     let terrain = terrain_handle
         .try_id()
-        .wrap_error_with_message("terrain must have an id")?
+        .wrap_expectation("terrain must have an id")?
         .clone();
 
     if context
@@ -3727,7 +3732,7 @@ pub fn add_pseudo_weather(
         .clone();
     let pseudo_weather = pseudo_weather_handle
         .try_id()
-        .wrap_error_with_message("pseudo weather must have an id")?
+        .wrap_expectation("pseudo weather must have an id")?
         .clone();
 
     if context
@@ -3771,7 +3776,7 @@ pub fn add_pseudo_weather(
                 .field
                 .pseudo_weathers
                 .get_mut(&pseudo_weather)
-                .wrap_error_with_message("expected pseudo weather state to exist")?
+                .wrap_expectation("expected pseudo weather state to exist")?
                 .set_duration(duration);
         }
 
@@ -3785,7 +3790,7 @@ pub fn add_pseudo_weather(
                 .field
                 .pseudo_weathers
                 .get_mut(&pseudo_weather)
-                .wrap_error_with_message("expected pseudo weather state to exist")?
+                .wrap_expectation("expected pseudo weather state to exist")?
                 .set_duration(duration);
         }
     }
@@ -3851,14 +3856,7 @@ pub fn set_ability(
         return Ok(false);
     }
 
-    if context
-        .battle()
-        .dex
-        .abilities
-        .get_by_id(ability)
-        .into_option()
-        .is_none()
-    {
+    if context.battle().dex.abilities.get_by_id(ability).is_err() {
         return Ok(false);
     }
 
@@ -4015,7 +4013,7 @@ pub fn add_slot_condition(
         .clone();
     let condition = slot_condition_handle
         .try_id()
-        .wrap_error_with_message("slot condition must have an id")?
+        .wrap_expectation("slot condition must have an id")?
         .clone();
 
     if context
@@ -4061,7 +4059,7 @@ pub fn add_slot_condition(
                 .entry(slot)
                 .or_default()
                 .get_mut(&condition)
-                .wrap_error_with_message("expected slot condition state to exist")?
+                .wrap_expectation("expected slot condition state to exist")?
                 .set_duration(duration);
         }
 
@@ -4077,7 +4075,7 @@ pub fn add_slot_condition(
                 .entry(slot)
                 .or_default()
                 .get_mut(&condition)
-                .wrap_error_with_message("expected side condition state to exist")?
+                .wrap_expectation("expected side condition state to exist")?
                 .set_duration(duration);
         }
     }
@@ -4116,7 +4114,7 @@ pub fn remove_slot_condition(
         .clone();
     let condition = slot_condition_handle
         .try_id()
-        .wrap_error_with_message("slot condition must have an id")?
+        .wrap_expectation("slot condition must have an id")?
         .clone();
 
     if !context
@@ -4624,7 +4622,7 @@ fn calculate_shake_probability(catch_rate: u64) -> Result<u64, Error> {
     let b = Fraction::new(catch_rate, 1044480);
     let b = b
         .pow(Fraction::new(3u32, 16u32))
-        .wrap_error_with_message("integer overflow")?;
+        .map_err(integer_overflow_error)?;
     let b = b * 65536;
     Ok(b.floor())
 }

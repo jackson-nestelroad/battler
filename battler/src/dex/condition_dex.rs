@@ -5,12 +5,12 @@ use crate::{
         ConditionData,
     },
     dex::{
-        DataLookupResult,
         DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
+    error::Error,
 };
 
 /// Lookup type for [`ConditionDex`].
@@ -23,7 +23,7 @@ impl<'d> ResourceLookup<'d, ConditionData> for ConditionLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> DataLookupResult<ConditionData> {
+    fn lookup(&self, id: &Id) -> Result<ConditionData, Error> {
         self.data.get_condition(id)
     }
 }

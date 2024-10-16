@@ -4,7 +4,7 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -90,13 +90,13 @@ fn disobedient_mon_refuses_to_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_trainer_singles_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(1, 254), (2, 254)]);
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -114,13 +114,13 @@ fn disobedient_mon_hurts_self() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_trainer_singles_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(1, 254), (2, 100)]);
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -141,15 +141,15 @@ fn disobedient_mon_falls_asleep() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
         make_trainer_singles_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(1, 254), (2, 0)]);
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

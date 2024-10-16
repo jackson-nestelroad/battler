@@ -1,11 +1,12 @@
 use crate::{
-    battler_error,
-    common::{
+    common::Fraction,
+    effect::fxlang::tree,
+    error::{
+        general_error,
         Error,
-        Fraction,
+        WrapOptionError,
         WrapResultError,
     },
-    effect::fxlang::tree,
 };
 
 /// Tokens that are parsed from the input stream.
@@ -90,12 +91,10 @@ mod token {
         NextTokenContext,
         Token,
     };
-    use crate::{
-        battler_error,
-        common::{
-            Error,
-            WrapResultError,
-        },
+    use crate::error::{
+        general_error,
+        Error,
+        WrapOptionError,
     };
 
     /// Parser for fxlang tokens, which are used to make up a statement.
@@ -249,10 +248,10 @@ mod token {
                             b'\'' | b'\\' => string.push(next),
                             b'n' => string.push(b'\n'),
                             _ => {
-                                return Err(battler_error!(
+                                return Err(general_error(format!(
                                     "invalid escape character: \\{}",
-                                    next as char
-                                ))
+                                    next as char,
+                                )))
                             }
                         }
                     }
@@ -275,7 +274,7 @@ mod token {
             }
 
             if !terminated {
-                Err(battler_error!("unterminated string"))
+                Err(general_error("unterminated string"))
             } else {
                 Ok(Some(unsafe {
                     std::str::from_utf8_unchecked(string.as_slice()).to_owned()
@@ -474,7 +473,7 @@ mod token {
             if self.try_read_identifier() {
                 let identifier = self
                     .lexeme_buffer_str()
-                    .wrap_error_with_message("parsed empty identifier")?;
+                    .wrap_expectation("parsed empty identifier")?;
                 return Ok(Some(self.identifier_to_token(identifier)));
             }
             self.reset_buffer();
@@ -501,8 +500,11 @@ mod token {
             // At this point, we have a byte that cannot be put into any token, so the input is
             // invalid.
             match self.peek_next_byte() {
-                None => return Err(battler_error!("unexpected end of line")),
-                Some(next) => Err(battler_error!("unexpected character: {}", next as char)),
+                None => return Err(general_error("unexpected end of line")),
+                Some(next) => Err(general_error(format!(
+                    "unexpected character: {}",
+                    next as char
+                ))),
             }
         }
 
@@ -546,32 +548,32 @@ impl<'s> StatementParser<'s> {
 
     fn unexpected_token_error(&self) -> Error {
         match self.token_parser.token() {
-            None => battler_error!("unexpected end of line"),
-            _ => battler_error!(
+            None => general_error("unexpected end of line"),
+            _ => general_error(format!(
                 "unexpected token at index {}: {}",
                 self.token_parser.token_index(),
                 self.token_parser.lexeme(),
-            ),
+            )),
         }
     }
 
     fn unexpected_token_error_with_expected_hint(&self, expected: &str) -> Error {
         match self.token_parser.token() {
-            None => battler_error!("unexpected end of line (expected {expected})"),
-            _ => battler_error!(
+            None => general_error(format!("unexpected end of line (expected {expected})")),
+            _ => general_error(format!(
                 "unexpected token at index {}: {} (expected {expected})",
                 self.token_parser.token_index(),
                 self.token_parser.lexeme(),
-            ),
+            )),
         }
     }
 
     fn down_one_level(&mut self) -> Result<(), Error> {
         if self.depth == Self::MAX_DEPTH {
-            Err(battler_error!(
+            Err(general_error(format!(
                 "stack overflow: exceeded maximum depth of {}",
-                Self::MAX_DEPTH
-            ))
+                Self::MAX_DEPTH,
+            )))
         } else {
             self.depth += 1;
             Ok(())
@@ -742,10 +744,10 @@ impl<'s> StatementParser<'s> {
             }
         }
         if values.is_empty() && !none_allowed {
-            Err(battler_error!(
+            Err(general_error(format!(
                 "expected at least one value at index {}, found 0",
-                self.token_parser.token_index()
-            ))
+                self.token_parser.token_index(),
+            )))
         } else {
             Ok(tree::Values(values))
         }
@@ -870,7 +872,7 @@ impl<'s> StatementParser<'s> {
             Some(Token::String) => Ok(tree::StringLiteral(
                 self.token_parser
                     .consume_string()
-                    .wrap_error_with_message("string token did not produce a string")?,
+                    .wrap_expectation("string token did not produce a string")?,
             )),
             _ => return Err(self.unexpected_token_error_with_expected_hint("string")),
         }
@@ -1253,10 +1255,7 @@ mod statement_parser_tests {
 
     use super::StatementParser;
     use crate::{
-        common::{
-            assert_error_message,
-            Fraction,
-        },
+        common::Fraction,
         effect::fxlang::tree::{
             self,
             BinaryExprRhs,
@@ -1265,56 +1264,65 @@ mod statement_parser_tests {
 
     #[test]
     fn parses_empty_statement() {
-        assert_eq!(StatementParser::new("").parse(), Ok(tree::Statement::Empty));
+        assert_eq!(
+            StatementParser::new("").parse().unwrap(),
+            tree::Statement::Empty
+        );
     }
 
     #[test]
     fn parses_line_comment() {
         assert_eq!(
-            StatementParser::new("# This is a comment! ### 12345 'testffff").parse(),
-            Ok(tree::Statement::Empty)
+            StatementParser::new("# This is a comment! ### 12345 'testffff")
+                .parse()
+                .unwrap(),
+            tree::Statement::Empty
         );
     }
 
     #[test]
     fn fails_invalid_function_identifier() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             StatementParser::new("23456").parse(),
-            "unexpected token at index 0: 23456",
+            Err(err) => assert_eq!(err.full_description(), "unexpected token at index 0: 23456")
         );
     }
 
     #[test]
     fn parses_basic_function_call() {
         assert_eq!(
-            StatementParser::new("display").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("display").parse().unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("display".to_owned()),
                 args: tree::Values(vec![]),
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_bool_literals() {
         assert_eq!(
-            StatementParser::new("test: true false true").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("test: true false true")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("test".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::BoolLiteral(tree::BoolLiteral(true)),
                     tree::Value::BoolLiteral(tree::BoolLiteral(false)),
                     tree::Value::BoolLiteral(tree::BoolLiteral(true)),
                 ])
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_number_literals() {
         assert_eq!(
-            StatementParser::new("test: 1 -3 55/100 -1/2 +23456542 - 1   /    3").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("test: 1 -3 55/100 -1/2 +23456542 - 1   /    3")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("test".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(1u64.into())),
@@ -1326,7 +1334,7 @@ mod statement_parser_tests {
                     tree::Value::NumberLiteral(tree::NumberLiteral::Signed(23456542i64.into())),
                     tree::Value::NumberLiteral(tree::NumberLiteral::Signed(Fraction::new(-1, 3))),
                 ])
-            }))
+            })
         );
     }
 
@@ -1334,8 +1342,8 @@ mod statement_parser_tests {
     fn parses_string_literals() {
         assert_eq!(
             StatementParser::new("strings: 'hello world!' 'another' 'it\\'s magnitude 7!' 'complex \\\\ backslashing \\\\\\\\ \\n :)'")
-                .parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+                .parse().unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("strings".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::StringLiteral(tree::StringLiteral("hello world!".to_owned())),
@@ -1343,15 +1351,17 @@ mod statement_parser_tests {
                     tree::Value::StringLiteral(tree::StringLiteral("it's magnitude 7!".to_owned())),
                     tree::Value::StringLiteral(tree::StringLiteral("complex \\ backslashing \\\\ \n :)".to_owned())),
                 ])
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_lists() {
         assert_eq!(
-            StatementParser::new("lists: [1/40] [1, 2, 3] ['a' b false] []").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("lists: [1/40] [1, 2, 3] ['a' b false] []")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("lists".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::List(tree::List(tree::Values(vec![tree::Value::NumberLiteral(
@@ -1369,7 +1379,7 @@ mod statement_parser_tests {
                     ]))),
                     tree::Value::List(tree::List(tree::Values(vec![]))),
                 ])
-            }))
+            })
         );
     }
 
@@ -1379,8 +1389,8 @@ mod statement_parser_tests {
             StatementParser::new(
                 "vars: $source $target $source.hp $a.b.c.d9.e $ident_with-000more_chars123 $move.effect_state.infiltrates"
             )
-            .parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            .parse().unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("vars".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::Var(tree::Var {
@@ -1415,15 +1425,17 @@ mod statement_parser_tests {
                             tree::Identifier("infiltrates".to_owned()),],
                     }),
                 ])
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_nested_function_calls() {
         assert_eq!(
-            StatementParser::new("fn: $a func_call(rand: 1 5) $b func_call(other)").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("fn: $a func_call(rand: 1 5) $b func_call(other)")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("fn".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::Var(tree::Var {
@@ -1446,26 +1458,28 @@ mod statement_parser_tests {
                         args: tree::Values(vec![]),
                     })),
                 ])
-            }))
+            })
         );
     }
 
     #[test]
     fn fails_on_max_depth_exceeded() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             StatementParser::new(
                 "a:func_call(b:func_call(c:func_call(d:func_call(e:func_call(f)))))",
             )
             .parse(),
-            "stack overflow: exceeded maximum depth of 5",
+            Err(err) => assert_eq!(err.full_description(), "stack overflow: exceeded maximum depth of 5")
         );
     }
 
     #[test]
     fn parses_simple_nested_exprs() {
         assert_eq!(
-            StatementParser::new("exprs: expr(1 + 1) expr($list has ability)").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("exprs: expr(1 + 1) expr($list has ability)")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("exprs".to_owned()),
                 args: tree::Values(vec![
                     tree::Value::ValueExpr(tree::ValueExpr(Box::new(tree::Expr::BinaryExpr(
@@ -1496,7 +1510,7 @@ mod statement_parser_tests {
                         }
                     )))),
                 ])
-            }))
+            })
         );
     }
 
@@ -1513,8 +1527,8 @@ mod statement_parser_tests {
             StatementParser::new(
                 "exprs: expr(!a ^ af * b / c % d + e - f < g <= h > i >= j has k hasany l == m != n and o or p or q and r != s == t hasany u has v >= w > x <= y < z - aa + ab % ac / ad * ag ^ !ae)"
             )
-            .parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            .parse().unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("exprs".to_owned()),
                 args: tree::Values(vec![tree::Value::ValueExpr(tree::ValueExpr(
                     Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
@@ -1707,15 +1721,17 @@ mod statement_parser_tests {
                         ],
                     })),
                 ))])
-            }))
+            })
         );
     }
 
     #[test]
     fn parenthesis_override_operator_precedence() {
         assert_eq!(
-            StatementParser::new("exprs: expr((a + b) * c)").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("exprs: expr((a + b) * c)")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("exprs".to_owned()),
                 args: tree::Values(vec![tree::Value::ValueExpr(tree::ValueExpr(Box::new(
                     tree::Expr::BinaryExpr(tree::BinaryExpr {
@@ -1732,15 +1748,15 @@ mod statement_parser_tests {
                         }],
                     })
                 )))])
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_value_assignment() {
         assert_eq!(
-            StatementParser::new("$var = value").parse(),
-            Ok(tree::Statement::Assignment(tree::Assignment {
+            StatementParser::new("$var = value").parse().unwrap(),
+            tree::Statement::Assignment(tree::Assignment {
                 lhs: tree::Var {
                     name: tree::Identifier("var".to_owned()),
                     member_access: vec![],
@@ -1748,15 +1764,15 @@ mod statement_parser_tests {
                 rhs: tree::Expr::Value(tree::Value::StringLiteral(tree::StringLiteral(
                     "value".to_owned()
                 ))),
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_copy_assignment() {
         assert_eq!(
-            StatementParser::new("$var = $other.prop").parse(),
-            Ok(tree::Statement::Assignment(tree::Assignment {
+            StatementParser::new("$var = $other.prop").parse().unwrap(),
+            tree::Statement::Assignment(tree::Assignment {
                 lhs: tree::Var {
                     name: tree::Identifier("var".to_owned()),
                     member_access: vec![],
@@ -1765,15 +1781,17 @@ mod statement_parser_tests {
                     name: tree::Identifier("other".to_owned()),
                     member_access: vec![tree::Identifier("prop".to_owned())]
                 })),
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_expr_assignment() {
         assert_eq!(
-            StatementParser::new("$var = 2 * func_call(rand: 1 5)").parse(),
-            Ok(tree::Statement::Assignment(tree::Assignment {
+            StatementParser::new("$var = 2 * func_call(rand: 1 5)")
+                .parse()
+                .unwrap(),
+            tree::Statement::Assignment(tree::Assignment {
                 lhs: tree::Var {
                     name: tree::Identifier("var".to_owned()),
                     member_access: vec![],
@@ -1799,16 +1817,16 @@ mod statement_parser_tests {
                         )))
                     }]
                 })
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_if_statement() {
         assert_eq!(
-            StatementParser::new("if $var == 2:").parse(),
-            Ok(tree::Statement::IfStatement(tree::IfStatement(
-                tree::Expr::BinaryExpr(tree::BinaryExpr {
+            StatementParser::new("if $var == 2:").parse().unwrap(),
+            tree::Statement::IfStatement(tree::IfStatement(tree::Expr::BinaryExpr(
+                tree::BinaryExpr {
                     lhs: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
                         name: tree::Identifier("var".to_owned()),
                         member_access: vec![],
@@ -1819,7 +1837,7 @@ mod statement_parser_tests {
                             tree::NumberLiteral::Unsigned(2u64.into())
                         )))
                     }]
-                })
+                }
             )))
         );
     }
@@ -1827,41 +1845,39 @@ mod statement_parser_tests {
     #[test]
     fn parses_else_statement() {
         assert_eq!(
-            StatementParser::new("else:").parse(),
-            Ok(tree::Statement::ElseIfStatement(tree::ElseIfStatement(
-                None
-            )))
+            StatementParser::new("else:").parse().unwrap(),
+            tree::Statement::ElseIfStatement(tree::ElseIfStatement(None))
         );
     }
 
     #[test]
     fn parses_else_if_statement() {
         assert_eq!(
-            StatementParser::new("else if $val < 10:").parse(),
-            Ok(tree::Statement::ElseIfStatement(tree::ElseIfStatement(
-                Some(tree::IfStatement(tree::Expr::BinaryExpr(
-                    tree::BinaryExpr {
-                        lhs: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
-                            name: tree::Identifier("val".to_owned()),
-                            member_access: vec![],
-                        }))),
-                        rhs: vec![tree::BinaryExprRhs {
-                            op: tree::Operator::LessThan,
-                            expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
-                                tree::NumberLiteral::Unsigned(10u64.into())
-                            )))
-                        }]
-                    }
-                )))
-            )))
+            StatementParser::new("else if $val < 10:").parse().unwrap(),
+            tree::Statement::ElseIfStatement(tree::ElseIfStatement(Some(tree::IfStatement(
+                tree::Expr::BinaryExpr(tree::BinaryExpr {
+                    lhs: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
+                        name: tree::Identifier("val".to_owned()),
+                        member_access: vec![],
+                    }))),
+                    rhs: vec![tree::BinaryExprRhs {
+                        op: tree::Operator::LessThan,
+                        expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
+                            tree::NumberLiteral::Unsigned(10u64.into())
+                        )))
+                    }]
+                })
+            ))))
         );
     }
 
     #[test]
     fn parses_foreach_statement_with_var() {
         assert_eq!(
-            StatementParser::new("foreach $item in $list:").parse(),
-            Ok(tree::Statement::ForEachStatement(tree::ForEachStatement {
+            StatementParser::new("foreach $item in $list:")
+                .parse()
+                .unwrap(),
+            tree::Statement::ForEachStatement(tree::ForEachStatement {
                 var: tree::Var {
                     name: tree::Identifier("item".to_owned()),
                     member_access: vec![],
@@ -1870,15 +1886,17 @@ mod statement_parser_tests {
                     name: tree::Identifier("list".to_owned()),
                     member_access: vec![],
                 }),
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_foreach_statement_with_list() {
         assert_eq!(
-            StatementParser::new("foreach $mon in [bulbasaur, charmander, squirtle]:").parse(),
-            Ok(tree::Statement::ForEachStatement(tree::ForEachStatement {
+            StatementParser::new("foreach $mon in [bulbasaur, charmander, squirtle]:")
+                .parse()
+                .unwrap(),
+            tree::Statement::ForEachStatement(tree::ForEachStatement {
                 var: tree::Var {
                     name: tree::Identifier("mon".to_owned()),
                     member_access: vec![],
@@ -1888,15 +1906,17 @@ mod statement_parser_tests {
                     tree::Value::StringLiteral(tree::StringLiteral("charmander".to_owned())),
                     tree::Value::StringLiteral(tree::StringLiteral("squirtle".to_owned())),
                 ]))),
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_foreach_statement_with_generator() {
         assert_eq!(
-            StatementParser::new("foreach $mon in func_call(range: 0 10 2):").parse(),
-            Ok(tree::Statement::ForEachStatement(tree::ForEachStatement {
+            StatementParser::new("foreach $mon in func_call(range: 0 10 2):")
+                .parse()
+                .unwrap(),
+            tree::Statement::ForEachStatement(tree::ForEachStatement {
                 var: tree::Var {
                     name: tree::Identifier("mon".to_owned()),
                     member_access: vec![],
@@ -1911,28 +1931,26 @@ mod statement_parser_tests {
                         ])
                     }
                 )),
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_return_statement_with_value() {
         assert_eq!(
-            StatementParser::new("return false").parse(),
-            Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
-                Some(tree::Expr::Value(tree::Value::BoolLiteral(
-                    tree::BoolLiteral(false)
-                )))
-            )))
+            StatementParser::new("return false").parse().unwrap(),
+            tree::Statement::ReturnStatement(tree::ReturnStatement(Some(tree::Expr::Value(
+                tree::Value::BoolLiteral(tree::BoolLiteral(false))
+            ))))
         );
     }
 
     #[test]
     fn parses_return_statement_with_expr() {
         assert_eq!(
-            StatementParser::new("return 4 * 16").parse(),
-            Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
-                Some(tree::Expr::BinaryExpr(tree::BinaryExpr {
+            StatementParser::new("return 4 * 16").parse().unwrap(),
+            tree::Statement::ReturnStatement(tree::ReturnStatement(Some(tree::Expr::BinaryExpr(
+                tree::BinaryExpr {
                     lhs: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
                         tree::NumberLiteral::Unsigned(4u64.into())
                     ))),
@@ -1942,16 +1960,18 @@ mod statement_parser_tests {
                             tree::NumberLiteral::Unsigned(16u64.into())
                         )))
                     }]
-                }))
-            )))
+                }
+            ))))
         );
     }
 
     #[test]
     fn parses_formatted_string() {
         assert_eq!(
-            StatementParser::new("print: str('test = {}', 1/10, 5)").parse(),
-            Ok(tree::Statement::FunctionCall(tree::FunctionCall {
+            StatementParser::new("print: str('test = {}', 1/10, 5)")
+                .parse()
+                .unwrap(),
+            tree::Statement::FunctionCall(tree::FunctionCall {
                 function: tree::Identifier("print".to_owned()),
                 args: tree::Values(vec![tree::Value::FormattedString(tree::FormattedString {
                     template: tree::StringLiteral("test = {}".to_owned()),
@@ -1962,33 +1982,31 @@ mod statement_parser_tests {
                         tree::Value::NumberLiteral(tree::NumberLiteral::Unsigned(5u64.into())),
                     ])
                 })])
-            }))
+            })
         );
     }
 
     #[test]
     fn parses_return_missing_value() {
         assert_eq!(
-            StatementParser::new("return").parse(),
-            Ok(tree::Statement::ReturnStatement(tree::ReturnStatement(
-                None
-            ))),
+            StatementParser::new("return").parse().unwrap(),
+            tree::Statement::ReturnStatement(tree::ReturnStatement(None)),
         )
     }
 
     #[test]
     fn parses_continue() {
         assert_eq!(
-            StatementParser::new("continue").parse(),
-            Ok(tree::Statement::Continue(tree::ContinueStatement)),
-        )
+            StatementParser::new("continue").parse().unwrap(),
+            tree::Statement::Continue(tree::ContinueStatement)
+        );
     }
 
     #[test]
     fn parses_unary_plus_expr() {
         assert_eq!(
-            StatementParser::new("$test = +1 + +$test").parse(),
-            Ok(tree::Statement::Assignment(tree::Assignment {
+            StatementParser::new("$test = +1 + +$test").parse().unwrap(),
+            tree::Statement::Assignment(tree::Assignment {
                 lhs: tree::Var {
                     name: tree::Identifier("test".to_owned()),
                     member_access: vec![],
@@ -2011,39 +2029,39 @@ mod statement_parser_tests {
                         }))
                     }]
                 })
-            }))
+            })
         );
     }
 
     #[test]
     fn fails_if_statement_missing_colon() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             StatementParser::new("if $test == expr($other / 3)").parse(),
-            "unexpected end of line (expected :)",
-        )
+            Err(err) => assert_eq!(err.full_description(), "unexpected end of line (expected :)")
+        );
     }
 
     #[test]
     fn fails_else_statement_missing_colon() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             StatementParser::new("else").parse(),
-            "unexpected end of line (expected :)",
-        )
+            Err(err) => assert_eq!(err.full_description(), "unexpected end of line (expected :)")
+        );
     }
 
     #[test]
     fn fails_foreach_missing_in() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             StatementParser::new("foreach $var").parse(),
-            "unexpected end of line (expected in)",
-        )
+            Err(err) => assert_eq!(err.full_description(), "unexpected end of line (expected in)")
+        );
     }
 
     #[test]
     fn fails_foreach_wrong_keyword() {
-        assert_error_message(
+        assert_matches::assert_matches!(
             StatementParser::new("foreach $var of $list:").parse(),
-            "unexpected token at index 13: of (expected in)",
-        )
+            Err(err) => assert_eq!(err.full_description(), "unexpected token at index 13: of (expected in)")
+        );
     }
 }

@@ -10,9 +10,9 @@ use serde::{
     Serializer,
 };
 
-use crate::{
-    battler_error,
-    common::Error,
+use crate::error::{
+    general_error,
+    Error,
 };
 
 /// The base accuracy of a move.
@@ -45,7 +45,7 @@ impl FromStr for Accuracy {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "exempt" => Ok(Self::Exempt),
-            _ => Err(battler_error!("invalid accuracy \"{s}\"")),
+            _ => Err(general_error(format!("invalid accuracy \"{s}\""))),
         }
     }
 }

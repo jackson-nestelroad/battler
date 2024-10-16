@@ -4,13 +4,13 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
     teams::TeamData,
 };
@@ -75,13 +75,13 @@ fn lightning_rod_redirects_electric_moves() {
     let mut opponent = team().unwrap();
     opponent.members[0].ability = "Lightning Rod".to_owned();
     let mut battle = make_battle(&data, 0, team().unwrap(), opponent).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2;pass"),
         Ok(())
     );
-    assert_eq!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -102,10 +102,10 @@ fn me_first_takes_priority_over_lightning_rod() {
     let mut player = team().unwrap();
     player.members[0].ability = "Lightning Rod".to_owned();
     let mut battle = make_battle(&data, 0, player, team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass;move 0"), Ok(()));
-    assert_eq!(
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;move 0"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;pass"),
         Ok(())
     );

@@ -4,21 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
-use battler_test_utils::{
-    assert_error_message,
-    assert_error_message_contains,
-    TestBattleBuilder,
-};
+use battler_test_utils::TestBattleBuilder;
 
 fn team() -> Result<TeamData, Error> {
     serde_json::from_str(
@@ -99,10 +95,10 @@ fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
 fn too_many_switches() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2; switch 3; switch 4"),
-        "cannot switch: you sent more choices than active Mons",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you sent more choices than active mons")
     );
 }
 
@@ -110,14 +106,14 @@ fn too_many_switches() {
 fn missing_position() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch"),
-        "cannot switch: you must select a Mon to switch in",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you must select a mon to switch in")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch  "),
-        "cannot switch: you must select a Mon to switch in",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you must select a mon to switch in")
     );
 }
 
@@ -125,14 +121,14 @@ fn missing_position() {
 fn invalid_position() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_error_message_contains(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch Charmander"),
-        "cannot switch: switch argument is not an integer",
+        Err(err) => assert!(err.full_description().contains("cannot switch: switch argument is not an integer"))
     );
-    assert_error_message_contains(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch -1"),
-        "cannot switch: switch argument is not an integer",
+        Err(err) => assert!(err.full_description().contains("cannot switch: switch argument is not an integer"))
     );
 }
 
@@ -140,14 +136,14 @@ fn invalid_position() {
 fn no_mon_in_position() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 6"),
-        "cannot switch: you do not have a Mon in slot 6 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 6 to switch to")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 10"),
-        "cannot switch: you do not have a Mon in slot 10 to switch to",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 10 to switch to")
     );
 }
 
@@ -155,18 +151,18 @@ fn no_mon_in_position() {
 fn switch_to_active_mon() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 0"),
-        "cannot switch: you cannot switch to an active Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to an active mon")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        "cannot switch: you cannot switch to an active Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to an active mon")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2; switch 1"),
-        "cannot switch: you cannot switch to an active Mon",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to an active mon")
     );
 }
 
@@ -174,9 +170,9 @@ fn switch_to_active_mon() {
 fn switch_a_mon_in_twice() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2; switch 2"),
-        "cannot switch: the Mon in slot 2 can only switch in once",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: the mon in slot 2 can only switch in once")
     );
 }

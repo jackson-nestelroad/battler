@@ -4,10 +4,6 @@ use crate::{
         EffectContext,
         MonHandle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     effect::{
         fxlang::{
             self,
@@ -23,6 +19,10 @@ use crate::{
         SlotConditionEffectStateConnector,
         TerrainEffectStateConnector,
         WeatherEffectStateConnector,
+    },
+    error::{
+        Error,
+        WrapOptionError,
     },
 };
 
@@ -158,7 +158,7 @@ impl AppliedEffectHandle {
                     &mut context,
                     self.effect_handle
                         .try_id()
-                        .wrap_error_with_message("expected volatile to have an id")?,
+                        .wrap_expectation("expected volatile to have an id")?,
                     false,
                 )
             }
@@ -167,7 +167,7 @@ impl AppliedEffectHandle {
                     &mut context.field_effect_context(None)?,
                     self.effect_handle
                         .try_id()
-                        .wrap_error_with_message("expected pseudo-weather to have an id")?,
+                        .wrap_expectation("expected pseudo-weather to have an id")?,
                 )
             }
             AppliedEffectLocation::SideCondition(side)
@@ -176,7 +176,7 @@ impl AppliedEffectHandle {
                     &mut context.side_effect_context(side, None)?,
                     self.effect_handle
                         .try_id()
-                        .wrap_error_with_message("expected side condition to have an id")?,
+                        .wrap_expectation("expected side condition to have an id")?,
                 )
             }
             AppliedEffectLocation::SlotCondition(side, slot)
@@ -186,7 +186,7 @@ impl AppliedEffectHandle {
                     slot,
                     self.effect_handle
                         .try_id()
-                        .wrap_error_with_message("expected side condition to have an id")?,
+                        .wrap_expectation("expected side condition to have an id")?,
                 )
             }
             AppliedEffectLocation::Terrain | AppliedEffectLocation::MonTerrain(_) => {

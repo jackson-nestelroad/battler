@@ -1,6 +1,8 @@
 use std::{
+    convert::Infallible,
     fmt::Display,
     mem,
+    ops::FromResidual,
 };
 
 use ahash::{
@@ -15,7 +17,6 @@ use zone_alloc::ElementRef;
 use crate::{
     abilities::Ability,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
         Id,
@@ -25,9 +26,11 @@ use crate::{
         Format,
         ResourceCheck,
     },
-    dex::{
-        DataLookupResult,
-        Dex,
+    dex::Dex,
+    error::{
+        Error,
+        NotFoundError,
+        TeamValidationError,
     },
     items::Item,
     mons::{
@@ -47,57 +50,50 @@ use crate::{
 /// The maximum length of a Mon name.
 const MAX_NAME_LENGTH: usize = 30;
 
-/// An error generated from team validation.
-pub struct TeamValidationError {
-    /// Reasons for why the team failed validation.
+/// Problems produced by team validation.
+///
+/// Converted to [`TeamValidationError`] when returned to callers.
+#[derive(Default)]
+pub struct TeamValidationProblems {
     pub problems: Vec<String>,
 }
 
-impl TeamValidationError {
-    /// Creates a new error.
-    pub fn new() -> Self {
-        Self {
-            problems: Vec::new(),
-        }
-    }
-
-    /// Creates a new error with the given problem.
+impl TeamValidationProblems {
     pub fn problem(problem: String) -> Self {
-        let mut error = Self::new();
+        let mut error = Self::default();
         error.add_problem(problem);
         error
     }
 
-    /// Is the team valid?
-    pub fn valid(&self) -> bool {
-        self.problems.is_empty()
-    }
-
-    /// Adds a new problem.
     pub fn add_problem(&mut self, problem: String) {
         self.problems.push(problem)
     }
 
-    fn merge(&mut self, other: Result<(), TeamValidationError>) {
-        if let Err(mut error) = other {
-            self.problems.append(&mut error.problems);
-        }
+    pub fn merge(&mut self, mut other: Self) {
+        self.problems.append(&mut other.problems);
     }
 }
 
-impl Into<Result<(), TeamValidationError>> for TeamValidationError {
+impl Into<Result<(), TeamValidationError>> for TeamValidationProblems {
     fn into(self) -> Result<(), TeamValidationError> {
         if self.problems.is_empty() {
             Ok(())
         } else {
-            Err(self)
+            Err(TeamValidationError::new(self.problems))
         }
     }
 }
 
-impl Display for TeamValidationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.problems.join("; "))
+impl<E> FromResidual<Result<Infallible, E>> for TeamValidationProblems
+where
+    E: Display,
+{
+    fn from_residual(residual: Result<Infallible, E>) -> Self {
+        match residual {
+            Err(error) => Self::problem(error.to_string()),
+            #[allow(unreachable_patterns)]
+            Ok(_) => unreachable!(),
+        }
     }
 }
 
@@ -143,7 +139,7 @@ impl<'s> MonValidationState<'s> {
     }
 }
 
-impl From<Error> for TeamValidationError {
+impl From<Error> for TeamValidationProblems {
     fn from(value: Error) -> Self {
         Self::problem(value.to_string())
     }
@@ -184,7 +180,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
     /// Validates an entire team for a battle.
     pub fn validate_team(&self, team: &mut TeamData) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+        self.validate_team_internal(team).into()
+    }
+
+    fn validate_team_internal(&self, team: &mut TeamData) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         let team_size = team.members.len();
         let max_team_size = self.format.rules.numeric_rules.max_team_size as usize;
@@ -193,7 +193,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 "You may only bring up to {max_team_size} Mons (your team has {team_size})."
             ));
             // Return early, since there's no point in validating a large team.
-            return result.into();
+            return result;
         }
 
         let min_team_size = self.format.rules.numeric_rules.min_team_size as usize;
@@ -215,54 +215,57 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
         result.merge(self.validate_bag(&mut team.bag));
 
-        result.into()
+        result
     }
 
     /// Validates a single Mon for a battle.
-    pub fn validate_mon(&self, mon: &'b mut MonData) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    fn validate_mon(&self, mon: &'b mut MonData) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         let species = match self.dex.species.get(&mon.species) {
-            DataLookupResult::Found(species) => species,
-            DataLookupResult::NotFound => {
-                result.add_problem(format!("Species {} does not exist.", mon.species));
-                return result.into();
-            }
-            DataLookupResult::Error(error) => {
-                result.add_problem(format!(
-                    "Failed to lookup species {}: {error}.",
-                    mon.species
-                ));
-                return result.into();
+            Ok(species) => species,
+            Err(error) => {
+                if error.as_ref().is::<NotFoundError>() {
+                    result.add_problem(format!("Species {} does not exist.", mon.species));
+                } else {
+                    result.add_problem(format!(
+                        "Failed to look up species {}: {error}.",
+                        mon.species
+                    ));
+                }
+                return result;
             }
         };
         let ability = match self.dex.abilities.get(&mon.ability) {
-            DataLookupResult::Found(ability) => ability,
-            DataLookupResult::NotFound => {
-                result.add_problem(format!(
-                    "Ability {} (on {}) does not exist.",
-                    mon.ability, mon.name
-                ));
-                return result.into();
-            }
-            DataLookupResult::Error(error) => {
-                result.add_problem(format!(
-                    "Failed to lookup ability {}: {error}.",
-                    mon.ability
-                ));
-                return result.into();
+            Ok(ability) => ability,
+            Err(error) => {
+                if error.as_ref().is::<NotFoundError>() {
+                    result.add_problem(format!(
+                        "Ability {} (on {}) does not exist.",
+                        mon.ability, mon.name
+                    ));
+                } else {
+                    result.add_problem(format!(
+                        "Failed to look up ability {}: {error}.",
+                        mon.ability
+                    ));
+                }
+                return result;
             }
         };
         let item = if let Some(item) = &mon.item {
             match self.dex.items.get(&item) {
-                DataLookupResult::Found(item) => Some(item),
-                DataLookupResult::NotFound => {
-                    result.add_problem(format!("Item {} (on {}) does not exist.", item, mon.name));
-                    return result.into();
-                }
-                DataLookupResult::Error(error) => {
-                    result.add_problem(format!("Failed to lookup item {}: {error}.", item));
-                    return result.into();
+                Ok(item) => Some(item),
+                Err(error) => {
+                    if error.as_ref().is::<NotFoundError>() {
+                        result.add_problem(format!(
+                            "Item {} (on {}) does not exist.",
+                            item, mon.name
+                        ));
+                    } else {
+                        result.add_problem(format!("Failed to look up item {}: {error}.", item));
+                    }
+                    return result;
                 }
             }
         } else {
@@ -353,20 +356,20 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
         // Forme may have changed, so look up the species again.
         let species = match self.dex.species.get(&mon.species) {
-            DataLookupResult::Found(species) => species,
-            DataLookupResult::NotFound => {
-                result.add_problem(format!(
-                    "Species {} ({} was forced into it) does not exist.",
-                    mon.species, mon.name
-                ));
-                return result.into();
-            }
-            DataLookupResult::Error(error) => {
-                result.add_problem(format!(
-                    "Failed to lookup species {}: {error}.",
-                    mon.species
-                ));
-                return result.into();
+            Ok(species) => species,
+            Err(error) => {
+                if error.as_ref().is::<NotFoundError>() {
+                    result.add_problem(format!(
+                        "Species {} ({} was forced into it) does not exist.",
+                        mon.species, mon.name
+                    ));
+                } else {
+                    result.add_problem(format!(
+                        "Failed to look up species {}: {error}.",
+                        mon.species
+                    ));
+                }
+                return result;
             }
         };
 
@@ -391,7 +394,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             result.merge(clause.on_validate_mon(self, mon));
         }
 
-        result.into()
+        result
     }
 
     fn check_if_resource_is_allowed<'a>(&self, ids: impl Iterator<Item = &'a Id>) -> ResourceCheck {
@@ -402,11 +405,8 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         check
     }
 
-    fn validate_species(
-        &self,
-        species: &ElementRef<'d, Species>,
-    ) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    fn validate_species(&self, species: &ElementRef<'d, Species>) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         let tags = species
             .data
@@ -423,15 +423,12 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         match check {
             ResourceCheck::Banned => {
                 result.add_problem(format!("{} is not allowed.", species.data.display_name()));
-                return result.into();
+                return result;
             }
-            ResourceCheck::Allowed => {
-                return result.into();
-            }
-            ResourceCheck::Unknown => (),
+            ResourceCheck::Allowed | ResourceCheck::Unknown => (),
         }
 
-        result.into()
+        result
     }
 
     fn validate_forme(
@@ -440,8 +437,8 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         species: &ElementRef<'d, Species>,
         _: &ElementRef<'d, Ability>,
         item: Option<&ElementRef<'d, Item>>,
-    ) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    ) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         if species.data.battle_only_forme {
             result.add_problem(format!(
@@ -466,19 +463,18 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
         // The item forces this base species into some forme, so modify the Mon's species.
         if let Some(Some(force_forme)) = &item.as_ref().map(|item| &item.data.force_forme) {
-            if let DataLookupResult::Found(force_forme_species) = self.dex.species.get(&force_forme)
-            {
+            if let Ok(force_forme_species) = self.dex.species.get(&force_forme) {
                 if species.data.name == force_forme_species.data.base_species {
                     mon.species = force_forme.clone();
                 }
             }
         }
 
-        result.into()
+        result
     }
 
-    fn validate_item(&self, item: &ElementRef<'d, Item>) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    fn validate_item(&self, item: &ElementRef<'d, Item>) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         // Check if item is allowed.
         let tags = item
@@ -496,15 +492,15 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         match check {
             ResourceCheck::Banned => {
                 result.add_problem(format!("Item {} is not allowed.", item.data.name));
-                return result.into();
+                return result;
             }
             ResourceCheck::Allowed => {
-                return result.into();
+                return result;
             }
             ResourceCheck::Unknown => (),
         }
 
-        result.into()
+        result
     }
 
     fn validate_moveset<'state>(
@@ -512,11 +508,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         mon: &'b MonData,
         species: &ElementRef<'d, Species>,
         state: &mut MonValidationState<'state>,
-    ) -> Result<(), TeamValidationError>
+    ) -> TeamValidationProblems
     where
         'b: 'state,
     {
-        let mut result = TeamValidationError::new();
+        let mut result = TeamValidationProblems::default();
 
         let max_move_count = self.format.rules.numeric_rules.max_move_count as usize;
         if mon.moves.len() > max_move_count {
@@ -525,22 +521,22 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 mon.name,
                 mon.moves.len()
             ));
-            return result.into();
+            return result;
         }
 
         for (i, move_name) in mon.moves.iter().enumerate() {
             let mov = match self.dex.moves.get(move_name) {
-                DataLookupResult::Found(mov) => mov,
-                DataLookupResult::NotFound => {
-                    result.add_problem(format!(
-                        "Move {} (on {}) does not exist.",
-                        move_name, mon.name
-                    ));
-                    return result.into();
-                }
-                DataLookupResult::Error(error) => {
-                    result.add_problem(format!("Failed to lookup move {}: {error}", move_name));
-                    return result.into();
+                Ok(mov) => mov,
+                Err(error) => {
+                    if error.as_ref().is::<NotFoundError>() {
+                        result.add_problem(format!(
+                            "Move {} (on {}) does not exist.",
+                            move_name, mon.name
+                        ));
+                    } else {
+                        result.add_problem(format!("Failed to look up move {move_name}: {error}."));
+                    }
+                    return result;
                 }
             };
             result.merge(self.validate_move(
@@ -551,7 +547,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 state,
             ));
         }
-        result.into()
+        result
     }
 
     fn validate_move<'mov, 'state>(
@@ -561,11 +557,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         mov: &ElementRef<'mov, Move>,
         pp_boosts: u8,
         state: &mut MonValidationState<'state>,
-    ) -> Result<(), TeamValidationError>
+    ) -> TeamValidationProblems
     where
         'b: 'state,
     {
-        let mut result = TeamValidationError::new();
+        let mut result = TeamValidationProblems::default();
 
         // Check if move is allowed.
         let tags = mov
@@ -583,10 +579,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         match check {
             ResourceCheck::Banned => {
                 result.add_problem(format!("Move {} is not allowed.", mov.data.name));
-                return result.into();
+                return result;
             }
             ResourceCheck::Allowed => {
-                return result.into();
+                return result;
             }
             ResourceCheck::Unknown => (),
         }
@@ -622,7 +618,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ));
         }
 
-        result.into()
+        result
     }
 
     fn validate_can_learn<'mov, 'state>(
@@ -636,15 +632,18 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         'b: 'state,
     {
         let mut seen = FastHashSet::<Id>::new();
-        let mut current_species = DataLookupResult::Found(species.clone());
+        let mut current_species: Result<ElementRef<'_, Species>, Error> = Ok(species.clone());
         let mut possible_events = FastHashMap::new();
 
         loop {
             let species = match &current_species {
-                DataLookupResult::NotFound => break,
-                DataLookupResult::Found(species) => species.clone(),
-                DataLookupResult::Error(error) => {
-                    return MoveLegality::Illegal(format!("could not be looked up: {error}."));
+                Ok(species) => species.clone(),
+                Err(error) => {
+                    if error.as_ref().is::<NotFoundError>() {
+                        break;
+                    } else {
+                        return MoveLegality::Illegal(format!("could not be looked up: {error}."));
+                    }
                 }
             };
 
@@ -790,8 +789,8 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         species: &ElementRef<'d, Species>,
         ability: &ElementRef<'d, Ability>,
         _: &mut MonValidationState<'state>,
-    ) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    ) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         // Check if ability is allowed.
         let tags = ability
@@ -809,23 +808,23 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         match check {
             ResourceCheck::Banned => {
                 result.add_problem(format!("Ability {} is not allowed.", ability.data.name));
-                return result.into();
+                return result;
             }
             ResourceCheck::Allowed => {
-                return result.into();
+                return result;
             }
             ResourceCheck::Unknown => (),
         }
 
         // Normal ability.
         if species.data.abilities.contains(&ability.data.name) {
-            return result.into();
+            return result;
         }
 
         // Hidden ability.
         if let Some(hidden_ability) = &species.data.hidden_ability {
             if &ability.data.name == hidden_ability {
-                return result.into();
+                return result;
             }
         }
 
@@ -835,19 +834,19 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             "{} cannot have the ability {} because it is unobtainable.",
             mon.name, ability.data.name
         ));
-        result.into()
+        result
     }
 
     fn validate_event<'state>(
         &self,
         mon: &'b MonData,
         state: &mut MonValidationState<'state>,
-    ) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    ) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
 
         // Nothing to check.
         if !state.from_event {
-            return result.into();
+            return result;
         }
 
         // Check if events are banned.
@@ -855,7 +854,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             == ResourceCheck::Banned
         {
             result.add_problem(format!("All Mons obtained from events are banned."));
-            return result.into();
+            return result;
         }
 
         if state.possible_events.is_empty() {
@@ -863,7 +862,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 "{} is unobtainable (no single giveaway event allows its moveset).",
                 mon.name,
             ));
-            return result.into();
+            return result;
         }
 
         // At this point, the set of possible events is made up using the Mon's moveset and ability.
@@ -905,30 +904,28 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ));
         }
 
-        result.into()
+        result
     }
 
     /// Validates an entire bag for a battle.
-    fn validate_bag(&self, bag: &mut BagData) -> Result<(), TeamValidationError> {
-        let mut result = TeamValidationError::new();
+    fn validate_bag(&self, bag: &mut BagData) -> TeamValidationProblems {
+        let mut result = TeamValidationProblems::default();
         for item in bag.items.keys() {
             let item = match self.dex.items.get(&item) {
-                DataLookupResult::Found(item) => Some(item),
-                DataLookupResult::NotFound => {
-                    result.add_problem(format!("Item {item} (in bag) does not exist."));
-                    return result.into();
-                }
-                DataLookupResult::Error(error) => {
-                    result.add_problem(format!("Failed to lookup item {item}: {error}."));
-                    return result.into();
+                Ok(item) => item,
+                Err(error) => {
+                    if error.as_ref().is::<NotFoundError>() {
+                        result.add_problem(format!("Item {item} (in bag) does not exist."));
+                    } else {
+                        result.add_problem(format!("Failed to look up item {}: {error}.", item));
+                    }
+                    return result;
                 }
             };
 
-            if let Some(item) = item {
-                result.merge(self.validate_item(&item));
-            }
+            result.merge(self.validate_item(&item));
         }
-        result.into()
+        result
     }
 }
 
@@ -972,7 +969,7 @@ mod team_validator_tests {
             let result = validator.validate_team(&mut test_case.team);
             let problems = match result {
                 Ok(_) => Vec::new(),
-                Err(error) => error.problems,
+                Err(error) => error.problems().map(|problem| problem.to_owned()).collect(),
             };
             assert_eq!(
                 problems, test_case.expected_problems,

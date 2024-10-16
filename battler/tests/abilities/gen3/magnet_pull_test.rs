@@ -4,20 +4,17 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
-use battler_test_utils::{
-    assert_error_message,
-    TestBattleBuilder,
-};
+use battler_test_utils::TestBattleBuilder;
 
 fn team() -> Result<TeamData, Error> {
     serde_json::from_str(
@@ -68,10 +65,10 @@ fn make_battle(
 fn magnet_pull_traps_steel_foes() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        "cannot switch: Magnemite is trapped",
+        Err(err) => assert_eq!(err.full_description(), "cannot switch: Magnemite is trapped")
     );
 }

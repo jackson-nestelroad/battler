@@ -1,9 +1,7 @@
 mod captures;
-mod error;
 mod fraction;
 mod hash;
 mod id;
-mod lookup_result;
 mod lru;
 mod maybe_owned;
 mod reference;
@@ -11,15 +9,6 @@ mod strings;
 mod test_util;
 
 pub use captures::Captures;
-#[cfg(test)]
-pub use error::{
-    assert_error_message,
-    assert_error_message_contains,
-};
-pub use error::{
-    Error,
-    WrapResultError,
-};
 pub use fraction::{
     Fraction,
     FractionInteger,
@@ -32,7 +21,6 @@ pub use id::{
     Id,
     Identifiable,
 };
-pub use lookup_result::LookupResult;
 pub use lru::{
     Iter,
     IterMut,

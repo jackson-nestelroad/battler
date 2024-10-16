@@ -5,7 +5,7 @@ use battler::{
         PublicCoreBattle,
         WildPlayerOptions,
     },
-    common::{
+    error::{
         Error,
         WrapResultError,
     },
@@ -103,19 +103,19 @@ fn make_horde_battle(
 fn player_can_hit_all_adjacent_foes() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_horde_battle(&data, 0, team().unwrap(), rattata().unwrap()).unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("protagonist", "move 0,5"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-3", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-4", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("wild-3", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0,5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-3", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-4", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("wild-3", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

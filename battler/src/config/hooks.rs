@@ -8,23 +8,26 @@ use lazy_static::lazy_static;
 
 use crate::{
     battle::CoreBattleOptions,
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
         Id,
         Identifiable,
-        WrapResultError,
     },
     config::{
         ClauseStaticHooks,
         RuleSet,
     },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
+    },
     mons::Type,
     teams::{
         MonData,
-        TeamValidationError,
+        TeamValidationProblems,
         TeamValidator,
     },
 };
@@ -38,13 +41,13 @@ lazy_static! {
                 on_validate_team: Some(Box::new(
                     |validator: &TeamValidator,
                      team: &mut [&mut MonData]|
-                     -> Result<(), TeamValidationError> {
-                        let mut result = TeamValidationError::new();
+                     -> TeamValidationProblems {
+                        let mut result = TeamValidationProblems::default();
                         let limit = validator
                             .format
                             .rules
                             .numeric_value(&Id::from_known("abilityclause"))
-                            .wrap_error_with_message("expected abilityclause to be defined")?
+                            .wrap_expectation("expected abilityclause to be defined")?
                             as usize;
                         let mut abilities = FastHashMap::<Id, usize>::new();
                         for mon in team {
@@ -52,7 +55,6 @@ lazy_static! {
                                 .dex
                                 .abilities
                                 .get(&mon.ability)
-                                .into_result()
                                 .wrap_error_with_message("expected ability to exist")?;
                             *abilities.entry(ability.id().clone()).or_default() += 1;
                         }
@@ -63,11 +65,10 @@ lazy_static! {
                                 .dex
                                 .abilities
                                 .get_by_id(&ability)
-                                .into_result()
                                 .wrap_error_with_message("expected ability to exist")?;
                             result.add_problem(format!("Ability Clause: Ability {} appears more than {limit} times in your team.", ability.data.name));
                         }
-                        result.into()
+                        result
                     }
                 )),
                 ..Default::default()
@@ -77,25 +78,21 @@ lazy_static! {
             Id::from_known("forcemonotype"),
             ClauseStaticHooks {
                 on_validate_mon: Some(Box::new(
-                    |validator: &TeamValidator,
-                     mon: &mut MonData|
-                     -> Result<(), TeamValidationError> {
-                        let mut result = TeamValidationError::new();
+                    |validator: &TeamValidator, mon: &mut MonData| -> TeamValidationProblems {
+                        let mut result = TeamValidationProblems::default();
                         let want = Type::from_str(
                             validator
                                 .format
                                 .rules
                                 .value(&Id::from_known("forcemonotype"))
-                                .wrap_error_with_message(
-                                    "expected forcemonotype value to be defined",
-                                )?,
+                                .wrap_expectation("expected forcemonotype value to be defined")?,
                         )
+                        .map_err(|err| general_error(format!("invalid type: {err}")))
                         .wrap_error_with_message("expected forcemonotype to be a type")?;
                         let species = validator
                             .dex
                             .species
                             .get(&mon.species)
-                            .into_result()
                             .wrap_error_with_message("expected species to exist")?;
                         if !(species.data.primary_type == want
                             || species.data.secondary_type.is_some_and(|typ| typ == want))
@@ -114,8 +111,8 @@ lazy_static! {
                 on_validate_team: Some(Box::new(
                     |validator: &TeamValidator,
                      team: &mut [&mut MonData]|
-                     -> Result<(), TeamValidationError> {
-                        let mut result = TeamValidationError::new();
+                     -> TeamValidationProblems {
+                        let mut result = TeamValidationProblems::default();
                         let mut items_seen = FastHashSet::new();
                         for mon in team {
                             match &mon.item {
@@ -125,7 +122,6 @@ lazy_static! {
                                         .dex
                                         .items
                                         .get(&item)
-                                        .into_result()
                                         .wrap_error_with_message("expected item to exist")?;
                                     if !items_seen.insert(item.id().clone()) {
                                         result.add_problem(format!("You are limited to one of each item by Item Clause (you have more than one {}).", item.data.name));
@@ -143,17 +139,15 @@ lazy_static! {
             Id::from_known("nicknameclause"),
             ClauseStaticHooks {
                 on_validate_team: Some(Box::new(
-                    |_: &TeamValidator,
-                     team: &mut [&mut MonData]|
-                     -> Result<(), TeamValidationError> {
-                        let mut result = TeamValidationError::new();
+                    |_: &TeamValidator, team: &mut [&mut MonData]| -> TeamValidationProblems {
+                        let mut result = TeamValidationProblems::default();
                         let mut nicknames_seen = FastHashSet::new();
                         for mon in team {
                             if !nicknames_seen.insert(&mon.name) {
                                 result.add_problem(format!("You are limited to one of each nickname by Nickname Clause (you have more than one Mon named {}).", mon.name));
                             }
                         }
-                        result.into()
+                        result
                     }
                 )),
                 ..Default::default()
@@ -165,15 +159,14 @@ lazy_static! {
                 on_validate_team: Some(Box::new(
                     |validator: &TeamValidator,
                      team: &mut [&mut MonData]|
-                     -> Result<(), TeamValidationError> {
-                        let mut result = TeamValidationError::new();
+                     -> TeamValidationProblems {
+                        let mut result = TeamValidationProblems::default();
                         let mut team_types = FastHashMap::<Type, usize>::new();
                         for mon in team.iter() {
                             let species = validator
                                 .dex
                                 .species
                                 .get(&mon.species)
-                                .into_result()
                                 .wrap_error_with_message("expected species to exist")?;
                             *team_types.entry(species.data.primary_type).or_default() += 1;
                             if let Some(secondary_type) = species.data.secondary_type {
@@ -184,7 +177,7 @@ lazy_static! {
                         if team_types.into_iter().all(|(_, count)| count < team_size) {
                             result.add_problem(format!("Your team does not share a common type to satisfy Same Type Clause."));
                         }
-                        result.into()
+                        result
                     }
                 )),
                 ..Default::default()
@@ -196,21 +189,20 @@ lazy_static! {
                 on_validate_team: Some(Box::new(
                     |validator: &TeamValidator,
                      team: &mut [&mut MonData]|
-                     -> Result<(), TeamValidationError> {
-                        let mut result = TeamValidationError::new();
+                     -> TeamValidationProblems {
+                        let mut result = TeamValidationProblems::default();
                         let mut species_seen = FastHashSet::new();
                         for mon in team {
                             let species = validator
                                 .dex
                                 .species
                                 .get(&mon.species)
-                                .into_result()
                                 .wrap_error_with_message("expected species to exist")?;
                             if !species_seen.insert(Id::from(species.data.base_species.as_ref())) {
                                 result.add_problem(format!("You are limited to one of each Mon by Species Clause (you have more than one {}).", species.data.base_species));
                             }
                         }
-                        result.into()
+                        result
                     }
                 )),
                 ..Default::default()
@@ -223,22 +215,20 @@ lazy_static! {
                     |rules: &RuleSet, options: &mut CoreBattleOptions| -> Result<(), Error> {
                         let players_per_side = rules
                             .numeric_value(&Id::from_known("playersperside"))
-                            .wrap_error_with_message("expected Players Per Side to be an integer")?
+                            .wrap_expectation("expected playersperside to be an integer")?
                             as usize;
                         let suffix = if players_per_side == 1 { "" } else { "s" };
                         if options.side_1.players.len() != players_per_side {
-                            return Err(battler_error!(
-                                "{} must have exactly {players_per_side} player{}.",
+                            return Err(general_error(format!(
+                                "{} must have exactly {players_per_side} player{suffix}.",
                                 options.side_1.name,
-                                suffix
-                            ));
+                            )));
                         }
                         if options.side_2.players.len() != players_per_side {
-                            return Err(battler_error!(
-                                "{} must have exactly {players_per_side} player{}.",
+                            return Err(general_error(format!(
+                                "{} must have exactly {players_per_side} player{suffix}.",
                                 options.side_2.name,
-                                suffix
-                            ));
+                            )));
                         }
                         Ok(())
                     }

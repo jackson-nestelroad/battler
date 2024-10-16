@@ -27,7 +27,6 @@ pub use condition_dex::ConditionDex;
 #[cfg(test)]
 pub use data::fake_data_store::FakeDataStore;
 pub use data::{
-    DataLookupResult,
     DataStore,
     DataTable,
     LocalDataStore,

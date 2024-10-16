@@ -15,12 +15,12 @@ use crate::{
         MoveHandle,
     },
     common::{
-        Error,
         Id,
         Identifiable,
     },
     conditions::Condition,
     effect::fxlang,
+    error::Error,
     items::Item,
     moves::{
         Move,

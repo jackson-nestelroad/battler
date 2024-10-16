@@ -14,9 +14,7 @@ use crate::{
         BoostTable,
         MonHandle,
     },
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
         Fraction,
@@ -24,6 +22,10 @@ use crate::{
         Identifiable,
     },
     effect::fxlang,
+    error::{
+        general_error,
+        Error,
+    },
     mons::{
         Stat,
         Type,
@@ -461,10 +463,10 @@ impl Move {
         secondary_effects: Vec<SecondaryEffect>,
     ) -> Result<(), Error> {
         match self.secondary_effects.entry((target, self.hit)) {
-            Entry::Occupied(_) => Err(battler_error!(
+            Entry::Occupied(_) => Err(general_error(format!(
                 "target {target} already has secondary effects saved for hit {}",
-                self.hit
-            )),
+                self.hit,
+            ))),
             Entry::Vacant(entry) => {
                 entry.insert(secondary_effects);
                 Ok(())

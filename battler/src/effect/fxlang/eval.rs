@@ -30,15 +30,12 @@ use crate::{
         Player,
         SideEffectContext,
     },
-    battler_error,
     common::{
-        Error,
         Fraction,
         Id,
         Identifiable,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
-        WrapResultError,
     },
     effect::{
         fxlang::{
@@ -61,6 +58,13 @@ use crate::{
         ActiveMoveEffectStateConnector,
         EffectHandle,
         MonStatusEffectStateConnector,
+    },
+    error::{
+        general_error,
+        integer_overflow_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
     },
     mons::Type,
     moves::{
@@ -152,7 +156,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
         let source_effect = self
             .source_effect_handle()
-            .wrap_error_with_message("context has no source effect")?
+            .wrap_expectation("context has no source effect")?
             .clone();
         self.battle_context_mut().applying_effect_context(
             source_effect,
@@ -184,7 +188,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
         let source_effect = self
             .source_effect_handle()
-            .wrap_error_with_message("context has no source effect")?
+            .wrap_expectation("context has no source effect")?
             .clone();
         self.battle_context_mut()
             .side_effect_context(source_effect, side, source_handle, None)
@@ -210,7 +214,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
         let source_effect = self
             .source_effect_handle()
-            .wrap_error_with_message("context has no source effect")?
+            .wrap_expectation("context has no source effect")?
             .clone();
         self.battle_context_mut()
             .field_effect_context(source_effect, source_handle, None)
@@ -221,7 +225,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<&'eval ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
-            _ => Err(battler_error!("context is not an applying effect")),
+            _ => Err(general_error("context is not an applying effect")),
         }
     }
 
@@ -230,7 +234,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<&'eval mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
-            _ => Err(battler_error!("context is not an applying effect")),
+            _ => Err(general_error("context is not an applying effect")),
         }
     }
 
@@ -239,7 +243,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<Option<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
         match self {
             Self::ApplyingEffect(context) => context.source_applying_effect_context(),
-            _ => Err(battler_error!("context is not an applying effect")),
+            _ => Err(general_error("context is not an applying effect")),
         }
     }
 
@@ -254,7 +258,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>, Error> {
         match self {
             Self::ApplyingEffect(context) => context.target_context(),
-            _ => Err(battler_error!("effect cannot have a target")),
+            _ => Err(general_error("effect cannot have a target")),
         }
     }
 
@@ -265,7 +269,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             Self::ApplyingEffect(context) => context.source_context(),
             Self::SideEffect(context) => context.source_context(),
             Self::FieldEffect(context) => context.source_context(),
-            _ => Err(battler_error!("effect cannot have a source")),
+            _ => Err(general_error("effect cannot have a source")),
         }
     }
 
@@ -281,7 +285,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 {
                     context
                         .source_context()?
-                        .wrap_error_with_message("expected source mon")
+                        .wrap_expectation("expected source mon")
                 } else if mon_handle == context.target_handle() {
                     context.target_context()
                 } else {
@@ -296,7 +300,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 {
                     context
                         .source_context()?
-                        .wrap_error_with_message("expected source mon")
+                        .wrap_expectation("expected source mon")
                 } else {
                     context.as_battle_context_mut().mon_context(mon_handle)
                 }
@@ -308,7 +312,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 {
                     context
                         .source_context()?
-                        .wrap_error_with_message("expected source mon")
+                        .wrap_expectation("expected source mon")
                 } else {
                     context.as_battle_context_mut().mon_context(mon_handle)
                 }
@@ -323,9 +327,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    context
-                        .source()
-                        .wrap_error_with_message("expected source mon")
+                    context.source().wrap_expectation("expected source mon")
                 } else if mon_handle == context.target_handle() {
                     Ok(context.target())
                 } else {
@@ -338,9 +340,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    context
-                        .source()
-                        .wrap_error_with_message("expected source mon")
+                    context.source().wrap_expectation("expected source mon")
                 } else {
                     context.as_battle_context().mon(mon_handle)
                 }
@@ -350,9 +350,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    context
-                        .source()
-                        .wrap_error_with_message("expected source mon")
+                    context.source().wrap_expectation("expected source mon")
                 } else {
                     context.as_battle_context().mon(mon_handle)
                 }
@@ -367,9 +365,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    context
-                        .source_mut()
-                        .wrap_error_with_message("expected source mon")
+                    context.source_mut().wrap_expectation("expected source mon")
                 } else if mon_handle == context.target_handle() {
                     Ok(context.target_mut())
                 } else {
@@ -382,9 +378,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    context
-                        .source_mut()
-                        .wrap_error_with_message("expected source mon")
+                    context.source_mut().wrap_expectation("expected source mon")
                 } else {
                     context.as_battle_context_mut().mon_mut(mon_handle)
                 }
@@ -394,9 +388,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                     .source_handle()
                     .is_some_and(|source_handle| source_handle == mon_handle)
                 {
-                    context
-                        .source_mut()
-                        .wrap_error_with_message("expected source mon")
+                    context.source_mut().wrap_expectation("expected source mon")
                 } else {
                     context.as_battle_context_mut().mon_mut(mon_handle)
                 }
@@ -513,7 +505,7 @@ impl VariableRegistry {
         match self.vars.get(var) {
             Ok(val) => Ok(Some(val)),
             Err(BorrowError::OutOfBounds) => Ok(None),
-            Err(_) => Err(battler_error!("failed to borrow variable ${var}")),
+            Err(_) => Err(general_error(format!("failed to borrow variable ${var}"))),
         }
     }
 
@@ -521,7 +513,7 @@ impl VariableRegistry {
         match self.vars.get_mut(var) {
             Ok(val) => Ok(Some(val)),
             Err(BorrowError::OutOfBounds) => Ok(None),
-            Err(_) => Err(battler_error!("failed to borrow variable ${var}")),
+            Err(_) => Err(general_error(format!("failed to borrow variable ${var}"))),
         }
     }
 
@@ -535,7 +527,9 @@ impl VariableRegistry {
                 self.vars.register(var.to_owned(), value);
                 Ok(())
             }
-            Err(_) => Err(battler_error!("failed to mutably borrow variable ${var}")),
+            Err(_) => Err(general_error(format!(
+                "failed to mutably borrow variable ${var}"
+            ))),
         }
     }
 }
@@ -560,7 +554,7 @@ where
     }
 
     fn bad_member_access(member: &str, value_type: ValueType) -> Error {
-        battler_error!("value of type {value_type} has no member {member}")
+        general_error(format!("value of type {value_type} has no member {member}"))
     }
 
     fn get_ref<'var>(
@@ -600,7 +594,7 @@ where
                     value = match value.len() {
                         Some(len) => ValueRef::UFraction(
                             TryInto::<u64>::try_into(len)
-                                .wrap_error_with_message("integer overflow")?
+                                .map_err(integer_overflow_error)?
                                 .into(),
                         ),
                         None => ValueRef::Undefined,
@@ -622,9 +616,7 @@ where
                             "condition" => ValueRef::TempEffect(
                                 effect_handle
                                     .condition_handle(context.battle_context())?
-                                    .wrap_error_with_message(
-                                        "effect has no associated condition",
-                                    )?,
+                                    .wrap_expectation("effect has no associated condition")?,
                             ),
                             "id" => ValueRef::TempString(
                                 CoreBattle::get_effect_by_handle(
@@ -954,7 +946,7 @@ where
                                 match context.mon(mon_handle)?.last_move_target_location {
                                     Some(last_target_location) => ValueRef::Fraction(
                                         TryInto::<i32>::try_into(last_target_location)
-                                            .wrap_error_with_message("integer overflow")?
+                                            .map_err(integer_overflow_error)?
                                             .into(),
                                     ),
                                     None => ValueRef::Undefined,
@@ -995,7 +987,7 @@ where
                                 match Mon::position_on_side(&context.mon_context(mon_handle)?) {
                                     Some(position) => ValueRef::UFraction(
                                         TryInto::<u32>::try_into(position)
-                                            .wrap_error_with_message("integer overflow")?
+                                            .map_err(integer_overflow_error)?
                                             .into(),
                                     ),
                                     None => ValueRef::Undefined,
@@ -1091,7 +1083,7 @@ where
                                 TryInto::<u64>::try_into(
                                     context.battle_context().battle().max_side_length(),
                                 )
-                                .wrap_error_with_message("integer overflow")?
+                                .map_err(integer_overflow_error)?
                                 .into(),
                             ),
                             "obedience_cap" => ValueRef::UFraction(
@@ -1161,18 +1153,12 @@ where
                         }
                     } else if let ValueRef::Nature(nature) = value {
                         value = match *member {
-                            "boosts" => ValueRef::Boost(
-                                nature
-                                    .boosts()
-                                    .try_into()
-                                    .wrap_error_with_message("invalid nature boost")?,
-                            ),
-                            "drops" => ValueRef::Boost(
-                                nature
-                                    .drops()
-                                    .try_into()
-                                    .wrap_error_with_message("invalid nature drop")?,
-                            ),
+                            "boosts" => {
+                                ValueRef::Boost(nature.boosts().try_into().map_err(general_error)?)
+                            }
+                            "drops" => {
+                                ValueRef::Boost(nature.drops().try_into().map_err(general_error)?)
+                            }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::EffectState(connector) = value {
@@ -1232,9 +1218,9 @@ where
     }
 
     fn bad_member_or_mutable_access(member: &str, value_type: ValueType) -> Error {
-        battler_error!(
-            "value of type {value_type} has no member {member} or the member is immutable"
-        )
+        general_error(format!(
+            "value of type {value_type} has no member {member} or the member is immutable",
+        ))
     }
 
     fn get_ref_mut<'var>(
@@ -1553,7 +1539,7 @@ impl Evaluator {
                 Value::Mon(
                     context
                         .target_handle()
-                        .wrap_error_with_message("context has no mon")?,
+                        .wrap_expectation("context has no mon")?,
                 ),
             )?;
         }
@@ -1576,7 +1562,7 @@ impl Evaluator {
                 Value::Mon(
                     context
                         .target_handle()
-                        .wrap_error_with_message("context has no user")?,
+                        .wrap_expectation("context has no user")?,
                 ),
             )?;
         }
@@ -1601,7 +1587,7 @@ impl Evaluator {
                     context
                         .source_effect_handle()
                         .cloned()
-                        .wrap_error_with_message("context has no effect")?,
+                        .wrap_expectation("context has no effect")?,
                 ),
             )?;
         }
@@ -1611,7 +1597,7 @@ impl Evaluator {
                 Value::ActiveMove(
                     context
                         .source_active_move_handle()
-                        .wrap_error_with_message("context has no active move")?,
+                        .wrap_expectation("context has no active move")?,
                 ),
             )?;
         }
@@ -1627,7 +1613,7 @@ impl Evaluator {
                 Value::Side(
                     context
                         .side_index()
-                        .wrap_error_with_message("context has no side")?,
+                        .wrap_expectation("context has no side")?,
                 ),
             )?;
         }
@@ -1638,10 +1624,10 @@ impl Evaluator {
             match input.values.pop() {
                 None | Some(Value::Undefined) => {
                     if *required {
-                        return Err(battler_error!(
+                        return Err(general_error(format!(
                             "missing {value_type} input at position {} for variable {name}",
-                            i + 1
-                        ));
+                            i + 1,
+                        )));
                     }
                 }
                 Some(value) => {
@@ -1653,10 +1639,10 @@ impl Evaluator {
         }
 
         if !input.values.is_empty() {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "too many input values: found {} extra values",
-                input.values.len()
-            ));
+                input.values.len(),
+            )));
         }
 
         Ok(())
@@ -1683,12 +1669,12 @@ impl Evaluator {
         if !event.output_type_allowed(value.as_ref().map(|val| val.value_type())) {
             match value {
                 Some(val) => {
-                    return Err(battler_error!(
+                    return Err(general_error(format!(
                         "{event:?} cannot return a {}",
-                        val.value_type()
-                    ))
+                        val.value_type(),
+                    )))
                 }
-                None => return Err(battler_error!("{event:?} must return a value")),
+                None => return Err(general_error(format!("{event:?} must return a value"))),
             }
         }
         Ok(ProgramEvalResult::new(value))
@@ -1716,14 +1702,14 @@ impl Evaluator {
                 if let Some(for_each_context) = &parent_state.for_each_context {
                     let list = self.resolve_value(context, for_each_context.list)?;
                     if !list.supports_list_iteration() {
-                        return Err(battler_error!(
+                        return Err(general_error(format!(
                             "cannot iterate over a {}",
                             list.value_type()
-                        ));
+                        )));
                     }
-                    let len = list.len().wrap_error_with_message(
-                        "value supports iteration but is missing a length",
-                    )?;
+                    let len = list
+                        .len()
+                        .wrap_expectation("value supports iteration but is missing a length")?;
                     // SAFETY: We only use this immutable borrow at the beginning of each loop, at
                     // the start of each execution.
                     //
@@ -1732,7 +1718,7 @@ impl Evaluator {
                     // checking, so borrow errors will trigger during evaluation.
                     let list: MaybeReferenceValue = unsafe { mem::transmute(list) };
                     for i in 0..len {
-                        let current_item = list.list_index(i).wrap_error_with_format(format_args!(
+                        let current_item = list.list_index(i).wrap_expectation_with_format(format_args!(
                             "list has no element at index {i}, but length at beginning of foreach loop was {len}"
                         ))?.to_owned();
                         self.vars.set(for_each_context.item, current_item)?;
@@ -1860,10 +1846,10 @@ impl Evaluator {
             }
             tree::Statement::ForEachStatement(statement) => {
                 if !statement.var.member_access.is_empty() {
-                    return Err(battler_error!(
+                    return Err(general_error(format!(
                         "invalid variable in foreach statement: ${}",
-                        statement.var.full_name()
-                    ));
+                        statement.var.full_name(),
+                    )));
                 }
                 Ok(ProgramStatementEvalResult::ForEachStatement(
                     &statement.var.name.0,
@@ -1892,10 +1878,10 @@ impl Evaluator {
         let condition = match condition.boolean() {
             Some(value) => value,
             _ => {
-                return Err(battler_error!(
+                return Err(general_error(format!(
                     "if statement condition must return a boolean, got {}",
-                    condition.value_type()
-                ))
+                    condition.value_type(),
+                )))
             }
         };
         Ok(condition)
@@ -1937,7 +1923,7 @@ impl Evaluator {
         match op {
             tree::Operator::Not => value.negate(),
             tree::Operator::UnaryPlus => value.unary_plus(),
-            _ => Err(battler_error!("invalid prefix operator: {op}")),
+            _ => Err(general_error(format!("invalid prefix operator: {op}"))),
         }
     }
 
@@ -1963,7 +1949,7 @@ impl Evaluator {
             tree::Operator::NotEqual => lhs.not_equal(rhs),
             tree::Operator::And => lhs.and(rhs),
             tree::Operator::Or => lhs.or(rhs),
-            _ => Err(battler_error!("invalid binary operator: {op}")),
+            _ => Err(general_error(format!("invalid binary operator: {op}"))),
         }
     }
 
@@ -2058,12 +2044,12 @@ impl Evaluator {
                         // Use next positional argument.
                         let next_arg = args
                             .get(next_arg_index)
-                            .wrap_error_with_format(format_args!("formatted string is missing positional argument for index {next_arg_index}"))?;
+                            .wrap_expectation_with_format(format_args!("formatted string is missing positional argument for index {next_arg_index}"))?;
                         next_arg_index += 1;
                         group = MaybeReferenceValueForOperation::from(next_arg)
                             .for_formatted_string()?;
                     } else {
-                        return Err(battler_error!("invalid format group: {group}"));
+                        return Err(general_error(format!("invalid format group: {group}")));
                     }
 
                     // Add the replaced group to the string.
@@ -2175,28 +2161,16 @@ impl Evaluator {
                 *var = Some(val);
             }
             (ValueRefMut::I8(var), Value::Fraction(val)) => {
-                *var = val
-                    .round()
-                    .try_into()
-                    .wrap_error_with_message("integer overflow")?;
+                *var = val.round().try_into().map_err(integer_overflow_error)?
             }
             (ValueRefMut::I8(var), Value::UFraction(val)) => {
-                *var = val
-                    .round()
-                    .try_into()
-                    .wrap_error_with_message("integer overflow")?;
+                *var = val.round().try_into().map_err(integer_overflow_error)?;
             }
             (ValueRefMut::U16(var), Value::Fraction(val)) => {
-                *var = val
-                    .round()
-                    .try_into()
-                    .wrap_error_with_message("integer overflow")?;
+                *var = val.round().try_into().map_err(integer_overflow_error)?;
             }
             (ValueRefMut::U16(var), Value::UFraction(val)) => {
-                *var = val
-                    .round()
-                    .try_into()
-                    .wrap_error_with_message("integer overflow")?;
+                *var = val.round().try_into().map_err(integer_overflow_error)?;
             }
             (ValueRefMut::U32(var), Value::Fraction(val)) => {
                 *var = val.round() as u32;
@@ -2217,60 +2191,34 @@ impl Evaluator {
                 *var = val.round() as i64;
             }
             (ValueRefMut::OptionalISize(var), Value::Fraction(val)) => {
-                *var = Some(
-                    val.round()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?,
-                );
+                *var = Some(val.round().try_into().map_err(integer_overflow_error)?);
             }
             (ValueRefMut::OptionalISize(var), Value::UFraction(val)) => {
-                *var = Some(
-                    val.floor()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?,
-                );
+                *var = Some(val.floor().try_into().map_err(integer_overflow_error)?);
             }
             (ValueRefMut::OptionalU16(var), Value::Fraction(val)) => {
-                *var = Some(
-                    val.round()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?,
-                );
+                *var = Some(val.round().try_into().map_err(integer_overflow_error)?);
             }
             (ValueRefMut::OptionalU16(var), Value::UFraction(val)) => {
-                *var = Some(
-                    val.round()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?,
-                );
+                *var = Some(val.round().try_into().map_err(integer_overflow_error)?);
             }
             (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
                 *var = val;
             }
             (ValueRefMut::Fraction(var), Value::UFraction(val)) => {
-                *var = val
-                    .try_convert()
-                    .wrap_error_with_message("integer overflow")?;
+                *var = val.try_convert().map_err(integer_overflow_error)?;
             }
             (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
-                *var = val
-                    .try_convert()
-                    .wrap_error_with_message("integer overflow")?;
+                *var = val.try_convert().map_err(integer_overflow_error)?;
             }
             (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
                 *var = val;
             }
             (ValueRefMut::OptionalFractionU16(var), Value::Fraction(val)) => {
-                *var = Some(
-                    val.try_convert()
-                        .wrap_error_with_message("integer overflow")?,
-                );
+                *var = Some(val.try_convert().map_err(integer_overflow_error)?);
             }
             (ValueRefMut::OptionalFractionU16(var), Value::UFraction(val)) => {
-                *var = Some(
-                    val.try_convert()
-                        .wrap_error_with_message("integer overflow")?,
-                );
+                *var = Some(val.try_convert().map_err(integer_overflow_error)?);
             }
             (ValueRefMut::String(var), Value::String(val)) => {
                 *var = val;
@@ -2303,13 +2251,13 @@ impl Evaluator {
                 *var = val;
             }
             (ValueRefMut::MoveTarget(var), Value::String(val)) => {
-                *var = MoveTarget::from_str(&val).wrap_error_with_message("invalid move target")?;
+                *var = MoveTarget::from_str(&val).map_err(general_error)?;
             }
             (ValueRefMut::Type(var), Value::Type(val)) => {
                 *var = val;
             }
             (ValueRefMut::Type(var), Value::String(val)) => {
-                *var = Type::from_str(&val).wrap_error_with_message("invalid type")?;
+                *var = Type::from_str(&val).map_err(general_error)?;
             }
             (ValueRefMut::Boost(var), Value::Boost(val)) => {
                 *var = val;
@@ -2331,18 +2279,16 @@ impl Evaluator {
             }
             (ValueRefMut::Accuracy(var), Value::Fraction(val)) => {
                 *var = Accuracy::from(
-                    TryInto::<u8>::try_into((val * 100).floor())
-                        .wrap_error_with_message("invalid accuracy")?,
+                    TryInto::<u8>::try_into((val * 100).floor()).map_err(general_error)?,
                 );
             }
             (ValueRefMut::Accuracy(var), Value::UFraction(val)) => {
                 *var = Accuracy::from(
-                    TryInto::<u8>::try_into((val * 100).floor())
-                        .wrap_error_with_message("invalid accuracy")?,
+                    TryInto::<u8>::try_into((val * 100).floor()).map_err(general_error)?,
                 );
             }
             (ValueRefMut::Accuracy(var), Value::String(val)) => {
-                *var = Accuracy::from_str(&val).wrap_error_with_message("invalid accuracy")?;
+                *var = Accuracy::from_str(&val).map_err(general_error)?;
             }
             (ValueRefMut::Accuracy(var), Value::Accuracy(val)) => {
                 *var = val;
@@ -2370,9 +2316,7 @@ impl Evaluator {
             }
             (ValueRefMut::OptionalMultihitType(var), Value::Fraction(val)) => {
                 *var = Some(MultihitType::Static(
-                    val.floor()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?,
+                    val.floor().try_into().map_err(integer_overflow_error)?,
                 ));
             }
             (ValueRefMut::StatTable(var), Value::StatTable(val)) => {
@@ -2380,9 +2324,7 @@ impl Evaluator {
             }
             (ValueRefMut::OptionalMultihitType(var), Value::UFraction(val)) => {
                 *var = Some(MultihitType::Static(
-                    val.floor()
-                        .try_into()
-                        .wrap_error_with_message("integer overflow")?,
+                    val.floor().try_into().map_err(integer_overflow_error)?,
                 ));
             }
             (ValueRefMut::EffectState(var), Value::EffectState(val)) => {
@@ -2395,7 +2337,7 @@ impl Evaluator {
                 *var = val;
             }
             _ => {
-                return Err(battler_error!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name()));
+                return Err(general_error(format!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name())));
             }
         }
 
@@ -2430,7 +2372,7 @@ impl Evaluator {
                 self.vars.set(&var.name.0, Value::Undefined)?;
                 self.vars
                     .get_mut(&var.name.0)?
-                    .wrap_error_with_format(format_args!(
+                    .wrap_expectation_with_format(format_args!(
                         "variable ${} is undefined even after initialization",
                         var.name.0
                     ))?

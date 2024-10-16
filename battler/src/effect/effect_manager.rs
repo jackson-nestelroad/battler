@@ -5,12 +5,7 @@ use std::{
 
 use crate::{
     battle::CoreBattle,
-    battler_error,
-    common::{
-        Error,
-        LruCache,
-        WrapResultError,
-    },
+    common::LruCache,
     effect::{
         fxlang::{
             BattleEvent,
@@ -23,6 +18,11 @@ use crate::{
         },
         Effect,
         EffectHandle,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
     },
 };
 
@@ -75,10 +75,10 @@ impl EffectManager {
             .stack
             > Self::MAX_STACK_SIZE
         {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "fxlang effect callback stack size exceeded for {event} callback of effect {}",
-                effect.full_name()
-            ));
+                effect.full_name(),
+            )));
         }
 
         let result = Self::evaluate_internal(
@@ -105,7 +105,7 @@ impl EffectManager {
         effect: &Effect,
     ) -> Result<Rc<ParsedCallbacks>, Error> {
         let id = if effect.unlinked() {
-            effect_handle.unlinked_internal_fxlang_id().wrap_error_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
+            effect_handle.unlinked_internal_fxlang_id().wrap_expectation_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
         } else {
             effect.internal_fxlang_id()
         };
@@ -116,7 +116,7 @@ impl EffectManager {
                 .callbacks
                 .get(&id)
                 .cloned()
-                .wrap_error_with_format(format_args!(
+                .wrap_expectation_with_format(format_args!(
                     "callbacks cache contains {id} but lookup failed"
                 ));
         }
@@ -129,7 +129,7 @@ impl EffectManager {
         self.callbacks
             .get(&id)
             .cloned()
-            .wrap_error_with_message("pushing to effect cache failed, so parsed program was lost")
+            .wrap_expectation("pushing to effect cache failed, so parsed program was lost")
     }
 
     fn evaluate_internal(

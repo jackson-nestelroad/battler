@@ -10,11 +10,13 @@ use serde_string_enum::{
 };
 
 use crate::{
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
+    },
+    error::{
+        general_error,
+        Error,
         WrapResultError,
     },
 };
@@ -56,7 +58,7 @@ impl FromStr for MoveSource {
             }
             "E" => Ok(Self::Egg),
             "R" => Ok(Self::Restricted),
-            _ => Err(battler_error!("invalid move source: {s}")),
+            _ => Err(general_error(format!("invalid move source: {s}"))),
         }
     }
 }

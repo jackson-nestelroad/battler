@@ -13,7 +13,6 @@ use serde::{
     Serialize,
 };
 
-use super::MonSummaryData;
 use crate::{
     battle::{
         core_battle_actions,
@@ -33,6 +32,7 @@ use crate::{
         MonBattleData,
         MonExitType,
         MonHandle,
+        MonSummaryData,
         MoveAction,
         MoveActionInput,
         PlayerContext,
@@ -44,21 +44,24 @@ use crate::{
         TeamAction,
         TeamActionInput,
     },
-    battler_error,
     common::{
         split_once_optional,
         Captures,
-        Error,
         FastHashMap,
         FastHashSet,
         Id,
         Identifiable,
-        WrapResultError,
     },
     dex::Dex,
     effect::{
         fxlang,
         EffectHandle,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
     },
     items::{
         ItemFlags,
@@ -279,9 +282,7 @@ impl MoveChoice {
             .split(',')
             .map(|str| str.trim())
             .collect::<VecDeque<&str>>();
-        let move_slot = args
-            .pop_front()
-            .wrap_error_with_message("missing move slot")?;
+        let move_slot = args.pop_front().wrap_expectation("missing move slot")?;
         let move_slot = move_slot
             .parse()
             .wrap_error_with_message("invalid move slot")?;
@@ -304,7 +305,11 @@ impl MoveChoice {
             Some("mega") => {
                 choice.mega = true;
             }
-            Some(str) => return Err(battler_error!("invalid option in move choice: {str}")),
+            Some(str) => {
+                return Err(general_error(format!(
+                    "invalid option in move choice: {str}"
+                )))
+            }
             None => (),
         }
 
@@ -344,7 +349,7 @@ impl ItemChoice {
             .split(',')
             .map(|str| str.trim())
             .collect::<VecDeque<&str>>();
-        let item = args.pop_front().wrap_error_with_message("missing item")?;
+        let item = args.pop_front().wrap_expectation("missing item")?;
         let item = Id::from(item);
         let target = args.pop_front().map(|target| target.parse().ok()).flatten();
         let additional_input = args.into_iter().map(|arg| arg.to_owned()).collect();
@@ -418,7 +423,7 @@ impl Player {
             .map(|(team_position, mon_data)| {
                 Ok(registry.register_mon(Mon::new(mon_data, team_position, dex)?))
             })
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<Vec<_>, Error>>()?;
         let active = vec![None; battle_type.active_per_player()];
         let bag = data
             .team
@@ -490,7 +495,7 @@ impl Player {
         *self
             .active
             .get_mut(position)
-            .wrap_error_with_format(format_args!(
+            .wrap_expectation_with_format(format_args!(
                 "mon cannot be in active position {position}"
             ))? = mon;
         if mon.is_some() {
@@ -498,7 +503,7 @@ impl Player {
             *self
                 .active_or_exited
                 .get_mut(position)
-                .wrap_error_with_format(format_args!(
+                .wrap_expectation_with_format(format_args!(
                     "mon cannot be in active position {position}"
                 ))? = mon;
         }
@@ -715,7 +720,7 @@ impl Player {
         let player = context.player_mut();
         match player.request_type() {
             Some(RequestType::TeamPreview) => (),
-            _ => return Err(battler_error!("you are not in a team preview phase")),
+            _ => return Err(general_error("you are not in a team preview phase")),
         }
 
         let picked_team_size = Self::picked_team_size(context);
@@ -752,15 +757,17 @@ impl Player {
 
         for (i, mon_index) in selected.iter().enumerate() {
             if mon_index >= &context.player().mons.len() {
-                return Err(battler_error!("you do not have a Mon in slot {mon_index}"));
+                return Err(general_error(format!(
+                    "you do not have a mon in slot {mon_index}"
+                )));
             }
             // `position` returns the position of the first `mon_index` in the user's input. If this
             // is not equal to the position we are currently validating, that means the same
             // `mon_index` appears earlier in the vector, so the input is invalid.
             if selected.iter().position(|i| i == mon_index) != Some(i) {
-                return Err(battler_error!(
-                    "the Mon in slot {mon_index} can only be selected once"
-                ));
+                return Err(general_error(format!(
+                    "the mon in slot {mon_index} can only be selected once",
+                )));
             }
         }
 
@@ -792,14 +799,14 @@ impl Player {
             };
             return Self::emit_choice_error(
                 context,
-                battler_error!("you cannot do anything: {reason}"),
+                general_error(format!("you cannot do anything: {reason}")),
             );
         }
 
         if !player.choice.undo_allowed {
             return Self::emit_choice_error(
                 context,
-                battler_error!("player choice cannot be undone"),
+                general_error("player choice cannot be undone"),
             );
         }
 
@@ -807,86 +814,34 @@ impl Player {
 
         for choice in input.split(";").map(|str| str.trim()) {
             let (choice, data) = split_once_optional(choice, " ");
-            match choice {
-                "team" => match Self::choose_team(context, data) {
-                    Err(error) => {
-                        return Self::emit_choice_error(
-                            context,
-                            Error::wrap("team preview choice failed", error),
-                        );
-                    }
-                    _ => (),
-                },
-                "switch" => match Self::choose_switch(context, data) {
-                    Err(error) => {
-                        return Self::emit_choice_error(
-                            context,
-                            Error::wrap("cannot switch", error),
-                        );
-                    }
-                    _ => (),
-                },
-                "move" => match Self::choose_move(context, data) {
-                    Err(error) => {
-                        return Self::emit_choice_error(context, Error::wrap("cannot move", error))
-                    }
-                    _ => (),
-                },
-                "pass" => match Self::choose_pass(context) {
-                    Err(error) => {
-                        return Self::emit_choice_error(context, Error::wrap("cannot pass", error))
-                    }
-                    _ => (),
-                },
-                "learnmove" => match Self::choose_learn_move(context, data) {
-                    Err(error) => {
-                        return Self::emit_choice_error(
-                            context,
-                            Error::wrap("cannot learn move", error),
-                        )
-                    }
-                    _ => (),
-                },
-                "escape" => match Self::choose_escape(context) {
-                    Err(error) => {
-                        return Self::emit_choice_error(
-                            context,
-                            Error::wrap("cannot escape", error),
-                        );
-                    }
-                    _ => (),
-                },
-                "forfeit" => match Self::choose_forfeit(context) {
-                    Err(error) => {
-                        return Self::emit_choice_error(
-                            context,
-                            Error::wrap("cannot forfeit", error),
-                        )
-                    }
-                    _ => (),
-                },
-                "item" => match Self::choose_item(context, data) {
-                    Err(error) => {
-                        return Self::emit_choice_error(
-                            context,
-                            Error::wrap("cannot use item", error),
-                        )
-                    }
-                    _ => (),
-                },
-                _ => {
-                    return Self::emit_choice_error(
-                        context,
-                        battler_error!("unrecognized choice: {choice}"),
-                    )
+            let result = match choice {
+                "team" => Self::choose_team(context, data)
+                    .wrap_error_with_message("team preview choice failed"),
+                "switch" => {
+                    Self::choose_switch(context, data).wrap_error_with_message("cannot switch")
                 }
+                "move" => Self::choose_move(context, data).wrap_error_with_message("cannot move"),
+                "pass" => Self::choose_pass(context).wrap_error_with_message("cannot pass"),
+                "learnmove" => Self::choose_learn_move(context, data)
+                    .wrap_error_with_message("cannot learn move"),
+                "escape" => Self::choose_escape(context).wrap_error_with_message("cannot escape"),
+                "forfeit" => {
+                    Self::choose_forfeit(context).wrap_error_with_message("cannot forfeit")
+                }
+                "item" => {
+                    Self::choose_item(context, data).wrap_error_with_message("cannot use item")
+                }
+                _ => Err(general_error(format!("unrecognized choice: {choice}"))),
+            };
+            if let Err(error) = result {
+                return Self::emit_choice_error(context, error);
             }
         }
 
         if !Self::choice_done(context)? {
             return Self::emit_choice_error(
                 context,
-                battler_error!("incomplete choice: missing actions for Mons"),
+                general_error("incomplete choice: missing actions for mons"),
             );
         }
 
@@ -897,15 +852,15 @@ impl Player {
     fn choose_switch(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
         match context.player().request_type() {
             Some(RequestType::Turn | RequestType::Switch) => (),
-            _ => return Err(battler_error!("you cannot switch out of turn")),
+            _ => return Err(general_error("you cannot switch out of turn")),
         };
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return match context.player().request_type() {
-                Some(RequestType::Switch) => Err(battler_error!(
-                    "you sent more switches than Mons that need to switch"
+                Some(RequestType::Switch) => Err(general_error(
+                    "you sent more switches than mons that need to switch",
                 )),
-                _ => Err(battler_error!("you sent more choices than active Mons")),
+                _ => Err(general_error("you sent more choices than active mons")),
             };
         }
         let active_mon_handle = context
@@ -914,15 +869,15 @@ impl Player {
             .get(active_position)
             .cloned()
             .flatten()
-            .wrap_error_with_format(format_args!(
-                "expected player to have active Mon in position {active_position}"
+            .wrap_expectation_with_format(format_args!(
+                "expected player to have active mon in position {active_position}"
             ))?;
         let active_mon = context.mon(active_mon_handle)?;
         let active_mon_position = active_mon
             .active_position
             .or(active_mon.old_active_position)
-            .wrap_error_with_message("mon to switch out is not in an active position")?;
-        let data = data.wrap_error_with_message("you must select a Mon to switch in")?;
+            .wrap_expectation("mon to switch out is not in an active position")?;
+        let data = data.wrap_expectation("you must select a mon to switch in")?;
         let slot = data
             .parse::<usize>()
             .wrap_error_with_message("switch argument is not an integer")?;
@@ -932,16 +887,16 @@ impl Player {
             .mons
             .get(slot)
             .cloned()
-            .wrap_error_with_format(format_args!(
-                "you do not have a Mon in slot {slot} to switch to"
+            .wrap_expectation_with_format(format_args!(
+                "you do not have a mon in slot {slot} to switch to"
             ))?;
         if context.player().active.contains(&Some(target_mon_handle)) {
-            return Err(battler_error!("you cannot switch to an active Mon"));
+            return Err(general_error("you cannot switch to an active mon"));
         }
         if context.player().choice.switch_ins.contains(&slot) {
-            return Err(battler_error!(
-                "the Mon in slot {slot} can only switch in once"
-            ));
+            return Err(general_error(format!(
+                "the mon in slot {slot} can only switch in once",
+            )));
         }
 
         let target_context = context
@@ -950,10 +905,10 @@ impl Player {
 
         match target_context.mon().exited {
             Some(MonExitType::Fainted) => {
-                return Err(battler_error!("you cannot switch to a fainted Mon"))
+                return Err(general_error("you cannot switch to a fainted mon"))
             }
             Some(MonExitType::Caught) => {
-                return Err(battler_error!("you cannot switch to a caught Mon"))
+                return Err(general_error("you cannot switch to a caught mon"))
             }
             None => (),
         }
@@ -962,13 +917,13 @@ impl Player {
         match context.player().request_type() {
             Some(RequestType::Turn) => {
                 if active_mon.trapped {
-                    return Err(battler_error!("{} is trapped", active_mon.name));
+                    return Err(general_error(format!("{} is trapped", active_mon.name)));
                 }
             }
             Some(RequestType::Switch) => {
                 let player = context.player_mut();
                 if player.choice.forced_switches_left == 0 {
-                    return Err(battler_error!("player switched too many Mons"));
+                    return Err(general_error("player switched too many mons"));
                 }
                 player.choice.forced_switches_left -= 1;
             }
@@ -998,14 +953,14 @@ impl Player {
         pass: bool,
     ) -> Result<usize, Error> {
         if context.player().escaped {
-            return Err(battler_error!(
+            return Err(general_error(format!(
                 "you {} the battle",
                 if Self::can_escape(context) {
                     "escaped from"
                 } else {
                     "left"
-                }
-            ));
+                },
+            )));
         }
 
         // Choices generate a single action, so there should be once choice for each active Mon.
@@ -1063,10 +1018,10 @@ impl Player {
                     let mut context = context.mon_context(mon)?;
                     if context.mon().needs_switch.is_some() {
                         if context.player().choice.forced_passes_left == 0 {
-                            return Err(battler_error!(
-                                "cannot pass: you must select a Mon to replace {}",
+                            return Err(general_error(format!(
+                                "you must select a mon to replace {}",
                                 context.mon().name,
-                            ));
+                            )));
                         }
                         context.player_mut().choice.forced_passes_left -= 1;
                     }
@@ -1078,18 +1033,16 @@ impl Player {
                     if context.mon().exited.is_none()
                         && !context.battle().engine_options.allow_pass_for_unfainted_mon
                     {
-                        return Err(battler_error!(
-                            "cannot pass: your {} must make a move or switch",
+                        return Err(general_error(format!(
+                            "your {} must make a move or switch",
                             context.mon().name,
-                        ));
+                        )));
                     };
                 }
             }
             Some(RequestType::LearnMove) => (),
             _ => {
-                return Err(battler_error!(
-                    "cannot pass: only a move or switch can be passed"
-                ));
+                return Err(general_error("only a move or switch can be passed"));
             }
         }
 
@@ -1100,37 +1053,36 @@ impl Player {
     fn choose_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
-            _ => return Err(battler_error!("you cannot move out of turn")),
+            _ => return Err(general_error("you cannot move out of turn")),
         }
-        let mut choice = MoveChoice::new(data.wrap_error_with_message("missing move choice")?)?;
+        let mut choice = MoveChoice::new(data.wrap_expectation("missing move choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
-            return Err(battler_error!("you sent more choices than active Mons"));
+            return Err(general_error("you sent more choices than active mons"));
         }
         let mon_handle = context
             .player()
             .active_mon_handle(active_position)
-            .wrap_error_with_format(format_args!(
-                "expected an active Mon in position {active_position}"
+            .wrap_expectation_with_format(format_args!(
+                "expected an active mon in position {active_position}"
             ))?;
 
         // This becomes our new context for the rest of the choice.
         let mut context = context
             .mon_context(mon_handle)
             .wrap_error_with_format(format_args!(
-                "expected Mon to exist for handle {mon_handle}"
+                "expected mon to exist for handle {mon_handle}"
             ))?;
 
         let request = Mon::move_request(&mut context)?;
-        let move_slot =
-            request
-                .moves
-                .get(choice.move_slot)
-                .wrap_error_with_format(format_args!(
-                    "{} does not have a move in slot {}",
-                    context.mon().name,
-                    choice.move_slot
-                ))?;
+        let move_slot = request
+            .moves
+            .get(choice.move_slot)
+            .wrap_expectation_with_format(format_args!(
+                "{} does not have a move in slot {}",
+                context.mon().name,
+                choice.move_slot
+            ))?;
 
         let mut move_id = move_slot.id.clone();
 
@@ -1158,7 +1110,6 @@ impl Player {
             .dex
             .moves
             .get_by_id(&move_id)
-            .into_result()
             .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
         // Clone these to avoid borrow errors.
         //
@@ -1173,16 +1124,16 @@ impl Player {
             // Make sure the selected move is not disabled.
             let move_slot = moves
                 .get(choice.move_slot)
-                .wrap_error_with_format(format_args!(
-                    "expected move in slot {}",
+                .wrap_not_found_error_with_format(format_args!(
+                    "move in slot {}",
                     choice.move_slot,
                 ))?;
             if move_slot.disabled {
-                return Err(battler_error!(
+                return Err(general_error(format!(
                     "{}'s {} is disabled",
                     context.mon().name,
-                    move_name
-                ));
+                    move_name,
+                )));
             }
         }
 
@@ -1195,26 +1146,31 @@ impl Player {
         match (mov.data.target.choosable(), choice.target) {
             (true, None) => {
                 if target_required {
-                    return Err(battler_error!("{move_name} requires a target"));
+                    return Err(general_error(format!("{move_name} requires a target")));
                 }
             }
             (true, Some(target)) => {
                 if !CoreBattle::valid_target(&mut context, move_target, target)? {
-                    return Err(battler_error!("invalid target for {move_name}"));
+                    return Err(general_error(format!("invalid target for {move_name}")));
                 }
             }
             (false, Some(_)) => {
-                return Err(battler_error!("you cannot choose a target for {move_name}"))
+                return Err(general_error(format!(
+                    "you cannot choose a target for {move_name}"
+                )));
             }
             _ => (),
         }
 
         // Mega evoution.
         if choice.mega && !context.mon().can_mega_evo {
-            return Err(battler_error!("{} cannot mega evolve", context.mon().name));
+            return Err(general_error(format!(
+                "{} cannot mega evolve",
+                context.mon().name
+            )));
         }
         if choice.mega && context.player().choice.mega {
-            return Err(battler_error!("you can only mega evolve once per battle"));
+            return Err(general_error("you can only mega evolve once per battle"));
         }
 
         context
@@ -1238,20 +1194,21 @@ impl Player {
     fn choose_learn_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
         match context.player().request_type() {
             Some(RequestType::LearnMove) => (),
-            _ => return Err(battler_error!("you cannot learn move out of turn")),
+            _ => return Err(general_error("you cannot learn move out of turn")),
         }
 
-        let choice =
-            LearnMoveChoice::new(data.wrap_error_with_message("missing learn move choice")?)?;
+        let choice = LearnMoveChoice::new(data.wrap_expectation("missing learn move choice")?)?;
         let team_position = Self::get_position_for_next_choice(context, false)?;
         if team_position >= context.player().mons.len() {
-            return Err(battler_error!("you sent more choices than Mons"));
+            return Err(general_error("you sent more choices than mons"));
         }
         let mon_handle = context
             .player()
             .mons
             .get(team_position)
-            .wrap_error_with_format(format_args!("expected a Mon in position {team_position}"))?
+            .wrap_expectation_with_format(format_args!(
+                "expected a mon in position {team_position}"
+            ))?
             .clone();
         context
             .player_mut()
@@ -1282,30 +1239,33 @@ impl Player {
     fn choose_escape(context: &mut PlayerContext) -> Result<(), Error> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
-            _ => return Err(battler_error!("you cannot escape out of turn")),
+            _ => return Err(general_error("you cannot escape out of turn")),
         }
 
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
-            return Err(battler_error!("you sent more choices than active Mons"));
+            return Err(general_error("you sent more choices than active mons"));
         }
         let mon_handle = context
             .player()
             .active_mon_handle(active_position)
-            .wrap_error_with_format(format_args!(
-                "expected an active Mon in position {active_position}"
+            .wrap_expectation_with_format(format_args!(
+                "expected an active mon in position {active_position}"
             ))?;
 
         {
             let mut context = context.mon_context(mon_handle)?;
             if Mon::locked_move(&mut context)?.is_some() {
-                return Err(battler_error!("{} must use a move", context.mon().name));
+                return Err(general_error(format!(
+                    "{} must use a move",
+                    context.mon().name
+                )));
             }
         }
 
         let can_escape = Self::can_escape(context) && Self::all_mons_can_escape(context)?;
         if !can_escape {
-            return Err(battler_error!("you cannot escape"));
+            return Err(general_error("you cannot escape"));
         }
 
         context
@@ -1322,14 +1282,14 @@ impl Player {
     fn choose_forfeit(context: &mut PlayerContext) -> Result<(), Error> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
-            _ => return Err(battler_error!("you cannot forfeit out of turn")),
+            _ => return Err(general_error("you cannot forfeit out of turn")),
         }
 
         if Self::get_position_for_next_choice(context, false)? >= context.player().active.len() {
-            return Err(battler_error!("you sent more choices than active Mons"));
+            return Err(general_error("you sent more choices than active mons"));
         }
         if !Self::can_forfeit(context) {
-            return Err(battler_error!("you cannot forfeit"));
+            return Err(general_error("you cannot forfeit"));
         }
 
         let action = Action::Forfeit(ForfeitAction {
@@ -1343,28 +1303,31 @@ impl Player {
 
     fn choose_item(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
         if !context.battle().format.options.bag_items {
-            return Err(battler_error!("you cannot use items"));
+            return Err(general_error("you cannot use items"));
         }
 
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
-            _ => return Err(battler_error!("you cannot use an item out of turn")),
+            _ => return Err(general_error("you cannot use an item out of turn")),
         }
-        let mut choice = ItemChoice::new(data.wrap_error_with_message("missing item choice")?)?;
+        let mut choice = ItemChoice::new(data.wrap_expectation("missing item choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
-            return Err(battler_error!("you sent more choices than active Mons"));
+            return Err(general_error("you sent more choices than active mons"));
         }
         let mon_handle = context
             .player()
             .active_mon_handle(active_position)
-            .wrap_error_with_format(format_args!(
+            .wrap_expectation_with_format(format_args!(
                 "expected an active mon in position {active_position}"
             ))?;
         let mut context = context.mon_context(mon_handle)?;
 
         if Mon::locked_move(&mut context)?.is_some() {
-            return Err(battler_error!("{} must use a move", context.mon().name));
+            return Err(general_error(format!(
+                "{} must use a move",
+                context.mon().name
+            )));
         }
 
         let item = context
@@ -1372,24 +1335,23 @@ impl Player {
             .dex
             .items
             .get_by_id(&choice.item)
-            .into_result()
             .wrap_error_with_message("item does not exist")?;
         let item_id = item.id().clone();
         let item_name = item.data.name.clone();
         let item_target = item
             .data
             .target
-            .wrap_error_with_format(format_args!("{item_name} cannot be used"))?;
+            .wrap_expectation_with_format(format_args!("{item_name} cannot be used"))?;
         let item_input = item.data.input;
         let item_is_ball = item.data.flags.contains(&ItemFlags::Ball);
 
         if !Self::use_item_from_bag(context.as_player_context_mut(), &item_id, true) {
-            return Err(battler_error!("bag contains no {item_name}"));
+            return Err(general_error(format!("bag contains no {item_name}")));
         }
 
         match (item_target.choosable(), choice.target) {
             (true, None) => {
-                return Err(battler_error!("{item_name} requires a target"));
+                return Err(general_error(format!("{item_name} requires a target")));
             }
             (_, Some(target)) => {
                 if !CoreBattle::valid_item_target(
@@ -1397,7 +1359,7 @@ impl Player {
                     item_target,
                     target,
                 )? {
-                    return Err(battler_error!("invalid target for {item_name}"));
+                    return Err(general_error(format!("invalid target for {item_name}")));
                 }
             }
             _ => (),
@@ -1405,7 +1367,7 @@ impl Player {
 
         let target_handle = CoreBattle::get_item_target(&mut context, &item_id, choice.target)?;
         if item_target.requires_target() && target_handle.is_none() {
-            return Err(battler_error!("{item_name} requires one target"));
+            return Err(general_error(format!("{item_name} requires one target")));
         }
 
         let mut action = ItemAction::new(ItemActionInput {
@@ -1416,21 +1378,20 @@ impl Player {
 
         match item_input {
             Some(ItemInput::MoveSlot) => {
-                let target_handle = target_handle.wrap_error_with_message(
-                    "item requiring move slot input requires a target mon",
-                )?;
+                let target_handle = target_handle
+                    .wrap_expectation("item requiring move slot input requires a target mon")?;
                 let move_slot = Id::from(
                     choice
                         .additional_input
                         .pop_front()
-                        .wrap_error_with_message("missing move slot")?,
+                        .wrap_expectation("missing move slot")?,
                 );
                 let context = context.as_battle_context_mut().mon_context(target_handle)?;
                 if context.mon().move_slot_index(&move_slot).is_none() {
-                    return Err(battler_error!(
+                    return Err(general_error(format!(
                         "{} does not have the given move",
-                        context.mon().name
-                    ));
+                        context.mon().name,
+                    )));
                 }
                 action.move_slot = Some(move_slot);
             }
@@ -1461,10 +1422,10 @@ impl Player {
                 )
                 .unwrap_or(true);
             if cannot_be_used {
-                return Err(battler_error!(
+                return Err(general_error(format!(
                     "{item_name} cannot be used on {}",
-                    context.as_battle_context().mon(target_handle)?.name
-                ));
+                    context.as_battle_context().mon(target_handle)?.name,
+                )));
             }
         }
 
@@ -1517,7 +1478,7 @@ impl Player {
         target: isize,
     ) -> Result<Option<MonHandle>, Error> {
         if target == 0 {
-            return Err(battler_error!("target cannot be 0"));
+            return Err(general_error("target cannot be 0"));
         } else if target < 0 {
             Ok(context.player().mons.get((-target) as usize - 1).cloned())
         } else {
@@ -1549,14 +1510,11 @@ impl Player {
 
 #[cfg(test)]
 mod move_choice_tests {
-    use crate::{
-        battle::player::MoveChoice,
-        common::assert_error_message_contains,
-    };
+    use crate::battle::player::MoveChoice;
 
     #[test]
     fn parses_move_target() {
-        assert_eq!(
+        assert_matches::assert_matches!(
             MoveChoice::new("0, 0"),
             Ok(MoveChoice {
                 move_slot: 0,
@@ -1568,7 +1526,7 @@ mod move_choice_tests {
 
     #[test]
     fn parses_move_target_mega() {
-        assert_eq!(
+        assert_matches::assert_matches!(
             MoveChoice::new("1, 0, mega"),
             Ok(MoveChoice {
                 move_slot: 1,
@@ -1580,7 +1538,7 @@ mod move_choice_tests {
 
     #[test]
     fn parses_move_no_target() {
-        assert_eq!(
+        assert_matches::assert_matches!(
             MoveChoice::new("2"),
             Ok(MoveChoice {
                 move_slot: 2,
@@ -1592,7 +1550,7 @@ mod move_choice_tests {
 
     #[test]
     fn parses_move_mega() {
-        assert_eq!(
+        assert_matches::assert_matches!(
             MoveChoice::new("3, mega"),
             Ok(MoveChoice {
                 move_slot: 3,
@@ -1604,7 +1562,10 @@ mod move_choice_tests {
 
     #[test]
     fn fails_empty_string() {
-        assert_error_message_contains(MoveChoice::new(""), "invalid move slot");
+        assert_matches::assert_matches!(
+            MoveChoice::new(""),
+            Err(err) => assert!(err.full_description().contains("invalid move slot"))
+        );
     }
 }
 

@@ -15,10 +15,12 @@ use serde::{
     Serialize,
 };
 
-use crate::common::{
-    Error,
-    FastHashMap,
-    WrapResultError,
+use crate::{
+    common::FastHashMap,
+    error::{
+        Error,
+        WrapResultError,
+    },
 };
 
 #[track_caller]

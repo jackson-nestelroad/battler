@@ -22,10 +22,7 @@ use battler::{
         PublicCoreBattle,
         WildPlayerOptions,
     },
-    common::{
-        Error,
-        FastHashMap,
-    },
+    common::FastHashMap,
     config::{
         FormatData,
         FormatOptions,
@@ -33,6 +30,7 @@ use battler::{
         SerializedRuleSet,
     },
     dex::DataStore,
+    error::Error,
     teams::TeamData,
 };
 

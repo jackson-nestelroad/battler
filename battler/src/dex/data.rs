@@ -7,26 +7,26 @@ use std::{
 
 use ahash::HashMapExt;
 use serde::de::DeserializeOwned;
-use zone_alloc::{
-    BorrowError,
-    KeyedRegistry,
-};
+use zone_alloc::KeyedRegistry;
 
 use crate::{
     abilities::AbilityData,
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         Id,
-        LookupResult,
-        WrapResultError,
     },
     conditions::ConditionData,
     config::ClauseData,
     dex::{
         deserialize_aliases,
         Aliases,
+    },
+    error::{
+        general_error,
+        ConvertError,
+        Error,
+        WrapOptionError,
+        WrapResultError,
     },
     items::ItemData,
     mons::{
@@ -42,19 +42,6 @@ pub type SerializedDataTable<T> = FastHashMap<String, T>;
 /// Table for all resource data of a particular type.
 pub type DataTable<T> = KeyedRegistry<Id, T>;
 
-/// The result of a data lookup request.
-pub type DataLookupResult<T> = LookupResult<T, Error>;
-
-impl<T> From<Result<T, BorrowError>> for DataLookupResult<T> {
-    fn from(value: Result<T, BorrowError>) -> Self {
-        match value {
-            Ok(value) => Self::Found(value),
-            Err(BorrowError::OutOfBounds) => Self::NotFound,
-            Err(error) => Self::Error(Error::new(error)),
-        }
-    }
-}
-
 /// Collection of tables for all resource data.
 ///
 /// This trait can be implemented for different data sources, such as an external database or disk.
@@ -65,21 +52,21 @@ pub trait DataStore {
     /// Gets all move IDs, applying the given filter on the underlying data.
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error>;
     /// Gets the type chart.
-    fn get_type_chart(&self) -> DataLookupResult<TypeChart>;
+    fn get_type_chart(&self) -> Result<TypeChart, Error>;
     /// Translates the given alias to another ID, if the alias mapping exists.
-    fn translate_alias(&self, id: &Id) -> DataLookupResult<Id>;
+    fn translate_alias(&self, id: &Id) -> Result<Id, Error>;
     /// Gets an ability by ID.
-    fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData>;
+    fn get_ability(&self, id: &Id) -> Result<AbilityData, Error>;
     /// Gets a clause by ID.
-    fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData>;
+    fn get_clause(&self, id: &Id) -> Result<ClauseData, Error>;
     /// Gets a condition by ID.
-    fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData>;
+    fn get_condition(&self, id: &Id) -> Result<ConditionData, Error>;
     /// Gets an item by ID.
-    fn get_item(&self, id: &Id) -> DataLookupResult<ItemData>;
+    fn get_item(&self, id: &Id) -> Result<ItemData, Error>;
     /// Gets a move by ID.
-    fn get_move(&self, id: &Id) -> DataLookupResult<MoveData>;
+    fn get_move(&self, id: &Id) -> Result<MoveData, Error>;
     /// Gets a species by ID.
-    fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData>;
+    fn get_species(&self, id: &Id) -> Result<SpeciesData, Error>;
 }
 
 /// An implementation of [`DataStore`] that reads all data locally from disk.
@@ -119,9 +106,9 @@ impl LocalDataStore {
     /// cached data.
     pub fn new(root: String) -> Result<Self, Error> {
         if !Path::new(&root).is_dir() {
-            return Err(battler_error!(
-                "Root directory for LocalDataStore ({root}) does not exist"
-            ));
+            return Err(general_error(format!(
+                "Root directory for LocalDataStore ({root}) does not exist",
+            )));
         }
         let mut store = Self {
             root,
@@ -193,15 +180,11 @@ impl LocalDataStore {
             .filter(|path| path.is_file())
             .map(|path| {
                 let path_name = path.to_string_lossy().to_string();
-                match serde_json::from_reader::<File, SerializedDataTable<T>>(
+                serde_json::from_reader::<File, SerializedDataTable<T>>(
                     File::open(path)
                         .wrap_error_with_format(format_args!("{path_name} could not be opened"))?,
-                ) {
-                    Err(err) => Err(battler_error!(
-                        "failed to read {dir} data from {path_name}: {err}"
-                    )),
-                    Ok(table) => Ok(table),
-                }
+                )
+                .wrap_error_with_format(format_args!("failed to read {dir} data from {path_name}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
         let registry = KeyedRegistry::new();
@@ -231,42 +214,57 @@ impl DataStore for LocalDataStore {
         Ok(move_ids)
     }
 
-    fn get_type_chart(&self) -> DataLookupResult<TypeChart> {
-        DataLookupResult::Found(self.type_chart.clone())
+    fn get_type_chart(&self) -> Result<TypeChart, Error> {
+        Ok(self.type_chart.clone())
     }
 
-    fn translate_alias(&self, id: &Id) -> DataLookupResult<Id> {
-        self.aliases.get(id).cloned().into()
+    fn translate_alias(&self, id: &Id) -> Result<Id, Error> {
+        self.aliases
+            .get(id)
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("alias {id}"))
     }
 
-    fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData> {
+    fn get_ability(&self, id: &Id) -> Result<AbilityData, Error> {
         self.abilities
             .get(id)
             .map(|data| data.deref().clone())
-            .into()
+            .map_err(|err| err.convert_error_with_message(format!("ability {id}")))
     }
 
-    fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
-        self.clauses.get(id).map(|data| data.deref().clone()).into()
+    fn get_clause(&self, id: &Id) -> Result<ClauseData, Error> {
+        self.clauses
+            .get(id)
+            .map(|data| data.deref().clone())
+            .map_err(|err| err.convert_error_with_message(format!("clause {id}")))
     }
 
-    fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData> {
+    fn get_condition(&self, id: &Id) -> Result<ConditionData, Error> {
         self.conditions
             .get(id)
             .map(|data| data.deref().clone())
-            .into()
+            .map_err(|err| err.convert_error_with_message(format!("condition {id}")))
     }
 
-    fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {
-        self.items.get(id).map(|data| data.deref().clone()).into()
+    fn get_item(&self, id: &Id) -> Result<ItemData, Error> {
+        self.items
+            .get(id)
+            .map(|data| data.deref().clone())
+            .map_err(|err| err.convert_error_with_message(format!("item {id}")))
     }
 
-    fn get_move(&self, id: &Id) -> DataLookupResult<MoveData> {
-        self.moves.get(id).map(|data| data.deref().clone()).into()
+    fn get_move(&self, id: &Id) -> Result<MoveData, Error> {
+        self.moves
+            .get(id)
+            .map(|data| data.deref().clone())
+            .map_err(|err| err.convert_error_with_message(format!("move {id}")))
     }
 
-    fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData> {
-        self.species.get(id).map(|data| data.deref().clone()).into()
+    fn get_species(&self, id: &Id) -> Result<SpeciesData, Error> {
+        self.species
+            .get(id)
+            .map(|data| data.deref().clone())
+            .map_err(|err| err.convert_error_with_message(format!("species {id}")))
     }
 }
 
@@ -278,18 +276,19 @@ pub mod fake_data_store {
 
     use crate::{
         abilities::AbilityData,
-        common::{
-            Error,
-            Id,
-            WrapResultError,
-        },
+        common::Id,
         conditions::ConditionData,
         config::ClauseData,
         dex::{
             Aliases,
-            DataLookupResult,
             DataStore,
             DataTable,
+        },
+        error::{
+            ConvertError,
+            Error,
+            WrapOptionError,
+            WrapResultError,
         },
         items::ItemData,
         mons::{
@@ -341,42 +340,57 @@ pub mod fake_data_store {
             Ok(move_ids)
         }
 
-        fn get_type_chart(&self) -> DataLookupResult<TypeChart> {
-            DataLookupResult::Found(self.type_chart.clone())
+        fn get_type_chart(&self) -> Result<TypeChart, Error> {
+            Ok(self.type_chart.clone())
         }
 
-        fn translate_alias(&self, id: &Id) -> DataLookupResult<Id> {
-            self.aliases.get(id).cloned().into()
+        fn translate_alias(&self, id: &Id) -> Result<Id, Error> {
+            self.aliases
+                .get(id)
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("alias {id} not found"))
         }
 
-        fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData> {
+        fn get_ability(&self, id: &Id) -> Result<AbilityData, Error> {
             self.abilities
                 .get(id)
                 .map(|data| data.deref().clone())
-                .into()
+                .map_err(|err| err.convert_error())
         }
 
-        fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
-            self.clauses.get(id).map(|data| data.deref().clone()).into()
+        fn get_clause(&self, id: &Id) -> Result<ClauseData, Error> {
+            self.clauses
+                .get(id)
+                .map(|data| data.deref().clone())
+                .map_err(|err| err.convert_error())
         }
 
-        fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData> {
+        fn get_condition(&self, id: &Id) -> Result<ConditionData, Error> {
             self.conditions
                 .get(id)
                 .map(|data| data.deref().clone())
-                .into()
+                .map_err(|err| err.convert_error())
         }
 
-        fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {
-            self.items.get(id).map(|data| data.deref().clone()).into()
+        fn get_item(&self, id: &Id) -> Result<ItemData, Error> {
+            self.items
+                .get(id)
+                .map(|data| data.deref().clone())
+                .map_err(|err| err.convert_error())
         }
 
-        fn get_move(&self, id: &Id) -> DataLookupResult<MoveData> {
-            self.moves.get(id).map(|data| data.deref().clone()).into()
+        fn get_move(&self, id: &Id) -> Result<MoveData, Error> {
+            self.moves
+                .get(id)
+                .map(|data| data.deref().clone())
+                .map_err(|err| err.convert_error())
         }
 
-        fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData> {
-            self.species.get(id).map(|data| data.deref().clone()).into()
+        fn get_species(&self, id: &Id) -> Result<SpeciesData, Error> {
+            self.species
+                .get(id)
+                .map(|data| data.deref().clone())
+                .map_err(|err| err.convert_error())
         }
     }
 }

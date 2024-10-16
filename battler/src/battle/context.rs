@@ -10,16 +10,18 @@ use crate::{
         Player,
         Side,
     },
-    battler_error,
     common::{
-        Error,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
-        WrapResultError,
     },
     effect::{
         Effect,
         EffectHandle,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
     },
     moves::{
         HitEffect,
@@ -178,7 +180,7 @@ impl<'battle, 'data> Context<'battle, 'data> {
         let user = self
             .active_move(active_move_handle)?
             .used_by
-            .wrap_error_with_message("active move handle does not have a user")?;
+            .wrap_expectation("active move handle does not have a user")?;
         ActiveMoveContext::new_from_mon_context(
             self.mon_context(user)?.into(),
             active_move_handle,
@@ -289,7 +291,7 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
         position: usize,
     ) -> Result<PlayerContext<'side, 'context, 'battle, 'data>, Error> {
         let player = Side::player_position_to_index(self, position)
-            .wrap_error_with_format(format_args!("side has no player in position {position}"))?;
+            .wrap_not_found_error_with_format(format_args!("player at position {position}"))?;
         PlayerContext::new_from_side_context(self.into(), player)
     }
 
@@ -715,10 +717,13 @@ impl<'player, 'side, 'context, 'battle, 'data>
 
     /// Returns a reference to the active [`Move`], if it exists.
     pub fn active_move(&self) -> Result<&Move, Error> {
-        let move_handle = self.mon().active_move.wrap_error_with_format(format_args!(
-            "mon {} does not have an active move",
-            self.mon_handle()
-        ))?;
+        let move_handle = self
+            .mon()
+            .active_move
+            .wrap_expectation_with_format(format_args!(
+                "mon {} does not have an active move",
+                self.mon_handle()
+            ))?;
         let context = self.as_battle_context();
         context
             .cache
@@ -728,10 +733,13 @@ impl<'player, 'side, 'context, 'battle, 'data>
 
     /// Returns a mutable reference to the active [`Move`], if it exists.
     pub fn active_move_mut(&mut self) -> Result<&mut Move, Error> {
-        let move_handle = self.mon().active_move.wrap_error_with_format(format_args!(
-            "mon {} does not have an active move",
-            self.mon_handle()
-        ))?;
+        let move_handle = self
+            .mon()
+            .active_move
+            .wrap_expectation_with_format(format_args!(
+                "mon {} does not have an active move",
+                self.mon_handle()
+            ))?;
         let context = self.as_battle_context();
         context.cache.active_move(context.battle(), move_handle)
     }
@@ -832,9 +840,11 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         // SAFETY: Active moves live as long as the context itself, assuming that the context cannot
         // exist when the battle moves to the next turn.
         let active_move = unsafe { active_move.unsafely_detach_borrow_mut() };
-        let mon_handle = active_move.used_by.wrap_error_with_format(format_args!(
-            "active move {active_move_handle} does not have an associated mon"
-        ))?;
+        let mon_handle = active_move
+            .used_by
+            .wrap_expectation_with_format(format_args!(
+                "active move {active_move_handle} does not have an associated mon"
+            ))?;
         let context = context.mon_context(mon_handle)?;
         Ok(Self {
             context: MaybeOwnedMut::Owned(context),
@@ -1564,8 +1574,8 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
                     hit_effect_type,
                 )
             }
-            _ => Err(battler_error!(
-                "effect context does not contain an active move"
+            _ => Err(general_error(
+                "effect context does not contain an active move",
             )),
         }
     }

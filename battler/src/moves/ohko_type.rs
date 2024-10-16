@@ -15,9 +15,9 @@ use serde::{
 };
 
 use crate::{
-    common::{
+    error::{
+        general_error,
         Error,
-        WrapResultError,
     },
     mons::Type,
 };
@@ -43,7 +43,7 @@ impl Display for OhkoType {
 impl FromStr for OhkoType {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(OhkoType::Type(Type::from_str(s).wrap_error()?))
+        Ok(OhkoType::Type(Type::from_str(s).map_err(general_error)?))
     }
 }
 

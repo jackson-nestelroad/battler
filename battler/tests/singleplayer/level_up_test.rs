@@ -5,13 +5,13 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
     teams::TeamData,
 };
@@ -114,37 +114,35 @@ fn massive_level_up_before_battle_ends() {
         level_100_blissey_and_pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
-    pretty_assertions::assert_eq!(
-        battle.request_for_player("player-1"),
-        Some(
-            serde_json::from_str(
-                r#"{
-                    "type": "learnmove",
-                    "can_learn_move": {
-                        "team_position": 0,
-                        "id": "confuseray",
-                        "name": "Confuse Ray"
-                    }
-                }"#
-            )
-            .unwrap()
+    assert_eq!(
+        battle.request_for_player("player-1").unwrap(),
+        serde_json::from_str(
+            r#"{
+                "type": "learnmove",
+                "can_learn_move": {
+                    "team_position": 0,
+                    "id": "confuseray",
+                    "name": "Confuse Ray"
+                }
+            }"#
         )
+        .unwrap()
     );
 
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
@@ -155,8 +153,8 @@ fn massive_level_up_before_battle_ends() {
         ]));
     });
 
-    assert_eq!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -246,22 +244,22 @@ fn inactive_mon_levels_up_directly_to_level() {
         level_100_blissey_and_pikachu().unwrap(),
     )
     .unwrap();
-    assert_eq!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
         assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
@@ -272,8 +270,8 @@ fn inactive_mon_levels_up_directly_to_level() {
         ]));
     });
 
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

@@ -5,20 +5,17 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    common::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::{
+        Error,
+        WrapResultError,
+    },
     teams::TeamData,
 };
-use battler_test_utils::{
-    assert_error_message,
-    TestBattleBuilder,
-};
+use battler_test_utils::TestBattleBuilder;
 
 fn singles_team() -> Result<TeamData, Error> {
     serde_json::from_str(
@@ -102,11 +99,11 @@ fn player_has_active_request(battle: &PublicCoreBattle, player_id: &str) -> bool
 fn too_many_moves() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0; move 1"),
-        "cannot move: you sent more choices than active Mons",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you sent more choices than active mons")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -115,11 +112,11 @@ fn too_many_moves() {
 fn missing_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move"),
-        "cannot move: missing move choice",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: missing move choice")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -128,11 +125,11 @@ fn missing_move() {
 fn invalid_move() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 5"),
-        "cannot move: Blastoise does not have a move in slot 5",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: Blastoise does not have a move in slot 5")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -141,19 +138,19 @@ fn invalid_move() {
 fn target_not_allowed() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0, 1"),
-        "cannot move: you cannot choose a target for Blizzard",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot choose a target for Blizzard")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1, 1"),
-        "cannot move: you cannot choose a target for Counter",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot choose a target for Counter")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2, 1"),
-        "cannot move: you cannot choose a target for Hail",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot choose a target for Hail")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -162,9 +159,9 @@ fn target_not_allowed() {
 fn target_implied_in_singles() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
     assert!(!player_has_active_request(&battle, "player-1"));
 }
 
@@ -172,9 +169,9 @@ fn target_implied_in_singles() {
 fn target_chosen_for_singles() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 3, 1"), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3, 1"), Ok(()));
     assert!(!player_has_active_request(&battle, "player-1"));
 }
 
@@ -182,11 +179,11 @@ fn target_chosen_for_singles() {
 fn target_out_of_bounds() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3, 2"),
-        "cannot move: invalid target for Scald",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -195,8 +192,8 @@ fn target_out_of_bounds() {
 fn struggle_when_no_available_moves() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_singles_battle_with_struggle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert!(
         player_request(&battle, "player-1").is_some_and(|request| match request {
             Request::Turn(request) => request.active.first().is_some_and(|mon| mon.moves.len()
@@ -207,7 +204,7 @@ fn struggle_when_no_available_moves() {
             _ => false,
         })
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert!(!player_has_active_request(&battle, "player-1"));
 }
 
@@ -280,51 +277,51 @@ fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> 
 fn target_normal() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_triples_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     // All three Mons choose a move that must target an adjacent Mon.
 
     // Target foes.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,1; move 1,1; move 3,3"),
-        "cannot move: invalid target for Giga Drain",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Giga Drain")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2; move 1,1; move 3,3"),
-        "cannot move: invalid target for Scald",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,3; move 1,2; move 3,2"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,3; move 1,3; move 3,1"),
         Ok(())
     );
 
     // Target allies.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-1; move 1,1; move 3,-3"),
-        "cannot move: invalid target for Giga Drain",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Giga Drain")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-3; move 1,1; move 3,-3"),
-        "cannot move: invalid target for Giga Drain",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Giga Drain")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-2; move 3,-3"),
-        "cannot move: invalid target for Blast Burn",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Blast Burn")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-1; move 3,-3"),
-        "cannot move: invalid target for Scald",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-3; move 3,-1"),
-        "cannot move: invalid target for Scald",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-3; move 3,-2"),
         Ok(())
     );
@@ -336,17 +333,17 @@ fn target_normal() {
 fn target_any_except_user() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_triples_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     // Blastoise's Water Pulse can hit a non-adjacent foe.
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2; move 2; move 1,3"),
         Ok(())
     );
     // But it cannot hit itself.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2; move 2; move 1,-3"),
-        "cannot move: invalid target for Water Pulse",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Water Pulse")
     );
 }
 
@@ -354,29 +351,29 @@ fn target_any_except_user() {
 fn target_adjacent_foe() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_triples_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     // Adjacent ally or self is not allowed.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,-2; move 2; move 2"),
-        "cannot move: invalid target for Me First",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Me First")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,-1; move 2; move 2"),
-        "cannot move: invalid target for Me First",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Me First")
     );
 
     // Adjacent foe is allowed.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,1; move 2; move 2"),
-        "cannot move: invalid target for Me First",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Me First")
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,2; move 2; move 2"),
         Ok(())
     );
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,3; move 2; move 2"),
         Ok(())
     );
@@ -386,25 +383,25 @@ fn target_adjacent_foe() {
 fn target_adjacent_ally() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_triples_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
     // Adjacent foe or self is not allowed.
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,3; move 2; move 2"),
-        "cannot move: invalid target for Helping Hand",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Helping Hand")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2; move 2; move 2"),
-        "cannot move: invalid target for Helping Hand",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Helping Hand")
     );
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,-1; move 2; move 2"),
-        "cannot move: invalid target for Helping Hand",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Helping Hand")
     );
 
     // Adjacent ally is allowed.
-    assert_eq!(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,-2; move 2; move 2"),
         Ok(())
     );
@@ -443,24 +440,24 @@ fn adjacency_rules_apply_across_players() {
     // battle.
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_multi_battle(&data).unwrap();
-    assert_eq!(battle.start(), Ok(()));
-    assert_eq!(battle.continue_battle(), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
-    assert_error_message(
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,1"),
-        "cannot move: invalid target for Scald",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
     );
-    assert_eq!(battle.set_player_choice("player-1", "move 3,2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-1", "move 3,3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3,2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3,3"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-2", "move 3,1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 3,2"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-2", "move 3,3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3,2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3,3"), Ok(()));
 
-    assert_eq!(battle.set_player_choice("player-3", "move 3,1"), Ok(()));
-    assert_eq!(battle.set_player_choice("player-3", "move 3,2"), Ok(()));
-    assert_error_message(
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "move 3,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "move 3,2"), Ok(()));
+    assert_matches::assert_matches!(
         battle.set_player_choice("player-3", "move 3,3"),
-        "cannot move: invalid target for Scald",
+        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
     );
 }

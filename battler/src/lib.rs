@@ -11,6 +11,7 @@ pub mod conditions;
 pub mod config;
 pub mod dex;
 pub mod effect;
+pub mod error;
 pub mod items;
 pub mod log;
 pub mod mons;

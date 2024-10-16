@@ -31,14 +31,11 @@ use crate::{
         Side,
         SideEffectContext,
     },
-    battler_error,
     common::{
-        Error,
         FastHashMap,
         FastHashSet,
         Id,
         Identifiable,
-        WrapResultError,
     },
     effect::{
         fxlang::{
@@ -56,6 +53,12 @@ use crate::{
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
+    },
+    error::{
+        general_error,
+        Error,
+        WrapOptionError,
+        WrapResultError,
     },
     items::ItemFlags,
     log::Event,
@@ -228,7 +231,9 @@ pub fn run_function(
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context),
-        _ => Err(battler_error!("undefined function: {function_name}")),
+        _ => Err(general_error(format!(
+            "undefined function: {function_name}"
+        ))),
     }
 }
 
@@ -328,7 +333,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         if has_boost_table {
             return args
                 .pop_front()
-                .wrap_error_with_message("expected boost table")?
+                .wrap_expectation("missing boost table")?
                 .boost_table()
                 .wrap_error_with_message("invalid boost table");
         }
@@ -474,14 +479,14 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn effect_handle(&mut self) -> Result<EffectHandle, Error> {
         if self.use_effect_state_source_effect() {
             self.effect_state()
-                .wrap_error_with_message("effect has no effect state")?
+                .wrap_expectation("effect has no effect state")?
                 .get_mut(self.evaluation_context_mut().battle_context_mut())?
                 .source_effect()
-                .wrap_error_with_message("effect state has no source effect")
+                .wrap_expectation("effect state has no source effect")
         } else if self.use_source_effect() {
             self.evaluation_context()
                 .source_effect_handle()
-                .wrap_error_with_message("effect has no source effect")
+                .wrap_expectation("effect has no source effect")
                 .cloned()
         } else {
             Ok(self.evaluation_context().effect_handle().clone())
@@ -492,7 +497,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         match self.front().map(|val| val.value_type()) {
             Some(ValueType::Effect) => self
                 .pop_front()
-                .wrap_error_with_message("expected effect")?
+                .wrap_expectation("missing effect")?
                 .effect_handle()
                 .wrap_error_with_message("invalid effect"),
             _ => self.effect_handle(),
@@ -520,7 +525,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>, Error> {
         let target_handle = self
             .target_handle()
-            .wrap_error_with_message("effect has no target")?;
+            .wrap_expectation("effect has no target")?;
         self.forward_to_applying_effect_context_with_target(target_handle)
     }
 
@@ -604,7 +609,7 @@ fn log_internal(mut context: FunctionContext, title: String) -> Result<(), Error
 fn log(mut context: FunctionContext) -> Result<(), Error> {
     let title = context
         .pop_front()
-        .wrap_error_with_message("missing log title")?
+        .wrap_expectation("missing log title")?
         .string()
         .wrap_error_with_message("invalid title")?;
     log_internal(context, title)
@@ -713,12 +718,12 @@ fn log_single_move(context: FunctionContext) -> Result<(), Error> {
 fn log_animate_move(mut context: FunctionContext) -> Result<(), Error> {
     let user_handle = context
         .pop_front()
-        .wrap_error_with_message("missing user")?
+        .wrap_expectation("missing user")?
         .mon_handle()
         .wrap_error_with_message("invalid user")?;
     let move_name = context
         .pop_front()
-        .wrap_error_with_message("missing move name")?
+        .wrap_expectation("missing move name")?
         .string()
         .wrap_error_with_message("invalid move name")?;
     let target_handle = match context.pop_front() {
@@ -797,7 +802,7 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
-        .wrap_error_with_message("source effect is not an active move")?;
+        .wrap_expectation("source effect is not an active move")?;
     let mut event = log_event!(
         "prepare",
         ("mon", Mon::position_details(context.as_mon_context())?),
@@ -830,7 +835,7 @@ fn log_cant(mut context: FunctionContext) -> Result<(), Error> {
 fn log_status(mut context: FunctionContext) -> Result<(), Error> {
     let status = context
         .pop_front()
-        .wrap_error_with_message("missing status")?
+        .wrap_expectation("missing status")?
         .string()
         .wrap_error_with_message("invalid status")?;
 
@@ -876,7 +881,7 @@ fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
     };
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let what = match context.pop_front() {
@@ -901,7 +906,7 @@ fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
     };
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let mut boosts = Vec::new();
@@ -927,7 +932,7 @@ fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
 fn log_immune(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let effect = if context.from_effect() {
@@ -944,7 +949,7 @@ fn log_immune(mut context: FunctionContext) -> Result<(), Error> {
 fn log_fail_heal(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_logs::fail_heal(&mut context.evaluation_context_mut().mon_context(mon_handle)?)
@@ -953,7 +958,7 @@ fn log_fail_heal(mut context: FunctionContext) -> Result<(), Error> {
 fn log_ohko(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_logs::ohko(&mut context.evaluation_context_mut().mon_context(mon_handle)?)
@@ -995,7 +1000,7 @@ fn random(mut context: FunctionContext) -> Result<Value, Error> {
             min,
             max,
         ),
-        _ => return Err(battler_error!("invalid random arguments")),
+        _ => return Err(general_error("invalid random arguments")),
     };
     Ok(Value::UFraction(val.into()))
 }
@@ -1010,7 +1015,7 @@ fn chance(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| val.integer_u64().ok())
         .flatten();
     let val = match (a, b) {
-        (None, None) => return Err(battler_error!("chance requires at least one argument")),
+        (None, None) => return Err(general_error("chance requires at least one argument")),
         (Some(den), None) => rand_util::chance(
             context
                 .evaluation_context_mut()
@@ -1031,7 +1036,7 @@ fn chance(mut context: FunctionContext) -> Result<Value, Error> {
             num,
             den,
         ),
-        _ => return Err(battler_error!("invalid chance arguments")),
+        _ => return Err(general_error("invalid chance arguments")),
     };
     Ok(Value::Boolean(val))
 }
@@ -1039,7 +1044,7 @@ fn chance(mut context: FunctionContext) -> Result<Value, Error> {
 fn sample(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let list = context
         .pop_front()
-        .wrap_error_with_message("missing list")?
+        .wrap_expectation("missing list")?
         .list()
         .wrap_error_with_message("invalid list")?;
     Ok(rand_util::sample_slice(
@@ -1059,13 +1064,13 @@ fn damage(mut context: FunctionContext) -> Result<Value, Error> {
 
     let target_handle = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
 
     let amount = context
         .pop_front()
-        .wrap_error_with_message("missing damage amount")?
+        .wrap_expectation("missing damage amount")?
         .integer_u16()
         .wrap_error_with_message("invalid damage amount")?;
 
@@ -1092,13 +1097,13 @@ fn direct_damage(mut context: FunctionContext) -> Result<(), Error> {
 
     let target_handle = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
 
     let amount = context
         .pop_front()
-        .wrap_error_with_message("missing damage amount")?
+        .wrap_expectation("missing damage amount")?
         .integer_u16()
         .wrap_error_with_message("invalid damage amount")?;
 
@@ -1118,13 +1123,13 @@ fn direct_damage(mut context: FunctionContext) -> Result<(), Error> {
 fn has_ability(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
 
     let abilities = context
         .pop_front()
-        .wrap_error_with_message("missing ability or abilities")?;
+        .wrap_expectation("missing ability or abilities")?;
     let abilities = if abilities.is_list() {
         abilities
             .list()
@@ -1151,12 +1156,12 @@ fn has_ability(mut context: FunctionContext) -> Result<Value, Error> {
 fn has_item(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let item = context
         .pop_front()
-        .wrap_error_with_message("missing item id")?
+        .wrap_expectation("missing item id")?
         .string()
         .map(|ability| Id::from(ability))
         .wrap_error_with_message("invalid item id")?;
@@ -1169,12 +1174,12 @@ fn has_item(mut context: FunctionContext) -> Result<Value, Error> {
 fn has_volatile(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let volatile = context
         .pop_front()
-        .wrap_error_with_message("missing volatile id")?
+        .wrap_expectation("missing volatile id")?
         .string()
         .map(|ability| Id::from(ability))
         .wrap_error_with_message("invalid volatile id")?;
@@ -1189,7 +1194,7 @@ fn cure_status(mut context: FunctionContext) -> Result<Value, Error> {
     context.has_flag("log_active_move");
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
@@ -1199,15 +1204,15 @@ fn cure_status(mut context: FunctionContext) -> Result<Value, Error> {
 fn move_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move")?;
     let move_flag = context
         .pop_front()
-        .wrap_error_with_message("missing move flag")?
+        .wrap_expectation("missing move flag")?
         .string()
         .wrap_error_with_message("invalid move flag")?;
-    let move_flag = MoveFlags::from_str(&move_flag).wrap_error_with_message("invalid move flag")?;
+    let move_flag = MoveFlags::from_str(&move_flag).map_err(general_error)?;
     Ok(Value::Boolean(
         context
             .evaluation_context_mut()
@@ -1225,16 +1230,16 @@ fn move_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
 fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     let item_id = context
         .pop_front()
-        .wrap_error_with_message("missing item")?
+        .wrap_expectation("missing item")?
         .item_id()
         .wrap_error_with_message("invalid item")?;
     let item_id = Id::from(item_id);
     let item_flag = context
         .pop_front()
-        .wrap_error_with_message("missing item flag")?
+        .wrap_expectation("missing item flag")?
         .string()
         .wrap_error_with_message("invalid item flag")?;
-    let item_flag = ItemFlags::from_str(&item_flag).wrap_error_with_message("invalid item flag")?;
+    let item_flag = ItemFlags::from_str(&item_flag).map_err(general_error)?;
     Ok(Value::Boolean(
         context
             .evaluation_context_mut()
@@ -1252,17 +1257,16 @@ fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
 fn ability_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     let ability_id = context
         .pop_front()
-        .wrap_error_with_message("missing ability")?
+        .wrap_expectation("missing ability")?
         .ability_id()
         .wrap_error_with_message("invalid ability")?;
     let ability_id = Id::from(ability_id);
     let ability_flag = context
         .pop_front()
-        .wrap_error_with_message("missing ability flag")?
+        .wrap_expectation("missing ability flag")?
         .string()
         .wrap_error_with_message("invalid ability flag")?;
-    let ability_flag =
-        AbilityFlags::from_str(&ability_flag).wrap_error_with_message("invalid ability flag")?;
+    let ability_flag = AbilityFlags::from_str(&ability_flag).map_err(general_error)?;
     Ok(Value::Boolean(
         context
             .evaluation_context_mut()
@@ -1280,15 +1284,15 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
 fn remove_move_flag(mut context: FunctionContext) -> Result<(), Error> {
     let active_move = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
     let move_flag = context
         .pop_front()
-        .wrap_error_with_message("missing move flag")?
+        .wrap_expectation("missing move flag")?
         .string()
         .wrap_error_with_message("invalid move flag")?;
-    let move_flag = MoveFlags::from_str(&move_flag).wrap_error_with_message("invalid move flag")?;
+    let move_flag = MoveFlags::from_str(&move_flag).map_err(general_error)?;
     context
         .evaluation_context_mut()
         .active_move_mut(active_move)?
@@ -1301,12 +1305,12 @@ fn remove_move_flag(mut context: FunctionContext) -> Result<(), Error> {
 fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let volatile = context
         .pop_front()
-        .wrap_error_with_message("missing volatile id")?
+        .wrap_expectation("missing volatile id")?
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
@@ -1324,12 +1328,12 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {
 fn remove_volatile(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let volatile = context
         .pop_front()
-        .wrap_error_with_message("missing volatile id")?
+        .wrap_expectation("missing volatile id")?
         .string()
         .wrap_error_with_message("invalid volatile")?;
 
@@ -1343,10 +1347,10 @@ fn remove_volatile(mut context: FunctionContext) -> Result<Value, Error> {
 fn run_event(mut context: FunctionContext) -> Result<Value, Error> {
     let event = context
         .pop_front()
-        .wrap_error_with_message("missing event")?
+        .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
-    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
 
     match context.evaluation_context_mut() {
         EvaluationContext::ApplyingEffect(context) => Ok(Value::Boolean(
@@ -1371,7 +1375,7 @@ fn run_event(mut context: FunctionContext) -> Result<Value, Error> {
             ),
         )),
         EvaluationContext::Effect(_) => {
-            Err(battler_error!("effect must have a target to run an event"))
+            Err(general_error("effect must have a target to run an event"))
         }
     }
 }
@@ -1379,10 +1383,10 @@ fn run_event(mut context: FunctionContext) -> Result<Value, Error> {
 fn run_event_for_mon(mut context: FunctionContext) -> Result<Value, Error> {
     let event = context
         .pop_front()
-        .wrap_error_with_message("missing event")?
+        .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
-    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
     Ok(Value::Boolean(core_battle_effects::run_event_for_mon(
         &mut context.evaluation_context_mut().target_context()?,
         event,
@@ -1393,10 +1397,10 @@ fn run_event_for_mon(mut context: FunctionContext) -> Result<Value, Error> {
 fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<(), Error> {
     let event = context
         .pop_front()
-        .wrap_error_with_message("missing event")?
+        .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
-    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_event_for_each_active_mon_with_effect(
         context.evaluation_context_mut().effect_context_mut(),
         event,
@@ -1406,10 +1410,10 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<(), Err
 fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<(), Error> {
     let event = context
         .pop_front()
-        .wrap_error_with_message("missing event")?
+        .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
-    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_mon_ability_event(
         context
             .evaluation_context_mut()
@@ -1422,10 +1426,10 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<(), Error> {
 fn run_event_on_mon_item(mut context: FunctionContext) -> Result<(), Error> {
     let event = context
         .pop_front()
-        .wrap_error_with_message("missing event")?
+        .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
-    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_mon_item_event(
         context
             .evaluation_context_mut()
@@ -1447,14 +1451,14 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<(), Error> {
     };
     let event = context
         .pop_front()
-        .wrap_error_with_message("missing event")?
+        .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
-        .wrap_error_with_message("source effect is not an active move")?;
-    let event = BattleEvent::from_str(&event).wrap_error_with_message("invalid event")?;
+        .wrap_expectation("source effect is not an active move")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_active_move_event_expecting_void(
         &mut context,
         event,
@@ -1474,13 +1478,13 @@ fn do_not_animate_last_move(mut context: FunctionContext) -> Result<(), Error> {
 fn calculate_damage(mut context: FunctionContext) -> Result<Value, Error> {
     let target_handle = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
-        .wrap_error_with_message("source effect is not an active move")?;
+        .wrap_expectation("source effect is not an active move")?;
     match core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)? {
         MoveOutcomeOnTarget::Damage(damage) => Ok(Value::UFraction(damage.into())),
         MoveOutcomeOnTarget::Success | MoveOutcomeOnTarget::Unknown => {
@@ -1493,12 +1497,12 @@ fn calculate_damage(mut context: FunctionContext) -> Result<Value, Error> {
 fn calculate_confusion_damage(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let base_power = context
         .pop_front()
-        .wrap_error_with_message("missing base power")?
+        .wrap_expectation("missing base power")?
         .integer_u32()
         .wrap_error_with_message("invalid base power")?;
     core_battle_actions::calculate_confusion_damage(
@@ -1511,7 +1515,7 @@ fn calculate_confusion_damage(mut context: FunctionContext) -> Result<Value, Err
 fn max(mut context: FunctionContext) -> Result<Value, Error> {
     let mut first = context
         .pop_front()
-        .wrap_error_with_message("max requires at least one argument")?;
+        .wrap_expectation("max requires at least one argument")?;
     while let Some(second) = context.pop_front() {
         if MaybeReferenceValueForOperation::from(&second)
             .greater_than(MaybeReferenceValueForOperation::from(&first))?
@@ -1525,36 +1529,27 @@ fn max(mut context: FunctionContext) -> Result<Value, Error> {
 }
 
 fn floor(mut context: FunctionContext) -> Result<Value, Error> {
-    let value = match context
-        .pop_front()
-        .wrap_error_with_message("missing number")?
-    {
+    let value = match context.pop_front().wrap_expectation("missing number")? {
         Value::Fraction(number) => Value::Fraction(number.floor().into()),
         Value::UFraction(number) => Value::UFraction(number.floor().into()),
         _ => {
-            return Err(battler_error!("invalid number"));
+            return Err(general_error("invalid number"));
         }
     };
     Ok(value)
 }
 
 fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
-    let number = context
-        .pop_front()
-        .wrap_error_with_message("missing number")?;
-    let min = context
-        .pop_front()
-        .wrap_error_with_message("missing minimum")?;
-    let max = context
-        .pop_front()
-        .wrap_error_with_message("missing maximum")?;
+    let number = context.pop_front().wrap_expectation("missing number")?;
+    let min = context.pop_front().wrap_expectation("missing minimum")?;
+    let max = context.pop_front().wrap_expectation("missing maximum")?;
 
     if MaybeReferenceValueForOperation::from(&min)
         .greater_than_or_equal(MaybeReferenceValueForOperation::from(&max))?
         .boolean()
         .unwrap_or(false)
     {
-        return Err(battler_error!("invalid range"));
+        return Err(general_error("invalid range"));
     }
 
     if MaybeReferenceValueForOperation::from(&number)
@@ -1577,12 +1572,12 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
 fn heal(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let damage = context
         .pop_front()
-        .wrap_error_with_message("missing damage")?
+        .wrap_expectation("missing damage")?
         .integer_u16()
         .wrap_error_with_message("invalid damage")?;
     core_battle_actions::heal(
@@ -1595,12 +1590,12 @@ fn heal(mut context: FunctionContext) -> Result<Value, Error> {
 fn revive(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let hp = context
         .pop_front()
-        .wrap_error_with_message("missing hp")?
+        .wrap_expectation("missing hp")?
         .integer_u16()
         .wrap_error_with_message("invalid hp")?;
     core_battle_actions::revive(
@@ -1613,17 +1608,17 @@ fn revive(mut context: FunctionContext) -> Result<Value, Error> {
 fn apply_drain(mut context: FunctionContext) -> Result<(), Error> {
     let target_handle = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     let source_handle = context
         .pop_front()
-        .wrap_error_with_message("missing source")?
+        .wrap_expectation("missing source")?
         .mon_handle()
         .wrap_error_with_message("invalid source")?;
     let damage = context
         .pop_front()
-        .wrap_error_with_message("missing damage")?
+        .wrap_expectation("missing damage")?
         .integer_u16()
         .wrap_error_with_message("invalid damage")?;
     core_battle_actions::apply_drain(
@@ -1638,25 +1633,25 @@ fn apply_drain(mut context: FunctionContext) -> Result<(), Error> {
 fn apply_recoil_damage(mut context: FunctionContext) -> Result<(), Error> {
     let damage = context
         .pop_front()
-        .wrap_error_with_message("missing damage")?
+        .wrap_expectation("missing damage")?
         .integer_u64()
         .wrap_error_with_message("invalid damage")?;
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
-        .wrap_error_with_message("source effect is not an active move")?;
+        .wrap_expectation("source effect is not an active move")?;
     core_battle_actions::apply_recoil_damage(&mut context, damage)
 }
 
 fn set_status(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let status = context
         .pop_front()
-        .wrap_error_with_message("missing status id")?
+        .wrap_expectation("missing status id")?
         .string()
         .wrap_error_with_message("invalid status")?;
     let status = Id::from(status);
@@ -1672,12 +1667,12 @@ fn set_status(mut context: FunctionContext) -> Result<Value, Error> {
 fn is_ally(mut context: FunctionContext) -> Result<Value, Error> {
     let left_mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing first mon")?
+        .wrap_expectation("missing first mon")?
         .mon_handle()
         .wrap_error_with_message("invalid first mon")?;
     let right_mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing second mon")?
+        .wrap_expectation("missing second mon")?
         .mon_handle()
         .wrap_error_with_message("invalid second mon")?;
     Ok(Value::Boolean(
@@ -1697,12 +1692,12 @@ fn boostable_stats() -> Value {
 fn get_boost(mut context: FunctionContext) -> Result<Value, Error> {
     let boosts = context
         .pop_front()
-        .wrap_error_with_message("missing boosts")?
+        .wrap_expectation("missing boosts")?
         .boost_table()
         .wrap_error_with_message("invalid boosts")?;
     let boost = context
         .pop_front()
-        .wrap_error_with_message("missing boost")?
+        .wrap_expectation("missing boost")?
         .boost()
         .wrap_error_with_message("invalid boost")?;
     Ok(Value::Fraction(boosts.get(boost).into()))
@@ -1711,17 +1706,17 @@ fn get_boost(mut context: FunctionContext) -> Result<Value, Error> {
 fn set_boost(mut context: FunctionContext) -> Result<Value, Error> {
     let mut boosts = context
         .pop_front()
-        .wrap_error_with_message("missing boosts")?
+        .wrap_expectation("missing boosts")?
         .boost_table()
         .wrap_error_with_message("invalid boosts")?;
     let boost = context
         .pop_front()
-        .wrap_error_with_message("missing boost")?
+        .wrap_expectation("missing boost")?
         .boost()
         .wrap_error_with_message("invalid boost")?;
     let value = context
         .pop_front()
-        .wrap_error_with_message("missing boost value")?
+        .wrap_expectation("missing boost value")?
         .integer_i8()
         .wrap_error_with_message("invalid boost value")?;
     boosts.set(boost, value);
@@ -1731,12 +1726,12 @@ fn set_boost(mut context: FunctionContext) -> Result<Value, Error> {
 fn has_type(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let typ = context
         .pop_front()
-        .wrap_error_with_message("missing type")?
+        .wrap_expectation("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
     Mon::has_type(
@@ -1749,12 +1744,12 @@ fn has_type(mut context: FunctionContext) -> Result<Value, Error> {
 fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let side_index = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     let position = context
         .pop_front()
-        .wrap_error_with_message("missing position")?
+        .wrap_expectation("missing position")?
         .integer_usize()
         .wrap_error_with_message("invalid position")?;
     Ok(Side::mon_in_position(
@@ -1770,12 +1765,12 @@ fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>, Error>
 fn disable_move(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
@@ -1788,12 +1783,12 @@ fn disable_move(mut context: FunctionContext) -> Result<(), Error> {
 fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let volatile_id = context
         .pop_front()
-        .wrap_error_with_message("missing volatile")?
+        .wrap_expectation("missing volatile")?
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile_id = Id::from(volatile_id);
@@ -1808,7 +1803,7 @@ fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>, 
 fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let effect_state = MonStatusEffectStateConnector::new(mon_handle);
@@ -1822,12 +1817,12 @@ fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Er
 fn side_condition_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let side = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     let condition_id = context
         .pop_front()
-        .wrap_error_with_message("missing condition")?
+        .wrap_expectation("missing condition")?
         .string()
         .wrap_error_with_message("invalid condition")?;
     let condition_id = Id::from(condition_id);
@@ -1844,8 +1839,8 @@ struct StatBoost(Boost, i8);
 impl FromStr for StatBoost {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (boost, amount) = s.split_once(':').wrap_error_with_message("invalid boost")?;
-        let boost = Boost::from_str(boost).wrap_error_with_message("invalid boost stat")?;
+        let (boost, amount) = s.split_once(':').wrap_expectation("invalid boost")?;
+        let boost = Boost::from_str(boost).map_err(general_error)?;
         let amount =
             i8::from_str_radix(amount, 10).wrap_error_with_message("invalid boost amount")?;
         Ok(Self(boost, amount))
@@ -1855,7 +1850,7 @@ impl FromStr for StatBoost {
 fn can_boost(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let boosts = context.boosts_from_rest_of_args()?;
@@ -1870,7 +1865,7 @@ fn can_boost(mut context: FunctionContext) -> Result<Value, Error> {
 fn boost(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
 
@@ -1895,7 +1890,7 @@ fn boost_table(mut context: FunctionContext) -> Result<Value, Error> {
 fn can_switch(mut context: FunctionContext) -> Result<Value, Error> {
     let player_index = context
         .pop_front()
-        .wrap_error_with_message("missing player")?
+        .wrap_expectation("missing player")?
         .player_index()
         .wrap_error_with_message("invalid player")?;
     Ok(Value::Boolean(Player::can_switch(
@@ -1909,12 +1904,12 @@ fn can_switch(mut context: FunctionContext) -> Result<Value, Error> {
 fn has_move(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     Ok(Value::Boolean(
@@ -1929,12 +1924,12 @@ fn has_move(mut context: FunctionContext) -> Result<Value, Error> {
 fn move_slot_index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     match context
@@ -1954,12 +1949,12 @@ fn move_slot_index(mut context: FunctionContext) -> Result<Option<Value>, Error>
 fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let index = context
         .pop_front()
-        .wrap_error_with_message("missing index")?
+        .wrap_expectation("missing index")?
         .integer_usize()
         .wrap_error_with_message("invalid index")?;
     Ok(context
@@ -1974,7 +1969,7 @@ fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>, Err
 fn move_slot(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move_handle = context
         .pop_front()
-        .wrap_error_with_message("missing active move")?
+        .wrap_expectation("missing active move")?
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let active_move = context
@@ -1993,17 +1988,17 @@ fn move_slot(mut context: FunctionContext) -> Result<Value, Error> {
 fn overwrite_move_slot(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let index = context
         .pop_front()
-        .wrap_error_with_message("missing index")?
+        .wrap_expectation("missing index")?
         .integer_usize()
         .wrap_error_with_message("invalid index")?;
     let move_slot = context
         .pop_front()
-        .wrap_error_with_message("missing move slot")?
+        .wrap_expectation("missing move slot")?
         .move_slot()
         .wrap_error_with_message("invalid move slot")?;
 
@@ -2019,12 +2014,12 @@ fn overwrite_move_slot(mut context: FunctionContext) -> Result<(), Error> {
 fn move_crit_target(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move_handle = context
         .pop_front()
-        .wrap_error_with_message("missing active move")?
+        .wrap_expectation("missing active move")?
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     Ok(Value::Boolean(
@@ -2040,12 +2035,12 @@ fn move_crit_target(mut context: FunctionContext) -> Result<Value, Error> {
 fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let active_move_handle = context
         .pop_front()
-        .wrap_error_with_message("missing active move")?
+        .wrap_expectation("missing active move")?
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     Ok(context
@@ -2058,17 +2053,17 @@ fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<V
 fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Result<(), Error> {
     let active_move_handle = context
         .pop_front()
-        .wrap_error_with_message("missing active move")?
+        .wrap_expectation("missing active move")?
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let flag = context
         .pop_front()
-        .wrap_error_with_message("missing flag")?
+        .wrap_expectation("missing flag")?
         .string()
         .wrap_error_with_message("invalid flag")?;
     let flag = Id::from(flag);
@@ -2084,17 +2079,17 @@ fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Resul
 fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move_handle = context
         .pop_front()
-        .wrap_error_with_message("missing active move")?
+        .wrap_expectation("missing active move")?
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let flag = context
         .pop_front()
-        .wrap_error_with_message("missing flag")?
+        .wrap_expectation("missing flag")?
         .string()
         .wrap_error_with_message("invalid flag")?;
     let flag = Id::from(flag);
@@ -2123,7 +2118,7 @@ fn all_active_mons(context: FunctionContext) -> Result<Value, Error> {
 fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
     let side = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     Ok(Value::List(
@@ -2140,7 +2135,7 @@ fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value, Error>
 fn all_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
     let side = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     Ok(Value::List(
@@ -2157,7 +2152,7 @@ fn all_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
 fn all_mons_in_party(mut context: FunctionContext) -> Result<Value, Error> {
     let player = context
         .pop_front()
-        .wrap_error_with_message("missing player")?
+        .wrap_expectation("missing player")?
         .player_index()
         .wrap_error_with_message("invalid player")?;
     Ok(Value::List(
@@ -2175,7 +2170,7 @@ fn all_mons_in_party(mut context: FunctionContext) -> Result<Value, Error> {
 fn adjacent_foes(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     Ok(Value::List(
@@ -2188,7 +2183,7 @@ fn adjacent_foes(mut context: FunctionContext) -> Result<Value, Error> {
 fn clear_boosts(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     context
@@ -2202,7 +2197,7 @@ fn clear_boosts(mut context: FunctionContext) -> Result<(), Error> {
 fn clear_negative_boosts(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::clear_negative_boosts(
@@ -2213,7 +2208,7 @@ fn clear_negative_boosts(mut context: FunctionContext) -> Result<(), Error> {
 fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_target = match context.pop_front() {
@@ -2233,7 +2228,7 @@ fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
 fn clone_active_move(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
     let active_move = context
@@ -2250,12 +2245,12 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value, Error> {
 fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value, Error> {
     let effect_handle = context
         .pop_front()
-        .wrap_error_with_message("missing effect")?
+        .wrap_expectation("missing effect")?
         .effect_handle()
         .wrap_error_with_message("invalid effect")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
@@ -2264,11 +2259,11 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
         &effect_handle,
     )?
     .fxlang_effect()
-    .wrap_error_with_message("effect does not have local data")?
+    .wrap_expectation("effect does not have local data")?
     .local_data
     .moves
     .get(&move_id)
-    .wrap_error_with_format(format_args!(
+    .wrap_expectation_with_format(format_args!(
         "move {move_id} does not exist in the effect's local data"
     ))?
     .clone();
@@ -2284,12 +2279,12 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value, Error> {
     let indirect = context.has_flag("indirect");
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let active_move_handle = context
         .pop_front()
-        .wrap_error_with_message("missing active move")?
+        .wrap_expectation("missing active move")?
         .active_move()
         .wrap_error_with_message("invalid active move")?;
     let target_handle = match context.pop_front() {
@@ -2322,12 +2317,12 @@ fn use_move(mut context: FunctionContext) -> Result<Value, Error> {
     let indirect = context.has_flag("indirect");
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move")?;
     let target_handle = match context.pop_front() {
@@ -2358,12 +2353,12 @@ fn use_move(mut context: FunctionContext) -> Result<Value, Error> {
 fn do_move(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move")?;
     let target_position = match context.pop_front() {
@@ -2393,12 +2388,12 @@ fn do_move(mut context: FunctionContext) -> Result<(), Error> {
 fn mon_at_target_location(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let relative_location = context
         .pop_front()
-        .wrap_error_with_message("missing relative location")?
+        .wrap_expectation("missing relative location")?
         .integer_isize()
         .wrap_error_with_message("invalid relative location")?;
     Mon::get_target(
@@ -2411,12 +2406,12 @@ fn mon_at_target_location(mut context: FunctionContext) -> Result<Option<Value>,
 fn target_location_of_mon(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let target_handle = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     Ok(Value::Fraction(
@@ -2432,7 +2427,7 @@ fn target_location_of_mon(mut context: FunctionContext) -> Result<Value, Error> 
 fn get_move(mut context: FunctionContext) -> Result<Value, Error> {
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move id")?
+        .wrap_expectation("missing move id")?
         .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move id")?;
     Ok(Value::Effect(EffectHandle::InactiveMove(move_id)))
@@ -2441,7 +2436,7 @@ fn get_move(mut context: FunctionContext) -> Result<Value, Error> {
 fn get_ability(mut context: FunctionContext) -> Result<Value, Error> {
     let ability_id = context
         .pop_front()
-        .wrap_error_with_message("missing ability id")?
+        .wrap_expectation("missing ability id")?
         .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid ability id")?;
     Ok(Value::Effect(EffectHandle::Ability(ability_id)))
@@ -2456,11 +2451,13 @@ fn get_all_moves(mut context: FunctionContext) -> Result<Value, Error> {
             .wrap_error_with_message("invalid filter")?
             .split_once(':')
         {
-            Some(("with_flag", flag)) => with_flags
-                .insert(MoveFlags::from_str(flag).wrap_error_with_message("invalid move flag")?),
-            Some(("without_flag", flag)) => without_flags
-                .insert(MoveFlags::from_str(flag).wrap_error_with_message("invalid move flag")?),
-            _ => return Err(battler_error!("invalid filter")),
+            Some(("with_flag", flag)) => {
+                with_flags.insert(MoveFlags::from_str(flag).map_err(general_error)?)
+            }
+            Some(("without_flag", flag)) => {
+                without_flags.insert(MoveFlags::from_str(flag).map_err(general_error)?)
+            }
+            _ => return Err(general_error("invalid filter")),
         };
     }
 
@@ -2486,12 +2483,12 @@ fn get_all_moves(mut context: FunctionContext) -> Result<Value, Error> {
 fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let index = context
         .pop_front()
-        .wrap_error_with_message("missing index")?
+        .wrap_expectation("missing index")?
         .integer_usize()
         .wrap_error_with_message("invalid index")?;
     let context = context.evaluation_context_mut().mon_context(mon_handle)?;
@@ -2505,12 +2502,12 @@ fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>
 fn set_types(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let typ = context
         .pop_front()
-        .wrap_error_with_message("missing type")?
+        .wrap_expectation("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
@@ -2521,7 +2518,7 @@ fn set_types(mut context: FunctionContext) -> Result<Value, Error> {
 fn set_weather(mut context: FunctionContext) -> Result<Value, Error> {
     let weather = context
         .pop_front()
-        .wrap_error_with_message("missing weather")?
+        .wrap_expectation("missing weather")?
         .string()
         .wrap_error_with_message("invalid weather")?;
     let weather = Id::from(weather);
@@ -2536,12 +2533,12 @@ fn clear_weather(mut context: FunctionContext) -> Result<Value, Error> {
 fn transform_into(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let target_handle = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
 
@@ -2555,7 +2552,7 @@ fn transform_into(mut context: FunctionContext) -> Result<Value, Error> {
 fn can_escape(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     Mon::can_escape(&mut context.evaluation_context_mut().mon_context(mon_handle)?)
@@ -2565,7 +2562,7 @@ fn can_escape(mut context: FunctionContext) -> Result<Value, Error> {
 fn escape(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::try_escape(
@@ -2602,12 +2599,12 @@ fn all_types(context: FunctionContext) -> Result<Value, Error> {
 fn type_is_weak_against(mut context: FunctionContext) -> Result<Value, Error> {
     let offense = context
         .pop_front()
-        .wrap_error_with_message("missing offensive type")?
+        .wrap_expectation("missing offensive type")?
         .mon_type()
         .wrap_error_with_message("invalid offensive type")?;
     let defense = context
         .pop_front()
-        .wrap_error_with_message("missing defensive type")?
+        .wrap_expectation("missing defensive type")?
         .mon_type()
         .wrap_error_with_message("invalid defensive type")?;
     Ok(Value::Boolean(
@@ -2631,12 +2628,12 @@ fn type_is_weak_against(mut context: FunctionContext) -> Result<Value, Error> {
 fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value, Error> {
     let offense = context
         .pop_front()
-        .wrap_error_with_message("missing offensive type")?
+        .wrap_expectation("missing offensive type")?
         .mon_type()
         .wrap_error_with_message("invalid offensive type")?;
     let defense = context
         .pop_front()
-        .wrap_error_with_message("missing defensive type")?
+        .wrap_expectation("missing defensive type")?
         .mon_type()
         .wrap_error_with_message("invalid defensive type")?;
     Ok(Value::Boolean(
@@ -2660,12 +2657,10 @@ fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value, Err
 fn append(mut context: FunctionContext) -> Result<Value, Error> {
     let mut list = context
         .pop_front()
-        .wrap_error_with_message("missing list")?
+        .wrap_expectation("missing list")?
         .list()
         .wrap_error_with_message("invalid list")?;
-    let value = context
-        .pop_front()
-        .wrap_error_with_message("missing value")?;
+    let value = context.pop_front().wrap_expectation("missing value")?;
     list.push(value);
     Ok(Value::List(list))
 }
@@ -2673,12 +2668,10 @@ fn append(mut context: FunctionContext) -> Result<Value, Error> {
 fn remove(mut context: FunctionContext) -> Result<Value, Error> {
     let list = context
         .pop_front()
-        .wrap_error_with_message("missing list")?
+        .wrap_expectation("missing list")?
         .list()
         .wrap_error_with_message("invalid list")?;
-    let value = context
-        .pop_front()
-        .wrap_error_with_message("missing value")?;
+    let value = context.pop_front().wrap_expectation("missing value")?;
     let list = list
         .into_iter()
         .filter(|element| {
@@ -2693,12 +2686,12 @@ fn remove(mut context: FunctionContext) -> Result<Value, Error> {
 fn index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let list = context
         .pop_front()
-        .wrap_error_with_message("missing list")?
+        .wrap_expectation("missing list")?
         .list()
         .wrap_error_with_message("invalid list")?;
     let index = context
         .pop_front()
-        .wrap_error_with_message("missing index")?
+        .wrap_expectation("missing index")?
         .integer_usize()
         .wrap_error_with_message("invalid index")?;
     Ok(list.get(index).cloned())
@@ -2718,12 +2711,12 @@ fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value, Error>
 fn remove_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
     let side = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     let condition = context
         .pop_front()
-        .wrap_error_with_message("missing side condition")?
+        .wrap_expectation("missing side condition")?
         .string()
         .wrap_error_with_message("invalid side condition")?;
     let condition = Id::from(condition);
@@ -2736,7 +2729,7 @@ fn remove_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
 fn faint(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let source = context.source_handle();
@@ -2751,13 +2744,13 @@ fn faint(mut context: FunctionContext) -> Result<(), Error> {
 fn prepare_direct_move(mut context: FunctionContext) -> Result<Value, Error> {
     let targets = context
         .pop_front()
-        .wrap_error_with_message("missing targets list")?
+        .wrap_expectation("missing targets list")?
         .mons_list()
         .wrap_error_with_message("invalid targets list")?;
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
-        .wrap_error_with_message("context is not an active move")?;
+        .wrap_expectation("context is not an active move")?;
     let targets = core_battle_actions::prepare_direct_move(&mut context, &targets)?;
     Ok(Value::List(
         targets
@@ -2770,12 +2763,12 @@ fn prepare_direct_move(mut context: FunctionContext) -> Result<Value, Error> {
 fn check_immunity(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let effect_id = context
         .pop_front()
-        .wrap_error_with_message("missing effect")?
+        .wrap_expectation("missing effect")?
         .string()
         .wrap_error_with_message("invalid effect")?;
     let effect_id = Id::from(effect_id);
@@ -2804,12 +2797,12 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value, Error> {
 fn set_hp(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let hp = context
         .pop_front()
-        .wrap_error_with_message("missing hp")?
+        .wrap_expectation("missing hp")?
         .integer_u16()
         .wrap_error_with_message("invalid hp")?;
     Ok(Value::Fraction(
@@ -2824,18 +2817,18 @@ fn set_hp(mut context: FunctionContext) -> Result<Value, Error> {
 fn deduct_pp(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
     let pp = context
         .pop_front()
-        .wrap_error_with_message("missing pp")?
+        .wrap_expectation("missing pp")?
         .integer_u8()
         .wrap_error_with_message("invalid pp")?;
     core_battle_actions::deduct_pp(
@@ -2849,18 +2842,18 @@ fn deduct_pp(mut context: FunctionContext) -> Result<Value, Error> {
 fn restore_pp(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
     let pp = context
         .pop_front()
-        .wrap_error_with_message("missing pp")?
+        .wrap_expectation("missing pp")?
         .integer_u8()
         .wrap_error_with_message("invalid pp")?;
     core_battle_actions::restore_pp(
@@ -2874,18 +2867,18 @@ fn restore_pp(mut context: FunctionContext) -> Result<Value, Error> {
 fn set_pp(mut context: FunctionContext) -> Result<Value, Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let move_id = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
     let pp = context
         .pop_front()
-        .wrap_error_with_message("missing pp")?
+        .wrap_expectation("missing pp")?
         .integer_u8()
         .wrap_error_with_message("invalid pp")?;
     core_battle_actions::set_pp(
@@ -2899,17 +2892,17 @@ fn set_pp(mut context: FunctionContext) -> Result<Value, Error> {
 fn add_slot_condition(mut context: FunctionContext) -> Result<Value, Error> {
     let side_index = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     let slot = context
         .pop_front()
-        .wrap_error_with_message("missing slot")?
+        .wrap_expectation("missing slot")?
         .integer_usize()
         .wrap_error_with_message("invalid slot")?;
     let condition = context
         .pop_front()
-        .wrap_error_with_message("missing condition id")?
+        .wrap_expectation("missing condition id")?
         .string()
         .wrap_error_with_message("invalid condition id")?;
     let condition = Id::from(condition);
@@ -2922,12 +2915,12 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value, Error> {
 fn add_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
     let side_index = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     let condition = context
         .pop_front()
-        .wrap_error_with_message("missing condition id")?
+        .wrap_expectation("missing condition id")?
         .string()
         .wrap_error_with_message("invalid condition id")?;
     let condition = Id::from(condition);
@@ -2940,12 +2933,12 @@ fn add_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
 fn is_adjacent(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let other = context
         .pop_front()
-        .wrap_error_with_message("missing second mon")?
+        .wrap_expectation("missing second mon")?
         .mon_handle()
         .wrap_error_with_message("invalid second mon")?;
     Mon::is_adjacent(
@@ -2958,7 +2951,7 @@ fn is_adjacent(mut context: FunctionContext) -> Result<Value, Error> {
 fn cancel_move(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     Ok(Value::Boolean(
@@ -2974,7 +2967,7 @@ fn cancel_move(mut context: FunctionContext) -> Result<Value, Error> {
 fn take_item(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let dry_run = context.has_flag("dry_run");
@@ -2990,12 +2983,12 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>, Error> {
 fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let item = context
         .pop_front()
-        .wrap_error_with_message("missing item")?
+        .wrap_expectation("missing item")?
         .string()
         .wrap_error_with_message("invalid item")?;
     let item = Id::from(item);
@@ -3009,7 +3002,7 @@ fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
 fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::eat_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
@@ -3019,12 +3012,12 @@ fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
 fn eat_given_item(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let item = context
         .pop_front()
-        .wrap_error_with_message("missing item")?
+        .wrap_expectation("missing item")?
         .string()
         .wrap_error_with_message("invalid item")?;
     let item = Id::from(item);
@@ -3038,7 +3031,7 @@ fn eat_given_item(mut context: FunctionContext) -> Result<Value, Error> {
 fn use_item(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     core_battle_actions::use_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
@@ -3048,17 +3041,17 @@ fn use_item(mut context: FunctionContext) -> Result<Value, Error> {
 fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let target = context
         .pop_front()
-        .wrap_error_with_message("missing target mon")?
+        .wrap_expectation("missing target mon")?
         .mon_handle()
         .wrap_error_with_message("invalid target mon")?;
     let move_target = context
         .pop_front()
-        .wrap_error_with_message("missing move target")?
+        .wrap_expectation("missing move target")?
         .move_target()
         .wrap_error_with_message("invalid move target")?;
     let mut context = context.evaluation_context_mut().mon_context(mon)?;
@@ -3072,12 +3065,12 @@ fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
     let dry_run = context.has_flag("dry_run");
     let mon = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let ability_id = context
         .pop_front()
-        .wrap_error_with_message("missing ability")?
+        .wrap_expectation("missing ability")?
         .string()
         .wrap_error_with_message("invalid ability")?;
     let ability_id = Id::from(ability_id);
@@ -3095,12 +3088,12 @@ fn received_attack(mut context: FunctionContext) -> Result<Value, Error> {
     let this_turn = context.has_flag("this_turn");
     let target = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     let source = context
         .pop_front()
-        .wrap_error_with_message("missing source")?
+        .wrap_expectation("missing source")?
         .mon_handle()
         .wrap_error_with_message("invalid source")?;
     let turn = context
@@ -3125,12 +3118,12 @@ fn received_attack(mut context: FunctionContext) -> Result<Value, Error> {
 fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<(), Error> {
     let active_move = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
     let secondary_effect = context
         .pop_front()
-        .wrap_error_with_message("missing target effect")?
+        .wrap_expectation("missing target effect")?
         .secondary_hit_effect()
         .wrap_error_with_message("invalid target effect")?;
     context
@@ -3145,7 +3138,7 @@ fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<(), Erro
 fn move_makes_contact(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
     Ok(Value::Boolean(mon_states::move_makes_contact(
@@ -3158,12 +3151,12 @@ fn move_makes_contact(mut context: FunctionContext) -> Result<Value, Error> {
 fn type_effectiveness(mut context: FunctionContext) -> Result<Value, Error> {
     let active_move = context
         .pop_front()
-        .wrap_error_with_message("missing move")?
+        .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
     let target = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     core_battle_actions::type_effectiveness(
@@ -3179,12 +3172,12 @@ fn forme_change(mut context: FunctionContext) -> Result<Value, Error> {
     let permanent = context.has_flag("permanent");
     let target = context
         .pop_front()
-        .wrap_error_with_message("missing target")?
+        .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     let forme = context
         .pop_front()
-        .wrap_error_with_message("missing forme")?
+        .wrap_expectation("missing forme")?
         .string()
         .wrap_error_with_message("invalid forme")?;
     let forme = Id::from(forme);
@@ -3203,22 +3196,22 @@ fn forme_change(mut context: FunctionContext) -> Result<Value, Error> {
 fn increase_friendship(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let delta_1 = context
         .pop_front()
-        .wrap_error_with_message("missing level 1 delta")?
+        .wrap_expectation("missing level 1 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 1 delta")?;
     let delta_2 = context
         .pop_front()
-        .wrap_error_with_message("missing level 2 delta")?
+        .wrap_expectation("missing level 2 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 2 delta")?;
     let delta_3 = context
         .pop_front()
-        .wrap_error_with_message("missing level 3 delta")?
+        .wrap_expectation("missing level 3 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 3 delta")?;
     Mon::increase_friendship(
@@ -3231,22 +3224,22 @@ fn increase_friendship(mut context: FunctionContext) -> Result<(), Error> {
 fn decrease_friendship(mut context: FunctionContext) -> Result<(), Error> {
     let mon_handle = context
         .pop_front()
-        .wrap_error_with_message("missing mon")?
+        .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
     let delta_1 = context
         .pop_front()
-        .wrap_error_with_message("missing level 1 delta")?
+        .wrap_expectation("missing level 1 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 1 delta")?;
     let delta_2 = context
         .pop_front()
-        .wrap_error_with_message("missing level 2 delta")?
+        .wrap_expectation("missing level 2 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 2 delta")?;
     let delta_3 = context
         .pop_front()
-        .wrap_error_with_message("missing level 3 delta")?
+        .wrap_expectation("missing level 3 delta")?
         .integer_u8()
         .wrap_error_with_message("invalid level 3 delta")?;
     Mon::decrease_friendship(
@@ -3259,12 +3252,12 @@ fn decrease_friendship(mut context: FunctionContext) -> Result<(), Error> {
 fn has_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
     let side_index = context
         .pop_front()
-        .wrap_error_with_message("missing side")?
+        .wrap_expectation("missing side")?
         .side_index()
         .wrap_error_with_message("invalid side")?;
     let condition = context
         .pop_front()
-        .wrap_error_with_message("missing condition")?
+        .wrap_expectation("missing condition")?
         .string()
         .wrap_error_with_message("invalid condition")?;
     let condition = Id::from(condition);

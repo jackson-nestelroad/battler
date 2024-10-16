@@ -9,9 +9,9 @@ use serde::{
     Serialize,
 };
 
-use crate::{
-    battler_error,
-    common::Error,
+use crate::error::{
+    general_error,
+    Error,
 };
 
 /// The chance that a Mon is shiny.
@@ -44,7 +44,7 @@ impl FromStr for ShinyChance {
             "maybe" => Ok(Self::Chance),
             "always" => Ok(Self::Always),
             "never" => Ok(Self::Never),
-            _ => Err(battler_error!("invalid shiny chance \"{s}\"")),
+            _ => Err(general_error(format!("invalid shiny chance \"{s}\""))),
         }
     }
 }

@@ -4,17 +4,14 @@ use ahash::{
 };
 use battler::{
     abilities::AbilityData,
-    common::{
-        Error,
-        Id,
-    },
+    common::Id,
     conditions::ConditionData,
     config::ClauseData,
     dex::{
-        DataLookupResult,
         DataStore,
         LocalDataStore,
     },
+    error::Error,
     items::ItemData,
     mons::{
         SpeciesData,
@@ -58,36 +55,38 @@ impl DataStore for TestDataStore {
         Ok(all_moves)
     }
 
-    fn get_type_chart(&self) -> DataLookupResult<TypeChart> {
+    fn get_type_chart(&self) -> Result<TypeChart, Error> {
         self.local.get_type_chart()
     }
 
-    fn translate_alias(&self, id: &Id) -> DataLookupResult<Id> {
+    fn translate_alias(&self, id: &Id) -> Result<Id, Error> {
         self.local.translate_alias(id)
     }
 
-    fn get_ability(&self, id: &Id) -> DataLookupResult<AbilityData> {
+    fn get_ability(&self, id: &Id) -> Result<AbilityData, Error> {
         self.local.get_ability(id)
     }
 
-    fn get_clause(&self, id: &Id) -> DataLookupResult<ClauseData> {
+    fn get_clause(&self, id: &Id) -> Result<ClauseData, Error> {
         self.local.get_clause(id)
     }
 
-    fn get_condition(&self, id: &Id) -> DataLookupResult<ConditionData> {
+    fn get_condition(&self, id: &Id) -> Result<ConditionData, Error> {
         self.local.get_condition(id)
     }
 
-    fn get_item(&self, id: &Id) -> DataLookupResult<ItemData> {
+    fn get_item(&self, id: &Id) -> Result<ItemData, Error> {
         self.local.get_item(id)
     }
 
-    fn get_move(&self, id: &Id) -> DataLookupResult<MoveData> {
-        Into::<DataLookupResult<MoveData>>::into(self.fake_moves.get(id).cloned())
-            .or_else(|| self.local.get_move(id))
+    fn get_move(&self, id: &Id) -> Result<MoveData, Error> {
+        match self.fake_moves.get(id) {
+            Some(fake_move) => Ok(fake_move.clone()),
+            None => self.local.get_move(id),
+        }
     }
 
-    fn get_species(&self, id: &Id) -> DataLookupResult<SpeciesData> {
+    fn get_species(&self, id: &Id) -> Result<SpeciesData, Error> {
         self.local.get_species(id)
     }
 }
