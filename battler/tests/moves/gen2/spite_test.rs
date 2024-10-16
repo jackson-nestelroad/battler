@@ -5,13 +5,13 @@ use battler::{
         PublicCoreBattle,
         Request,
     },
-    error::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
     teams::TeamData,
 };

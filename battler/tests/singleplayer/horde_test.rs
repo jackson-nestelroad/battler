@@ -5,13 +5,13 @@ use battler::{
         PublicCoreBattle,
         WildPlayerOptions,
     },
-    error::{
-        Error,
-        WrapResultError,
-    },
     dex::{
         DataStore,
         LocalDataStore,
+    },
+    error::{
+        Error,
+        WrapResultError,
     },
     teams::TeamData,
 };

@@ -4,11 +4,11 @@ use battler::{
         CoreBattleEngineSpeedSortTieResolution,
         PublicCoreBattle,
     },
-    error::Error,
     dex::{
         DataStore,
         LocalDataStore,
     },
+    error::Error,
     teams::TeamData,
 };
 use battler_test_utils::{
