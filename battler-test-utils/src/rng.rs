@@ -8,11 +8,9 @@ use ahash::{
     HashMapExt,
 };
 use battler::{
-    battle::PublicCoreBattle,
-    rng::{
-        PseudoRandomNumberGenerator,
-        RealPseudoRandomNumberGenerator,
-    },
+    PseudoRandomNumberGenerator,
+    PublicCoreBattle,
+    RealPseudoRandomNumberGenerator,
 };
 
 /// A controlled random number generator, for tests that need fine-grained control over battle RNG.

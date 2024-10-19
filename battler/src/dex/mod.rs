@@ -30,6 +30,7 @@ pub use data::{
     DataStore,
     DataTable,
     LocalDataStore,
+    SerializedDataTable,
 };
 pub use dex::Dex;
 pub use item_dex::ItemDex;

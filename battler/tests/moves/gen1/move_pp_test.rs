@@ -1,18 +1,14 @@
 use battler::{
-    battle::{
-        BattleType,
-        CoreBattleEngineSpeedSortTieResolution,
-        PublicCoreBattle,
-        Request,
-    },
-    common::Id,
-    dex::DataStore,
-    error::{
-        Error,
-        WrapResultError,
-    },
-    moves::MoveData,
-    teams::TeamData,
+    BattleType,
+    CoreBattleEngineSpeedSortTieResolution,
+    DataStore,
+    Error,
+    Id,
+    MoveData,
+    PublicCoreBattle,
+    Request,
+    TeamData,
+    WrapResultError,
 };
 use battler_test_utils::{
     TestBattleBuilder,

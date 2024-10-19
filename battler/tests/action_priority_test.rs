@@ -1,16 +1,12 @@
 use battler::{
-    battle::{
-        BattleType,
-        PublicCoreBattle,
-    },
-    common::Id,
-    dex::DataStore,
-    error::{
-        Error,
-        WrapResultError,
-    },
-    moves::MoveData,
-    teams::TeamData,
+    BattleType,
+    DataStore,
+    Error,
+    Id,
+    MoveData,
+    PublicCoreBattle,
+    TeamData,
+    WrapResultError,
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,

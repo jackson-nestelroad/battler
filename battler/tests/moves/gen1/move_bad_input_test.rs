@@ -1,19 +1,13 @@
 use battler::{
-    battle::{
-        BattleType,
-        CoreBattleEngineSpeedSortTieResolution,
-        PublicCoreBattle,
-        Request,
-    },
-    dex::{
-        DataStore,
-        LocalDataStore,
-    },
-    error::{
-        Error,
-        WrapResultError,
-    },
-    teams::TeamData,
+    BattleType,
+    CoreBattleEngineSpeedSortTieResolution,
+    DataStore,
+    Error,
+    LocalDataStore,
+    PublicCoreBattle,
+    Request,
+    TeamData,
+    WrapResultError,
 };
 use battler_test_utils::TestBattleBuilder;
 

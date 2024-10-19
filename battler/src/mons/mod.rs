@@ -33,6 +33,7 @@ pub use species_flags::SpeciesFlags;
 pub use stats::{
     PartialStatTable,
     Stat,
+    StatMap,
     StatTable,
     StatTableEntries,
 };

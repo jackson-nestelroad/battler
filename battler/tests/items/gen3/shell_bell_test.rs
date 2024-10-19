@@ -1,18 +1,12 @@
 use battler::{
-    battle::{
-        BattleType,
-        CoreBattleEngineSpeedSortTieResolution,
-        PublicCoreBattle,
-    },
-    dex::{
-        DataStore,
-        LocalDataStore,
-    },
-    error::{
-        Error,
-        WrapResultError,
-    },
-    teams::TeamData,
+    BattleType,
+    CoreBattleEngineSpeedSortTieResolution,
+    DataStore,
+    Error,
+    LocalDataStore,
+    PublicCoreBattle,
+    TeamData,
+    WrapResultError,
 };
 use battler_test_utils::{
     assert_logs_since_turn_eq,

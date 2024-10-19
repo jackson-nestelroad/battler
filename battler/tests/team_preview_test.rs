@@ -1,18 +1,12 @@
 use battler::{
-    battle::{
-        BattleType,
-        PublicCoreBattle,
-    },
-    common::FastHashMap,
-    dex::{
-        DataStore,
-        LocalDataStore,
-    },
-    error::{
-        Error,
-        WrapResultError,
-    },
-    teams::TeamData,
+    BattleType,
+    DataStore,
+    Error,
+    FastHashMap,
+    LocalDataStore,
+    PublicCoreBattle,
+    TeamData,
+    WrapResultError,
 };
 use battler_test_utils::{
     assert_new_logs_eq,

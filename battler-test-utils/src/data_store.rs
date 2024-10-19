@@ -3,21 +3,17 @@ use ahash::{
     HashMapExt,
 };
 use battler::{
-    abilities::AbilityData,
-    common::Id,
-    conditions::ConditionData,
-    config::ClauseData,
-    dex::{
-        DataStore,
-        LocalDataStore,
-    },
-    error::Error,
-    items::ItemData,
-    mons::{
-        SpeciesData,
-        TypeChart,
-    },
-    moves::MoveData,
+    AbilityData,
+    ClauseData,
+    ConditionData,
+    DataStore,
+    Error,
+    Id,
+    ItemData,
+    LocalDataStore,
+    MoveData,
+    SpeciesData,
+    TypeChart,
 };
 
 /// Wrapper around a battle's [`LocalDataStore`] for testing.

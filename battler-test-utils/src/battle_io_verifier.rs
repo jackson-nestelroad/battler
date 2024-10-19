@@ -6,14 +6,10 @@ use std::{
 
 use ahash::HashMap;
 use battler::{
-    battle::{
-        PublicCoreBattle,
-        Request,
-    },
-    error::{
-        Error,
-        WrapResultError,
-    },
+    Error,
+    PublicCoreBattle,
+    Request,
+    WrapResultError,
 };
 use serde::Deserialize;
 

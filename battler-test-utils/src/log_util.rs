@@ -4,7 +4,7 @@ use std::{
     io,
 };
 
-use battler::battle::PublicCoreBattle;
+use battler::PublicCoreBattle;
 use itertools::Itertools;
 use serde::Deserialize;
 
