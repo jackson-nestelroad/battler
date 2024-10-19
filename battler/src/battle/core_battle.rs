@@ -23,7 +23,6 @@ use crate::{
         core_battle_logs,
         speed_sort,
         Action,
-        BattleOptions,
         BattleQueue,
         BattleRegistry,
         Context,

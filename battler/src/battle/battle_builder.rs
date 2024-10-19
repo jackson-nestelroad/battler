@@ -5,7 +5,6 @@ use serde::{
 
 use crate::{
     battle::{
-        BattleOptions,
         CoreBattleEngineOptions,
         CoreBattleOptions,
         FieldData,

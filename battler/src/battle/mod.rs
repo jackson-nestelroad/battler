@@ -52,7 +52,6 @@ pub use battle_builder::{
     BattleBuilderSideData,
 };
 pub use battle_options::{
-    BattleOptions,
     CoreBattleEngineOptions,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,

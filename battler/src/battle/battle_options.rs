@@ -146,14 +146,6 @@ impl Default for CoreBattleEngineOptions {
     }
 }
 
-/// Common trait for different battle options.
-pub trait BattleOptions {
-    /// Validates the battle options.
-    fn validate(&self) -> Result<(), Error>;
-    /// Validates the battle options for the given format.
-    fn validate_with_format(&self, format: &FormatData) -> Result<(), Error>;
-}
-
 /// Core options for a new battle.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CoreBattleOptions {
@@ -216,15 +208,17 @@ impl CoreBattleOptions {
     }
 }
 
-impl BattleOptions for CoreBattleOptions {
-    fn validate(&self) -> Result<(), Error> {
+impl CoreBattleOptions {
+    /// Validates the battle options.
+    pub fn validate(&self) -> Result<(), Error> {
         match &self.format {
             Some(format) => self.validate_with_format(format),
             None => Err(general_error("battle options has no format data")),
         }
     }
 
-    fn validate_with_format(&self, format: &FormatData) -> Result<(), Error> {
+    /// Validates the battle options against a given format.
+    pub fn validate_with_format(&self, format: &FormatData) -> Result<(), Error> {
         self.validate_side(format, &self.side_1)?;
         self.validate_side(format, &self.side_2)?;
         Ok(())
@@ -236,10 +230,7 @@ mod battle_options_tests {
     use serde::Deserialize;
 
     use crate::{
-        battle::{
-            BattleOptions,
-            CoreBattleOptions,
-        },
+        battle::CoreBattleOptions,
         common::read_test_cases,
     };
 
