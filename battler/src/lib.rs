@@ -101,6 +101,16 @@ pub use dex::{
     SingleValueDex,
     SpeciesDex,
 };
+pub use effect::fxlang::{
+    Callback,
+    CallbackInput,
+    Callbacks,
+    Condition,
+    Effect,
+    LocalData,
+    Program,
+    ProgramWithPriority,
+};
 pub use error::{
     borrow_failed_error,
     general_error,
