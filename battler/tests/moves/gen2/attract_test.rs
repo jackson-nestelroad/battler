@@ -174,8 +174,8 @@ fn destiny_knot_causes_mutual_attraction() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Wobbuffet,player-1,1|name:Attract|target:Wobbuffet,player-2,1",
-            "start|mon:Wobbuffet,player-1,1|move:Attract|from:item:Destiny Knot|of:Wobbuffet,player-2,1",
             "start|mon:Wobbuffet,player-2,1|move:Attract",
+            "start|mon:Wobbuffet,player-1,1|move:Attract|from:item:Destiny Knot|of:Wobbuffet,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
