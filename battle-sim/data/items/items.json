@@ -648,7 +648,9 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_attract": [
+        "on_after_add_volatile": [
+          "if $effect.id != attract:",
+          ["return"],
           "if !$source or $source == $target:",
           ["return"],
           "add_volatile: $source attract use_target_as_source"

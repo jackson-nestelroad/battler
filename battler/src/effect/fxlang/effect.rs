@@ -226,7 +226,7 @@ enum CommonCallbackType {
 pub enum BattleEvent {
     /// Runs when the accuracy of a move against a target is being determined.
     ///
-    /// Runs in the context of an active move on the target.
+    /// Runs in the context of a move target.
     #[string = "AccuracyExempt"]
     AccuracyExempt,
     /// Runs when a pseudo-weather is being added to the field.
@@ -238,24 +238,32 @@ pub enum BattleEvent {
     AddPseudoWeather,
     /// Runs after a volatile effect is added to a Mon.
     ///
-    /// Runs in the context of an applying effect.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "AddVolatile"]
     AddVolatile,
+    /// Runs after a Mon receives a new volatile effect.
+    ///
+    /// Only runs if the volatile has been added successfully. This event will not undo the
+    /// volatile.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterAddVolatile"]
+    AfterAddVolatile,
     /// Runs after a Mon hits another Mon with a move.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "AfterHit"]
     AfterHit,
     /// Runs after a Mon finishes using a move.
     ///
-    /// Runs on the active move itself and in the context of an active move from the user.
+    /// Runs on the active move and in the context of a move user.
     #[string = "AfterMove"]
     AfterMove,
     /// Runs after a move's secondary effects have been applied.
     ///
     /// Should be viewed as the last effect the move needs to apply.
     ///
-    /// Runs on the active move itself and the context of an active move on the target.
+    /// Runs on the active move and in the context of a move target.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
     /// Runs after a Mon's status effect is changed.
@@ -263,7 +271,7 @@ pub enum BattleEvent {
     /// Only runs if the status has been set successfully. This event will not undo a status
     /// change.
     ///
-    /// Runs in the context of an applying effect.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterSetStatus"]
     AfterSetStatus,
     /// Runs after damage is applied to a substitute.
@@ -272,107 +280,75 @@ pub enum BattleEvent {
     /// this event is used to cover for scenarios where hitting a substitute should still trigger
     /// some callback.
     ///
-    /// Runs on the active move itself and in the context of an active move on the target.
+    /// Runs on the active move and in the context of a move target.
     #[string = "AfterSubstituteDamage"]
     AfterSubstituteDamage,
-    /// Runs when a Mon's ally's status effect is changed.
-    ///
-    /// Runs in the context of an applying effect.
+    /// [`SetStatus`][`Self::SetStatus`] but triggers for an ally Mon.
     #[string = "AllySetStatus"]
     AllySetStatus,
-    /// Runs when any Mon's damage is being calculated for a target.
-    ///
-    /// Used to override damage calculations.
-    ///
-    /// Runs in the context of an applying effect on the target.
+    /// [`Damage`][`Self::Damage`] but triggers for any Mon.
     #[string = "AnyDamage"]
     AnyDamage,
-    /// Runs when any Mon exits the battle (is no longer active).
-    ///
-    /// Runs in the context of the target Mon.
+    /// [`Exit`][`Self::Exit`] but triggers for any Mon.
     #[string = "AnyExit"]
     AnyExit,
-    /// Runs when any Mon is preparing to hit all of its targets with a move.
-    ///
-    /// Can fail the move.
-    ///
-    /// Runs on the active move itself and in the context of an active move from the user.
+    /// [`PrepareHit`][`Self::PrepareHit`] but triggers for any Mon.
     #[string = "AnyPrepareHit"]
     AnyPrepareHit,
-    /// Runs when any move is going to target one Mon but can be redirected towards a different
-    /// target.
-    ///
-    /// Runs in the context of an active move from the user.
+    /// [`RedirectTarget`][`Self::RedirectTarget`] but triggers for any Mon.
     #[string = "AnyRedirectTarget"]
     AnyRedirectTarget,
-    /// Runs when any Mon's status effect is being set.
-    ///
-    /// Runs before the status effect is applied. Can be used to fail the status change.
-    ///
-    /// Runs in the context of an applying effect on the target.
+    /// [`SetStatus`][`Self::SetStatus`] but triggers for any Mon.
     #[string = "AnySetStatus"]
     AnySetStatus,
-    /// Runs when any Mon is trying to use a move.
-    ///
-    /// Can fail the move.
-    ///
-    /// Runs on the active move itself and in the context of an applying effect from the user.
+    /// [`TryMove`][`Self::TryMove`] but triggers for any Mon.
     #[string = "AnyTryMove"]
     AnyTryMove,
-    /// Runs when a Mon becomes attracted to another Mon.
-    ///
-    /// Can fail the attraction.
-    ///
-    /// Runs in the context of an applying effect on the target.
-    #[string = "Attract"]
-    Attract,
     /// Runs when a move's base power is being calculated for a target.
     ///
-    /// Used to override a move's base power.
-    ///
-    /// Runs in the context of an active move on the target.
+    /// Runs on the active move and in the context of a move target.
     #[string = "BasePower"]
     BasePower,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs on the active move and in the context of a move user.
     #[string = "BeforeMove"]
     BeforeMove,
     /// Runs before a Mon switches out.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "BeforeSwitchOut"]
     BeforeSwitchOut,
     /// Runs before a turn of a battle.
     ///
-    /// Runs in the context of the target Mon (the user of the move).
+    /// Runs in the context of a Mon.
     #[string = "BeforeTurn"]
     BeforeTurn,
     /// Runs when determining the health at which the Mon should eat berries.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "BerryEatingHealth"]
     BerryEatingHealth,
     /// Runs when a Mon is attempting to escape from battle.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "CanEscape"]
     CanEscape,
     /// Runs when determining if a Mon can heal.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "CanHeal"]
     CanHeal,
     /// Runs when a group of stat boosts is being applied to a Mon.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "ChangeBoosts"]
     ChangeBoosts,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "ChargeMove"]
     ChargeMove,
     /// Runs when the field's terrain is being cleared.
@@ -389,117 +365,113 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the field.
     #[string = "ClearWeather"]
     ClearWeather,
-    /// Runs when copying a volatile condition to the target Mon.
+    /// Runs when copying a volatile effect to the target Mon.
     ///
-    /// Runs in the context of an applying effect on the target Mon.
+    /// Runs on the effect.
     #[string = "CopyVolatile"]
     CopyVolatile,
     /// Runs when a move critical hits a target.
     ///
-    /// Runs in the context of an active move on the target.
+    /// Runs in the context of a move target.
     #[string = "CriticalHit"]
     CriticalHit,
     /// Runs when a Mon's current status is cured.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "CureStatus"]
     CureStatus,
     /// Runs when a Mon's damage is being calculated for a target.
     ///
-    /// Used to override damage calculations.
-    ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "Damage"]
     Damage,
     /// Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.
     ///
-    /// Run for each target. Run once per hit (i.e., multi-hit moves execute one event per hit).
+    /// Runs once per hit (i.e., multi-hit moves execute one event per hit).
     ///
-    /// Runs in the context of an active move on the target.
+    /// Runs in the context of a move target.
     #[string = "DamagingHit"]
     DamagingHit,
     /// Runs after a move is used that should have PP deducted.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context a Mon.
     #[string = "DeductPp"]
     DeductPp,
     /// Runs when determining which moves are disabled.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context a Mon.
     #[string = "DisableMove"]
     DisableMove,
     /// Runs before a Mon is dragged out of battle.
     ///
     /// Can cancel the force switch.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "DragOut"]
     DragOut,
     /// Runs when determining the duration of an effect.
     ///
-    /// Used to apply dynamic durations.
-    ///
-    /// Runs on the effect itself.
+    /// Runs on the effect.
     #[string = "Duration"]
     Duration,
     /// Runs when an item is eaten.
     ///
-    /// Runs on the item itself.
+    /// Runs on the item.
     #[string = "Eat"]
     Eat,
     /// Runs when a Mon eats its item.
     ///
-    /// Runs in the context of an applying effect (the item) on the target.
+    /// Runs in the context of a Mon.
     #[string = "EatItem"]
     EatItem,
     /// Runs when determining the type effectiveness of a move.
     ///
-    /// Runs on the active move itself and in the context of an active move on the target.
+    /// Runs on the active move and in the context of a move target.
     #[string = "Effectiveness"]
     Effectiveness,
     /// Runs when an effect ends.
     ///
-    /// Runs on the effect itself.
+    /// Runs on the effect.
     #[string = "End"]
     End,
     /// Runs when a Mon is active when the battle has ended.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "EndBattle"]
     EndBattle,
     /// Runs when a Mon is affected by an entry hazard.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "EntryHazard"]
     EntryHazard,
     /// Runs when a Mon exits the battle (is no longer active).
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "Exit"]
     Exit,
     /// Runs when a Mon faints.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "Faint"]
     Faint,
     /// Runs when a field condition ends.
     ///
-    /// Runs in the context of the field condition itself.
+    /// Runs on the field condition.
     #[string = "FieldEnd"]
     FieldEnd,
     /// Runs at the end of every turn to apply residual effects on the field.
     ///
-    /// Runs in the context of the field condition itself.
+    /// Runs on the field condition.
     #[string = "FieldResidual"]
     FieldResidual,
     /// Runs when a field condition restarts.
     ///
-    /// Runs in the context of the field condition itself.
+    /// Runs on the field condition.
     #[string = "FieldRestart"]
     FieldRestart,
     /// Runs when a field condition starts.
     ///
-    /// Runs in the context of the field condition itself.
+    /// Runs on the field condition.
     #[string = "FieldStart"]
     FieldStart,
     /// Runs when a Mon flinches.
@@ -507,37 +479,24 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Flinch"]
     Flinch,
-    /// Runs before a foe uses a move.
-    ///
-    /// Can prevent the move from being used.
-    ///
-    /// Runs in the context of an active move from the user.
+    /// [`BeforeMove`][`Self::BeforeMove`] but triggers for a foe Mon.
     #[string = "FoeBeforeMove"]
     FoeBeforeMove,
-    /// Runs after a move is used by a foe that should have PP deducted.
-    ///
-    /// Runs in the context of the target Mon.
+    /// [`DeductPp`][`Self::DeductPp`] but triggers for a foe Mon.
     #[string = "FoeDeductPp"]
     FoeDeductPp,
-    /// Runs when a foe is determining which moves are disabled.
-    ///
-    /// Runs in the context of the target Mon.
+    /// [`DisableMove`][`Self::DisableMove`] but triggers for a foe Mon.
     #[string = "FoeDisableMove"]
     FoeDisableMove,
-    /// Runs when a foe's move is going to target one Mon but can be redirected towards a different
-    /// target.
-    ///
-    /// Runs in the context of an active move from the user.
+    /// [`RedirectTarget`][`Self::RedirectTarget`] but triggers for a foe Mon.
     #[string = "FoeRedirectTarget"]
     FoeRedirectTarget,
-    /// Runs when determining if a foe Mon is trapped (i.e., cannot switch out).
-    ///
-    /// Runs in the context of the target Mon.
+    /// [`TrapMon`][`Self::TrapMon`] but triggers for a foe Mon.
     #[string = "FoeTrapMon"]
     FoeTrapMon,
     /// Runs when a Mon is attempting to escape from battle, prior to any speed check.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "ForceEscape"]
     ForceEscape,
     /// Runs when a Mon is hit by a move.
@@ -545,7 +504,7 @@ pub enum BattleEvent {
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
     /// the applying hit effect.
     ///
-    /// Runs on the active move itself and in the context of an active move on the target.
+    /// Runs on the active move and in the context of a move target.
     #[string = "Hit"]
     Hit,
     /// Runs when the field is hit by a move.
@@ -553,7 +512,7 @@ pub enum BattleEvent {
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
     /// the applying hit effect.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "HitField"]
     HitField,
     /// Runs when a side is hit by a move.
@@ -561,188 +520,171 @@ pub enum BattleEvent {
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
     /// the applying hit effect.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move and in the context of an applying effect on a side.
     #[string = "HitSide"]
     HitSide,
     /// Runs when determining if a Mon is immune to some status.
     ///
-    /// Runs in the context of an applying effect on the target, including moves.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "Immunity"]
     Immunity,
     /// Runs when determining if a Mon is invulnerable to targeting moves.
     ///
     /// Runs as the very first step in a move.
     ///
-    /// Runs in the context of an active move on the target.
+    /// Runs in the context of a move target.
     #[string = "Invulnerability"]
     Invulnerability,
     /// Runs when determining if a Mon is asleep.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsAsleep"]
     IsAsleep,
     /// Runs when determining if a Mon is away from the field (e.g., immobilized by Sky Drop).
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsAwayFromField"]
     IsAwayFromField,
     /// Runs when determining if a Mon is behind a substitute.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsBehindSubstitute"]
     IsBehindSubstitute,
     /// Runs when determining if a Mon is protected from making contact with other Mons.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsContactProof"]
     IsContactProof,
     /// Runs when determining if a Mon is grounded.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsGrounded"]
     IsGrounded,
     /// Runs when determining if a Mon is immune to entry hazards.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsImmuneToEntryHazards"]
     IsImmuneToEntryHazards,
     /// Runs when determining if a weather includes raining.
     ///
-    /// Runs on the effect itslf.
+    /// Runs in the context of a Mon.
     #[string = "IsRaining"]
     IsRaining,
     /// Runs when determining if a Mon is in a semi-invulnerable state.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsSemiInvulnerable"]
     IsSemiInvulnerable,
     /// Runs when determining if a weather includes snowing.
     ///
-    /// Runs on the effect itslf.
+    /// Runs in the context of a Mon.
     #[string = "IsSnowing"]
     IsSnowing,
     /// Runs when determining if a Mon is soundproof.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "IsSoundproof"]
     IsSoundproof,
     /// Runs when determining if a weather includes sunny weather.
     ///
-    /// Runs on the effect itslf.
+    /// Runs in the context of a Mon.
     #[string = "IsSunny"]
     IsSunny,
     /// Runs when determining if a Mon is locked into a move.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "LockMove"]
     LockMove,
     /// Runs when calculating the accuracy of a move.
     ///
-    /// Runs in the context of an active move against the target.
+    /// Runs in the context of a move target.
     #[string = "ModifyAccuracy"]
     ModifyAccuracy,
     /// Runs when calculating a Mon's Atk stat.
     ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyAtk"]
     ModifyAtk,
     /// Runs when modifying a Mon's stat boosts used for stat calculations.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "ModifyBoosts"]
     ModifyBoosts,
     /// Runs when calculating the modified catch rate of a Mon.
     ///
-    /// Runs in the context of the item itself and in the context of an applying effect on the
-    /// target.
+    /// Runs in the context of the item and in the context of an applying effect on a Mon.
     #[string = "ModifyCatchRate"]
     ModifyCatchRate,
     /// Runs when calculating a move's critical hit chance.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "ModifyCritChance"]
     ModifyCritChance,
     /// Runs when calculating a move's critical hit ratio.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "ModifyCritRatio"]
     ModifyCritRatio,
     /// Runs when calculating the damage applied to a Mon.
     ///
     /// Runs as the very last step in the regular damage calculation formula.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "ModifyDamage"]
     ModifyDamage,
     /// Runs when calculating a Mon's Def stat.
     ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyDef"]
     ModifyDef,
     /// Runs when calculating a Mon's SpA stat.
     ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpA"]
     ModifySpA,
     /// Runs when calculating the amount of experience gained by a Mon.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "ModifyExperience"]
     ModifyExperience,
     /// Runs when calculating the amount of friendship gained by a Mon.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "ModifyFriendshipIncrease"]
     ModifyFriendshipIncrease,
     /// Runs when determining the priority of a move.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "ModifyPriority"]
     ModifyPriority,
     /// Runs before applying secondary move effects.
     ///
-    /// Runs in the context of an active move against the target.
+    /// Runs in the context of a move target.
     #[string = "ModifySecondaryEffects"]
     ModifySecondaryEffects,
     /// Runs when caclculating a Mon's SpD stat.
     ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpD"]
     ModifySpD,
     /// Runs when calculating a Mon's Spe stat.
     ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpe"]
     ModifySpe,
-    /// Runs when a Mon uses a move.
-    ///
-    /// Can be used to modify a move's type when it is used.
-    ///
-    /// Runs on the active move itself and in the context of an active move from the user.
-    #[string = "ModifyType"]
-    ModifyType,
     /// Runs when a move is aborted due to failing the BeforeMove event.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "MoveAborted"]
     MoveAborted,
     /// Runs when a move's base power is being calculated for a target.
     ///
-    /// Used to apply dynamic base powers.
-    ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "MoveBasePower"]
     MoveBasePower,
     /// Runs when a move's damage is being calculated for a target.
     ///
-    /// Used to override damage calculations.
-    ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "MoveDamage"]
     MoveDamage,
     /// Runs when a move fails, only on the move itself.
@@ -750,84 +692,84 @@ pub enum BattleEvent {
     /// A move fails when it is successfully used by the user, but it does not hit or apply its
     /// primary effect to any targets.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "MoveFailed"]
     MoveFailed,
     /// Runs when determining if a Mon's immunity against a single type should be negated.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "NegateImmunity"]
     NegateImmunity,
     /// Runs when a Mon uses a move, to override the chosen move.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "OverrideMove"]
     OverrideMove,
     /// Runs when a player tries to choose to use an item.
     ///
-    /// Runs on the item itself.
+    /// Runs on the item.
     #[string = "PlayerTryUseItem"]
     PlayerTryUseItem,
     /// Runs when an item is used on a Mon by a player.
     ///
-    /// Runs on the item itself.
+    /// Runs on the item.
     #[string = "PlayerUse"]
     PlayerUse,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself and in the context of an active move from the user.
+    /// Runs on the active move and in the context of a move user.
     #[string = "PrepareHit"]
     PrepareHit,
     /// Runs when determining if a Mon can have items used on it.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "PreventUsedItems"]
     PreventUsedItems,
     /// Runs before at the start of the turn, when a move is charging for the turn.
     ///
-    /// Runs in the context of the target Mon (the user of the move).
+    /// Runs in the context of a Mon.
     #[string = "PriorityChargeMove"]
     PriorityChargeMove,
     /// Runs when a move is going to target one Mon but can be redirected towards a different
     /// target.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "RedirectTarget"]
     RedirectTarget,
     /// Runs at the end of every turn to apply residual effects.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "Residual"]
     Residual,
     /// Runs when a volatile effect is applied to a Mon that already has the volatile effect.
     ///
-    /// Runs on the effect itself.
+    /// Runs on the effect.
     #[string = "Restart"]
     Restart,
     /// Runs when restoring PP to a move.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "RestorePp"]
     RestorePp,
     /// Runs when a Mon's ability is being set.
     ///
     /// Runs before the ability is changed. Can be used to fail the ability change.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "SetAbility"]
     SetAbility,
     /// Runs when the Mon's last move selected is being set.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "SetLastMove"]
     SetLastMove,
     /// Runs when a Mon's status effect is being set.
     ///
     /// Runs before the status effect is applied. Can be used to fail the status change.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "SetStatus"]
     SetStatus,
     /// Runs when the field's terrain is being set.
@@ -846,234 +788,195 @@ pub enum BattleEvent {
     SetWeather,
     /// Runs when a side condition starts successfully.
     ///
-    /// Runs in the context of an applying effect on the side.
+    /// Runs in the context of an applying effect on a side.
     #[string = "SideConditionStart"]
     SideConditionStart,
     /// Runs when a side condition ends.
     ///
-    /// Runs in the context of the side condition itself.
+    /// Runs in the context of the side condition.
     #[string = "SideEnd"]
     SideEnd,
     /// Runs at the end of every turn to apply residual effects on the side.
     ///
-    /// Runs in the context of the side condition itself.
+    /// Runs in the context of the side condition.
     #[string = "SideResidual"]
     SideResidual,
     /// Runs when a side condition restarts.
     ///
-    /// Runs in the context of the side condition itself.
+    /// Runs in the context of the side condition.
     #[string = "SideRestart"]
     SideRestart,
     /// Runs when a side condition starts.
     ///
-    /// Runs in the context of the side condition itself.
+    /// Runs in the context of the side condition.
     #[string = "SideStart"]
     SideStart,
     /// Runs when a slot condition ends.
     ///
-    /// Runs in the context of the slot condition itself.
+    /// Runs in the context of the slot condition.
     #[string = "SlotEnd"]
     SlotEnd,
     /// Runs when a slot condition restarts.
     ///
-    /// Runs in the context of the slot condition itself.
+    /// Runs in the context of the slot condition.
     #[string = "SlotRestart"]
     SlotRestart,
     /// Runs when a slot condition starts.
     ///
-    /// Runs in the context of the slot condition itself.
+    /// Runs in the context of the slot condition.
     #[string = "SlotStart"]
     SlotStart,
-    /// Runs when a move is trying to hit an entire side that a Mon is in.
-    ///
-    /// Can fail the move.
-    ///
-    /// Runs on the active move itself and in the context of an applying effect on the side.
+    /// [`TryHitSide`][`Self::TryHitSide`] but triggers for a side.
     #[string = "SideTryHitSide"]
     SideTryHitSide,
-    /// Runs when the accuracy of a move used by a Mon is being determined.
-    ///
-    /// Runs in the context of an active move on the target.
+    /// [`AccuracyExempt`][`Self::AccuracyExempt`] but triggers for the source Mon of the event.
     #[string = "SourceAccuracyExempt"]
     SourceAccuracyExempt,
-    /// Runs when a Mon is the source of determining its move's base power is being calculated for
-    /// a target.
-    ///
-    /// Used to override a move's base power.
-    ///
-    /// Runs in the context of an active move on the target.
+    /// [`BasePower`][`Self::BasePower`] but triggers for the source Mon of the event.
     #[string = "SourceBasePower"]
     SourceBasePower,
-    /// Runs when a Mon is the source of determining if another Mon is invulnerable to targeting
-    /// moves.
-    ///
-    /// Runs as the very first step in a move.
-    ///
-    /// Runs in the context of an active move on the target.
+    /// [`Invulnerability`][`Self::Invulnerability`] but triggers for the source Mon of the event.
     #[string = "SourceInvulnerability"]
     SourceInvulnerability,
-    /// Runs when calculating the accuracy of a move used by the Mon.
-    ///
-    /// Runs in the context of an active move against the target.
+    /// [`ModifyAccuracy`][`Self::ModifyAccuracy`] but triggers for the source Mon of the event.
     #[string = "SourceModifyAccuracy"]
     SourceModifyAccuracy,
-    /// Runs when the Mon is the source of another Mon calculating its Atk stat.
-    ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// [`ModifyAtk`][`Self::ModifyAtk`] but triggers for the source Mon of the event.
     #[string = "SourceModifyAtk"]
     SourceModifyAtk,
-    /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
-    /// apply against it).
-    ///
-    /// Used to modify damage calculations impacted by effects on the target Mon.
-    ///
-    /// Runs in the context of an active move from the user.
+    /// [`ModifyDamage`][`Self::ModifyDamage`] but triggers for the source Mon of the event.
     #[string = "SourceModifyDamage"]
     SourceModifyDamage,
-    /// Runs when the Mon is the source of another Mon calculating its SpA stat.
-    ///
-    /// Runs in the context of the target Mon or an applying effect, where the target is always the
-    /// target of the stat modification.
+    /// [`ModifySpA`][`Self::ModifySpA`] but triggers for the source Mon of the event.
     #[string = "SourceModifySpA"]
     SourceModifySpA,
-    /// Runs before a Mon is the source of another Mon healing for some amount of damage.
-    ///
-    /// Runs in the context of the target Mon or an applying effect.
+    /// [`TryHeal`][`Self::TryHeal`] but triggers for the source Mon of the event.
     #[string = "SourceTryHeal"]
     SourceTryHeal,
-    /// Runs when a Mon's move is trying to hit a set of targets.
-    ///
-    /// Can fail the move.
-    ///
-    /// Runs on the active move itself and in the context of an applying effect on each target.
-    #[string = "TryHit"]
+    /// [`TryHit`][`Self::TryHit`] but triggers for the source Mon of the event.
+    #[string = "SourceTryHit"]
     SourceTryHit,
-    /// Runs when a Mon's move's primary hit is being applied to a target.
-    ///
-    /// Runs in the context of an active move on the target.
+    /// [`TryPrimaryHit`][`Self::TryPrimaryHit`] but triggers for the source Mon of the event.
     #[string = "SourceTryPrimaryHit"]
     SourceTryPrimaryHit,
-    /// Runs when a Mon is the target of a damage calculation (i.e., a Mon is calculating damage to
-    /// apply against it).
-    ///
-    /// Runs in the context of an active move from the user.
+    /// [`WeatherModifyDamage`][`Self::WeatherModifyDamage`] but triggers for the source Mon of the
+    /// event.
     #[string = "SourceWeatherModifyDamage"]
     SourceWeatherModifyDamage,
     /// Runs when a Mon attempts a stalling move (e.g., Protect).
     ///
     /// Can fail the stalling move (assuming the stalling move integrates with the event properly).
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "StallMove"]
     StallMove,
     /// Runs when an effect starts.
     ///
     /// Used to set up state.
     ///
-    /// Runs on the effect itself.
+    /// Runs on the effect.
     #[string = "Start"]
     Start,
     /// Runs when determining the sub-priority of a move.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "SubPriority"]
     SubPriority,
     /// Runs when determining if terrain on the field is suppressed, for some other active effect.
     ///
-    /// Runs on the effect itslf.
+    /// Runs on the effect.
     #[string = "SuppressFieldTerrain"]
     SuppressFieldTerrain,
     /// Runs when determining if weather on the field is suppressed, for some other active effect.
     ///
-    /// Runs on the effect itslf.
+    /// Runs on the effect.
     #[string = "SuppressFieldWeather"]
     SuppressFieldWeather,
     /// Runs when determining if the item on the Mon is suppressed, for some other active effect.
     ///
-    /// Runs on the effect itslf.
+    /// Runs on the effect.
     #[string = "SuppressMonItem"]
     SuppressMonItem,
     /// Runs when determining if terrain on the Mon is suppressed, for some other active effect.
     ///
-    /// Runs on the effect itslf.
+    /// Runs on the effect.
     #[string = "SuppressMonTerrain"]
     SuppressMonTerrain,
     /// Runs when determining if weather on the Mon is suppressed, for some other active effect.
     ///
-    /// Runs on the effect itslf.
+    /// Runs on the effect.
     #[string = "SuppressMonWeather"]
     SuppressMonWeather,
     /// Runs when a Mon switches in.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "SwitchIn"]
     SwitchIn,
     /// Runs when a Mon is switching out.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "SwitchOut"]
     SwitchOut,
     /// Runs when an item is being taken from a Mon.
     ///
     /// Can prevent the item from being taken.
     ///
-    /// Runs on the item itself and in the context of an applying effect on the target.
+    /// Runs on the item and in the context of an applying effect on a Mon.
     #[string = "TakeItem"]
     TakeItem,
     /// Runs when determining if a Mon is trapped (i.e., cannot switch out).
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "TrapMon"]
     TrapMon,
     /// Runs when a group of stat boosts is being applied to a Mon.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "TryBoost"]
     TryBoost,
     /// Runs when a Mon tries to eat its item.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "TryEatItem"]
     TryEatItem,
     /// Runs before a Mon is healed for some amount of damage.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "TryHeal"]
     TryHeal,
     /// Runs when a move is trying to hit a set of targets.
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself and in the context of an applying effect on each target.
+    /// Runs on the active move and in the context of a move target.
     #[string = "TryHit"]
     TryHit,
     /// Runs when a move is trying to hit the whole field.
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself and in the context of an applying effect on the field.
+    /// Runs on the active move and in the context of an applying effect on the field.
     #[string = "TryHitField"]
     TryHitField,
     /// Runs when a move is trying to hit an entire side
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself and in the context of an applying effect on the side.
+    /// Runs on the active move and in the context of an applying effect on a side.
     #[string = "TryHitSide"]
     TryHitSide,
     /// Runs when a move is checking general immunity for its target.
     ///
     /// Can fail the move (by marking the target as immune).
     ///
-    /// Runs in the context of the active move itself.
+    /// Runs in the context of the active move.
     #[string = "TryImmunity"]
     TryImmunity,
     /// Runs when trying to use a move.
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself and in the context of an applying effect from the user.
+    /// Runs on the active move and in the context of a move user.
     #[string = "TryMove"]
     TryMove,
     /// Runs when a move's primary hit is being applied to a target.
@@ -1083,66 +986,66 @@ pub enum BattleEvent {
     /// substitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the
     /// target).
     ///
-    /// Runs in the context of an active move on the target.
+    /// Runs in the context of a move target.
     #[string = "TryPrimaryHit"]
     TryPrimaryHit,
     /// Runs when a Mon tries to use an item.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "PlayerTryUseItem"]
     TryUseItem,
     /// Runs when a Mon is trying to use a move on a set of targets.
     ///
     /// Can fail the move.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "TryUseMove"]
     TryUseMove,
     /// Runs when determining if a Mon has immunity against a single type.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "TypeImmunity"]
     TypeImmunity,
     /// Runs when determining the types of a Mon.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "Types"]
     Types,
     /// Runs when miscellaneous Mon effects in the battle could activate.
     ///
-    /// Runs in the context of the target Mon.
+    /// Runs in the context of a Mon.
     #[string = "Update"]
     Update,
     /// Runs when an item is used.
     ///
-    /// Runs on the item itself.
+    /// Runs on the item.
     #[string = "Use"]
     Use,
     /// Runs when a Mon uses a move.
     ///
     /// Can be used to modify a move when it is used.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "UseMove"]
     UseMove,
     /// Runs when a custom message should be displayed when a Mon uses a move.
     ///
-    /// Runs on the active move itself.
+    /// Runs on the active move.
     #[string = "UseMoveMessage"]
     UseMoveMessage,
     /// Runs when weather is activated at the end of each turn.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "Weather"]
     Weather,
     /// Runs when the weather over a Mon changes.
     ///
-    /// Runs in the context of an applying effect on the target.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "WeatherChange"]
     WeatherChange,
     /// Runs when calculating the damage applied to a Mon.
     ///
-    /// Runs in the context of an active move from the user.
+    /// Runs in the context of a move user.
     #[string = "WeatherModifyDamage"]
     WeatherModifyDamage,
 }
@@ -1154,6 +1057,7 @@ impl BattleEvent {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
@@ -1166,7 +1070,6 @@ impl BattleEvent {
             Self::AnyRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyTryMove => CommonCallbackType::SourceMoveControllingResult as u32,
-            Self::Attract => CommonCallbackType::ApplyingEffectResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
@@ -1238,7 +1141,6 @@ impl BattleEvent {
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::ModifyType => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
@@ -1323,7 +1225,7 @@ impl BattleEvent {
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
             Self::AddPseudoWeather => &[("pseudo_weather", ValueType::Effect, true)],
-            Self::AddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
             }
@@ -1422,7 +1324,7 @@ impl BattleEvent {
     ///
     /// This creates some limitations that must be carefully considered. These are very niche edge
     /// cases (such as the one described above), and there is almost always a workaround (in the
-    /// above case, weather can apply a volatile condition to Mons for the duration of the weather
+    /// above case, weather can apply a volatile effect to Mons for the duration of the weather
     /// that changes each Mon's type).
     ///
     /// An example of infinite recursion:
@@ -1663,6 +1565,7 @@ pub struct Callbacks {
     pub on_accuracy_exempt: Callback,
     pub on_add_pseudo_weather: Callback,
     pub on_add_volatile: Callback,
+    pub on_after_add_volatile: Callback,
     pub on_after_hit: Callback,
     pub on_after_move: Callback,
     pub on_after_move_secondary_effects: Callback,
@@ -1675,7 +1578,6 @@ pub struct Callbacks {
     pub on_any_redirect_target: Callback,
     pub on_any_set_status: Callback,
     pub on_any_try_move: Callback,
-    pub on_attract: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
     pub on_before_switch_out: Callback,
@@ -1737,7 +1639,6 @@ pub struct Callbacks {
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
-    pub on_modify_type: Callback,
     pub on_move_aborted: Callback,
     pub on_move_base_power: Callback,
     pub on_move_damage: Callback,
@@ -1818,6 +1719,7 @@ impl Callbacks {
             BattleEvent::AccuracyExempt => &self.on_accuracy_exempt,
             BattleEvent::AddPseudoWeather => &self.on_add_pseudo_weather,
             BattleEvent::AddVolatile => &self.on_add_volatile,
+            BattleEvent::AfterAddVolatile => &self.on_after_add_volatile,
             BattleEvent::AfterHit => &self.on_after_hit,
             BattleEvent::AfterMove => &self.on_after_move,
             BattleEvent::AfterMoveSecondaryEffects => &self.on_after_move_secondary_effects,
@@ -1830,7 +1732,6 @@ impl Callbacks {
             BattleEvent::AnyRedirectTarget => &self.on_any_redirect_target,
             BattleEvent::AnySetStatus => &self.on_any_set_status,
             BattleEvent::AnyTryMove => &self.on_any_try_move,
-            BattleEvent::Attract => &self.on_attract,
             BattleEvent::BasePower => &self.on_base_power,
             BattleEvent::BeforeMove => &self.on_before_move,
             BattleEvent::BeforeSwitchOut => &self.on_before_switch_out,
@@ -1902,7 +1803,6 @@ impl Callbacks {
             BattleEvent::ModifySpA => &self.on_modify_spa,
             BattleEvent::ModifySpD => &self.on_modify_spd,
             BattleEvent::ModifySpe => &self.on_modify_spe,
-            BattleEvent::ModifyType => &self.on_modify_type,
             BattleEvent::MoveAborted => &self.on_move_aborted,
             BattleEvent::MoveBasePower => &self.on_move_base_power,
             BattleEvent::MoveDamage => &self.on_move_damage,

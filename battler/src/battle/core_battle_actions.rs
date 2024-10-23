@@ -563,12 +563,6 @@ fn use_active_move_internal(
     mut target: Option<MonHandle>,
     directly_used: bool,
 ) -> Result<MoveOutcome, Error> {
-    core_battle_effects::run_active_move_event_expecting_void(
-        context,
-        fxlang::BattleEvent::ModifyType,
-        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-        fxlang::VariableInput::default(),
-    );
     let use_move_input = fxlang::VariableInput::from_iter([target
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
@@ -579,11 +573,6 @@ fn use_active_move_internal(
         use_move_input.clone(),
     );
 
-    core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(target)?,
-        fxlang::BattleEvent::ModifyType,
-        fxlang::VariableInput::default(),
-    );
     core_battle_effects::run_event_for_applying_effect(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::UseMove,
@@ -2770,13 +2759,11 @@ pub fn try_set_status(
         return Ok(ApplyMoveEffectResult::Failed);
     }
 
-    if !core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::AfterSetStatus,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle)]),
-    ) {
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
+    );
 
     Ok(ApplyMoveEffectResult::Success)
 }
@@ -2931,6 +2918,12 @@ pub fn try_add_volatile(
     }
 
     core_battle_logs::add_volatile(context, &volatile)?;
+
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterAddVolatile,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
+    );
 
     Ok(true)
 }

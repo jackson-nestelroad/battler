@@ -1509,7 +1509,7 @@
     "flags": ["Bullet", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_modify_type": [
+        "on_use_move": [
           "$weather = $user.effective_weather",
           "if !$weather:",
           ["return"],

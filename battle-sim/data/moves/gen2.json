@@ -1008,8 +1008,6 @@
         "on_start": [
           "if !($target.gender == m and $source.gender == f) and !($target.gender == f and $source.gender == m):",
           ["return false"],
-          "if !func_call(run_event: Attract):",
-          ["return false"],
           "if !$source_effect.is_move:",
           ["log_start: with_source_effect"],
           "else:",
@@ -1613,7 +1611,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_modify_type": ["$move.type = $user.hidden_power_type"]
+        "on_use_move": ["$move.type = $user.hidden_power_type"]
       }
     }
   },

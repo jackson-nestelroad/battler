@@ -39,6 +39,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AccuracyExempt, callbacks)?;
             parsed.parse_and_save(BattleEvent::AddPseudoWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::AddVolatile, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AfterAddVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMoveSecondaryEffects, callbacks)?;
@@ -51,7 +52,6 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AnyRedirectTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnySetStatus, callbacks)?;
             parsed.parse_and_save(BattleEvent::AnyTryMove, callbacks)?;
-            parsed.parse_and_save(BattleEvent::Attract, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeSwitchOut, callbacks)?;
@@ -123,7 +123,6 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
-            parsed.parse_and_save(BattleEvent::ModifyType, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveDamage, callbacks)?;
