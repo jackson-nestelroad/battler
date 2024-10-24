@@ -188,13 +188,13 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. Condition `Duration`.
                         1. Condition `SlotStart`.
                         1. `SideConditionStart`.
-                     1. Add weather:
+                     1. Set weather:
                         1. `ClearWeather`.
                         1. `SetWeather`.
                         1. Weather `Duration`.
                         1. Weather `FieldStart`.
                         1. `WeatherChange`.
-                     1. Add terrain
+                     1. Set terrain
                         1. `ClearTerrain`.
                         1. `SetTerrain`.
                         1. Terrain `Duration`.
