@@ -95,43 +95,6 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'battle-sim'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=battle-sim",
-                    "--package=battle-sim"
-                ],
-                "filter": {
-                    "name": "battle-sim",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'battle-sim'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=battle-sim",
-                    "--package=battle-sim"
-                ],
-                "filter": {
-                    "name": "battle-sim",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
         }
     ]
 }
