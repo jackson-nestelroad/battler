@@ -50,6 +50,12 @@ pub struct MonData {
     /// Nature.
     #[serde(default)]
     pub nature: Nature,
+    /// The true nature.
+    ///
+    /// A Mon's nature can be changed for battle, but its true nature is still used for some
+    /// inherent properties, like flavor preferences.
+    #[serde(default)]
+    pub true_nature: Option<Nature>,
     /// Gender.
     #[serde(default)]
     pub gender: Gender,

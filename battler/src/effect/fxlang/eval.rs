@@ -1008,6 +1008,7 @@ where
                             "transformed" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.transformed)
                             }
+                            "true_nature" => ValueRef::Nature(context.mon(mon_handle)?.true_nature),
                             "weight" => ValueRef::UFraction(
                                 Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
                             ),

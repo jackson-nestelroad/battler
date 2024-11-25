@@ -394,6 +394,7 @@ pub struct Mon {
     pub experience: u32,
     pub friendship: u8,
     pub nature: Nature,
+    pub true_nature: Nature,
     pub gender: Gender,
     pub shiny: bool,
     pub ball: String,
@@ -466,6 +467,7 @@ impl Mon {
         let experience = data.experience;
         let friendship = data.friendship;
         let nature = data.nature;
+        let true_nature = data.true_nature.unwrap_or(data.nature);
         let gender = data.gender;
         let shiny = data.shiny;
         let ball = data.ball;
@@ -546,6 +548,7 @@ impl Mon {
             experience,
             friendship,
             nature,
+            true_nature,
             gender,
             shiny,
             ball,

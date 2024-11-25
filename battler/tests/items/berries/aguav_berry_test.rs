@@ -113,7 +113,8 @@ fn aguav_berry_causes_confusion_to_special_defense_dropping_natures() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = blaziken().unwrap();
     team.members[0].item = Some("Aguav Berry".to_owned());
-    team.members[0].nature = Nature::Naughty;
+    team.members[0].nature = Nature::Sassy;
+    team.members[0].true_nature = Some(Nature::Naughty);
     let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -125,12 +126,12 @@ fn aguav_berry_causes_confusion_to_special_defense_dropping_natures() {
             "move|mon:Swampert,player-2,1|name:Surf",
             "supereffective|mon:Blaziken,player-1,1",
             "split|side:0",
-            "damage|mon:Blaziken,player-1,1|health:2/140",
-            "damage|mon:Blaziken,player-1,1|health:2/100",
+            "damage|mon:Blaziken,player-1,1|health:26/140",
+            "damage|mon:Blaziken,player-1,1|health:19/100",
             "itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat",
             "split|side:0",
-            "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:48/140",
-            "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:35/100",
+            "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:72/140",
+            "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:52/100",
             "start|mon:Blaziken,player-1,1|condition:Confusion",
             "residual",
             "turn|turn:2"
