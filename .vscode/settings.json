@@ -17,7 +17,8 @@
     "rust-analyzer.runnables.extraEnv": {
         "DATA_DIR": "${workspaceFolder}/battle-data/data",
         "TEST_CASE_DIR": "${workspaceFolder}/battler/test_cases",
-        "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected"
+        "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected",
+        "RUST_LOG": "debug"
     },
     "rust-analyzer.showUnlinkedFileNotification": false
 }

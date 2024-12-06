@@ -1,0 +1,8 @@
+[package]
+name = "test-utils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tracing-core = "0.1.33"
+tracing-subscriber = "0.3.19"

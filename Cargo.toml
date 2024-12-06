@@ -3,4 +3,10 @@ resolver = "2"
 members = [
     "battler",
     "battler-test-utils",
+    "battler-wamp",
+    "battler-wamp/serde-struct-tuple",
+    "battler-wamp/serde-struct-tuple/serde-struct-tuple-proc-macro",
+    "battler-wamp/serde-struct-tuple-enum",
+    "battler-wamp/serde-struct-tuple-enum/serde-struct-tuple-enum-proc-macro",
+    "battler-wamp/test-utils",
 ]

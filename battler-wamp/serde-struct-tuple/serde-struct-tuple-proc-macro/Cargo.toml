@@ -1,0 +1,13 @@
+[package]
+name = "serde-struct-tuple-proc-macro"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+serde = { version = "1.0", default-features = false }
+syn = "2.0"
