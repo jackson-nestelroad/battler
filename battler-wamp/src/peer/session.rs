@@ -3,8 +3,8 @@ use anyhow::{
     Result,
 };
 use log::{
+    debug,
     info,
-    trace,
     warn,
 };
 use tokio::sync::{
@@ -35,9 +35,10 @@ struct EstablishingSessionState {
     realm: Uri,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct EstablishedSessionState {
     session_id: Id,
+    realm: Uri,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -95,6 +96,15 @@ pub mod peer_session_message {
                 reason: reason.to_owned(),
                 message: message.to_owned(),
             })
+        }
+    }
+
+    impl From<&anyhow::Error> for Error {
+        fn from(value: &anyhow::Error) -> Self {
+            Self {
+                reason: Uri::for_error(value),
+                message: value.to_string(),
+            }
         }
     }
 
@@ -190,7 +200,18 @@ impl Session {
     }
 
     pub fn send_message(&mut self, message: Message) -> Result<()> {
-        self.transition_state_from_sending_message(&message)?;
+        match self.transition_state_from_sending_message(&message) {
+            Ok(()) => (),
+            Err(err) => {
+                match &message {
+                    Message::Hello(_) => {
+                        self.established_session_tx.send(Err((&err).into()))?;
+                    }
+                    _ => (),
+                }
+                return Err(err);
+            }
+        }
         self.service_message_tx.send(message).map_err(Error::new)
     }
 
@@ -210,7 +231,7 @@ impl Session {
     }
 
     pub async fn handle_message(&mut self, message: Message) -> Result<()> {
-        trace!("Peer {} received message: {message:?}", self.name);
+        debug!("Peer {} received message: {message:?}", self.name);
         if let Err(err) = self.handle_message_on_state_machine(message).await {
             self.send_message(abort_message_for_error(&err))?;
             return Err(err);
@@ -237,15 +258,8 @@ impl Session {
                 let realm = self.establishing_session_state()?.realm.clone();
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     session_id: message.session,
-                }))?;
-                info!(
-                    "Peer {} started session {} on realm {realm}",
-                    self.name,
-                    self.established_session_state()?.session_id
-                );
-                self.established_session_tx
-                    .send(Ok(peer_session_message::EstablishedSession { realm }))?;
-                Ok(())
+                    realm,
+                }))
             }
             message @ Message::Abort(_) => {
                 self.transition_state(SessionState::Closed)?;
@@ -282,7 +296,7 @@ impl Session {
 
     async fn handle_closing(&mut self, message: Message) -> Result<()> {
         match message {
-            Message::Goodbye(_) => Ok(()),
+            Message::Goodbye(_) => self.transition_state(SessionState::Closed),
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on a closing session",
                 message.message_name()
@@ -304,14 +318,23 @@ impl Session {
             .into());
         }
 
-        trace!(
+        debug!(
             "Peer {} transitioned from {:?} to {state:?}",
-            self.name,
-            self.state
+            self.name, self.state
         );
         self.state = state;
 
-        match self.state {
+        match &self.state {
+            SessionState::Established(state) => {
+                info!(
+                    "Peer {} started session {} on realm {}",
+                    self.name, state.session_id, state.realm
+                );
+                self.established_session_tx
+                    .send(Ok(peer_session_message::EstablishedSession {
+                        realm: state.realm.clone(),
+                    }))?;
+            }
             SessionState::Closed => {
                 self.closed_session_tx.send(())?;
             }

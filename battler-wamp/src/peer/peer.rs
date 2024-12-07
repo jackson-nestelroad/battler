@@ -111,6 +111,7 @@ pub struct Peer<S> {
     config: PeerConfig,
     connector_factory: Box<dyn ConnectorFactory<S>>,
     transport_factory: Box<dyn TransportFactory<S>>,
+    #[allow(unused)]
     id_allocator: Box<dyn IdAllocator>,
 
     drop_tx: broadcast::Sender<()>,
@@ -188,29 +189,43 @@ where
     async fn message_handler(
         mut session: Session,
         peer_state: Arc<Mutex<Option<PeerState>>>,
-        message_rx: UnboundedReceiver<Message>,
+        mut message_rx: UnboundedReceiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
         drop_rx: broadcast::Receiver<()>,
     ) {
-        match Self::session_loop_with_errors(
-            &mut session,
-            message_rx,
-            service_message_rx,
-            end_rx,
-            drop_rx,
-        )
-        .await
-        {
-            Ok(()) => info!("Peer session {} finished", session.name()),
-            Err(err) => error!("Peer session {} failed: {err:#}", session.name()),
+        loop {
+            match Self::session_loop_with_errors(
+                &mut session,
+                &mut message_rx,
+                service_message_rx.resubscribe(),
+                end_rx.resubscribe(),
+                drop_rx.resubscribe(),
+            )
+            .await
+            {
+                Ok(()) => {
+                    info!("Peer session {} finished", session.name());
+                    continue;
+                }
+                Err(err) => {
+                    error!("Peer session {} failed: {err:#}", session.name());
+                }
+            }
+
+            info!(
+                "Peer session {} is disconnecting from the router",
+                session.name()
+            );
+            break;
         }
+
         peer_state.lock().await.take();
     }
 
     async fn session_loop_with_errors(
         session: &mut Session,
-        mut message_rx: UnboundedReceiver<Message>,
+        message_rx: &mut UnboundedReceiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         mut drop_rx: broadcast::Receiver<()>,

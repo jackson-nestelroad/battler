@@ -3,8 +3,8 @@ use anyhow::{
     Result,
 };
 use log::{
+    debug,
     info,
-    trace,
     warn,
 };
 use tokio::sync::{
@@ -152,7 +152,7 @@ impl Session {
         context: &RouterContext<S>,
         message: Message,
     ) -> Result<()> {
-        trace!("Received message for session {}: {message:?}", self.id);
+        debug!("Received message for session {}: {message:?}", self.id);
         if let Err(err) = self.handle_message_on_state_machine(context, message).await {
             self.send_message(abort_message_for_error(&err))?;
             return Err(err);
@@ -214,16 +214,14 @@ impl Session {
                     ),
                 );
 
-                self.send_message(Message::Welcome(WelcomeMessage {
-                    session: self.id,
-                    details,
-                }))?;
-
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     realm: realm.uri().clone(),
                 }))?;
 
-                Ok(())
+                self.send_message(Message::Welcome(WelcomeMessage {
+                    session: self.id,
+                    details,
+                }))
             }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on a closed session",
@@ -235,7 +233,7 @@ impl Session {
 
     async fn handle_established<S>(
         &mut self,
-        context: &RouterContext<S>,
+        _context: &RouterContext<S>,
         message: Message,
     ) -> Result<()> {
         match message {
@@ -243,7 +241,10 @@ impl Session {
                 warn!("Router session {} aborted by peer: {message:?}", self.id);
                 self.transition_state(SessionState::Closed)
             }
-            Message::Goodbye(_) => self.send_message(goodbye_and_out()),
+            Message::Goodbye(_) => {
+                self.transition_state(SessionState::Closing)?;
+                self.send_message(goodbye_and_out())
+            }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on an established session",
                 message.message_name()
@@ -272,10 +273,9 @@ impl Session {
             .into());
         }
 
-        trace!(
+        debug!(
             "Router session {} transitioned from {:?} to {state:?}",
-            self.id,
-            self.state
+            self.id, self.state
         );
         self.state = state;
 

@@ -60,11 +60,28 @@ impl Connection {
         let end_rx = service.end_rx();
 
         let service_handle = service.start();
-        if let Err(err) = self
-            .run_session(context, service_handle.message_tx(), message_rx, end_rx)
-            .await
-        {
-            error!("Failed to run session for connection {}: {err}", self.uuid);
+        loop {
+            match self
+                .run_session(
+                    context,
+                    service_handle.message_tx(),
+                    message_rx.resubscribe(),
+                    end_rx.resubscribe(),
+                )
+                .await
+            {
+                Ok(done) => {
+                    if !done {
+                        continue;
+                    }
+                }
+                Err(err) => {
+                    error!("Failed to run session for connection {}: {err}", self.uuid);
+                }
+            }
+
+            info!("Connection {} will have no more sessions", self.uuid);
+            break;
         }
 
         if let Err(err) = service_handle.cancel() {
@@ -85,16 +102,16 @@ impl Connection {
         service_message_tx: UnboundedSender<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let session_id = context.router().id_allocator.generate_id().await?;
         let (message_tx, message_rx) = unbounded_channel();
         let session = Session::new(session_id, message_tx, service_message_tx);
 
         info!("Connection {} started session {}", self.uuid, session_id);
 
-        self.session_loop(context, session, message_rx, service_message_rx, end_rx)
-            .await;
-        Ok(())
+        Ok(self
+            .session_loop(context, session, message_rx, service_message_rx, end_rx)
+            .await)
     }
 
     async fn session_loop<S>(
@@ -104,8 +121,8 @@ impl Connection {
         message_rx: UnboundedReceiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
-    ) {
-        match self
+    ) -> bool {
+        let done = match self
             .session_loop_with_errors(
                 context,
                 &mut session,
@@ -115,19 +132,26 @@ impl Connection {
             )
             .await
         {
-            Ok(()) => info!(
-                "Router session {} for connection {} finished",
-                self.uuid,
-                session.id()
-            ),
-            Err(err) => error!(
-                "Router session {} for connection {} failed: {err:#}",
-                self.uuid,
-                session.id()
-            ),
+            Ok(()) => {
+                info!(
+                    "Router session {} for connection {} finished",
+                    self.uuid,
+                    session.id()
+                );
+                false
+            }
+            Err(err) => {
+                error!(
+                    "Router session {} for connection {} failed: {err:#}",
+                    self.uuid,
+                    session.id()
+                );
+                true
+            }
         };
 
         session.destroy(context).await;
+        done
     }
 
     async fn session_loop_with_errors<S>(
