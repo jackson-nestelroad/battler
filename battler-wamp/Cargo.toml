@@ -25,7 +25,6 @@ thiserror = "1.0.65"
 tokio = { version = "1.41.0", features = ["full"] }
 tokio-tungstenite = { version = "0.24.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.11.0", features = ["v4", "fast-rng", "macro-diagnostics" ] }
-zone-alloc = { version = "0.4.2", features = ["std", "may-dangle"] }
 
 [dev-dependencies]
 assert_matches = "1.5.0"

@@ -6,16 +6,22 @@ use crate::{
         id::Id,
         uri::Uri,
     },
-    router::context::RouterContext,
+    router::context::RealmContext,
 };
 
 #[async_trait]
 pub trait PubSubPolicies<S>: Send + Sync {
     async fn validate_subscription(
         &self,
-        context: &RouterContext<S>,
+        context: &RealmContext<'_, '_, S>,
         session: Id,
-        realm: &Uri,
+        topic: &Uri,
+    ) -> Result<()>;
+
+    async fn validate_publication(
+        &self,
+        context: &RealmContext<'_, '_, S>,
+        session: Id,
         topic: &Uri,
     ) -> Result<()>;
 }
@@ -27,9 +33,17 @@ pub struct EmptyPubSubPolicies {}
 impl<S> PubSubPolicies<S> for EmptyPubSubPolicies {
     async fn validate_subscription(
         &self,
-        _: &RouterContext<S>,
+        _: &RealmContext<'_, '_, S>,
         _: Id,
         _: &Uri,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    async fn validate_publication(
+        &self,
+        _: &RealmContext<'_, '_, S>,
+        _: Id,
         _: &Uri,
     ) -> Result<()> {
         Ok(())

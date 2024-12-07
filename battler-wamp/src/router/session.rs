@@ -42,6 +42,8 @@ use crate::{
         },
         message::{
             Message,
+            PublishMessage,
+            PublishedMessage,
             SubscribeMessage,
             SubscribedMessage,
             UnsubscribeMessage,
@@ -52,6 +54,7 @@ use crate::{
     router::{
         context::RouterContext,
         realm::RealmSession,
+        topic::TopicManager,
     },
 };
 
@@ -108,6 +111,10 @@ pub struct SessionHandle {
 }
 
 impl SessionHandle {
+    pub fn send_message(&self, message: Message) -> Result<()> {
+        self.message_tx.send(message).map_err(Error::new)
+    }
+
     pub fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
             .send(goodbye_with_close_reason(close_reason))
@@ -226,8 +233,8 @@ impl Session {
     ) -> Result<()> {
         match message {
             Message::Hello(message) => {
-                let context = context.realm_context(&message.realm).await?;
-                context.realm().sessions.lock().await.insert(
+                let mut context = context.realm_context(&message.realm).await?;
+                context.realm_mut().sessions.insert(
                     self.id,
                     RealmSession {
                         session: self.session_handle(),
@@ -303,6 +310,12 @@ impl Session {
                 }
                 Ok(())
             }
+            ref whole_message @ Message::Publish(ref message) => {
+                if let Err(err) = self.handle_publish(context, message).await {
+                    return self.send_message(error_for_request(&whole_message, &err));
+                }
+                Ok(())
+            }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on an established session",
                 message.message_name()
@@ -316,26 +329,19 @@ impl Session {
         context: &RouterContext<S>,
         message: &SubscribeMessage,
     ) -> Result<()> {
-        let pub_sub_policies = context.router().pub_sub_policies.lock().await;
-        pub_sub_policies
-            .validate_subscription(
-                context,
-                self.id,
-                &self.established_session_state()?.realm,
-                &message.topic,
-            )
-            .await?;
         let mut context = context
             .realm_context(&self.established_session_state()?.realm)
             .await?;
-        let subscription = context.realm_mut().topic_manager.subscribe(
+        let subscription = TopicManager::subscribe(
+            &mut context,
             self.id,
             message.topic.clone(),
             self.established_session_state()?
                 .id_allocator
                 .generate_id()
                 .await,
-        )?;
+        )
+        .await?;
         self.established_session_state_mut()?
             .subscriptions
             .insert(subscription, message.topic.clone());
@@ -358,12 +364,31 @@ impl Session {
         let mut context = context
             .realm_context(&self.established_session_state()?.realm)
             .await?;
-        context
-            .realm_mut()
-            .topic_manager
-            .unsubscribe(self.id, &topic);
+        TopicManager::unsubscribe(&mut context, self.id, &topic).await;
         self.send_message(Message::Unsubscribed(UnsubscribedMessage {
             unsubscribe_request: message.request,
+        }))
+    }
+
+    async fn handle_publish<S>(
+        &mut self,
+        context: &RouterContext<S>,
+        message: &PublishMessage,
+    ) -> Result<()> {
+        let mut context = context
+            .realm_context(&self.established_session_state()?.realm)
+            .await?;
+        let publication = TopicManager::publish(
+            &mut context,
+            self.id,
+            &message.topic,
+            message.arguments.clone(),
+            message.arguments_keyword.clone(),
+        )
+        .await?;
+        self.send_message(Message::Published(PublishedMessage {
+            publish_request: message.request,
+            publication,
         }))
     }
 
@@ -405,8 +430,8 @@ impl Session {
 
     pub async fn destroy<S>(self, context: &RouterContext<S>) {
         if let Ok(state) = self.established_session_state() {
-            if let Ok(context) = context.realm_context(&state.realm).await {
-                context.realm().sessions.lock().await.remove(&self.id);
+            if let Ok(mut context) = context.realm_context(&state.realm).await {
+                context.realm_mut().sessions.remove(&self.id);
             }
         }
     }

@@ -1,7 +1,4 @@
-use std::{
-    cell::UnsafeCell,
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use anyhow::Result;
 use futures_util::lock::MutexGuard;
@@ -12,10 +9,7 @@ use crate::{
         uri::Uri,
     },
     router::{
-        realm::{
-            Realm,
-            RealmManager,
-        },
+        realm::Realm,
         router::Router,
     },
 };
@@ -42,16 +36,15 @@ impl<S> RouterContext<S> {
         self.router.as_ref()
     }
 
-    pub async fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, '_, '_, S>> {
-        let mut realm_manager = self.router.realm_manager.lock().await;
-        let realm = realm_manager
-            .get_mut(realm)
+    pub async fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, '_, S>> {
+        let realm = self
+            .router
+            .realm_manager
+            .get(realm)
             .ok_or_else(|| InteractionError::NoSuchRealm)?;
-        // SAFETY: realm_manager is unused in RealmContext.
-        let realm = unsafe { std::mem::transmute(realm) };
+        let realm = realm.lock().await;
         Ok(RealmContext {
             context: self,
-            _realm_manager: realm_manager.into(),
             realm,
         })
     }
@@ -65,26 +58,24 @@ impl<S> Clone for RouterContext<S> {
     }
 }
 
-pub struct RealmContext<'realm, 'realm_manager, 'router, S>
+pub struct RealmContext<'realm, 'router, S>
 where
     S: 'static,
 {
     context: &'router RouterContext<S>,
-    // SAFETY: Do not use realm_manager.
-    _realm_manager: UnsafeCell<MutexGuard<'realm_manager, RealmManager>>,
-    realm: &'realm mut Realm,
+    realm: MutexGuard<'realm, Realm>,
 }
 
-impl<'realm, 'realm_manager, 'router, S> RealmContext<'realm, 'realm_manager, 'router, S> {
+impl<'realm, 'router, S> RealmContext<'realm, 'router, S> {
     pub fn router(&self) -> &Router<S> {
         self.context.router()
     }
 
     pub fn realm(&self) -> &Realm {
-        self.realm
+        &*self.realm
     }
 
     pub fn realm_mut(&mut self) -> &mut Realm {
-        self.realm
+        &mut *self.realm
     }
 }

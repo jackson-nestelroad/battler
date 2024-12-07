@@ -8,11 +8,6 @@ use futures_util::{
     future::join_all,
     lock::Mutex,
 };
-use zone_alloc::{
-    BorrowError,
-    ElementRefMut,
-    KeyedRegistry,
-};
 
 use crate::{
     core::{
@@ -39,16 +34,15 @@ pub struct RealmSession {
 
 pub struct Realm {
     pub config: RealmConfig,
-    pub sessions: Mutex<HashMap<Id, RealmSession>>,
+    pub sessions: HashMap<Id, RealmSession>,
     pub topic_manager: TopicManager,
 }
 
 impl Realm {
     pub fn new(config: RealmConfig) -> Self {
-        let sessions = HashMap::default();
         Self {
             config,
-            sessions: Mutex::new(sessions),
+            sessions: HashMap::default(),
             topic_manager: TopicManager::default(),
         }
     }
@@ -57,10 +51,9 @@ impl Realm {
         &self.config.uri
     }
 
-    pub async fn shut_down(&self, close_reason: CloseReason) -> Result<()> {
-        let mut sessions = self.sessions.lock().await;
+    pub async fn shut_down(&mut self, close_reason: CloseReason) -> Result<()> {
         let mut futures = Vec::default();
-        for (_, session) in &mut *sessions {
+        for (_, session) in &mut self.sessions {
             session.session.close(close_reason)?;
             futures.push(session.session.closed_session_rx_mut().recv());
         }
@@ -72,27 +65,24 @@ impl Realm {
             }
         }
 
+        self.sessions.clear();
         Ok(())
     }
 }
 
 #[derive(Default)]
 pub struct RealmManager {
-    pub realms: KeyedRegistry<Uri, Realm>,
+    pub realms: HashMap<Uri, Mutex<Realm>>,
 }
 
 impl RealmManager {
-    pub fn get_mut(&mut self, uri: &Uri) -> Result<Option<ElementRefMut<'_, Realm>>> {
-        match self.realms.get_mut(uri) {
-            Ok(realm) => Ok(Some(realm)),
-            Err(BorrowError::OutOfBounds) => Ok(None),
-            Err(err) => Err(err.into()),
-        }
+    pub fn get(&self, uri: &Uri) -> Option<&Mutex<Realm>> {
+        self.realms.get(uri)
     }
 
     pub fn insert(&mut self, realm: Realm) {
         let uri = realm.uri().clone();
-        self.realms.register(uri, realm);
+        self.realms.insert(uri, realm.into());
     }
 
     pub fn uris(&self) -> impl Iterator<Item = &Uri> {

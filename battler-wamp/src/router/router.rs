@@ -262,8 +262,6 @@ where
         let realms = context
             .router()
             .realm_manager
-            .lock()
-            .await
             .uris()
             .cloned()
             .collect::<Vec<_>>();
@@ -281,11 +279,11 @@ where
         realm: &Uri,
         close_reason: CloseReason,
     ) -> Result<()> {
-        let mut realm_manager = context.router().realm_manager.lock().await;
-        let realm = match realm_manager.remove(realm) {
+        let realm = match context.router().realm_manager.get(realm) {
             Some(realm) => realm,
             None => return Ok(()),
         };
+        let mut realm = realm.lock().await;
         realm.shut_down(close_reason).await
     }
 }
