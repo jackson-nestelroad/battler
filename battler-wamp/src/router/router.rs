@@ -37,6 +37,7 @@ use crate::{
     },
     router::{
         acceptor::acceptor::AcceptorFactory,
+        app::pub_sub::PubSubPolicies,
         connection::Connection,
         context::RouterContext,
         realm::{
@@ -111,6 +112,8 @@ pub struct Router<S> {
     /// The router configuration when created.
     pub(crate) config: RouterConfig,
 
+    pub(crate) pub_sub_policies: Mutex<Box<dyn PubSubPolicies<S>>>,
+
     pub(crate) realm_manager: Mutex<RealmManager>,
 
     /// The factory for acceptors.
@@ -140,6 +143,7 @@ where
     /// Creates a new [`Router`].
     pub fn new(
         config: RouterConfig,
+        pub_sub_policies: Box<dyn PubSubPolicies<S>>,
         acceptor_factory: Box<dyn AcceptorFactory<S>>,
         transport_factory: Box<dyn TransportFactory<S>>,
     ) -> Result<Self> {
@@ -151,6 +155,7 @@ where
         let (end_tx, end_rx) = broadcast::channel(1);
         Ok(Self {
             config,
+            pub_sub_policies: Mutex::new(pub_sub_policies),
             realm_manager: Mutex::new(realm_manager),
             acceptor_factory: Mutex::new(acceptor_factory),
             transport_factory: Mutex::new(transport_factory),

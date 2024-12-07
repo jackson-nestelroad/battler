@@ -176,23 +176,29 @@ pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Input);
 
     let ident = input.ident;
+    let tag = input.tag;
 
-    let match_variant = input
+    let (serialize_variant, tag_variant): (Vec<_>, Vec<_>) = input
         .variants
         .iter()
         .map(|variant| {
             let variant_ident = &variant.ident;
             let tag = &variant.attrs.tag;
-            quote! {
-                #ident::#variant_ident(inner) => {
-                    let mut seq = serializer.serialize_seq(None)?;
-                    seq.serialize_element(&#tag)?;
-                    inner.serialize_fields_to_seq(&mut seq)?;
-                    seq.end()
-                }
-            }
+            (
+                quote! {
+                    #ident::#variant_ident(inner) => {
+                        let mut seq = serializer.serialize_seq(None)?;
+                        seq.serialize_element(&#tag)?;
+                        inner.serialize_fields_to_seq(&mut seq)?;
+                        seq.end()
+                    }
+                },
+                quote! {
+                    #ident::#variant_ident(_) => #tag,
+                },
+            )
         })
-        .collect::<Vec<_>>();
+        .unzip();
 
     quote! {
         impl serde::Serialize for #ident {
@@ -201,9 +207,17 @@ pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
                 S: serde::Serializer {
                     use serde::ser::SerializeSeq;
                     match self {
-                        #(#match_variant)*
+                        #(#serialize_variant)*
                     }
                 }
+        }
+
+        impl #ident {
+            pub fn tag(&self) -> #tag {
+                match self {
+                    #(#tag_variant)*
+                }
+            }
         }
     }
     .into()

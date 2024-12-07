@@ -13,14 +13,20 @@ use serde::{
 };
 use thiserror::Error;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
 pub struct Id(u64);
 
 impl Id {
-    pub const MIN: u64 = 1;
-    pub const MAX: u64 = 1 << 53;
+    pub const MIN: Id = Id(1);
+    pub const MAX: Id = Id(1 << 53);
+}
+
+impl Default for Id {
+    fn default() -> Self {
+        Id::MIN
+    }
 }
 
 impl Display for Id {
@@ -44,7 +50,7 @@ impl IdOutOfRange {
 impl TryFrom<u64> for Id {
     type Error = IdOutOfRange;
     fn try_from(value: u64) -> Result<Self, Self::Error> {
-        if value < Self::MIN || value > Self::MAX {
+        if value < Self::MIN.0 || value > Self::MAX.0 {
             Err(IdOutOfRange::new(value))
         } else {
             Ok(Id(value))
@@ -85,7 +91,7 @@ impl<'de> Deserialize<'de> for Id {
 
 #[async_trait]
 pub trait IdAllocator: Send + Sync {
-    async fn generate_id(&self) -> Result<Id>;
+    async fn generate_id(&self) -> Id;
 }
 
 #[derive(Default)]
@@ -93,9 +99,9 @@ pub struct RandomIdAllocator {}
 
 #[async_trait]
 impl IdAllocator for RandomIdAllocator {
-    async fn generate_id(&self) -> Result<Id> {
-        let id = (rand::random::<u64>() & (Id::MAX - 1)) + 1;
-        Ok(Id(id))
+    async fn generate_id(&self) -> Id {
+        let id = (rand::random::<u64>() & (Id::MAX.0 - 1)) + 1;
+        Id(id)
     }
 }
 
@@ -106,12 +112,13 @@ pub struct SequentialIdAllocator {
 
 #[async_trait]
 impl IdAllocator for SequentialIdAllocator {
-    async fn generate_id(&self) -> Result<Id> {
+    async fn generate_id(&self) -> Id {
         let mut lock = self.next.lock().await;
         let id = *lock;
-        let next = Id::try_from(id.0 + 1)?;
+        let next = if id.0 == Id::MAX.0 { 1 } else { id.0 + 1 };
+        let next = Id::try_from(next).unwrap();
         *lock = next;
-        Ok(id)
+        id
     }
 }
 

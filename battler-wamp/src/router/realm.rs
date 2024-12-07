@@ -16,7 +16,10 @@ use crate::{
         id::Id,
         uri::Uri,
     },
-    router::session::SessionHandle,
+    router::{
+        session::SessionHandle,
+        topic::TopicManager,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -25,9 +28,14 @@ pub struct RealmConfig {
     pub uri: Uri,
 }
 
+pub struct RealmSession {
+    pub session: SessionHandle,
+}
+
 pub struct Realm {
     pub config: RealmConfig,
-    pub sessions: Mutex<HashMap<Id, SessionHandle>>,
+    pub sessions: Mutex<HashMap<Id, RealmSession>>,
+    pub topic_manager: TopicManager,
 }
 
 impl Realm {
@@ -36,6 +44,7 @@ impl Realm {
         Self {
             config,
             sessions: Mutex::new(sessions),
+            topic_manager: TopicManager::default(),
         }
     }
 
@@ -47,8 +56,8 @@ impl Realm {
         let mut sessions = self.sessions.lock().await;
         let mut futures = Vec::default();
         for (_, session) in &mut *sessions {
-            session.close(close_reason)?;
-            futures.push(session.closed_session_rx_mut().recv());
+            session.session.close(close_reason)?;
+            futures.push(session.session.closed_session_rx_mut().recv());
         }
 
         tokio::select! {
@@ -64,12 +73,16 @@ impl Realm {
 
 #[derive(Default)]
 pub struct RealmManager {
-    realms: HashMap<Uri, Realm>,
+    pub realms: HashMap<Uri, Realm>,
 }
 
 impl RealmManager {
     pub fn get(&self, uri: &Uri) -> Option<&Realm> {
         self.realms.get(uri)
+    }
+
+    pub fn get_mut(&mut self, uri: &Uri) -> Option<&mut Realm> {
+        self.realms.get_mut(uri)
     }
 
     pub fn insert(&mut self, realm: Realm) {

@@ -11,6 +11,7 @@ use crate::{
     },
     message::message::{
         AbortMessage,
+        ErrorMessage,
         GoodbyeMessage,
         Message,
     },
@@ -34,4 +35,14 @@ pub fn goodbye_with_close_reason(close_reason: CloseReason) -> Message {
 
 pub fn goodbye_and_out() -> Message {
     goodbye_with_close_reason(CloseReason::GoodbyeAndOut)
+}
+
+pub fn error_for_request(message: &Message, error: &Error) -> Message {
+    Message::Error(ErrorMessage {
+        request_type: message.tag(),
+        request: message.request_id().unwrap_or_default(),
+        details: Dictionary::from_iter([("message".to_owned(), Value::String(error.to_string()))]),
+        error: Uri::for_error(error),
+        ..Default::default()
+    })
 }

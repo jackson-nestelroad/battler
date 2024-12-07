@@ -103,7 +103,7 @@ impl Connection {
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> Result<bool> {
-        let session_id = context.router().id_allocator.generate_id().await?;
+        let session_id = context.router().id_allocator.generate_id().await;
         let (message_tx, message_rx) = unbounded_channel();
         let session = Session::new(session_id, message_tx, service_message_tx);
 

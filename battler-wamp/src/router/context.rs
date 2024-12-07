@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use crate::router::router::Router;
+use futures_util::lock::Mutex;
+
+use crate::router::{
+    realm::RealmManager,
+    router::Router,
+};
 
 /// The context of a task running for a router.
 ///
@@ -22,6 +27,10 @@ impl<S> RouterContext<S> {
 
     pub fn router(&self) -> &Router<S> {
         self.router.as_ref()
+    }
+
+    pub fn realm_manager(&self) -> &Mutex<RealmManager> {
+        &self.router.realm_manager
     }
 }
 

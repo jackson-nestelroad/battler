@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use anyhow::{
     Error,
     Result,
@@ -18,7 +20,11 @@ use crate::{
             BasicError,
             InteractionError,
         },
-        id::Id,
+        id::{
+            Id,
+            IdAllocator,
+            SequentialIdAllocator,
+        },
         uri::Uri,
     },
     message::{
@@ -30,18 +36,36 @@ use crate::{
     },
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 struct EstablishingSessionState {
     realm: Uri,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
 struct EstablishedSessionState {
     session_id: Id,
     realm: Uri,
+    #[allow(unused)]
+    id_allocator: Box<dyn IdAllocator>,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+impl Debug for EstablishedSessionState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        #[derive(Debug)]
+        #[allow(unused)]
+        struct DebugEstablishedSessionState<'a> {
+            session_id: &'a Id,
+            realm: &'a Uri,
+        }
+
+        DebugEstablishedSessionState {
+            session_id: &self.session_id,
+            realm: &self.realm,
+        }
+        .fmt(f)
+    }
+}
+
+#[derive(Debug, Default)]
 enum SessionState {
     #[default]
     Closed,
@@ -51,6 +75,15 @@ enum SessionState {
 }
 
 impl SessionState {
+    fn is_same_state(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Closed, Self::Closed) => true,
+            (Self::Establishing(_), Self::Establishing(_)) => true,
+            (Self::Established(_), Self::Established(_)) => true,
+            (Self::Closing, Self::Closing) => true,
+            _ => false,
+        }
+    }
     fn allowed_state_transition(&self, next: &Self) -> bool {
         match (self, next) {
             (Self::Closed, Self::Establishing(_)) => true,
@@ -174,7 +207,10 @@ impl Session {
     }
 
     pub fn closed(&self) -> bool {
-        self.state == SessionState::Closed
+        match self.state {
+            SessionState::Closed => true,
+            _ => false,
+        }
     }
 
     pub fn session_handle(&self) -> SessionHandle {
@@ -259,6 +295,7 @@ impl Session {
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     session_id: message.session,
                     realm,
+                    id_allocator: Box::new(SequentialIdAllocator::default()),
                 }))
             }
             message @ Message::Abort(_) => {
@@ -285,7 +322,10 @@ impl Session {
                 );
                 self.transition_state(SessionState::Closed)
             }
-            Message::Goodbye(_) => self.send_message(goodbye_and_out()),
+            Message::Goodbye(_) => {
+                self.transition_state(SessionState::Closing)?;
+                self.send_message(goodbye_and_out())
+            }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on an established session",
                 message.message_name()
@@ -306,7 +346,7 @@ impl Session {
     }
 
     fn transition_state(&mut self, state: SessionState) -> Result<()> {
-        if state == self.state {
+        if state.is_same_state(&self.state) {
             return Ok(());
         }
 
