@@ -8,6 +8,11 @@ use futures_util::{
     future::join_all,
     lock::Mutex,
 };
+use zone_alloc::{
+    BorrowError,
+    ElementRefMut,
+    KeyedRegistry,
+};
 
 use crate::{
     core::{
@@ -73,25 +78,21 @@ impl Realm {
 
 #[derive(Default)]
 pub struct RealmManager {
-    pub realms: HashMap<Uri, Realm>,
+    pub realms: KeyedRegistry<Uri, Realm>,
 }
 
 impl RealmManager {
-    pub fn get(&self, uri: &Uri) -> Option<&Realm> {
-        self.realms.get(uri)
-    }
-
-    pub fn get_mut(&mut self, uri: &Uri) -> Option<&mut Realm> {
-        self.realms.get_mut(uri)
+    pub fn get_mut(&mut self, uri: &Uri) -> Result<Option<ElementRefMut<'_, Realm>>> {
+        match self.realms.get_mut(uri) {
+            Ok(realm) => Ok(Some(realm)),
+            Err(BorrowError::OutOfBounds) => Ok(None),
+            Err(err) => Err(err.into()),
+        }
     }
 
     pub fn insert(&mut self, realm: Realm) {
         let uri = realm.uri().clone();
-        self.realms.insert(uri, realm);
-    }
-
-    pub fn remove(&mut self, uri: &Uri) -> Option<Realm> {
-        self.realms.remove(uri)
+        self.realms.register(uri, realm);
     }
 
     pub fn uris(&self) -> impl Iterator<Item = &Uri> {

@@ -21,6 +21,7 @@ use crate::{
             BasicError,
             InteractionError,
         },
+        hash::HashMap,
         id::{
             Id,
             IdAllocator,
@@ -41,7 +42,10 @@ use crate::{
         },
         message::{
             Message,
+            SubscribeMessage,
             SubscribedMessage,
+            UnsubscribeMessage,
+            UnsubscribedMessage,
             WelcomeMessage,
         },
     },
@@ -54,6 +58,7 @@ use crate::{
 struct EstablishedSessionState {
     realm: Uri,
     id_allocator: Box<dyn IdAllocator>,
+    subscriptions: HashMap<Id, Uri>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -165,6 +170,13 @@ impl Session {
         }
     }
 
+    fn established_session_state_mut(&mut self) -> Result<&mut EstablishedSessionState> {
+        match &mut self.state {
+            SessionState::Established(state) => Ok(state),
+            _ => Err(Error::msg("session is not in the established state")),
+        }
+    }
+
     pub fn send_message(&mut self, message: Message) -> Result<()> {
         self.transition_state_from_sending_message(&message)?;
         self.service_message_tx.send(message).map_err(Error::new)
@@ -214,18 +226,14 @@ impl Session {
     ) -> Result<()> {
         match message {
             Message::Hello(message) => {
-                let realm_manager = context.router().realm_manager.lock().await;
-                let realm = match realm_manager.get(&message.realm) {
-                    Some(realm) => realm,
-                    None => return Err(InteractionError::NoSuchRealm.into()),
-                };
-                realm.sessions.lock().await.insert(
+                let context = context.realm_context(&message.realm).await?;
+                context.realm().sessions.lock().await.insert(
                     self.id,
                     RealmSession {
                         session: self.session_handle(),
                     },
                 );
-                info!("Session {} joined realm {}", self.id, realm.uri());
+                info!("Session {} joined realm {}", self.id, context.realm().uri());
 
                 let mut details = Dictionary::default();
                 details.insert(
@@ -251,8 +259,9 @@ impl Session {
                 );
 
                 self.transition_state(SessionState::Established(EstablishedSessionState {
-                    realm: realm.uri().clone(),
+                    realm: context.realm().uri().clone(),
                     id_allocator: Box::new(SequentialIdAllocator::default()),
+                    subscriptions: HashMap::default(),
                 }))?;
 
                 self.send_message(Message::Welcome(WelcomeMessage {
@@ -283,34 +292,16 @@ impl Session {
                 self.send_message(goodbye_and_out())
             }
             ref whole_message @ Message::Subscribe(ref message) => {
-                let pub_sub_policies = context.router().pub_sub_policies.lock().await;
-                if let Err(err) = pub_sub_policies
-                    .validate_subscription(
-                        context,
-                        self.id,
-                        &self.established_session_state()?.realm,
-                        &message.topic,
-                    )
-                    .await
-                {
+                if let Err(err) = self.handle_subscribe(context, message).await {
                     return self.send_message(error_for_request(&whole_message, &err));
                 }
-                let mut realm_manager = context.router().realm_manager.lock().await;
-                let realm = realm_manager
-                    .get_mut(&self.established_session_state()?.realm)
-                    .ok_or_else(|| BasicError::Internal("expected realm to exist".to_string()))?;
-                let subscription = realm.topic_manager.subscribe(
-                    self.id,
-                    message.topic.clone(),
-                    self.established_session_state()?
-                        .id_allocator
-                        .generate_id()
-                        .await,
-                );
-                self.send_message(Message::Subscribed(SubscribedMessage {
-                    subscribe_request: message.request,
-                    subscription,
-                }))
+                Ok(())
+            }
+            ref whole_message @ Message::Unsubscribe(ref message) => {
+                if let Err(err) = self.handle_unsubscribe(context, message).await {
+                    return self.send_message(error_for_request(&whole_message, &err));
+                }
+                Ok(())
             }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on an established session",
@@ -318,6 +309,62 @@ impl Session {
             ))
             .into()),
         }
+    }
+
+    async fn handle_subscribe<S>(
+        &mut self,
+        context: &RouterContext<S>,
+        message: &SubscribeMessage,
+    ) -> Result<()> {
+        let pub_sub_policies = context.router().pub_sub_policies.lock().await;
+        pub_sub_policies
+            .validate_subscription(
+                context,
+                self.id,
+                &self.established_session_state()?.realm,
+                &message.topic,
+            )
+            .await?;
+        let mut context = context
+            .realm_context(&self.established_session_state()?.realm)
+            .await?;
+        let subscription = context.realm_mut().topic_manager.subscribe(
+            self.id,
+            message.topic.clone(),
+            self.established_session_state()?
+                .id_allocator
+                .generate_id()
+                .await,
+        )?;
+        self.established_session_state_mut()?
+            .subscriptions
+            .insert(subscription, message.topic.clone());
+        self.send_message(Message::Subscribed(SubscribedMessage {
+            subscribe_request: message.request,
+            subscription,
+        }))
+    }
+
+    async fn handle_unsubscribe<S>(
+        &mut self,
+        context: &RouterContext<S>,
+        message: &UnsubscribeMessage,
+    ) -> Result<()> {
+        let topic = self
+            .established_session_state_mut()?
+            .subscriptions
+            .remove(&message.subscribed_subscription)
+            .ok_or_else(|| InteractionError::NoSuchSubscription)?;
+        let mut context = context
+            .realm_context(&self.established_session_state()?.realm)
+            .await?;
+        context
+            .realm_mut()
+            .topic_manager
+            .unsubscribe(self.id, &topic);
+        self.send_message(Message::Unsubscribed(UnsubscribedMessage {
+            unsubscribe_request: message.request,
+        }))
     }
 
     async fn handle_closing<S>(&mut self, _: &RouterContext<S>, message: Message) -> Result<()> {
@@ -358,9 +405,8 @@ impl Session {
 
     pub async fn destroy<S>(self, context: &RouterContext<S>) {
         if let Ok(state) = self.established_session_state() {
-            let realm_manager = context.router().realm_manager.lock().await;
-            if let Some(realm) = realm_manager.get(&state.realm) {
-                realm.sessions.lock().await.remove(&self.id);
+            if let Ok(context) = context.realm_context(&state.realm).await {
+                context.realm().sessions.lock().await.remove(&self.id);
             }
         }
     }

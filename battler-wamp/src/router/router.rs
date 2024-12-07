@@ -114,7 +114,7 @@ pub struct Router<S> {
 
     pub(crate) pub_sub_policies: Mutex<Box<dyn PubSubPolicies<S>>>,
 
-    pub(crate) realm_manager: Mutex<RealmManager>,
+    pub(crate) realm_manager: RealmManager,
 
     /// The factory for acceptors.
     pub(crate) acceptor_factory: Mutex<Box<dyn AcceptorFactory<S>>>,
@@ -156,7 +156,7 @@ where
         Ok(Self {
             config,
             pub_sub_policies: Mutex::new(pub_sub_policies),
-            realm_manager: Mutex::new(realm_manager),
+            realm_manager,
             acceptor_factory: Mutex::new(acceptor_factory),
             transport_factory: Mutex::new(transport_factory),
             id_allocator: Box::new(RandomIdAllocator::default()),

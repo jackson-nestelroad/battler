@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::core::{
     hash::HashMap,
     id::Id,
@@ -22,12 +24,20 @@ pub struct TopicManager {
 }
 
 impl TopicManager {
-    pub fn subscribe(&mut self, session: Id, topic: Uri, id: Id) -> Id {
+    pub fn subscribe(&mut self, session: Id, topic: Uri, id: Id) -> Result<Id> {
         let topic = self.topics.entry(topic).or_insert_with(|| Topic::default());
         let subscriber = topic
             .subscribers
             .entry(session)
             .or_insert_with(|| TopicSubscriber { id });
-        subscriber.id
+        Ok(subscriber.id)
+    }
+
+    pub fn unsubscribe(&mut self, session: Id, topic: &Uri) {
+        let topic = match self.topics.get_mut(topic) {
+            Some(topic) => topic,
+            None => return,
+        };
+        topic.subscribers.remove(&session);
     }
 }
