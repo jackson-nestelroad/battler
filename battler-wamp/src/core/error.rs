@@ -13,6 +13,10 @@ pub enum BasicError {
     NotFound(String),
     #[error("invalid argument: {0}")]
     InvalidArgument(String),
+    #[error("not allowed: {0}")]
+    NotAllowed(String),
+    #[error("permission denied: {0}")]
+    PermissionDenied(String),
     #[error("internal error: {0}")]
     Internal(String),
 }
@@ -22,6 +26,8 @@ impl BasicError {
         match self {
             Self::NotFound(_) => "not_found",
             Self::InvalidArgument(_) => "invalid_argument",
+            Self::NotAllowed(_) => "not_allowed",
+            Self::PermissionDenied(_) => "permission_denied",
             Self::Internal(_) => "internal",
         }
     }
@@ -63,6 +69,8 @@ pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error 
     match reason.as_ref() {
         "wamp.error.not_found" => BasicError::NotFound(message).into(),
         "wamp.error.invalid_argument" => BasicError::InvalidArgument(message).into(),
+        "wamp.error.not_allowed" => BasicError::NotAllowed(message).into(),
+        "wamp.error.permission_denied" => BasicError::PermissionDenied(message).into(),
         "wamp.error.protocol_violation" => InteractionError::ProtocolViolation(message).into(),
         "wamp.error.no_such_procedure" => InteractionError::NoSuchProcedure.into(),
         "wamp.error.procedure_already_exists" => InteractionError::ProcedureAlreadyExists.into(),

@@ -285,6 +285,7 @@ impl Message {
         match self {
             Self::Abort(message) => Some(&message.reason),
             Self::Goodbye(message) => Some(&message.reason),
+            Self::Error(message) => Some(&message.error),
             _ => None,
         }
     }

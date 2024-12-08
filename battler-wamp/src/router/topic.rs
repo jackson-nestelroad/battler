@@ -5,6 +5,7 @@ use crate::{
         error::BasicError,
         hash::HashMap,
         id::Id,
+        roles::RouterRole,
         types::{
             Dictionary,
             List,
@@ -41,6 +42,10 @@ impl TopicManager {
         session: Id,
         topic: Uri,
     ) -> Result<Id> {
+        if !context.router().config.roles.contains(&RouterRole::Broker) {
+            return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
+        }
+
         context
             .router()
             .pub_sub_policies
@@ -82,6 +87,10 @@ impl TopicManager {
         arguments: List,
         arguments_keyword: Dictionary,
     ) -> Result<Id> {
+        if !context.router().config.roles.contains(&RouterRole::Broker) {
+            return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
+        }
+
         context
             .router()
             .pub_sub_policies
