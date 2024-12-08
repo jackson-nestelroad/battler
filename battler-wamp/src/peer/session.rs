@@ -105,7 +105,7 @@ impl SessionState {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Event {
     pub arguments: List,
     pub arguments_keyword: Dictionary,

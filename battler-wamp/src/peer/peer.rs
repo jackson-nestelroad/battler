@@ -119,6 +119,7 @@ struct PeerState {
     message_tx: UnboundedSender<Message>,
 }
 
+#[derive(Debug)]
 pub struct Subscription {
     pub id: Id,
     pub event_rx: broadcast::Receiver<Event>,
