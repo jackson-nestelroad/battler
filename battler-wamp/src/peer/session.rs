@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    sync::Arc,
+};
 
 use anyhow::{
     Error,
@@ -6,6 +9,7 @@ use anyhow::{
 };
 use log::{
     debug,
+    error,
     info,
     warn,
 };
@@ -20,10 +24,15 @@ use crate::{
             BasicError,
             InteractionError,
         },
+        hash::HashMap,
         id::{
             Id,
             IdAllocator,
             SequentialIdAllocator,
+        },
+        types::{
+            Dictionary,
+            List,
         },
         uri::Uri,
     },
@@ -44,8 +53,7 @@ struct EstablishingSessionState {
 struct EstablishedSessionState {
     session_id: Id,
     realm: Uri,
-    #[allow(unused)]
-    id_allocator: Box<dyn IdAllocator>,
+    subscriptions: HashMap<Id, Subscription>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -97,22 +105,34 @@ impl SessionState {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Event {
+    pub arguments: List,
+    pub arguments_keyword: Dictionary,
+}
+
 pub mod peer_session_message {
+
+    use tokio::sync::broadcast;
+
     use crate::{
         core::{
             error::{
                 error_from_uri_reason_and_message,
                 extract_error_uri_reason_and_message,
             },
+            id::Id,
             uri::Uri,
         },
         message::message::Message,
+        peer::session::Event,
     };
 
     #[derive(Debug, Clone)]
     pub struct Error {
         pub reason: Uri,
         pub message: String,
+        pub request_id: Option<Id>,
     }
 
     impl Error {
@@ -128,6 +148,7 @@ pub mod peer_session_message {
             Ok(Self {
                 reason: reason.to_owned(),
                 message: message.to_owned(),
+                request_id: value.request_id(),
             })
         }
     }
@@ -137,6 +158,7 @@ pub mod peer_session_message {
             Self {
                 reason: Uri::for_error(value),
                 message: value.to_string(),
+                request_id: None,
             }
         }
     }
@@ -147,18 +169,57 @@ pub mod peer_session_message {
     pub struct EstablishedSession {
         pub realm: Uri,
     }
+
+    #[derive(Debug)]
+    pub struct Subscription {
+        pub request_id: Id,
+        pub subscription_id: Id,
+        pub event_rx: broadcast::Receiver<Event>,
+    }
+
+    impl Clone for Subscription {
+        fn clone(&self) -> Self {
+            Self {
+                request_id: self.request_id,
+                subscription_id: self.subscription_id,
+                event_rx: self.event_rx.resubscribe(),
+            }
+        }
+    }
+
+    #[derive(Debug, Clone)]
+    pub struct Unsubscription {
+        pub request_id: Id,
+    }
+
+    #[derive(Debug, Clone)]
+    pub struct Publication {
+        pub request_id: Id,
+    }
+}
+
+struct Subscription {
+    event_tx: broadcast::Sender<Event>,
 }
 
 pub struct SessionHandle {
-    message_tx: UnboundedSender<Message>,
+    id_allocator: Arc<Box<dyn IdAllocator>>,
+
     established_session_rx:
         broadcast::Receiver<peer_session_message::Result<peer_session_message::EstablishedSession>>,
     closed_session_rx: broadcast::Receiver<()>,
+
+    subscribed_rx:
+        broadcast::Receiver<peer_session_message::Result<peer_session_message::Subscription>>,
+    unsubscribed_rx:
+        broadcast::Receiver<peer_session_message::Result<peer_session_message::Unsubscription>>,
+    published_rx:
+        broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>>,
 }
 
 impl SessionHandle {
-    pub fn message_tx(&self) -> UnboundedSender<Message> {
-        self.message_tx.clone()
+    pub fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
+        self.id_allocator.clone()
     }
 
     pub fn established_session_rx(
@@ -171,34 +232,63 @@ impl SessionHandle {
     pub fn closed_session_rx(&self) -> broadcast::Receiver<()> {
         self.closed_session_rx.resubscribe()
     }
+
+    pub fn subscribed_rx(
+        &self,
+    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Subscription>> {
+        self.subscribed_rx.resubscribe()
+    }
+
+    pub fn unsubscribed_rx(
+        &self,
+    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Unsubscription>>
+    {
+        self.unsubscribed_rx.resubscribe()
+    }
+
+    pub fn published_rx(
+        &self,
+    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>> {
+        self.published_rx.resubscribe()
+    }
 }
 
 pub struct Session {
     name: String,
-    message_tx: UnboundedSender<Message>,
     service_message_tx: UnboundedSender<Message>,
     state: SessionState,
+    id_allocator: Arc<Box<dyn IdAllocator>>,
 
     established_session_tx:
         broadcast::Sender<peer_session_message::Result<peer_session_message::EstablishedSession>>,
     closed_session_tx: broadcast::Sender<()>,
+
+    subscribed_tx:
+        broadcast::Sender<peer_session_message::Result<peer_session_message::Subscription>>,
+    unsubscribed_tx:
+        broadcast::Sender<peer_session_message::Result<peer_session_message::Unsubscription>>,
+    published_tx:
+        broadcast::Sender<peer_session_message::Result<peer_session_message::Publication>>,
 }
 
 impl Session {
-    pub fn new(
-        name: String,
-        message_tx: UnboundedSender<Message>,
-        service_message_tx: UnboundedSender<Message>,
-    ) -> Self {
+    pub fn new(name: String, service_message_tx: UnboundedSender<Message>) -> Self {
+        let id_allocator = SequentialIdAllocator::default();
         let (established_session_tx, _) = broadcast::channel(16);
         let (closed_session_tx, _) = broadcast::channel(16);
+        let (subscribed_tx, _) = broadcast::channel(16);
+        let (unsubscribed_tx, _) = broadcast::channel(16);
+        let (published_tx, _) = broadcast::channel(16);
         Self {
             name,
-            message_tx,
             service_message_tx,
             state: SessionState::default(),
+            id_allocator: Arc::new(Box::new(id_allocator)),
             established_session_tx,
             closed_session_tx,
+            subscribed_tx,
+            unsubscribed_tx,
+            published_tx,
         }
     }
 
@@ -215,16 +305,12 @@ impl Session {
 
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
-            message_tx: self.message_tx.clone(),
+            id_allocator: self.id_allocator.clone(),
             established_session_rx: self.established_session_tx.subscribe(),
             closed_session_rx: self.closed_session_tx.subscribe(),
-        }
-    }
-
-    fn established_session_state(&self) -> Result<&EstablishedSessionState> {
-        match &self.state {
-            SessionState::Established(state) => Ok(state),
-            _ => Err(Error::msg("session is not in the established state")),
+            subscribed_rx: self.subscribed_tx.subscribe(),
+            unsubscribed_rx: self.unsubscribed_tx.subscribe(),
+            published_rx: self.published_tx.subscribe(),
         }
     }
 
@@ -235,8 +321,22 @@ impl Session {
         }
     }
 
-    pub fn send_message(&mut self, message: Message) -> Result<()> {
-        match self.transition_state_from_sending_message(&message) {
+    fn established_session_state(&self) -> Result<&EstablishedSessionState> {
+        match &self.state {
+            SessionState::Established(state) => Ok(state),
+            _ => Err(Error::msg("session is not in the established state")),
+        }
+    }
+
+    fn established_session_state_mut(&mut self) -> Result<&mut EstablishedSessionState> {
+        match &mut self.state {
+            SessionState::Established(state) => Ok(state),
+            _ => Err(Error::msg("session is not in the established state")),
+        }
+    }
+
+    pub async fn send_message(&mut self, message: Message) -> Result<()> {
+        match self.transition_state_from_sending_message(&message).await {
             Ok(()) => (),
             Err(err) => {
                 match &message {
@@ -251,25 +351,36 @@ impl Session {
         self.service_message_tx.send(message).map_err(Error::new)
     }
 
-    fn transition_state_from_sending_message(&mut self, message: &Message) -> Result<()> {
-        let next_state = match message {
-            Message::Hello(message) => SessionState::Establishing(EstablishingSessionState {
-                realm: message.realm.clone(),
-            }),
-            Message::Abort(_) => SessionState::Closed,
-            Message::Goodbye(_) => match self.state {
-                SessionState::Closing => SessionState::Closed,
-                _ => SessionState::Closing,
-            },
-            _ => return Ok(()),
-        };
-        self.transition_state(next_state)
+    async fn transition_state_from_sending_message(&mut self, message: &Message) -> Result<()> {
+        match message {
+            Message::Hello(message) => {
+                self.transition_state(SessionState::Establishing(EstablishingSessionState {
+                    realm: message.realm.clone(),
+                }))
+                .await
+            }
+            Message::Abort(_) => self.transition_state(SessionState::Closed).await,
+            Message::Goodbye(_) => {
+                self.transition_state(match self.state {
+                    SessionState::Closing => SessionState::Closed,
+                    _ => SessionState::Closing,
+                })
+                .await
+            }
+            Message::Unsubscribe(message) => {
+                self.established_session_state_mut()?
+                    .subscriptions
+                    .remove(&message.subscribed_subscription);
+                Ok(())
+            }
+            _ => Ok(()),
+        }
     }
 
     pub async fn handle_message(&mut self, message: Message) -> Result<()> {
         debug!("Peer {} received message: {message:?}", self.name);
         if let Err(err) = self.handle_message_on_state_machine(message).await {
-            self.send_message(abort_message_for_error(&err))?;
+            self.send_message(abort_message_for_error(&err)).await?;
             return Err(err);
         }
         Ok(())
@@ -295,11 +406,12 @@ impl Session {
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     session_id: message.session,
                     realm,
-                    id_allocator: Box::new(SequentialIdAllocator::default()),
+                    subscriptions: HashMap::default(),
                 }))
+                .await
             }
             message @ Message::Abort(_) => {
-                self.transition_state(SessionState::Closed)?;
+                self.transition_state(SessionState::Closed).await?;
                 self.established_session_tx
                     .send(Err((&message).try_into()?))?;
                 Ok(())
@@ -320,11 +432,76 @@ impl Session {
                     self.established_session_state()?.session_id,
                     self.name
                 );
-                self.transition_state(SessionState::Closed)
+                self.transition_state(SessionState::Closed).await
             }
             Message::Goodbye(_) => {
-                self.transition_state(SessionState::Closing)?;
-                self.send_message(goodbye_and_out())
+                self.transition_state(SessionState::Closing).await?;
+                self.send_message(goodbye_and_out()).await
+            }
+            ref message @ Message::Error(ref error_message) => {
+                match error_message.request_type {
+                    Message::SUBSCRIBE_TAG => {
+                        self.subscribed_tx.send(Err(message.try_into()?))?;
+                    }
+                    Message::UNSUBSCRIBE_TAG => {
+                        self.unsubscribed_tx.send(Err(message.try_into()?))?;
+                    }
+                    Message::PUBLISH_TAG => {
+                        self.published_tx.send(Err(message.try_into()?))?;
+                    }
+                    _ => {
+                        error!(
+                            "Invalid ERROR mesage with request type {} received from the router: {error_message:?}",
+                            error_message.request_type
+                        );
+                        return Err(
+                            BasicError::InvalidArgument("invalid request type".to_owned()).into(),
+                        );
+                    }
+                }
+                Ok(())
+            }
+            Message::Subscribed(message) => {
+                let (event_tx, event_rx) = broadcast::channel(16);
+                self.established_session_state_mut()?
+                    .subscriptions
+                    .insert(message.subscription, Subscription { event_tx });
+                self.subscribed_tx
+                    .send(Ok(peer_session_message::Subscription {
+                        request_id: message.subscribe_request,
+                        subscription_id: message.subscription,
+                        event_rx,
+                    }))?;
+                Ok(())
+            }
+            Message::Unsubscribed(message) => {
+                self.unsubscribed_tx
+                    .send(Ok(peer_session_message::Unsubscription {
+                        request_id: message.unsubscribe_request,
+                    }))?;
+                Ok(())
+            }
+            Message::Published(message) => {
+                self.published_tx
+                    .send(Ok(peer_session_message::Publication {
+                        request_id: message.publish_request,
+                    }))?;
+                Ok(())
+            }
+            Message::Event(message) => {
+                let subscription = match self
+                    .established_session_state()?
+                    .subscriptions
+                    .get(&message.subscribed_subscription)
+                {
+                    Some(subscription) => subscription,
+                    None => return Ok(()),
+                };
+                subscription.event_tx.send(Event {
+                    arguments: message.publish_arguments,
+                    arguments_keyword: message.publish_arguments_keyword,
+                })?;
+                Ok(())
             }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on an established session",
@@ -336,7 +513,7 @@ impl Session {
 
     async fn handle_closing(&mut self, message: Message) -> Result<()> {
         match message {
-            Message::Goodbye(_) => self.transition_state(SessionState::Closed),
+            Message::Goodbye(_) => self.transition_state(SessionState::Closed).await,
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on a closing session",
                 message.message_name()
@@ -345,7 +522,7 @@ impl Session {
         }
     }
 
-    fn transition_state(&mut self, state: SessionState) -> Result<()> {
+    async fn transition_state(&mut self, state: SessionState) -> Result<()> {
         if state.is_same_state(&self.state) {
             return Ok(());
         }
@@ -370,6 +547,7 @@ impl Session {
                     "Peer {} started session {} on realm {}",
                     self.name, state.session_id, state.realm
                 );
+                self.id_allocator.reset().await;
                 self.established_session_tx
                     .send(Ok(peer_session_message::EstablishedSession {
                         realm: state.realm.clone(),

@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    sync::Arc,
+};
 
 use anyhow::{
     Error,
@@ -60,7 +63,6 @@ use crate::{
 
 struct EstablishedSessionState {
     realm: Uri,
-    id_allocator: Box<dyn IdAllocator>,
     subscriptions: HashMap<Id, Uri>,
 }
 
@@ -106,11 +108,16 @@ impl SessionState {
 }
 
 pub struct SessionHandle {
+    id_allocator: Arc<Box<dyn IdAllocator>>,
     message_tx: UnboundedSender<Message>,
     closed_session_rx: broadcast::Receiver<()>,
 }
 
 impl SessionHandle {
+    pub fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
+        self.id_allocator.clone()
+    }
+
     pub fn send_message(&self, message: Message) -> Result<()> {
         self.message_tx.send(message).map_err(Error::new)
     }
@@ -131,6 +138,7 @@ pub struct Session {
     message_tx: UnboundedSender<Message>,
     service_message_tx: UnboundedSender<Message>,
     state: SessionState,
+    id_allocator: Arc<Box<dyn IdAllocator>>,
 
     closed_session_tx: broadcast::Sender<()>,
 }
@@ -141,12 +149,14 @@ impl Session {
         message_tx: UnboundedSender<Message>,
         service_message_tx: UnboundedSender<Message>,
     ) -> Self {
+        let id_allocator = SequentialIdAllocator::default();
         let (closed_session_tx, _) = broadcast::channel(16);
         Self {
             id,
             message_tx,
             service_message_tx,
             state: SessionState::default(),
+            id_allocator: Arc::new(Box::new(id_allocator)),
 
             closed_session_tx,
         }
@@ -165,6 +175,7 @@ impl Session {
 
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
+            id_allocator: self.id_allocator.clone(),
             message_tx: self.message_tx.clone(),
             closed_session_rx: self.closed_session_tx.subscribe(),
         }
@@ -184,12 +195,12 @@ impl Session {
         }
     }
 
-    pub fn send_message(&mut self, message: Message) -> Result<()> {
-        self.transition_state_from_sending_message(&message)?;
+    pub async fn send_message(&mut self, message: Message) -> Result<()> {
+        self.transition_state_from_sending_message(&message).await?;
         self.service_message_tx.send(message).map_err(Error::new)
     }
 
-    fn transition_state_from_sending_message(&mut self, message: &Message) -> Result<()> {
+    async fn transition_state_from_sending_message(&mut self, message: &Message) -> Result<()> {
         let next_state = match message {
             Message::Abort(_) => SessionState::Closed,
             Message::Goodbye(_) => match self.state {
@@ -198,7 +209,7 @@ impl Session {
             },
             _ => return Ok(()),
         };
-        self.transition_state(next_state)
+        self.transition_state(next_state).await
     }
 
     pub async fn handle_message<S>(
@@ -208,7 +219,7 @@ impl Session {
     ) -> Result<()> {
         debug!("Received message for session {}: {message:?}", self.id);
         if let Err(err) = self.handle_message_on_state_machine(context, message).await {
-            self.send_message(abort_message_for_error(&err))?;
+            self.send_message(abort_message_for_error(&err)).await?;
             return Err(err);
         }
         Ok(())
@@ -267,14 +278,15 @@ impl Session {
 
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     realm: context.realm().uri().clone(),
-                    id_allocator: Box::new(SequentialIdAllocator::default()),
                     subscriptions: HashMap::default(),
-                }))?;
+                }))
+                .await?;
 
                 self.send_message(Message::Welcome(WelcomeMessage {
                     session: self.id,
                     details,
                 }))
+                .await
             }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on a closed session",
@@ -292,27 +304,27 @@ impl Session {
         match message {
             Message::Abort(_) => {
                 warn!("Router session {} aborted by peer: {message:?}", self.id);
-                self.transition_state(SessionState::Closed)
+                self.transition_state(SessionState::Closed).await
             }
             Message::Goodbye(_) => {
-                self.transition_state(SessionState::Closing)?;
-                self.send_message(goodbye_and_out())
+                self.transition_state(SessionState::Closing).await?;
+                self.send_message(goodbye_and_out()).await
             }
-            ref whole_message @ Message::Subscribe(ref message) => {
-                if let Err(err) = self.handle_subscribe(context, message).await {
-                    return self.send_message(error_for_request(&whole_message, &err));
+            ref message @ Message::Subscribe(ref subscribe_message) => {
+                if let Err(err) = self.handle_subscribe(context, subscribe_message).await {
+                    return self.send_message(error_for_request(&message, &err)).await;
                 }
                 Ok(())
             }
-            ref whole_message @ Message::Unsubscribe(ref message) => {
-                if let Err(err) = self.handle_unsubscribe(context, message).await {
-                    return self.send_message(error_for_request(&whole_message, &err));
+            ref message @ Message::Unsubscribe(ref unsubscribe_message) => {
+                if let Err(err) = self.handle_unsubscribe(context, unsubscribe_message).await {
+                    return self.send_message(error_for_request(&message, &err)).await;
                 }
                 Ok(())
             }
-            ref whole_message @ Message::Publish(ref message) => {
-                if let Err(err) = self.handle_publish(context, message).await {
-                    return self.send_message(error_for_request(&whole_message, &err));
+            ref message @ Message::Publish(ref publish_message) => {
+                if let Err(err) = self.handle_publish(context, publish_message).await {
+                    return self.send_message(error_for_request(&message, &err)).await;
                 }
                 Ok(())
             }
@@ -332,16 +344,8 @@ impl Session {
         let mut context = context
             .realm_context(&self.established_session_state()?.realm)
             .await?;
-        let subscription = TopicManager::subscribe(
-            &mut context,
-            self.id,
-            message.topic.clone(),
-            self.established_session_state()?
-                .id_allocator
-                .generate_id()
-                .await,
-        )
-        .await?;
+        let subscription =
+            TopicManager::subscribe(&mut context, self.id, message.topic.clone()).await?;
         self.established_session_state_mut()?
             .subscriptions
             .insert(subscription, message.topic.clone());
@@ -349,6 +353,7 @@ impl Session {
             subscribe_request: message.request,
             subscription,
         }))
+        .await
     }
 
     async fn handle_unsubscribe<S>(
@@ -368,6 +373,7 @@ impl Session {
         self.send_message(Message::Unsubscribed(UnsubscribedMessage {
             unsubscribe_request: message.request,
         }))
+        .await
     }
 
     async fn handle_publish<S>(
@@ -390,16 +396,17 @@ impl Session {
             publish_request: message.request,
             publication,
         }))
+        .await
     }
 
     async fn handle_closing<S>(&mut self, _: &RouterContext<S>, message: Message) -> Result<()> {
         match message {
-            Message::Goodbye(_) => self.transition_state(SessionState::Closed),
+            Message::Goodbye(_) => self.transition_state(SessionState::Closed).await,
             _ => Ok(()),
         }
     }
 
-    fn transition_state(&mut self, state: SessionState) -> Result<()> {
+    async fn transition_state(&mut self, state: SessionState) -> Result<()> {
         if state.is_same_state(&self.state) {
             return Ok(());
         }
@@ -419,6 +426,9 @@ impl Session {
         self.state = state;
 
         match self.state {
+            SessionState::Established(_) => {
+                self.id_allocator.reset().await;
+            }
             SessionState::Closed => {
                 self.closed_session_tx.send(())?;
             }

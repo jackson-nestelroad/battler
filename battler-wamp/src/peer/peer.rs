@@ -18,6 +18,7 @@ use tokio::sync::{
     mpsc::{
         unbounded_channel,
         UnboundedReceiver,
+        UnboundedSender,
     },
 };
 
@@ -25,6 +26,7 @@ use crate::{
     core::{
         close::CloseReason,
         id::{
+            Id,
             IdAllocator,
             SequentialIdAllocator,
         },
@@ -35,6 +37,7 @@ use crate::{
         },
         types::{
             Dictionary,
+            List,
             Value,
         },
         uri::Uri,
@@ -44,11 +47,15 @@ use crate::{
         message::{
             HelloMessage,
             Message,
+            PublishMessage,
+            SubscribeMessage,
+            UnsubscribeMessage,
         },
     },
     peer::{
         connector::connector::ConnectorFactory,
         session::{
+            Event,
             Session,
             SessionHandle,
         },
@@ -105,6 +112,13 @@ impl Default for PeerConfig {
 struct PeerState {
     service: ServiceHandle,
     session: SessionHandle,
+
+    message_tx: UnboundedSender<Message>,
+}
+
+pub struct Subscription {
+    pub id: Id,
+    pub event_rx: broadcast::Receiver<Event>,
 }
 
 pub struct Peer<S> {
@@ -162,11 +176,7 @@ where
 
         let service_handle = service.start();
 
-        let session = Session::new(
-            self.config.name.clone(),
-            message_tx,
-            service_handle.message_tx(),
-        );
+        let session = Session::new(self.config.name.clone(), service_handle.message_tx());
         let session_handle = session.session_handle();
         tokio::spawn(Self::message_handler(
             session,
@@ -181,6 +191,7 @@ where
         *peer_state = Some(PeerState {
             service: service_handle,
             session: session_handle,
+            message_tx,
         });
 
         Ok(())
@@ -230,16 +241,17 @@ where
         mut end_rx: broadcast::Receiver<()>,
         mut drop_rx: broadcast::Receiver<()>,
     ) -> Result<()> {
+        let mut finish_on_close = false;
         loop {
             tokio::select! {
                 // Received a message from this peer object.
                 message = message_rx.recv() => {
                     let message = match message {
                         Some(message) => message,
-                        None => break,
+                        None => return Err(Error::msg("peer message channel closed")),
                     };
                     let message_name = message.message_name();
-                    if let Err(err) = session.send_message(message) {
+                    if let Err(err) = session.send_message(message).await {
                         return Err(err.context(format!("failed to send {message_name} message")));
                     }
                 }
@@ -263,7 +275,11 @@ where
             }
 
             if session.closed() {
-                break;
+                if finish_on_close {
+                    break;
+                }
+            } else {
+                finish_on_close = true;
             }
         }
         Ok(())
@@ -283,7 +299,7 @@ where
         let (message_tx, mut established_session_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
-                    peer_state.session.message_tx(),
+                    peer_state.message_tx.clone(),
                     peer_state.session.established_session_rx(),
                 )
             })
@@ -330,7 +346,7 @@ where
         let (message_tx, mut closed_session_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
-                    peer_state.session.message_tx(),
+                    peer_state.message_tx.clone(),
                     peer_state.session.closed_session_rx(),
                 )
             })
@@ -352,6 +368,129 @@ where
             None => (),
         }
         Ok(())
+    }
+
+    pub async fn subscribe(&self, topic: Uri) -> Result<Subscription> {
+        let (message_tx, id_generator, mut subscribed_rx) = self
+            .get_from_peer_state(|peer_state| {
+                (
+                    peer_state.message_tx.clone(),
+                    peer_state.session.id_generator(),
+                    peer_state.session.subscribed_rx(),
+                )
+            })
+            .await?;
+        let request_id = id_generator.generate_id().await;
+
+        message_tx.send(Message::Subscribe(SubscribeMessage {
+            request: request_id,
+            options: Dictionary::default(),
+            topic,
+        }))?;
+
+        loop {
+            tokio::select! {
+                subscription = subscribed_rx.recv() => {
+                    match subscription? {
+                        Ok(subscription) => {
+                            if subscription.request_id == request_id {
+                                return Ok(Subscription {
+                                    id: subscription.subscription_id,
+                                    event_rx: subscription.event_rx,
+                                });
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                return Err(err.into_error());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub async fn unsubscribe(&self, id: Id) -> Result<()> {
+        let (message_tx, id_generator, mut unsubscribed_rx) = self
+            .get_from_peer_state(|peer_state| {
+                (
+                    peer_state.message_tx.clone(),
+                    peer_state.session.id_generator(),
+                    peer_state.session.unsubscribed_rx(),
+                )
+            })
+            .await?;
+        let request_id = id_generator.generate_id().await;
+
+        message_tx.send(Message::Unsubscribe(UnsubscribeMessage {
+            request: request_id,
+            subscribed_subscription: id,
+        }))?;
+
+        loop {
+            tokio::select! {
+                unsubscription = unsubscribed_rx.recv() => {
+                    match unsubscription? {
+                        Ok(unsubscription) => {
+                            if unsubscription.request_id == request_id {
+                                return Ok(());
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                return Err(err.into_error());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub async fn publish(
+        &self,
+        topic: Uri,
+        arguments: List,
+        arguments_keyword: Dictionary,
+    ) -> Result<()> {
+        let (message_tx, id_generator, mut published_rx) = self
+            .get_from_peer_state(|peer_state| {
+                (
+                    peer_state.message_tx.clone(),
+                    peer_state.session.id_generator(),
+                    peer_state.session.published_rx(),
+                )
+            })
+            .await?;
+        let request_id = id_generator.generate_id().await;
+
+        message_tx.send(Message::Publish(PublishMessage {
+            request: request_id,
+            options: Dictionary::default(),
+            topic,
+            arguments,
+            arguments_keyword,
+        }))?;
+
+        loop {
+            tokio::select! {
+                publication = published_rx.recv() => {
+                    match publication? {
+                        Ok(publication) => {
+                            if publication.request_id == request_id {
+                                return Ok(());
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                return Err(err.into_error());
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -9,10 +9,10 @@ use crate::{
 
 #[derive(Debug, Error)]
 pub enum BasicError {
-    #[error("not found")]
-    NotFound,
-    #[error("invalid argument")]
-    InvalidArgument,
+    #[error("not found: {0}")]
+    NotFound(String),
+    #[error("invalid argument: {0}")]
+    InvalidArgument(String),
     #[error("internal error: {0}")]
     Internal(String),
 }
@@ -20,8 +20,8 @@ pub enum BasicError {
 impl BasicError {
     pub fn uri_component(&self) -> &str {
         match self {
-            Self::NotFound => "not_found",
-            Self::InvalidArgument => "invalid_argument",
+            Self::NotFound(_) => "not_found",
+            Self::InvalidArgument(_) => "invalid_argument",
             Self::Internal(_) => "internal",
         }
     }
@@ -61,8 +61,8 @@ impl InteractionError {
 
 pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
     match reason.as_ref() {
-        "wamp.error.not_found" => BasicError::NotFound.into(),
-        "wamp.error.invalid_argument" => BasicError::InvalidArgument.into(),
+        "wamp.error.not_found" => BasicError::NotFound(message).into(),
+        "wamp.error.invalid_argument" => BasicError::InvalidArgument(message).into(),
         "wamp.error.protocol_violation" => InteractionError::ProtocolViolation(message).into(),
         "wamp.error.no_such_procedure" => InteractionError::NoSuchProcedure.into(),
         "wamp.error.procedure_already_exists" => InteractionError::ProcedureAlreadyExists.into(),

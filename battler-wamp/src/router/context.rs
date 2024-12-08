@@ -6,11 +6,13 @@ use futures_util::lock::MutexGuard;
 use crate::{
     core::{
         error::InteractionError,
+        id::Id,
         uri::Uri,
     },
     router::{
         realm::Realm,
         router::Router,
+        session::SessionHandle,
     },
 };
 
@@ -77,5 +79,16 @@ impl<'realm, 'router, S> RealmContext<'realm, 'router, S> {
 
     pub fn realm_mut(&mut self) -> &mut Realm {
         &mut *self.realm
+    }
+
+    pub fn session(&self, id: Id) -> Option<&SessionHandle> {
+        self.realm.sessions.get(&id).map(|session| &session.session)
+    }
+
+    pub fn session_mut(&mut self, id: Id) -> Option<&mut SessionHandle> {
+        self.realm
+            .sessions
+            .get_mut(&id)
+            .map(|session| &mut session.session)
     }
 }

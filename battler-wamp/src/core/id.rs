@@ -92,6 +92,7 @@ impl<'de> Deserialize<'de> for Id {
 #[async_trait]
 pub trait IdAllocator: Send + Sync {
     async fn generate_id(&self) -> Id;
+    async fn reset(&self);
 }
 
 #[derive(Default)]
@@ -103,6 +104,8 @@ impl IdAllocator for RandomIdAllocator {
         let id = (rand::random::<u64>() & (Id::MAX.0 - 1)) + 1;
         Id(id)
     }
+
+    async fn reset(&self) {}
 }
 
 #[derive(Default)]
@@ -119,6 +122,11 @@ impl IdAllocator for SequentialIdAllocator {
         let next = Id::try_from(next).unwrap();
         *lock = next;
         id
+    }
+
+    async fn reset(&self) {
+        let mut lock = self.next.lock().await;
+        *lock = Id::MIN;
     }
 }
 

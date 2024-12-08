@@ -2,6 +2,7 @@ use anyhow::Result;
 
 use crate::{
     core::{
+        error::BasicError,
         hash::HashMap,
         id::Id,
         types::{
@@ -39,7 +40,6 @@ impl TopicManager {
         context: &mut RealmContext<'_, '_, S>,
         session: Id,
         topic: Uri,
-        id: Id,
     ) -> Result<Id> {
         context
             .router()
@@ -48,6 +48,12 @@ impl TopicManager {
             .await
             .validate_subscription(context, session, &topic)
             .await?;
+        let subscription_id = context
+            .session(session)
+            .ok_or_else(|| BasicError::NotFound(format!("expected session {session} to exist")))?
+            .id_generator()
+            .generate_id()
+            .await;
         let topic = context
             .realm_mut()
             .topic_manager
@@ -57,9 +63,7 @@ impl TopicManager {
         let subscriber = topic
             .subscribers
             .entry(session)
-            .or_insert_with(|| TopicSubscriber {
-                subscription_id: id,
-            });
+            .or_insert_with(|| TopicSubscriber { subscription_id });
         Ok(subscriber.subscription_id)
     }
 

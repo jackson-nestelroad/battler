@@ -3,6 +3,7 @@ extern crate proc_macro;
 
 use alloc::fmt::format;
 
+use itertools::Itertools;
 use proc_macro::TokenStream;
 use proc_macro2::{
     Span,
@@ -176,13 +177,17 @@ pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Input);
 
     let ident = input.ident;
-    let tag = input.tag;
+    let tag_type = input.tag;
 
-    let (serialize_variant, tag_variant): (Vec<_>, Vec<_>) = input
+    let (serialize_variant, tag_variant, tag_const_variant): (Vec<_>, Vec<_>, Vec<_>) = input
         .variants
         .iter()
         .map(|variant| {
             let variant_ident = &variant.ident;
+            let variant_const_ident = Ident::new(
+                &format!("{}_TAG", variant_ident.to_string().to_uppercase()),
+                variant_ident.span(),
+            );
             let tag = &variant.attrs.tag;
             (
                 quote! {
@@ -196,9 +201,12 @@ pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
                 quote! {
                     #ident::#variant_ident(_) => #tag,
                 },
+                quote! {
+                    pub const #variant_const_ident: #tag_type = #tag;
+                },
             )
         })
-        .unzip();
+        .multiunzip();
 
     quote! {
         impl serde::Serialize for #ident {
@@ -213,7 +221,9 @@ pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
         }
 
         impl #ident {
-            pub fn tag(&self) -> #tag {
+            #(#tag_const_variant)*
+
+            pub fn tag(&self) -> #tag_type {
                 match self {
                     #(#tag_variant)*
                 }

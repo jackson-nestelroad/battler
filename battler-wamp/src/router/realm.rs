@@ -54,7 +54,7 @@ impl Realm {
     pub async fn shut_down(&mut self, close_reason: CloseReason) -> Result<()> {
         let mut futures = Vec::default();
         for (_, session) in &mut self.sessions {
-            session.session.close(close_reason)?;
+            session.session.close(close_reason).ok();
             futures.push(session.session.closed_session_rx_mut().recv());
         }
 

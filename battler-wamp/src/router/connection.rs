@@ -107,7 +107,10 @@ impl Connection {
         let (message_tx, message_rx) = unbounded_channel();
         let session = Session::new(session_id, message_tx, service_message_tx);
 
-        info!("Connection {} started session {}", self.uuid, session_id);
+        info!(
+            "Proactively starting session {} for connection {}",
+            session_id, self.uuid
+        );
 
         Ok(self
             .session_loop(context, session, message_rx, service_message_rx, end_rx)
@@ -162,6 +165,7 @@ impl Connection {
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
     ) -> Result<()> {
+        let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
         loop {
             tokio::select! {
@@ -169,10 +173,10 @@ impl Connection {
                 message = message_rx.recv() => {
                     let message = match message {
                         Some(message) => message,
-                        None => break,
+                        None => return Err(Error::msg("connection message channel closed")),
                     };
                     let message_name = message.message_name();
-                    if let Err(err) = session.send_message(message) {
+                    if let Err(err) = session.send_message(message).await {
                         return Err(err.context(format!("failed to send {message_name} message")));
                     }
                 }
@@ -200,7 +204,11 @@ impl Connection {
             }
 
             if session.closed() {
-                break;
+                if finish_on_close {
+                    break;
+                }
+            } else {
+                finish_on_close = true;
             }
         }
 
