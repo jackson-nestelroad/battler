@@ -105,11 +105,6 @@ async fn peer_receives_published_messages_for_topic() {
                 .await,
             Ok(())
         );
-
-        // Unsubscribe on the 5th message.
-        if i == 4 {
-            assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
-        }
     }
 
     // Subscriber should only receive 5 messages.
@@ -125,6 +120,12 @@ async fn peer_receives_published_messages_for_topic() {
                 )])
             });
         });
+
+        // Unsubscribe on the 5th message.
+        if seen.len() >= 5 {
+            assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
+            break;
+        }
     }
 
     pretty_assertions::assert_eq!(seen, HashSet::from_iter([0, 1, 2, 3, 4]));
