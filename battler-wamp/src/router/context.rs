@@ -34,10 +34,12 @@ impl<S> RouterContext<S> {
         }
     }
 
+    /// The router.
     pub fn router(&self) -> &Router<S> {
         self.router.as_ref()
     }
 
+    /// Creates a [`RealmContext`] with the givne realm locked and ready for use.
     pub async fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, '_, S>> {
         let realm = self
             .router
@@ -60,6 +62,9 @@ impl<S> Clone for RouterContext<S> {
     }
 }
 
+/// The context of a task running for a realm.
+///
+/// Used to lock the realm for use.
 pub struct RealmContext<'realm, 'router, S>
 where
     S: 'static,
@@ -69,22 +74,27 @@ where
 }
 
 impl<'realm, 'router, S> RealmContext<'realm, 'router, S> {
+    /// The router.
     pub fn router(&self) -> &Router<S> {
         self.context.router()
     }
 
+    /// The realm.
     pub fn realm(&self) -> &Realm {
         &*self.realm
     }
 
+    /// The realm.
     pub fn realm_mut(&mut self) -> &mut Realm {
         &mut *self.realm
     }
 
+    /// Looks up a session by ID.
     pub fn session(&self, id: Id) -> Option<&SessionHandle> {
         self.realm.sessions.get(&id).map(|session| &session.session)
     }
 
+    /// Looks up a session by ID.
     pub fn session_mut(&mut self, id: Id) -> Option<&mut SessionHandle> {
         self.realm
             .sessions

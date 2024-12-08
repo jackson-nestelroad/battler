@@ -37,6 +37,7 @@ use crate::{
     transport::transport::Transport,
 };
 
+/// A handle to an asynchronously-running [`Service`].
 pub struct ServiceHandle {
     start_handle: JoinHandle<()>,
     cancel_tx: broadcast::Sender<()>,
@@ -44,14 +45,19 @@ pub struct ServiceHandle {
 }
 
 impl ServiceHandle {
+    /// Joins the task running the service.
     pub async fn join(self) -> Result<()> {
         self.start_handle.await.map_err(Error::new)
     }
 
+    /// Cancels the service.
+    ///
+    /// Cancellation is the correct way to cleanly exit a service.
     pub fn cancel(&self) -> Result<()> {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
     }
 
+    /// The message transmission channel.
     pub fn message_tx(&self) -> UnboundedSender<Message> {
         self.message_tx.clone()
     }
@@ -61,14 +67,14 @@ impl ServiceHandle {
 /// transport.
 ///
 /// The goal of this module is to provide a common layer for WAMP messaging. Received messages are
-/// passed to a channel for higher layers (such as a single session on a router or a client) to
+/// passed to a channel for higher layers (such as a single session on a router or a peer) to
 /// process.
 ///
 /// This type assumes that errors are handled higher up in the stack. In other words, canceling the
 /// operation of this service *will not* inject an ABORT message. If a router wishes to cancel a
 /// session, the session object itself should be canceled, and it's expected that the session sends
-/// ABORT before canceling the service. The same applies for clients: the client should inject an
-/// ABORT message when canceled before canceling the service.
+/// ABORT before canceling the service. The same applies for peers: the peer should inject an ABORT
+/// message when canceled before canceling the service.
 pub struct Service {
     name: String,
     stream: MessageStream,
@@ -83,6 +89,7 @@ pub struct Service {
 }
 
 impl Service {
+    /// Creates a new service with the given transport and serialization.
     pub fn new(
         name: String,
         transport: Box<dyn Transport>,
@@ -106,14 +113,20 @@ impl Service {
         }
     }
 
+    /// The message receiver channel.
     pub fn message_rx(&self) -> broadcast::Receiver<Message> {
         self.message_tx.subscribe()
     }
 
+    /// The end receiver channel.
     pub fn end_rx(&self) -> broadcast::Receiver<()> {
         self.end_tx.subscribe()
     }
 
+    /// Starts the service asynchronously.
+    ///
+    /// This method takes ownership of the service. All future interactions with the service should
+    /// be made through the returned handle.
     pub fn start(self) -> ServiceHandle {
         let cancel_tx = self.cancel_tx.clone();
         let message_tx = self.user_message_tx.clone();

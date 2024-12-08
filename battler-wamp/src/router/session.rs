@@ -107,6 +107,7 @@ impl SessionState {
     }
 }
 
+/// A handle to an asynchronously-running router session.
 pub struct SessionHandle {
     id_allocator: Arc<Box<dyn IdAllocator>>,
     message_tx: UnboundedSender<Message>,
@@ -114,25 +115,33 @@ pub struct SessionHandle {
 }
 
 impl SessionHandle {
+    /// A reference to the session's ID generator.
     pub fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
         self.id_allocator.clone()
     }
 
+    /// Sends a message over the session.
     pub fn send_message(&self, message: Message) -> Result<()> {
         self.message_tx.send(message).map_err(Error::new)
     }
 
+    /// Closes the session.
     pub fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
             .send(goodbye_with_close_reason(close_reason))
             .map_err(Error::new)
     }
 
+    /// A mutable reference to the receiver channel that is populated when the session moves to the
+    /// CLOSED state.
     pub fn closed_session_rx_mut(&mut self) -> &mut broadcast::Receiver<()> {
         &mut self.closed_session_rx
     }
 }
 
+/// The router end of a WAMP session.
+///
+/// Handles WAMP messages in a state machine and holds all session-scoped state.
 pub struct Session {
     id: Id,
     message_tx: UnboundedSender<Message>,
@@ -144,6 +153,7 @@ pub struct Session {
 }
 
 impl Session {
+    /// Creates a new session over a service.
     pub fn new(
         id: Id,
         message_tx: UnboundedSender<Message>,
@@ -162,10 +172,12 @@ impl Session {
         }
     }
 
+    /// The session ID.
     pub fn id(&self) -> Id {
         self.id
     }
 
+    /// Checks if the session is closed.
     pub fn closed(&self) -> bool {
         match self.state {
             SessionState::Closed => true,
@@ -173,6 +185,8 @@ impl Session {
         }
     }
 
+    /// Generates a handle to the session, which can be saved separately from the session's
+    /// lifecycle.
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
             id_allocator: self.id_allocator.clone(),
@@ -212,6 +226,7 @@ impl Session {
         self.transition_state(next_state).await
     }
 
+    /// Handles a message over the session state machine.
     pub async fn handle_message<S>(
         &mut self,
         context: &RouterContext<S>,

@@ -19,24 +19,30 @@ use crate::{
     router::context::RealmContext,
 };
 
+/// A single subscriber to a topic.
 #[derive(Default)]
 pub struct TopicSubscriber {
     pub subscription_id: Id,
 }
 
+/// A topic that events can be published to for subscribers.
 #[derive(Default)]
 pub struct Topic {
+    /// All subscribers to the topic.
+    ///
+    /// Key is session ID.
     pub subscribers: HashMap<Id, TopicSubscriber>,
 }
 
-impl Topic {}
-
+/// A manager for all topics owned by a realm.
 #[derive(Default)]
 pub struct TopicManager {
+    /// Map of topics.
     pub topics: HashMap<Uri, Topic>,
 }
 
 impl TopicManager {
+    /// Subscribes to a topic.
     pub async fn subscribe<S>(
         context: &mut RealmContext<'_, '_, S>,
         session: Id,
@@ -72,6 +78,7 @@ impl TopicManager {
         Ok(subscriber.subscription_id)
     }
 
+    /// Unsubscribes from a topic.
     pub async fn unsubscribe<S>(context: &mut RealmContext<'_, '_, S>, session: Id, topic: &Uri) {
         let topic = match context.realm_mut().topic_manager.topics.get_mut(topic) {
             Some(topic) => topic,
@@ -80,6 +87,7 @@ impl TopicManager {
         topic.subscribers.remove(&session);
     }
 
+    /// Publishes an event to a topic.
     pub async fn publish<S>(
         context: &mut RealmContext<'_, '_, S>,
         session: Id,

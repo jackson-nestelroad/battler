@@ -5,12 +5,16 @@ use serde::{
 
 use crate::core::hash::HashMap;
 
+/// An integer type for WAMP messages.
 pub type Integer = u64;
 
+/// A dictionary of key-value pairs.
 pub type Dictionary = HashMap<String, Value>;
 
+/// A sequence of values.
 pub type List = Vec<Value>;
 
+/// A value for WAMP messages.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Value {

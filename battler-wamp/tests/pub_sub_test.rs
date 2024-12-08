@@ -94,8 +94,13 @@ async fn peer_receives_published_messages_for_topic() {
             publisher
                 .publish(
                     Uri::try_from("com.battler.topic1").unwrap(),
-                    List::from_iter([Value::Integer(i)]),
-                    Dictionary::from_iter([("index".to_owned(), Value::Integer(i))]),
+                    Event {
+                        arguments: List::from_iter([Value::Integer(i)]),
+                        arguments_keyword: Dictionary::from_iter([(
+                            "index".to_owned(),
+                            Value::Integer(i)
+                        )]),
+                    }
                 )
                 .await,
             Ok(())
@@ -152,7 +157,7 @@ async fn event_channel_closes_automatically_when_unsubscribing() {
 }
 
 #[tokio::test]
-async fn event_channel_closes_automatically_when_leaving_relam() {
+async fn event_channel_closes_automatically_when_leaving_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
@@ -234,8 +239,10 @@ async fn peer_does_not_receive_events_for_different_topic() {
         publisher
             .publish(
                 Uri::try_from("com.battler.topic2").unwrap(),
-                List::from_iter([Value::Bool(false)]),
-                Dictionary::default(),
+                Event {
+                    arguments: List::from_iter([Value::Bool(false)]),
+                    arguments_keyword: Dictionary::default(),
+                }
             )
             .await,
         Ok(())
@@ -313,8 +320,10 @@ async fn pub_sub_not_allowed_without_broker_role() {
     assert_matches::assert_matches!(
         peer.publish(
             Uri::try_from("com.battler.topic1").unwrap(),
-            List::default(),
-            Dictionary::default()
+            Event {
+                arguments: List::default(),
+                arguments_keyword: Dictionary::default(),
+            }
         )
         .await,
         Err(err) => {

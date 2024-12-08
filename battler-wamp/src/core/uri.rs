@@ -20,11 +20,12 @@ use crate::core::error::{
     InteractionError,
 };
 
+/// Error for an invalid URI.
 #[derive(Debug, Error)]
 #[error("invalid URI")]
 pub struct InvalidUri;
 
-/// Vaidates a strict URI.
+/// Validates a strict URI.
 pub fn validate_strict_uri<S>(uri: S) -> Result<(), InvalidUri>
 where
     S: AsRef<str>,
@@ -37,19 +38,25 @@ where
     Ok(())
 }
 
+/// A uniform resource identifier, used in many aspects of WAMP messaging for identifying resources,
+/// such as realms, topics, and procedures.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
 pub struct Uri(String);
 
 impl Uri {
-    pub fn from_known<S>(value: S) -> Self
+    /// Constructs a URI directly from a value known to be valid, skipping validation.
+    pub(crate) fn from_known<S>(value: S) -> Self
     where
         S: Into<String>,
     {
         Self(value.into())
     }
 
+    /// Creates a URI for a generic error.
+    ///
+    /// Attempts to derive out known URIs first.
     pub fn for_error(error: &Error) -> Self {
         if error.is::<InvalidUri>() {
             return Self::from_known("wamp.error.invalid_uri");

@@ -9,8 +9,10 @@ use crate::{
     router::context::RealmContext,
 };
 
+/// Router-level policies for incoming pub/sub requests.
 #[async_trait]
 pub trait PubSubPolicies<S>: Send + Sync {
+    /// Validates that a subscription is allowed.
     async fn validate_subscription(
         &self,
         context: &RealmContext<'_, '_, S>,
@@ -18,6 +20,7 @@ pub trait PubSubPolicies<S>: Send + Sync {
         topic: &Uri,
     ) -> Result<()>;
 
+    /// Validates that a publication is allowed.
     async fn validate_publication(
         &self,
         context: &RealmContext<'_, '_, S>,
@@ -26,6 +29,7 @@ pub trait PubSubPolicies<S>: Send + Sync {
     ) -> Result<()>;
 }
 
+/// Default implementation of [`PubSubPolicies`] with empty policies.
 #[derive(Default)]
 pub struct EmptyPubSubPolicies {}
 

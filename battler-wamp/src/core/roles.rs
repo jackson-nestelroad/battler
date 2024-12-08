@@ -1,3 +1,4 @@
+/// A role a peer can take on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum PeerRole {
     // Calls RPC endpoints.
@@ -11,6 +12,7 @@ pub enum PeerRole {
 }
 
 impl PeerRole {
+    /// The key that should be used when communicating this role over message details.
     pub fn key_for_details(&self) -> &str {
         match self {
             Self::Caller => "caller",
@@ -21,6 +23,7 @@ impl PeerRole {
     }
 }
 
+/// A role a router can take on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum RouterRole {
     // Supports RPC calls.
@@ -30,6 +33,7 @@ pub enum RouterRole {
 }
 
 impl RouterRole {
+    /// The key that should be used when communicating this role over message details.
     pub fn key_for_details(&self) -> &str {
         match self {
             Self::Dealer => "dealer",

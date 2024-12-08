@@ -105,6 +105,7 @@ impl SessionState {
     }
 }
 
+/// An event published to a topic.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Event {
     pub arguments: List,
@@ -128,6 +129,7 @@ pub mod peer_session_message {
         peer::session::Event,
     };
 
+    /// An error that can be transmitted over peer session channels.
     #[derive(Debug, Clone)]
     pub struct Error {
         pub reason: Uri,
@@ -136,6 +138,7 @@ pub mod peer_session_message {
     }
 
     impl Error {
+        /// Converts the error into a real Error object that can be returned out.
         pub fn into_error(self) -> anyhow::Error {
             error_from_uri_reason_and_message(self.reason, self.message)
         }
@@ -163,13 +166,16 @@ pub mod peer_session_message {
         }
     }
 
+    /// A result that can be transmitted over peer session channels.
     pub type Result<T> = std::result::Result<T, Error>;
 
+    /// The result of establishing a session.
     #[derive(Debug, Clone)]
     pub struct EstablishedSession {
         pub realm: Uri,
     }
 
+    /// A subscription made on a topic.
     #[derive(Debug)]
     pub struct Subscription {
         pub request_id: Id,
@@ -187,11 +193,13 @@ pub mod peer_session_message {
         }
     }
 
+    /// A confirmation that a subscription was dropped.
     #[derive(Debug, Clone)]
     pub struct Unsubscription {
         pub request_id: Id,
     }
 
+    /// A confirmation that an event was published.
     #[derive(Debug, Clone)]
     pub struct Publication {
         pub request_id: Id,
@@ -202,6 +210,7 @@ struct Subscription {
     event_tx: broadcast::Sender<Event>,
 }
 
+/// A handle to an asynchronously-running peer session.
 pub struct SessionHandle {
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
@@ -218,10 +227,13 @@ pub struct SessionHandle {
 }
 
 impl SessionHandle {
-    pub fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
+    /// A reference to the session's ID generator.
+    pub fn id_allocator(&self) -> Arc<Box<dyn IdAllocator>> {
         self.id_allocator.clone()
     }
 
+    /// The receiver channel for establishing a session (moving the session to the ESTABLISHED
+    /// state).
     pub fn established_session_rx(
         &self,
     ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::EstablishedSession>>
@@ -229,16 +241,19 @@ impl SessionHandle {
         self.established_session_rx.resubscribe()
     }
 
+    /// The receiver channel, populated when the session moves to the CLOSED state.
     pub fn closed_session_rx(&self) -> broadcast::Receiver<()> {
         self.closed_session_rx.resubscribe()
     }
 
+    /// The receiver channel for responses to SUBSCRIBE messages.
     pub fn subscribed_rx(
         &self,
     ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Subscription>> {
         self.subscribed_rx.resubscribe()
     }
 
+    /// The receiver channel for responses to UNSUBSCRIBE messages.
     pub fn unsubscribed_rx(
         &self,
     ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Unsubscription>>
@@ -246,6 +261,7 @@ impl SessionHandle {
         self.unsubscribed_rx.resubscribe()
     }
 
+    /// The receiver channel for responses to PUBLISH messages.
     pub fn published_rx(
         &self,
     ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>> {
@@ -253,6 +269,9 @@ impl SessionHandle {
     }
 }
 
+/// The peer end of a WAMP session.
+///
+/// Handles WAMP messages in a state machine and holds all session-scoped state.
 pub struct Session {
     name: String,
     service_message_tx: UnboundedSender<Message>,
@@ -272,6 +291,7 @@ pub struct Session {
 }
 
 impl Session {
+    /// Creates a new session over a service.
     pub fn new(name: String, service_message_tx: UnboundedSender<Message>) -> Self {
         let id_allocator = SequentialIdAllocator::default();
         let (established_session_tx, _) = broadcast::channel(16);
@@ -292,10 +312,12 @@ impl Session {
         }
     }
 
+    /// The name of the session.
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /// Checks if the session is closed.
     pub fn closed(&self) -> bool {
         match self.state {
             SessionState::Closed => true,
@@ -303,6 +325,8 @@ impl Session {
         }
     }
 
+    /// Generates a handle to the session, which can be saved separately from the session's
+    /// lifecycle.
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
             id_allocator: self.id_allocator.clone(),
@@ -335,6 +359,10 @@ impl Session {
         }
     }
 
+    /// Sends a message over the session.
+    ///
+    /// Messages should not be sent directly over the underlying service. By sending messages
+    /// through the session, the session state can be updated accordingly.
     pub async fn send_message(&mut self, message: Message) -> Result<()> {
         match self.transition_state_from_sending_message(&message).await {
             Ok(()) => (),
@@ -377,6 +405,7 @@ impl Session {
         }
     }
 
+    /// Handles a message over the session state machine.
     pub async fn handle_message(&mut self, message: Message) -> Result<()> {
         debug!("Peer {} received message: {message:?}", self.name);
         if let Err(err) = self.handle_message_on_state_machine(message).await {
@@ -451,7 +480,7 @@ impl Session {
                     }
                     _ => {
                         error!(
-                            "Invalid ERROR mesage with request type {} received from the router: {error_message:?}",
+                            "Invalid ERROR message with request type {} received from the router: {error_message:?}",
                             error_message.request_type
                         );
                         return Err(

@@ -58,11 +58,19 @@ const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG
 /// Configuration for a [`Router`].
 #[derive(Debug)]
 pub struct RouterConfig {
+    /// IP address the router starts on.
     pub address: IpAddr,
+    /// Network port the router starts on.
     pub port: u16,
+    /// Agent name, communicated to peers.
     pub agent: String,
+    /// Roles implemented by the router.
     pub roles: HashSet<RouterRole>,
+    /// Allowed serializers.
+    ///
+    /// The actual serializer will be selected when the connection with the router is established.
     pub serializers: HashSet<SerializerType>,
+    /// Realms available on the router.
     pub realms: Vec<RealmConfig>,
 }
 
@@ -79,7 +87,7 @@ impl Default for RouterConfig {
     }
 }
 
-/// A handle to a running [`Router`].
+/// A handle to an asynchronously-running [`Router`].
 ///
 /// The router's ownership is transferred away when it starts. This handle allows interaction with
 /// the router as it is running asynchronously.
@@ -112,8 +120,10 @@ pub struct Router<S> {
     /// The router configuration when created.
     pub(crate) config: RouterConfig,
 
+    /// Policies for pub/sub functionality.
     pub(crate) pub_sub_policies: Mutex<Box<dyn PubSubPolicies<S>>>,
 
+    /// Realm manager.
     pub(crate) realm_manager: RealmManager,
 
     /// The factory for acceptors.
@@ -131,6 +141,7 @@ pub struct Router<S> {
 }
 
 impl<S> Router<S> {
+    /// Receiver channel for determining when the router ends.
     pub(crate) fn end_rx(&self) -> broadcast::Receiver<()> {
         self.end_tx.subscribe()
     }

@@ -23,17 +23,20 @@ use crate::{
     },
 };
 
+/// A WAMP message returned out from a [`MessageStream`].
 pub enum StreamMessage {
     Ping(Vec<u8>),
     Message(Message),
 }
 
+/// A stream that produces a sequence of WAMP [`Message`]s asynchronously.
 pub struct MessageStream {
     transport: Box<dyn Transport>,
     serializer: Box<dyn Serializer>,
 }
 
 impl MessageStream {
+    /// Creates a message stream with the given transport and serialization.
     pub fn new(transport: Box<dyn Transport>, serializer: Box<dyn Serializer>) -> Self {
         Self {
             transport,

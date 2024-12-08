@@ -13,13 +13,17 @@ use serde::{
 };
 use thiserror::Error;
 
+/// An integer ID, used for identification of resources and requests.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 #[repr(transparent)]
 #[serde(transparent)]
 pub struct Id(u64);
 
 impl Id {
+    /// The minimum allowable value of an ID.
     pub const MIN: Id = Id(1);
+
+    /// The maximum allowable value of an ID.
     pub const MAX: Id = Id(1 << 53);
 }
 
@@ -35,6 +39,7 @@ impl Display for Id {
     }
 }
 
+/// Error for an ID being out of range.
 #[derive(Debug, Error)]
 #[error("{value} is out of range for IDs")]
 pub struct IdOutOfRange {
@@ -89,12 +94,19 @@ impl<'de> Deserialize<'de> for Id {
     }
 }
 
+/// An ID allocator.
 #[async_trait]
 pub trait IdAllocator: Send + Sync {
+    /// Generates a new ID.
     async fn generate_id(&self) -> Id;
+
+    /// Resets the allocator to its initial state.
     async fn reset(&self);
 }
 
+/// An ID allocator that generates IDs from a random sequence.
+///
+/// Used for global-scoped IDs.
 #[derive(Default)]
 pub struct RandomIdAllocator {}
 
@@ -108,6 +120,9 @@ impl IdAllocator for RandomIdAllocator {
     async fn reset(&self) {}
 }
 
+/// An ID allocator that generates IDs sequentially.
+///
+/// Used for session-scoped IDs.
 #[derive(Default)]
 pub struct SequentialIdAllocator {
     next: Mutex<Id>,

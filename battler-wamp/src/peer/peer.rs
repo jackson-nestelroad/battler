@@ -40,7 +40,6 @@ use crate::{
         },
         types::{
             Dictionary,
-            List,
             Value,
         },
         uri::Uri,
@@ -72,17 +71,27 @@ use crate::{
 
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG_VERSION"));
 
+/// Configuration for WebSocket-specific WAMP connections.
 #[derive(Debug, Default)]
 pub struct WebSocketConfig {
+    /// Additional headers to include in the WebSocket handshake request.
     pub headers: HashMap<String, String>,
 }
 
+/// Configuration for a [`Peer`].
 #[derive(Debug)]
 pub struct PeerConfig {
+    /// Name of the peer, mostly for logging.
     pub name: String,
+    /// Agent name, communicated to the router.
     pub agent: String,
+    /// Roles implemented by the peer.
     pub roles: HashSet<PeerRole>,
+    /// Allowed serializers.
+    ///
+    /// The actual serializer will be selected when the connection with the router is established.
     pub serializers: HashSet<SerializerType>,
+    /// Additional configuration for WebSocket-specific connections.
     pub web_socket: Option<WebSocketConfig>,
 }
 
@@ -119,12 +128,17 @@ struct PeerState {
     message_tx: UnboundedSender<Message>,
 }
 
+/// A subscription to a topic.
 #[derive(Debug)]
 pub struct Subscription {
+    /// The subscription ID.
     pub id: Id,
+    /// The event receiver channel.
     pub event_rx: broadcast::Receiver<Event>,
 }
 
+/// A WAMP peer (a.k.a., client) that connects to a WAMP router, establishes sessions in a realm,
+/// and interacts with resources in the realm.
 pub struct Peer<S> {
     config: PeerConfig,
     connector_factory: Box<dyn ConnectorFactory<S>>,
@@ -141,6 +155,7 @@ impl<S> Peer<S>
 where
     S: Send + 'static,
 {
+    /// Creates a new peer.
     pub fn new(
         config: PeerConfig,
         connector_factory: Box<dyn ConnectorFactory<S>>,
@@ -158,6 +173,16 @@ where
         })
     }
 
+    /// Connects to a router.
+    ///
+    /// This method merely establishes a network connection with the router. It does not establish
+    /// any WAMP session. This allows the underlying network connection to be reused across multiple
+    /// WAMP sessions, if the router allows.
+    ///
+    /// The connection and message service is maintained asynchronously. If the peer loses
+    /// connection to the router, the connection is dropped in the background and methods depending
+    /// on the connection will fail. The peer can reconnect to the router by calling this method
+    /// again.
     pub async fn connect(&mut self, uri: &str) -> Result<()> {
         let connector = self.connector_factory.new_connector();
         let connection = connector.connect(&self.config, uri).await?;
@@ -302,6 +327,15 @@ where
         }
     }
 
+    /// Joins the realm, establishing a WAMP session.
+    ///
+    /// The session exists for as long as the router allows it to. The session will be lost in the
+    /// following scenarios:
+    /// 1. [`Self::leave_realm`] is called.
+    /// 1. The router terminates the session due to an error.
+    /// 1. The underlying connection to the router is lost.
+    ///
+    /// To join a different realm, [`Self::leave_realm`] should be called first.
     pub async fn join_realm(&self, realm: &str) -> Result<()> {
         let (message_tx, mut established_session_rx) = self
             .get_from_peer_state(|peer_state| {
@@ -349,6 +383,7 @@ where
         Ok(())
     }
 
+    /// Leaves the realm, closing the WAMP session.
     pub async fn leave_realm(&self) -> Result<()> {
         let (message_tx, mut closed_session_rx) = self
             .get_from_peer_state(|peer_state| {
@@ -364,6 +399,7 @@ where
         Ok(())
     }
 
+    /// Disconnects from the router.
     pub async fn disconnect(&mut self) -> Result<()> {
         let mut peer_state = self.peer_state.lock().await;
 
@@ -377,17 +413,22 @@ where
         Ok(())
     }
 
+    /// Subscribes to a topic in the realm.
+    ///
+    /// The resulting subscription contains an event receiver stream for published events. The
+    /// stream automatically closes when the peer unsubscribes from the topic or when the session
+    /// ends.
     pub async fn subscribe(&self, topic: Uri) -> Result<Subscription> {
-        let (message_tx, id_generator, mut subscribed_rx) = self
+        let (message_tx, id_allocator, mut subscribed_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
                     peer_state.message_tx.clone(),
-                    peer_state.session.id_generator(),
+                    peer_state.session.id_allocator(),
                     peer_state.session.subscribed_rx(),
                 )
             })
             .await?;
-        let request_id = id_generator.generate_id().await;
+        let request_id = id_allocator.generate_id().await;
 
         message_tx.send(Message::Subscribe(SubscribeMessage {
             request: request_id,
@@ -418,17 +459,20 @@ where
         }
     }
 
+    /// Removes a subscription.
+    ///
+    /// The subscription ID is received after subscribing to the topic.
     pub async fn unsubscribe(&self, id: Id) -> Result<()> {
-        let (message_tx, id_generator, mut unsubscribed_rx) = self
+        let (message_tx, id_allocator, mut unsubscribed_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
                     peer_state.message_tx.clone(),
-                    peer_state.session.id_generator(),
+                    peer_state.session.id_allocator(),
                     peer_state.session.unsubscribed_rx(),
                 )
             })
             .await?;
-        let request_id = id_generator.generate_id().await;
+        let request_id = id_allocator.generate_id().await;
 
         message_tx.send(Message::Unsubscribe(UnsubscribeMessage {
             request: request_id,
@@ -455,29 +499,25 @@ where
         }
     }
 
-    pub async fn publish(
-        &self,
-        topic: Uri,
-        arguments: List,
-        arguments_keyword: Dictionary,
-    ) -> Result<()> {
-        let (message_tx, id_generator, mut published_rx) = self
+    /// Publishes an event to a topic.
+    pub async fn publish(&self, topic: Uri, event: Event) -> Result<()> {
+        let (message_tx, id_allocator, mut published_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
                     peer_state.message_tx.clone(),
-                    peer_state.session.id_generator(),
+                    peer_state.session.id_allocator(),
                     peer_state.session.published_rx(),
                 )
             })
             .await?;
-        let request_id = id_generator.generate_id().await;
+        let request_id = id_allocator.generate_id().await;
 
         message_tx.send(Message::Publish(PublishMessage {
             request: request_id,
             options: Dictionary::default(),
             topic,
-            arguments,
-            arguments_keyword,
+            arguments: event.arguments,
+            arguments_keyword: event.arguments_keyword,
         }))?;
 
         loop {

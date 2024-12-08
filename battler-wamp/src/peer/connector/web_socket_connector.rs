@@ -63,6 +63,7 @@ impl Connector<WebSocketStream<MaybeTlsStream<TcpStream>>> for WebSocketConnecto
     }
 }
 
+/// A factory for generating [`Connector`]s for WebSocket connections.
 #[derive(Default)]
 pub struct WebSocketConnectorFactory {}
 

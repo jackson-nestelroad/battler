@@ -45,6 +45,7 @@ impl Connection {
         }
     }
 
+    /// The unique identifier of the connection.
     pub fn uuid(&self) -> Uuid {
         self.uuid
     }

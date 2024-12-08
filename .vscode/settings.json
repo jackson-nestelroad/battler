@@ -20,5 +20,16 @@
         "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected",
         "RUST_LOG": "debug"
     },
-    "rust-analyzer.showUnlinkedFileNotification": false
+    "rust-analyzer.showUnlinkedFileNotification": false,
+    "cSpell.words": [
+        "ahash",
+        "repr",
+        "thiserror",
+        "tungstenite",
+        "unsubscription",
+        "WAMP"
+    ],
+    "cSpell.ignorePaths": [
+        ".vscode"
+    ]
 }

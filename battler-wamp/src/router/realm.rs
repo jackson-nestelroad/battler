@@ -22,23 +22,36 @@ use crate::{
     },
 };
 
+/// Configuration for a realm.
 #[derive(Debug, Clone)]
 pub struct RealmConfig {
+    /// Name of the realm, mostly for logging.
     pub name: String,
+    /// URI for peers to connect to the realm.
     pub uri: Uri,
 }
 
+/// A single session on a realm.
 pub struct RealmSession {
     pub session: SessionHandle,
 }
 
+/// A realm, which is a scoped area for peer sessions and resources.
+///
+/// WAMP sessions cannot communicate across realms.
 pub struct Realm {
+    /// The realm configuration when created.
     pub config: RealmConfig,
+
+    /// Sessions in the realm.
     pub sessions: HashMap<Id, RealmSession>,
+
+    /// Topic manager for pub/sub functionality.
     pub topic_manager: TopicManager,
 }
 
 impl Realm {
+    /// Creates a new realm.
     pub fn new(config: RealmConfig) -> Self {
         Self {
             config,
@@ -47,10 +60,14 @@ impl Realm {
         }
     }
 
+    /// The URI for accessing the realm.
     pub fn uri(&self) -> &Uri {
         &self.config.uri
     }
 
+    /// Shuts down the realm by attempting to end all sessions cleanly.
+    ///
+    /// If sessions cannot be cleaned up properly, everything will be dropped anyway.
     pub async fn shut_down(&mut self, close_reason: CloseReason) -> Result<()> {
         let mut futures = Vec::default();
         for (_, session) in &mut self.sessions {
@@ -70,21 +87,26 @@ impl Realm {
     }
 }
 
+/// A manager for all realms owned by a router.
 #[derive(Default)]
 pub struct RealmManager {
+    /// Map of realms.
     pub realms: HashMap<Uri, Mutex<Realm>>,
 }
 
 impl RealmManager {
+    /// Looks up realm by URI.
     pub fn get(&self, uri: &Uri) -> Option<&Mutex<Realm>> {
         self.realms.get(uri)
     }
 
+    /// Inserts a new realm.
     pub fn insert(&mut self, realm: Realm) {
         let uri = realm.uri().clone();
         self.realms.insert(uri, realm.into());
     }
 
+    /// Returns an iterator over all realm URIs.
     pub fn uris(&self) -> impl Iterator<Item = &Uri> {
         self.realms.keys()
     }

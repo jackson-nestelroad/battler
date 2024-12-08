@@ -17,6 +17,7 @@ use crate::core::{
     uri::Uri,
 };
 
+/// A HELLO message for a peer to initiate a WAMP session in a realm.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct HelloMessage {
     pub realm: Uri,
@@ -24,6 +25,7 @@ pub struct HelloMessage {
     pub details: Dictionary,
 }
 
+/// A WELCOME message for a router to confirm a peer's WAMP session in a realm.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct WelcomeMessage {
     pub session: Id,
@@ -31,6 +33,7 @@ pub struct WelcomeMessage {
     pub details: Dictionary,
 }
 
+/// An ABORT message for quickly terminating a WAMP session.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct AbortMessage {
     pub details: Dictionary,
@@ -41,12 +44,14 @@ pub struct AbortMessage {
     pub arguments_keyword: Dictionary,
 }
 
+/// A GOODBYE message for ending a WAMP session with a two-way handshake.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct GoodbyeMessage {
     pub details: Dictionary,
     pub reason: Uri,
 }
 
+/// An ERROR message for communicating an error in response to a single request.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct ErrorMessage {
     pub request_type: Integer,
@@ -59,6 +64,7 @@ pub struct ErrorMessage {
     pub arguments_keyword: Dictionary,
 }
 
+/// A PUBLISH message for publishing an event to a topic.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct PublishMessage {
     pub request: Id,
@@ -70,12 +76,14 @@ pub struct PublishMessage {
     pub arguments_keyword: Dictionary,
 }
 
+/// A PUBLISHED message for confirming an event was published.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct PublishedMessage {
     pub publish_request: Id,
     pub publication: Id,
 }
 
+/// A SUBSCRIBE message for subscribing to a topic.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct SubscribeMessage {
     pub request: Id,
@@ -83,23 +91,27 @@ pub struct SubscribeMessage {
     pub topic: Uri,
 }
 
+/// A SUBSCRIBED message for confirming a peer has subscribed to a topic.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct SubscribedMessage {
     pub subscribe_request: Id,
     pub subscription: Id,
 }
 
+/// An UNSUBSCRIBE message for unsubscribing from a topic.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct UnsubscribeMessage {
     pub request: Id,
     pub subscribed_subscription: Id,
 }
 
+/// An UNSUBSCRIBED message for confirming a peer has unsubscribed from a topic.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct UnsubscribedMessage {
     pub unsubscribe_request: Id,
 }
 
+/// An EVENT message for relaying a published event to subscribers.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct EventMessage {
     pub subscribed_subscription: Id,
@@ -111,6 +123,7 @@ pub struct EventMessage {
     pub publish_arguments_keyword: Dictionary,
 }
 
+/// A CALL message for invoking a procedure.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct CallMessage {
     pub request: Id,
@@ -122,6 +135,7 @@ pub struct CallMessage {
     pub arguments_keyword: Dictionary,
 }
 
+/// A RESULT message for sending the result of a procedure invocation.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct ResultMessage {
     pub call_request: Id,
@@ -132,6 +146,7 @@ pub struct ResultMessage {
     pub yield_arguments_keyword: Dictionary,
 }
 
+/// A REGISTER message for registering a procedure in the realm.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct RegisterMessage {
     pub request: Id,
@@ -139,23 +154,27 @@ pub struct RegisterMessage {
     pub procedure: Uri,
 }
 
+/// A REGISTERED message for confirming a procedure has been registered.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct RegisteredMessage {
     pub register_request: Id,
     pub registration: Id,
 }
 
+/// An UNREGISTERED message for unregistering a procedure in the realm.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct UnregisterMessage {
     pub request: Id,
     pub registered_registration: Id,
 }
 
+/// An UNREGISTERED message for confirming a procedure has been unregistered.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct UnregisteredMessage {
     pub unregister_request: Id,
 }
 
+/// An INVOCATION message for invoking a procedure on its callee.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct InvocationMessage {
     pub request: Id,
@@ -167,6 +186,7 @@ pub struct InvocationMessage {
     pub call_arguments_keyword: Dictionary,
 }
 
+/// A YIELD message for yielding the result of an invocation from the callee.
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct YieldMessage {
     pub invocation_request: Id,
@@ -223,6 +243,7 @@ pub enum Message {
 }
 
 impl Message {
+    /// The message name, mostly for logging.
     pub fn message_name(&self) -> &'static str {
         match self {
             Self::Hello(_) => "HELLO",
@@ -247,6 +268,8 @@ impl Message {
             Self::Yield(_) => "YIELD",
         }
     }
+
+    /// The request ID on the message.
     pub fn request_id(&self) -> Option<Id> {
         match self {
             Self::Error(message) => Some(message.request),
@@ -267,6 +290,7 @@ impl Message {
         }
     }
 
+    /// The details dictionary on the message.
     pub fn details(&self) -> Option<&Dictionary> {
         match self {
             Self::Hello(message) => Some(&message.details),
@@ -281,6 +305,7 @@ impl Message {
         }
     }
 
+    /// The error reason on the message.
     pub fn reason(&self) -> Option<&Uri> {
         match self {
             Self::Abort(message) => Some(&message.reason),
