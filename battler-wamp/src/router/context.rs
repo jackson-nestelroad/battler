@@ -39,7 +39,7 @@ impl<S> RouterContext<S> {
         self.router.as_ref()
     }
 
-    /// Creates a [`RealmContext`] with the givne realm locked and ready for use.
+    /// Creates a [`RealmContext`] with the given realm locked and ready for use.
     pub async fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, '_, S>> {
         let realm = self
             .router
