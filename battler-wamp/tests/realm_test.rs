@@ -1,6 +1,9 @@
 use anyhow::Error;
 use battler_wamp::{
-    core::uri::Uri,
+    core::{
+        error::InteractionError,
+        uri::Uri,
+    },
     peer::{
         new_web_socket_peer,
         PeerConfig,
@@ -125,6 +128,27 @@ async fn peer_joins_and_leaves_realm() {
     // Second attempt shows the peer is not connected.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
         assert!(err.to_string().contains("peer is not connected"));
+    });
+
+    router_handle.cancel().unwrap();
+    router_handle.join().await.unwrap();
+}
+
+#[tokio::test]
+async fn peer_cannot_join_missing_realm() {
+    test_utils::setup::setup_test_environment();
+
+    let router_handle = start_router().await.unwrap();
+    let mut peer = create_peer().unwrap();
+
+    assert_matches::assert_matches!(
+        peer.connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(peer.join_realm("unknown").await, Err(err) => {
+        assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoSuchRealm));
     });
 
     router_handle.cancel().unwrap();
