@@ -7,7 +7,10 @@ use log::{
     info,
 };
 use tokio::sync::{
-    broadcast,
+    broadcast::{
+        self,
+        error::RecvError,
+    },
     mpsc::{
         unbounded_channel,
         UnboundedReceiver,
@@ -108,7 +111,7 @@ impl Connection {
         let session = Session::new(session_id, message_tx, service_message_tx);
 
         info!(
-            "Proactively starting session {} for connection {}",
+            "Proactively starting router session {} for connection {}",
             session_id, self.uuid
         );
 
@@ -135,13 +138,13 @@ impl Connection {
             )
             .await
         {
-            Ok(()) => {
+            Ok(done) => {
                 info!(
                     "Router session {} for connection {} finished",
                     self.uuid,
                     session.id()
                 );
-                false
+                done
             }
             Err(err) => {
                 error!(
@@ -164,7 +167,7 @@ impl Connection {
         mut message_rx: UnboundedReceiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
         loop {
@@ -173,7 +176,7 @@ impl Connection {
                 message = message_rx.recv() => {
                     let message = match message {
                         Some(message) => message,
-                        None => return Err(Error::msg("connection message channel closed")),
+                        None => return Err(Error::msg("failed to receive message from connection channel")),
                     };
                     let message_name = message.message_name();
                     if let Err(err) = session.send_message(message).await {
@@ -184,6 +187,7 @@ impl Connection {
                 message = service_message_rx.recv() => {
                     let message = match message {
                         Ok(message) => message,
+                        Err(RecvError::Closed) => return Ok(true),
                         Err(err) => return Err(Error::context(err.into(), "failed to receive message")),
                     };
                     let message_name = message.message_name();
@@ -212,6 +216,6 @@ impl Connection {
             }
         }
 
-        Ok(())
+        Ok(false)
     }
 }

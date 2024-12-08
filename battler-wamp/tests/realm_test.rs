@@ -34,7 +34,7 @@ fn create_peer() -> Result<WebSocketPeer, Error> {
 }
 
 #[tokio::test]
-async fn peer_connects_to_router() {
+async fn peer_joins_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
@@ -47,66 +47,85 @@ async fn peer_connects_to_router() {
         Ok(())
     );
 
-    // Close the router.
-    //
-    // We expect that the connection established by the peer ends abruptly, because it is an
-    // untracked connection not attached to any realm.
+    // Join realm.
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+
     router_handle.cancel().unwrap();
     router_handle.join().await.unwrap();
+}
+
+#[tokio::test]
+async fn peer_reconnects_and_rejoins_realm() {
+    test_utils::setup::setup_test_environment();
+
+    let router_handle = start_router().await.unwrap();
+    let mut peer = create_peer().unwrap();
+
+    assert_matches::assert_matches!(
+        peer.connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+
+    // Clean up the first router.
+    router_handle.cancel().unwrap();
+    router_handle.join().await.unwrap();
+
+    // Recreate the router.
+    let router_handle = start_router().await.unwrap();
 
     // The channel is closed.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
         assert!(err.to_string().contains("channel closed"));
     });
-}
 
-#[tokio::test]
-async fn peer_reconnects_to_router() {
-    test_utils::setup::setup_test_environment();
+    // Second attempt shows the peer is not connected.
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
+        assert!(err.to_string().contains("peer is not connected"));
+    });
 
-    let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
-
-    // Connect to the router.
+    // Reconnect and rejoin the realm.
     assert_matches::assert_matches!(
         peer.connect(&format!("ws://{}", router_handle.local_addr()))
             .await,
         Ok(())
     );
-    // Reconnect.
-    assert_matches::assert_matches!(
-        peer.connect(&format!("ws://{}", router_handle.local_addr()))
-            .await,
-        Ok(())
-    );
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
 
+    // Clean up the second router.
     router_handle.cancel().unwrap();
     router_handle.join().await.unwrap();
 }
 
 #[tokio::test]
-async fn peer_disconnects_from_router() {
+async fn peer_joins_and_leaves_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
     let mut peer = create_peer().unwrap();
 
-    assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
-
     assert_matches::assert_matches!(
         peer.connect(&format!("ws://{}", router_handle.local_addr()))
             .await,
         Ok(())
     );
 
-    assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
-    assert_matches::assert_matches!(
-        peer.connect(&format!("ws://{}", router_handle.local_addr()))
-            .await,
-        Ok(())
-    );
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+    assert_matches::assert_matches!(peer.leave_realm().await, Ok(()));
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+    assert_matches::assert_matches!(peer.leave_realm().await, Ok(()));
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
 
-    assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
+    // Invalid state transition, so the channel closes.
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
+        assert!(err.to_string().contains("invalid state transition"));
+    });
+
+    // Second attempt shows the peer is not connected.
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
+        assert!(err.to_string().contains("peer is not connected"));
+    });
 
     router_handle.cancel().unwrap();
     router_handle.join().await.unwrap();

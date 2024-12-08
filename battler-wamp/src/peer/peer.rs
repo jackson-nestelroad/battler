@@ -14,7 +14,10 @@ use log::{
     info,
 };
 use tokio::sync::{
-    broadcast,
+    broadcast::{
+        self,
+        error::RecvError,
+    },
     mpsc::{
         unbounded_channel,
         UnboundedReceiver,
@@ -215,9 +218,11 @@ where
             )
             .await
             {
-                Ok(()) => {
+                Ok(done) => {
                     info!("Peer session {} finished", session.name());
-                    continue;
+                    if !done {
+                        continue;
+                    }
                 }
                 Err(err) => {
                     error!("Peer session {} failed: {err:#}", session.name());
@@ -240,7 +245,7 @@ where
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         mut drop_rx: broadcast::Receiver<()>,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let mut finish_on_close = false;
         loop {
             tokio::select! {
@@ -248,7 +253,7 @@ where
                 message = message_rx.recv() => {
                     let message = match message {
                         Some(message) => message,
-                        None => return Err(Error::msg("peer message channel closed")),
+                        None => return Err(Error::msg("failed to receive message from peer channel")),
                     };
                     let message_name = message.message_name();
                     if let Err(err) = session.send_message(message).await {
@@ -259,7 +264,8 @@ where
                 message = service_message_rx.recv() => {
                     let message = match message {
                         Ok(message) => message,
-                        Err(_) => break,
+                        Err(RecvError::Closed) => return Ok(true),
+                        Err(err) => return Err(Error::context(err.into(), "failed to receive message")),
                     };
                     let message_name = message.message_name();
                     if let Err(err) = session.handle_message(message).await {
@@ -282,7 +288,7 @@ where
                 finish_on_close = true;
             }
         }
-        Ok(())
+        Ok(false)
     }
 
     async fn get_from_peer_state<F, T>(&self, f: F) -> Result<T, Error>
