@@ -315,7 +315,7 @@ where
                 _ = drop_rx.recv() => return Err(Error::msg("peer dropped unexpectedly")),
             }
 
-            if session.closed() {
+            if session.closed().await {
                 if finish_on_close {
                     break;
                 }

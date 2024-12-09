@@ -65,7 +65,7 @@ impl Connection {
 
         let service_handle = service.start();
         loop {
-            match self
+            if !self
                 .run_session(
                     context,
                     service_handle.message_tx(),
@@ -74,14 +74,7 @@ impl Connection {
                 )
                 .await
             {
-                Ok(done) => {
-                    if !done {
-                        continue;
-                    }
-                }
-                Err(err) => {
-                    error!("Failed to run session for connection {}: {err}", self.uuid);
-                }
+                continue;
             }
 
             info!("Connection {} will have no more sessions", self.uuid);
@@ -106,7 +99,7 @@ impl Connection {
         service_message_tx: UnboundedSender<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
-    ) -> Result<bool> {
+    ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
         let (message_tx, message_rx) = unbounded_channel();
         let session = Session::new(session_id, message_tx, service_message_tx);
@@ -116,9 +109,8 @@ impl Connection {
             session_id, self.uuid
         );
 
-        Ok(self
-            .session_loop(context, session, message_rx, service_message_rx, end_rx)
-            .await)
+        self.session_loop(context, session, message_rx, service_message_rx, end_rx)
+            .await
     }
 
     async fn session_loop<S>(
@@ -208,7 +200,7 @@ impl Connection {
                 _ = router_end_rx.recv() => return Err(Error::msg("router ended abruptly")),
             }
 
-            if session.closed() {
+            if session.closed().await {
                 if finish_on_close {
                     break;
                 }
