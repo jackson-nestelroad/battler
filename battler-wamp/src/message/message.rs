@@ -178,7 +178,7 @@ pub struct UnregisteredMessage {
 #[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
 pub struct InvocationMessage {
     pub request: Id,
-    pub reigstered_registartion: Id,
+    pub registered_registration: Id,
     pub details: Dictionary,
     #[serde_struct_tuple(default, skip_serializing_if = List::is_empty)]
     pub call_arguments: List,

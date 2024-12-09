@@ -47,8 +47,12 @@ use crate::{
             Message,
             PublishMessage,
             PublishedMessage,
+            RegisterMessage,
+            RegisteredMessage,
             SubscribeMessage,
             SubscribedMessage,
+            UnregisterMessage,
+            UnregisteredMessage,
             UnsubscribeMessage,
             UnsubscribedMessage,
             WelcomeMessage,
@@ -56,6 +60,7 @@ use crate::{
     },
     router::{
         context::RouterContext,
+        procedure::ProcedureManager,
         realm::RealmSession,
         topic::TopicManager,
     },
@@ -64,6 +69,7 @@ use crate::{
 struct EstablishedSessionState {
     realm: Uri,
     subscriptions: HashMap<Id, Uri>,
+    procedures: HashMap<Id, Uri>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -294,6 +300,7 @@ impl Session {
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     realm: context.realm().uri().clone(),
                     subscriptions: HashMap::default(),
+                    procedures: HashMap::default(),
                 }))
                 .await?;
 
@@ -339,6 +346,18 @@ impl Session {
             }
             ref message @ Message::Publish(ref publish_message) => {
                 if let Err(err) = self.handle_publish(context, publish_message).await {
+                    return self.send_message(error_for_request(&message, &err)).await;
+                }
+                Ok(())
+            }
+            ref message @ Message::Register(ref register_message) => {
+                if let Err(err) = self.handle_register(context, register_message).await {
+                    return self.send_message(error_for_request(&message, &err)).await;
+                }
+                Ok(())
+            }
+            ref message @ Message::Unregister(ref unregister_message) => {
+                if let Err(err) = self.handle_unregister(context, unregister_message).await {
                     return self.send_message(error_for_request(&message, &err)).await;
                 }
                 Ok(())
@@ -414,6 +433,46 @@ impl Session {
         .await
     }
 
+    async fn handle_register<S>(
+        &mut self,
+        context: &RouterContext<S>,
+        message: &RegisterMessage,
+    ) -> Result<()> {
+        let mut context = context
+            .realm_context(&self.established_session_state()?.realm)
+            .await?;
+        let registration =
+            ProcedureManager::register(&mut context, self.id, message.procedure.clone()).await?;
+        self.established_session_state_mut()?
+            .procedures
+            .insert(registration, message.procedure.clone());
+        self.send_message(Message::Registered(RegisteredMessage {
+            register_request: message.request,
+            registration,
+        }))
+        .await
+    }
+
+    async fn handle_unregister<S>(
+        &mut self,
+        context: &RouterContext<S>,
+        message: &UnregisterMessage,
+    ) -> Result<()> {
+        let procedure = self
+            .established_session_state_mut()?
+            .subscriptions
+            .remove(&message.registered_registration)
+            .ok_or_else(|| InteractionError::NoSuchRegistration)?;
+        let mut context = context
+            .realm_context(&self.established_session_state()?.realm)
+            .await?;
+        ProcedureManager::unregister(&mut context, &procedure).await;
+        self.send_message(Message::Unregistered(UnregisteredMessage {
+            unregister_request: message.request,
+        }))
+        .await
+    }
+
     async fn handle_closing<S>(&mut self, _: &RouterContext<S>, message: Message) -> Result<()> {
         match message {
             Message::Goodbye(_) => self.transition_state(SessionState::Closed).await,
@@ -453,10 +512,16 @@ impl Session {
         Ok(())
     }
 
-    pub async fn destroy<S>(self, context: &RouterContext<S>) {
-        if let Ok(state) = self.established_session_state() {
+    pub async fn clean_up<S>(mut self, context: &RouterContext<S>) {
+        let id = self.id;
+        if let Ok(state) = self.established_session_state_mut() {
             if let Ok(mut context) = context.realm_context(&state.realm).await {
-                context.realm_mut().sessions.remove(&self.id);
+                for topic in state.subscriptions.values() {
+                    TopicManager::unsubscribe(&mut context, id, &topic).await;
+                }
+                state.subscriptions.clear();
+
+                context.realm_mut().sessions.remove(&id);
             }
         }
     }

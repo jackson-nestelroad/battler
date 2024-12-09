@@ -8,7 +8,10 @@ use tokio_tungstenite::{
 use crate::{
     router::{
         acceptor::web_socket_acceptor::WebSocketAcceptorFactory,
-        app::pub_sub::PubSubPolicies,
+        app::{
+            pub_sub::PubSubPolicies,
+            rpc::RpcPolicies,
+        },
         router::{
             Router,
             RouterConfig,
@@ -24,10 +27,12 @@ pub type WebSocketRouter = Router<WebSocketStream<MaybeTlsStream<TcpStream>>>;
 pub fn new_web_socket_router(
     config: RouterConfig,
     pub_sub_policies: Box<dyn PubSubPolicies<WebSocketStream<MaybeTlsStream<TcpStream>>>>,
+    rpc_policies: Box<dyn RpcPolicies<WebSocketStream<MaybeTlsStream<TcpStream>>>>,
 ) -> Result<WebSocketRouter> {
     Router::new(
         config,
         pub_sub_policies,
+        rpc_policies,
         Box::new(WebSocketAcceptorFactory::default()),
         Box::new(WebSocketTransportFactory::default()),
     )

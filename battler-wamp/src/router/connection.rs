@@ -157,7 +157,7 @@ impl Connection {
             }
         };
 
-        session.destroy(context).await;
+        session.clean_up(context).await;
         done
     }
 

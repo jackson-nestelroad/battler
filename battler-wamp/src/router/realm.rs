@@ -17,6 +17,7 @@ use crate::{
         uri::Uri,
     },
     router::{
+        procedure::ProcedureManager,
         session::SessionHandle,
         topic::TopicManager,
     },
@@ -48,6 +49,9 @@ pub struct Realm {
 
     /// Topic manager for pub/sub functionality.
     pub topic_manager: TopicManager,
+
+    /// Procedure manager for RPC functionality.
+    pub procedure_manager: ProcedureManager,
 }
 
 impl Realm {
@@ -57,6 +61,7 @@ impl Realm {
             config,
             sessions: HashMap::default(),
             topic_manager: TopicManager::default(),
+            procedure_manager: ProcedureManager::default(),
         }
     }
 

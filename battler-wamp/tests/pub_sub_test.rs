@@ -30,6 +30,7 @@ use battler_wamp::{
     router::{
         new_web_socket_router,
         EmptyPubSubPolicies,
+        EmptyRpcPolicies,
         RealmConfig,
         RouterConfig,
         RouterHandle,
@@ -44,7 +45,11 @@ async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHand
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
     });
-    let router = new_web_socket_router(config, Box::new(EmptyPubSubPolicies::default()))?;
+    let router = new_web_socket_router(
+        config,
+        Box::new(EmptyPubSubPolicies::default()),
+        Box::new(EmptyRpcPolicies::default()),
+    )?;
     let handle = router.start().await?;
     Ok(handle)
 }

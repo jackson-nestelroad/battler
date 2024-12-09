@@ -55,8 +55,6 @@ impl TopicManager {
         context
             .router()
             .pub_sub_policies
-            .lock()
-            .await
             .validate_subscription(context, session, &topic)
             .await?;
         let subscription_id = context
@@ -102,8 +100,6 @@ impl TopicManager {
         context
             .router()
             .pub_sub_policies
-            .lock()
-            .await
             .validate_publication(context, session, &topic)
             .await?;
         let published_id = context.router().id_allocator.generate_id().await;
