@@ -31,6 +31,7 @@ use crate::{
 };
 
 /// A transport implemented for a TCP stream using the WebSocket protocol.
+#[derive(Debug)]
 pub struct WebSocketTransport {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
     binary: bool,

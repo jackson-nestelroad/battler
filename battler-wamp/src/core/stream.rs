@@ -1,4 +1,5 @@
 use std::{
+    fmt::Debug,
     pin::Pin,
     task,
 };
@@ -12,6 +13,10 @@ use futures_util::{
     SinkExt,
     Stream,
     StreamExt,
+};
+use tokio::sync::mpsc::{
+    UnboundedReceiver,
+    UnboundedSender,
 };
 
 use crate::{
@@ -30,12 +35,23 @@ pub enum StreamMessage {
 }
 
 /// A stream that produces a sequence of WAMP [`Message`]s asynchronously.
-pub struct MessageStream {
+pub trait MessageStream:
+    Stream<Item = Result<StreamMessage>> + Sink<StreamMessage, Error = Error> + Send + Unpin + Debug
+{
+    /// The message stream type for logging.
+    fn message_stream_type(&self) -> &'static str;
+}
+
+/// A stream of messages over some transport, such as a network connection.
+///
+/// All remote connections use this message stream.
+#[derive(Debug)]
+pub struct TransportMessageStream {
     transport: Box<dyn Transport>,
     serializer: Box<dyn Serializer>,
 }
 
-impl MessageStream {
+impl TransportMessageStream {
     /// Creates a message stream with the given transport and serialization.
     pub fn new(transport: Box<dyn Transport>, serializer: Box<dyn Serializer>) -> Self {
         Self {
@@ -45,7 +61,13 @@ impl MessageStream {
     }
 }
 
-impl Stream for MessageStream {
+impl MessageStream for TransportMessageStream {
+    fn message_stream_type(&self) -> &'static str {
+        "TransportMessageStream"
+    }
+}
+
+impl Stream for TransportMessageStream {
     type Item = Result<StreamMessage>;
 
     fn poll_next(
@@ -66,7 +88,7 @@ impl Stream for MessageStream {
     }
 }
 
-impl Sink<StreamMessage> for MessageStream {
+impl Sink<StreamMessage> for TransportMessageStream {
     type Error = Error;
 
     fn poll_ready(
@@ -101,5 +123,87 @@ impl Sink<StreamMessage> for MessageStream {
         cx: &mut task::Context<'_>,
     ) -> task::Poll<std::result::Result<(), Self::Error>> {
         self.transport.poll_close_unpin(cx)
+    }
+}
+
+/// A direct stream of messages.
+///
+/// Used for connections running in the same local process, to skip serialization.
+#[derive(Debug)]
+pub struct DirectMessageStream {
+    message_tx: UnboundedSender<Message>,
+    message_rx: UnboundedReceiver<Message>,
+}
+
+impl DirectMessageStream {
+    /// Creates a direct message stream.
+    pub fn new(
+        message_tx: UnboundedSender<Message>,
+        message_rx: UnboundedReceiver<Message>,
+    ) -> Self {
+        Self {
+            message_tx,
+            message_rx,
+        }
+    }
+}
+
+impl MessageStream for DirectMessageStream {
+    fn message_stream_type(&self) -> &'static str {
+        "DirectMessageStream"
+    }
+}
+
+impl Stream for DirectMessageStream {
+    type Item = Result<StreamMessage>;
+
+    fn poll_next(
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Option<Self::Item>> {
+        match futures_util::ready!(self.message_rx.poll_recv(cx)) {
+            Some(message) => task::Poll::Ready(Some(Ok(StreamMessage::Message(message)))),
+            None => task::Poll::Ready(None),
+        }
+    }
+}
+
+impl Sink<StreamMessage> for DirectMessageStream {
+    type Error = Error;
+
+    fn poll_ready(
+        self: Pin<&mut Self>,
+        _: &mut task::Context<'_>,
+    ) -> task::Poll<std::result::Result<(), Self::Error>> {
+        task::Poll::Ready(Ok(()))
+    }
+
+    fn start_send(
+        self: Pin<&mut Self>,
+        item: StreamMessage,
+    ) -> std::result::Result<(), Self::Error> {
+        match item {
+            StreamMessage::Message(message) => self.message_tx.send(message).map_err(Error::new),
+            StreamMessage::Ping(_) => Ok(()),
+        }
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        _: &mut task::Context<'_>,
+    ) -> task::Poll<std::result::Result<(), Self::Error>> {
+        task::Poll::Ready(Ok(()))
+    }
+
+    fn poll_close(
+        mut self: Pin<&mut Self>,
+        _: &mut task::Context<'_>,
+    ) -> task::Poll<std::result::Result<(), Self::Error>> {
+        self.message_rx.close();
+        if self.message_tx.is_closed() {
+            task::Poll::Ready(Ok(()))
+        } else {
+            task::Poll::Pending
+        }
     }
 }

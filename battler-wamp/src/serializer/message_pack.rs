@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// A serializer implemented for MessagePack.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct MessagePackSerializer {}
 
 impl Serializer for MessagePackSerializer {

@@ -12,16 +12,21 @@ use futures_util::lock::Mutex;
 use log::{
     debug,
     error,
+    info,
 };
 use tokio::{
     net::{
         TcpListener,
         TcpStream,
     },
-    sync::broadcast,
+    sync::{
+        broadcast,
+        mpsc::unbounded_channel,
+    },
     task::JoinHandle,
 };
 use tokio_tungstenite::MaybeTlsStream;
+use uuid::Uuid;
 
 use crate::{
     core::{
@@ -33,6 +38,11 @@ use crate::{
         },
         roles::RouterRole,
         service::Service,
+        stream::{
+            DirectMessageStream,
+            MessageStream,
+            TransportMessageStream,
+        },
         uri::Uri,
     },
     router::{
@@ -87,14 +97,33 @@ impl Default for RouterConfig {
     }
 }
 
+/// A direct connection made to a router, managed externally in the same process.
+pub struct DirectConnection {
+    uuid: Uuid,
+    stream: Box<dyn MessageStream>,
+}
+
+impl DirectConnection {
+    /// The unique identifier of the connection.
+    pub fn uuid(&self) -> Uuid {
+        self.uuid
+    }
+
+    /// The message transmission channel.
+    pub fn stream(self) -> Box<dyn MessageStream> {
+        self.stream
+    }
+}
+
 /// A handle to an asynchronously-running [`Router`].
 ///
 /// The router's ownership is transferred away when it starts. This handle allows interaction with
 /// the router as it is running asynchronously.
 pub struct RouterHandle {
+    direct_connect_fn: Box<dyn Fn() -> DirectConnection>,
     start_handle: JoinHandle<()>,
-    cancel_tx: broadcast::Sender<()>,
     local_addr: SocketAddr,
+    cancel_tx: broadcast::Sender<()>,
 }
 
 impl RouterHandle {
@@ -110,8 +139,14 @@ impl RouterHandle {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
     }
 
+    /// The local address of the router.
     pub fn local_addr(&self) -> SocketAddr {
         self.local_addr
+    }
+
+    /// Starts a direct connection to the router.
+    pub fn direct_connect(&self) -> DirectConnection {
+        (self.direct_connect_fn)()
     }
 }
 
@@ -187,17 +222,20 @@ where
         let local_addr = listener.local_addr()?;
 
         let cancel_tx = self.cancel_tx.clone();
-        let start_handle = tokio::spawn(self.handle_connections(listener));
+        let context = RouterContext::new(self);
+        let start_handle = tokio::spawn(Self::handle_connections(context.clone(), listener));
 
         Ok(RouterHandle {
             start_handle,
-            cancel_tx,
             local_addr,
+            cancel_tx,
+            direct_connect_fn: |context: RouterContext<S>| -> Box<dyn Fn() -> DirectConnection> {
+                Box::new(move || -> DirectConnection { Router::direct_connect(&context) })
+            }(context.clone()),
         })
     }
 
-    async fn handle_connections(self, listener: TcpListener) {
-        let context = RouterContext::new(self);
+    async fn handle_connections(context: RouterContext<S>, listener: TcpListener) {
         Self::connection_loop(&context, listener).await;
         Self::shut_down(&context).await;
         if let Err(err) = context.router().end_tx.send(()) {
@@ -261,12 +299,27 @@ where
             .await
             .new_transport(acceptance.stream, acceptance.serializer);
 
-        let connection = Connection::new();
-        let service = Service::new(connection.uuid().to_string(), transport, serializer);
-
-        connection.start(context.clone(), service);
-
+        Self::start_connection_over_stream(
+            context,
+            Box::new(TransportMessageStream::new(transport, serializer)),
+        );
         Ok(())
+    }
+
+    fn start_connection_over_stream(
+        context: &RouterContext<S>,
+        stream: Box<dyn MessageStream>,
+    ) -> Uuid {
+        let connection = Connection::new();
+        let uuid = connection.uuid();
+        info!(
+            "Created connection {uuid} over {}",
+            stream.message_stream_type()
+        );
+
+        let service = Service::new(connection.uuid().to_string(), stream);
+        connection.start(context.clone(), service);
+        uuid
     }
 
     async fn shut_down(context: &RouterContext<S>) {
@@ -296,5 +349,17 @@ where
         };
         let mut realm = realm.lock().await;
         realm.shut_down(close_reason).await
+    }
+
+    fn direct_connect(context: &RouterContext<S>) -> DirectConnection {
+        let (router_to_peer_tx, router_to_peer_rx) = unbounded_channel();
+        let (peer_to_router_tx, peer_to_router_rx) = unbounded_channel();
+        let router_stream = DirectMessageStream::new(router_to_peer_tx, peer_to_router_rx);
+        let peer_stream = DirectMessageStream::new(peer_to_router_tx, router_to_peer_rx);
+        let uuid = Self::start_connection_over_stream(context, Box::new(router_stream));
+        DirectConnection {
+            uuid,
+            stream: Box::new(peer_stream),
+        }
     }
 }

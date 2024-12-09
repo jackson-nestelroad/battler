@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use anyhow::Result;
 
 use crate::{
@@ -43,7 +45,7 @@ impl TryFrom<&str> for SerializerType {
 /// passed over wire.
 ///
 /// Does not implement message batching.
-pub trait Serializer: Send {
+pub trait Serializer: Send + Debug {
     /// Serializes the given message to bytes.
     fn serialize(&self, value: &Message) -> Result<Vec<u8>>;
 

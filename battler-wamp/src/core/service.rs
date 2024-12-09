@@ -33,8 +33,6 @@ use crate::{
         common::abort_message_for_error,
         message::Message,
     },
-    serializer::serializer::Serializer,
-    transport::transport::Transport,
 };
 
 /// A handle to an asynchronously-running [`Service`].
@@ -77,7 +75,7 @@ impl ServiceHandle {
 /// message when canceled before canceling the service.
 pub struct Service {
     name: String,
-    stream: MessageStream,
+    stream: Box<dyn MessageStream>,
     message_tx: broadcast::Sender<Message>,
     end_tx: broadcast::Sender<()>,
     _end_rx: broadcast::Receiver<()>,
@@ -89,13 +87,8 @@ pub struct Service {
 }
 
 impl Service {
-    /// Creates a new service with the given transport and serialization.
-    pub fn new(
-        name: String,
-        transport: Box<dyn Transport>,
-        serializer: Box<dyn Serializer>,
-    ) -> Self {
-        let stream = MessageStream::new(transport, serializer);
+    /// Creates a new service over a message stream.
+    pub fn new(name: String, stream: Box<dyn MessageStream>) -> Self {
         let (message_tx, _) = broadcast::channel(16);
         let (end_tx, end_rx) = broadcast::channel(1);
         let (cancel_tx, cancel_rx) = broadcast::channel(1);

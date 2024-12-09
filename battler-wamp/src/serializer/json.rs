@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// A serializer implemented for JavaScript Object Notation.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct JsonSerializer {}
 
 impl Serializer for JsonSerializer {

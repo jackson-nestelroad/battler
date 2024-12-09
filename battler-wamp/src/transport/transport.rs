@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use anyhow::{
     Error,
     Result,
@@ -22,7 +24,7 @@ pub enum TransportData {
 /// Implemented as a [`Stream`] and [`Sink`] that extracts out meaningful data and reports protocol
 /// violations to be handled at higher layers.
 pub trait Transport:
-    Send + Stream<Item = Result<TransportData>> + Sink<TransportData, Error = Error> + Unpin
+    Send + Stream<Item = Result<TransportData>> + Sink<TransportData, Error = Error> + Unpin + Debug
 {
 }
 

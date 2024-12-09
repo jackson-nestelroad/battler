@@ -38,6 +38,10 @@ use crate::{
             Service,
             ServiceHandle,
         },
+        stream::{
+            MessageStream,
+            TransportMessageStream,
+        },
         types::{
             Dictionary,
             Value,
@@ -195,9 +199,14 @@ where
         let transport = self
             .transport_factory
             .new_transport(connection.stream, connection.serializer);
+        self.direct_connect(Box::new(TransportMessageStream::new(transport, serializer)))
+            .await
+    }
 
+    /// Directly connects to a router with the given message stream.
+    pub async fn direct_connect(&mut self, stream: Box<dyn MessageStream>) -> Result<()> {
         // Start the service and message handler.
-        let service = Service::new(self.config.name.clone(), transport, serializer);
+        let service = Service::new(self.config.name.clone(), stream);
         let (message_tx, message_rx) = unbounded_channel();
         let service_message_rx = service.message_rx();
         let end_rx = service.end_rx();
