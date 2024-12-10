@@ -73,8 +73,8 @@ pub enum InteractionError {
     /// The role being referenced does not exist.
     #[error("no such role")]
     NoSuchRole,
-    #[error("cancelled")]
-    Cancelled,
+    #[error("canceled")]
+    Canceled,
 }
 
 impl InteractionError {
@@ -88,7 +88,7 @@ impl InteractionError {
             Self::NoSuchSubscription => "no_such_subscription",
             Self::NoSuchRealm => "no_such_realm",
             Self::NoSuchRole => "no_such_role",
-            Self::Cancelled => "cancelled",
+            Self::Canceled => "canceled",
         }
     }
 }
@@ -107,7 +107,7 @@ pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error 
         "wamp.error.no_such_subscription" => InteractionError::NoSuchSubscription.into(),
         "wamp.error.no_such_realm" => InteractionError::NoSuchRealm.into(),
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
-        "wamp.error.cancelled" => InteractionError::Cancelled.into(),
+        "wamp.error.canceled" => InteractionError::Canceled.into(),
         _ => BasicError::Internal(message).into(),
     }
 }

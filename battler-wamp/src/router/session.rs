@@ -674,7 +674,7 @@ impl Session {
             tokio::select! {
                 rpc_yield = rpc_yield_rx.recv() => {
                     match rpc_yield.map_err(|err| match err {
-                        RecvError::Closed => Error::new(InteractionError::Cancelled),
+                        RecvError::Closed => Error::new(InteractionError::Canceled),
                         _ => err.into()
                     })? {
                         Ok(rpc_yield) => {

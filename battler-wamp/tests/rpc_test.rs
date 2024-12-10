@@ -210,7 +210,7 @@ async fn caller_receives_cancelled_error_when_callee_leaves() {
             RpcCall::default(),
         ).await,
         Err(err) => {
-            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Cancelled));
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled));
         }
     );
 
