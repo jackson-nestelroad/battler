@@ -27,6 +27,7 @@
         "repr",
         "thiserror",
         "tungstenite",
+        "Unregistration",
         "unsubscription",
         "WAMP"
     ],

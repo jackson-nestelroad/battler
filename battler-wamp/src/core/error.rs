@@ -14,22 +14,22 @@ pub enum BasicError {
     ///
     /// WAMP defines standard URIs for not finding specific resource types. This error should only
     /// be used when the standard URI cannot be used.
-    #[error("not found: {0}")]
+    #[error("{0}")]
     NotFound(String),
     /// An invalid argument was passed.
-    #[error("invalid argument: {0}")]
+    #[error("{0}")]
     InvalidArgument(String),
     /// The operation is not allowed based on process configuration.
-    #[error("not allowed: {0}")]
+    #[error("{0}")]
     NotAllowed(String),
     /// The operation is not allowed based on user permissions.
-    #[error("permission denied: {0}")]
+    #[error("{0}")]
     PermissionDenied(String),
     /// Some internal error occurred.
     ///
-    /// Should only be used when there is no other error variant that descibes the error, since the
-    /// message is very vague and not very useful for debugging.
-    #[error("internal error: {0}")]
+    /// Should only be used when there is no other error variant that describes the error, since
+    /// the message is very vague and not very useful for debugging.
+    #[error("{0}")]
     Internal(String),
 }
 
@@ -90,7 +90,7 @@ impl InteractionError {
     }
 }
 
-/// Creates an [`Error`] from a URI error reason and messsage.
+/// Creates an [`Error`] from a URI error reason and message.
 pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
     match reason.as_ref() {
         "wamp.error.not_found" => BasicError::NotFound(message).into(),

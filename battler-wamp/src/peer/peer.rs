@@ -44,6 +44,7 @@ use crate::{
         },
         types::{
             Dictionary,
+            List,
             Value,
         },
         uri::Uri,
@@ -51,10 +52,13 @@ use crate::{
     message::{
         common::goodbye_with_close_reason,
         message::{
+            CallMessage,
             HelloMessage,
             Message,
             PublishMessage,
+            RegisterMessage,
             SubscribeMessage,
+            UnregisterMessage,
             UnsubscribeMessage,
         },
     },
@@ -62,6 +66,7 @@ use crate::{
         connector::connector::ConnectorFactory,
         session::{
             Event,
+            Invocation,
             Session,
             SessionHandle,
         },
@@ -137,8 +142,40 @@ struct PeerState {
 pub struct Subscription {
     /// The subscription ID.
     pub id: Id,
-    /// The event receiver channel.
+    /// The event receiver channel.Z
     pub event_rx: broadcast::Receiver<Event>,
+}
+
+/// A registration of a procedure.
+#[derive(Debug)]
+pub struct Procedure {
+    /// The registration ID.
+    pub id: Id,
+    /// The invocation receiver channel.
+    pub invocation_rx: broadcast::Receiver<Invocation>,
+}
+
+impl Clone for Procedure {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            invocation_rx: self.invocation_rx.resubscribe(),
+        }
+    }
+}
+
+/// A procedure call.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct RpcCall {
+    pub arguments: List,
+    pub arguments_keyword: Dictionary,
+}
+
+/// A result of a procedure call.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct RpcResult {
+    pub arguments: List,
+    pub arguments_keyword: Dictionary,
 }
 
 /// A WAMP peer (a.k.a., client) that connects to a WAMP router, establishes sessions in a realm,
@@ -536,6 +573,134 @@ where
                         Ok(publication) => {
                             if publication.request_id == request_id {
                                 return Ok(());
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                return Err(err.into_error());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Registers a procedure to an endpoint.
+    ///
+    /// The resulting procedure contains an invocation receiver stream. The stream automatically
+    /// closes when the peer deregisters the procedure or when the session ends.
+    pub async fn register(&self, procedure: Uri) -> Result<Procedure> {
+        let (message_tx, id_allocator, mut registered_rx) = self
+            .get_from_peer_state(|peer_state| {
+                (
+                    peer_state.message_tx.clone(),
+                    peer_state.session.id_allocator(),
+                    peer_state.session.registered_rx(),
+                )
+            })
+            .await?;
+        let request_id = id_allocator.generate_id().await;
+
+        message_tx.send(Message::Register(RegisterMessage {
+            request: request_id,
+            options: Dictionary::default(),
+            procedure,
+        }))?;
+
+        loop {
+            tokio::select! {
+                registration = registered_rx.recv() => {
+                    match registration? {
+                        Ok(registration) => {
+                            if registration.request_id == request_id {
+                                return Ok(Procedure {
+                                    id: registration.registration_id,
+                                    invocation_rx: registration.invocation_rx,
+                                });
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                return Err(err.into_error());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Removes a procedure.
+    ///
+    /// The registration ID is received after registering the procedure.
+    pub async fn unregister(&self, id: Id) -> Result<()> {
+        let (message_tx, id_allocator, mut unregistered_rx) = self
+            .get_from_peer_state(|peer_state| {
+                (
+                    peer_state.message_tx.clone(),
+                    peer_state.session.id_allocator(),
+                    peer_state.session.unregistered_rx(),
+                )
+            })
+            .await?;
+        let request_id = id_allocator.generate_id().await;
+
+        message_tx.send(Message::Unregister(UnregisterMessage {
+            request: request_id,
+            registered_registration: id,
+        }))?;
+
+        loop {
+            tokio::select! {
+                unregistration = unregistered_rx.recv() => {
+                    match unregistration? {
+                        Ok(unregistration) => {
+                            if unregistration.request_id == request_id {
+                                return Ok(());
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                return Err(err.into_error());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /// Calls a procedure.
+    pub async fn call(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
+        let (message_tx, id_allocator, mut rpc_result_rx) = self
+            .get_from_peer_state(|peer_state| {
+                (
+                    peer_state.message_tx.clone(),
+                    peer_state.session.id_allocator(),
+                    peer_state.session.rpc_result_rx(),
+                )
+            })
+            .await?;
+        let request_id = id_allocator.generate_id().await;
+
+        message_tx.send(Message::Call(CallMessage {
+            request: request_id,
+            options: Dictionary::default(),
+            procedure,
+            arguments: rpc_call.arguments,
+            arguments_keyword: rpc_call.arguments_keyword,
+        }))?;
+
+        loop {
+            tokio::select! {
+                rpc_result = rpc_result_rx.recv() => {
+                    match rpc_result? {
+                        Ok(rpc_result) => {
+                            if rpc_result.request_id == request_id {
+                                return Ok(RpcResult {
+                                    arguments: rpc_result.arguments,
+                                    arguments_keyword: rpc_result.arguments_keyword,
+                                });
                             }
                         }
                         Err(err) => {

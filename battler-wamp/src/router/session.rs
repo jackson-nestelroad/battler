@@ -476,7 +476,7 @@ impl Session {
             }
             ref message @ Message::Error(ref error_message) => {
                 match error_message.request_type {
-                    Message::YIELD_TAG => {
+                    Message::INVOCATION_TAG => {
                         self.rpc_yield_tx.send(Err(message.try_into()?))?;
                     }
                     _ => {
@@ -603,7 +603,7 @@ impl Session {
         let procedure = self
             .modify_established_session_state(|state| {
                 state
-                    .subscriptions
+                    .procedures
                     .remove(&message.registered_registration)
                     .ok_or_else(|| InteractionError::NoSuchRegistration)
             })

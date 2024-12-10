@@ -285,6 +285,7 @@ impl Message {
             Self::Registered(message) => Some(message.register_request),
             Self::Unregister(message) => Some(message.request),
             Self::Unregistered(message) => Some(message.unregister_request),
+            Self::Invocation(message) => Some(message.request),
             Self::Yield(message) => Some(message.invocation_request),
             _ => None,
         }

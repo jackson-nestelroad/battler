@@ -40,9 +40,14 @@ use crate::{
     message::{
         common::{
             abort_message_for_error,
+            error_for_request,
             goodbye_and_out,
         },
-        message::Message,
+        message::{
+            InvocationMessage,
+            Message,
+            YieldMessage,
+        },
     },
 };
 
@@ -55,6 +60,7 @@ struct EstablishedSessionState {
     session_id: Id,
     realm: Uri,
     subscriptions: HashMap<Id, Subscription>,
+    procedures: HashMap<Id, Procedure>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -107,10 +113,48 @@ impl SessionState {
 }
 
 /// An event published to a topic.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Event {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct RpcYield {
+    pub arguments: List,
+    pub arguments_keyword: Dictionary,
+}
+
+/// An invocation of a procedure.
+#[derive(Debug, Clone)]
+pub struct Invocation {
+    pub arguments: List,
+    pub arguments_keyword: Dictionary,
+
+    id: Id,
+    message_tx: UnboundedSender<Message>,
+}
+
+impl Invocation {
+    /// Responds to the invocation.
+    pub fn respond(self, rpc_yield: Result<RpcYield>) -> Result<()> {
+        match rpc_yield {
+            Ok(rpc_yield) => self.message_tx.send(Message::Yield(YieldMessage {
+                invocation_request: self.id,
+                options: Dictionary::default(),
+                arguments: rpc_yield.arguments,
+                arguments_keyword: rpc_yield.arguments_keyword,
+            }))?,
+            Err(err) => self.message_tx.send(error_for_request(
+                &Message::Invocation(InvocationMessage {
+                    request: self.id,
+                    ..Default::default()
+                }),
+                &err,
+            ))?,
+        }
+        Ok(())
+    }
 }
 
 mod peer_session_message {
@@ -123,10 +167,17 @@ mod peer_session_message {
                 extract_error_uri_reason_and_message,
             },
             id::Id,
+            types::{
+                Dictionary,
+                List,
+            },
             uri::Uri,
         },
         message::message::Message,
-        peer::session::Event,
+        peer::session::{
+            Event,
+            Invocation,
+        },
     };
 
     /// An error that can be transmitted over peer session channels.
@@ -204,11 +255,48 @@ mod peer_session_message {
     pub struct Publication {
         pub request_id: Id,
     }
+
+    /// A confirmation that a procedure was registered.
+    #[derive(Debug)]
+    pub struct Registration {
+        pub request_id: Id,
+        pub registration_id: Id,
+        pub invocation_rx: broadcast::Receiver<Invocation>,
+    }
+
+    impl Clone for Registration {
+        fn clone(&self) -> Self {
+            Self {
+                request_id: self.request_id,
+                registration_id: self.registration_id,
+                invocation_rx: self.invocation_rx.resubscribe(),
+            }
+        }
+    }
+
+    /// A confirmation that a procedure was deregistered.
+    #[derive(Debug, Clone)]
+    pub struct Unregistration {
+        pub request_id: Id,
+    }
+
+    /// A result of a procedure call.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct RpcResult {
+        pub request_id: Id,
+        pub arguments: List,
+        pub arguments_keyword: Dictionary,
+    }
 }
 
 #[derive(Clone)]
 struct Subscription {
     event_tx: broadcast::Sender<Event>,
+}
+
+#[derive(Clone)]
+struct Procedure {
+    invocation_tx: broadcast::Sender<Invocation>,
 }
 
 /// A handle to an asynchronously-running peer session.
@@ -225,6 +313,12 @@ pub struct SessionHandle {
         broadcast::Receiver<peer_session_message::Result<peer_session_message::Unsubscription>>,
     published_rx:
         broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>>,
+    registered_rx:
+        broadcast::Receiver<peer_session_message::Result<peer_session_message::Registration>>,
+    unregistered_rx:
+        broadcast::Receiver<peer_session_message::Result<peer_session_message::Unregistration>>,
+    rpc_result_rx:
+        broadcast::Receiver<peer_session_message::Result<peer_session_message::RpcResult>>,
 }
 
 impl SessionHandle {
@@ -268,6 +362,28 @@ impl SessionHandle {
     ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>> {
         self.published_rx.resubscribe()
     }
+
+    /// The receiver channel for responses to REGISTER messages.
+    pub fn registered_rx(
+        &self,
+    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Registration>> {
+        self.registered_rx.resubscribe()
+    }
+
+    /// The receiver channel for responses to UNREGISTER messages.
+    pub fn unregistered_rx(
+        &self,
+    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Unregistration>>
+    {
+        self.unregistered_rx.resubscribe()
+    }
+
+    /// The receiver channel for responses to CALL messages.
+    pub fn rpc_result_rx(
+        &self,
+    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::RpcResult>> {
+        self.rpc_result_rx.resubscribe()
+    }
 }
 
 /// The peer end of a WAMP session.
@@ -289,6 +405,11 @@ pub struct Session {
         broadcast::Sender<peer_session_message::Result<peer_session_message::Unsubscription>>,
     published_tx:
         broadcast::Sender<peer_session_message::Result<peer_session_message::Publication>>,
+    registered_tx:
+        broadcast::Sender<peer_session_message::Result<peer_session_message::Registration>>,
+    unregistered_tx:
+        broadcast::Sender<peer_session_message::Result<peer_session_message::Unregistration>>,
+    rpc_result_tx: broadcast::Sender<peer_session_message::Result<peer_session_message::RpcResult>>,
 }
 
 impl Session {
@@ -300,6 +421,9 @@ impl Session {
         let (subscribed_tx, _) = broadcast::channel(16);
         let (unsubscribed_tx, _) = broadcast::channel(16);
         let (published_tx, _) = broadcast::channel(16);
+        let (registered_tx, _) = broadcast::channel(16);
+        let (unregistered_tx, _) = broadcast::channel(16);
+        let (rpc_result_tx, _) = broadcast::channel(16);
         Self {
             name,
             service_message_tx,
@@ -310,6 +434,9 @@ impl Session {
             subscribed_tx,
             unsubscribed_tx,
             published_tx,
+            registered_tx,
+            unregistered_tx,
+            rpc_result_tx,
         }
     }
 
@@ -336,6 +463,9 @@ impl Session {
             subscribed_rx: self.subscribed_tx.subscribe(),
             unsubscribed_rx: self.unsubscribed_tx.subscribe(),
             published_rx: self.published_tx.subscribe(),
+            registered_rx: self.registered_tx.subscribe(),
+            unregistered_rx: self.unregistered_tx.subscribe(),
+            rpc_result_rx: self.rpc_result_tx.subscribe(),
         }
     }
 
@@ -412,6 +542,13 @@ impl Session {
                 .await?;
                 Ok(())
             }
+            Message::Unregister(message) => {
+                self.modify_established_session_state(|state| {
+                    state.procedures.remove(&message.registered_registration)
+                })
+                .await?;
+                Ok(())
+            }
             _ => Ok(()),
         }
     }
@@ -463,6 +600,7 @@ impl Session {
                     session_id: message.session,
                     realm,
                     subscriptions: HashMap::default(),
+                    procedures: HashMap::default(),
                 }))
                 .await
             }
@@ -505,6 +643,9 @@ impl Session {
                     }
                     Message::PUBLISH_TAG => {
                         self.published_tx.send(Err(message.try_into()?))?;
+                    }
+                    Message::CALL_TAG => {
+                        self.rpc_result_tx.send(Err(message.try_into()?))?;
                     }
                     _ => {
                         error!(
@@ -568,6 +709,62 @@ impl Session {
                     arguments: message.publish_arguments,
                     arguments_keyword: message.publish_arguments_keyword,
                 })?;
+                Ok(())
+            }
+            Message::Registered(message) => {
+                let (invocation_tx, invocation_rx) = broadcast::channel(16);
+                self.modify_established_session_state(|state| {
+                    state.procedures.insert(
+                        message.registration,
+                        Procedure {
+                            invocation_tx: invocation_tx.clone(),
+                        },
+                    )
+                })
+                .await?;
+                self.registered_tx
+                    .send(Ok(peer_session_message::Registration {
+                        request_id: message.register_request,
+                        registration_id: message.registration,
+                        invocation_rx,
+                    }))?;
+                Ok(())
+            }
+            Message::Unregistered(message) => {
+                self.unregistered_tx
+                    .send(Ok(peer_session_message::Unregistration {
+                        request_id: message.unregister_request,
+                    }))?;
+                Ok(())
+            }
+            Message::Invocation(message) => {
+                let procedure = match self
+                    .get_from_established_session_state(|state| {
+                        state
+                            .procedures
+                            .get(&message.registered_registration)
+                            .cloned()
+                    })
+                    .await?
+                {
+                    Some(procedure) => procedure,
+                    None => return Ok(()),
+                };
+                procedure.invocation_tx.send(Invocation {
+                    arguments: message.call_arguments,
+                    arguments_keyword: message.call_arguments_keyword,
+                    id: message.request,
+                    message_tx: self.service_message_tx.clone(),
+                })?;
+                Ok(())
+            }
+            Message::Result(message) => {
+                self.rpc_result_tx
+                    .send(Ok(peer_session_message::RpcResult {
+                        request_id: message.call_request,
+                        arguments: message.yield_arguments,
+                        arguments_keyword: message.yield_arguments_keyword,
+                    }))?;
                 Ok(())
             }
             _ => Err(InteractionError::ProtocolViolation(format!(
