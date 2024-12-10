@@ -29,7 +29,7 @@ pub trait Transport:
 }
 
 /// A factory for creating a new [`Transport`].
-pub trait TransportFactory<S>: Send {
+pub trait TransportFactory<S>: Send + Sync {
     /// Creates a new [`Transport`] for WAMP messaging.
     fn new_transport(&self, stream: S, serializer_type: SerializerType) -> Box<dyn Transport>;
 }

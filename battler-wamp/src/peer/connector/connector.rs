@@ -20,7 +20,7 @@ pub trait Connector<S> {
 
 /// A type for generating a new [`Connector`].
 #[async_trait]
-pub trait ConnectorFactory<S>: Send {
+pub trait ConnectorFactory<S>: Send + Sync {
     /// Creates a new [`Connector`].
     fn new_connector(&self) -> Box<dyn Connector<S> + Send>;
 }

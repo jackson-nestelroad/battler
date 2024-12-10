@@ -14,7 +14,10 @@ use log::{
     warn,
 };
 use tokio::sync::{
-    broadcast,
+    broadcast::{
+        self,
+        error::RecvError,
+    },
     mpsc::UnboundedSender,
     RwLock,
 };
@@ -670,7 +673,10 @@ impl Session {
         loop {
             tokio::select! {
                 rpc_yield = rpc_yield_rx.recv() => {
-                    match rpc_yield? {
+                    match rpc_yield.map_err(|err| match err {
+                        RecvError::Closed => Error::new(InteractionError::Cancelled),
+                        _ => err.into()
+                    })? {
                         Ok(rpc_yield) => {
                             if rpc_yield.request_id == request_id {
                                 return Ok(rpc_yield);

@@ -4,7 +4,10 @@ use anyhow::{
 };
 use battler_wamp::{
     core::{
-        error::BasicError,
+        error::{
+            BasicError,
+            InteractionError,
+        },
         types::{
             Integer,
             List,
@@ -160,4 +163,56 @@ async fn peer_invokes_procedure_from_another_peer() {
     assert_matches::assert_matches!(callee.unregister(procedure_id).await, Ok(()));
 
     adder_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn caller_receives_cancelled_error_when_callee_leaves() {
+    test_utils::setup::setup_test_environment();
+
+    let router_handle = start_router().await.unwrap();
+    let mut caller = create_peer("caller").unwrap();
+    let mut callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.add2").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(callee: WebSocketPeer, mut procedure: Procedure) {
+        while let Ok(_) = procedure.invocation_rx.recv().await {
+            // Leave the realm when we receive an invocation.
+            assert_matches::assert_matches!(callee.leave_realm().await, Ok(()));
+            return;
+        }
+    }
+
+    let handler_handle = tokio::spawn(handler(callee, procedure));
+
+    assert_matches::assert_matches!(
+        caller.call(
+            Uri::try_from("com.battler.add2").unwrap(),
+            RpcCall::default(),
+        ).await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Cancelled));
+        }
+    );
+
+    handler_handle.await.unwrap();
 }
