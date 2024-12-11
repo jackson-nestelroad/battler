@@ -523,7 +523,11 @@ impl Session {
             subscribe_request: message.request,
             subscription,
         }))
-        .await
+        .await?;
+        // Activate the subscription only after sending the response, so that the peer does not
+        // receive events prior to the confirmation.
+        TopicManager::activate_subscription(&mut context, self.id, &message.topic);
+        Ok(())
     }
 
     async fn handle_unsubscribe<S>(
@@ -595,7 +599,11 @@ impl Session {
             register_request: message.request,
             registration,
         }))
-        .await
+        .await?;
+        // Activate the procedure only after sending the response, so that the peer does not
+        // receive invocations prior to the confirmation.
+        ProcedureManager::activate_procedure(&mut context, &message.procedure);
+        Ok(())
     }
 
     async fn handle_unregister<S>(

@@ -22,7 +22,8 @@ use crate::{
 /// A single subscriber to a topic.
 #[derive(Default)]
 pub struct TopicSubscriber {
-    pub subscription_id: Id,
+    subscription_id: Id,
+    active: bool,
 }
 
 /// A topic that events can be published to for subscribers.
@@ -72,8 +73,27 @@ impl TopicManager {
         let subscriber = topic
             .subscribers
             .entry(session)
-            .or_insert_with(|| TopicSubscriber { subscription_id });
+            .or_insert_with(|| TopicSubscriber {
+                subscription_id,
+                active: false,
+            });
         Ok(subscriber.subscription_id)
+    }
+
+    /// Activates a subscriber's subscription.
+    ///
+    /// Required for proper ordering of events. The subscription should not receive events until
+    /// after the peer has received the subscription confirmation.
+    pub fn activate_subscription<S>(
+        context: &mut RealmContext<'_, '_, S>,
+        session: Id,
+        topic: &Uri,
+    ) {
+        if let Some(topic) = context.realm_mut().topic_manager.topics.get_mut(topic) {
+            if let Some(subscriber) = topic.subscribers.get_mut(&session) {
+                subscriber.active = true;
+            }
+        }
     }
 
     /// Unsubscribes from a topic.
@@ -108,6 +128,9 @@ impl TopicManager {
             None => return Ok(published_id),
         };
         for (session, subscription) in &topic.subscribers {
+            if !subscription.active {
+                continue;
+            }
             let session = match context.realm().sessions.get(&session) {
                 Some(session) => &session.session,
                 None => continue,

@@ -22,6 +22,8 @@ pub struct Procedure {
     pub registration_id: Id,
     /// The session ID of the callee.
     pub callee: Id,
+
+    active: bool,
 }
 
 /// A manager for all procedures owned by a realm.
@@ -59,10 +61,26 @@ impl ProcedureManager {
                 entry.insert(Procedure {
                     registration_id,
                     callee: session,
+                    active: false,
                 });
             }
         }
         Ok(registration_id)
+    }
+
+    /// Activates a callee's procedure.
+    ///
+    /// Required for proper ordering of messages. The procedure should not receive invocations until
+    /// after the peer has received the registration confirmation.
+    pub fn activate_procedure<S>(context: &mut RealmContext<'_, '_, S>, procedure: &Uri) {
+        if let Some(procedure) = context
+            .realm_mut()
+            .procedure_manager
+            .procedures
+            .get_mut(procedure)
+        {
+            procedure.active = true;
+        }
     }
 
     /// Deregisters a procedure.
