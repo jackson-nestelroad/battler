@@ -287,6 +287,7 @@ impl Connection {
         let mut router_end_rx = context.router().end_rx();
         let (handle_message_result_tx, mut handle_message_result_rx) = unbounded_channel();
 
+        // Start two separate loops for ordering guarantees of PUBLISH and CALL messages.
         tokio::spawn(Self::publish_loop(
             context.clone(),
             session.clone(),
