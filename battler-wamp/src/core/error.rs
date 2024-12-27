@@ -1,9 +1,12 @@
 use anyhow::Error;
 use thiserror::Error;
 
-use super::types::Value;
 use crate::{
-    core::uri::Uri,
+    core::{
+        id::Id,
+        types::Value,
+        uri::Uri,
+    },
     message::message::Message,
 };
 
@@ -139,3 +142,51 @@ pub fn error_from_message(message: &Message) -> Result<Error, Error> {
         message.to_owned(),
     ))
 }
+
+/// An error that can be transmitted over channels.
+#[derive(Debug, Clone)]
+pub struct ChannelTransmittableError {
+    pub reason: Uri,
+    pub message: String,
+    pub request_id: Option<Id>,
+}
+
+impl ChannelTransmittableError {
+    /// Converts the error into a real Error object that can be returned out.
+    pub fn into_error(self) -> anyhow::Error {
+        error_from_uri_reason_and_message(self.reason, self.message)
+    }
+}
+
+impl TryFrom<&Message> for ChannelTransmittableError {
+    type Error = anyhow::Error;
+    fn try_from(value: &Message) -> std::result::Result<Self, Self::Error> {
+        let (reason, message) = extract_error_uri_reason_and_message(&value)?;
+        Ok(Self {
+            reason: reason.to_owned(),
+            message: message.to_owned(),
+            request_id: value.request_id(),
+        })
+    }
+}
+
+impl From<&anyhow::Error> for ChannelTransmittableError {
+    fn from(value: &anyhow::Error) -> Self {
+        Self {
+            reason: Uri::for_error(value),
+            message: value.to_string(),
+            request_id: None,
+        }
+    }
+}
+
+impl From<anyhow::Error> for ChannelTransmittableError {
+    fn from(value: anyhow::Error) -> Self {
+        Self::from(&value)
+    }
+}
+
+/// Type alias for a channel-transmittable result.
+///
+/// Assumes `T` is channel-transmittable.
+pub type ChannelTransmittableResult<T> = Result<T, ChannelTransmittableError>;

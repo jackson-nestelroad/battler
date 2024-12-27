@@ -34,6 +34,7 @@ use battler_wamp::{
         RouterHandle,
     },
 };
+use futures_util::future::join_all;
 
 const REALM: &str = "com.battler.test";
 
@@ -57,7 +58,7 @@ async fn start_router() -> Result<RouterHandle, Error> {
 
 fn create_peer(agent: &str) -> Result<WebSocketPeer, Error> {
     let mut config = PeerConfig::default();
-    config.agent = agent.to_owned();
+    config.name = agent.to_owned();
     new_web_socket_peer(config)
 }
 
@@ -214,5 +215,94 @@ async fn caller_receives_cancelled_error_when_callee_leaves() {
         }
     );
 
+    handler_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn calls_from_same_peer_processed_in_parallel() {
+    test_utils::setup::setup_test_environment();
+
+    let router_handle = start_router().await.unwrap();
+    let mut caller = create_peer("caller").unwrap();
+    let mut callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        let mut invocations = Vec::new();
+        while let Ok(invocation) = procedure.invocation_rx.recv().await {
+            invocations.push(invocation);
+
+            // Wait for two invocations.
+            if invocations.len() < 2 {
+                continue;
+            }
+
+            // Respond to invocations at the same time.
+            for invocation in invocations {
+                let arguments = invocation.arguments.clone();
+                assert_matches::assert_matches!(
+                    invocation.respond(Ok(RpcYield {
+                        arguments,
+                        ..Default::default()
+                    })),
+                    Ok(())
+                );
+            }
+            break;
+        }
+    }
+
+    let handler_handle = tokio::spawn(handler(procedure));
+
+    // Two calls made in parallel.
+    let call_1 = caller.call(
+        Uri::try_from("com.battler.fn").unwrap(),
+        RpcCall {
+            arguments: List::from_iter([Value::Integer(1)]),
+            ..Default::default()
+        },
+    );
+    let call_2 = caller.call(
+        Uri::try_from("com.battler.fn").unwrap(),
+        RpcCall {
+            arguments: List::from_iter([Value::Integer(2)]),
+            ..Default::default()
+        },
+    );
+
+    let results = join_all([call_1, call_2]).await;
+    assert_eq!(results.len(), 2);
+    assert_matches::assert_matches!(&results[0], Ok(result) => {
+        pretty_assertions::assert_eq!(*result, RpcResult {
+            arguments: List::from_iter([Value::Integer(1)]),
+            ..Default::default()
+        });
+    });
+    assert_matches::assert_matches!(&results[1], Ok(result) => {
+        pretty_assertions::assert_eq!(*result, RpcResult {
+            arguments: List::from_iter([Value::Integer(2)]),
+            ..Default::default()
+        });
+    });
     handler_handle.await.unwrap();
 }

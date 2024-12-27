@@ -27,6 +27,7 @@ use crate::{
         close::CloseReason,
         error::{
             BasicError,
+            ChannelTransmittableResult,
             InteractionError,
         },
         hash::HashMap,
@@ -123,61 +124,13 @@ impl SessionState {
 }
 
 mod router_session_message {
-    use crate::{
-        core::{
-            error::{
-                error_from_uri_reason_and_message,
-                extract_error_uri_reason_and_message,
-            },
-            id::Id,
-            types::{
-                Dictionary,
-                List,
-            },
-            uri::Uri,
+    use crate::core::{
+        id::Id,
+        types::{
+            Dictionary,
+            List,
         },
-        message::message::Message,
     };
-
-    /// An error that can be transmitted over peer session channels.
-    #[derive(Debug, Clone)]
-    pub struct Error {
-        pub reason: Uri,
-        pub message: String,
-        pub request_id: Option<Id>,
-    }
-
-    impl Error {
-        /// Converts the error into a real Error object that can be returned out.
-        pub fn into_error(self) -> anyhow::Error {
-            error_from_uri_reason_and_message(self.reason, self.message)
-        }
-    }
-
-    impl TryFrom<&Message> for Error {
-        type Error = anyhow::Error;
-        fn try_from(value: &Message) -> std::result::Result<Self, Self::Error> {
-            let (reason, message) = extract_error_uri_reason_and_message(&value)?;
-            Ok(Self {
-                reason: reason.to_owned(),
-                message: message.to_owned(),
-                request_id: value.request_id(),
-            })
-        }
-    }
-
-    impl From<&anyhow::Error> for Error {
-        fn from(value: &anyhow::Error) -> Self {
-            Self {
-                reason: Uri::for_error(value),
-                message: value.to_string(),
-                request_id: None,
-            }
-        }
-    }
-
-    /// A result that can be transmitted over peer session channels.
-    pub type Result<T> = std::result::Result<T, Error>;
 
     /// The result of an RPC invocation.
     #[derive(Debug, Clone)]
@@ -194,8 +147,7 @@ pub struct SessionHandle {
     message_tx: UnboundedSender<Message>,
     closed_session_rx: broadcast::Receiver<()>,
 
-    rpc_yield_rx:
-        broadcast::Receiver<router_session_message::Result<router_session_message::RpcYield>>,
+    rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
 }
 
 impl SessionHandle {
@@ -216,16 +168,15 @@ impl SessionHandle {
             .map_err(Error::new)
     }
 
-    /// A mutable reference to the receiver channel that is populated when the session moves to the
-    /// CLOSED state.
-    pub fn closed_session_rx_mut(&mut self) -> &mut broadcast::Receiver<()> {
-        &mut self.closed_session_rx
+    /// The receiver channel that is populated when the session moves to the CLOSED state.
+    pub fn closed_session_rx(&self) -> broadcast::Receiver<()> {
+        self.closed_session_rx.resubscribe()
     }
 
     ///The receiver channel for responses to INVOCATION messages.
     pub fn rpc_yield_rx(
         &self,
-    ) -> broadcast::Receiver<router_session_message::Result<router_session_message::RpcYield>> {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>> {
         self.rpc_yield_rx.resubscribe()
     }
 }
@@ -242,8 +193,7 @@ pub struct Session {
 
     closed_session_tx: broadcast::Sender<()>,
 
-    rpc_yield_tx:
-        broadcast::Sender<router_session_message::Result<router_session_message::RpcYield>>,
+    rpc_yield_tx: broadcast::Sender<ChannelTransmittableResult<router_session_message::RpcYield>>,
 }
 
 impl Session {
@@ -331,11 +281,14 @@ impl Session {
     /// Handles a message over the session state machine.
     pub async fn handle_message<S>(
         &self,
-        context: &RouterContext<S>,
+        context: RouterContext<S>,
         message: Message,
     ) -> Result<()> {
         debug!("Received message for session {}: {message:?}", self.id);
-        if let Err(err) = self.handle_message_on_state_machine(context, message).await {
+        if let Err(err) = self
+            .handle_message_on_state_machine(&context, message)
+            .await
+        {
             self.send_message(abort_message_for_error(&err)).await?;
             return Err(err);
         }
@@ -368,12 +321,12 @@ impl Session {
     async fn handle_closed<S>(&self, context: &RouterContext<S>, message: Message) -> Result<()> {
         match message {
             Message::Hello(message) => {
-                let mut context = context.realm_context(&message.realm).await?;
-                context.realm_mut().sessions.insert(
+                let context = context.realm_context(&message.realm)?;
+                context.realm().sessions.write().await.insert(
                     self.id,
-                    RealmSession {
+                    Arc::new(RealmSession {
                         session: self.session_handle(),
-                    },
+                    }),
                 );
                 info!("Session {} joined realm {}", self.id, context.realm().uri());
 
@@ -510,9 +463,9 @@ impl Session {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
-        let mut context = context.realm_context(&realm).await?;
+        let context = context.realm_context(&realm)?;
         let subscription =
-            TopicManager::subscribe(&mut context, self.id, message.topic.clone()).await?;
+            TopicManager::subscribe(&context, self.id, message.topic.clone()).await?;
         self.modify_established_session_state(|state| {
             state
                 .subscriptions
@@ -526,7 +479,7 @@ impl Session {
         .await?;
         // Activate the subscription only after sending the response, so that the peer does not
         // receive events prior to the confirmation.
-        TopicManager::activate_subscription(&mut context, self.id, &message.topic);
+        TopicManager::activate_subscription(&context, self.id, &message.topic).await;
         Ok(())
     }
 
@@ -546,7 +499,7 @@ impl Session {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
-        let mut context = context.realm_context(&realm).await?;
+        let mut context = context.realm_context(&realm)?;
         TopicManager::unsubscribe(&mut context, self.id, &topic).await;
         self.send_message(Message::Unsubscribed(UnsubscribedMessage {
             unsubscribe_request: message.request,
@@ -562,7 +515,7 @@ impl Session {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
-        let mut context = context.realm_context(&realm).await?;
+        let mut context = context.realm_context(&realm)?;
         let publication = TopicManager::publish(
             &mut context,
             self.id,
@@ -586,7 +539,7 @@ impl Session {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
-        let mut context = context.realm_context(&realm).await?;
+        let mut context = context.realm_context(&realm)?;
         let registration =
             ProcedureManager::register(&mut context, self.id, message.procedure.clone()).await?;
         self.modify_established_session_state(|state| {
@@ -602,7 +555,7 @@ impl Session {
         .await?;
         // Activate the procedure only after sending the response, so that the peer does not
         // receive invocations prior to the confirmation.
-        ProcedureManager::activate_procedure(&mut context, &message.procedure);
+        ProcedureManager::activate_procedure(&mut context, &message.procedure).await;
         Ok(())
     }
 
@@ -622,7 +575,7 @@ impl Session {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
-        let mut context = context.realm_context(&realm).await?;
+        let mut context = context.realm_context(&realm)?;
         ProcedureManager::unregister(&mut context, &procedure).await;
         self.send_message(Message::Unregistered(UnregisteredMessage {
             unregister_request: message.request,
@@ -638,19 +591,21 @@ impl Session {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
-        let context = context.realm_context(&realm).await?;
+        let context = context.realm_context(&realm)?;
         let procedure = context
-            .realm()
-            .procedure_manager
-            .procedures
-            .get(&message.procedure)
+            .procedure(&message.procedure)
+            .await
             .ok_or_else(|| InteractionError::NoSuchProcedure)?;
-        let registration_id = procedure.registration_id;
-        let callee = procedure.callee;
-        let callee =
-            context.realm().sessions.get(&callee).ok_or_else(|| {
-                BasicError::NotFound("expected callee session to exist".to_owned())
-            })?;
+        let registration_id = procedure.read().await.registration_id;
+        let callee = procedure.read().await.callee;
+        let callee = context
+            .realm()
+            .sessions
+            .read()
+            .await
+            .get(&callee)
+            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
+            .clone();
         let request_id = self.id_allocator.generate_id().await;
         let rpc_yield_rx = callee.session.rpc_yield_rx();
         callee
@@ -674,7 +629,7 @@ impl Session {
 
     async fn wait_for_rpc_yield(
         mut rpc_yield_rx: broadcast::Receiver<
-            router_session_message::Result<router_session_message::RpcYield>,
+            ChannelTransmittableResult<router_session_message::RpcYield>,
         >,
         request_id: Id,
     ) -> Result<router_session_message::RpcYield> {
@@ -760,7 +715,7 @@ impl Session {
         Ok(())
     }
 
-    pub async fn clean_up<S>(self, context: &RouterContext<S>) {
+    pub async fn clean_up<S>(&self, context: &RouterContext<S>) {
         let id = self.id;
 
         // We only need to clean up if we have resources in a realm.
@@ -772,7 +727,7 @@ impl Session {
             Err(_) => return,
         };
 
-        let mut context = match context.realm_context(&realm).await {
+        let mut context = match context.realm_context(&realm) {
             Ok(context) => context,
             Err(err) => {
                 error!("Failed to clean up session {id}, due to error getting context for realm {realm}: {err:?}");
@@ -792,7 +747,7 @@ impl Session {
                 }
                 state.procedures.clear();
 
-                context.realm_mut().sessions.remove(&id);
+                context.realm().sessions.write().await.remove(&id);
             }
             _ => (),
         }

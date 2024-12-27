@@ -15,7 +15,7 @@ pub trait PubSubPolicies<S>: Send + Sync {
     /// Validates that a subscription is allowed.
     async fn validate_subscription(
         &self,
-        context: &RealmContext<'_, '_, S>,
+        context: &RealmContext<'_, S>,
         session: Id,
         topic: &Uri,
     ) -> Result<()>;
@@ -23,7 +23,7 @@ pub trait PubSubPolicies<S>: Send + Sync {
     /// Validates that a publication is allowed.
     async fn validate_publication(
         &self,
-        context: &RealmContext<'_, '_, S>,
+        context: &RealmContext<'_, S>,
         session: Id,
         topic: &Uri,
     ) -> Result<()>;
@@ -35,21 +35,11 @@ pub struct EmptyPubSubPolicies {}
 
 #[async_trait]
 impl<S> PubSubPolicies<S> for EmptyPubSubPolicies {
-    async fn validate_subscription(
-        &self,
-        _: &RealmContext<'_, '_, S>,
-        _: Id,
-        _: &Uri,
-    ) -> Result<()> {
+    async fn validate_subscription(&self, _: &RealmContext<'_, S>, _: Id, _: &Uri) -> Result<()> {
         Ok(())
     }
 
-    async fn validate_publication(
-        &self,
-        _: &RealmContext<'_, '_, S>,
-        _: Id,
-        _: &Uri,
-    ) -> Result<()> {
+    async fn validate_publication(&self, _: &RealmContext<'_, S>, _: Id, _: &Uri) -> Result<()> {
         Ok(())
     }
 }

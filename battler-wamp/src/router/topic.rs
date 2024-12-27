@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use anyhow::Result;
+use tokio::sync::RwLock;
 
 use crate::{
     core::{
@@ -32,20 +35,20 @@ pub struct Topic {
     /// All subscribers to the topic.
     ///
     /// Key is session ID.
-    pub subscribers: HashMap<Id, TopicSubscriber>,
+    pub subscribers: RwLock<HashMap<Id, TopicSubscriber>>,
 }
 
 /// A manager for all topics owned by a realm.
 #[derive(Default)]
 pub struct TopicManager {
     /// Map of topics.
-    pub topics: HashMap<Uri, Topic>,
+    pub topics: RwLock<HashMap<Uri, Arc<Topic>>>,
 }
 
 impl TopicManager {
     /// Subscribes to a topic.
     pub async fn subscribe<S>(
-        context: &mut RealmContext<'_, '_, S>,
+        context: &RealmContext<'_, S>,
         session: Id,
         topic: Uri,
     ) -> Result<Id> {
@@ -60,54 +63,58 @@ impl TopicManager {
             .await?;
         let subscription_id = context
             .session(session)
+            .await
             .ok_or_else(|| BasicError::NotFound(format!("expected session {session} to exist")))?
+            .session
             .id_generator()
             .generate_id()
             .await;
         let topic = context
-            .realm_mut()
+            .realm()
             .topic_manager
             .topics
+            .write()
+            .await
             .entry(topic)
-            .or_insert_with(|| Topic::default());
-        let subscriber = topic
+            .or_insert_with(|| Arc::new(Topic::default()))
+            .clone();
+        let subscription_id = topic
             .subscribers
+            .write()
+            .await
             .entry(session)
             .or_insert_with(|| TopicSubscriber {
                 subscription_id,
                 active: false,
-            });
-        Ok(subscriber.subscription_id)
+            })
+            .subscription_id;
+        Ok(subscription_id)
     }
 
     /// Activates a subscriber's subscription.
     ///
     /// Required for proper ordering of events. The subscription should not receive events until
     /// after the peer has received the subscription confirmation.
-    pub fn activate_subscription<S>(
-        context: &mut RealmContext<'_, '_, S>,
-        session: Id,
-        topic: &Uri,
-    ) {
-        if let Some(topic) = context.realm_mut().topic_manager.topics.get_mut(topic) {
-            if let Some(subscriber) = topic.subscribers.get_mut(&session) {
+    pub async fn activate_subscription<S>(context: &RealmContext<'_, S>, session: Id, topic: &Uri) {
+        if let Some(topic) = context.topic(topic).await {
+            if let Some(subscriber) = topic.subscribers.write().await.get_mut(&session) {
                 subscriber.active = true;
             }
         }
     }
 
     /// Unsubscribes from a topic.
-    pub async fn unsubscribe<S>(context: &mut RealmContext<'_, '_, S>, session: Id, topic: &Uri) {
-        let topic = match context.realm_mut().topic_manager.topics.get_mut(topic) {
+    pub async fn unsubscribe<S>(context: &RealmContext<'_, S>, session: Id, topic: &Uri) {
+        let topic = match context.topic(topic).await {
             Some(topic) => topic,
             None => return,
         };
-        topic.subscribers.remove(&session);
+        topic.subscribers.write().await.remove(&session);
     }
 
     /// Publishes an event to a topic.
     pub async fn publish<S>(
-        context: &mut RealmContext<'_, '_, S>,
+        context: &RealmContext<'_, S>,
         session: Id,
         topic: &Uri,
         arguments: List,
@@ -123,19 +130,19 @@ impl TopicManager {
             .validate_publication(context, session, &topic)
             .await?;
         let published_id = context.router().id_allocator.generate_id().await;
-        let topic = match context.realm().topic_manager.topics.get(topic) {
+        let topic = match context.topic(topic).await {
             Some(topic) => topic,
             None => return Ok(published_id),
         };
-        for (session, subscription) in &topic.subscribers {
+        for (session, subscription) in topic.subscribers.read().await.iter() {
             if !subscription.active {
                 continue;
             }
-            let session = match context.realm().sessions.get(&session) {
-                Some(session) => &session.session,
+            let session = match context.realm().sessions.read().await.get(&session).cloned() {
+                Some(session) => session,
                 None => continue,
             };
-            session.send_message(Message::Event(EventMessage {
+            session.session.send_message(Message::Event(EventMessage {
                 subscribed_subscription: subscription.subscription_id,
                 published_publication: published_id,
                 details: Dictionary::default(),

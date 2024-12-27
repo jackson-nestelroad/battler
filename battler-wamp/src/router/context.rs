@@ -1,8 +1,12 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use futures_util::lock::MutexGuard;
+use tokio::sync::RwLock;
 
+use super::{
+    procedure::Procedure,
+    topic::Topic,
+};
 use crate::{
     core::{
         error::InteractionError,
@@ -10,9 +14,11 @@ use crate::{
         uri::Uri,
     },
     router::{
-        realm::Realm,
+        realm::{
+            Realm,
+            RealmSession,
+        },
         router::Router,
-        session::SessionHandle,
     },
 };
 
@@ -40,13 +46,12 @@ impl<S> RouterContext<S> {
     }
 
     /// Creates a [`RealmContext`] with the given realm locked and ready for use.
-    pub async fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, '_, S>> {
+    pub fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, S>> {
         let realm = self
             .router
             .realm_manager
             .get(realm)
             .ok_or_else(|| InteractionError::NoSuchRealm)?;
-        let realm = realm.lock().await;
         Ok(RealmContext {
             context: self,
             realm,
@@ -65,15 +70,15 @@ impl<S> Clone for RouterContext<S> {
 /// The context of a task running for a realm.
 ///
 /// Used to lock the realm for use.
-pub struct RealmContext<'realm, 'router, S>
+pub struct RealmContext<'router, S>
 where
     S: 'static,
 {
     context: &'router RouterContext<S>,
-    realm: MutexGuard<'realm, Realm>,
+    realm: Arc<Realm>,
 }
 
-impl<'realm, 'router, S> RealmContext<'realm, 'router, S> {
+impl<'router, S> RealmContext<'router, S> {
     /// The router.
     pub fn router(&self) -> &Router<S> {
         self.context.router()
@@ -84,21 +89,30 @@ impl<'realm, 'router, S> RealmContext<'realm, 'router, S> {
         &*self.realm
     }
 
-    /// The realm.
-    pub fn realm_mut(&mut self) -> &mut Realm {
-        &mut *self.realm
+    /// Looks up a session by ID.
+    pub async fn session(&self, id: Id) -> Option<Arc<RealmSession>> {
+        self.realm.sessions.read().await.get(&id).cloned()
     }
 
-    /// Looks up a session by ID.
-    pub fn session(&self, id: Id) -> Option<&SessionHandle> {
-        self.realm.sessions.get(&id).map(|session| &session.session)
-    }
-
-    /// Looks up a session by ID.
-    pub fn session_mut(&mut self, id: Id) -> Option<&mut SessionHandle> {
+    /// Looks up a topic by URI.
+    pub async fn topic(&self, topic: &Uri) -> Option<Arc<Topic>> {
         self.realm
-            .sessions
-            .get_mut(&id)
-            .map(|session| &mut session.session)
+            .topic_manager
+            .topics
+            .read()
+            .await
+            .get(topic)
+            .cloned()
+    }
+
+    /// Looks up a procedure by URI.
+    pub async fn procedure(&self, procedure: &Uri) -> Option<Arc<RwLock<Procedure>>> {
+        self.realm
+            .procedure_manager
+            .procedures
+            .read()
+            .await
+            .get(procedure)
+            .cloned()
     }
 }

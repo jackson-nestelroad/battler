@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::{
     Error,
     Result,
@@ -20,7 +22,10 @@ use tokio::sync::{
 use uuid::Uuid;
 
 use crate::{
-    core::service::Service,
+    core::{
+        error::ChannelTransmittableResult,
+        service::Service,
+    },
     message::message::Message,
     router::{
         context::RouterContext,
@@ -116,15 +121,16 @@ impl Connection {
     async fn session_loop<S>(
         &self,
         context: &RouterContext<S>,
-        mut session: Session,
+        session: Session,
         message_rx: UnboundedReceiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
+        let session = Arc::new(session);
         let done = match self
             .session_loop_with_errors(
                 context,
-                &mut session,
+                session.clone(),
                 message_rx,
                 service_message_rx,
                 end_rx,
@@ -153,16 +159,37 @@ impl Connection {
         done
     }
 
+    async fn handle_message<S>(
+        context: RouterContext<S>,
+        session: Arc<Session>,
+        message: Message,
+        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+    ) {
+        let message_name = message.message_name();
+        handle_message_result_tx
+            .send(
+                session
+                    .handle_message(context.clone(), message)
+                    .await
+                    .map_err(|err| {
+                        err.context(format!("failed to handle {message_name} message"))
+                            .into()
+                    }),
+            )
+            .ok();
+    }
+
     async fn session_loop_with_errors<S>(
         &self,
         context: &RouterContext<S>,
-        session: &mut Session,
+        session: Arc<Session>,
         mut message_rx: UnboundedReceiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
     ) -> Result<bool> {
         let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
+        let (handle_message_result_tx, mut handle_message_result_rx) = unbounded_channel();
         loop {
             tokio::select! {
                 // Received a message from some part of the router.
@@ -183,9 +210,16 @@ impl Connection {
                         Err(RecvError::Closed) => return Ok(true),
                         Err(err) => return Err(Error::context(err.into(), "failed to receive message")),
                     };
-                    let message_name = message.message_name();
-                    if let Err(err) = session.handle_message(context, message).await {
-                        return Err(err.context(format!("failed to handle {message_name} message")));
+
+                    // Handle the message asynchronously, so we can process multiple messages at a time.
+                    tokio::spawn(Self::handle_message(context.clone(), session.clone(), message, handle_message_result_tx.clone()));
+                }
+                // Finished handling a message.
+                result = handle_message_result_rx.recv() => {
+                    match result {
+                        Some(Ok(())) => (),
+                        Some(Err(err)) => return Err(err.into_error()),
+                        None => return Err(Error::msg("handle_message_error_rx unexpectedly closed")),
                     }
                 }
                 // Service ended, which is unexpected.

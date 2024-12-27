@@ -23,6 +23,7 @@
     "rust-analyzer.showUnlinkedFileNotification": false,
     "cSpell.words": [
         "ahash",
+        "dashmap",
         "msgpack",
         "repr",
         "thiserror",

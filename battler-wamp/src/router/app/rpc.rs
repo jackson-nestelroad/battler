@@ -15,7 +15,7 @@ pub trait RpcPolicies<S>: Send + Sync {
     /// Validates that a registration is allowed.
     async fn validate_registration(
         &self,
-        context: &RealmContext<'_, '_, S>,
+        context: &RealmContext<'_, S>,
         session: Id,
         procedure: &Uri,
     ) -> Result<()>;
@@ -27,12 +27,7 @@ pub struct EmptyRpcPolicies {}
 
 #[async_trait]
 impl<S> RpcPolicies<S> for EmptyRpcPolicies {
-    async fn validate_registration(
-        &self,
-        _: &RealmContext<'_, '_, S>,
-        _: Id,
-        _: &Uri,
-    ) -> Result<()> {
+    async fn validate_registration(&self, _: &RealmContext<'_, S>, _: Id, _: &Uri) -> Result<()> {
         Ok(())
     }
 }

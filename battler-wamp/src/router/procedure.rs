@@ -1,6 +1,10 @@
-use std::collections::hash_map::Entry;
+use std::{
+    collections::hash_map::Entry,
+    sync::Arc,
+};
 
 use anyhow::Result;
+use tokio::sync::RwLock;
 
 use crate::{
     core::{
@@ -30,13 +34,13 @@ pub struct Procedure {
 #[derive(Default)]
 pub struct ProcedureManager {
     /// Map of procedures.
-    pub procedures: HashMap<Uri, Procedure>,
+    pub procedures: RwLock<HashMap<Uri, Arc<RwLock<Procedure>>>>,
 }
 
 impl ProcedureManager {
     /// Registers a procedure.
     pub async fn register<S>(
-        context: &mut RealmContext<'_, '_, S>,
+        context: &RealmContext<'_, S>,
         session: Id,
         procedure: Uri,
     ) -> Result<Id> {
@@ -51,18 +55,20 @@ impl ProcedureManager {
             .await?;
         let registration_id = context.router().id_allocator.generate_id().await;
         match context
-            .realm_mut()
+            .realm()
             .procedure_manager
             .procedures
+            .write()
+            .await
             .entry(procedure)
         {
             Entry::Occupied(_) => return Err(InteractionError::ProcedureAlreadyExists.into()),
             Entry::Vacant(entry) => {
-                entry.insert(Procedure {
+                entry.insert(Arc::new(RwLock::new(Procedure {
                     registration_id,
                     callee: session,
                     active: false,
-                });
+                })));
             }
         }
         Ok(registration_id)
@@ -72,23 +78,20 @@ impl ProcedureManager {
     ///
     /// Required for proper ordering of messages. The procedure should not receive invocations until
     /// after the peer has received the registration confirmation.
-    pub fn activate_procedure<S>(context: &mut RealmContext<'_, '_, S>, procedure: &Uri) {
-        if let Some(procedure) = context
-            .realm_mut()
-            .procedure_manager
-            .procedures
-            .get_mut(procedure)
-        {
-            procedure.active = true;
+    pub async fn activate_procedure<S>(context: &RealmContext<'_, S>, procedure: &Uri) {
+        if let Some(procedure) = context.procedure(procedure).await {
+            procedure.write().await.active = true;
         }
     }
 
     /// Deregisters a procedure.
-    pub async fn unregister<S>(context: &mut RealmContext<'_, '_, S>, procedure: &Uri) {
+    pub async fn unregister<S>(context: &RealmContext<'_, S>, procedure: &Uri) {
         context
-            .realm_mut()
+            .realm()
             .procedure_manager
             .procedures
+            .write()
+            .await
             .remove(procedure);
     }
 }

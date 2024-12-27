@@ -354,7 +354,6 @@ where
             Some(realm) => realm,
             None => return Ok(()),
         };
-        let mut realm = realm.lock().await;
         realm.shut_down(close_reason).await
     }
 
