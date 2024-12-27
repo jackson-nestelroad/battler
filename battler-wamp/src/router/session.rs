@@ -141,6 +141,13 @@ mod router_session_message {
     }
 }
 
+/// The result of an RPC invocation.
+pub struct RpcInvocation {
+    call_message: CallMessage,
+    invocation_request_id: Id,
+    callee: Arc<RealmSession>,
+}
+
 /// A handle to an asynchronously-running router session.
 pub struct SessionHandle {
     id_allocator: Arc<Box<dyn IdAllocator>>,
@@ -194,6 +201,9 @@ pub struct Session {
     closed_session_tx: broadcast::Sender<()>,
 
     rpc_yield_tx: broadcast::Sender<ChannelTransmittableResult<router_session_message::RpcYield>>,
+
+    publish_tx: broadcast::Sender<PublishMessage>,
+    call_tx: broadcast::Sender<CallMessage>,
 }
 
 impl Session {
@@ -206,6 +216,8 @@ impl Session {
         let id_allocator = SequentialIdAllocator::default();
         let (closed_session_tx, _) = broadcast::channel(16);
         let (rpc_yield_tx, _) = broadcast::channel(16);
+        let (publish_tx, _) = broadcast::channel(16);
+        let (call_tx, _) = broadcast::channel(16);
         Self {
             id,
             message_tx,
@@ -214,6 +226,8 @@ impl Session {
             id_allocator: Arc::new(Box::new(id_allocator)),
             closed_session_tx,
             rpc_yield_tx,
+            publish_tx,
+            call_tx,
         }
     }
 
@@ -239,6 +253,16 @@ impl Session {
             closed_session_rx: self.closed_session_tx.subscribe(),
             rpc_yield_rx: self.rpc_yield_tx.subscribe(),
         }
+    }
+
+    /// The receiver channel for publications, for strong ordering.
+    pub fn publish_rx(&self) -> broadcast::Receiver<PublishMessage> {
+        self.publish_tx.subscribe()
+    }
+
+    /// The receiver channel for procedure calls, for strong ordering.
+    pub fn call_rx(&self) -> broadcast::Receiver<CallMessage> {
+        self.call_tx.subscribe()
     }
 
     async fn get_from_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
@@ -509,6 +533,35 @@ impl Session {
 
     async fn handle_publish<S>(
         &self,
+        _: &RouterContext<S>,
+        message: &PublishMessage,
+    ) -> Result<()> {
+        self.publish_tx
+            .send(message.clone())
+            .map(|_| ())
+            .map_err(Error::new)
+    }
+
+    /// Handles an ordered publication from the peer.
+    ///
+    /// Returns when the publication has been sent to all subscribers.
+    pub async fn handle_ordered_publish<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: PublishMessage,
+    ) -> Result<()> {
+        if let Err(err) = self
+            .handle_ordered_publish_internal(context, &message)
+            .await
+        {
+            self.send_message(error_for_request(&Message::Publish(message), &err))
+                .await?;
+        }
+        Ok(())
+    }
+
+    async fn handle_ordered_publish_internal<S>(
+        &self,
         context: &RouterContext<S>,
         message: &PublishMessage,
     ) -> Result<()> {
@@ -583,11 +636,37 @@ impl Session {
         .await
     }
 
-    async fn handle_call<S>(
+    async fn handle_call<S>(&self, _: &RouterContext<S>, message: &CallMessage) -> Result<()> {
+        self.call_tx
+            .send(message.clone())
+            .map(|_| ())
+            .map_err(Error::new)
+    }
+
+    /// Handles an ordered procedure call from the peer.
+    ///
+    /// Returns when the invocation has been sent to the callee.
+    pub async fn handle_ordered_call<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: CallMessage,
+    ) -> Result<Option<RpcInvocation>> {
+        let invocation = match self.handle_ordered_call_internal(context, &message).await {
+            Ok(invocation) => invocation,
+            Err(err) => {
+                self.send_message(error_for_request(&Message::Call(message), &err))
+                    .await?;
+                return Ok(None);
+            }
+        };
+        Ok(Some(invocation))
+    }
+
+    async fn handle_ordered_call_internal<S>(
         &self,
         context: &RouterContext<S>,
         message: &CallMessage,
-    ) -> Result<()> {
+    ) -> Result<RpcInvocation> {
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
@@ -607,7 +686,6 @@ impl Session {
             .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
             .clone();
         let request_id = self.id_allocator.generate_id().await;
-        let rpc_yield_rx = callee.session.rpc_yield_rx();
         callee
             .session
             .send_message(Message::Invocation(InvocationMessage {
@@ -617,9 +695,35 @@ impl Session {
                 call_arguments: message.arguments.clone(),
                 call_arguments_keyword: message.arguments_keyword.clone(),
             }))?;
-        let rpc_yield = Self::wait_for_rpc_yield(rpc_yield_rx, request_id).await?;
+        Ok(RpcInvocation {
+            call_message: message.clone(),
+            invocation_request_id: request_id,
+            callee: callee.clone(),
+        })
+    }
+
+    /// Handles the invocation returned from [`Self::handle_ordered_call`].
+    ///
+    /// Returns when the result has been sent to the peer.
+    pub async fn handle_invocation(&self, invocation: RpcInvocation) -> Result<()> {
+        if let Err(err) = self.handle_invocation_internal(&invocation).await {
+            self.send_message(error_for_request(
+                &Message::Call(invocation.call_message),
+                &err,
+            ))
+            .await?;
+        }
+        Ok(())
+    }
+
+    async fn handle_invocation_internal(&self, invocation: &RpcInvocation) -> Result<()> {
+        let rpc_yield = Self::wait_for_rpc_yield(
+            invocation.callee.session.rpc_yield_rx.resubscribe(),
+            invocation.invocation_request_id,
+        )
+        .await?;
         self.send_message(Message::Result(ResultMessage {
-            call_request: message.request,
+            call_request: invocation.call_message.request,
             details: Dictionary::default(),
             yield_arguments: rpc_yield.arguments,
             yield_arguments_keyword: rpc_yield.arguments_keyword,

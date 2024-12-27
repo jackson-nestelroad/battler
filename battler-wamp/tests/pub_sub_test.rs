@@ -58,9 +58,9 @@ async fn start_router() -> Result<RouterHandle, Error> {
     start_router_with_config(RouterConfig::default()).await
 }
 
-fn create_peer(agent: &str) -> Result<WebSocketPeer, Error> {
+fn create_peer(name: &str) -> Result<WebSocketPeer, Error> {
     let mut config = PeerConfig::default();
-    config.agent = agent.to_owned();
+    config.name = name.to_owned();
     new_web_socket_peer(config)
 }
 

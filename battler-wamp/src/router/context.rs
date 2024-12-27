@@ -3,10 +3,6 @@ use std::sync::Arc;
 use anyhow::Result;
 use tokio::sync::RwLock;
 
-use super::{
-    procedure::Procedure,
-    topic::Topic,
-};
 use crate::{
     core::{
         error::InteractionError,
@@ -14,11 +10,13 @@ use crate::{
         uri::Uri,
     },
     router::{
+        procedure::Procedure,
         realm::{
             Realm,
             RealmSession,
         },
         router::Router,
+        topic::Topic,
     },
 };
 

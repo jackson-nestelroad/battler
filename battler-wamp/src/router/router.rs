@@ -225,6 +225,10 @@ where
     /// transferred away.
     pub async fn start(self) -> Result<RouterHandle, Error> {
         let addr = format!("{}:{}", self.config.address, self.config.port);
+        info!(
+            "Starting router {} at {addr}: {:?}",
+            self.config.agent, self.config
+        );
         let listener = TcpListener::bind(&addr).await?;
         let local_addr = listener.local_addr()?;
 

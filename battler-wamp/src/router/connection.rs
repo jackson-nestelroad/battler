@@ -29,7 +29,10 @@ use crate::{
     message::message::Message,
     router::{
         context::RouterContext,
-        session::Session,
+        session::{
+            RpcInvocation,
+            Session,
+        },
     },
 };
 
@@ -127,6 +130,7 @@ impl Connection {
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session = Arc::new(session);
+        let (session_loop_done_tx, session_loop_done_rx) = broadcast::channel(1);
         let done = match self
             .session_loop_with_errors(
                 context,
@@ -134,6 +138,7 @@ impl Connection {
                 message_rx,
                 service_message_rx,
                 end_rx,
+                session_loop_done_rx,
             )
             .await
         {
@@ -155,6 +160,7 @@ impl Connection {
             }
         };
 
+        session_loop_done_tx.send(()).ok();
         session.clean_up(context).await;
         done
     }
@@ -179,6 +185,95 @@ impl Connection {
             .ok();
     }
 
+    async fn publish_loop<S>(
+        context: RouterContext<S>,
+        session: Arc<Session>,
+        session_loop_done_rx: broadcast::Receiver<()>,
+        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+    ) {
+        if let Err(err) =
+            Self::publish_loop_with_errors(context, session, session_loop_done_rx).await
+        {
+            handle_message_result_tx.send(Err(err.into())).ok();
+        }
+    }
+
+    async fn publish_loop_with_errors<S>(
+        context: RouterContext<S>,
+        session: Arc<Session>,
+        mut session_loop_done_rx: broadcast::Receiver<()>,
+    ) -> Result<()> {
+        let mut publish_rx = session.publish_rx();
+        loop {
+            tokio::select! {
+                // Received a publish message.
+                publish_message = publish_rx.recv() => {
+                    session.handle_ordered_publish(&context, publish_message?).await?;
+                }
+                // The session loop is done, so we should also be done.
+                _ = session_loop_done_rx.recv() => {
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    async fn call_loop<S>(
+        context: RouterContext<S>,
+        session: Arc<Session>,
+        session_loop_done_rx: broadcast::Receiver<()>,
+        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+    ) {
+        if let Err(err) = Self::call_loop_with_errors(
+            context,
+            session,
+            session_loop_done_rx,
+            handle_message_result_tx.clone(),
+        )
+        .await
+        {
+            handle_message_result_tx.send(Err(err.into())).ok();
+        }
+    }
+
+    async fn handle_invocation(
+        session: Arc<Session>,
+        invocation: RpcInvocation,
+        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+    ) {
+        if let Err(err) = session.handle_invocation(invocation).await {
+            handle_message_result_tx.send(Err(err.into())).ok();
+        }
+    }
+
+    async fn call_loop_with_errors<S>(
+        context: RouterContext<S>,
+        session: Arc<Session>,
+        mut session_loop_done_rx: broadcast::Receiver<()>,
+        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+    ) -> Result<()> {
+        let mut call_rx = session.call_rx();
+        loop {
+            tokio::select! {
+                // Received a call message.
+                call_message = call_rx.recv() => {
+                    let invocation = match session.handle_ordered_call(&context, call_message?).await? {
+                        Some(invocation) => invocation,
+                        None => continue,
+                    };
+                    // Handle the invocation asynchronously.
+                    tokio::spawn(Self::handle_invocation(session.clone(), invocation, handle_message_result_tx.clone()));
+                }
+                // The session loop is done, so we should also be done.
+                _ = session_loop_done_rx.recv() => {
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+
     async fn session_loop_with_errors<S>(
         &self,
         context: &RouterContext<S>,
@@ -186,10 +281,25 @@ impl Connection {
         mut message_rx: UnboundedReceiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
+        session_loop_done_rx: broadcast::Receiver<()>,
     ) -> Result<bool> {
         let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
         let (handle_message_result_tx, mut handle_message_result_rx) = unbounded_channel();
+
+        tokio::spawn(Self::publish_loop(
+            context.clone(),
+            session.clone(),
+            session_loop_done_rx.resubscribe(),
+            handle_message_result_tx.clone(),
+        ));
+        tokio::spawn(Self::call_loop(
+            context.clone(),
+            session.clone(),
+            session_loop_done_rx.resubscribe(),
+            handle_message_result_tx.clone(),
+        ));
+
         loop {
             tokio::select! {
                 // Received a message from some part of the router.

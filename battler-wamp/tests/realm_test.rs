@@ -83,23 +83,28 @@ async fn peer_reconnects_and_rejoins_realm() {
     // Recreate the router.
     let router_handle = start_router().await.unwrap();
 
-    // The channel is closed.
-    assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
-        assert!(err.to_string().contains("channel closed"));
-    });
+    // The router transitions peers to the closed state, but the message may not be received if the
+    // channel closes too soon.
+    match peer.join_realm(REALM).await {
+        Ok(()) => (),
+        Err(err) => {
+            // The channel is closed.
+            assert_eq!(err.to_string(), "channel closed");
 
-    // Second attempt shows the peer is not connected.
-    assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
-        assert!(err.to_string().contains("peer is not connected"));
-    });
+            // Second attempt shows the peer is not connected.
+            assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
+                assert_eq!(err.to_string(), "peer is not connected");
+            });
 
-    // Reconnect and rejoin the realm.
-    assert_matches::assert_matches!(
-        peer.connect(&format!("ws://{}", router_handle.local_addr()))
-            .await,
-        Ok(())
-    );
-    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+            // Reconnect and rejoin the realm.
+            assert_matches::assert_matches!(
+                peer.connect(&format!("ws://{}", router_handle.local_addr()))
+                    .await,
+                Ok(())
+            );
+            assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+        }
+    }
 
     // Clean up the second router.
     router_handle.cancel().unwrap();
