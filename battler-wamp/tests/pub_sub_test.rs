@@ -69,8 +69,8 @@ async fn peer_receives_published_messages_for_topic() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut publisher = create_peer("publisher").unwrap();
-    let mut subscriber = create_peer("subscriber").unwrap();
+    let publisher = create_peer("publisher").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
         publisher
@@ -141,7 +141,7 @@ async fn event_channel_closes_automatically_when_unsubscribing() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut subscriber = create_peer("subscriber").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
         subscriber
@@ -167,7 +167,7 @@ async fn event_channel_closes_automatically_when_leaving_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut subscriber = create_peer("subscriber").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
         subscriber
@@ -192,7 +192,7 @@ async fn event_channel_closes_automatically_when_disconnecting() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut subscriber = create_peer("subscriber").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
         subscriber
@@ -217,8 +217,8 @@ async fn peer_does_not_receive_events_for_different_topic() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut publisher = create_peer("publisher").unwrap();
-    let mut subscriber = create_peer("subscriber").unwrap();
+    let publisher = create_peer("publisher").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
         publisher
@@ -275,7 +275,7 @@ async fn cannot_unsubscribe_from_non_existent_subscription() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut subscriber = create_peer("subscriber").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
         subscriber
@@ -307,7 +307,7 @@ async fn pub_sub_not_allowed_without_broker_role() {
     let mut config = RouterConfig::default();
     config.roles.remove(&RouterRole::Broker);
     let router_handle = start_router_with_config(config).await.unwrap();
-    let mut peer = create_peer("peer").unwrap();
+    let peer = create_peer("peer").unwrap();
 
     assert_matches::assert_matches!(
         peer.connect(&format!("ws://{}", router_handle.local_addr()))

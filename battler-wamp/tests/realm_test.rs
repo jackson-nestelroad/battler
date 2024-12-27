@@ -46,7 +46,7 @@ async fn peer_joins_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     // Connect to the router.
     assert_matches::assert_matches!(
@@ -67,7 +67,7 @@ async fn peer_reconnects_and_rejoins_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(
         peer.connect(&format!("ws://{}", router_handle.local_addr()))
@@ -116,7 +116,7 @@ async fn peer_joins_and_leaves_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(
         peer.connect(&format!("ws://{}", router_handle.local_addr()))
@@ -149,7 +149,7 @@ async fn peer_cannot_join_missing_realm() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(
         peer.connect(&format!("ws://{}", router_handle.local_addr()))

@@ -43,7 +43,7 @@ async fn peer_directly_connects_to_router() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     let connection = router_handle.direct_connect();
     assert_matches::assert_matches!(peer.direct_connect(connection.stream()).await, Ok(()));

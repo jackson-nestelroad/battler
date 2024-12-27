@@ -67,8 +67,8 @@ async fn peer_invokes_procedure_from_another_peer() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut caller = create_peer("caller").unwrap();
-    let mut callee = create_peer("callee").unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
 
     assert_matches::assert_matches!(
         caller
@@ -171,8 +171,8 @@ async fn caller_receives_cancelled_error_when_callee_leaves() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut caller = create_peer("caller").unwrap();
-    let mut callee = create_peer("callee").unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
 
     assert_matches::assert_matches!(
         caller
@@ -223,8 +223,8 @@ async fn calls_from_same_peer_processed_in_parallel() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut caller = create_peer("caller").unwrap();
-    let mut callee = create_peer("callee").unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
 
     assert_matches::assert_matches!(
         caller

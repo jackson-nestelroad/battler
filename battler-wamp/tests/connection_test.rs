@@ -43,7 +43,7 @@ async fn peer_connects_to_router() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     // Connect to the router.
     assert_matches::assert_matches!(
@@ -70,7 +70,7 @@ async fn peer_reconnects_to_router() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     // Connect to the router.
     assert_matches::assert_matches!(
@@ -94,7 +94,7 @@ async fn peer_disconnects_from_router() {
     test_utils::setup::setup_test_environment();
 
     let router_handle = start_router().await.unwrap();
-    let mut peer = create_peer().unwrap();
+    let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
 

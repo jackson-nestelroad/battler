@@ -224,7 +224,7 @@ where
     /// connection to the router, the connection is dropped in the background and methods depending
     /// on the connection will fail. The peer can reconnect to the router by calling this method
     /// again.
-    pub async fn connect(&mut self, uri: &str) -> Result<()> {
+    pub async fn connect(&self, uri: &str) -> Result<()> {
         let connector = self.connector_factory.new_connector();
         let connection = connector.connect(&self.config, uri).await?;
         info!(
@@ -241,7 +241,7 @@ where
     }
 
     /// Directly connects to a router with the given message stream.
-    pub async fn direct_connect(&mut self, stream: Box<dyn MessageStream>) -> Result<()> {
+    pub async fn direct_connect(&self, stream: Box<dyn MessageStream>) -> Result<()> {
         // Start the service and message handler.
         let service = Service::new(self.config.name.clone(), stream);
         let (message_tx, message_rx) = unbounded_channel();
@@ -446,7 +446,7 @@ where
     }
 
     /// Disconnects from the router.
-    pub async fn disconnect(&mut self) -> Result<()> {
+    pub async fn disconnect(&self) -> Result<()> {
         let mut peer_state = self.peer_state.lock().await;
 
         match peer_state.take() {
