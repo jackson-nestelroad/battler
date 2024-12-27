@@ -1,5 +1,3 @@
-#![feature(async_closure)]
-
 pub mod core;
 pub mod message;
 pub mod peer;
