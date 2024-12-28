@@ -1,0 +1,9 @@
+[package]
+name = "battler-wamprat-schema"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+battler-wamp = { path = "../../battler-wamp" }
+battler-wamprat-schema-proc-macro = { path = "battler-wamprat-schema-proc-macro" }
+thiserror = "1.0.65"

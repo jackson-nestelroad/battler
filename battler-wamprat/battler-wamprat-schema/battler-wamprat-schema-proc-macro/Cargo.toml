@@ -1,0 +1,18 @@
+[package]
+name = "battler-wamprat-schema-proc-macro"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+itertools = "0.13.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "2.0"
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+battler-wamprat-schema = { path = ".." }
+pretty_assertions = "1.4.0"

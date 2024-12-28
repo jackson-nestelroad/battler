@@ -1,7 +1,13 @@
+#![no_std]
+
 extern crate alloc;
 extern crate proc_macro;
 
-use alloc::fmt::format;
+use alloc::{
+    fmt::format,
+    string::ToString,
+    vec::Vec,
+};
 
 use itertools::Itertools;
 use proc_macro::TokenStream;
@@ -185,7 +191,10 @@ pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
         .map(|variant| {
             let variant_ident = &variant.ident;
             let variant_const_ident = Ident::new(
-                &format!("{}_TAG", variant_ident.to_string().to_uppercase()),
+                &format(format_args!(
+                    "{}_TAG",
+                    variant_ident.to_string().to_uppercase()
+                )),
                 variant_ident.span(),
             );
             let tag = &variant.attrs.tag;

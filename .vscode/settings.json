@@ -30,7 +30,8 @@
         "tungstenite",
         "Unregistration",
         "unsubscription",
-        "WAMP"
+        "WAMP",
+        "wamprat"
     ],
     "cSpell.ignorePaths": [
         ".vscode"

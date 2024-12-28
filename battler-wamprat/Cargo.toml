@@ -1,0 +1,11 @@
+[package]
+name = "battler-wamprat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+battler-wamp = { path = "../battler-wamp" }
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+pretty_assertions = "1.4.0"
