@@ -6,6 +6,7 @@ mod web_socket_peer;
 pub use peer::{
     Peer,
     PeerConfig,
+    PeerNotConnectedError,
     Procedure,
     RpcCall,
     RpcResult,

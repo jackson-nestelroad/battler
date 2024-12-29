@@ -40,7 +40,7 @@ use tokio::sync::broadcast::error::RecvError;
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHandle, Error> {
+async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHandle> {
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
@@ -54,11 +54,11 @@ async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHand
     Ok(handle)
 }
 
-async fn start_router() -> Result<RouterHandle, Error> {
+async fn start_router() -> Result<RouterHandle> {
     start_router_with_config(RouterConfig::default()).await
 }
 
-fn create_peer(name: &str) -> Result<WebSocketPeer, Error> {
+fn create_peer(name: &str) -> Result<WebSocketPeer> {
     let mut config = PeerConfig::default();
     config.name = name.to_owned();
     new_web_socket_peer(config)

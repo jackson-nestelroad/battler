@@ -123,7 +123,7 @@ impl DirectConnection {
 /// The router's ownership is transferred away when it starts. This handle allows interaction with
 /// the router as it is running asynchronously.
 pub struct RouterHandle {
-    direct_connect_fn: Box<dyn Fn() -> DirectConnection>,
+    direct_connect_fn: Box<dyn Fn() -> DirectConnection + Send + Sync + 'static>,
     start_handle: JoinHandle<()>,
     local_addr: SocketAddr,
     cancel_tx: broadcast::Sender<()>,
@@ -176,14 +176,15 @@ pub struct Router<S> {
     pub(crate) id_allocator: Box<dyn IdAllocator>,
 
     cancel_tx: broadcast::Sender<()>,
+    cancel_rx: broadcast::Receiver<()>,
     end_tx: broadcast::Sender<()>,
-    _end_rx: broadcast::Receiver<()>,
+    end_rx: broadcast::Receiver<()>,
 }
 
 impl<S> Router<S> {
     /// Receiver channel for determining when the router ends.
     pub(crate) fn end_rx(&self) -> broadcast::Receiver<()> {
-        self.end_tx.subscribe()
+        self.end_rx.resubscribe()
     }
 }
 
@@ -203,7 +204,7 @@ where
         for realm_config in &config.realms {
             realm_manager.insert(Realm::new(realm_config.clone()));
         }
-        let (cancel_tx, _) = broadcast::channel(1);
+        let (cancel_tx, cancel_rx) = broadcast::channel(1);
         let (end_tx, end_rx) = broadcast::channel(1);
         Ok(Self {
             config,
@@ -214,8 +215,9 @@ where
             transport_factory: Mutex::new(transport_factory),
             id_allocator: Box::new(RandomIdAllocator::default()),
             cancel_tx,
+            cancel_rx,
             end_tx,
-            _end_rx: end_rx,
+            end_rx,
         })
     }
 
@@ -232,31 +234,49 @@ where
         let listener = TcpListener::bind(&addr).await?;
         let local_addr = listener.local_addr()?;
 
+        // Subscribe to cancellations as soon as possible, so we don't miss messages while we
+        // asynchronously set up the connection loop.
+        let cancel_rx = self.cancel_rx.resubscribe();
+
         let cancel_tx = self.cancel_tx.clone();
         let context = RouterContext::new(self);
-        let start_handle = tokio::spawn(Self::handle_connections(context.clone(), listener));
+        let start_handle = tokio::spawn(Self::handle_connections(
+            context.clone(),
+            listener,
+            cancel_rx,
+        ));
 
-        Ok(RouterHandle {
-            start_handle,
-            local_addr,
-            cancel_tx,
-            direct_connect_fn: |context: RouterContext<S>| -> Box<dyn Fn() -> DirectConnection> {
-                Box::new(move || -> DirectConnection { Router::direct_connect(&context) })
-            }(context.clone()),
-        })
+        Ok(
+            RouterHandle {
+                start_handle,
+                local_addr,
+                cancel_tx,
+                direct_connect_fn: |context: RouterContext<S>| -> Box<
+                    dyn Fn() -> DirectConnection + Send + Sync + 'static,
+                > {
+                    Box::new(move || -> DirectConnection { Router::direct_connect(&context) })
+                }(context.clone()),
+            },
+        )
     }
 
-    async fn handle_connections(context: RouterContext<S>, listener: TcpListener) {
-        Self::connection_loop(&context, listener).await;
+    async fn handle_connections(
+        context: RouterContext<S>,
+        listener: TcpListener,
+        cancel_rx: broadcast::Receiver<()>,
+    ) {
+        Self::connection_loop(&context, listener, cancel_rx).await;
         Self::shut_down(&context).await;
         if let Err(err) = context.router().end_tx.send(()) {
             error!("Failed to write to end_tx channel after router connection loop ended: {err}");
         }
     }
 
-    async fn connection_loop(context: &RouterContext<S>, listener: TcpListener) {
-        let mut cancel_rx = context.router().cancel_tx.subscribe();
-
+    async fn connection_loop(
+        context: &RouterContext<S>,
+        listener: TcpListener,
+        mut cancel_rx: broadcast::Receiver<()>,
+    ) {
         loop {
             tokio::select! {
                 accept = listener.accept() => {

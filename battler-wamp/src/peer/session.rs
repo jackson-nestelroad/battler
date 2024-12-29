@@ -136,6 +136,11 @@ pub struct Invocation {
 }
 
 impl Invocation {
+    /// The invocation ID.
+    pub fn id(&self) -> Id {
+        self.id
+    }
+
     /// Responds to the invocation.
     pub fn respond(self, rpc_yield: Result<RpcYield>) -> Result<()> {
         match rpc_yield {

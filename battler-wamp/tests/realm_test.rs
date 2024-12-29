@@ -1,4 +1,4 @@
-use anyhow::Error;
+use anyhow::Result;
 use battler_wamp::{
     core::{
         error::InteractionError,
@@ -21,7 +21,7 @@ use battler_wamp::{
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router() -> Result<RouterHandle, Error> {
+async fn start_router() -> Result<RouterHandle> {
     let mut config = RouterConfig::default();
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
@@ -36,7 +36,7 @@ async fn start_router() -> Result<RouterHandle, Error> {
     Ok(handle)
 }
 
-fn create_peer() -> Result<WebSocketPeer, Error> {
+fn create_peer() -> Result<WebSocketPeer> {
     let config = PeerConfig::default();
     new_web_socket_peer(config)
 }

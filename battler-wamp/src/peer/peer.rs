@@ -13,6 +13,7 @@ use log::{
     error,
     info,
 };
+use thiserror::Error;
 use tokio::sync::{
     broadcast::{
         self,
@@ -178,6 +179,10 @@ pub struct RpcResult {
     pub arguments_keyword: Dictionary,
 }
 
+#[derive(Debug, Error)]
+#[error("peer is not connected")]
+pub struct PeerNotConnectedError;
+
 /// A WAMP peer (a.k.a., client) that connects to a WAMP router, establishes sessions in a realm,
 /// and interacts with resources in the realm.
 pub struct Peer<S> {
@@ -187,6 +192,7 @@ pub struct Peer<S> {
     #[allow(unused)]
     id_allocator: Box<dyn IdAllocator>,
 
+    session_finished_tx: broadcast::Sender<()>,
     drop_tx: broadcast::Sender<()>,
 
     peer_state: Arc<Mutex<Option<PeerState>>>,
@@ -203,15 +209,22 @@ where
         transport_factory: Box<dyn TransportFactory<S>>,
     ) -> Result<Self> {
         config.validate()?;
+        let (session_finished_tx, _) = broadcast::channel(16);
         let (drop_tx, _) = broadcast::channel(1);
         Ok(Self {
             config,
             connector_factory,
             transport_factory,
             id_allocator: Box::new(SequentialIdAllocator::default()),
+            session_finished_tx,
             drop_tx,
             peer_state: Arc::new(Mutex::new(None)),
         })
+    }
+
+    /// Receiver channel for a single session finishing, for reconnection logic.
+    pub fn session_finished_rx(&self) -> broadcast::Receiver<()> {
+        self.session_finished_tx.subscribe()
     }
 
     /// Connects to a router.
@@ -256,6 +269,7 @@ where
         tokio::spawn(Self::message_handler(
             session,
             self.peer_state.clone(),
+            self.session_finished_tx.clone(),
             message_rx,
             service_message_rx,
             end_rx,
@@ -275,21 +289,26 @@ where
     async fn message_handler(
         mut session: Session,
         peer_state: Arc<Mutex<Option<PeerState>>>,
+        session_finished_tx: broadcast::Sender<()>,
         mut message_rx: UnboundedReceiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
         drop_rx: broadcast::Receiver<()>,
     ) {
         loop {
-            match Self::session_loop_with_errors(
+            let result = Self::session_loop_with_errors(
                 &mut session,
                 &mut message_rx,
                 service_message_rx.resubscribe(),
                 end_rx.resubscribe(),
                 drop_rx.resubscribe(),
             )
-            .await
-            {
+            .await;
+
+            // Notify the outside world that a session finished, for reconnection logic.
+            session_finished_tx.send(()).ok();
+
+            match result {
                 Ok(done) => {
                     info!("Peer session {} finished", session.name());
                     if !done {
@@ -369,7 +388,7 @@ where
     {
         match &*self.peer_state.lock().await {
             Some(peer_state) => Ok(f(peer_state)),
-            None => Err(Error::msg("peer is not connected")),
+            None => Err(PeerNotConnectedError.into()),
         }
     }
 
