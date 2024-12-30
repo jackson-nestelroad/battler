@@ -27,6 +27,7 @@ use battler_wamp::{
     },
     router::RouterHandle,
 };
+use futures_util::lock::Mutex;
 use log::{
     error,
     warn,
@@ -46,17 +47,21 @@ use tokio::{
 };
 
 use crate::{
-    peer::error::{
-        PeerConnectionError,
-        ProcedureRegistrationError,
+    peer::{
+        error::{
+            PeerConnectionError,
+            ProcedureRegistrationError,
+        },
+        subscriber::Subscriber,
     },
     procedure::Procedure,
+    subscription::TypedSubscription,
 };
 
 /// A preregistered procedure that will be registered on every new connection to a router.
 pub(crate) struct PreregisteredProcedure {
-    pub(crate) procedure: Arc<Box<dyn Procedure>>,
-    pub(crate) ignore_registration_error: bool,
+    pub procedure: Arc<Box<dyn Procedure>>,
+    pub ignore_registration_error: bool,
 }
 
 /// The type of connection a [`Peer`] should continually establish with a router.
@@ -130,6 +135,7 @@ where
 /// peer as it is running asynchronously.
 pub struct PeerHandle<S> {
     peer: Arc<battler_wamp::peer::Peer<S>>,
+    subscriber: Arc<Mutex<Subscriber<S>>>,
 
     cancel_tx: broadcast::Sender<()>,
     error_rx: broadcast::Receiver<ChannelTransmittableError>,
@@ -232,6 +238,24 @@ where
         .await
     }
 
+    /// Subscribes to a topic.
+    pub async fn subscribe<T, Event>(&self, topic: Uri, subscription: T) -> Result<()>
+    where
+        T: TypedSubscription<Event = Event> + 'static,
+        Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+    {
+        self.subscriber
+            .lock()
+            .await
+            .subscribe_typed(topic, subscription)
+            .await
+    }
+
+    /// Unsubscribes from a topic.
+    pub async fn unsubscribe(&self, topic: &Uri) -> Result<()> {
+        self.subscriber.lock().await.unsubscribe(topic).await
+    }
+
     /// Calls a procedure, without type checking.
     pub async fn call_unchecked(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
         self.wait_until_session_established().await?;
@@ -272,6 +296,7 @@ where
     fn clone(&self) -> Self {
         Self {
             peer: self.peer.clone(),
+            subscriber: self.subscriber.clone(),
             cancel_tx: self.cancel_tx.clone(),
             error_rx: self.error_rx.resubscribe(),
             peer_state: self.peer_state.clone(),
@@ -318,6 +343,8 @@ pub struct Peer<S> {
     peer: Arc<battler_wamp::peer::Peer<S>>,
     connection_config: PeerConnectionConfig,
     realm: Uri,
+
+    subscriber: Arc<Mutex<Subscriber<S>>>,
     procedures: ahash::HashMap<Uri, PreregisteredProcedure>,
 
     peer_state: Arc<RwLock<PeerState>>,
@@ -337,13 +364,15 @@ where
         realm: Uri,
         procedures: impl Iterator<Item = (Uri, PreregisteredProcedure)>,
     ) -> Self {
+        let peer = Arc::new(peer);
         let (session_established_tx, session_established_rx) = broadcast::channel(16);
         let (session_ready_tx, session_ready_rx) = broadcast::channel(16);
 
         Self {
-            peer: Arc::new(peer),
+            peer: peer.clone(),
             connection_config,
             realm,
+            subscriber: Arc::new(Mutex::new(Subscriber::new(peer))),
             procedures: procedures.collect(),
             peer_state: Arc::new(RwLock::new(PeerState::Disconnected)),
             session_established_tx,
@@ -358,6 +387,7 @@ where
     /// The returned handle should be used to interact with the peer as it runs.
     pub fn start(self) -> (PeerHandle<S>, JoinHandle<()>) {
         let peer = self.peer.clone();
+        let subscriber = self.subscriber.clone();
         let (cancel_tx, cancel_rx) = broadcast::channel(16);
         let (error_tx, error_rx) = broadcast::channel(16);
         let peer_state = self.peer_state.clone();
@@ -367,6 +397,7 @@ where
         (
             PeerHandle {
                 peer,
+                subscriber,
                 cancel_tx,
                 error_rx,
                 peer_state,
@@ -479,7 +510,8 @@ where
         *self.peer_state.write().await = PeerState::Established;
         self.session_established_tx.send(()).ok();
 
-        // TODO: Resubscribe.
+        // Restore all subscriptions.
+        self.subscriber.lock().await.restore_subscriptions().await?;
 
         // Restart all procedure handlers.
         for (uri, procedure) in &self.procedures {

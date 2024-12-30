@@ -509,7 +509,7 @@ impl Session {
 
     async fn modify_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
     where
-        F: Fn(&mut EstablishedSessionState) -> T,
+        F: FnOnce(&mut EstablishedSessionState) -> T,
     {
         match &mut *self.state.write().await {
             SessionState::Established(ref mut state) => Ok(f(state)),
@@ -680,12 +680,9 @@ impl Session {
             Message::Subscribed(message) => {
                 let (event_tx, event_rx) = broadcast::channel(16);
                 self.modify_established_session_state(|state| {
-                    state.subscriptions.insert(
-                        message.subscription,
-                        Subscription {
-                            event_tx: event_tx.clone(),
-                        },
-                    )
+                    state
+                        .subscriptions
+                        .insert(message.subscription, Subscription { event_tx })
                 })
                 .await?;
                 self.subscribed_tx
@@ -732,12 +729,9 @@ impl Session {
             Message::Registered(message) => {
                 let (invocation_tx, invocation_rx) = broadcast::channel(16);
                 self.modify_established_session_state(|state| {
-                    state.procedures.insert(
-                        message.registration,
-                        Procedure {
-                            invocation_tx: invocation_tx.clone(),
-                        },
-                    )
+                    state
+                        .procedures
+                        .insert(message.registration, Procedure { invocation_tx })
                 })
                 .await?;
                 self.registered_tx

@@ -31,3 +31,19 @@ impl PeerConnectionError {
         Self { msg: msg.into() }
     }
 }
+
+/// An error for a topic already having a subscription.
+#[derive(Debug, Error)]
+#[error("{msg}")]
+pub struct AlreadySubscribedError {
+    msg: String,
+}
+
+impl AlreadySubscribedError {
+    pub fn new<S>(msg: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Self { msg: msg.into() }
+    }
+}

@@ -1,6 +1,7 @@
 mod error;
 mod peer;
 mod peer_builder;
+mod subscriber;
 
 pub use peer::{
     Peer,

@@ -13,6 +13,7 @@ use syn::{
     Error,
     Field,
     Ident,
+    Index,
     ItemStruct,
     Meta,
     Path,
@@ -134,7 +135,7 @@ pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
     let (field_serializers, field_deserializers, field_identifiers): (Vec<_>, Vec<_>, Vec<_>) = input.fields.iter().enumerate().map(|(i, field)| {
         let accessor = match &field.ident {
             Some(ident) => quote!(self.#ident),
-            None => quote!(self.#i),
+            None => { let i = Index::from(i); quote!(self.#i) },
         };
         let ty = &field.ty;
         let field_name = field.ident.clone().unwrap_or(Ident::new(&format!("field_{i}"), call_site));
@@ -258,7 +259,7 @@ pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
     let (field_serializers, field_deserializers, field_identifiers): (Vec<_>, Vec<_>, Vec<_>) = input.fields.iter().enumerate().map(|(i, field)| {
         let accessor = match &field.ident {
             Some(ident) => quote!(self.#ident),
-            None => quote!(self.#i),
+            None => { let i = Index::from(i); quote!(self.#i) },
         };
         let ty = &field.ty;
         let field_name = field.ident.clone().unwrap_or(Ident::new(&format!("field_{i}"), call_site));
@@ -416,7 +417,7 @@ pub fn derive_wamp_application_message(input: TokenStream) -> TokenStream {
     let (field_serializers, field_deserializers, field_identifiers): (Vec<_>, Vec<_>, Vec<_>) = input.fields.iter().enumerate().map(|(i, field)| {
         let accessor = match &field.ident {
             Some(ident) => quote!(self.#ident),
-            None => quote!(self.#i),
+            None => { let i = Index::from(i); quote!(self.#i) },
         };
         let field_name = field.ident.clone().unwrap_or(Ident::new(&format!("field_{i}"), call_site));
         let input_output_ident = match field.attrs.field_type {

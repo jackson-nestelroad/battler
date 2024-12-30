@@ -104,7 +104,7 @@ async fn registers_methods_on_start() {
         "ws://{}",
         router_handle.local_addr()
     )));
-    peer_builder.add_typed_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
+    peer_builder.add_procedure_typed(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
     let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
         Uri::try_from(REALM).unwrap(),
@@ -166,7 +166,7 @@ async fn registers_methods_on_reconnect() {
         "ws://{}",
         router_handle.local_addr()
     )));
-    peer_builder.add_typed_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
+    peer_builder.add_procedure_typed(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
     let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
         Uri::try_from(REALM).unwrap(),
@@ -177,9 +177,10 @@ async fn registers_methods_on_reconnect() {
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
 
+    // Restart the router.
     let (router_handle, router_join_handle) = start_router(8888).await.unwrap();
 
-    // Wait again.
+    // Wait again, to ensure the method is registered before calling it.
     callee_handle.wait_until_ready().await.unwrap();
 
     let (caller_handle, caller_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
@@ -219,7 +220,7 @@ async fn retries_call_during_reconnect() {
         "ws://{}",
         router_handle.local_addr()
     )));
-    peer_builder.add_typed_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
+    peer_builder.add_procedure_typed(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
     let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
         Uri::try_from(REALM).unwrap(),

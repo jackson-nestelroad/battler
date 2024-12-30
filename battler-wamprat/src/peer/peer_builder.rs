@@ -50,7 +50,7 @@ impl PeerBuilder {
 
     /// Adds a new strongly-typed procedure, which will be registered on every new connection to a
     /// router.
-    pub fn add_typed_procedure<T, Input, Output>(&mut self, uri: Uri, procedure: T)
+    pub fn add_procedure_typed<T, Input, Output>(&mut self, uri: Uri, procedure: T)
     where
         T: TypedProcedure<Input = Input, Output = Output> + 'static,
         Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
