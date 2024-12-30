@@ -10,7 +10,11 @@ use anyhow::{
 };
 use battler_wamp::{
     core::{
-        error::ChannelTransmittableError,
+        error::{
+            ChannelTransmittableError,
+            InteractionError,
+        },
+        id::Id,
         uri::Uri,
     },
     message::message::Message,
@@ -31,7 +35,10 @@ use tokio::{
     sync::{
         broadcast::{
             self,
-            error::SendError,
+            error::{
+                RecvError,
+                SendError,
+            },
         },
         RwLock,
     },
@@ -58,7 +65,7 @@ pub enum PeerConnectionType {
     Remote(String),
     /// A direct connection with a [`Router`][`battler_wamp::router::Router`] running in the same
     /// process.
-    Direct(Arc<RouterHandle>),
+    Direct(RouterHandle),
 }
 
 impl Debug for PeerConnectionType {
@@ -92,7 +99,13 @@ impl PeerConnectionConfig {
 }
 
 fn retryable_error(err: &Error) -> bool {
-    err.is::<PeerNotConnectedError>() || err.is::<SendError<Message>>()
+    err.is::<PeerNotConnectedError>()
+        || err.is::<SendError<Message>>()
+        || err.is::<RecvError>()
+        || match err.downcast_ref::<InteractionError>() {
+            Some(InteractionError::Canceled) => true,
+            _ => false,
+        }
 }
 
 async fn repeat_while_retryable<F, T>(f: F) -> Result<T>
@@ -103,6 +116,7 @@ where
         let result = f().await;
         if let Err(err) = &result {
             if retryable_error(err) {
+                tokio::time::sleep(Duration::from_secs(1)).await;
                 continue;
             }
         }
@@ -117,7 +131,6 @@ where
 pub struct PeerHandle<S> {
     peer: Arc<battler_wamp::peer::Peer<S>>,
 
-    start_handle: JoinHandle<()>,
     cancel_tx: broadcast::Sender<()>,
     error_rx: broadcast::Receiver<ChannelTransmittableError>,
 
@@ -130,14 +143,10 @@ impl<S> PeerHandle<S>
 where
     S: Send + 'static,
 {
-    /// Joins the task running the service.
-    pub async fn join(self) -> Result<()> {
-        self.start_handle.await.map_err(Error::new)
-    }
-
-    /// Cancels the router.
+    /// Cancels the peer.
     ///
-    /// Cancellation is asynchronous. Use [`Self::join`] to wait for the peer to stop.
+    /// Cancellation is asynchronous. Use the [`JoinHandle`] returned from [`Peer::start`] to wait
+    /// for the peer to stop.
     pub fn cancel(&self) -> Result<()> {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
     }
@@ -148,6 +157,14 @@ where
     /// running.
     pub fn error_rx(&self) -> broadcast::Receiver<ChannelTransmittableError> {
         self.error_rx.resubscribe()
+    }
+
+    /// The current session ID, as given by the router.
+    ///
+    /// Since a peer is reused across multiple router sessions, this ID is subject to change at any
+    /// point.
+    pub async fn current_session_id(&self) -> Option<Id> {
+        self.peer.current_session_id().await
     }
 
     async fn wait_until_session_established(&self) -> Result<()> {
@@ -193,13 +210,16 @@ where
     /// Publishes an event to a topic, without type checking.
     pub async fn publish_unchecked(&self, topic: Uri, event: Event) -> Result<()> {
         self.wait_until_session_established().await?;
-        repeat_while_retryable(async || self.peer.publish(topic.clone(), event.clone()).await).await
+        let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, topic: Uri, event: Event| {
+            async move || peer.publish(topic.clone(), event.clone()).await
+        })(self.peer.clone(), topic, event);
+        repeat_while_retryable(f).await
     }
 
     /// Publishes an event to a topic.
     pub async fn publish<Payload>(&self, topic: Uri, payload: Payload) -> Result<()>
     where
-        Payload: battler_wamprat_message::WampApplicationMessage,
+        Payload: battler_wamprat_message::WampApplicationMessage + 'static,
     {
         let (arguments, arguments_keyword) = payload.wamp_serialize_application_message()?;
         self.publish_unchecked(
@@ -215,15 +235,17 @@ where
     /// Calls a procedure, without type checking.
     pub async fn call_unchecked(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
         self.wait_until_session_established().await?;
-        repeat_while_retryable(async || self.peer.call(procedure.clone(), rpc_call.clone()).await)
-            .await
+        let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, procedure: Uri, rpc_call: RpcCall| {
+            async move || peer.call(procedure.clone(), rpc_call.clone()).await
+        })(self.peer.clone(), procedure, rpc_call);
+        repeat_while_retryable(f).await
     }
 
     /// Calls a procedure.
     pub async fn call<Input, Output>(&self, procedure: Uri, input: Input) -> Result<Output>
     where
-        Input: battler_wamprat_message::WampApplicationMessage,
-        Output: battler_wamprat_message::WampApplicationMessage,
+        Input: battler_wamprat_message::WampApplicationMessage + 'static,
+        Output: battler_wamprat_message::WampApplicationMessage + 'static,
     {
         let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
         let result = self
@@ -240,6 +262,22 @@ where
             result.arguments_keyword,
         )?;
         Ok(output)
+    }
+}
+
+impl<S> Clone for PeerHandle<S>
+where
+    S: Send + 'static,
+{
+    fn clone(&self) -> Self {
+        Self {
+            peer: self.peer.clone(),
+            cancel_tx: self.cancel_tx.clone(),
+            error_rx: self.error_rx.resubscribe(),
+            peer_state: self.peer_state.clone(),
+            session_established_rx: self.session_established_rx.resubscribe(),
+            session_ready_rx: self.session_ready_rx.resubscribe(),
+        }
     }
 }
 
@@ -318,7 +356,7 @@ where
     /// Starts the peer asynchronously.
     ///
     /// The returned handle should be used to interact with the peer as it runs.
-    pub fn start(self) -> PeerHandle<S> {
+    pub fn start(self) -> (PeerHandle<S>, JoinHandle<()>) {
         let peer = self.peer.clone();
         let (cancel_tx, cancel_rx) = broadcast::channel(16);
         let (error_tx, error_rx) = broadcast::channel(16);
@@ -326,15 +364,17 @@ where
         let session_established_rx = self.session_established_rx.resubscribe();
         let session_ready_rx = self.session_ready_rx.resubscribe();
         let start_handle = tokio::spawn(self.run(cancel_rx, error_tx));
-        PeerHandle {
-            peer,
+        (
+            PeerHandle {
+                peer,
+                cancel_tx,
+                error_rx,
+                peer_state,
+                session_established_rx,
+                session_ready_rx,
+            },
             start_handle,
-            cancel_tx,
-            error_rx,
-            peer_state,
-            session_established_rx,
-            session_ready_rx,
-        }
+        )
     }
 
     async fn run(

@@ -18,10 +18,11 @@ use battler_wamp::{
         RouterHandle,
     },
 };
+use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router() -> Result<RouterHandle> {
+async fn start_router() -> Result<(RouterHandle, JoinHandle<()>)> {
     let mut config = RouterConfig::default();
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
@@ -32,8 +33,7 @@ async fn start_router() -> Result<RouterHandle> {
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
-    let handle = router.start().await?;
-    Ok(handle)
+    router.start().await
 }
 
 fn create_peer() -> Result<WebSocketPeer> {
@@ -45,7 +45,7 @@ fn create_peer() -> Result<WebSocketPeer> {
 async fn peer_joins_realm() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     // Connect to the router.
@@ -59,14 +59,14 @@ async fn peer_joins_realm() {
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }
 
 #[tokio::test]
 async fn peer_reconnects_and_rejoins_realm() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(
@@ -78,10 +78,10 @@ async fn peer_reconnects_and_rejoins_realm() {
 
     // Clean up the first router.
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 
     // Recreate the router.
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
 
     // The router transitions peers to the closed state, but the message may not be received if the
     // channel closes too soon.
@@ -108,14 +108,14 @@ async fn peer_reconnects_and_rejoins_realm() {
 
     // Clean up the second router.
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }
 
 #[tokio::test]
 async fn peer_joins_and_leaves_realm() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(
@@ -141,14 +141,14 @@ async fn peer_joins_and_leaves_realm() {
     });
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }
 
 #[tokio::test]
 async fn peer_cannot_join_missing_realm() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(
@@ -173,5 +173,5 @@ async fn peer_cannot_join_missing_realm() {
     });
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }

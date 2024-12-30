@@ -32,10 +32,13 @@ use battler_wamp::{
     },
 };
 use futures_util::future::join_all;
+use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHandle> {
+async fn start_router_with_config(
+    mut config: RouterConfig,
+) -> Result<(RouterHandle, JoinHandle<()>)> {
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
@@ -45,11 +48,10 @@ async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHand
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
-    let handle = router.start().await?;
-    Ok(handle)
+    router.start().await
 }
 
-async fn start_router() -> Result<RouterHandle> {
+async fn start_router() -> Result<(RouterHandle, JoinHandle<()>)> {
     start_router_with_config(RouterConfig::default()).await
 }
 
@@ -63,7 +65,7 @@ fn create_peer(name: &str) -> Result<WebSocketPeer> {
 async fn peer_invokes_procedure_from_another_peer() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let caller = create_peer("caller").unwrap();
     let callee = create_peer("callee").unwrap();
 
@@ -167,7 +169,7 @@ async fn peer_invokes_procedure_from_another_peer() {
 async fn caller_receives_cancelled_error_when_callee_leaves() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let caller = create_peer("caller").unwrap();
     let callee = create_peer("callee").unwrap();
 
@@ -219,7 +221,7 @@ async fn caller_receives_cancelled_error_when_callee_leaves() {
 async fn calls_from_same_peer_processed_in_parallel() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let caller = create_peer("caller").unwrap();
     let callee = create_peer("callee").unwrap();
 

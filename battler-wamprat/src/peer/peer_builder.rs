@@ -12,6 +12,7 @@ use battler_wamp::{
         RpcYield,
     },
 };
+use tokio::task::JoinHandle;
 
 use crate::{
     peer::{
@@ -121,7 +122,11 @@ impl PeerBuilder {
 
     /// Builds and starts a new [`Peer`] object in an asynchronous task, which can be managed
     /// through the returned [`PeerHandle`].
-    pub fn start<S>(self, peer: battler_wamp::peer::Peer<S>, realm: Uri) -> PeerHandle<S>
+    pub fn start<S>(
+        self,
+        peer: battler_wamp::peer::Peer<S>,
+        realm: Uri,
+    ) -> (PeerHandle<S>, JoinHandle<()>)
     where
         S: Send + 'static,
     {

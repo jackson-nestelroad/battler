@@ -15,10 +15,11 @@ use battler_wamp::{
         RouterHandle,
     },
 };
+use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router() -> Result<RouterHandle> {
+async fn start_router() -> Result<(RouterHandle, JoinHandle<()>)> {
     let mut config = RouterConfig::default();
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
@@ -29,8 +30,7 @@ async fn start_router() -> Result<RouterHandle> {
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
-    let handle = router.start().await?;
-    Ok(handle)
+    router.start().await
 }
 
 fn create_peer() -> Result<WebSocketPeer> {
@@ -42,7 +42,7 @@ fn create_peer() -> Result<WebSocketPeer> {
 async fn peer_connects_to_router() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     // Connect to the router.
@@ -57,7 +57,7 @@ async fn peer_connects_to_router() {
     // We expect that the connection established by the peer ends abruptly, because it is an
     // untracked connection not attached to any realm.
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 
     // The channel is closed.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
@@ -69,7 +69,7 @@ async fn peer_connects_to_router() {
 async fn peer_reconnects_to_router() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     // Connect to the router.
@@ -86,14 +86,14 @@ async fn peer_reconnects_to_router() {
     );
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }
 
 #[tokio::test]
 async fn peer_disconnects_from_router() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
 
     assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
@@ -114,5 +114,5 @@ async fn peer_disconnects_from_router() {
     assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }

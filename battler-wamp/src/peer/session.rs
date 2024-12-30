@@ -306,6 +306,7 @@ struct Procedure {
 
 /// A handle to an asynchronously-running peer session.
 pub struct SessionHandle {
+    state: Arc<RwLock<SessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
     established_session_rx:
@@ -327,6 +328,17 @@ pub struct SessionHandle {
 }
 
 impl SessionHandle {
+    /// The current session ID, as given by the router.
+    ///
+    /// Since a peer session is reused across multiple router sessions for the same peer, this ID is
+    /// subject to change at any point.
+    pub async fn current_session_id(&self) -> Option<Id> {
+        match &*self.state.read().await {
+            SessionState::Established(state) => Some(state.session_id),
+            _ => None,
+        }
+    }
+
     /// A reference to the session's ID generator.
     pub fn id_allocator(&self) -> Arc<Box<dyn IdAllocator>> {
         self.id_allocator.clone()
@@ -397,7 +409,7 @@ impl SessionHandle {
 pub struct Session {
     name: String,
     service_message_tx: UnboundedSender<Message>,
-    state: RwLock<SessionState>,
+    state: Arc<RwLock<SessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
     established_session_tx:
@@ -432,7 +444,7 @@ impl Session {
         Self {
             name,
             service_message_tx,
-            state: RwLock::new(SessionState::default()),
+            state: Arc::new(RwLock::new(SessionState::default())),
             id_allocator: Arc::new(Box::new(id_allocator)),
             established_session_tx,
             closed_session_tx,
@@ -462,6 +474,7 @@ impl Session {
     /// lifecycle.
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
+            state: self.state.clone(),
             id_allocator: self.id_allocator.clone(),
             established_session_rx: self.established_session_tx.subscribe(),
             closed_session_rx: self.closed_session_tx.subscribe(),

@@ -36,11 +36,16 @@ use battler_wamp::{
         RouterHandle,
     },
 };
-use tokio::sync::broadcast::error::RecvError;
+use tokio::{
+    sync::broadcast::error::RecvError,
+    task::JoinHandle,
+};
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHandle> {
+async fn start_router_with_config(
+    mut config: RouterConfig,
+) -> Result<(RouterHandle, JoinHandle<()>)> {
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
@@ -50,11 +55,10 @@ async fn start_router_with_config(mut config: RouterConfig) -> Result<RouterHand
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
-    let handle = router.start().await?;
-    Ok(handle)
+    router.start().await
 }
 
-async fn start_router() -> Result<RouterHandle> {
+async fn start_router() -> Result<(RouterHandle, JoinHandle<()>)> {
     start_router_with_config(RouterConfig::default()).await
 }
 
@@ -68,7 +72,7 @@ fn create_peer(name: &str) -> Result<WebSocketPeer> {
 async fn peer_receives_published_messages_for_topic() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let publisher = create_peer("publisher").unwrap();
     let subscriber = create_peer("subscriber").unwrap();
 
@@ -140,7 +144,7 @@ async fn peer_receives_published_messages_for_topic() {
 async fn event_channel_closes_automatically_when_unsubscribing() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
@@ -166,7 +170,7 @@ async fn event_channel_closes_automatically_when_unsubscribing() {
 async fn event_channel_closes_automatically_when_leaving_realm() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
@@ -191,7 +195,7 @@ async fn event_channel_closes_automatically_when_leaving_realm() {
 async fn event_channel_closes_automatically_when_disconnecting() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
@@ -216,7 +220,7 @@ async fn event_channel_closes_automatically_when_disconnecting() {
 async fn peer_does_not_receive_events_for_different_topic() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let publisher = create_peer("publisher").unwrap();
     let subscriber = create_peer("subscriber").unwrap();
 
@@ -274,7 +278,7 @@ async fn peer_does_not_receive_events_for_different_topic() {
 async fn cannot_unsubscribe_from_non_existent_subscription() {
     test_utils::setup::setup_test_environment();
 
-    let router_handle = start_router().await.unwrap();
+    let (router_handle, _) = start_router().await.unwrap();
     let subscriber = create_peer("subscriber").unwrap();
 
     assert_matches::assert_matches!(
@@ -306,7 +310,7 @@ async fn pub_sub_not_allowed_without_broker_role() {
 
     let mut config = RouterConfig::default();
     config.roles.remove(&RouterRole::Broker);
-    let router_handle = start_router_with_config(config).await.unwrap();
+    let (router_handle, _) = start_router_with_config(config).await.unwrap();
     let peer = create_peer("peer").unwrap();
 
     assert_matches::assert_matches!(

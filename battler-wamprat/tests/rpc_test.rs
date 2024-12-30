@@ -20,6 +20,7 @@ use battler_wamprat::{
     peer::{
         PeerBuilder,
         PeerConnectionType,
+        PeerHandle,
     },
     procedure::TypedProcedure,
 };
@@ -28,10 +29,11 @@ use battler_wamprat_message::{
     WampApplicationMessage,
     WampList,
 };
+use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";
 
-async fn start_router(port: u16) -> Result<RouterHandle> {
+async fn start_router(port: u16) -> Result<(RouterHandle, JoinHandle<()>)> {
     let mut config = RouterConfig::default();
     // Must use a stable port for reconnection.
     config.port = port;
@@ -44,8 +46,7 @@ async fn start_router(port: u16) -> Result<RouterHandle> {
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
-    let handle = router.start().await?;
-    Ok(handle)
+    router.start().await
 }
 
 fn create_peer(name: &str) -> Result<WebSocketPeer> {
@@ -96,7 +97,7 @@ async fn registers_methods_on_start() {
     test_utils::setup::setup_test_environment();
 
     // Start a router.
-    let router_handle = start_router(0).await.unwrap();
+    let (router_handle, router_join_handle) = start_router(0).await.unwrap();
 
     // Create a callee with that exposes an addition RPC.
     let mut peer_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
@@ -104,7 +105,7 @@ async fn registers_methods_on_start() {
         router_handle.local_addr()
     )));
     peer_builder.add_typed_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
-    let callee_handle = peer_builder.start(
+    let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
@@ -113,10 +114,9 @@ async fn registers_methods_on_start() {
     callee_handle.wait_until_ready().await.unwrap();
 
     // Create a caller.
-    let caller_handle = PeerBuilder::new(PeerConnectionType::Remote(format!(
-        "ws://{}",
-        router_handle.local_addr()
-    )))
+    let (caller_handle, caller_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ))
     .start(
         create_peer("caller").unwrap(),
         Uri::try_from(REALM).unwrap(),
@@ -145,13 +145,13 @@ async fn registers_methods_on_start() {
     // Clean up everything.
 
     caller_handle.cancel().unwrap();
-    caller_handle.join().await.unwrap();
+    caller_join_handle.await.unwrap();
 
     callee_handle.cancel().unwrap();
-    callee_handle.join().await.unwrap();
+    callee_join_handle.await.unwrap();
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 }
 
 #[tokio::test]
@@ -159,7 +159,7 @@ async fn registers_methods_on_reconnect() {
     test_utils::setup::setup_test_environment();
 
     // Start a router.
-    let router_handle = start_router(8888).await.unwrap();
+    let (router_handle, router_join_handle) = start_router(8888).await.unwrap();
 
     // Create a callee with that exposes an addition RPC.
     let mut peer_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
@@ -167,7 +167,7 @@ async fn registers_methods_on_reconnect() {
         router_handle.local_addr()
     )));
     peer_builder.add_typed_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
-    let callee_handle = peer_builder.start(
+    let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
@@ -175,17 +175,16 @@ async fn registers_methods_on_reconnect() {
 
     // Stop the router to disconnect the peer.
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
 
-    let router_handle = start_router(8888).await.unwrap();
+    let (router_handle, router_join_handle) = start_router(8888).await.unwrap();
 
     // Wait again.
     callee_handle.wait_until_ready().await.unwrap();
 
-    let caller_handle = PeerBuilder::new(PeerConnectionType::Remote(format!(
-        "ws://{}",
-        router_handle.local_addr()
-    )))
+    let (caller_handle, caller_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ))
     .start(
         create_peer("caller").unwrap(),
         Uri::try_from(REALM).unwrap(),
@@ -199,11 +198,81 @@ async fn registers_methods_on_reconnect() {
     });
 
     caller_handle.cancel().unwrap();
-    caller_handle.join().await.unwrap();
+    caller_join_handle.await.unwrap();
 
     callee_handle.cancel().unwrap();
-    callee_handle.join().await.unwrap();
+    callee_join_handle.await.unwrap();
 
     router_handle.cancel().unwrap();
-    router_handle.join().await.unwrap();
+    router_join_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn retries_call_during_reconnect() {
+    test_utils::setup::setup_test_environment();
+
+    // Start a router.
+    let (router_handle, router_join_handle) = start_router(0).await.unwrap();
+
+    // Create a callee with that exposes an addition RPC.
+    let mut peer_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    peer_builder.add_typed_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
+    let (callee_handle, callee_join_handle) = peer_builder.start(
+        create_peer("callee").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    callee_handle.wait_until_ready().await.unwrap();
+
+    let (caller_handle, caller_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ))
+    .start(
+        create_peer("caller").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    caller_handle.wait_until_ready().await.unwrap();
+
+    async fn call<S>(caller_handle: PeerHandle<S>)
+    where
+        S: Send + Sync + 'static,
+    {
+        assert_matches::assert_matches!(
+            caller_handle
+                .call::<AddInput, AddOutput>(
+                    Uri::try_from("com.battler.add2").unwrap(),
+                    AddInput {
+                        args: AddArgs { a: 12, b: 34 },
+                    },
+                )
+                .await,
+            Ok(output) => {
+                pretty_assertions::assert_eq!(output, AddOutput { args: SumArgs { sum: 46 }});
+            }
+        );
+    }
+
+    let call_handle = tokio::spawn(call(caller_handle.clone()));
+
+    // We cannot restart the whole router because there may be a data race between the callee
+    // re-registering its procedure and the caller invoking the procedure.
+    router_handle
+        .end_session(
+            Uri::try_from(REALM).unwrap(),
+            caller_handle.current_session_id().await.unwrap(),
+        )
+        .unwrap();
+
+    call_handle.await.unwrap();
+
+    caller_handle.cancel().unwrap();
+    caller_join_handle.await.unwrap();
+
+    callee_handle.cancel().unwrap();
+    callee_join_handle.await.unwrap();
+
+    router_handle.cancel().unwrap();
+    router_join_handle.await.unwrap();
 }

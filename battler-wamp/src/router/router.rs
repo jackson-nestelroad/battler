@@ -1,7 +1,10 @@
-use std::net::{
-    IpAddr,
-    Ipv4Addr,
-    SocketAddr,
+use std::{
+    net::{
+        IpAddr,
+        Ipv4Addr,
+        SocketAddr,
+    },
+    sync::Arc,
 };
 
 use anyhow::{
@@ -21,7 +24,11 @@ use tokio::{
     },
     sync::{
         broadcast,
-        mpsc::unbounded_channel,
+        mpsc::{
+            unbounded_channel,
+            UnboundedReceiver,
+            UnboundedSender,
+        },
     },
     task::JoinHandle,
 };
@@ -33,6 +40,7 @@ use crate::{
         close::CloseReason,
         hash::HashSet,
         id::{
+            Id,
             IdAllocator,
             RandomIdAllocator,
         },
@@ -118,26 +126,30 @@ impl DirectConnection {
     }
 }
 
+/// A message for controlling the router as it is running.
+#[derive(Debug)]
+pub enum RouterControlMessage {
+    /// Ends the session with the given ID in a realm.
+    EndSession { realm: Uri, id: Id },
+}
+
 /// A handle to an asynchronously-running [`Router`].
 ///
 /// The router's ownership is transferred away when it starts. This handle allows interaction with
 /// the router as it is running asynchronously.
+#[derive(Clone)]
 pub struct RouterHandle {
-    direct_connect_fn: Box<dyn Fn() -> DirectConnection + Send + Sync + 'static>,
-    start_handle: JoinHandle<()>,
     local_addr: SocketAddr,
     cancel_tx: broadcast::Sender<()>,
+    control_tx: UnboundedSender<RouterControlMessage>,
+    direct_connect_fn: Arc<Box<dyn Fn() -> DirectConnection + Send + Sync + 'static>>,
 }
 
 impl RouterHandle {
-    /// Joins the router task, effectively waiting for the router to stop altogether.
-    pub async fn join(self) -> Result<()> {
-        self.start_handle.await.map_err(Error::new)
-    }
-
     /// Cancels the router.
     ///
-    /// Cancellation is asynchronous. Use [`Self::join`] to wait for the router to stop.
+    /// Cancellation is asynchronous. Use the [`JoinHandle`] returned from [`Router::start`] to wait
+    /// for the router to stop.
     pub fn cancel(&self) -> Result<()> {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
     }
@@ -150,6 +162,13 @@ impl RouterHandle {
     /// Starts a direct connection to the router.
     pub fn direct_connect(&self) -> DirectConnection {
         (self.direct_connect_fn)()
+    }
+
+    /// Ends the session with the given ID in a realm.
+    pub fn end_session(&self, realm: Uri, id: Id) -> Result<()> {
+        self.control_tx
+            .send(RouterControlMessage::EndSession { realm, id })
+            .map_err(Error::new)
     }
 }
 
@@ -225,7 +244,7 @@ where
     ///
     /// The returned handle can be used to interact with the router since its ownership is
     /// transferred away.
-    pub async fn start(self) -> Result<RouterHandle, Error> {
+    pub async fn start(self) -> Result<(RouterHandle, JoinHandle<()>), Error> {
         let addr = format!("{}:{}", self.config.address, self.config.port);
         info!(
             "Starting router {} at {addr}: {:?}",
@@ -239,33 +258,39 @@ where
         let cancel_rx = self.cancel_rx.resubscribe();
 
         let cancel_tx = self.cancel_tx.clone();
+        let (control_tx, control_rx) = unbounded_channel();
         let context = RouterContext::new(self);
         let start_handle = tokio::spawn(Self::handle_connections(
             context.clone(),
             listener,
             cancel_rx,
+            control_rx,
         ));
 
-        Ok(
+        Ok((
             RouterHandle {
-                start_handle,
                 local_addr,
                 cancel_tx,
-                direct_connect_fn: |context: RouterContext<S>| -> Box<
-                    dyn Fn() -> DirectConnection + Send + Sync + 'static,
+                control_tx,
+                direct_connect_fn: |context: RouterContext<S>| -> Arc<
+                    Box<dyn Fn() -> DirectConnection + Send + Sync + 'static>,
                 > {
-                    Box::new(move || -> DirectConnection { Router::direct_connect(&context) })
+                    Arc::new(Box::new(move || -> DirectConnection {
+                        Router::direct_connect(&context)
+                    }))
                 }(context.clone()),
             },
-        )
+            start_handle,
+        ))
     }
 
     async fn handle_connections(
         context: RouterContext<S>,
         listener: TcpListener,
         cancel_rx: broadcast::Receiver<()>,
+        control_rx: UnboundedReceiver<RouterControlMessage>,
     ) {
-        Self::connection_loop(&context, listener, cancel_rx).await;
+        Self::connection_loop(&context, listener, cancel_rx, control_rx).await;
         Self::shut_down(&context).await;
         if let Err(err) = context.router().end_tx.send(()) {
             error!("Failed to write to end_tx channel after router connection loop ended: {err}");
@@ -276,6 +301,7 @@ where
         context: &RouterContext<S>,
         listener: TcpListener,
         mut cancel_rx: broadcast::Receiver<()>,
+        mut control_rx: UnboundedReceiver<RouterControlMessage>,
     ) {
         loop {
             tokio::select! {
@@ -289,6 +315,11 @@ where
                         addr,
                         MaybeTlsStream::Plain(stream),
                     ));
+                }
+                control_message = control_rx.recv() => {
+                    if let Some(control_message) = control_message {
+                        tokio::spawn(Self::handle_control_message(context.clone(), control_message));
+                    }
                 }
                 _ = cancel_rx.recv() => {
                     break;
@@ -351,6 +382,28 @@ where
         let service = Service::new(connection.uuid().to_string(), stream);
         connection.start(context.clone(), service);
         uuid
+    }
+
+    async fn handle_control_message(
+        context: RouterContext<S>,
+        control_message: RouterControlMessage,
+    ) {
+        match control_message {
+            RouterControlMessage::EndSession { realm, id } => {
+                if let Err(err) = Self::end_session(&context, &realm, id).await {
+                    error!("Failed to end session {id} in realm {realm}: {err}");
+                }
+            }
+        }
+    }
+
+    async fn end_session(context: &RouterContext<S>, realm: &Uri, id: Id) -> Result<()> {
+        let context = context.realm_context(realm)?;
+        match context.session(id).await {
+            Some(session) => session.session.close(CloseReason::Killed)?,
+            None => (),
+        }
+        Ok(())
     }
 
     async fn shut_down(context: &RouterContext<S>) {

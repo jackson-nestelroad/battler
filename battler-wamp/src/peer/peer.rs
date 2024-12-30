@@ -227,6 +227,19 @@ where
         self.session_finished_tx.subscribe()
     }
 
+    /// The current session ID, as given by the router.
+    ///
+    /// Since a peer is reused across multiple router sessions, this ID is subject to change at any
+    /// point.
+    pub async fn current_session_id(&self) -> Option<Id> {
+        self.get_from_peer_state_async(async |peer_state: &PeerState| {
+            peer_state.session.current_session_id().await
+        })
+        .await
+        .ok()
+        .flatten()
+    }
+
     /// Connects to a router.
     ///
     /// This method merely establishes a network connection with the router. It does not establish
@@ -393,6 +406,16 @@ where
         }
     }
 
+    async fn get_from_peer_state_async<F, T>(&self, f: F) -> Result<T, Error>
+    where
+        F: AsyncFn(&PeerState) -> T,
+    {
+        match self.peer_state.lock().await.as_ref() {
+            Some(peer_state) => Ok(f(peer_state).await),
+            None => Err(PeerNotConnectedError.into()),
+        }
+    }
+
     /// Joins the realm, establishing a WAMP session.
     ///
     /// The session exists for as long as the router allows it to. The session will be lost in the
@@ -506,6 +529,7 @@ where
             topic,
         }))?;
 
+        let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
                 subscription = subscribed_rx.recv() => {
@@ -524,6 +548,9 @@ where
                             }
                         }
                     }
+                }
+                _ = session_finished_rx.recv() => {
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }
@@ -549,6 +576,7 @@ where
             subscribed_subscription: id,
         }))?;
 
+        let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
                 unsubscription = unsubscribed_rx.recv() => {
@@ -564,6 +592,9 @@ where
                             }
                         }
                     }
+                }
+                _ = session_finished_rx.recv() => {
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }
@@ -590,6 +621,7 @@ where
             arguments_keyword: event.arguments_keyword,
         }))?;
 
+        let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
                 publication = published_rx.recv() => {
@@ -605,6 +637,9 @@ where
                             }
                         }
                     }
+                }
+                _ = session_finished_rx.recv() => {
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }
@@ -632,6 +667,7 @@ where
             procedure,
         }))?;
 
+        let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
                 registration = registered_rx.recv() => {
@@ -650,6 +686,9 @@ where
                             }
                         }
                     }
+                }
+                _ = session_finished_rx.recv() => {
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }
@@ -675,6 +714,7 @@ where
             registered_registration: id,
         }))?;
 
+        let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
                 unregistration = unregistered_rx.recv() => {
@@ -690,6 +730,9 @@ where
                             }
                         }
                     }
+                }
+                _ = session_finished_rx.recv() => {
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }
@@ -715,6 +758,7 @@ where
             arguments_keyword: rpc_call.arguments_keyword,
         }))?;
 
+        let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
                 rpc_result = rpc_result_rx.recv() => {
@@ -733,6 +777,9 @@ where
                             }
                         }
                     }
+                }
+                _ = session_finished_rx.recv() => {
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }

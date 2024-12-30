@@ -150,6 +150,7 @@ pub struct RpcInvocation {
 
 /// A handle to an asynchronously-running router session.
 pub struct SessionHandle {
+    id: Id,
     id_allocator: Arc<Box<dyn IdAllocator>>,
     message_tx: UnboundedSender<Message>,
     closed_session_rx: broadcast::Receiver<()>,
@@ -158,6 +159,11 @@ pub struct SessionHandle {
 }
 
 impl SessionHandle {
+    /// The session ID, as reported out to the peer.
+    pub fn id(&self) -> Id {
+        self.id
+    }
+
     /// A reference to the session's ID generator.
     pub fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
         self.id_allocator.clone()
@@ -248,6 +254,7 @@ impl Session {
     /// lifecycle.
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
+            id: self.id,
             id_allocator: self.id_allocator.clone(),
             message_tx: self.message_tx.clone(),
             closed_session_rx: self.closed_session_tx.subscribe(),
