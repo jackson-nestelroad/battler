@@ -337,7 +337,7 @@ impl PeerState {
 /// re-establish the session in the background.
 ///
 /// As such, this type operates similarly to [`battler_wamp::router::Router`]: its ownership is
-/// owned by a background task, so users can only operate on the router using the returned
+/// owned by a background task, so users can only operate on the peer using the returned
 /// [`PeerHandle`].
 pub struct Peer<S> {
     peer: Arc<battler_wamp::peer::Peer<S>>,
