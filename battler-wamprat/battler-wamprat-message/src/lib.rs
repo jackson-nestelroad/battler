@@ -4,7 +4,7 @@ pub use battler_wamp::core::types::{
     List,
     Value,
 };
-pub use battler_wamprat_schema_proc_macro::{
+pub use battler_wamprat_message_proc_macro::{
     WampApplicationMessage,
     WampDictionary,
     WampList,

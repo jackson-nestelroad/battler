@@ -8,7 +8,7 @@ ahash = "0.8.11"
 anyhow = "1.0"
 async-trait = "0.1.83"
 battler-wamp = { path = "../battler-wamp" }
-battler-wamprat-schema = { path = "battler-wamprat-schema" }
+battler-wamprat-message = { path = "battler-wamprat-message" }
 futures-channel = "0.3"
 futures-util = "0.3"
 log = "0.4"

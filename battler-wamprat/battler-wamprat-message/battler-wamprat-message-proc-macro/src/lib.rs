@@ -45,7 +45,7 @@ struct InputFieldAttrs {
 fn parse_input_field_attrs(field: &Field) -> syn::Result<InputFieldAttrs> {
     let attr = field.attrs.iter().find(|attr| {
         if let Meta::List(list) = &attr.meta {
-            if list.path.is_ident("battler_wamprat_schema") {
+            if list.path.is_ident("battler_wamprat_message") {
                 return true;
             }
         }
@@ -121,10 +121,10 @@ impl Parse for ListInput {
     }
 }
 
-/// Procedural macro for deriving [`battler_wamprat_schema::WampSerialize`] and
-/// [`battler_wamprat_schema::WampDeserialize`] for a struct that converts to a
-/// [`battler_wamprat_schema::List`].
-#[proc_macro_derive(WampList, attributes(battler_wamprat_schema))]
+/// Procedural macro for deriving [`battler_wamprat_message::WampSerialize`] and
+/// [`battler_wamprat_message::WampDeserialize`] for a struct that converts to a
+/// [`battler_wamprat_message::List`].
+#[proc_macro_derive(WampList, attributes(battler_wamprat_message))]
 pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ListInput);
     let call_site = Span::call_site();
@@ -141,20 +141,20 @@ pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
         let serialize_check = match &field.attrs.skip_serializing_if {
             Some(skip_serializing_if) => Some(quote! {
                 if #skip_serializing_if(&#accessor) {
-                    return Ok(battler_wamprat_schema::Value::List(list));
+                    return Ok(battler_wamprat_message::Value::List(list));
                 }
             }),
             None => None,
         };
         let if_empty = match &field.attrs.default {
-            DefaultAttr::False => quote!(return Err(battler_wamprat_schema::WampDeserializeError::new(std::fmt::format(format_args!("list member {} of {} is missing", std::stringify!(#field_name), std::stringify!(#ident)))))),
+            DefaultAttr::False => quote!(return Err(battler_wamprat_message::WampDeserializeError::new(std::fmt::format(format_args!("list member {} of {} is missing", std::stringify!(#field_name), std::stringify!(#ident)))))),
             DefaultAttr::True => quote!(<#ty as Default>::default()),
             DefaultAttr::Path(path) => quote!(#path()),
         };
         (
             quote! {
                 #serialize_check
-                match battler_wamprat_schema::WampSerialize::wamp_serialize(#accessor) {
+                match battler_wamprat_message::WampSerialize::wamp_serialize(#accessor) {
                     Ok(val) => list.push(val),
                     Err(err) => return Err(err.annotate(std::fmt::format(format_args!("failed to serialize list member {} of {}", std::stringify!(#field_name), std::stringify!(#ident))))),
                 }
@@ -162,14 +162,14 @@ pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
             quote! {
                 let #field_name = match list.get_mut(#i) {
                     Some(val) => {
-                        let mut out = battler_wamprat_schema::Value::Bool(false);
+                        let mut out = battler_wamprat_message::Value::Bool(false);
                         std::mem::swap(val, &mut out);
                         Some(out)
                     }
                     None => None,
                 };
                 let #field_name = match #field_name {
-                    Some(val) => match battler_wamprat_schema::WampDeserialize::wamp_deserialize(val) {
+                    Some(val) => match battler_wamprat_message::WampDeserialize::wamp_deserialize(val) {
                         Ok(val) => val,
                         Err(err) => return Err(err.annotate(std::fmt::format(format_args!("failed to deserialize list member {} of {}", std::stringify!(#field_name), std::stringify!(#ident)))))
                     },
@@ -181,11 +181,11 @@ pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
     }).multiunzip();
 
     let serialize = quote! {
-        impl battler_wamprat_schema::WampSerialize for #ident {
-            fn wamp_serialize(self) -> core::result::Result<battler_wamprat_schema::Value, battler_wamprat_schema::WampSerializeError> {
-                let mut list = battler_wamprat_schema::List::default();
+        impl battler_wamprat_message::WampSerialize for #ident {
+            fn wamp_serialize(self) -> core::result::Result<battler_wamprat_message::Value, battler_wamprat_message::WampSerializeError> {
+                let mut list = battler_wamprat_message::List::default();
                 #(#field_serializers)*
-                Ok(battler_wamprat_schema::Value::List(list))
+                Ok(battler_wamprat_message::Value::List(list))
             }
         }
     };
@@ -197,11 +197,11 @@ pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
         quote!(#ident(#(#field_identifiers,)*))
     };
     let deserialize = quote! {
-        impl battler_wamprat_schema::WampDeserialize for #ident {
-            fn wamp_deserialize(value: battler_wamprat_schema::Value) -> core::result::Result<Self, battler_wamprat_schema::WampDeserializeError> {
+        impl battler_wamprat_message::WampDeserialize for #ident {
+            fn wamp_deserialize(value: battler_wamprat_message::Value) -> core::result::Result<Self, battler_wamprat_message::WampDeserializeError> {
                 let mut list = match value {
-                    battler_wamprat_schema::Value::List(list) => list,
-                    _ => return Err(battler_wamprat_schema::WampDeserializeError::new("value must be a list")),
+                    battler_wamprat_message::Value::List(list) => list,
+                    _ => return Err(battler_wamprat_message::WampDeserializeError::new("value must be a list")),
                 };
                 #(#field_deserializers)*
                 Ok(#struct_constructor)
@@ -245,10 +245,10 @@ impl Parse for DictionaryInput {
     }
 }
 
-/// Procedural macro for deriving [`battler_wamprat_schema::WampSerialize`] and
-/// [`battler_wamprat_schema::WampDeserialize`] for a struct that converts to a
-/// [`battler_wamprat_schema::Dictionary`].
-#[proc_macro_derive(WampDictionary, attributes(battler_wamprat_schema))]
+/// Procedural macro for deriving [`battler_wamprat_message::WampSerialize`] and
+/// [`battler_wamprat_message::WampDeserialize`] for a struct that converts to a
+/// [`battler_wamprat_message::Dictionary`].
+#[proc_macro_derive(WampDictionary, attributes(battler_wamprat_message))]
 pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DictionaryInput);
     let call_site = Span::call_site();
@@ -267,14 +267,14 @@ pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
             None => quote!(true),
         };
         let if_empty = match &field.attrs.default {
-            DefaultAttr::False => quote!(return Err(battler_wamprat_schema::WampDeserializeError::new(std::fmt::format(format_args!("dictionary member {} of {} is missing", std::stringify!(#field_name), std::stringify!(#ident)))))),
+            DefaultAttr::False => quote!(return Err(battler_wamprat_message::WampDeserializeError::new(std::fmt::format(format_args!("dictionary member {} of {} is missing", std::stringify!(#field_name), std::stringify!(#ident)))))),
             DefaultAttr::True => quote!(<#ty as Default>::default()),
             DefaultAttr::Path(path) => quote!(#path()),
         };
         (
             quote! {
                 if #serialize_check {
-                    match battler_wamprat_schema::WampSerialize::wamp_serialize(#accessor) {
+                    match battler_wamprat_message::WampSerialize::wamp_serialize(#accessor) {
                         Ok(val) => dict.insert(stringify!(#field_name).to_owned(), val),
                         Err(err) => return Err(err.annotate(std::fmt::format(format_args!("failed to serialize dictionary member {} of {}", std::stringify!(#field_name), std::stringify!(#ident))))),
                     };
@@ -283,14 +283,14 @@ pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
             quote! {
                 let #field_name = match dict.get_mut(stringify!(#field_name)) {
                     Some(val) => {
-                        let mut out = battler_wamprat_schema::Value::Bool(false);
+                        let mut out = battler_wamprat_message::Value::Bool(false);
                         std::mem::swap(val, &mut out);
                         Some(out)
                     }
                     None => None,
                 };
                 let #field_name = match #field_name {
-                    Some(val) => match battler_wamprat_schema::WampDeserialize::wamp_deserialize(val) {
+                    Some(val) => match battler_wamprat_message::WampDeserialize::wamp_deserialize(val) {
                         Ok(val) => val,
                         Err(err) => return Err(err.annotate(std::fmt::format(format_args!("failed to deserialize dictionary member {} of {}", std::stringify!(#field_name), std::stringify!(#ident)))))
                     },
@@ -302,11 +302,11 @@ pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
     }).multiunzip();
 
     let serialize = quote! {
-        impl battler_wamprat_schema::WampSerialize for #ident {
-            fn wamp_serialize(self) -> core::result::Result<battler_wamprat_schema::Value, battler_wamprat_schema::WampSerializeError> {
-                let mut dict = battler_wamprat_schema::Dictionary::default();
+        impl battler_wamprat_message::WampSerialize for #ident {
+            fn wamp_serialize(self) -> core::result::Result<battler_wamprat_message::Value, battler_wamprat_message::WampSerializeError> {
+                let mut dict = battler_wamprat_message::Dictionary::default();
                 #(#field_serializers)*
-                Ok(battler_wamprat_schema::Value::Dictionary(dict))
+                Ok(battler_wamprat_message::Value::Dictionary(dict))
             }
         }
     };
@@ -318,11 +318,11 @@ pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
         quote!(#ident(#(#field_identifiers,)*))
     };
     let deserialize = quote! {
-        impl battler_wamprat_schema::WampDeserialize for #ident {
-            fn wamp_deserialize(value: battler_wamprat_schema::Value) -> core::result::Result<Self, battler_wamprat_schema::WampDeserializeError> {
+        impl battler_wamprat_message::WampDeserialize for #ident {
+            fn wamp_deserialize(value: battler_wamprat_message::Value) -> core::result::Result<Self, battler_wamprat_message::WampDeserializeError> {
                 let mut dict = match value {
-                    battler_wamprat_schema::Value::Dictionary(dict) => dict,
-                    _ => return Err(battler_wamprat_schema::WampDeserializeError::new("value must be a list")),
+                    battler_wamprat_message::Value::Dictionary(dict) => dict,
+                    _ => return Err(battler_wamprat_message::WampDeserializeError::new("value must be a list")),
                 };
                 #(#field_deserializers)*
                 Ok(#struct_constructor)
@@ -405,7 +405,7 @@ impl Parse for ApplicationMessageInput {
     }
 }
 
-/// Procedural macro for deriving [`battler_wamprat_schema::WampApplicationMessage`] for a struct.
+/// Procedural macro for deriving [`battler_wamprat_message::WampApplicationMessage`] for a struct.
 #[proc_macro_derive(WampApplicationMessage, attributes(arguments, arguments_keyword))]
 pub fn derive_wamp_application_message(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ApplicationMessageInput);
@@ -426,26 +426,26 @@ pub fn derive_wamp_application_message(input: TokenStream) -> TokenStream {
         let validate_serialize_output = match field.attrs.field_type {
             ApplicationMessageFieldType::Arguments => quote! {
                 match val {
-                    battler_wamprat_schema::Value::List(val) => val,
-                    _ => return Err(battler_wamprat_schema::WampSerializeError::new(std::fmt::format(format_args!("arguments of {} did not produce a list", std::stringify!(#ident))))),
+                    battler_wamprat_message::Value::List(val) => val,
+                    _ => return Err(battler_wamprat_message::WampSerializeError::new(std::fmt::format(format_args!("arguments of {} did not produce a list", std::stringify!(#ident))))),
                 }
             },
             ApplicationMessageFieldType::ArgumentsKeyword => quote! {
                 match val {
-                    battler_wamprat_schema::Value::Dictionary(val) => val,
-                    _ => return Err(battler_wamprat_schema::WampSerializeError::new(std::fmt::format(format_args!("arguments of {} did not produce a list", std::stringify!(#ident))))),
+                    battler_wamprat_message::Value::Dictionary(val) => val,
+                    _ => return Err(battler_wamprat_message::WampSerializeError::new(std::fmt::format(format_args!("arguments of {} did not produce a list", std::stringify!(#ident))))),
                 }
             },
         };
         (
             quote! {
-                let #input_output_ident = match battler_wamprat_schema::WampSerialize::wamp_serialize(#accessor) {
+                let #input_output_ident = match battler_wamprat_message::WampSerialize::wamp_serialize(#accessor) {
                     Ok(val) => #validate_serialize_output,
                     Err(err) => return Err(err.annotate(std::fmt::format(format_args!("failed to serialize {} of {}", std::stringify!(#input_output_ident), std::stringify!(#ident))))),
                 };
             },
             quote! {
-                let #field_name = match battler_wamprat_schema::WampDeserialize::wamp_deserialize(#input_output_ident) {
+                let #field_name = match battler_wamprat_message::WampDeserialize::wamp_deserialize(#input_output_ident) {
                     Ok(val) => val,
                     Err(err) => return Err(err.annotate(std::fmt::format(format_args!("failed to deserialize {} of {}", std::stringify!(#input_output_ident), std::stringify!(#ident)))))
                 };
@@ -462,20 +462,20 @@ pub fn derive_wamp_application_message(input: TokenStream) -> TokenStream {
     };
 
     quote!{
-        impl battler_wamprat_schema::WampApplicationMessage for #ident {
-            fn wamp_serialize_application_message(self) -> core::result::Result<(battler_wamprat_schema::List, battler_wamprat_schema::Dictionary), battler_wamprat_schema::WampSerializeError> {
-                let arguments = battler_wamprat_schema::List::default();
-                let arguments_keyword = battler_wamprat_schema::Dictionary::default();
+        impl battler_wamprat_message::WampApplicationMessage for #ident {
+            fn wamp_serialize_application_message(self) -> core::result::Result<(battler_wamprat_message::List, battler_wamprat_message::Dictionary), battler_wamprat_message::WampSerializeError> {
+                let arguments = battler_wamprat_message::List::default();
+                let arguments_keyword = battler_wamprat_message::Dictionary::default();
                 #(#field_serializers)*
                 Ok((arguments, arguments_keyword))
             }
 
             fn wamp_deserialize_application_message(
-                arguments: battler_wamprat_schema::List,
-                arguments_keyword: battler_wamprat_schema::Dictionary,
-            ) -> core::result::Result<Self, battler_wamprat_schema::WampDeserializeError> {
-                let arguments = battler_wamprat_schema::Value::List(arguments);
-                let arguments_keyword = battler_wamprat_schema::Value::Dictionary(arguments_keyword);
+                arguments: battler_wamprat_message::List,
+                arguments_keyword: battler_wamprat_message::Dictionary,
+            ) -> core::result::Result<Self, battler_wamprat_message::WampDeserializeError> {
+                let arguments = battler_wamprat_message::Value::List(arguments);
+                let arguments_keyword = battler_wamprat_message::Value::Dictionary(arguments_keyword);
                 #(#field_deserializers)*
                 Ok(#struct_constructor)
             }

@@ -199,7 +199,7 @@ where
     /// Publishes an event to a topic.
     pub async fn publish<Payload>(&self, topic: Uri, payload: Payload) -> Result<()>
     where
-        Payload: battler_wamprat_schema::WampApplicationMessage,
+        Payload: battler_wamprat_message::WampApplicationMessage,
     {
         let (arguments, arguments_keyword) = payload.wamp_serialize_application_message()?;
         self.publish_unchecked(
@@ -222,8 +222,8 @@ where
     /// Calls a procedure.
     pub async fn call<Input, Output>(&self, procedure: Uri, input: Input) -> Result<Output>
     where
-        Input: battler_wamprat_schema::WampApplicationMessage,
-        Output: battler_wamprat_schema::WampApplicationMessage,
+        Input: battler_wamprat_message::WampApplicationMessage,
+        Output: battler_wamprat_message::WampApplicationMessage,
     {
         let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
         let result = self

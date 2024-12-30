@@ -52,8 +52,8 @@ impl PeerBuilder {
     pub fn add_typed_procedure<T, Input, Output>(&mut self, uri: Uri, procedure: T)
     where
         T: TypedProcedure<Input = Input, Output = Output> + 'static,
-        Input: battler_wamprat_schema::WampApplicationMessage + Send + Sync + 'static,
-        Output: battler_wamprat_schema::WampApplicationMessage + Send + Sync + 'static,
+        Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+        Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
     {
         // Wrap the typed procedure with a generic wrapper that serializes and deserializes
         // application messages.
@@ -66,8 +66,8 @@ impl PeerBuilder {
         impl<T, Input, Output> ProcedureWrapper<T, Input, Output>
         where
             T: TypedProcedure<Input = Input, Output = Output>,
-            Input: battler_wamprat_schema::WampApplicationMessage + Send + Sync + 'static,
-            Output: battler_wamprat_schema::WampApplicationMessage + Send + Sync + 'static,
+            Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+            Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
         {
             fn new(procedure: T) -> Self {
                 Self {
@@ -79,8 +79,8 @@ impl PeerBuilder {
 
             async fn invoke_internal(
                 &self,
-                arguments: battler_wamprat_schema::List,
-                arguments_keyword: battler_wamprat_schema::Dictionary,
+                arguments: battler_wamprat_message::List,
+                arguments_keyword: battler_wamprat_message::Dictionary,
             ) -> Result<RpcYield> {
                 let input =
                     Input::wamp_deserialize_application_message(arguments, arguments_keyword)?;
@@ -97,12 +97,12 @@ impl PeerBuilder {
         impl<T, Input, Output> Procedure for ProcedureWrapper<T, Input, Output>
         where
             T: TypedProcedure<Input = Input, Output = Output>,
-            Input: battler_wamprat_schema::WampApplicationMessage + Send + Sync + 'static,
-            Output: battler_wamprat_schema::WampApplicationMessage + Send + Sync + 'static,
+            Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+            Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
         {
             async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
-                let mut arguments = battler_wamprat_schema::List::default();
-                let mut arguments_keyword = battler_wamprat_schema::Dictionary::default();
+                let mut arguments = battler_wamprat_message::List::default();
+                let mut arguments_keyword = battler_wamprat_message::Dictionary::default();
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
                 let result = self.invoke_internal(arguments, arguments_keyword).await;

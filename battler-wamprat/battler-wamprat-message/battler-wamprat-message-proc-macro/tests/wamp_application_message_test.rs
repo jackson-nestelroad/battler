@@ -1,11 +1,11 @@
-use battler_wamprat_schema::{
+use battler_wamprat_message::{
     Dictionary,
     Integer,
     List,
     Value,
     WampApplicationMessage,
 };
-use battler_wamprat_schema_proc_macro::{
+use battler_wamprat_message_proc_macro::{
     WampDictionary,
     WampList,
 };

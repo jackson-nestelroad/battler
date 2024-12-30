@@ -10,6 +10,6 @@ members = [
     "battler-wamp/serde-struct-tuple-enum/serde-struct-tuple-enum-proc-macro",
     "battler-wamp/test-utils",
     "battler-wamprat",
-    "battler-wamprat/battler-wamprat-schema",
-    "battler-wamprat/battler-wamprat-schema/battler-wamprat-schema-proc-macro",
+    "battler-wamprat/battler-wamprat-message",
+    "battler-wamprat/battler-wamprat-message/battler-wamprat-message-proc-macro",
 ]

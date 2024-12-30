@@ -1,5 +1,5 @@
 [package]
-name = "battler-wamprat-schema-proc-macro"
+name = "battler-wamprat-message-proc-macro"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,5 +14,5 @@ syn = "2.0"
 
 [dev-dependencies]
 assert_matches = "1.5.0"
-battler-wamprat-schema = { path = ".." }
+battler-wamprat-message = { path = ".." }
 pretty_assertions = "1.4.0"

@@ -11,7 +11,7 @@ pub trait Procedure: Send + Sync {
 /// A strongly-typed procedure that generates some output based on some input.
 #[async_trait]
 pub trait TypedProcedure: Send + Sync {
-    type Input: battler_wamprat_schema::WampApplicationMessage;
-    type Output: battler_wamprat_schema::WampApplicationMessage;
+    type Input: battler_wamprat_message::WampApplicationMessage;
+    type Output: battler_wamprat_message::WampApplicationMessage;
     async fn invoke(&self, input: Self::Input) -> Result<Self::Output>;
 }

@@ -23,7 +23,7 @@ use battler_wamprat::{
     },
     procedure::TypedProcedure,
 };
-use battler_wamprat_schema::{
+use battler_wamprat_message::{
     Integer,
     WampApplicationMessage,
     WampList,
