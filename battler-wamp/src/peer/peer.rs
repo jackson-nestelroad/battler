@@ -143,7 +143,7 @@ struct PeerState {
 pub struct Subscription {
     /// The subscription ID.
     pub id: Id,
-    /// The event receiver channel.Z
+    /// The event receiver channel.
     pub event_rx: broadcast::Receiver<Event>,
 }
 
