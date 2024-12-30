@@ -23,7 +23,10 @@ use battler_wamp::{
     },
     router::RouterHandle,
 };
-use log::error;
+use log::{
+    error,
+    warn,
+};
 use tokio::{
     sync::{
         broadcast::{
@@ -82,8 +85,8 @@ impl PeerConnectionConfig {
     pub fn new(connection_type: PeerConnectionType) -> Self {
         Self {
             connection_type,
-            max_consecutive_failures: 1,
-            reconnect_delay: Duration::ZERO,
+            max_consecutive_failures: 3,
+            reconnect_delay: Duration::from_secs(5),
         }
     }
 }
@@ -364,7 +367,9 @@ where
                     break
                 }
                 _ = cancel_rx.recv() => {
-                    self.peer.leave_realm().await?;
+                    if let Err(err) = self.peer.leave_realm().await {
+                        warn!("Failed to leave realm when canceling peer: {err}");
+                    }
                     self.peer.disconnect().await?;
                     return Ok(true);
                 }
@@ -387,9 +392,9 @@ where
                 self.connection_config.connection_type
             );
             failures += 1;
-            if failures > self.connection_config.max_consecutive_failures {
+            if failures >= self.connection_config.max_consecutive_failures {
                 return Err(PeerConnectionError::new(format!(
-                    "failed to connect to router after {failures} attempts"
+                    "failed to connect to router after {failures} attempt(s)"
                 ))
                 .into());
             }
@@ -399,6 +404,9 @@ where
     }
 
     async fn connect(&self) -> Result<()> {
+        // Stop any ongoing connection, if it has not stopped automatically due to the stream being
+        // closed.
+        self.peer.disconnect().await?;
         *self.peer_state.write().await = PeerState::Disconnected;
 
         match &self.connection_config.connection_type {
@@ -438,6 +446,7 @@ where
             let invocation_rx = match self.peer.register(uri.clone()).await {
                 Ok(procedure) => procedure.invocation_rx,
                 Err(err) => {
+                    error!("Failed to register procedure {uri}: {err}");
                     if procedure.ignore_registration_error {
                         continue;
                     } else {

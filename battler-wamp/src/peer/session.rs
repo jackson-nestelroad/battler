@@ -823,7 +823,7 @@ impl Session {
         match &*self.state.read().await {
             SessionState::Established(state) => {
                 info!(
-                    "Peer {} started session {} on realm {}",
+                    "Peer {} established session {} on realm {}",
                     self.name, state.session_id, state.realm
                 );
                 self.id_allocator.reset().await;

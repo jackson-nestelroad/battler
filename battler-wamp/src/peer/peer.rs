@@ -266,6 +266,14 @@ where
 
         let session = Session::new(self.config.name.clone(), service_handle.message_tx());
         let session_handle = session.session_handle();
+
+        let mut peer_state = self.peer_state.lock().await;
+        *peer_state = Some(PeerState {
+            service: service_handle,
+            session: session_handle,
+            message_tx,
+        });
+
         tokio::spawn(Self::message_handler(
             session,
             self.peer_state.clone(),
@@ -275,13 +283,6 @@ where
             end_rx,
             drop_rx,
         ));
-
-        let mut peer_state = self.peer_state.lock().await;
-        *peer_state = Some(PeerState {
-            service: service_handle,
-            session: session_handle,
-            message_tx,
-        });
 
         Ok(())
     }
@@ -344,7 +345,7 @@ where
                 message = message_rx.recv() => {
                     let message = match message {
                         Some(message) => message,
-                        None => return Err(Error::msg("failed to receive message from peer channel")),
+                        None => return Err(Error::msg("failed to receive message from peer channel (channel unexpectedly closed)")),
                     };
                     let message_name = message.message_name();
                     if let Err(err) = session.send_message(message).await {
@@ -386,7 +387,7 @@ where
     where
         F: Fn(&PeerState) -> T,
     {
-        match &*self.peer_state.lock().await {
+        match self.peer_state.lock().await.as_ref() {
             Some(peer_state) => Ok(f(peer_state)),
             None => Err(PeerNotConnectedError.into()),
         }
@@ -470,6 +471,10 @@ where
 
         match peer_state.take() {
             Some(peer_state) => {
+                info!(
+                    "Peer {} was instructed to disconnect from the router",
+                    self.config.name
+                );
                 peer_state.service.cancel()?;
                 peer_state.service.join().await?;
             }

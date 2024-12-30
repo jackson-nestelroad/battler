@@ -8,7 +8,10 @@ use futures_util::{
     SinkExt,
     StreamExt,
 };
-use log::error;
+use log::{
+    error,
+    info,
+};
 use tokio::{
     sync::{
         broadcast,
