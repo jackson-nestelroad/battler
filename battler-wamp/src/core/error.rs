@@ -76,6 +76,7 @@ pub enum InteractionError {
     /// The role being referenced does not exist.
     #[error("no such role")]
     NoSuchRole,
+    /// A procedure call was canceled due to the callee leaving.
     #[error("canceled")]
     Canceled,
 }
