@@ -72,7 +72,7 @@ impl TestBattleBuilder {
         }
     }
 
-    /// Builds a new [`CoreBattle`] from the battle builder.
+    /// Builds a new [`PublicCoreBattle`] from the battle builder.
     pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
         if self.controlled_rng {
             self.engine_options.rng_factory =

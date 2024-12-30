@@ -101,7 +101,7 @@ impl IntegerOverflowError {
     }
 }
 
-/// Helper for an [`Error`] wrapping a [`GeneralError`].
+/// Helper for an [`struct@Error`] wrapping a [`GeneralError`].
 #[track_caller]
 pub fn general_error<M>(message: M) -> Error
 where
@@ -110,7 +110,7 @@ where
     GeneralError::new(message).wrap_error()
 }
 
-/// Helper for an [`Error`] wrapping a [`NotFoundError`].
+/// Helper for an [`struct@Error`] wrapping a [`NotFoundError`].
 #[track_caller]
 pub fn not_found_error<M>(target: M) -> Error
 where
@@ -119,7 +119,7 @@ where
     NotFoundError::new(target).wrap_error()
 }
 
-/// Helper for an [`Error`] wrapping a [`BorrowFailedError`].
+/// Helper for an [`struct@Error`] wrapping a [`BorrowFailedError`].
 #[track_caller]
 pub fn borrow_failed_error<E, M>(error: E, target: M) -> Error
 where
@@ -129,7 +129,7 @@ where
     BorrowFailedError::new(error, target).wrap_error()
 }
 
-/// Helper for an [`Error`] wrapping an [`IntegerOverflowError`].
+/// Helper for an [`struct@Error`] wrapping an [`IntegerOverflowError`].
 #[track_caller]
 pub fn integer_overflow_error<E>(error: E) -> Error
 where

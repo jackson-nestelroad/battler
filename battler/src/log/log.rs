@@ -33,7 +33,8 @@ where
 
 /// An event that is added to the [`EventLog`].
 ///
-/// This object should not be constructed directly. Instead, use the [`log_event`] macro.
+/// This object should not be constructed directly. Instead, use the
+/// [`log_event`][`crate::log_event`] macro.
 #[derive(Debug, Clone)]
 pub struct Event {
     title: String,

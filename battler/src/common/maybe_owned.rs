@@ -30,7 +30,7 @@ macro_rules! common_maybe_owned_impls {
         where
             T: Clone,
         {
-            /// Clones the maybe-owned object into an owned [`T`] value.
+            /// Clones the maybe-owned object into an owned `T` value.
             pub fn clone_owned(&self) -> T {
                 match self {
                     Self::Owned(value) => value.clone(),

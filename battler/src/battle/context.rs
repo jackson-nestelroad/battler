@@ -1139,7 +1139,8 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         self.is_external
     }
 
-    /// Returns the applying [`MoveHitEffectType`], which describes the source of [`hit_effect`].
+    /// Returns the applying [`MoveHitEffectType`], which describes the source of
+    /// [`Self::hit_effect`].
     pub fn hit_effect_type(&self) -> MoveHitEffectType {
         self.hit_effect_type
     }
@@ -1342,7 +1343,7 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     ///
     /// The target is used as the source of the effect.
     ///
-    /// The inverse of [`applying_effect_context`].
+    /// The inverse of [`Self::applying_effect_context`].
     pub fn user_applying_effect_context<'active_target>(
         &'active_target mut self,
     ) -> Result<ApplyingEffectContext<'active_target, 'active_target, 'battle, 'data>, Error> {

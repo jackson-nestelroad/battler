@@ -121,8 +121,8 @@ impl Parse for Input {
     }
 }
 
-/// Implements [`serde::Deserialize`] for the enum, assuming each enum variant is a simple wrapper
-/// around implementations of [`serde_struct_tuple::DeserializeStructTuple`].
+/// Implements `serde::Deserialize` for the enum, assuming each enum variant is a simple wrapper
+/// around implementations of `serde_struct_tuple::DeserializeStructTuple`.
 #[proc_macro_derive(DeserializeStructTupleEnum, attributes(tag))]
 pub fn derive_deserialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Input);
@@ -176,8 +176,8 @@ pub fn derive_deserialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
     }.into()
 }
 
-/// Implements [`serde::Serialize`] for the enum, assuming each enum variant is a simple wrapper
-/// around implementations of [`serde_struct_tuple::SerializeStructTuple`].
+/// Implements `serde::Serialize` for the enum, assuming each enum variant is a simple wrapper
+/// around implementations of `serde_struct_tuple::SerializeStructTuple`.
 #[proc_macro_derive(SerializeStructTupleEnum, attributes(tag))]
 pub fn derive_serialize_struct_tuple_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Input);

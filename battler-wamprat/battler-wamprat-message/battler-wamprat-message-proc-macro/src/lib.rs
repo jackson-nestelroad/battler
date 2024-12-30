@@ -122,9 +122,9 @@ impl Parse for ListInput {
     }
 }
 
-/// Procedural macro for deriving [`battler_wamprat_message::WampSerialize`] and
-/// [`battler_wamprat_message::WampDeserialize`] for a struct that converts to a
-/// [`battler_wamprat_message::List`].
+/// Procedural macro for deriving `battler_wamprat_message::WampSerialize` and
+/// `battler_wamprat_message::WampDeserialize` for a struct that converts to a
+/// `battler_wamprat_message::List`.
 #[proc_macro_derive(WampList, attributes(battler_wamprat_message))]
 pub fn derive_wamp_list(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ListInput);
@@ -246,9 +246,9 @@ impl Parse for DictionaryInput {
     }
 }
 
-/// Procedural macro for deriving [`battler_wamprat_message::WampSerialize`] and
-/// [`battler_wamprat_message::WampDeserialize`] for a struct that converts to a
-/// [`battler_wamprat_message::Dictionary`].
+/// Procedural macro for deriving `battler_wamprat_message::WampSerialize` and
+/// `battler_wamprat_message::WampDeserialize` for a struct that converts to a
+/// `battler_wamprat_message::Dictionary`.
 #[proc_macro_derive(WampDictionary, attributes(battler_wamprat_message))]
 pub fn derive_wamp_dictionary(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DictionaryInput);
@@ -406,7 +406,7 @@ impl Parse for ApplicationMessageInput {
     }
 }
 
-/// Procedural macro for deriving [`battler_wamprat_message::WampApplicationMessage`] for a struct.
+/// Procedural macro for deriving `battler_wamprat_message::WampApplicationMessage` for a struct.
 #[proc_macro_derive(WampApplicationMessage, attributes(arguments, arguments_keyword))]
 pub fn derive_wamp_application_message(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ApplicationMessageInput);

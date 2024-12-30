@@ -197,6 +197,7 @@ pub struct YieldMessage {
     pub arguments_keyword: Dictionary,
 }
 
+/// A WAMP message.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeStructTupleEnum, DeserializeStructTupleEnum)]
 #[tag(Integer)]
 pub enum Message {

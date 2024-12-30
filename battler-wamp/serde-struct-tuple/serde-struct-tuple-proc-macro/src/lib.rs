@@ -125,7 +125,7 @@ impl Parse for Input {
     }
 }
 
-/// Implements [`serde_struct_tuple::DeserializeStructTuple`] and [`serde::Deserialize`] for the
+/// Implements `serde_struct_tuple::DeserializeStructTuple` and `serde::Deserialize` for the
 /// struct.
 #[proc_macro_derive(DeserializeStructTuple, attributes(serde_struct_tuple))]
 pub fn derive_deserialize_struct_tuple(input: TokenStream) -> TokenStream {
@@ -190,7 +190,7 @@ pub fn derive_deserialize_struct_tuple(input: TokenStream) -> TokenStream {
     .into()
 }
 
-/// Implements [`serde_struct_tuple::SerializeStructTuple`] and [`serde::Serialize`] for the struct.
+/// Implements `serde_struct_tuple::SerializeStructTuple` and `serde::Serialize` for the struct.
 #[proc_macro_derive(SerializeStructTuple, attributes(serde_struct_tuple))]
 pub fn derive_serialize_struct_tuple(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Input);

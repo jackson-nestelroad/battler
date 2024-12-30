@@ -61,8 +61,8 @@ pub struct CoreBattleEngineOptions {
     /// battle can automatically continue in the same method as the last player's choice.
     ///
     /// If set to `false`,
-    /// [`CoreBattle::continue_battle`][`crate::battle::CoreBattle::continue_battle`] must be
-    /// called to manually continue the battle (even at the start of the battle).
+    /// [`PublicCoreBattle::continue_battle`][`crate::battle::PublicCoreBattle::continue_battle`]
+    /// must be called to manually continue the battle (even at the start of the battle).
     pub auto_continue: bool,
 
     /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] reveal the actual health of all Mons

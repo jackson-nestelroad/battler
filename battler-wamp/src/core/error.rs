@@ -96,7 +96,7 @@ impl InteractionError {
     }
 }
 
-/// Creates an [`Error`] from a URI error reason and message.
+/// Creates an [`struct@Error`] from a URI error reason and message.
 pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
     match reason.as_ref() {
         "wamp.error.not_found" => BasicError::NotFound(message).into(),
@@ -132,7 +132,7 @@ pub fn extract_error_uri_reason_and_message(message: &Message) -> Result<(&Uri, 
     Ok((reason, message))
 }
 
-/// Constructs an [`Error`] from a WAMP message.
+/// Constructs an [`struct@Error`] from a WAMP message.
 ///
 /// Fails if the message does not describe any error.
 pub fn error_from_message(message: &Message) -> Result<Error, Error> {
