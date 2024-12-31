@@ -8,6 +8,12 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_values::{
+    Dictionary,
+    List,
+    Value,
+    WampSerialize,
+};
 use futures_util::lock::Mutex;
 use log::{
     error,
@@ -29,6 +35,7 @@ use tokio::sync::{
 use crate::{
     core::{
         close::CloseReason,
+        features::Features,
         id::{
             Id,
             IdAllocator,
@@ -42,11 +49,6 @@ use crate::{
         stream::{
             MessageStream,
             TransportMessageStream,
-        },
-        types::{
-            Dictionary,
-            List,
-            Value,
         },
         uri::Uri,
     },
@@ -437,18 +439,19 @@ where
 
         let mut details = Dictionary::default();
         details.insert("agent".to_owned(), Value::String(self.config.agent.clone()));
+
+        let features = Features {
+            call_canceling: true,
+            progressive_call_results: true,
+        }
+        .wamp_serialize()?;
         details.insert(
             "roles".to_owned(),
             Value::Dictionary(
                 self.config
                     .roles
                     .iter()
-                    .map(|role| {
-                        (
-                            role.key_for_details().to_owned(),
-                            Value::Dictionary(Dictionary::default()),
-                        )
-                    })
+                    .map(|role| (role.key_for_details().to_owned(), features.clone()))
                     .collect(),
             ),
         );

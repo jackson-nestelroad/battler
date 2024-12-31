@@ -1,4 +1,4 @@
-use battler_wamprat_message::{
+use battler_wamp_values::{
     Dictionary,
     Integer,
     List,
@@ -83,9 +83,9 @@ fn allows_missing_optionals() {
     #[derive(Debug, PartialEq, WampList)]
     struct Args {
         a: Integer,
-        #[battler_wamprat_message(default, skip_serializing_if = Option::is_none)]
+        #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
         b: Option<Integer>,
-        #[battler_wamprat_message(default, skip_serializing_if = Option::is_none)]
+        #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
         c: Option<Integer>,
     }
 

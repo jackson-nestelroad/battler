@@ -16,6 +16,10 @@ use battler_wamp::{
         RouterHandle,
     },
 };
+use battler_wamp_values::{
+    Integer,
+    WampList,
+};
 use battler_wamprat::{
     peer::{
         PeerBuilder,
@@ -24,11 +28,7 @@ use battler_wamprat::{
     },
     procedure::TypedProcedure,
 };
-use battler_wamprat_message::{
-    Integer,
-    WampApplicationMessage,
-    WampList,
-};
+use battler_wamprat_message::WampApplicationMessage;
 use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";

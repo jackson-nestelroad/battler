@@ -1,3 +1,8 @@
+use battler_wamp_values::{
+    Dictionary,
+    Integer,
+    List,
+};
 use serde_struct_tuple::{
     DeserializeStructTuple,
     SerializeStructTuple,
@@ -9,11 +14,6 @@ use serde_struct_tuple_enum::{
 
 use crate::core::{
     id::Id,
-    types::{
-        Dictionary,
-        Integer,
-        List,
-    },
     uri::Uri,
 };
 
@@ -197,6 +197,20 @@ pub struct YieldMessage {
     pub arguments_keyword: Dictionary,
 }
 
+/// A CANCEL message for canceling active procedure calls.
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
+pub struct CancelMessage {
+    pub call_request: Id,
+    pub options: Dictionary,
+}
+
+/// An INTERRUPT message for interrupting an active procedure invocation.
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
+pub struct InterruptMessage {
+    pub invocation_request: Id,
+    pub options: Dictionary,
+}
+
 /// A WAMP message.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeStructTupleEnum, DeserializeStructTupleEnum)]
 #[tag(Integer)]
@@ -241,6 +255,11 @@ pub enum Message {
     Invocation(InvocationMessage),
     #[tag = 70]
     Yield(YieldMessage),
+
+    #[tag = 49]
+    Cancel(CancelMessage),
+    #[tag = 69]
+    Interrupt(InterruptMessage),
 }
 
 impl Message {
@@ -267,6 +286,8 @@ impl Message {
             Self::Unregistered(_) => "UNREGISTERED",
             Self::Invocation(_) => "INVOCATION",
             Self::Yield(_) => "YIELD",
+            Self::Cancel(_) => "CANCEL",
+            Self::Interrupt(_) => "INTERRUPT",
         }
     }
 
@@ -288,6 +309,8 @@ impl Message {
             Self::Unregistered(message) => Some(message.unregister_request),
             Self::Invocation(message) => Some(message.request),
             Self::Yield(message) => Some(message.invocation_request),
+            Self::Cancel(message) => Some(message.call_request),
+            Self::Interrupt(message) => Some(message.invocation_request),
             _ => None,
         }
     }
@@ -322,14 +345,15 @@ impl Message {
 mod message_test {
     use std::fmt::Debug;
 
+    use battler_wamp_values::{
+        Dictionary,
+        List,
+        Value,
+    };
+
     use crate::{
         core::{
             id::Id,
-            types::{
-                Dictionary,
-                List,
-                Value,
-            },
             uri::Uri,
         },
         message::message::{

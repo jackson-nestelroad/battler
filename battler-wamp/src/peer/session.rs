@@ -7,6 +7,10 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_values::{
+    Dictionary,
+    List,
+};
 use log::{
     debug,
     error,
@@ -30,10 +34,6 @@ use crate::{
             Id,
             IdAllocator,
             SequentialIdAllocator,
-        },
-        types::{
-            Dictionary,
-            List,
         },
         uri::Uri,
     },
@@ -164,6 +164,10 @@ impl Invocation {
 }
 
 mod peer_session_message {
+    use battler_wamp_values::{
+        Dictionary,
+        List,
+    };
     use tokio::sync::broadcast;
 
     use crate::{
@@ -173,10 +177,6 @@ mod peer_session_message {
                 extract_error_uri_reason_and_message,
             },
             id::Id,
-            types::{
-                Dictionary,
-                List,
-            },
             uri::Uri,
         },
         message::message::Message,

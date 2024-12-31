@@ -19,6 +19,11 @@ use battler_wamp::{
         RouterHandle,
     },
 };
+use battler_wamp_values::{
+    List,
+    Value,
+    WampList,
+};
 use battler_wamprat::{
     peer::{
         PeerBuilder,
@@ -27,12 +32,7 @@ use battler_wamprat::{
     },
     subscription::TypedSubscription,
 };
-use battler_wamprat_message::{
-    List,
-    Value,
-    WampApplicationMessage,
-    WampList,
-};
+use battler_wamprat_message::WampApplicationMessage;
 use tokio::{
     sync::broadcast,
     task::JoinHandle,

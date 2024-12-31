@@ -7,6 +7,11 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_values::{
+    Dictionary,
+    Value,
+    WampSerialize,
+};
 use log::{
     debug,
     error,
@@ -30,15 +35,12 @@ use crate::{
             ChannelTransmittableResult,
             InteractionError,
         },
+        features::Features,
         hash::HashMap,
         id::{
             Id,
             IdAllocator,
             SequentialIdAllocator,
-        },
-        types::{
-            Dictionary,
-            Value,
         },
         uri::Uri,
     },
@@ -124,13 +126,12 @@ impl SessionState {
 }
 
 mod router_session_message {
-    use crate::core::{
-        id::Id,
-        types::{
-            Dictionary,
-            List,
-        },
+    use battler_wamp_values::{
+        Dictionary,
+        List,
     };
+
+    use crate::core::id::Id;
 
     /// The result of an RPC invocation.
     #[derive(Debug, Clone)]
@@ -366,6 +367,12 @@ impl Session {
                     "agent".to_owned(),
                     Value::String(context.router().config.agent.clone()),
                 );
+
+                let features = Features {
+                    call_canceling: true,
+                    progressive_call_results: true,
+                }
+                .wamp_serialize()?;
                 details.insert(
                     "roles".to_owned(),
                     Value::Dictionary(
@@ -374,12 +381,7 @@ impl Session {
                             .config
                             .roles
                             .iter()
-                            .map(|role| {
-                                (
-                                    role.key_for_details().to_owned(),
-                                    Value::Dictionary(Dictionary::default()),
-                                )
-                            })
+                            .map(|role| (role.key_for_details().to_owned(), features.clone()))
                             .collect(),
                     ),
                 );

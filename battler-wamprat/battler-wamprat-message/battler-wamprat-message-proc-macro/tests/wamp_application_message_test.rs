@@ -1,14 +1,12 @@
-use battler_wamprat_message::{
+use battler_wamp_values::{
     Dictionary,
     Integer,
     List,
     Value,
-    WampApplicationMessage,
-};
-use battler_wamprat_message_proc_macro::{
     WampDictionary,
     WampList,
 };
+use battler_wamprat_message::WampApplicationMessage;
 
 #[test]
 fn serializes_arguments_and_arguments_keyword() {

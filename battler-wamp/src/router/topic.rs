@@ -1,6 +1,10 @@
 use std::sync::Arc;
 
 use anyhow::Result;
+use battler_wamp_values::{
+    Dictionary,
+    List,
+};
 use tokio::sync::RwLock;
 
 use crate::{
@@ -9,10 +13,6 @@ use crate::{
         hash::HashMap,
         id::Id,
         roles::RouterRole,
-        types::{
-            Dictionary,
-            List,
-        },
         uri::Uri,
     },
     message::message::{

@@ -1,12 +1,12 @@
 use anyhow::Error;
+use battler_wamp_values::{
+    Dictionary,
+    Value,
+};
 
 use crate::{
     core::{
         close::CloseReason,
-        types::{
-            Dictionary,
-            Value,
-        },
         uri::Uri,
     },
     message::message::{

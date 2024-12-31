@@ -1,10 +1,10 @@
 use anyhow::Error;
+use battler_wamp_values::Value;
 use thiserror::Error;
 
 use crate::{
     core::{
         id::Id,
-        types::Value,
         uri::Uri,
     },
     message::message::Message,

@@ -13,11 +13,6 @@ use battler_wamp::{
         hash::HashSet,
         id::Id,
         roles::RouterRole,
-        types::{
-            Dictionary,
-            List,
-            Value,
-        },
         uri::Uri,
     },
     peer::{
@@ -35,6 +30,11 @@ use battler_wamp::{
         RouterConfig,
         RouterHandle,
     },
+};
+use battler_wamp_values::{
+    Dictionary,
+    List,
+    Value,
 };
 use tokio::{
     sync::broadcast::error::RecvError,

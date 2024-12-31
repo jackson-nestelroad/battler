@@ -12,6 +12,10 @@ use battler_wamp::{
         RpcYield,
     },
 };
+use battler_wamp_values::{
+    Dictionary,
+    List,
+};
 use tokio::task::JoinHandle;
 
 use crate::{
@@ -80,8 +84,8 @@ impl PeerBuilder {
 
             async fn invoke_internal(
                 &self,
-                arguments: battler_wamprat_message::List,
-                arguments_keyword: battler_wamprat_message::Dictionary,
+                arguments: battler_wamp_values::List,
+                arguments_keyword: battler_wamp_values::Dictionary,
             ) -> Result<RpcYield> {
                 let input =
                     Input::wamp_deserialize_application_message(arguments, arguments_keyword)?;
@@ -102,8 +106,8 @@ impl PeerBuilder {
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
         {
             async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
-                let mut arguments = battler_wamprat_message::List::default();
-                let mut arguments_keyword = battler_wamprat_message::Dictionary::default();
+                let mut arguments = List::default();
+                let mut arguments_keyword = Dictionary::default();
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
                 let result = self.invoke_internal(arguments, arguments_keyword).await;

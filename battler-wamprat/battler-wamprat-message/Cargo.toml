@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-battler-wamp = { path = "../../battler-wamp" }
+battler-wamp-values = { path = "../../battler-wamp/battler-wamp-values" }
 battler-wamprat-message-proc-macro = { path = "battler-wamprat-message-proc-macro" }
 thiserror = "1.0.65"

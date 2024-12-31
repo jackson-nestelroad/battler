@@ -1,12 +1,12 @@
-use battler_wamprat_message::{
+use battler_wamp_values::{
     Dictionary,
     Integer,
     List,
     Value,
     WampDeserialize,
+    WampDictionary,
     WampSerialize,
 };
-use battler_wamprat_message_proc_macro::WampDictionary;
 
 #[test]
 fn serializes_fields() {
@@ -83,9 +83,9 @@ fn allows_missing_optionals() {
     #[derive(Debug, PartialEq, WampDictionary)]
     struct Args {
         a: Integer,
-        #[battler_wamprat_message(default, skip_serializing_if = Option::is_none)]
+        #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
         b: Option<Integer>,
-        #[battler_wamprat_message(default, skip_serializing_if = Option::is_none)]
+        #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
         c: Option<Integer>,
     }
 

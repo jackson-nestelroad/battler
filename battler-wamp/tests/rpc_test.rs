@@ -5,11 +5,6 @@ use battler_wamp::{
             BasicError,
             InteractionError,
         },
-        types::{
-            Integer,
-            List,
-            Value,
-        },
         uri::Uri,
     },
     peer::{
@@ -30,6 +25,11 @@ use battler_wamp::{
         RouterConfig,
         RouterHandle,
     },
+};
+use battler_wamp_values::{
+    Integer,
+    List,
+    Value,
 };
 use futures_util::future::join_all;
 use tokio::task::JoinHandle;
