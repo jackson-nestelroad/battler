@@ -1,6 +1,9 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use battler_wamp::peer::Invocation;
+use battler_wamp::{
+    core::error::WampError,
+    peer::Invocation,
+};
 
 /// A procedure that responds to any given invocation with some result.
 #[async_trait]
@@ -21,6 +24,9 @@ pub trait TypedProcedure: Send + Sync {
     /// Output to the caller.
     type Output: battler_wamprat_message::WampApplicationMessage;
 
+    /// Error to the caller.
+    type Error: Into<WampError>;
+
     /// Invokes the procedure and produces a result.
-    async fn invoke(&self, input: Self::Input) -> Result<Self::Output>;
+    async fn invoke(&self, input: Self::Input) -> Result<Self::Output, Self::Error>;
 }

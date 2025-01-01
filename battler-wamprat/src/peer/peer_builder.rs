@@ -6,7 +6,10 @@ use std::{
 use anyhow::Result;
 use async_trait::async_trait;
 use battler_wamp::{
-    core::uri::Uri,
+    core::{
+        error::WampError,
+        uri::Uri,
+    },
     peer::{
         Invocation,
         RpcYield,
@@ -19,6 +22,10 @@ use battler_wamp_values::{
 use tokio::task::JoinHandle;
 
 use crate::{
+    error::{
+        WampratDeserializeError,
+        WampratSerializeError,
+    },
     peer::{
         peer::PreregisteredProcedure,
         Peer,
@@ -54,31 +61,35 @@ impl PeerBuilder {
 
     /// Adds a new strongly-typed procedure, which will be registered on every new connection to a
     /// router.
-    pub fn add_procedure_typed<T, Input, Output>(&mut self, uri: Uri, procedure: T)
+    pub fn add_procedure_typed<T, Input, Output, Error>(&mut self, uri: Uri, procedure: T)
     where
-        T: TypedProcedure<Input = Input, Output = Output> + 'static,
+        T: TypedProcedure<Input = Input, Output = Output, Error = Error> + 'static,
         Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
         Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+        Error: Into<WampError> + Send + Sync + 'static,
     {
         // Wrap the typed procedure with a generic wrapper that serializes and deserializes
         // application messages.
-        struct ProcedureWrapper<T, Input, Output> {
+        struct ProcedureWrapper<T, Input, Output, Error> {
             procedure: T,
             _input: PhantomData<Input>,
             _output: PhantomData<Output>,
+            _error: PhantomData<Error>,
         }
 
-        impl<T, Input, Output> ProcedureWrapper<T, Input, Output>
+        impl<T, Input, Output, Error> ProcedureWrapper<T, Input, Output, Error>
         where
-            T: TypedProcedure<Input = Input, Output = Output>,
-            Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
-            Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+            T: TypedProcedure<Input = Input, Output = Output, Error = Error>,
+            Input: battler_wamprat_message::WampApplicationMessage + Send + Sync,
+            Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
+            Error: Into<WampError> + Send + Sync,
         {
             fn new(procedure: T) -> Self {
                 Self {
                     procedure,
                     _input: PhantomData,
                     _output: PhantomData,
+                    _error: PhantomData,
                 }
             }
 
@@ -86,11 +97,20 @@ impl PeerBuilder {
                 &self,
                 arguments: battler_wamp_values::List,
                 arguments_keyword: battler_wamp_values::Dictionary,
-            ) -> Result<RpcYield> {
+            ) -> Result<RpcYield, WampError> {
                 let input =
-                    Input::wamp_deserialize_application_message(arguments, arguments_keyword)?;
-                let output = self.procedure.invoke(input).await?;
-                let (arguments, arguments_keyword) = output.wamp_serialize_application_message()?;
+                    Input::wamp_deserialize_application_message(arguments, arguments_keyword)
+                        .map_err(Into::<WampratDeserializeError>::into)
+                        .map_err(Into::<WampError>::into)?;
+                let output = self
+                    .procedure
+                    .invoke(input)
+                    .await
+                    .map_err(|err| Into::<WampError>::into(err))?;
+                let (arguments, arguments_keyword) = output
+                    .wamp_serialize_application_message()
+                    .map_err(Into::<WampratSerializeError>::into)
+                    .map_err(Into::<WampError>::into)?;
                 Ok(RpcYield {
                     arguments,
                     arguments_keyword,
@@ -99,11 +119,12 @@ impl PeerBuilder {
         }
 
         #[async_trait]
-        impl<T, Input, Output> Procedure for ProcedureWrapper<T, Input, Output>
+        impl<T, Input, Output, Error> Procedure for ProcedureWrapper<T, Input, Output, Error>
         where
-            T: TypedProcedure<Input = Input, Output = Output>,
-            Input: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
-            Output: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+            T: TypedProcedure<Input = Input, Output = Output, Error = Error>,
+            Input: battler_wamprat_message::WampApplicationMessage + Send + Sync,
+            Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
+            Error: Into<WampError> + Send + Sync,
         {
             async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
                 let mut arguments = List::default();

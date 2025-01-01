@@ -1,7 +1,10 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use battler_wamp::{
-    core::uri::Uri,
+    core::{
+        error::WampError,
+        uri::Uri,
+    },
     peer::{
         new_web_socket_peer,
         PeerConfig,
@@ -84,6 +87,7 @@ struct AddHandler;
 impl TypedProcedure for AddHandler {
     type Input = AddInput;
     type Output = AddOutput;
+    type Error = anyhow::Error;
     async fn invoke(&self, input: Self::Input) -> Result<Self::Output> {
         let sum = input.args.a + input.args.b;
         Ok(AddOutput {
@@ -276,4 +280,75 @@ async fn retries_call_during_reconnect() {
 
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn persists_error_data() {
+    #[derive(Debug, WampApplicationMessage)]
+    struct Input;
+
+    #[derive(Debug, WampApplicationMessage)]
+    struct Output;
+
+    #[derive(Debug, PartialEq)]
+    struct Error {
+        msg: String,
+    }
+
+    impl Into<WampError> for Error {
+        fn into(self) -> WampError {
+            WampError::new(
+                Uri::try_from("com.battler.error.forced_error").unwrap(),
+                self.msg,
+            )
+        }
+    }
+
+    struct Handler;
+
+    #[async_trait]
+    impl TypedProcedure for Handler {
+        type Input = Input;
+        type Output = Output;
+        type Error = Error;
+        async fn invoke(&self, _: Self::Input) -> Result<Self::Output, Self::Error> {
+            Err(Error {
+                msg: "foo bar".to_owned(),
+            })
+        }
+    }
+
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router(0).await.unwrap();
+
+    let mut peer_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    peer_builder.add_procedure_typed(Uri::try_from("com.battler.fn").unwrap(), Handler);
+    let (callee_handle, _) = peer_builder.start(
+        create_peer("callee").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    callee_handle.wait_until_ready().await.unwrap();
+
+    let (caller_handle, _) = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )))
+    .start(
+        create_peer("caller").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+
+    assert_matches::assert_matches!(caller_handle.call_and_wait::<Input, Output>(
+        Uri::try_from("com.battler.fn").unwrap(),
+        Input,
+    ).await, Err(err) => {
+        assert_matches::assert_matches!(err.downcast::<WampError>(), Ok(err) => {
+            assert_eq!(err.reason().as_ref(), "com.battler.error.forced_error");
+            assert_eq!(err.message(), "foo bar");
+        });
+    });
 }

@@ -279,10 +279,10 @@ async fn calls_from_same_peer_processed_in_parallel() {
             for invocation in invocations {
                 let arguments = invocation.arguments.clone();
                 assert_matches::assert_matches!(
-                    invocation.respond(Ok(RpcYield {
+                    invocation.respond_ok(RpcYield {
                         arguments,
                         ..Default::default()
-                    })),
+                    }),
                     Ok(())
                 );
             }
@@ -481,11 +481,11 @@ async fn peer_kills_call_and_gets_result() {
             loop {
                 tokio::select! {
                     _ = tokio::time::sleep(Duration::from_secs(10)) => {
-                        invocation.respond(Err(Error::msg("timeout"))).unwrap();
+                        invocation.respond_error(Error::msg("timeout")).unwrap();
                         return;
                     }
                     _ = interrupt_rx.recv() => {
-                        invocation.respond(Ok(RpcYield::default())).unwrap();
+                        invocation.respond_ok(RpcYield::default()).unwrap();
                         return;
                     }
                 }

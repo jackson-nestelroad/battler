@@ -29,6 +29,7 @@ use crate::{
             BasicError,
             ChannelTransmittableResult,
             InteractionError,
+            WampError,
         },
         hash::HashMap,
         id::{
@@ -144,8 +145,11 @@ impl Invocation {
         self.id
     }
 
-    /// Responds to the invocation.
-    pub fn respond(self, rpc_yield: Result<RpcYield>) -> Result<()> {
+    /// Responds to the invocation with a result.
+    pub fn respond<E>(self, rpc_yield: Result<RpcYield, E>) -> Result<()>
+    where
+        E: Into<WampError>,
+    {
         match rpc_yield {
             Ok(rpc_yield) => self.message_tx.send(Message::Yield(YieldMessage {
                 invocation_request: self.id,
@@ -158,10 +162,23 @@ impl Invocation {
                     request: self.id,
                     ..Default::default()
                 }),
-                &err,
+                &Into::<WampError>::into(err).into(),
             ))?,
         }
         Ok(())
+    }
+
+    /// Responds to the invocation with a successful result.
+    pub fn respond_ok(self, rpc_yield: RpcYield) -> Result<()> {
+        self.respond::<WampError>(Ok(rpc_yield))
+    }
+
+    /// Responds to the invocation with an error.
+    pub fn respond_error<E>(self, error: E) -> Result<()>
+    where
+        E: Into<WampError>,
+    {
+        self.respond(Err(error))
     }
 }
 
