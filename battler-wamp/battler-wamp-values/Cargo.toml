@@ -9,6 +9,6 @@ license = "MIT"
 
 [dependencies]
 ahash = "0.8.11"
-battler-wamp-values-proc-macro = { path = "battler-wamp-values-proc-macro" }
+battler-wamp-values-proc-macro = "0.1.0"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.65"

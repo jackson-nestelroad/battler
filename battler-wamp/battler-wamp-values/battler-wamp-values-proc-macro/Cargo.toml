@@ -14,7 +14,7 @@ proc-macro = true
 itertools = "0.13.0"
 proc-macro2 = "1.0"
 quote = "1.0"
-syn = "2.0"
+syn = { version = "2.0", features = ["full"] }
 
 [dev-dependencies]
 assert_matches = "1.5.0"

@@ -11,9 +11,9 @@ license = "MIT"
 ahash = "0.8.11"
 anyhow = "1.0"
 async-trait = "0.1.83"
-battler-wamp = { path = "../battler-wamp" }
-battler-wamp-values = { path = "../battler-wamp/battler-wamp-values" }
-battler-wamprat-message = { path = "battler-wamprat-message" }
+battler-wamp = "0.1.0"
+battler-wamp-values = "0.1"
+battler-wamprat-message = "0.1.0"
 futures-channel = "0.3"
 futures-util = "0.3"
 log = "0.4"

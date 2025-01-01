@@ -8,4 +8,4 @@ keywords = ["serde", "struct", "enum", "tuple"]
 license = "MIT"
 
 [dependencies]
-serde-struct-tuple-enum-proc-macro = { path = "serde-struct-tuple-enum-proc-macro" }
+serde-struct-tuple-enum-proc-macro = "0.1.0"

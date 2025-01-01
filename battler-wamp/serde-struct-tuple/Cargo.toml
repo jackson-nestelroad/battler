@@ -9,4 +9,4 @@ license = "MIT"
 
 [dependencies]
 serde = { version = "1.0", default-features = false }
-serde-struct-tuple-proc-macro = { path = "serde-struct-tuple-proc-macro" }
+serde-struct-tuple-proc-macro = "0.1.0"
