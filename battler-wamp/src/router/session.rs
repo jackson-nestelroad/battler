@@ -37,14 +37,20 @@ use crate::{
             ChannelTransmittableResult,
             InteractionError,
         },
-        features::Features,
+        features::{
+            PubSubFeatures,
+            RpcFeatures,
+        },
         hash::HashMap,
         id::{
             Id,
             IdAllocator,
             SequentialIdAllocator,
         },
-        roles::PeerRole,
+        roles::{
+            PeerRoles,
+            RouterRoles,
+        },
         uri::Uri,
     },
     message::{
@@ -134,7 +140,7 @@ impl SessionState {
 
 #[derive(Default)]
 struct SharedSessionState {
-    roles: HashMap<PeerRole, Features>,
+    roles: PeerRoles,
 }
 
 mod router_session_message {
@@ -186,19 +192,13 @@ impl SessionHandle {
         self.id
     }
 
-    /// Returns the last known features for the given role.
+    /// Returns the last known roles and features.
     ///
     /// Features are communicated when a session is established. If the session is not established,
     /// the roles may be missing or out of date. Since this data is only for advanced features that
     /// does not break correctness of the protocol, this is acceptable.
-    pub async fn features_for_role(&self, role: PeerRole) -> Features {
-        self.shared_state
-            .read()
-            .await
-            .roles
-            .get(&role)
-            .cloned()
-            .unwrap_or_default()
+    pub async fn roles(&self) -> PeerRoles {
+        self.shared_state.read().await.roles.clone()
     }
 
     /// A reference to the session's ID generator.
@@ -394,38 +394,12 @@ impl Session {
         }
     }
 
-    fn read_features_dictionary(mut data: Value) -> Result<Features> {
-        let features = data
-            .dictionary_mut()
-            .and_then(|dict| {
-                let mut val = Value::Bool(false);
-                let features = dict.get_mut("features")?;
-                std::mem::swap(&mut val, features);
-                Some(val)
-            })
-            .ok_or_else(|| Error::msg("could not find features dictionary"))?;
-        Features::wamp_deserialize(features).map_err(Error::new)
-    }
-
-    fn read_peer_roles(message: &HelloMessage) -> HashMap<PeerRole, Features> {
-        let roles = match message
-            .details
-            .get("roles")
-            .and_then(|roles| roles.dictionary())
-        {
-            Some(roles) => roles,
-            None => return HashMap::default(),
+    fn read_peer_roles(message: &HelloMessage) -> PeerRoles {
+        let roles = match message.details.get("roles") {
+            Some(roles) => roles.clone(),
+            None => return PeerRoles::default(),
         };
-        let mut peer_roles = HashMap::default();
-        for (role, data) in roles {
-            let role = match PeerRole::try_from(role.as_ref()) {
-                Ok(role) => role,
-                Err(_) => continue,
-            };
-            let features = Self::read_features_dictionary(data.clone()).unwrap_or_default();
-            peer_roles.insert(role, features);
-        }
-        peer_roles
+        PeerRoles::wamp_deserialize(roles).unwrap_or_default()
     }
 
     async fn handle_closed<S>(&self, context: &RouterContext<S>, message: Message) -> Result<()> {
@@ -446,30 +420,19 @@ impl Session {
                     Value::String(context.router().config.agent.clone()),
                 );
 
-                let features = Features {
+                let pub_sub_features = PubSubFeatures {};
+                let rpc_features = RpcFeatures {
                     call_canceling: true,
                     progressive_call_results: true,
-                }
-                .wamp_serialize()?;
+                };
                 details.insert(
                     "roles".to_owned(),
-                    Value::Dictionary(
-                        context
-                            .router()
-                            .config
-                            .roles
-                            .iter()
-                            .map(|role| {
-                                (
-                                    role.to_string(),
-                                    Value::Dictionary(Dictionary::from_iter([(
-                                        "features".to_owned(),
-                                        features.clone(),
-                                    )])),
-                                )
-                            })
-                            .collect(),
-                    ),
+                    RouterRoles::new(
+                        context.router().config.roles.iter().cloned(),
+                        pub_sub_features,
+                        rpc_features,
+                    )
+                    .wamp_serialize()?,
                 );
 
                 self.shared_state.write().await.roles = Self::read_peer_roles(&message);
@@ -999,9 +962,10 @@ impl Session {
         // Avoid sending an INTERRUPT message if the callee does not support it.
         if !callee
             .session
-            .features_for_role(PeerRole::Callee)
+            .roles()
             .await
-            .call_canceling
+            .callee
+            .is_some_and(|features| features.call_canceling)
         {
             mode = CallCancelMode::Skip;
         }

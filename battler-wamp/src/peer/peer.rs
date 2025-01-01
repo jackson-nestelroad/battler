@@ -40,13 +40,19 @@ use crate::{
         cancel::CallCancelMode,
         close::CloseReason,
         error::ChannelTransmittableResult,
-        features::Features,
+        features::{
+            PubSubFeatures,
+            RpcFeatures,
+        },
         id::{
             Id,
             IdAllocator,
             SequentialIdAllocator,
         },
-        roles::PeerRole,
+        roles::{
+            PeerRole,
+            PeerRoles,
+        },
         service::{
             Service,
             ServiceHandle,
@@ -492,28 +498,19 @@ where
         let mut details = Dictionary::default();
         details.insert("agent".to_owned(), Value::String(self.config.agent.clone()));
 
-        let features = Features {
+        let pub_sub_features = PubSubFeatures {};
+        let rpc_features = RpcFeatures {
             call_canceling: true,
             progressive_call_results: true,
-        }
-        .wamp_serialize()?;
+        };
         details.insert(
             "roles".to_owned(),
-            Value::Dictionary(
-                self.config
-                    .roles
-                    .iter()
-                    .map(|role| {
-                        (
-                            role.to_string(),
-                            Value::Dictionary(Dictionary::from_iter([(
-                                "features".to_owned(),
-                                features.clone(),
-                            )])),
-                        )
-                    })
-                    .collect(),
-            ),
+            PeerRoles::new(
+                self.config.roles.iter().cloned(),
+                pub_sub_features,
+                rpc_features,
+            )
+            .wamp_serialize()?,
         );
 
         message_tx.send(Message::Hello(HelloMessage {
