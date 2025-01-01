@@ -20,21 +20,26 @@ use log::{
     info,
 };
 use thiserror::Error;
-use tokio::sync::{
-    broadcast::{
-        self,
-        error::RecvError,
+use tokio::{
+    sync::{
+        broadcast::{
+            self,
+            error::RecvError,
+        },
+        mpsc::{
+            unbounded_channel,
+            UnboundedReceiver,
+            UnboundedSender,
+        },
     },
-    mpsc::{
-        unbounded_channel,
-        UnboundedReceiver,
-        UnboundedSender,
-    },
+    task::JoinHandle,
 };
 
 use crate::{
     core::{
+        cancel::CallCancelMode,
         close::CloseReason,
+        error::ChannelTransmittableResult,
         features::Features,
         id::{
             Id,
@@ -56,6 +61,7 @@ use crate::{
         common::goodbye_with_close_reason,
         message::{
             CallMessage,
+            CancelMessage,
             HelloMessage,
             Message,
             PublishMessage,
@@ -68,8 +74,9 @@ use crate::{
     peer::{
         connector::connector::ConnectorFactory,
         session::{
+            peer_session_message,
             Event,
-            Invocation,
+            ProcedureMessage,
             Session,
             SessionHandle,
         },
@@ -154,15 +161,15 @@ pub struct Subscription {
 pub struct Procedure {
     /// The registration ID.
     pub id: Id,
-    /// The invocation receiver channel.
-    pub invocation_rx: broadcast::Receiver<Invocation>,
+    /// The message receiver channel.
+    pub procedure_message_rx: broadcast::Receiver<ProcedureMessage>,
 }
 
 impl Clone for Procedure {
     fn clone(&self) -> Self {
         Self {
             id: self.id,
-            invocation_rx: self.invocation_rx.resubscribe(),
+            procedure_message_rx: self.procedure_message_rx.resubscribe(),
         }
     }
 }
@@ -179,6 +186,51 @@ pub struct RpcCall {
 pub struct RpcResult {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
+}
+
+struct PendingRpc {
+    results_join_handle: JoinHandle<Result<()>>,
+    result_rx: UnboundedReceiver<ChannelTransmittableResult<RpcResult>>,
+    cancel_tx: UnboundedSender<CallCancelMode>,
+}
+
+/// A simple pending RPC, which is expected to produce one result.
+pub struct SimplePendingRpc {
+    pending: PendingRpc,
+}
+
+impl SimplePendingRpc {
+    /// Waits for the result of the procedure call.
+    pub async fn result(mut self) -> Result<RpcResult> {
+        match self.pending.result_rx.recv().await {
+            Some(result) => result.map_err(|err| err.into()),
+            None => Err(Error::msg("procedure call finished with no result")),
+        }
+    }
+
+    /// Cancels the pending call.
+    pub async fn cancel(&self) -> Result<()> {
+        self.pending
+            .cancel_tx
+            .send(CallCancelMode::KillNoWait)
+            .map_err(Error::new)
+    }
+
+    /// Kills the pending call.
+    ///
+    /// The end error, or result, can still be read from [`Self::result`].
+    pub async fn kill(&self) -> Result<()> {
+        self.pending
+            .cancel_tx
+            .send(CallCancelMode::Kill)
+            .map_err(Error::new)
+    }
+}
+
+impl Drop for PendingRpc {
+    fn drop(&mut self) {
+        self.results_join_handle.abort();
+    }
 }
 
 #[derive(Debug, Error)]
@@ -451,7 +503,15 @@ where
                 self.config
                     .roles
                     .iter()
-                    .map(|role| (role.key_for_details().to_owned(), features.clone()))
+                    .map(|role| {
+                        (
+                            role.to_string(),
+                            Value::Dictionary(Dictionary::from_iter([(
+                                "features".to_owned(),
+                                features.clone(),
+                            )])),
+                        )
+                    })
                     .collect(),
             ),
         );
@@ -464,7 +524,7 @@ where
         let result = established_session_rx
             .recv()
             .await?
-            .map_err(|err| err.into_error())?;
+            .map_err(|err| Into::<Error>::into(err))?;
         if result.realm.as_ref() != realm {
             return Err(Error::msg(format!(
                 "joined realm {}, expected {realm}",
@@ -547,7 +607,7 @@ where
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
+                                return Err(err.into());
                             }
                         }
                     }
@@ -591,7 +651,7 @@ where
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
+                                return Err(err.into());
                             }
                         }
                     }
@@ -636,7 +696,7 @@ where
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
+                                return Err(err.into());
                             }
                         }
                     }
@@ -679,13 +739,13 @@ where
                             if registration.request_id == request_id {
                                 return Ok(Procedure {
                                     id: registration.registration_id,
-                                    invocation_rx: registration.invocation_rx,
+                                    procedure_message_rx: registration.procedure_message_rx,
                                 });
                             }
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
+                                return Err(err.into());
                             }
                         }
                     }
@@ -729,7 +789,7 @@ where
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
+                                return Err(err.into());
                             }
                         }
                     }
@@ -740,9 +800,59 @@ where
             }
         }
     }
-    /// Calls a procedure.
-    pub async fn call(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
-        let (message_tx, id_allocator, mut rpc_result_rx) = self
+
+    async fn wait_for_results(
+        request_id: Id,
+        mut session_rpc_result_rx: broadcast::Receiver<
+            ChannelTransmittableResult<peer_session_message::RpcResult>,
+        >,
+        mut session_finished_rx: broadcast::Receiver<()>,
+        mut cancel_rx: UnboundedReceiver<CallCancelMode>,
+        message_tx: UnboundedSender<Message>,
+        rpc_result_tx: UnboundedSender<ChannelTransmittableResult<RpcResult>>,
+    ) -> Result<()> {
+        loop {
+            tokio::select! {
+                rpc_result = session_rpc_result_rx.recv() => {
+                    match rpc_result? {
+                        Ok(rpc_result) => {
+                            if rpc_result.request_id == request_id {
+                                rpc_result_tx.send(Ok(RpcResult {
+                                    arguments: rpc_result.arguments,
+                                    arguments_keyword: rpc_result.arguments_keyword,
+                                }))?;
+                            }
+                        }
+                        Err(err) => {
+                            if err.request_id.is_some_and(|id| id == request_id) {
+                                rpc_result_tx.send(Err(err))?;
+                                break;
+                            }
+                        }
+                    }
+                }
+                cancel_mode = cancel_rx.recv() => {
+                    let cancel_mode = match cancel_mode {
+                        Some(cancel_mode) => cancel_mode,
+                        None => continue,
+                    };
+                    message_tx.send(Message::Cancel(CancelMessage {
+                        call_request: request_id,
+                        options: Dictionary::from_iter([("mode".to_owned(), Value::String(cancel_mode.into()))]),
+                    }))?;
+                }
+                _ = session_finished_rx.recv() => {
+                    rpc_result_tx.send(Err(Into::<Error>::into(PeerNotConnectedError).into()))?;
+                    break;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn initiate_call(&self, procedure: Uri, rpc_call: RpcCall) -> Result<PendingRpc> {
+        let (message_tx, id_allocator, session_rpc_result_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
                     peer_state.message_tx.clone(),
@@ -761,31 +871,39 @@ where
             arguments_keyword: rpc_call.arguments_keyword,
         }))?;
 
-        let mut session_finished_rx = self.session_finished_rx();
-        loop {
-            tokio::select! {
-                rpc_result = rpc_result_rx.recv() => {
-                    match rpc_result? {
-                        Ok(rpc_result) => {
-                            if rpc_result.request_id == request_id {
-                                return Ok(RpcResult {
-                                    arguments: rpc_result.arguments,
-                                    arguments_keyword: rpc_result.arguments_keyword,
-                                });
-                            }
-                        }
-                        Err(err) => {
-                            if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
-                            }
-                        }
-                    }
-                }
-                _ = session_finished_rx.recv() => {
-                    return Err(PeerNotConnectedError.into());
-                }
-            }
-        }
+        let session_finished_rx = self.session_finished_rx();
+        let (rpc_result_tx, rpc_result_rx) = unbounded_channel();
+        let (cancel_tx, cancel_rx) = unbounded_channel();
+        let results_join_handle = tokio::spawn(Self::wait_for_results(
+            request_id,
+            session_rpc_result_rx,
+            session_finished_rx,
+            cancel_rx,
+            message_tx,
+            rpc_result_tx,
+        ));
+
+        Ok(PendingRpc {
+            results_join_handle,
+            result_rx: rpc_result_rx,
+            cancel_tx,
+        })
+    }
+
+    /// Calls a procedure and waits for its result.
+    pub async fn call_and_wait(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
+        let pending = self.initiate_call(procedure, rpc_call).await?;
+        // Wait for a single result.
+        let simple = SimplePendingRpc { pending };
+        simple.result().await
+    }
+
+    /// Calls a procedure, expecting one result.
+    ///
+    /// The caller can choose what to do with the pending RPC.
+    pub async fn call(&self, procedure: Uri, rpc_call: RpcCall) -> Result<SimplePendingRpc> {
+        let pending = self.initiate_call(procedure, rpc_call).await?;
+        Ok(SimplePendingRpc { pending })
     }
 }
 

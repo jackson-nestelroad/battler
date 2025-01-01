@@ -7,7 +7,7 @@ use battler_wamp_values::{
 use crate::{
     core::{
         close::CloseReason,
-        uri::Uri,
+        error::uri_for_error,
     },
     message::message::{
         AbortMessage,
@@ -21,7 +21,7 @@ use crate::{
 pub fn abort_message_for_error(error: &Error) -> Message {
     Message::Abort(AbortMessage {
         details: Dictionary::from_iter([("message".to_owned(), Value::String(error.to_string()))]),
-        reason: Uri::for_error(error),
+        reason: uri_for_error(error),
         ..Default::default()
     })
 }
@@ -46,7 +46,7 @@ pub fn error_for_request(message: &Message, error: &Error) -> Message {
         request_type: message.tag(),
         request: message.request_id().unwrap_or_default(),
         details: Dictionary::from_iter([("message".to_owned(), Value::String(error.to_string()))]),
-        error: Uri::for_error(error),
+        error: uri_for_error(error),
         ..Default::default()
     })
 }

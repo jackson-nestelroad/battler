@@ -24,13 +24,14 @@ use uuid::Uuid;
 use crate::{
     core::{
         error::ChannelTransmittableResult,
+        id::Id,
         service::Service,
     },
     message::message::Message,
     router::{
         context::RouterContext,
         session::{
-            RpcInvocation,
+            ProcedureMessage,
             Session,
         },
     },
@@ -237,12 +238,13 @@ impl Connection {
         }
     }
 
-    async fn handle_invocation(
+    async fn handle_invocation<S>(
+        context: RouterContext<S>,
         session: Arc<Session>,
-        invocation: RpcInvocation,
+        invocation_id: Id,
         handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
     ) {
-        if let Err(err) = session.handle_invocation(invocation).await {
+        if let Err(err) = session.handle_invocation(&context, invocation_id).await {
             handle_message_result_tx.send(Err(err.into())).ok();
         }
     }
@@ -253,17 +255,24 @@ impl Connection {
         mut session_loop_done_rx: broadcast::Receiver<()>,
         handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
     ) -> Result<()> {
-        let mut call_rx = session.call_rx();
+        let mut procedure_message_rx = session.procedure_message_rx();
         loop {
             tokio::select! {
-                // Received a call message.
-                call_message = call_rx.recv() => {
-                    let invocation = match session.handle_ordered_call(&context, call_message?).await? {
-                        Some(invocation) => invocation,
-                        None => continue,
-                    };
-                    // Handle the invocation asynchronously.
-                    tokio::spawn(Self::handle_invocation(session.clone(), invocation, handle_message_result_tx.clone()));
+                // Received an ordered message.
+                message = procedure_message_rx.recv() => {
+                    match message? {
+                        ProcedureMessage::Call(call_message) => {
+                            let invocation = match session.handle_ordered_call(&context, call_message).await? {
+                                Some(invocation) => invocation,
+                                None => continue,
+                            };
+                            // Handle the invocation asynchronously.
+                            tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), invocation, handle_message_result_tx.clone()));
+                        },
+                        ProcedureMessage::Cancel(cancel_message) => {
+                            session.handle_ordered_cancel(&context, cancel_message).await?;
+                        }
+                    }
                 }
                 // The session loop is done, so we should also be done.
                 _ = session_loop_done_rx.recv() => {
@@ -329,7 +338,7 @@ impl Connection {
                 result = handle_message_result_rx.recv() => {
                     match result {
                         Some(Ok(())) => (),
-                        Some(Err(err)) => return Err(err.into_error()),
+                        Some(Err(err)) => return Err(err.into()),
                         None => return Err(Error::msg("handle_message_error_rx unexpectedly closed")),
                     }
                 }

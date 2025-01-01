@@ -123,19 +123,19 @@ async fn registers_methods_on_start() {
     );
 
     // Call the addition RPC.
-    assert_matches::assert_matches!(caller_handle.call::<AddInput, AddOutput>(
+    assert_matches::assert_matches!(caller_handle.call_and_wait::<AddInput, AddOutput>(
         Uri::try_from("com.battler.add2").unwrap(),
         AddInput { args: AddArgs { a: 2, b: 2 }},
     ).await, Ok(output) => {
         pretty_assertions::assert_eq!(output, AddOutput { args: SumArgs { sum: 4 }});
     });
-    assert_matches::assert_matches!(caller_handle.call::<AddInput, AddOutput>(
+    assert_matches::assert_matches!(caller_handle.call_and_wait::<AddInput, AddOutput>(
         Uri::try_from("com.battler.add2").unwrap(),
         AddInput { args: AddArgs { a: 12, b: 34 }},
     ).await, Ok(output) => {
         pretty_assertions::assert_eq!(output, AddOutput { args: SumArgs { sum: 46 }});
     });
-    assert_matches::assert_matches!(caller_handle.call::<AddInput, AddOutput>(
+    assert_matches::assert_matches!(caller_handle.call_and_wait::<AddInput, AddOutput>(
         Uri::try_from("com.battler.add2").unwrap(),
         AddInput { args: AddArgs { a: 2024, b: 1000 }},
     ).await, Ok(output) => {
@@ -191,7 +191,7 @@ async fn registers_methods_on_reconnect() {
         Uri::try_from(REALM).unwrap(),
     );
 
-    assert_matches::assert_matches!(caller_handle.call::<AddInput, AddOutput>(
+    assert_matches::assert_matches!(caller_handle.call_and_wait::<AddInput, AddOutput>(
         Uri::try_from("com.battler.add2").unwrap(),
         AddInput { args: AddArgs { a: 12, b: 34 }},
     ).await, Ok(output) => {
@@ -242,7 +242,7 @@ async fn retries_call_during_reconnect() {
     {
         assert_matches::assert_matches!(
             caller_handle
-                .call::<AddInput, AddOutput>(
+                .call_and_wait::<AddInput, AddOutput>(
                     Uri::try_from("com.battler.add2").unwrap(),
                     AddInput {
                         args: AddArgs { a: 12, b: 34 },

@@ -10,6 +10,7 @@ use anyhow::{
 use battler_wamp_values::{
     Dictionary,
     Value,
+    WampDeserialize,
     WampSerialize,
 };
 use log::{
@@ -29,6 +30,7 @@ use tokio::sync::{
 
 use crate::{
     core::{
+        cancel::CallCancelMode,
         close::CloseReason,
         error::{
             BasicError,
@@ -42,6 +44,7 @@ use crate::{
             IdAllocator,
             SequentialIdAllocator,
         },
+        roles::PeerRole,
         uri::Uri,
     },
     message::{
@@ -53,6 +56,9 @@ use crate::{
         },
         message::{
             CallMessage,
+            CancelMessage,
+            HelloMessage,
+            InterruptMessage,
             InvocationMessage,
             Message,
             PublishMessage,
@@ -82,6 +88,7 @@ struct EstablishedSessionState {
     realm: Uri,
     subscriptions: HashMap<Id, Uri>,
     procedures: HashMap<Id, Uri>,
+    active_invocations_by_call: HashMap<Id, RpcInvocation>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -125,6 +132,11 @@ impl SessionState {
     }
 }
 
+#[derive(Default)]
+struct SharedSessionState {
+    roles: HashMap<PeerRole, Features>,
+}
+
 mod router_session_message {
     use battler_wamp_values::{
         Dictionary,
@@ -143,15 +155,24 @@ mod router_session_message {
 }
 
 /// The result of an RPC invocation.
-pub struct RpcInvocation {
-    call_message: CallMessage,
+#[derive(Clone)]
+struct RpcInvocation {
+    registration_id: Id,
     invocation_request_id: Id,
-    callee: Arc<RealmSession>,
+    callee_session_id: Id,
+}
+
+/// A message related to procedure calls that must be strongly ordered.
+#[derive(Debug, Clone)]
+pub(crate) enum ProcedureMessage {
+    Call(CallMessage),
+    Cancel(CancelMessage),
 }
 
 /// A handle to an asynchronously-running router session.
 pub struct SessionHandle {
     id: Id,
+    shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
     message_tx: UnboundedSender<Message>,
     closed_session_rx: broadcast::Receiver<()>,
@@ -163,6 +184,21 @@ impl SessionHandle {
     /// The session ID, as reported out to the peer.
     pub fn id(&self) -> Id {
         self.id
+    }
+
+    /// Returns the last known features for the given role.
+    ///
+    /// Features are communicated when a session is established. If the session is not established,
+    /// the roles may be missing or out of date. Since this data is only for advanced features that
+    /// does not break correctness of the protocol, this is acceptable.
+    pub async fn features_for_role(&self, role: PeerRole) -> Features {
+        self.shared_state
+            .read()
+            .await
+            .roles
+            .get(&role)
+            .cloned()
+            .unwrap_or_default()
     }
 
     /// A reference to the session's ID generator.
@@ -203,14 +239,17 @@ pub struct Session {
     message_tx: UnboundedSender<Message>,
     service_message_tx: UnboundedSender<Message>,
     state: RwLock<SessionState>,
+    shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
     closed_session_tx: broadcast::Sender<()>,
 
     rpc_yield_tx: broadcast::Sender<ChannelTransmittableResult<router_session_message::RpcYield>>,
+    rpc_yield_cancel_tx: broadcast::Sender<Id>,
+    rpc_yield_cancel_rx: broadcast::Receiver<Id>,
 
     publish_tx: broadcast::Sender<PublishMessage>,
-    call_tx: broadcast::Sender<CallMessage>,
+    procedure_message_tx: broadcast::Sender<ProcedureMessage>,
 }
 
 impl Session {
@@ -223,18 +262,22 @@ impl Session {
         let id_allocator = SequentialIdAllocator::default();
         let (closed_session_tx, _) = broadcast::channel(16);
         let (rpc_yield_tx, _) = broadcast::channel(16);
+        let (rpc_yield_cancel_tx, rpc_yield_cancel_rx) = broadcast::channel(16);
         let (publish_tx, _) = broadcast::channel(16);
-        let (call_tx, _) = broadcast::channel(16);
+        let (procedure_message_tx, _) = broadcast::channel(16);
         Self {
             id,
+            shared_state: Arc::new(RwLock::new(SharedSessionState::default())),
             message_tx,
             service_message_tx,
             state: RwLock::new(SessionState::default()),
             id_allocator: Arc::new(Box::new(id_allocator)),
             closed_session_tx,
             rpc_yield_tx,
+            rpc_yield_cancel_tx,
+            rpc_yield_cancel_rx,
             publish_tx,
-            call_tx,
+            procedure_message_tx,
         }
     }
 
@@ -256,6 +299,7 @@ impl Session {
     pub fn session_handle(&self) -> SessionHandle {
         SessionHandle {
             id: self.id,
+            shared_state: self.shared_state.clone(),
             id_allocator: self.id_allocator.clone(),
             message_tx: self.message_tx.clone(),
             closed_session_rx: self.closed_session_tx.subscribe(),
@@ -268,9 +312,9 @@ impl Session {
         self.publish_tx.subscribe()
     }
 
-    /// The receiver channel for procedure calls, for strong ordering.
-    pub fn call_rx(&self) -> broadcast::Receiver<CallMessage> {
-        self.call_tx.subscribe()
+    /// The receiver channel for procedure call messages, for strong ordering.
+    pub fn procedure_message_rx(&self) -> broadcast::Receiver<ProcedureMessage> {
+        self.procedure_message_tx.subscribe()
     }
 
     async fn get_from_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
@@ -285,7 +329,7 @@ impl Session {
 
     async fn modify_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
     where
-        F: Fn(&mut EstablishedSessionState) -> T,
+        F: FnOnce(&mut EstablishedSessionState) -> T,
     {
         match &mut *self.state.write().await {
             SessionState::Established(ref mut state) => Ok(f(state)),
@@ -350,6 +394,40 @@ impl Session {
         }
     }
 
+    fn read_features_dictionary(mut data: Value) -> Result<Features> {
+        let features = data
+            .dictionary_mut()
+            .and_then(|dict| {
+                let mut val = Value::Bool(false);
+                let features = dict.get_mut("features")?;
+                std::mem::swap(&mut val, features);
+                Some(val)
+            })
+            .ok_or_else(|| Error::msg("could not find features dictionary"))?;
+        Features::wamp_deserialize(features).map_err(Error::new)
+    }
+
+    fn read_peer_roles(message: &HelloMessage) -> HashMap<PeerRole, Features> {
+        let roles = match message
+            .details
+            .get("roles")
+            .and_then(|roles| roles.dictionary())
+        {
+            Some(roles) => roles,
+            None => return HashMap::default(),
+        };
+        let mut peer_roles = HashMap::default();
+        for (role, data) in roles {
+            let role = match PeerRole::try_from(role.as_ref()) {
+                Ok(role) => role,
+                Err(_) => continue,
+            };
+            let features = Self::read_features_dictionary(data.clone()).unwrap_or_default();
+            peer_roles.insert(role, features);
+        }
+        peer_roles
+    }
+
     async fn handle_closed<S>(&self, context: &RouterContext<S>, message: Message) -> Result<()> {
         match message {
             Message::Hello(message) => {
@@ -381,15 +459,25 @@ impl Session {
                             .config
                             .roles
                             .iter()
-                            .map(|role| (role.key_for_details().to_owned(), features.clone()))
+                            .map(|role| {
+                                (
+                                    role.to_string(),
+                                    Value::Dictionary(Dictionary::from_iter([(
+                                        "features".to_owned(),
+                                        features.clone(),
+                                    )])),
+                                )
+                            })
                             .collect(),
                     ),
                 );
 
+                self.shared_state.write().await.roles = Self::read_peer_roles(&message);
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     realm: context.realm().uri().clone(),
                     subscriptions: HashMap::default(),
                     procedures: HashMap::default(),
+                    active_invocations_by_call: HashMap::default(),
                 }))
                 .await?;
 
@@ -459,6 +547,12 @@ impl Session {
             }
             ref message @ Message::Yield(ref yield_message) => {
                 if let Err(err) = self.handle_yield(context, yield_message).await {
+                    return self.send_message(error_for_request(&message, &err)).await;
+                }
+                Ok(())
+            }
+            ref message @ Message::Cancel(ref cancel_message) => {
+                if let Err(err) = self.handle_cancel(context, cancel_message).await {
                     return self.send_message(error_for_request(&message, &err)).await;
                 }
                 Ok(())
@@ -645,9 +739,38 @@ impl Session {
         .await
     }
 
-    async fn handle_call<S>(&self, _: &RouterContext<S>, message: &CallMessage) -> Result<()> {
-        self.call_tx
-            .send(message.clone())
+    async fn handle_call<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: &CallMessage,
+    ) -> Result<()> {
+        let realm = self
+            .get_from_established_session_state(|state| state.realm.clone())
+            .await?;
+        let context = context.realm_context(&realm)?;
+        let procedure = context
+            .procedure(&message.procedure)
+            .await
+            .ok_or_else(|| InteractionError::NoSuchProcedure)?;
+        let callee = procedure.read().await.callee;
+        let registration_id = procedure.read().await.registration_id;
+        let request_id = self.id_allocator.generate_id().await;
+        let invocation = RpcInvocation {
+            registration_id,
+            invocation_request_id: request_id,
+            callee_session_id: callee,
+        };
+
+        // Store the active invocation immediately before handling another message.
+        self.modify_established_session_state(|state| {
+            state
+                .active_invocations_by_call
+                .insert(message.request, invocation)
+        })
+        .await?;
+
+        self.procedure_message_tx
+            .send(ProcedureMessage::Call(message.clone()))
             .map(|_| ())
             .map_err(Error::new)
     }
@@ -659,80 +782,124 @@ impl Session {
         &self,
         context: &RouterContext<S>,
         message: CallMessage,
-    ) -> Result<Option<RpcInvocation>> {
-        let invocation = match self.handle_ordered_call_internal(context, &message).await {
-            Ok(invocation) => invocation,
+    ) -> Result<Option<Id>> {
+        let call_request_id = match self
+            .handle_procedure_message_internal(context, &message)
+            .await
+        {
+            Ok(call_request_id) => call_request_id,
             Err(err) => {
                 self.send_message(error_for_request(&Message::Call(message), &err))
                     .await?;
                 return Ok(None);
             }
         };
-        Ok(Some(invocation))
+        Ok(Some(call_request_id))
     }
 
-    async fn handle_ordered_call_internal<S>(
+    async fn handle_procedure_message_internal<S>(
         &self,
         context: &RouterContext<S>,
         message: &CallMessage,
-    ) -> Result<RpcInvocation> {
-        let realm = self
-            .get_from_established_session_state(|state| state.realm.clone())
+    ) -> Result<Id> {
+        let (realm, invocation) = self
+            .get_from_established_session_state(|state| {
+                (
+                    state.realm.clone(),
+                    state
+                        .active_invocations_by_call
+                        .get(&message.request)
+                        .cloned(),
+                )
+            })
             .await?;
+        let invocation = match invocation {
+            Some(invocation) => invocation,
+            // Invocation was lost, likely due to immediate cancellation.
+            None => return Err(InteractionError::Canceled.into()),
+        };
         let context = context.realm_context(&realm)?;
-        let procedure = context
-            .procedure(&message.procedure)
-            .await
-            .ok_or_else(|| InteractionError::NoSuchProcedure)?;
-        let registration_id = procedure.read().await.registration_id;
-        let callee = procedure.read().await.callee;
         let callee = context
-            .realm()
-            .sessions
-            .read()
+            .session(invocation.callee_session_id)
             .await
-            .get(&callee)
             .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
             .clone();
-        let request_id = self.id_allocator.generate_id().await;
         callee
             .session
             .send_message(Message::Invocation(InvocationMessage {
-                request: request_id,
-                registered_registration: registration_id,
+                request: invocation.invocation_request_id,
+                registered_registration: invocation.registration_id,
                 details: Dictionary::default(),
                 call_arguments: message.arguments.clone(),
                 call_arguments_keyword: message.arguments_keyword.clone(),
             }))?;
-        Ok(RpcInvocation {
-            call_message: message.clone(),
-            invocation_request_id: request_id,
-            callee: callee.clone(),
-        })
+        Ok(message.request)
     }
 
-    /// Handles the invocation returned from [`Self::handle_ordered_call`].
+    /// Handles the invocation mapped to the call request ID returned from
+    /// [`Self::handle_ordered_call`].
     ///
     /// Returns when the result has been sent to the peer.
-    pub async fn handle_invocation(&self, invocation: RpcInvocation) -> Result<()> {
-        if let Err(err) = self.handle_invocation_internal(&invocation).await {
+    pub async fn handle_invocation<S>(
+        &self,
+        context: &RouterContext<S>,
+        call_request_id: Id,
+    ) -> Result<()> {
+        if let Err(err) = self
+            .handle_invocation_internal(context, call_request_id)
+            .await
+        {
             self.send_message(error_for_request(
-                &Message::Call(invocation.call_message),
+                &Message::Call(CallMessage {
+                    request: call_request_id,
+                    ..Default::default()
+                }),
                 &err,
             ))
             .await?;
         }
+
+        // Forget the invocation only when everything is done.
+        self.modify_established_session_state(|state| {
+            state.active_invocations_by_call.remove(&call_request_id)
+        })
+        .await?;
+
         Ok(())
     }
 
-    async fn handle_invocation_internal(&self, invocation: &RpcInvocation) -> Result<()> {
+    async fn handle_invocation_internal<S>(
+        &self,
+        context: &RouterContext<S>,
+        call_request_id: Id,
+    ) -> Result<()> {
+        let (realm, invocation) = self
+            .get_from_established_session_state(|state| {
+                (
+                    state.realm.clone(),
+                    state
+                        .active_invocations_by_call
+                        .get(&call_request_id)
+                        .cloned(),
+                )
+            })
+            .await?;
+        let invocation = invocation.ok_or_else(|| InteractionError::Canceled)?;
+        let context = context.realm_context(&realm)?;
+
+        // Find the callee session again. If it is gone, the procedure should be canceled.
+        let callee = context
+            .session(invocation.callee_session_id)
+            .await
+            .ok_or_else(|| Error::new(InteractionError::Canceled))?;
         let rpc_yield = Self::wait_for_rpc_yield(
-            invocation.callee.session.rpc_yield_rx.resubscribe(),
+            callee.session.rpc_yield_rx.resubscribe(),
+            self.rpc_yield_cancel_rx.resubscribe(),
             invocation.invocation_request_id,
         )
         .await?;
         self.send_message(Message::Result(ResultMessage {
-            call_request: invocation.call_message.request,
+            call_request: call_request_id,
             details: Dictionary::default(),
             yield_arguments: rpc_yield.arguments,
             yield_arguments_keyword: rpc_yield.arguments_keyword,
@@ -744,6 +911,7 @@ impl Session {
         mut rpc_yield_rx: broadcast::Receiver<
             ChannelTransmittableResult<router_session_message::RpcYield>,
         >,
+        mut cancel_rx: broadcast::Receiver<Id>,
         request_id: Id,
     ) -> Result<router_session_message::RpcYield> {
         loop {
@@ -760,9 +928,14 @@ impl Session {
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                return Err(err.into_error());
+                                return Err(err.into());
                             }
                         }
+                    }
+                }
+                id = cancel_rx.recv() => {
+                    if id.is_ok_and(|id| id == request_id) {
+                        return Err(InteractionError::Canceled.into());
                     }
                 }
             }
@@ -776,6 +949,89 @@ impl Session {
                 arguments: message.arguments.clone(),
                 arguments_keyword: message.arguments_keyword.clone(),
             }))?;
+        Ok(())
+    }
+
+    async fn handle_cancel<S>(&self, _: &RouterContext<S>, message: &CancelMessage) -> Result<()> {
+        self.procedure_message_tx
+            .send(ProcedureMessage::Cancel(message.clone()))
+            .map(|_| ())
+            .map_err(Error::new)
+    }
+
+    /// Handles an ordered procedure call cancel from the peer.
+    pub async fn handle_ordered_cancel<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: CancelMessage,
+    ) -> Result<()> {
+        let mut mode = match message.options.get("mode").and_then(|mode| mode.string()) {
+            Some(mode) => CallCancelMode::try_from(mode).unwrap_or_default(),
+            None => CallCancelMode::default(),
+        };
+
+        let (realm, invocation) = self
+            .get_from_established_session_state(|state| {
+                (
+                    state.realm.clone(),
+                    state
+                        .active_invocations_by_call
+                        .get(&message.call_request)
+                        .cloned(),
+                )
+            })
+            .await?;
+
+        // If there is no invocation for the call being canceled, there is nothing to do.
+        let invocation = match invocation {
+            Some(invocation) => invocation,
+            None => return Ok(()),
+        };
+
+        let context = context.realm_context(&realm)?;
+
+        // If there is no callee, the call should already be canceled.
+        let callee = match context.session(invocation.callee_session_id).await {
+            Some(callee) => callee,
+            None => return Ok(()),
+        };
+
+        // Avoid sending an INTERRUPT message if the callee does not support it.
+        if !callee
+            .session
+            .features_for_role(PeerRole::Callee)
+            .await
+            .call_canceling
+        {
+            mode = CallCancelMode::Skip;
+        }
+
+        let send_interrupt = mode != CallCancelMode::Skip;
+        let immediate_error = mode != CallCancelMode::Kill;
+
+        if send_interrupt {
+            callee
+                .session
+                .send_message(Message::Interrupt(InterruptMessage {
+                    invocation_request: invocation.invocation_request_id,
+                    ..Default::default()
+                }))?;
+        }
+
+        if immediate_error {
+            // Remove the invocation.
+            self.modify_established_session_state(|state| {
+                state
+                    .active_invocations_by_call
+                    .remove(&message.call_request)
+            })
+            .await?;
+
+            // Notify the task that is waiting for a YIELD message to stop.
+            self.rpc_yield_cancel_tx
+                .send(invocation.invocation_request_id)?;
+        }
+
         Ok(())
     }
 

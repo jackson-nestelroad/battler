@@ -3,7 +3,6 @@ use std::{
     sync::LazyLock,
 };
 
-use anyhow::Error;
 use regex::Regex;
 use serde::{
     de::{
@@ -14,11 +13,6 @@ use serde::{
     Serialize,
 };
 use thiserror::Error;
-
-use crate::core::error::{
-    BasicError,
-    InteractionError,
-};
 
 /// Error for an invalid URI.
 #[derive(Debug, Error)]
@@ -52,21 +46,6 @@ impl Uri {
         S: Into<String>,
     {
         Self(value.into())
-    }
-
-    /// Creates a URI for a generic error.
-    ///
-    /// Attempts to derive out known URIs first.
-    pub fn for_error(error: &Error) -> Self {
-        if error.is::<InvalidUri>() {
-            return Self::from_known("wamp.error.invalid_uri");
-        } else if let Some(error) = error.downcast_ref::<BasicError>() {
-            return Self::from_known(format!("wamp.error.{}", error.uri_component()));
-        } else if let Some(error) = error.downcast_ref::<InteractionError>() {
-            return Self::from_known(format!("wamp.error.{}", error.uri_component()));
-        } else {
-            return Self::from_known("wamp.error.unknown_error");
-        }
     }
 }
 

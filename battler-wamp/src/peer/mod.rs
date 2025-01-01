@@ -15,7 +15,9 @@ pub use peer::{
 };
 pub use session::{
     Event,
+    Interrupt,
     Invocation,
+    ProcedureMessage,
     RpcYield,
 };
 pub use web_socket_peer::{

@@ -1,14 +1,73 @@
-use anyhow::Error;
+use anyhow::{
+    Error,
+    Result,
+};
 use battler_wamp_values::Value;
 use thiserror::Error;
 
 use crate::{
     core::{
         id::Id,
-        uri::Uri,
+        uri::{
+            InvalidUri,
+            Uri,
+        },
     },
     message::message::Message,
+    peer::PeerNotConnectedError,
 };
+
+/// A generic WAMP error.
+///
+/// Errors that are passed into the library by applications must use this type, which can be
+/// consistently communicated via an ERROR message.
+#[derive(Debug, Clone, Error)]
+#[error("{message}")]
+pub struct WampError {
+    reason: Uri,
+    message: String,
+}
+
+impl WampError {
+    /// Creates a new WAMP error.
+    pub fn new<S>(reason: Uri, message: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Self {
+            reason,
+            message: message.into(),
+        }
+    }
+
+    /// The reason URI.
+    pub fn reason(&self) -> &Uri {
+        &self.reason
+    }
+
+    /// The message explaining the error.
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+}
+
+impl Into<WampError> for Error {
+    fn into(self) -> WampError {
+        WampError {
+            reason: uri_for_error(&self),
+            message: self.to_string(),
+        }
+    }
+}
+
+impl Into<WampError> for &Error {
+    fn into(self) -> WampError {
+        WampError {
+            reason: uri_for_error(self),
+            message: self.to_string(),
+        }
+    }
+}
 
 /// A basic error that occurs while processing a WAMP message.
 #[derive(Debug, Error)]
@@ -82,8 +141,7 @@ pub enum InteractionError {
 }
 
 impl InteractionError {
-    /// The trailing URI component for the error.
-    pub fn uri_component(&self) -> &str {
+    fn uri_component(&self) -> &str {
         match self {
             Self::ProtocolViolation(_) => "protocol_violation",
             Self::NoSuchProcedure => "no_such_procedure",
@@ -98,7 +156,10 @@ impl InteractionError {
 }
 
 /// Creates an [`struct@Error`] from a URI error reason and message.
-pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
+///
+/// Standard WAMP errors are converted to the correct variant of [`BasicError`] or
+/// [`InteractionError`]. Otherwise, the reason and message are stored in [`WampError`].
+fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
     match reason.as_ref() {
         "wamp.error.not_found" => BasicError::NotFound(message).into(),
         "wamp.error.invalid_argument" => BasicError::InvalidArgument(message).into(),
@@ -112,12 +173,12 @@ pub fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error 
         "wamp.error.no_such_realm" => InteractionError::NoSuchRealm.into(),
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
         "wamp.error.canceled" => InteractionError::Canceled.into(),
-        _ => BasicError::Internal(message).into(),
+        _ => WampError::new(reason, message).into(),
     }
 }
 
 /// Extracts a URI error reason and message from a WAMP message.
-pub fn extract_error_uri_reason_and_message(message: &Message) -> Result<(&Uri, &str), Error> {
+fn extract_error_uri_reason_and_message(message: &Message) -> Result<(&Uri, &str), Error> {
     let reason = match message.reason() {
         Some(reason) => reason,
         None => return Err(Error::msg("message does not contain a reason uri")),
@@ -133,56 +194,47 @@ pub fn extract_error_uri_reason_and_message(message: &Message) -> Result<(&Uri, 
     Ok((reason, message))
 }
 
-/// Constructs an [`struct@Error`] from a WAMP message.
-///
-/// Fails if the message does not describe any error.
-pub fn error_from_message(message: &Message) -> Result<Error, Error> {
-    let (uri, message) = extract_error_uri_reason_and_message(message)?;
-    Ok(error_from_uri_reason_and_message(
-        uri.clone(),
-        message.to_owned(),
-    ))
-}
-
 /// An error that can be transmitted over channels.
+///
+/// Maintains a [`WampError`] (reason URI and message), as well as a request ID for connecting
+/// errors to individual requests.
 #[derive(Debug, Clone)]
 pub struct ChannelTransmittableError {
-    pub reason: Uri,
-    pub message: String,
+    pub error: WampError,
     pub request_id: Option<Id>,
 }
 
-impl ChannelTransmittableError {
-    /// Converts the error into a real Error object that can be returned out.
-    pub fn into_error(self) -> anyhow::Error {
-        error_from_uri_reason_and_message(self.reason, self.message)
+// Manual implementation, rather than using [`thiserror::Error`], to ensure we maintain URI reason
+// in the error type.
+impl Into<Error> for ChannelTransmittableError {
+    fn into(self) -> Error {
+        error_from_uri_reason_and_message(self.error.reason, self.error.message)
     }
 }
 
 impl TryFrom<&Message> for ChannelTransmittableError {
-    type Error = anyhow::Error;
+    type Error = Error;
     fn try_from(value: &Message) -> std::result::Result<Self, Self::Error> {
         let (reason, message) = extract_error_uri_reason_and_message(&value)?;
         Ok(Self {
-            reason: reason.to_owned(),
-            message: message.to_owned(),
+            error: WampError::new(reason.clone(), message),
             request_id: value.request_id(),
         })
     }
 }
 
-impl From<&anyhow::Error> for ChannelTransmittableError {
-    fn from(value: &anyhow::Error) -> Self {
+impl From<&Error> for ChannelTransmittableError {
+    fn from(value: &Error) -> Self {
+        // We must maintain URIs as much as possible inside and outside the library.
         Self {
-            reason: Uri::for_error(value),
-            message: value.to_string(),
+            error: WampError::new(uri_for_error(value), value.to_string()),
             request_id: None,
         }
     }
 }
 
-impl From<anyhow::Error> for ChannelTransmittableError {
-    fn from(value: anyhow::Error) -> Self {
+impl From<Error> for ChannelTransmittableError {
+    fn from(value: Error) -> Self {
         Self::from(&value)
     }
 }
@@ -191,3 +243,24 @@ impl From<anyhow::Error> for ChannelTransmittableError {
 ///
 /// Assumes `T` is channel-transmittable.
 pub type ChannelTransmittableResult<T> = Result<T, ChannelTransmittableError>;
+
+/// Creates a URI for a generic error, generated within the WAMP library.
+pub(crate) fn uri_for_error(error: &Error) -> Uri {
+    if error.is::<InvalidUri>() {
+        Uri::from_known("wamp.error.invalid_uri")
+    } else if let Some(error) = error.downcast_ref::<BasicError>() {
+        Uri::from_known(format!("wamp.error.{}", error.uri_component()))
+    } else if let Some(error) = error.downcast_ref::<InteractionError>() {
+        Uri::from_known(format!("wamp.error.{}", error.uri_component()))
+    } else if error.is::<tokio::sync::broadcast::error::SendError<Message>>() {
+        Uri::from_known("com.battler_wamp.send_error")
+    } else if error.is::<tokio::sync::broadcast::error::RecvError>() {
+        Uri::from_known("com.battler_wamp.recv_error")
+    } else if error.is::<PeerNotConnectedError>() {
+        Uri::from_known("com.battler_wamp.peer_not_connected")
+    } else if let Some(error) = error.downcast_ref::<WampError>() {
+        error.reason.clone()
+    } else {
+        Uri::from_known("wamp.error.unknown_error")
+    }
+}

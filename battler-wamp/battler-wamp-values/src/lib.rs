@@ -28,6 +28,64 @@ pub enum Value {
     List(List),
 }
 
+impl Value {
+    /// The value as an [`Integer`].
+    pub fn integer(&self) -> Option<Integer> {
+        match self {
+            Self::Integer(val) => Some(*val),
+            _ => None,
+        }
+    }
+
+    /// The value as a [`str`].
+    pub fn string(&self) -> Option<&str> {
+        match self {
+            Self::String(val) => Some(val),
+            _ => None,
+        }
+    }
+
+    /// The value as a [`bool`].
+    pub fn bool(&self) -> Option<bool> {
+        match self {
+            Self::Bool(val) => Some(*val),
+            _ => None,
+        }
+    }
+
+    /// The value as a [`Dictionary`].
+    pub fn dictionary(&self) -> Option<&Dictionary> {
+        match self {
+            Self::Dictionary(val) => Some(val),
+            _ => None,
+        }
+    }
+
+    /// The value as a [`Dictionary`].
+    pub fn dictionary_mut(&mut self) -> Option<&mut Dictionary> {
+        match self {
+            Self::Dictionary(val) => Some(val),
+            _ => None,
+        }
+    }
+
+    /// The value as a [`List`].
+    pub fn list(&self) -> Option<&List> {
+        match self {
+            Self::List(val) => Some(val),
+            _ => None,
+        }
+    }
+
+    /// The value as a [`List`].
+    pub fn list_mut(&mut self) -> Option<&mut List> {
+        match self {
+            Self::List(val) => Some(val),
+            _ => None,
+        }
+    }
+}
+
 impl From<Integer> for Value {
     fn from(value: Integer) -> Self {
         Self::Integer(value)

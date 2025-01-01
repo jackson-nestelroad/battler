@@ -43,7 +43,7 @@ impl<S> RouterContext<S> {
         self.router.as_ref()
     }
 
-    /// Creates a [`RealmContext`] with the given realm locked and ready for use.
+    /// Creates a [`RealmContext`] with a reference to the realm.
     pub fn realm_context(&self, realm: &Uri) -> Result<RealmContext<'_, S>> {
         let realm = self
             .router
@@ -67,7 +67,7 @@ impl<S> Clone for RouterContext<S> {
 
 /// The context of a task running for a realm.
 ///
-/// Used to lock the realm for use.
+/// Used for convenient access to a single realm.
 pub struct RealmContext<'router, S>
 where
     S: 'static,

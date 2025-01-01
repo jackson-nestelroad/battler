@@ -27,6 +27,7 @@ use crate::{
     core::{
         error::{
             BasicError,
+            ChannelTransmittableResult,
             InteractionError,
         },
         hash::HashMap,
@@ -61,6 +62,7 @@ struct EstablishedSessionState {
     realm: Uri,
     subscriptions: HashMap<Id, Subscription>,
     procedures: HashMap<Id, Procedure>,
+    active_invocations: HashMap<Id, Id>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -163,7 +165,26 @@ impl Invocation {
     }
 }
 
-mod peer_session_message {
+/// An interrupt of an invocation.
+#[derive(Debug, Clone)]
+pub struct Interrupt {
+    id: Id,
+}
+
+impl Interrupt {
+    pub fn id(&self) -> Id {
+        self.id
+    }
+}
+
+/// A message for a single [`Procedure`] that must be strongly ordered.
+#[derive(Debug, Clone)]
+pub enum ProcedureMessage {
+    Invocation(Invocation),
+    Interrupt(Interrupt),
+}
+
+pub(crate) mod peer_session_message {
     use battler_wamp_values::{
         Dictionary,
         List,
@@ -172,59 +193,14 @@ mod peer_session_message {
 
     use crate::{
         core::{
-            error::{
-                error_from_uri_reason_and_message,
-                extract_error_uri_reason_and_message,
-            },
             id::Id,
             uri::Uri,
         },
-        message::message::Message,
         peer::session::{
             Event,
-            Invocation,
+            ProcedureMessage,
         },
     };
-
-    /// An error that can be transmitted over peer session channels.
-    #[derive(Debug, Clone)]
-    pub struct Error {
-        pub reason: Uri,
-        pub message: String,
-        pub request_id: Option<Id>,
-    }
-
-    impl Error {
-        /// Converts the error into a real Error object that can be returned out.
-        pub fn into_error(self) -> anyhow::Error {
-            error_from_uri_reason_and_message(self.reason, self.message)
-        }
-    }
-
-    impl TryFrom<&Message> for Error {
-        type Error = anyhow::Error;
-        fn try_from(value: &Message) -> std::result::Result<Self, Self::Error> {
-            let (reason, message) = extract_error_uri_reason_and_message(&value)?;
-            Ok(Self {
-                reason: reason.to_owned(),
-                message: message.to_owned(),
-                request_id: value.request_id(),
-            })
-        }
-    }
-
-    impl From<&anyhow::Error> for Error {
-        fn from(value: &anyhow::Error) -> Self {
-            Self {
-                reason: Uri::for_error(value),
-                message: value.to_string(),
-                request_id: None,
-            }
-        }
-    }
-
-    /// A result that can be transmitted over peer session channels.
-    pub type Result<T> = std::result::Result<T, Error>;
 
     /// The result of establishing a session.
     #[derive(Debug, Clone)]
@@ -267,7 +243,7 @@ mod peer_session_message {
     pub struct Registration {
         pub request_id: Id,
         pub registration_id: Id,
-        pub invocation_rx: broadcast::Receiver<Invocation>,
+        pub procedure_message_rx: broadcast::Receiver<ProcedureMessage>,
     }
 
     impl Clone for Registration {
@@ -275,7 +251,7 @@ mod peer_session_message {
             Self {
                 request_id: self.request_id,
                 registration_id: self.registration_id,
-                invocation_rx: self.invocation_rx.resubscribe(),
+                procedure_message_rx: self.procedure_message_rx.resubscribe(),
             }
         }
     }
@@ -302,7 +278,7 @@ struct Subscription {
 
 #[derive(Clone)]
 struct Procedure {
-    invocation_tx: broadcast::Sender<Invocation>,
+    procedure_tx: broadcast::Sender<ProcedureMessage>,
 }
 
 /// A handle to an asynchronously-running peer session.
@@ -311,21 +287,20 @@ pub struct SessionHandle {
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
     established_session_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::EstablishedSession>>,
+        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::EstablishedSession>>,
     closed_session_rx: broadcast::Receiver<()>,
 
     subscribed_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::Subscription>>,
+        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Subscription>>,
     unsubscribed_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::Unsubscription>>,
+        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
     published_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>>,
+        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Publication>>,
     registered_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::Registration>>,
+        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Registration>>,
     unregistered_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::Unregistration>>,
-    rpc_result_rx:
-        broadcast::Receiver<peer_session_message::Result<peer_session_message::RpcResult>>,
+        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unregistration>>,
+    rpc_result_rx: broadcast::Receiver<ChannelTransmittableResult<peer_session_message::RpcResult>>,
 }
 
 impl SessionHandle {
@@ -349,7 +324,7 @@ impl SessionHandle {
     /// state).
     pub fn established_session_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::EstablishedSession>>
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::EstablishedSession>>
     {
         self.established_session_rx.resubscribe()
     }
@@ -362,44 +337,42 @@ impl SessionHandle {
     /// The receiver channel for responses to SUBSCRIBE messages.
     pub fn subscribed_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Subscription>> {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Subscription>> {
         self.subscribed_rx.resubscribe()
     }
 
     /// The receiver channel for responses to UNSUBSCRIBE messages.
     pub fn unsubscribed_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Unsubscription>>
-    {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unsubscription>> {
         self.unsubscribed_rx.resubscribe()
     }
 
     /// The receiver channel for responses to PUBLISH messages.
     pub fn published_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Publication>> {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Publication>> {
         self.published_rx.resubscribe()
     }
 
     /// The receiver channel for responses to REGISTER messages.
     pub fn registered_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Registration>> {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Registration>> {
         self.registered_rx.resubscribe()
     }
 
     /// The receiver channel for responses to UNREGISTER messages.
     pub fn unregistered_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::Unregistration>>
-    {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unregistration>> {
         self.unregistered_rx.resubscribe()
     }
 
     /// The receiver channel for responses to CALL messages.
     pub fn rpc_result_rx(
         &self,
-    ) -> broadcast::Receiver<peer_session_message::Result<peer_session_message::RpcResult>> {
+    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::RpcResult>> {
         self.rpc_result_rx.resubscribe()
     }
 }
@@ -414,20 +387,19 @@ pub struct Session {
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
     established_session_tx:
-        broadcast::Sender<peer_session_message::Result<peer_session_message::EstablishedSession>>,
+        broadcast::Sender<ChannelTransmittableResult<peer_session_message::EstablishedSession>>,
     closed_session_tx: broadcast::Sender<()>,
 
     subscribed_tx:
-        broadcast::Sender<peer_session_message::Result<peer_session_message::Subscription>>,
+        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Subscription>>,
     unsubscribed_tx:
-        broadcast::Sender<peer_session_message::Result<peer_session_message::Unsubscription>>,
-    published_tx:
-        broadcast::Sender<peer_session_message::Result<peer_session_message::Publication>>,
+        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
+    published_tx: broadcast::Sender<ChannelTransmittableResult<peer_session_message::Publication>>,
     registered_tx:
-        broadcast::Sender<peer_session_message::Result<peer_session_message::Registration>>,
+        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Registration>>,
     unregistered_tx:
-        broadcast::Sender<peer_session_message::Result<peer_session_message::Unregistration>>,
-    rpc_result_tx: broadcast::Sender<peer_session_message::Result<peer_session_message::RpcResult>>,
+        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Unregistration>>,
+    rpc_result_tx: broadcast::Sender<ChannelTransmittableResult<peer_session_message::RpcResult>>,
 }
 
 impl Session {
@@ -501,6 +473,7 @@ impl Session {
     async fn get_from_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
     where
         F: Fn(&EstablishedSessionState) -> T,
+        T: 'static,
     {
         match &*self.state.read().await {
             SessionState::Established(state) => Ok(f(&state)),
@@ -511,6 +484,7 @@ impl Session {
     async fn modify_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
     where
         F: FnOnce(&mut EstablishedSessionState) -> T,
+        T: 'static,
     {
         match &mut *self.state.write().await {
             SessionState::Established(ref mut state) => Ok(f(state)),
@@ -568,6 +542,20 @@ impl Session {
                 .await?;
                 Ok(())
             }
+            Message::Yield(message) => {
+                self.modify_established_session_state(|state| {
+                    state.active_invocations.remove(&message.invocation_request)
+                })
+                .await?;
+                Ok(())
+            }
+            Message::Error(message) => {
+                self.modify_established_session_state(|state| {
+                    state.active_invocations.remove(&message.request)
+                })
+                .await?;
+                Ok(())
+            }
             _ => Ok(()),
         }
     }
@@ -620,6 +608,7 @@ impl Session {
                     realm,
                     subscriptions: HashMap::default(),
                     procedures: HashMap::default(),
+                    active_invocations: HashMap::default(),
                 }))
                 .await
             }
@@ -728,18 +717,18 @@ impl Session {
                 Ok(())
             }
             Message::Registered(message) => {
-                let (invocation_tx, invocation_rx) = broadcast::channel(16);
+                let (procedure_tx, procedure_message_rx) = broadcast::channel(16);
                 self.modify_established_session_state(|state| {
                     state
                         .procedures
-                        .insert(message.registration, Procedure { invocation_tx })
+                        .insert(message.registration, Procedure { procedure_tx })
                 })
                 .await?;
                 self.registered_tx
                     .send(Ok(peer_session_message::Registration {
                         request_id: message.register_request,
                         registration_id: message.registration,
-                        invocation_rx,
+                        procedure_message_rx,
                     }))?;
                 Ok(())
             }
@@ -763,12 +752,20 @@ impl Session {
                     Some(procedure) => procedure,
                     None => return Ok(()),
                 };
-                procedure.invocation_tx.send(Invocation {
-                    arguments: message.call_arguments,
-                    arguments_keyword: message.call_arguments_keyword,
-                    id: message.request,
-                    message_tx: self.service_message_tx.clone(),
-                })?;
+                self.modify_established_session_state(|state| {
+                    state
+                        .active_invocations
+                        .insert(message.request, message.registered_registration)
+                })
+                .await?;
+                procedure
+                    .procedure_tx
+                    .send(ProcedureMessage::Invocation(Invocation {
+                        arguments: message.call_arguments,
+                        arguments_keyword: message.call_arguments_keyword,
+                        id: message.request,
+                        message_tx: self.service_message_tx.clone(),
+                    }))?;
                 Ok(())
             }
             Message::Result(message) => {
@@ -777,6 +774,27 @@ impl Session {
                         request_id: message.call_request,
                         arguments: message.yield_arguments,
                         arguments_keyword: message.yield_arguments_keyword,
+                    }))?;
+                Ok(())
+            }
+            Message::Interrupt(message) => {
+                let procedure = match self
+                    .get_from_established_session_state(|state| {
+                        state
+                            .active_invocations
+                            .get(&message.invocation_request)
+                            .and_then(|id| state.procedures.get(&id))
+                            .cloned()
+                    })
+                    .await?
+                {
+                    Some(procedure) => procedure,
+                    None => return Ok(()),
+                };
+                procedure
+                    .procedure_tx
+                    .send(ProcedureMessage::Interrupt(Interrupt {
+                        id: message.invocation_request,
                     }))?;
                 Ok(())
             }

@@ -12,16 +12,14 @@ use battler_wamp::{
     core::{
         error::{
             ChannelTransmittableError,
-            InteractionError,
+            WampError,
         },
         id::Id,
         uri::Uri,
     },
-    message::message::Message,
     peer::{
         Event,
-        Invocation,
-        PeerNotConnectedError,
+        ProcedureMessage,
         RpcCall,
         RpcResult,
     },
@@ -34,13 +32,7 @@ use log::{
 };
 use tokio::{
     sync::{
-        broadcast::{
-            self,
-            error::{
-                RecvError,
-                SendError,
-            },
-        },
+        broadcast,
         RwLock,
     },
     task::JoinHandle,
@@ -104,13 +96,13 @@ impl PeerConnectionConfig {
 }
 
 fn retryable_error(err: &Error) -> bool {
-    err.is::<PeerNotConnectedError>()
-        || err.is::<SendError<Message>>()
-        || err.is::<RecvError>()
-        || match err.downcast_ref::<InteractionError>() {
-            Some(InteractionError::Canceled) => true,
-            _ => false,
-        }
+    const RETRYABLE_URIS: [&str; 4] = [
+        "wamp.error.canceled",
+        "com.battler_wamp.peer_not_connected",
+        "com.battler_wamp.send_error",
+        "com.battler_wamp.recv_error",
+    ];
+    RETRYABLE_URIS.contains(&Into::<WampError>::into(err).reason().as_ref())
 }
 
 async fn repeat_while_retryable<F, T>(f: F) -> Result<T>
@@ -184,7 +176,7 @@ where
         tokio::select! {
             _ = session_established_rx.recv() => Ok(()),
             err = error_rx.recv() => match err {
-                Ok(err) => Err(err.into_error()),
+                Ok(err) => Err(err.into()),
                 Err(err) => Err(err.into()),
             },
         }
@@ -207,7 +199,7 @@ where
         tokio::select! {
             _ = session_ready_rx.recv() => Ok(()),
             err = error_rx.recv() => match err {
-                Ok(err) => Err(err.into_error()),
+                Ok(err) => Err(err.into()),
                 Err(err) => Err(err.into()),
             },
         }
@@ -256,24 +248,31 @@ where
         self.subscriber.lock().await.unsubscribe(topic).await
     }
 
-    /// Calls a procedure, without type checking.
-    pub async fn call_unchecked(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
+    /// Calls a procedure, without type checking, and waits for its result.
+    pub async fn call_and_wait_unchecked(
+        &self,
+        procedure: Uri,
+        rpc_call: RpcCall,
+    ) -> Result<RpcResult> {
         self.wait_until_session_established().await?;
         let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, procedure: Uri, rpc_call: RpcCall| {
-            async move || peer.call(procedure.clone(), rpc_call.clone()).await
+            async move || {
+                peer.call_and_wait(procedure.clone(), rpc_call.clone())
+                    .await
+            }
         })(self.peer.clone(), procedure, rpc_call);
         repeat_while_retryable(f).await
     }
 
-    /// Calls a procedure.
-    pub async fn call<Input, Output>(&self, procedure: Uri, input: Input) -> Result<Output>
+    /// Calls a procedure and waits for its result.
+    pub async fn call_and_wait<Input, Output>(&self, procedure: Uri, input: Input) -> Result<Output>
     where
         Input: battler_wamprat_message::WampApplicationMessage + 'static,
         Output: battler_wamprat_message::WampApplicationMessage + 'static,
     {
         let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
         let result = self
-            .call_unchecked(
+            .call_and_wait_unchecked(
                 procedure,
                 RpcCall {
                     arguments,
@@ -493,9 +492,9 @@ where
     async fn invocation_loop(
         uri: Uri,
         procedure: Arc<Box<dyn Procedure>>,
-        mut invocation_rx: broadcast::Receiver<Invocation>,
+        mut procedure_message_rx: broadcast::Receiver<ProcedureMessage>,
     ) {
-        while let Ok(invocation) = invocation_rx.recv().await {
+        while let Ok(ProcedureMessage::Invocation(invocation)) = procedure_message_rx.recv().await {
             let id = invocation.id();
             if let Err(err) = procedure.invoke(invocation).await {
                 error!("Procedure invocation {id} of {uri} failed: {err}");
@@ -515,8 +514,8 @@ where
 
         // Restart all procedure handlers.
         for (uri, procedure) in &self.procedures {
-            let invocation_rx = match self.peer.register(uri.clone()).await {
-                Ok(procedure) => procedure.invocation_rx,
+            let procedure_message_rx = match self.peer.register(uri.clone()).await {
+                Ok(procedure) => procedure.procedure_message_rx,
                 Err(err) => {
                     error!("Failed to register procedure {uri}: {err}");
                     if procedure.ignore_registration_error {
@@ -531,7 +530,7 @@ where
             tokio::spawn(Self::invocation_loop(
                 uri.clone(),
                 procedure.procedure.clone(),
-                invocation_rx,
+                procedure_message_rx,
             ));
         }
 
