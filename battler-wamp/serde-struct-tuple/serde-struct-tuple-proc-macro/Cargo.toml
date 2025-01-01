@@ -2,6 +2,10 @@
 name = "serde-struct-tuple-proc-macro"
 version = "0.1.0"
 edition = "2021"
+description = "Procedural macro for deserializing a struct from a tuple of its fields."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["serde", "struct", "tuple"]
+license = "MIT"
 
 [lib]
 proc-macro = true

@@ -2,6 +2,10 @@
 name = "serde-struct-tuple-enum-proc-macro"
 version = "0.1.0"
 edition = "2021"
+description = "Procedural macro for deserializing an enum of structs from tuples."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["serde", "struct", "enum", "tuple"]
+license = "MIT"
 
 [lib]
 proc-macro = true

@@ -2,6 +2,10 @@
 name = "battler-wamprat-message"
 version = "0.1.0"
 edition = "2021"
+description = "Procedural macro for sending structs over WAMP messages."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["wamp", "websocket", "message"]
+license = "MIT"
 
 [dependencies]
 battler-wamp-values = { path = "../../battler-wamp/battler-wamp-values" }

@@ -8,7 +8,7 @@ use battler_wamp_values::{
 };
 use thiserror::Error;
 
-/// An error resulting from serializing a WAMP value to the expected format.
+/// An error resulting from serializing a value to the expected format.
 #[derive(Debug, Error)]
 #[error("{msg}")]
 pub struct WampratSerializeError {

@@ -2,6 +2,10 @@
 name = "battler-wamprat"
 version = "0.1.0"
 edition = "2021"
+description = "Asynchronous library for strongly-typed WAMP peer messaging."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["wamp", "websocket", "router", "peer"]
+license = "MIT"
 
 [dependencies]
 ahash = "0.8.11"

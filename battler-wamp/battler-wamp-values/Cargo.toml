@@ -2,6 +2,10 @@
 name = "battler-wamp-values"
 version = "0.1.0"
 edition = "2021"
+description = "WAMP value types."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["wamp", "websocket"]
+license = "MIT"
 
 [dependencies]
 ahash = "0.8.11"
