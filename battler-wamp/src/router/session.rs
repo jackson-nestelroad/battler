@@ -647,6 +647,11 @@ impl Session {
         context: &RouterContext<S>,
         message: &PublishMessage,
     ) -> Result<()> {
+        let exclude_publisher = message
+            .options
+            .get("exclude_me")
+            .and_then(|val| val.bool())
+            .unwrap_or(true);
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
@@ -657,6 +662,7 @@ impl Session {
             &message.topic,
             message.arguments.clone(),
             message.arguments_keyword.clone(),
+            exclude_publisher,
         )
         .await?;
         self.send_message(Message::Published(PublishedMessage {

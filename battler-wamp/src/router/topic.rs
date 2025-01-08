@@ -127,16 +127,17 @@ impl TopicManager {
     /// Publishes an event to a topic.
     pub async fn publish<S>(
         context: &RealmContext<'_, S>,
-        session: Id,
+        publisher: Id,
         topic: &Uri,
         arguments: List,
         arguments_keyword: Dictionary,
+        exclude_publisher: bool,
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
         }
         if context
-            .session(session)
+            .session(publisher)
             .await
             .ok_or_else(|| BasicError::NotFound("expected publisher session to exist".to_owned()))?
             .session
@@ -151,7 +152,7 @@ impl TopicManager {
         context
             .router()
             .pub_sub_policies
-            .validate_publication(context, session, &topic)
+            .validate_publication(context, publisher, &topic)
             .await?;
         let published_id = context.router().id_allocator.generate_id().await;
         let topic = match context.topic(topic).await {
@@ -160,6 +161,9 @@ impl TopicManager {
         };
         for (session, subscription) in topic.subscribers.read().await.iter() {
             if !subscription.active {
+                continue;
+            }
+            if *session == publisher && exclude_publisher {
                 continue;
             }
             let session = match context.realm().sessions.read().await.get(&session).cloned() {

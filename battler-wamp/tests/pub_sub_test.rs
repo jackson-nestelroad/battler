@@ -341,3 +341,39 @@ async fn pub_sub_not_allowed_without_broker_role() {
         }
     );
 }
+
+#[tokio::test]
+async fn publisher_does_not_receive_event() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let peer = create_peer("peer").unwrap();
+
+    assert_matches::assert_matches!(
+        peer.connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+
+    let mut subscription = peer
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        peer.publish(
+            Uri::try_from("com.battler.topic1").unwrap(),
+            Event::default(),
+        )
+        .await,
+        Ok(())
+    );
+
+    tokio::select! {
+        _ = subscription.event_rx.recv() => {
+            assert!(false, "publisher received event for its own subscription");
+        }
+        _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+}
