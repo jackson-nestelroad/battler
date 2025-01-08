@@ -10,6 +10,7 @@ use anyhow::{
 use battler_wamp_values::{
     Dictionary,
     List,
+    Value,
 };
 use log::{
     debug,
@@ -17,6 +18,7 @@ use log::{
     info,
     warn,
 };
+use thiserror::Error;
 use tokio::sync::{
     broadcast,
     mpsc::UnboundedSender,
@@ -129,6 +131,12 @@ pub struct RpcYield {
     pub arguments_keyword: Dictionary,
 }
 
+/// Error for a callee attempting to respond to an RPC with a progressive result when it is not
+/// supported by the caller.
+#[derive(Debug, Error)]
+#[error("invocation does not support progressive results")]
+pub struct ProgressiveResultNotSupportedError;
+
 /// An invocation of a procedure.
 #[derive(Debug, Clone)]
 pub struct Invocation {
@@ -137,12 +145,30 @@ pub struct Invocation {
 
     id: Id,
     message_tx: UnboundedSender<Message>,
+    receive_progress: bool,
 }
 
 impl Invocation {
     /// The invocation ID.
     pub fn id(&self) -> Id {
         self.id
+    }
+
+    /// Responds to the invocation with a progressive result.
+    ///
+    /// Fails if the invocation (a.k.a., the caller) does not support progressive results.
+    pub fn progress(&self, rpc_yield: RpcYield) -> Result<()> {
+        if !self.receive_progress {
+            return Err(ProgressiveResultNotSupportedError.into());
+        }
+        self.message_tx
+            .send(Message::Yield(YieldMessage {
+                invocation_request: self.id,
+                options: Dictionary::from_iter([("progress".to_owned(), Value::Bool(true))]),
+                arguments: rpc_yield.arguments,
+                arguments_keyword: rpc_yield.arguments_keyword,
+            }))
+            .map_err(Error::new)
     }
 
     /// Responds to the invocation with a result.
@@ -285,6 +311,7 @@ pub(crate) mod peer_session_message {
         pub request_id: Id,
         pub arguments: List,
         pub arguments_keyword: Dictionary,
+        pub progress: bool,
     }
 }
 
@@ -775,6 +802,11 @@ impl Session {
                         .insert(message.request, message.registered_registration)
                 })
                 .await?;
+                let receive_progress = message
+                    .details
+                    .get("receive_progress")
+                    .and_then(|val| val.bool())
+                    .unwrap_or(false);
                 procedure
                     .procedure_tx
                     .send(ProcedureMessage::Invocation(Invocation {
@@ -782,15 +814,22 @@ impl Session {
                         arguments_keyword: message.call_arguments_keyword,
                         id: message.request,
                         message_tx: self.service_message_tx.clone(),
+                        receive_progress,
                     }))?;
                 Ok(())
             }
             Message::Result(message) => {
+                let progress = message
+                    .details
+                    .get("progress")
+                    .and_then(|val| val.bool())
+                    .unwrap_or(false);
                 self.rpc_result_tx
                     .send(Ok(peer_session_message::RpcResult {
                         request_id: message.call_request,
                         arguments: message.yield_arguments,
                         arguments_keyword: message.yield_arguments_keyword,
+                        progress,
                     }))?;
                 Ok(())
             }

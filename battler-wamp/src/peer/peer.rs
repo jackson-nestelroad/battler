@@ -14,7 +14,11 @@ use battler_wamp_values::{
     Value,
     WampSerialize,
 };
-use futures_util::lock::Mutex;
+use futures_util::{
+    lock::Mutex,
+    Stream,
+    StreamExt,
+};
 use log::{
     error,
     info,
@@ -192,6 +196,7 @@ pub struct RpcCall {
 pub struct RpcResult {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
+    pub progress: bool,
 }
 
 struct PendingRpc {
@@ -200,12 +205,22 @@ struct PendingRpc {
     cancel_tx: UnboundedSender<CallCancelMode>,
 }
 
+impl Drop for PendingRpc {
+    fn drop(&mut self) {
+        self.results_join_handle.abort();
+    }
+}
+
 /// A simple pending RPC, which is expected to produce one result.
 pub struct SimplePendingRpc {
     pending: PendingRpc,
 }
 
 impl SimplePendingRpc {
+    fn new(pending: PendingRpc) -> Self {
+        Self { pending }
+    }
+
     /// Waits for the result of the procedure call.
     pub async fn result(mut self) -> Result<RpcResult> {
         match self.pending.result_rx.recv().await {
@@ -233,9 +248,83 @@ impl SimplePendingRpc {
     }
 }
 
-impl Drop for PendingRpc {
-    fn drop(&mut self) {
-        self.results_join_handle.abort();
+/// A progressive pending RPC, which is expected to produce one or more results.
+pub struct ProgressivePendingRpc {
+    pending: PendingRpc,
+    done: bool,
+    canceled: bool,
+}
+
+impl ProgressivePendingRpc {
+    fn new(pending: PendingRpc) -> Self {
+        Self {
+            pending,
+            done: false,
+            canceled: false,
+        }
+    }
+
+    // Returns true if the RPC has received all of its results.
+    pub fn done(&self) -> bool {
+        self.done
+    }
+
+    /// Waits for the next result of the procedure call.
+    pub async fn next_result(&mut self) -> Result<Option<RpcResult>> {
+        if self.done {
+            return Ok(None);
+        }
+        match self.wait_for_next_result().await {
+            Ok(result) => {
+                self.done = self.canceled || !result.progress;
+                Ok(Some(result))
+            }
+            Err(err) => {
+                self.done = true;
+                Err(err)
+            }
+        }
+    }
+
+    async fn wait_for_next_result(&mut self) -> Result<RpcResult> {
+        match self.pending.result_rx.recv().await {
+            Some(result) => result.map_err(|err| err.into()),
+            None => Err(Error::msg("procedure call finished with no result")),
+        }
+    }
+
+    /// Cancels the pending call.
+    pub async fn cancel(&mut self) -> Result<()> {
+        self.canceled = true;
+        self.pending
+            .cancel_tx
+            .send(CallCancelMode::KillNoWait)
+            .map_err(Error::new)
+    }
+
+    /// Kills the pending call.
+    ///
+    /// The end error, or result, can still be read from [`Self::result`].
+    pub async fn kill(&mut self) -> Result<()> {
+        self.canceled = true;
+        self.pending
+            .cancel_tx
+            .send(CallCancelMode::Kill)
+            .map_err(Error::new)
+    }
+
+    /// Wraps the pending RPC as a stream of results.
+    ///
+    /// The stream is finished on the last result or error.
+    pub fn into_stream(self) -> impl Stream<Item = Result<RpcResult>> {
+        futures_util::stream::unfold(self, move |mut rpc| async {
+            match rpc.next_result().await {
+                Ok(Some(result)) => Some((Ok(result), rpc)),
+                Ok(None) => None,
+                Err(err) => Some((Err(err), rpc)),
+            }
+        })
+        .boxed()
     }
 }
 
@@ -817,6 +906,7 @@ where
                                 rpc_result_tx.send(Ok(RpcResult {
                                     arguments: rpc_result.arguments,
                                     arguments_keyword: rpc_result.arguments_keyword,
+                                    progress: rpc_result.progress,
                                 }))?;
                             }
                         }
@@ -848,7 +938,12 @@ where
         Ok(())
     }
 
-    async fn initiate_call(&self, procedure: Uri, rpc_call: RpcCall) -> Result<PendingRpc> {
+    async fn initiate_call(
+        &self,
+        procedure: Uri,
+        rpc_call: RpcCall,
+        receive_progress: bool,
+    ) -> Result<PendingRpc> {
         let (message_tx, id_allocator, session_rpc_result_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
@@ -860,9 +955,14 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
+        let mut options = Dictionary::default();
+        if receive_progress {
+            options.insert("receive_progress".to_owned(), Value::Bool(true));
+        }
+
         message_tx.send(Message::Call(CallMessage {
             request: request_id,
-            options: Dictionary::default(),
+            options,
             procedure,
             arguments: rpc_call.arguments,
             arguments_keyword: rpc_call.arguments_keyword,
@@ -889,9 +989,9 @@ where
 
     /// Calls a procedure and waits for its result.
     pub async fn call_and_wait(&self, procedure: Uri, rpc_call: RpcCall) -> Result<RpcResult> {
-        let pending = self.initiate_call(procedure, rpc_call).await?;
+        let pending = self.initiate_call(procedure, rpc_call, false).await?;
         // Wait for a single result.
-        let simple = SimplePendingRpc { pending };
+        let simple = SimplePendingRpc::new(pending);
         simple.result().await
     }
 
@@ -899,8 +999,20 @@ where
     ///
     /// The caller can choose what to do with the pending RPC.
     pub async fn call(&self, procedure: Uri, rpc_call: RpcCall) -> Result<SimplePendingRpc> {
-        let pending = self.initiate_call(procedure, rpc_call).await?;
-        Ok(SimplePendingRpc { pending })
+        let pending = self.initiate_call(procedure, rpc_call, false).await?;
+        Ok(SimplePendingRpc::new(pending))
+    }
+
+    /// Calls a procedure, expecting one or more progressive results.
+    ///
+    /// The caller can choose what to do with the pending RPC.
+    pub async fn call_with_progress(
+        &self,
+        procedure: Uri,
+        rpc_call: RpcCall,
+    ) -> Result<ProgressivePendingRpc> {
+        let pending = self.initiate_call(procedure, rpc_call, true).await?;
+        Ok(ProgressivePendingRpc::new(pending))
     }
 }
 

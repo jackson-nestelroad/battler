@@ -18,6 +18,7 @@ pub use session::{
     Interrupt,
     Invocation,
     ProcedureMessage,
+    ProgressiveResultNotSupportedError,
     RpcYield,
 };
 pub use web_socket_peer::{

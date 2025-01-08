@@ -173,6 +173,7 @@ fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
         "wamp.error.no_such_realm" => InteractionError::NoSuchRealm.into(),
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
         "wamp.error.canceled" => InteractionError::Canceled.into(),
+        "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
         _ => WampError::new(reason, message).into(),
     }
 }
@@ -261,6 +262,6 @@ pub(crate) fn uri_for_error(error: &Error) -> Uri {
     } else if let Some(error) = error.downcast_ref::<WampError>() {
         error.reason.clone()
     } else {
-        Uri::from_known("wamp.error.unknown_error")
+        Uri::from_known("com.battler_wamp.unknown_error")
     }
 }

@@ -13,6 +13,7 @@ use battler_wamp_values::{
     WampDeserialize,
     WampSerialize,
 };
+use futures_util::lock::Mutex;
 use log::{
     debug,
     error,
@@ -157,6 +158,7 @@ mod router_session_message {
         pub request_id: Id,
         pub arguments: List,
         pub arguments_keyword: Dictionary,
+        pub options: Dictionary,
     }
 }
 
@@ -166,6 +168,8 @@ struct RpcInvocation {
     registration_id: Id,
     invocation_request_id: Id,
     callee_session_id: Id,
+    progressive_call_results: bool,
+    canceled: Arc<Mutex<bool>>,
 }
 
 /// A message related to procedure calls that must be strongly ordered.
@@ -715,13 +719,29 @@ impl Session {
             .procedure(&message.procedure)
             .await
             .ok_or_else(|| InteractionError::NoSuchProcedure)?;
-        let callee = procedure.read().await.callee;
+
+        let callee = context
+            .session(procedure.read().await.callee)
+            .await
+            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?;
+
+        let progressive_call_results = message
+            .options
+            .get("receive_progress")
+            .is_some_and(|val| val.bool().unwrap_or(false))
+            && callee.session.roles().await.callee.is_some_and(|features| {
+                features.call_canceling && features.progressive_call_results
+            });
+
         let registration_id = procedure.read().await.registration_id;
         let request_id = self.id_allocator.generate_id().await;
+
         let invocation = RpcInvocation {
             registration_id,
             invocation_request_id: request_id,
-            callee_session_id: callee,
+            callee_session_id: callee.session.id(),
+            progressive_call_results,
+            canceled: Arc::new(Mutex::new(false)),
         };
 
         // Store the active invocation immediately before handling another message.
@@ -787,12 +807,18 @@ impl Session {
             .await
             .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
             .clone();
+
+        let mut details = Dictionary::default();
+        if invocation.progressive_call_results {
+            details.insert("receive_progress".to_owned(), Value::Bool(true));
+        }
+
         callee
             .session
             .send_message(Message::Invocation(InvocationMessage {
                 request: invocation.invocation_request_id,
                 registered_registration: invocation.registration_id,
-                details: Dictionary::default(),
+                details,
                 call_arguments: message.arguments.clone(),
                 call_arguments_keyword: message.arguments_keyword.clone(),
             }))?;
@@ -855,27 +881,57 @@ impl Session {
             .session(invocation.callee_session_id)
             .await
             .ok_or_else(|| Error::new(InteractionError::Canceled))?;
-        let rpc_yield = Self::wait_for_rpc_yield(
-            callee.session.rpc_yield_rx.resubscribe(),
-            self.rpc_yield_cancel_rx.resubscribe(),
-            invocation.invocation_request_id,
-        )
-        .await?;
-        self.send_message(Message::Result(ResultMessage {
-            call_request: call_request_id,
-            details: Dictionary::default(),
-            yield_arguments: rpc_yield.arguments,
-            yield_arguments_keyword: rpc_yield.arguments_keyword,
-        }))
-        .await
+        let mut rpc_yield_rx = callee.session.rpc_yield_rx.resubscribe();
+        let mut cancel_rx = self.rpc_yield_cancel_rx.resubscribe();
+        let mut closed_session_rx = self.closed_session_tx.subscribe();
+
+        loop {
+            let rpc_yield = Self::wait_for_rpc_yield(
+                &callee,
+                &mut rpc_yield_rx,
+                &mut cancel_rx,
+                &mut closed_session_rx,
+                invocation.invocation_request_id,
+                invocation.progressive_call_results,
+            )
+            .await?;
+
+            let progress = invocation.progressive_call_results
+                && rpc_yield
+                    .options
+                    .get("progress")
+                    .is_some_and(|val| val.bool().unwrap_or(false));
+            let mut details = Dictionary::default();
+            if progress {
+                details.insert("progress".to_owned(), Value::Bool(true));
+            }
+
+            self.send_message(Message::Result(ResultMessage {
+                call_request: call_request_id,
+                details,
+                yield_arguments: rpc_yield.arguments,
+                yield_arguments_keyword: rpc_yield.arguments_keyword,
+            }))
+            .await?;
+            let canceled = *invocation.canceled.lock().await;
+
+            if !progress || canceled {
+                break;
+            }
+        }
+
+        Ok(())
     }
 
     async fn wait_for_rpc_yield(
-        mut rpc_yield_rx: broadcast::Receiver<
+        callee: &RealmSession,
+        rpc_yield_rx: &mut broadcast::Receiver<
             ChannelTransmittableResult<router_session_message::RpcYield>,
         >,
-        mut cancel_rx: broadcast::Receiver<Id>,
+        cancel_rx: &mut broadcast::Receiver<Id>,
+        closed_session_rx: &mut broadcast::Receiver<()>,
         request_id: Id,
+        progressive_call_results: bool,
     ) -> Result<router_session_message::RpcYield> {
         loop {
             tokio::select! {
@@ -901,6 +957,16 @@ impl Session {
                         return Err(InteractionError::Canceled.into());
                     }
                 }
+                _ = closed_session_rx.recv() => {
+                    if progressive_call_results {
+                        callee.session.send_message(
+                            Message::Interrupt(InterruptMessage {
+                                invocation_request: request_id,
+                                ..Default::default()
+                            })
+                        )?;
+                    }
+                }
             }
         }
     }
@@ -911,6 +977,7 @@ impl Session {
                 request_id: message.invocation_request,
                 arguments: message.arguments.clone(),
                 arguments_keyword: message.arguments_keyword.clone(),
+                options: message.options.clone(),
             }))?;
         Ok(())
     }
@@ -991,10 +1058,13 @@ impl Session {
             })
             .await?;
 
-            // Notify the task that is waiting for a YIELD message to stop.
+            // Notify the task that is waiting for YIELD messages to stop.
             self.rpc_yield_cancel_tx
                 .send(invocation.invocation_request_id)?;
         }
+
+        // Mark the invocation as canceled, so the task waiting for YIELD messages knows to stop.
+        *invocation.canceled.lock().await = true;
 
         Ok(())
     }

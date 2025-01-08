@@ -18,6 +18,7 @@ use battler_wamp::{
         new_web_socket_peer,
         Invocation,
         PeerConfig,
+        PeerNotConnectedError,
         Procedure,
         ProcedureMessage,
         RpcCall,
@@ -39,7 +40,10 @@ use battler_wamp_values::{
     List,
     Value,
 };
-use futures_util::future::join_all;
+use futures_util::{
+    future::join_all,
+    StreamExt,
+};
 use tokio::{
     sync::mpsc::{
         unbounded_channel,
@@ -519,4 +523,344 @@ async fn peer_kills_call_and_gets_result() {
     // Kill the call and wait for the result, which is successful.
     assert_matches::assert_matches!(rpc.kill().await, Ok(()));
     assert_matches::assert_matches!(rpc.result().await, Ok(_));
+}
+
+#[tokio::test]
+async fn peer_receives_progressive_call_results() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        async fn handle_invocation(invocation: Invocation) {
+            assert_matches::assert_matches!(
+                invocation.progress(RpcYield {
+                    arguments: List::from_iter([Value::Integer(1)]),
+                    ..Default::default()
+                }),
+                Ok(())
+            );
+            assert_matches::assert_matches!(
+                invocation.progress(RpcYield {
+                    arguments: List::from_iter([Value::Integer(2)]),
+                    ..Default::default()
+                }),
+                Ok(())
+            );
+            assert_matches::assert_matches!(
+                invocation.progress(RpcYield {
+                    arguments: List::from_iter([Value::Integer(3)]),
+                    ..Default::default()
+                }),
+                Ok(())
+            );
+            assert_matches::assert_matches!(invocation.respond_ok(RpcYield::default()), Ok(()));
+        }
+
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    tokio::spawn(handle_invocation(invocation));
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    let rpc = caller
+        .call_with_progress(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+        .await
+        .unwrap();
+
+    let mut stream = rpc.into_stream();
+    assert_matches::assert_matches!(stream.next().await, Some(Ok(result)) => {
+        pretty_assertions::assert_eq!(result, RpcResult {
+            arguments: List::from_iter([Value::Integer(1)]),
+            progress: true,
+            ..Default::default()
+        });
+    });
+    assert_matches::assert_matches!(stream.next().await, Some(Ok(result)) => {
+        pretty_assertions::assert_eq!(result, RpcResult {
+            arguments: List::from_iter([Value::Integer(2)]),
+            progress: true,
+            ..Default::default()
+        });
+    });
+    assert_matches::assert_matches!(stream.next().await, Some(Ok(result)) => {
+        pretty_assertions::assert_eq!(result, RpcResult {
+            arguments: List::from_iter([Value::Integer(3)]),
+            progress: true,
+            ..Default::default()
+        });
+    });
+    assert_matches::assert_matches!(stream.next().await, Some(Ok(result)) => {
+        pretty_assertions::assert_eq!(result, RpcResult {
+            arguments: List::from_iter([]),
+            ..Default::default()
+        });
+    });
+    assert_matches::assert_matches!(stream.next().await, None);
+}
+
+#[tokio::test]
+async fn peer_receives_progressive_call_results_and_error() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        async fn handle_invocation(invocation: Invocation) {
+            assert_matches::assert_matches!(
+                invocation.progress(RpcYield {
+                    arguments: List::from_iter([Value::Integer(1)]),
+                    ..Default::default()
+                }),
+                Ok(())
+            );
+            assert_matches::assert_matches!(invocation.respond_error(Error::msg("failed")), Ok(()));
+        }
+
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    tokio::spawn(handle_invocation(invocation));
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    let rpc = caller
+        .call_with_progress(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+        .await
+        .unwrap();
+
+    let mut stream = rpc.into_stream();
+    assert_matches::assert_matches!(stream.next().await, Some(Ok(result)) => {
+        pretty_assertions::assert_eq!(result, RpcResult {
+            arguments: List::from_iter([Value::Integer(1)]),
+            progress: true,
+            ..Default::default()
+        });
+    });
+    assert_matches::assert_matches!(stream.next().await, Some(Err(err)) => {
+        assert_eq!(err.to_string(), "failed");
+    });
+    assert_matches::assert_matches!(stream.next().await, None);
+}
+
+#[tokio::test]
+async fn peer_kills_progressive_call_and_ends_stream() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        async fn handle_invocation(
+            invocation: Invocation,
+            mut interrupt_rx: UnboundedReceiver<()>,
+        ) {
+            loop {
+                tokio::select! {
+                    _ = tokio::time::sleep(Duration::from_secs(10)) => {
+                        invocation.respond_error(Error::msg("timeout")).unwrap();
+                        return;
+                    }
+                    _ = interrupt_rx.recv() => {
+                        invocation.progress(RpcYield::default()).unwrap();
+                        return;
+                    }
+                }
+            }
+        }
+
+        let mut interrupt_txs = HashMap::default();
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    let (interrupt_tx, interrupt_rx) = unbounded_channel();
+                    interrupt_txs.insert(invocation.id(), interrupt_tx);
+                    tokio::spawn(handle_invocation(invocation, interrupt_rx));
+                }
+                ProcedureMessage::Interrupt(interrupt) => {
+                    if let Some(interrupt_tx) = interrupt_txs.get(&interrupt.id()) {
+                        interrupt_tx.send(()).unwrap();
+                    }
+                }
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    let mut rpc = caller
+        .call_with_progress(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+        .await
+        .unwrap();
+
+    // Kill the call and wait for the result.
+    assert_matches::assert_matches!(rpc.kill().await, Ok(()));
+    assert!(!rpc.done());
+    assert_matches::assert_matches!(rpc.next_result().await, Ok(Some(result)) => {
+        pretty_assertions::assert_eq!(result, RpcResult {
+            progress: true,
+            ..Default::default()
+        })
+    });
+    assert!(rpc.done());
+    assert_matches::assert_matches!(rpc.next_result().await, Ok(None));
+}
+
+#[tokio::test]
+async fn progressive_call_interrupted_when_caller_leaves() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    // Must wait for the invocation to be received, since a canceled call could never be sent to the
+    // callee.
+    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
+
+    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
+        async fn handle_invocation(invocation: Invocation) {
+            loop {
+                tokio::time::sleep(Duration::from_secs(1)).await;
+                invocation.progress(RpcYield::default()).unwrap();
+            }
+        }
+
+        let mut request_id = None;
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    invocation_received_tx.send(()).unwrap();
+                    request_id = Some(invocation.id());
+                    tokio::spawn(handle_invocation(invocation));
+                }
+                ProcedureMessage::Interrupt(interrupt) => {
+                    // Return when our single invocation is interrupted.
+                    if request_id.is_some_and(|id| id == interrupt.id()) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    let handler_handle = tokio::spawn(handler(procedure, invocation_received_tx));
+
+    let mut rpc = caller
+        .call_with_progress(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+        .await
+        .unwrap();
+
+    // Wait for the invocation to be received.
+    invocation_received_rx.recv().await.unwrap();
+
+    // Leave the realm.
+    caller.leave_realm().await.unwrap();
+
+    assert_matches::assert_matches!(rpc.next_result().await, Err(err) => {
+        assert_matches::assert_matches!(err.downcast::<PeerNotConnectedError>(), Ok(_));
+    });
+
+    // Wait for the RPC to be interrupted.
+    handler_handle.await.unwrap();
 }
