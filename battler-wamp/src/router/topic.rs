@@ -55,6 +55,18 @@ impl TopicManager {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
         }
+        if context
+            .session(session)
+            .await
+            .ok_or_else(|| BasicError::NotFound("expected subscriber session to exist".to_owned()))?
+            .session
+            .roles()
+            .await
+            .subscriber
+            .is_none()
+        {
+            return Err(BasicError::NotAllowed("peer is not a subscriber".to_owned()).into());
+        }
 
         context
             .router()
@@ -122,6 +134,18 @@ impl TopicManager {
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
+        }
+        if context
+            .session(session)
+            .await
+            .ok_or_else(|| BasicError::NotFound("expected publisher session to exist".to_owned()))?
+            .session
+            .roles()
+            .await
+            .publisher
+            .is_none()
+        {
+            return Err(BasicError::NotAllowed("peer is not a publisher".to_owned()).into());
         }
 
         context

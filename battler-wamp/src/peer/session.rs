@@ -1,6 +1,7 @@
 use std::{
     fmt::Debug,
     sync::Arc,
+    time::Duration,
 };
 
 use anyhow::{
@@ -142,6 +143,8 @@ pub struct ProgressiveResultNotSupportedError;
 pub struct Invocation {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
+
+    pub timeout: Duration,
 
     id: Id,
     message_tx: UnboundedSender<Message>,
@@ -807,11 +810,18 @@ impl Session {
                     .get("receive_progress")
                     .and_then(|val| val.bool())
                     .unwrap_or(false);
+                let timeout = message
+                    .details
+                    .get("timeout")
+                    .and_then(|val| val.integer())
+                    .unwrap_or(0);
+                let timeout = Duration::from_millis(timeout);
                 procedure
                     .procedure_tx
                     .send(ProcedureMessage::Invocation(Invocation {
                         arguments: message.call_arguments,
                         arguments_keyword: message.call_arguments_keyword,
+                        timeout,
                         id: message.request,
                         message_tx: self.service_message_tx.clone(),
                         receive_progress,

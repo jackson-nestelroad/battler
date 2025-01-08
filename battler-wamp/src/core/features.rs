@@ -11,4 +11,6 @@ pub struct RpcFeatures {
     pub call_canceling: bool,
     /// Procedures may produce progressive results.
     pub progressive_call_results: bool,
+    /// The peer can enforce call timeouts.
+    pub call_timeout: bool,
 }

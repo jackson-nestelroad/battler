@@ -74,10 +74,13 @@ async fn start_router() -> Result<(RouterHandle, JoinHandle<()>)> {
     start_router_with_config(RouterConfig::default()).await
 }
 
-fn create_peer(name: &str) -> Result<WebSocketPeer> {
-    let mut config = PeerConfig::default();
+fn create_peer_with_config(name: &str, mut config: PeerConfig) -> Result<WebSocketPeer> {
     config.name = name.to_owned();
     new_web_socket_peer(config)
+}
+
+fn create_peer(name: &str) -> Result<WebSocketPeer> {
+    create_peer_with_config(name, PeerConfig::default())
 }
 
 #[tokio::test]
@@ -863,4 +866,136 @@ async fn progressive_call_interrupted_when_caller_leaves() {
 
     // Wait for the RPC to be interrupted.
     handler_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn router_times_out_procedure_call() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        let mut request_id = None;
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    request_id = Some(invocation.id());
+                    // Never respond to the invocation. The router should time the procedure out.
+                    assert!(invocation.timeout.is_zero());
+                }
+                ProcedureMessage::Interrupt(interrupt) => {
+                    // Return when our single invocation is interrupted.
+                    if request_id.is_some_and(|id| id == interrupt.id()) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    let handler_handle = tokio::spawn(handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall {
+                timeout: Some(Duration::from_secs(2)),
+                ..Default::default()
+            })
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled));
+        }
+    );
+
+    // Wait for the interrupt to the callee.
+    handler_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn callee_times_out_procedure_call() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+
+    let mut callee_config = PeerConfig::default();
+    callee_config.callee.enforce_timeouts = true;
+    let callee = create_peer_with_config("callee", callee_config).unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        async fn handle_invocation(invocation: Invocation) {
+            assert_ne!(invocation.timeout, Duration::ZERO);
+            tokio::time::sleep(invocation.timeout).await;
+            invocation
+                .respond_error(InteractionError::Canceled)
+                .unwrap();
+        }
+
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    tokio::spawn(handle_invocation(invocation));
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall {
+                timeout: Some(Duration::from_secs(2)),
+                ..Default::default()
+            })
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled));
+        }
+    );
 }

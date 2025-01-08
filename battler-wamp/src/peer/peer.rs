@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 use ahash::{
     HashMap,
@@ -107,6 +110,13 @@ pub struct WebSocketConfig {
     pub headers: HashMap<String, String>,
 }
 
+/// Configuration for a [`Peer`] acting as a callee.
+#[derive(Debug, Default)]
+pub struct CalleeConfig {
+    /// The callee can enforce timeouts for procedure invocations.
+    pub enforce_timeouts: bool,
+}
+
 /// Configuration for a [`Peer`].
 #[derive(Debug)]
 pub struct PeerConfig {
@@ -122,6 +132,10 @@ pub struct PeerConfig {
     pub serializers: HashSet<SerializerType>,
     /// Additional configuration for WebSocket-specific connections.
     pub web_socket: Option<WebSocketConfig>,
+    /// Additional configuration for the callee role.
+    ///
+    /// Ignored if [`PeerRole::Callee`] is not added to [`Self::roles`].
+    pub callee: CalleeConfig,
 }
 
 impl PeerConfig {
@@ -146,6 +160,7 @@ impl Default for PeerConfig {
             ]),
             serializers: HashSet::from_iter([SerializerType::Json, SerializerType::MessagePack]),
             web_socket: None,
+            callee: CalleeConfig::default(),
         }
     }
 }
@@ -189,6 +204,7 @@ impl Clone for Procedure {
 pub struct RpcCall {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
+    pub timeout: Option<Duration>,
 }
 
 /// A result of a procedure call.
@@ -591,6 +607,7 @@ where
         let rpc_features = RpcFeatures {
             call_canceling: true,
             progressive_call_results: true,
+            call_timeout: self.config.callee.enforce_timeouts,
         };
         details.insert(
             "roles".to_owned(),
@@ -958,6 +975,12 @@ where
         let mut options = Dictionary::default();
         if receive_progress {
             options.insert("receive_progress".to_owned(), Value::Bool(true));
+        }
+        if let Some(timeout) = rpc_call.timeout {
+            options.insert(
+                "timeout".to_owned(),
+                Value::Integer(timeout.as_millis() as u64),
+            );
         }
 
         message_tx.send(Message::Call(CallMessage {

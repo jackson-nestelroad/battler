@@ -1,6 +1,9 @@
 use std::{
     fmt::Debug,
+    future::Future,
+    pin::Pin,
     sync::Arc,
+    time::Duration,
 };
 
 use anyhow::{
@@ -162,13 +165,21 @@ mod router_session_message {
     }
 }
 
+/// Details about the callee of an RPC invocation.
+#[derive(Clone)]
+struct RpcInvocationCalleeDetails {
+    callee_session_id: Id,
+    progressive_call_results: bool,
+    forward_timeout_to_callee: bool,
+}
+
 /// The result of an RPC invocation.
 #[derive(Clone)]
 struct RpcInvocation {
     registration_id: Id,
     invocation_request_id: Id,
-    callee_session_id: Id,
-    progressive_call_results: bool,
+    timeout: Duration,
+    callee: RpcInvocationCalleeDetails,
     canceled: Arc<Mutex<bool>>,
 }
 
@@ -428,6 +439,7 @@ impl Session {
                 let rpc_features = RpcFeatures {
                     call_canceling: true,
                     progressive_call_results: true,
+                    call_timeout: true,
                 };
                 details.insert(
                     "roles".to_owned(),
@@ -733,14 +745,33 @@ impl Session {
                 features.call_canceling && features.progressive_call_results
             });
 
+        let timeout = message
+            .options
+            .get("timeout")
+            .and_then(|val| val.integer())
+            .unwrap_or(0);
+        let timeout = Duration::from_millis(timeout);
+
         let registration_id = procedure.read().await.registration_id;
         let request_id = self.id_allocator.generate_id().await;
+
+        let callee_supports_timeout = callee
+            .session
+            .roles()
+            .await
+            .callee
+            .map(|features| features.call_timeout)
+            .unwrap_or(false);
 
         let invocation = RpcInvocation {
             registration_id,
             invocation_request_id: request_id,
-            callee_session_id: callee.session.id(),
-            progressive_call_results,
+            timeout,
+            callee: RpcInvocationCalleeDetails {
+                callee_session_id: callee.session.id(),
+                progressive_call_results,
+                forward_timeout_to_callee: callee_supports_timeout,
+            },
             canceled: Arc::new(Mutex::new(false)),
         };
 
@@ -766,10 +797,7 @@ impl Session {
         context: &RouterContext<S>,
         message: CallMessage,
     ) -> Result<Option<Id>> {
-        let call_request_id = match self
-            .handle_procedure_message_internal(context, &message)
-            .await
-        {
+        let call_request_id = match self.handle_ordered_call_internal(context, &message).await {
             Ok(call_request_id) => call_request_id,
             Err(err) => {
                 self.send_message(error_for_request(&Message::Call(message), &err))
@@ -780,11 +808,14 @@ impl Session {
         Ok(Some(call_request_id))
     }
 
-    async fn handle_procedure_message_internal<S>(
+    async fn handle_ordered_call_internal<S>(
         &self,
         context: &RouterContext<S>,
         message: &CallMessage,
     ) -> Result<Id> {
+        if self.shared_state.read().await.roles.caller.is_none() {
+            return Err(BasicError::NotAllowed("peer is not a caller".to_owned()).into());
+        }
         let (realm, invocation) = self
             .get_from_established_session_state(|state| {
                 (
@@ -803,14 +834,20 @@ impl Session {
         };
         let context = context.realm_context(&realm)?;
         let callee = context
-            .session(invocation.callee_session_id)
+            .session(invocation.callee.callee_session_id)
             .await
             .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
             .clone();
 
         let mut details = Dictionary::default();
-        if invocation.progressive_call_results {
+        if invocation.callee.progressive_call_results {
             details.insert("receive_progress".to_owned(), Value::Bool(true));
+        }
+        if !invocation.timeout.is_zero() && invocation.callee.forward_timeout_to_callee {
+            details.insert(
+                "timeout".to_owned(),
+                Value::Integer(invocation.timeout.as_millis() as u64),
+            );
         }
 
         callee
@@ -878,7 +915,7 @@ impl Session {
 
         // Find the callee session again. If it is gone, the procedure should be canceled.
         let callee = context
-            .session(invocation.callee_session_id)
+            .session(invocation.callee.callee_session_id)
             .await
             .ok_or_else(|| Error::new(InteractionError::Canceled))?;
         let mut rpc_yield_rx = callee.session.rpc_yield_rx.resubscribe();
@@ -892,11 +929,23 @@ impl Session {
                 &mut cancel_rx,
                 &mut closed_session_rx,
                 invocation.invocation_request_id,
-                invocation.progressive_call_results,
+                callee
+                    .session
+                    .roles()
+                    .await
+                    .callee
+                    .map(|feature| feature.call_canceling)
+                    .unwrap_or(false),
+                invocation.callee.progressive_call_results,
+                if invocation.callee.forward_timeout_to_callee {
+                    Duration::ZERO
+                } else {
+                    invocation.timeout
+                },
             )
             .await?;
 
-            let progress = invocation.progressive_call_results
+            let progress = invocation.callee.progressive_call_results
                 && rpc_yield
                     .options
                     .get("progress")
@@ -931,9 +980,16 @@ impl Session {
         cancel_rx: &mut broadcast::Receiver<Id>,
         closed_session_rx: &mut broadcast::Receiver<()>,
         request_id: Id,
+        call_canceling: bool,
         progressive_call_results: bool,
+        timeout: Duration,
     ) -> Result<router_session_message::RpcYield> {
         loop {
+            let timeout: Pin<Box<dyn Future<Output = ()> + Send>> = if timeout.is_zero() {
+                Box::pin(futures_util::future::pending())
+            } else {
+                Box::pin(tokio::time::sleep(timeout))
+            };
             tokio::select! {
                 rpc_yield = rpc_yield_rx.recv() => {
                     match rpc_yield.map_err(|err| match err {
@@ -958,6 +1014,9 @@ impl Session {
                     }
                 }
                 _ = closed_session_rx.recv() => {
+                    // Caller left, so the invocation should be interrupted (if supported).
+                    //
+                    // Otherwise, the single message will just get disposed once we get it.
                     if progressive_call_results {
                         callee.session.send_message(
                             Message::Interrupt(InterruptMessage {
@@ -965,7 +1024,20 @@ impl Session {
                                 ..Default::default()
                             })
                         )?;
+                        return Err(InteractionError::Canceled.into());
                     }
+                }
+                _ = timeout => {
+                    // Dealer-initiated timeout: interrupt the callee (if supported) and error out immediately.
+                    if call_canceling {
+                        callee.session.send_message(
+                            Message::Interrupt(InterruptMessage {
+                                invocation_request: request_id,
+                                ..Default::default()
+                            })
+                        )?;
+                    }
+                    return Err(InteractionError::Canceled.into());
                 }
             }
         }
@@ -1021,7 +1093,7 @@ impl Session {
         let context = context.realm_context(&realm)?;
 
         // If there is no callee, the call should already be canceled.
-        let callee = match context.session(invocation.callee_session_id).await {
+        let callee = match context.session(invocation.callee.callee_session_id).await {
             Some(callee) => callee,
             None => return Ok(()),
         };

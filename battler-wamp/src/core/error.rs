@@ -108,6 +108,15 @@ impl BasicError {
     }
 }
 
+impl Into<WampError> for BasicError {
+    fn into(self) -> WampError {
+        WampError::new(
+            Uri::from_known(format!("wamp.error.{}", self.uri_component())),
+            self.to_string(),
+        )
+    }
+}
+
 /// An interaction error that occurs while processing a WAMP message.
 ///
 /// Interaction errors are clearly defined in the WAMP standard and are reserved for errors that
@@ -138,6 +147,9 @@ pub enum InteractionError {
     /// A procedure call was canceled due to the callee leaving.
     #[error("canceled")]
     Canceled,
+    /// A procedure call timed out.
+    #[error("timeout")]
+    Timeout,
 }
 
 impl InteractionError {
@@ -151,7 +163,17 @@ impl InteractionError {
             Self::NoSuchRealm => "no_such_realm",
             Self::NoSuchRole => "no_such_role",
             Self::Canceled => "canceled",
+            Self::Timeout => "timeout",
         }
+    }
+}
+
+impl Into<WampError> for InteractionError {
+    fn into(self) -> WampError {
+        WampError::new(
+            Uri::from_known(format!("wamp.error.{}", self.uri_component())),
+            self.to_string(),
+        )
     }
 }
 
@@ -173,6 +195,7 @@ fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
         "wamp.error.no_such_realm" => InteractionError::NoSuchRealm.into(),
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
         "wamp.error.canceled" => InteractionError::Canceled.into(),
+        "wamp.error.timeout" => InteractionError::Timeout.into(),
         "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
         _ => WampError::new(reason, message).into(),
     }

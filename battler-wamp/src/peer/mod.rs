@@ -4,6 +4,7 @@ mod session;
 mod web_socket_peer;
 
 pub use peer::{
+    CalleeConfig,
     Peer,
     PeerConfig,
     PeerNotConnectedError,

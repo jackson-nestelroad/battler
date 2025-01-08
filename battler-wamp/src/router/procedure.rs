@@ -47,6 +47,18 @@ impl ProcedureManager {
         if !context.router().config.roles.contains(&RouterRole::Dealer) {
             return Err(BasicError::NotAllowed("router is not a dealer".to_owned()).into());
         }
+        if context
+            .session(session)
+            .await
+            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
+            .session
+            .roles()
+            .await
+            .callee
+            .is_none()
+        {
+            return Err(BasicError::NotAllowed("peer is not a callee".to_owned()).into());
+        }
 
         context
             .router()
