@@ -62,7 +62,7 @@ impl Uri {
     }
 
     /// Splits the URI into its components.
-    pub fn split(&self) -> impl Iterator<Item = &str> {
+    pub fn split(&self) -> impl Iterator<Item = &str> + Clone {
         self.0.split('.')
     }
 }
@@ -155,7 +155,7 @@ pub struct WildcardUri(String);
 
 impl WildcardUri {
     /// Splits the URI into its components.
-    pub fn split(&self) -> impl Iterator<Item = &str> {
+    pub fn split(&self) -> impl Iterator<Item = &str> + Clone {
         self.0.split('.')
     }
 }

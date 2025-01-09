@@ -91,7 +91,7 @@ pub struct PublishedMessage {
 pub struct SubscribeMessage {
     pub request: Id,
     pub options: Dictionary,
-    pub topic: Uri,
+    pub topic: WildcardUri,
 }
 
 /// A SUBSCRIBED message for confirming a peer has subscribed to a topic.

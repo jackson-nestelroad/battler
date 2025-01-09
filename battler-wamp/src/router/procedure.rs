@@ -50,7 +50,6 @@ struct ProcedureState {
 }
 
 /// A procedure that can be invoked by peers to perform some operation on the callee.
-#[derive(Clone)]
 pub struct Procedure {
     /// The ID of the procedure.
     pub registration_id: Id,
@@ -59,12 +58,12 @@ pub struct Procedure {
 
     match_style: ProcedureMatchStyle,
 
-    state: Arc<Mutex<ProcedureState>>,
+    state: Mutex<ProcedureState>,
 }
 
 #[derive(Default)]
 struct ProcedureNode {
-    procedure: Option<Procedure>,
+    procedure: Option<Arc<Procedure>>,
     tree: HashMap<String, ProcedureNode>,
 }
 
@@ -91,7 +90,7 @@ impl ProcedureNode {
             None => match self.procedure {
                 Some(_) => Err(InteractionError::ProcedureAlreadyExists.into()),
                 None => {
-                    self.procedure = Some(procedure);
+                    self.procedure = Some(Arc::new(procedure));
                     Ok(())
                 }
             },
@@ -108,17 +107,20 @@ impl ProcedureNode {
         }
     }
 
-    fn find<'a>(&self, mut uri_components: impl Iterator<Item = &'a str>) -> Option<&Procedure> {
+    fn find<'a>(
+        &self,
+        mut uri_components: impl Iterator<Item = &'a str>,
+    ) -> Option<Arc<Procedure>> {
         match uri_components.next() {
             Some(uri_component) => match self.tree.get(uri_component).or_else(|| self.tree.get(""))
             {
                 Some(procedure) => procedure.find(uri_components),
                 None => self
                     .procedure
-                    .as_ref()
+                    .clone()
                     .filter(|procedure| procedure.match_style == ProcedureMatchStyle::Prefix),
             },
-            None => self.procedure.as_ref(),
+            None => self.procedure.clone(),
         }
     }
 }
@@ -126,7 +128,7 @@ impl ProcedureNode {
 /// A manager for all procedures owned by a realm.
 #[derive(Default)]
 pub struct ProcedureManager {
-    /// Map of procedures.
+    /// Tree of procedures.
     procedures: RwLock<ProcedureNode>,
 }
 
@@ -173,7 +175,7 @@ impl ProcedureManager {
                     registration_id,
                     callee: session,
                     match_style,
-                    state: Arc::new(Mutex::new(ProcedureState { active: false })),
+                    state: Mutex::new(ProcedureState { active: false }),
                 },
             )?;
         Ok(registration_id)
@@ -200,10 +202,11 @@ impl ProcedureManager {
             .remove(procedure.split());
     }
 
+    /// Gets the procedure matching the URI.
     pub async fn get<S>(
         context: &RealmContext<'_, S>,
         procedure: &WildcardUri,
-    ) -> Option<Procedure> {
+    ) -> Option<Arc<Procedure>> {
         context
             .realm()
             .procedure_manager
@@ -211,6 +214,5 @@ impl ProcedureManager {
             .read()
             .await
             .find(procedure.split())
-            .cloned()
     }
 }

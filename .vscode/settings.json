@@ -24,6 +24,7 @@
     "cSpell.words": [
         "ahash",
         "dashmap",
+        "Deque",
         "msgpack",
         "repr",
         "retryable",

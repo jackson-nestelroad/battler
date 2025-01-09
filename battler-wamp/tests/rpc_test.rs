@@ -1321,7 +1321,9 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 
     #[tokio::test]
@@ -1377,7 +1379,9 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 
     #[tokio::test]
@@ -1433,7 +1437,9 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 
     #[tokio::test]
@@ -1489,7 +1495,9 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 
     #[tokio::test]
@@ -1545,7 +1553,9 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 
     #[tokio::test]
@@ -1601,7 +1611,9 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 
     #[tokio::test]
@@ -1694,6 +1706,8 @@ mod procedure_wildcard_match_test {
         );
 
         cancel_tx.send(()).unwrap();
-        futures_util::future::join_all(handles).await;
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 }

@@ -15,11 +15,12 @@ pub use peer::{
     WebSocketConfig,
 };
 pub use session::{
-    Event,
     Interrupt,
     Invocation,
     ProcedureMessage,
     ProgressiveResultNotSupportedError,
+    PublishedEvent,
+    ReceivedEvent,
     RpcYield,
 };
 pub use web_socket_peer::{

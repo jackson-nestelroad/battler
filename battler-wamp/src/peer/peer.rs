@@ -91,8 +91,9 @@ use crate::{
         connector::connector::ConnectorFactory,
         session::{
             peer_session_message,
-            Event,
             ProcedureMessage,
+            PublishedEvent,
+            ReceivedEvent,
             Session,
             SessionHandle,
         },
@@ -181,7 +182,7 @@ pub struct Subscription {
     /// The subscription ID.
     pub id: Id,
     /// The event receiver channel.
-    pub event_rx: broadcast::Receiver<Event>,
+    pub event_rx: broadcast::Receiver<ReceivedEvent>,
 }
 
 /// A registration of a procedure.
@@ -675,12 +676,11 @@ where
         Ok(())
     }
 
-    /// Subscribes to a topic in the realm.
-    ///
-    /// The resulting subscription contains an event receiver stream for published events. The
-    /// stream automatically closes when the peer unsubscribes from the topic or when the session
-    /// ends.
-    pub async fn subscribe(&self, topic: Uri) -> Result<Subscription> {
+    async fn subscribe_internal(
+        &self,
+        topic: WildcardUri,
+        match_style: Option<String>,
+    ) -> Result<Subscription> {
         let (message_tx, id_allocator, mut subscribed_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
@@ -692,9 +692,14 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
+        let mut options = Dictionary::default();
+        if let Some(match_style) = match_style {
+            options.insert("match".to_owned(), Value::String(match_style));
+        }
+
         message_tx.send(Message::Subscribe(SubscribeMessage {
             request: request_id,
-            options: Dictionary::default(),
+            options,
             topic,
         }))?;
 
@@ -723,6 +728,35 @@ where
                 }
             }
         }
+    }
+
+    /// Subscribes to a topic in the realm.
+    ///
+    /// The resulting subscription contains an event receiver stream for published events. The
+    /// stream automatically closes when the peer unsubscribes from the topic or when the session
+    /// ends.
+    pub async fn subscribe(&self, topic: Uri) -> Result<Subscription> {
+        self.subscribe_internal(topic.into(), None).await
+    }
+
+    /// Subscribes to a topic in the realm with prefix matching.
+    ///
+    /// The resulting subscription contains an event receiver stream for published events. The
+    /// stream automatically closes when the peer unsubscribes from the topic or when the session
+    /// ends.
+    pub async fn subscribe_prefix(&self, topic: Uri) -> Result<Subscription> {
+        self.subscribe_internal(topic.into(), Some("prefix".to_owned()))
+            .await
+    }
+
+    /// Subscribes to a topic in the realm with wildcard matching.
+    ///
+    /// The resulting subscription contains an event receiver stream for published events. The
+    /// stream automatically closes when the peer unsubscribes from the topic or when the session
+    /// ends.
+    pub async fn subscribe_wildcard(&self, topic: WildcardUri) -> Result<Subscription> {
+        self.subscribe_internal(topic, Some("wildcard".to_owned()))
+            .await
     }
 
     /// Removes a subscription.
@@ -770,7 +804,7 @@ where
     }
 
     /// Publishes an event to a topic.
-    pub async fn publish(&self, topic: Uri, event: Event) -> Result<()> {
+    pub async fn publish(&self, topic: Uri, event: PublishedEvent) -> Result<()> {
         let (message_tx, id_allocator, mut published_rx) = self
             .get_from_peer_state(|peer_state| {
                 (

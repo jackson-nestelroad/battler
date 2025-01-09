@@ -96,13 +96,16 @@ use crate::{
             ProcedureMatchStyle,
         },
         realm::RealmSession,
-        topic::TopicManager,
+        topic::{
+            SubscriptionMatchStyle,
+            TopicManager,
+        },
     },
 };
 
 struct EstablishedSessionState {
     realm: Uri,
-    subscriptions: HashMap<Id, Uri>,
+    subscriptions: HashMap<Id, WildcardUri>,
     procedures: HashMap<Id, WildcardUri>,
     active_invocations_by_call: HashMap<Id, RpcInvocation>,
 }
@@ -576,8 +579,14 @@ impl Session {
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
         let context = context.realm_context(&realm)?;
+        let match_style = message
+            .options
+            .get("match")
+            .and_then(|val| val.string())
+            .and_then(|val| SubscriptionMatchStyle::try_from(val).ok())
+            .unwrap_or_default();
         let subscription =
-            TopicManager::subscribe(&context, self.id, message.topic.clone()).await?;
+            TopicManager::subscribe(&context, self.id, message.topic.clone(), match_style).await?;
         self.modify_established_session_state(|state| {
             state
                 .subscriptions

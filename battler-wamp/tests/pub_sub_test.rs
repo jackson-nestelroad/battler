@@ -13,12 +13,16 @@ use battler_wamp::{
         hash::HashSet,
         id::Id,
         roles::RouterRole,
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     peer::{
         new_web_socket_peer,
-        Event,
         PeerConfig,
+        PublishedEvent,
+        ReceivedEvent,
         Subscription,
         WebSocketPeer,
     },
@@ -103,7 +107,7 @@ async fn peer_receives_published_messages_for_topic() {
             publisher
                 .publish(
                     Uri::try_from("com.battler.topic1").unwrap(),
-                    Event {
+                    PublishedEvent {
                         arguments: List::from_iter([Value::Integer(i)]),
                         arguments_keyword: Dictionary::from_iter([(
                             "index".to_owned(),
@@ -114,6 +118,11 @@ async fn peer_receives_published_messages_for_topic() {
                 .await,
             Ok(())
         );
+
+        // Unsubscribe on the 5th message.
+        if i == 4 {
+            assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
+        }
     }
 
     // Subscriber should only receive 5 messages.
@@ -121,23 +130,24 @@ async fn peer_receives_published_messages_for_topic() {
     while let Ok(event) = subscription.event_rx.recv().await {
         assert_matches::assert_matches!(event.arguments.get(0), Some(Value::Integer(i)) => {
             seen.insert(*i);
-            pretty_assertions::assert_eq!(event, Event {
+            pretty_assertions::assert_eq!(event, ReceivedEvent {
                 arguments: List::from_iter([Value::Integer(*i)]),
                 arguments_keyword: Dictionary::from_iter([(
                     "index".to_owned(),
                     Value::Integer(*i)
-                )])
+                )]),
+                topic: Some(Uri::try_from("com.battler.topic1").unwrap()),
             });
         });
-
-        // Unsubscribe on the 5th message.
-        if seen.len() >= 5 {
-            assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
-            break;
-        }
     }
 
-    pretty_assertions::assert_eq!(seen, HashSet::from_iter([0, 1, 2, 3, 4]));
+    // When we unsubscribe, we close out the event receiver channel. There is a race condition
+    // between some of the last events being received and processed by the peer and the unsubscribe
+    // actuating.
+    //
+    // Thus, we check that we received at most 5 messages.
+    assert!(seen.len() <= 5);
+    pretty_assertions::assert_eq!(seen, (0..seen.len() as u64).collect());
 }
 
 #[tokio::test]
@@ -249,7 +259,7 @@ async fn peer_does_not_receive_events_for_different_topic() {
         publisher
             .publish(
                 Uri::try_from("com.battler.topic2").unwrap(),
-                Event {
+                PublishedEvent {
                     arguments: List::from_iter([Value::Bool(false)]),
                     arguments_keyword: Dictionary::default(),
                 }
@@ -258,7 +268,7 @@ async fn peer_does_not_receive_events_for_different_topic() {
         Ok(())
     );
 
-    async fn wait_for_event(subscription: &mut Subscription) -> Result<Event> {
+    async fn wait_for_event(subscription: &mut Subscription) -> Result<ReceivedEvent> {
         tokio::select! {
             event = subscription.event_rx.recv() => {
                 event.map_err(Error::new)
@@ -330,7 +340,7 @@ async fn pub_sub_not_allowed_without_broker_role() {
     assert_matches::assert_matches!(
         peer.publish(
             Uri::try_from("com.battler.topic1").unwrap(),
-            Event {
+            PublishedEvent {
                 arguments: List::default(),
                 arguments_keyword: Dictionary::default(),
             }
@@ -364,7 +374,7 @@ async fn publisher_does_not_receive_event() {
     assert_matches::assert_matches!(
         peer.publish(
             Uri::try_from("com.battler.topic1").unwrap(),
-            Event::default(),
+            PublishedEvent::default(),
         )
         .await,
         Ok(())
@@ -375,5 +385,619 @@ async fn publisher_does_not_receive_event() {
             assert!(false, "publisher received event for its own subscription");
         }
         _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+}
+
+#[tokio::test]
+async fn publish_matches_subscription_by_prefix() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let publisher = create_peer("publisher").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        subscriber
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+    let mut subscription = subscriber
+        .subscribe_prefix(Uri::try_from("com.battler.battle.abcd").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.abcd.start").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.abcd.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.abcd.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.abcd.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.abcd.end").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.another.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
+
+    let mut topics_seen = Vec::default();
+    while let Ok(event) = subscription.event_rx.recv().await {
+        topics_seen.push(event.topic);
+    }
+
+    pretty_assertions::assert_eq!(
+        topics_seen,
+        Vec::from_iter([
+            Some(Uri::try_from("com.battler.battle.abcd.start").unwrap()),
+            Some(Uri::try_from("com.battler.battle.abcd.update").unwrap()),
+            Some(Uri::try_from("com.battler.battle.abcd.update").unwrap()),
+            Some(Uri::try_from("com.battler.battle.abcd.update").unwrap()),
+            Some(Uri::try_from("com.battler.battle.abcd.end").unwrap()),
+        ])
+    );
+}
+
+#[tokio::test]
+async fn publish_matches_subscription_by_wildcard() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let publisher = create_peer("publisher").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        subscriber
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+    let mut subscription = subscriber
+        .subscribe_wildcard(WildcardUri::try_from("com.battler.battle..start").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle1.start").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle1.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle2.start").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle3.start").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle2.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
+
+    let mut topics_seen = Vec::default();
+    while let Ok(event) = subscription.event_rx.recv().await {
+        topics_seen.push(event.topic);
+    }
+
+    pretty_assertions::assert_eq!(
+        topics_seen,
+        Vec::from_iter([
+            Some(Uri::try_from("com.battler.battle.battle1.start").unwrap()),
+            Some(Uri::try_from("com.battler.battle.battle2.start").unwrap()),
+            Some(Uri::try_from("com.battler.battle.battle3.start").unwrap()),
+        ])
+    );
+}
+
+mod subscription_wildcard_match_test {
+    use std::time::Duration;
+
+    use battler_wamp::{
+        core::uri::{
+            Uri,
+            WildcardUri,
+        },
+        peer::{
+            Peer,
+            PublishedEvent,
+            Subscription,
+        },
+    };
+    use tokio::{
+        sync::broadcast,
+        task::JoinHandle,
+    };
+
+    use crate::{
+        create_peer,
+        start_router,
+        REALM,
+    };
+
+    enum MatchStyle {
+        None,
+        Prefix,
+        Wildcard,
+    }
+
+    async fn subscribe_that_expects_event<S>(
+        peer: &Peer<S>,
+        uri: WildcardUri,
+        match_style: MatchStyle,
+        cancel_rx: broadcast::Receiver<()>,
+    ) -> JoinHandle<()>
+    where
+        S: Send + 'static,
+    {
+        let subscription = match match_style {
+            MatchStyle::None => peer.subscribe(Uri::try_from(&uri).unwrap()).await.unwrap(),
+            MatchStyle::Prefix => peer
+                .subscribe_prefix(Uri::try_from(Uri::try_from(&uri).unwrap()).unwrap())
+                .await
+                .unwrap(),
+            MatchStyle::Wildcard => peer.subscribe_wildcard(uri.clone()).await.unwrap(),
+        };
+
+        async fn handler(
+            mut subscription: Subscription,
+            uri: WildcardUri,
+            mut cancel_rx: broadcast::Receiver<()>,
+        ) {
+            loop {
+                tokio::select! {
+                    event = subscription.event_rx.recv() => {
+                        match event {
+                            Ok(_) => {
+                                return;
+                            }
+                            _ => (),
+                        }
+                    }
+                    _ = cancel_rx.recv() => {
+                        panic!("no event received for {uri}");
+                    }
+                }
+            }
+        }
+
+        tokio::spawn(handler(subscription, uri, cancel_rx))
+    }
+
+    async fn subscribe_that_expects_no_event<S>(
+        peer: &Peer<S>,
+        uri: WildcardUri,
+        match_style: MatchStyle,
+        cancel_rx: broadcast::Receiver<()>,
+    ) -> JoinHandle<()>
+    where
+        S: Send + 'static,
+    {
+        let subscription = match match_style {
+            MatchStyle::None => peer.subscribe(Uri::try_from(&uri).unwrap()).await.unwrap(),
+            MatchStyle::Prefix => peer
+                .subscribe_prefix(Uri::try_from(Uri::try_from(&uri).unwrap()).unwrap())
+                .await
+                .unwrap(),
+            MatchStyle::Wildcard => peer.subscribe_wildcard(uri).await.unwrap(),
+        };
+
+        async fn handler(mut subscription: Subscription, mut cancel_rx: broadcast::Receiver<()>) {
+            loop {
+                tokio::select! {
+                    event = subscription.event_rx.recv() => {
+                        match event {
+                            Ok(_) => {
+                                panic!("unexpected event {event:?}");
+                            }
+                            _ => (),
+                        }
+                    }
+                    _ = cancel_rx.recv() => {
+                        return;
+                    }
+                }
+            }
+        }
+
+        tokio::spawn(handler(subscription, cancel_rx))
+    }
+
+    #[tokio::test]
+    async fn uses_exact_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let publisher = create_peer("publisher").unwrap();
+        let subscriber = create_peer("subscriber").unwrap();
+
+        assert_matches::assert_matches!(
+            publisher
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            subscriber
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([subscribe_that_expects_event(
+            &subscriber,
+            WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
+            MatchStyle::None,
+            cancel_rx.resubscribe(),
+        )
+        .await]);
+
+        assert_matches::assert_matches!(
+            publisher
+                .publish(
+                    Uri::try_from("a1.b2.c3.d4.e55").unwrap(),
+                    PublishedEvent::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        // A small delay to ensure published events are received by the peer.
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        cancel_tx.send(()).unwrap();
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
+    }
+
+    #[tokio::test]
+    async fn uses_single_prefix_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let publisher = create_peer("publisher").unwrap();
+        let subscriber = create_peer("subscriber").unwrap();
+
+        assert_matches::assert_matches!(
+            publisher
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            subscriber
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            subscribe_that_expects_no_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
+                MatchStyle::None,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            publisher
+                .publish(
+                    Uri::try_from("a1.b2.c3.d98.e74").unwrap(),
+                    PublishedEvent::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        // A small delay to ensure published events are received by the peer.
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        cancel_tx.send(()).unwrap();
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
+    }
+
+    #[tokio::test]
+    async fn uses_multiple_prefix_matches() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let publisher = create_peer("publisher").unwrap();
+        let subscriber = create_peer("subscriber").unwrap();
+
+        assert_matches::assert_matches!(
+            publisher
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            subscriber
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            publisher
+                .publish(
+                    Uri::try_from("a1.b2.c3.d4.325").unwrap(),
+                    PublishedEvent::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        // A small delay to ensure published events are received by the peer.
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        cancel_tx.send(()).unwrap();
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
+    }
+
+    #[tokio::test]
+    async fn uses_wildcard_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let publisher = create_peer("publisher").unwrap();
+        let subscriber = create_peer("subscriber").unwrap();
+
+        assert_matches::assert_matches!(
+            publisher
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            subscriber
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            subscribe_that_expects_no_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            publisher
+                .publish(
+                    Uri::try_from("a1.b2.c55.d4.e5").unwrap(),
+                    PublishedEvent::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        // A small delay to ensure published events are received by the peer.
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        cancel_tx.send(()).unwrap();
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
+    }
+
+    #[tokio::test]
+    async fn uses_all_match_types_at_the_same_time() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let publisher = create_peer("publisher").unwrap();
+        let subscriber = create_peer("subscriber").unwrap();
+
+        assert_matches::assert_matches!(
+            publisher
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            subscriber
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3.d4.e5").unwrap(),
+                MatchStyle::None,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            subscribe_that_expects_event(
+                &subscriber,
+                WildcardUri::try_from("a1....e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            publisher
+                .publish(
+                    Uri::try_from("a1.b2.c3.d4.e5").unwrap(),
+                    PublishedEvent::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        // A small delay to ensure published events are received by the peer.
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        cancel_tx.send(()).unwrap();
+        for result in futures_util::future::join_all(handles).await {
+            assert_matches::assert_matches!(result, Ok(()));
+        }
     }
 }

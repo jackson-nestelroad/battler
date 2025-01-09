@@ -1,9 +1,16 @@
-use std::sync::Arc;
+use std::{
+    collections::{
+        hash_map::Entry,
+        VecDeque,
+    },
+    sync::Arc,
+};
 
 use anyhow::Result;
 use battler_wamp_values::{
     Dictionary,
     List,
+    Value,
 };
 use tokio::sync::RwLock;
 
@@ -13,7 +20,10 @@ use crate::{
         hash::HashMap,
         id::Id,
         roles::RouterRole,
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     message::message::{
         EventMessage,
@@ -22,11 +32,35 @@ use crate::{
     router::context::RealmContext,
 };
 
+/// The subscription match style.
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
+pub enum SubscriptionMatchStyle {
+    #[default]
+    None,
+    Prefix,
+    Wildcard,
+}
+
+impl TryFrom<&str> for SubscriptionMatchStyle {
+    type Error = anyhow::Error;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "none" => Ok(Self::None),
+            "prefix" => Ok(Self::Prefix),
+            "wildcard" => Ok(Self::Wildcard),
+            _ => Err(Self::Error::msg(format!(
+                "invalid procedure match style: {value}"
+            ))),
+        }
+    }
+}
+
 /// A single subscriber to a topic.
 #[derive(Default)]
 pub struct TopicSubscriber {
     subscription_id: Id,
     active: bool,
+    match_style: SubscriptionMatchStyle,
 }
 
 /// A topic that events can be published to for subscribers.
@@ -38,11 +72,66 @@ pub struct Topic {
     pub subscribers: RwLock<HashMap<Id, TopicSubscriber>>,
 }
 
+#[derive(Default)]
+struct TopicNode {
+    topic: Arc<Topic>,
+    tree: HashMap<String, TopicNode>,
+}
+
+impl TopicNode {
+    fn get<'a>(&self, mut uri_components: impl Iterator<Item = &'a str>) -> Option<Arc<Topic>> {
+        match uri_components.next() {
+            Some(uri_component) => self
+                .tree
+                .get(uri_component)
+                .and_then(|topic| topic.get(uri_components)),
+            None => Some(self.topic.clone()),
+        }
+    }
+
+    fn get_or_insert<'a>(
+        &mut self,
+        mut uri_components: impl Iterator<Item = &'a str>,
+    ) -> Arc<Topic> {
+        match uri_components.next() {
+            Some(uri_component) => match self.tree.entry(uri_component.to_owned()) {
+                Entry::Occupied(mut entry) => entry.get_mut().get_or_insert(uri_components),
+                Entry::Vacant(entry) => entry
+                    .insert(TopicNode::default())
+                    .get_or_insert(uri_components),
+            },
+            None => self.topic.clone(),
+        }
+    }
+
+    fn get_all<'a>(
+        &self,
+        mut uri_components: impl Iterator<Item = &'a str> + Clone,
+        match_style: SubscriptionMatchStyle,
+        topics: &mut VecDeque<(Arc<Topic>, SubscriptionMatchStyle)>,
+    ) {
+        match uri_components.next() {
+            Some(uri_component) => {
+                topics.push_back((self.topic.clone(), SubscriptionMatchStyle::Prefix));
+                if let Some(topic) = self.tree.get(uri_component) {
+                    topic.get_all(uri_components.clone(), match_style, topics);
+                }
+                if let Some(topic) = self.tree.get("") {
+                    topic.get_all(uri_components, SubscriptionMatchStyle::Wildcard, topics);
+                }
+            }
+            None => {
+                topics.push_back((self.topic.clone(), match_style));
+            }
+        }
+    }
+}
+
 /// A manager for all topics owned by a realm.
 #[derive(Default)]
 pub struct TopicManager {
-    /// Map of topics.
-    pub topics: RwLock<HashMap<Uri, Arc<Topic>>>,
+    /// Tree of topics.
+    topics: RwLock<TopicNode>,
 }
 
 impl TopicManager {
@@ -50,7 +139,8 @@ impl TopicManager {
     pub async fn subscribe<S>(
         context: &RealmContext<'_, S>,
         session: Id,
-        topic: Uri,
+        topic: WildcardUri,
+        match_style: SubscriptionMatchStyle,
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
@@ -87,9 +177,7 @@ impl TopicManager {
             .topics
             .write()
             .await
-            .entry(topic)
-            .or_insert_with(|| Arc::new(Topic::default()))
-            .clone();
+            .get_or_insert(topic.split());
         let subscription_id = topic
             .subscribers
             .write()
@@ -98,6 +186,7 @@ impl TopicManager {
             .or_insert_with(|| TopicSubscriber {
                 subscription_id,
                 active: false,
+                match_style,
             })
             .subscription_id;
         Ok(subscription_id)
@@ -107,7 +196,11 @@ impl TopicManager {
     ///
     /// Required for proper ordering of events. The subscription should not receive events until
     /// after the peer has received the subscription confirmation.
-    pub async fn activate_subscription<S>(context: &RealmContext<'_, S>, session: Id, topic: &Uri) {
+    pub async fn activate_subscription<S>(
+        context: &RealmContext<'_, S>,
+        session: Id,
+        topic: &WildcardUri,
+    ) {
         if let Some(topic) = context.topic(topic).await {
             if let Some(subscriber) = topic.subscribers.write().await.get_mut(&session) {
                 subscriber.active = true;
@@ -116,7 +209,7 @@ impl TopicManager {
     }
 
     /// Unsubscribes from a topic.
-    pub async fn unsubscribe<S>(context: &RealmContext<'_, S>, session: Id, topic: &Uri) {
+    pub async fn unsubscribe<S>(context: &RealmContext<'_, S>, session: Id, topic: &WildcardUri) {
         let topic = match context.topic(topic).await {
             Some(topic) => topic,
             None => return,
@@ -155,13 +248,53 @@ impl TopicManager {
             .validate_publication(context, publisher, &topic)
             .await?;
         let published_id = context.router().id_allocator.generate_id().await;
-        let topic = match context.topic(topic).await {
-            Some(topic) => topic,
-            None => return Ok(published_id),
-        };
-        for (session, subscription) in topic.subscribers.read().await.iter() {
+
+        let mut topics = VecDeque::new();
+        context.realm().topic_manager.topics.read().await.get_all(
+            topic.split(),
+            SubscriptionMatchStyle::None,
+            &mut topics,
+        );
+
+        for (single_topic, required_match_style) in topics {
+            Self::publish_to_topic(
+                context,
+                publisher,
+                published_id,
+                topic,
+                single_topic,
+                required_match_style,
+                arguments.clone(),
+                arguments_keyword.clone(),
+                exclude_publisher,
+            )
+            .await;
+        }
+
+        Ok(published_id)
+    }
+
+    async fn publish_to_topic<S>(
+        context: &RealmContext<'_, S>,
+        publisher: Id,
+        published_id: Id,
+        topic: &Uri,
+        single_topic: Arc<Topic>,
+        required_match_style: SubscriptionMatchStyle,
+        arguments: List,
+        arguments_keyword: Dictionary,
+        exclude_publisher: bool,
+    ) {
+        for (session, subscription) in single_topic.subscribers.read().await.iter() {
             if !subscription.active {
                 continue;
+            }
+            match (required_match_style, subscription.match_style) {
+                // Exact match should match anything.
+                (SubscriptionMatchStyle::None, _) => (),
+                (SubscriptionMatchStyle::Prefix, SubscriptionMatchStyle::Prefix) => (),
+                (SubscriptionMatchStyle::Wildcard, SubscriptionMatchStyle::Wildcard) => (),
+                _ => continue,
             }
             if *session == publisher && exclude_publisher {
                 continue;
@@ -170,14 +303,31 @@ impl TopicManager {
                 Some(session) => session,
                 None => continue,
             };
-            session.session.send_message(Message::Event(EventMessage {
-                subscribed_subscription: subscription.subscription_id,
-                published_publication: published_id,
-                details: Dictionary::default(),
-                publish_arguments: arguments.clone(),
-                publish_arguments_keyword: arguments_keyword.clone(),
-            }))?;
+
+            let mut details = Dictionary::default();
+            details.insert("topic".to_owned(), Value::String(topic.to_string()));
+
+            session
+                .session
+                .send_message(Message::Event(EventMessage {
+                    subscribed_subscription: subscription.subscription_id,
+                    published_publication: published_id,
+                    details,
+                    publish_arguments: arguments.clone(),
+                    publish_arguments_keyword: arguments_keyword.clone(),
+                }))
+                .ok();
         }
-        Ok(published_id)
+    }
+
+    /// Gets the topic matching the URI.
+    pub async fn get<S>(context: &RealmContext<'_, S>, topic: &WildcardUri) -> Option<Arc<Topic>> {
+        context
+            .realm()
+            .topic_manager
+            .topics
+            .read()
+            .await
+            .get(topic.split())
     }
 }

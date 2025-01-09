@@ -4,7 +4,10 @@ use async_trait::async_trait;
 use crate::{
     core::{
         id::Id,
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     router::context::RealmContext,
 };
@@ -17,7 +20,7 @@ pub trait PubSubPolicies<S>: Send + Sync {
         &self,
         context: &RealmContext<'_, S>,
         session: Id,
-        topic: &Uri,
+        topic: &WildcardUri,
     ) -> Result<()>;
 
     /// Validates that a publication is allowed.
@@ -35,7 +38,12 @@ pub struct EmptyPubSubPolicies {}
 
 #[async_trait]
 impl<S> PubSubPolicies<S> for EmptyPubSubPolicies {
-    async fn validate_subscription(&self, _: &RealmContext<'_, S>, _: Id, _: &Uri) -> Result<()> {
+    async fn validate_subscription(
+        &self,
+        _: &RealmContext<'_, S>,
+        _: Id,
+        _: &WildcardUri,
+    ) -> Result<()> {
         Ok(())
     }
 

@@ -21,7 +21,10 @@ use crate::{
             RealmSession,
         },
         router::Router,
-        topic::Topic,
+        topic::{
+            Topic,
+            TopicManager,
+        },
     },
 };
 
@@ -98,18 +101,12 @@ impl<'router, S> RealmContext<'router, S> {
     }
 
     /// Looks up a topic by URI.
-    pub async fn topic(&self, topic: &Uri) -> Option<Arc<Topic>> {
-        self.realm
-            .topic_manager
-            .topics
-            .read()
-            .await
-            .get(topic)
-            .cloned()
+    pub async fn topic(&self, topic: &WildcardUri) -> Option<Arc<Topic>> {
+        TopicManager::get(self, topic).await
     }
 
     /// Looks up a procedure by URI.
-    pub async fn procedure(&self, procedure: &WildcardUri) -> Option<Procedure> {
+    pub async fn procedure(&self, procedure: &WildcardUri) -> Option<Arc<Procedure>> {
         ProcedureManager::get(self, procedure).await
     }
 }
