@@ -472,6 +472,7 @@ async fn publish_matches_subscription_by_prefix() {
         Ok(())
     );
 
+    tokio::time::sleep(Duration::from_millis(200)).await;
     assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
 
     let mut topics_seen = Vec::default();
@@ -566,6 +567,7 @@ async fn publish_matches_subscription_by_wildcard() {
         Ok(())
     );
 
+    tokio::time::sleep(Duration::from_millis(200)).await;
     assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
 
     let mut topics_seen = Vec::default();
