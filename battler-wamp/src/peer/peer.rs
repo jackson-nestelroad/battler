@@ -68,7 +68,10 @@ use crate::{
             MessageStream,
             TransportMessageStream,
         },
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     message::{
         common::goodbye_with_close_reason,
@@ -815,7 +818,11 @@ where
     ///
     /// The resulting procedure contains an invocation receiver stream. The stream automatically
     /// closes when the peer deregisters the procedure or when the session ends.
-    pub async fn register(&self, procedure: Uri) -> Result<Procedure> {
+    async fn register_internal(
+        &self,
+        procedure: WildcardUri,
+        match_style: Option<String>,
+    ) -> Result<Procedure> {
         let (message_tx, id_allocator, mut registered_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
@@ -827,10 +834,15 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
+        let mut options = Dictionary::default();
+        if let Some(match_style) = match_style {
+            options.insert("match".to_owned(), Value::String(match_style));
+        }
+
         message_tx.send(Message::Register(RegisterMessage {
             request: request_id,
-            options: Dictionary::default(),
-            procedure,
+            options,
+            procedure: procedure.into(),
         }))?;
 
         let mut session_finished_rx = self.session_finished_rx();
@@ -858,6 +870,32 @@ where
                 }
             }
         }
+    }
+
+    /// Registers a procedure to an endpoint.
+    ///
+    /// The resulting procedure contains an invocation receiver stream. The stream automatically
+    /// closes when the peer deregisters the procedure or when the session ends.
+    pub async fn register(&self, procedure: Uri) -> Result<Procedure> {
+        self.register_internal(procedure.into(), None).await
+    }
+
+    /// Registers a procedure to an endpoint with prefix matching.
+    ///
+    /// The resulting procedure contains an invocation receiver stream. The stream automatically
+    /// closes when the peer deregisters the procedure or when the session ends.
+    pub async fn register_prefix(&self, procedure: Uri) -> Result<Procedure> {
+        self.register_internal(procedure.into(), Some("prefix".to_owned()))
+            .await
+    }
+
+    /// Registers a procedure to an endpoint with wildcard matching.
+    ///
+    /// The resulting procedure contains an invocation receiver stream. The stream automatically
+    /// closes when the peer deregisters the procedure or when the session ends.
+    pub async fn register_wildcard(&self, procedure: WildcardUri) -> Result<Procedure> {
+        self.register_internal(procedure, Some("wildcard".to_owned()))
+            .await
     }
 
     /// Removes a procedure.
@@ -986,7 +1024,7 @@ where
         message_tx.send(Message::Call(CallMessage {
             request: request_id,
             options,
-            procedure,
+            procedure: procedure.into(),
             arguments: rpc_call.arguments,
             arguments_keyword: rpc_call.arguments_keyword,
         }))?;

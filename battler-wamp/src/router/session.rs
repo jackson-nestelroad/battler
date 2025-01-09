@@ -55,7 +55,10 @@ use crate::{
             PeerRoles,
             RouterRoles,
         },
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     message::{
         common::{
@@ -88,7 +91,10 @@ use crate::{
     },
     router::{
         context::RouterContext,
-        procedure::ProcedureManager,
+        procedure::{
+            ProcedureManager,
+            ProcedureMatchStyle,
+        },
         realm::RealmSession,
         topic::TopicManager,
     },
@@ -97,7 +103,7 @@ use crate::{
 struct EstablishedSessionState {
     realm: Uri,
     subscriptions: HashMap<Id, Uri>,
-    procedures: HashMap<Id, Uri>,
+    procedures: HashMap<Id, WildcardUri>,
     active_invocations_by_call: HashMap<Id, RpcInvocation>,
 }
 
@@ -681,8 +687,20 @@ impl Session {
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
         let mut context = context.realm_context(&realm)?;
-        let registration =
-            ProcedureManager::register(&mut context, self.id, message.procedure.clone()).await?;
+
+        let match_style = message
+            .options
+            .get("match")
+            .and_then(|val| val.string())
+            .and_then(|val| ProcedureMatchStyle::try_from(val).ok())
+            .unwrap_or_default();
+        let registration = ProcedureManager::register(
+            &mut context,
+            self.id,
+            message.procedure.clone(),
+            match_style,
+        )
+        .await?;
         self.modify_established_session_state(|state| {
             state
                 .procedures
@@ -734,12 +752,12 @@ impl Session {
             .await?;
         let context = context.realm_context(&realm)?;
         let procedure = context
-            .procedure(&message.procedure)
+            .procedure(&message.procedure.clone().into())
             .await
             .ok_or_else(|| InteractionError::NoSuchProcedure)?;
 
         let callee = context
-            .session(procedure.read().await.callee)
+            .session(procedure.callee)
             .await
             .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?;
 
@@ -758,7 +776,7 @@ impl Session {
             .unwrap_or(0);
         let timeout = Duration::from_millis(timeout);
 
-        let registration_id = procedure.read().await.registration_id;
+        let registration_id = procedure.registration_id;
         let request_id = self.id_allocator.generate_id().await;
 
         let callee_supports_timeout = callee
@@ -846,6 +864,10 @@ impl Session {
             .clone();
 
         let mut details = Dictionary::default();
+        details.insert(
+            "procedure".to_owned(),
+            Value::String(message.procedure.to_string()),
+        );
         if invocation.callee.progressive_call_results {
             details.insert("receive_progress".to_owned(), Value::Bool(true));
         }

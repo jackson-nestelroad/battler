@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use crate::{
     core::{
         id::Id,
-        uri::Uri,
+        uri::WildcardUri,
     },
     router::context::RealmContext,
 };
@@ -17,7 +17,7 @@ pub trait RpcPolicies<S>: Send + Sync {
         &self,
         context: &RealmContext<'_, S>,
         session: Id,
-        procedure: &Uri,
+        procedure: &WildcardUri,
     ) -> Result<()>;
 }
 
@@ -27,7 +27,12 @@ pub struct EmptyRpcPolicies {}
 
 #[async_trait]
 impl<S> RpcPolicies<S> for EmptyRpcPolicies {
-    async fn validate_registration(&self, _: &RealmContext<'_, S>, _: Id, _: &Uri) -> Result<()> {
+    async fn validate_registration(
+        &self,
+        _: &RealmContext<'_, S>,
+        _: Id,
+        _: &WildcardUri,
+    ) -> Result<()> {
         Ok(())
     }
 }

@@ -196,6 +196,7 @@ fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
         "wamp.error.canceled" => InteractionError::Canceled.into(),
         "wamp.error.timeout" => InteractionError::Timeout.into(),
+        "wamp.error.invalid_uri" => InvalidUri.into(),
         "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
         _ => WampError::new(reason, message).into(),
     }

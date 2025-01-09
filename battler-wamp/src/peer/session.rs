@@ -145,6 +145,7 @@ pub struct Invocation {
     pub arguments_keyword: Dictionary,
 
     pub timeout: Duration,
+    pub procedure: Option<Uri>,
 
     id: Id,
     message_tx: UnboundedSender<Message>,
@@ -816,12 +817,18 @@ impl Session {
                     .and_then(|val| val.integer())
                     .unwrap_or(0);
                 let timeout = Duration::from_millis(timeout);
+                let reported_procedure = message
+                    .details
+                    .get("procedure")
+                    .and_then(|val| val.string())
+                    .and_then(|val| Uri::try_from(val).ok());
                 procedure
                     .procedure_tx
                     .send(ProcedureMessage::Invocation(Invocation {
                         arguments: message.call_arguments,
                         arguments_keyword: message.call_arguments_keyword,
                         timeout,
+                        procedure: reported_procedure,
                         id: message.request,
                         message_tx: self.service_message_tx.clone(),
                         receive_progress,

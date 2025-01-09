@@ -1,16 +1,21 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use tokio::sync::RwLock;
 
 use crate::{
     core::{
         error::InteractionError,
         id::Id,
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     router::{
-        procedure::Procedure,
+        procedure::{
+            Procedure,
+            ProcedureManager,
+        },
         realm::{
             Realm,
             RealmSession,
@@ -104,13 +109,7 @@ impl<'router, S> RealmContext<'router, S> {
     }
 
     /// Looks up a procedure by URI.
-    pub async fn procedure(&self, procedure: &Uri) -> Option<Arc<RwLock<Procedure>>> {
-        self.realm
-            .procedure_manager
-            .procedures
-            .read()
-            .await
-            .get(procedure)
-            .cloned()
+    pub async fn procedure(&self, procedure: &WildcardUri) -> Option<Procedure> {
+        ProcedureManager::get(self, procedure).await
     }
 }

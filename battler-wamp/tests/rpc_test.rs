@@ -12,7 +12,10 @@ use battler_wamp::{
         },
         hash::HashMap,
         id::Id,
-        uri::Uri,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     peer::{
         new_web_socket_peer,
@@ -185,6 +188,21 @@ async fn peer_invokes_procedure_from_another_peer() {
     );
 
     assert_matches::assert_matches!(callee.unregister(procedure_id).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.add2").unwrap(),
+                RpcCall {
+                    arguments: List::from_iter([Value::Integer(12), Value::Integer(33)]),
+                    ..Default::default()
+                }
+            )
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoSuchProcedure));
+        }
+    );
 
     adder_handle.await.unwrap();
 }
@@ -998,4 +1016,684 @@ async fn callee_times_out_procedure_call() {
             assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled));
         }
     );
+}
+
+#[tokio::test]
+async fn procedure_call_matches_registration_by_prefix() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register_prefix(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        async fn handle_invocation(invocation: Invocation) {
+            assert_matches::assert_matches!(invocation.procedure.as_ref(), Some(procedure) => {
+                assert_eq!(procedure, &Uri::try_from("com.battler.fn.a.b.c").unwrap());
+                invocation.respond_ok(RpcYield::default()).unwrap();
+            });
+        }
+
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    tokio::spawn(handle_invocation(invocation));
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.fn.a.b.c").unwrap(),
+                RpcCall::default()
+            )
+            .await,
+        Ok(_)
+    );
+}
+
+#[tokio::test]
+async fn procedure_call_matches_registration_by_wildcard() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register_wildcard(WildcardUri::try_from("com.battler.battle..start").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        async fn handle_invocation(invocation: Invocation) {
+            assert_matches::assert_matches!(invocation.procedure.as_ref(), Some(procedure) => {
+                assert_eq!(procedure, &Uri::try_from("com.battler.battle.abcd.start").unwrap());
+                invocation.respond_ok(RpcYield::default()).unwrap();
+            });
+        }
+
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    tokio::spawn(handle_invocation(invocation));
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.battle").unwrap(),
+                RpcCall::default()
+            )
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoSuchProcedure));
+        }
+    );
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.battle.abcd").unwrap(),
+                RpcCall::default()
+            )
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoSuchProcedure));
+        }
+    );
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.battle.abcd.start").unwrap(),
+                RpcCall::default()
+            )
+            .await,
+        Ok(_)
+    );
+}
+
+mod procedure_wildcard_match_test {
+    use battler_wamp::{
+        core::{
+            error::InteractionError,
+            uri::{
+                Uri,
+                WildcardUri,
+            },
+        },
+        peer::{
+            Peer,
+            Procedure,
+            ProcedureMessage,
+            RpcCall,
+            RpcYield,
+        },
+    };
+    use tokio::{
+        sync::broadcast,
+        task::JoinHandle,
+    };
+
+    use crate::{
+        create_peer,
+        start_router,
+        REALM,
+    };
+
+    enum MatchStyle {
+        None,
+        Prefix,
+        Wildcard,
+    }
+
+    async fn register_handler_that_expects_invocation<S>(
+        peer: &Peer<S>,
+        uri: WildcardUri,
+        match_style: MatchStyle,
+        cancel_rx: broadcast::Receiver<()>,
+    ) -> JoinHandle<()>
+    where
+        S: Send + 'static,
+    {
+        let procedure = match match_style {
+            MatchStyle::None => peer.register(Uri::try_from(&uri).unwrap()).await.unwrap(),
+            MatchStyle::Prefix => peer
+                .register_prefix(Uri::try_from(Uri::try_from(&uri).unwrap()).unwrap())
+                .await
+                .unwrap(),
+            MatchStyle::Wildcard => peer.register_wildcard(uri.clone()).await.unwrap(),
+        };
+
+        async fn handler(
+            mut procedure: Procedure,
+            uri: WildcardUri,
+            mut cancel_rx: broadcast::Receiver<()>,
+        ) {
+            loop {
+                tokio::select! {
+                    message = procedure.procedure_message_rx.recv() => {
+                        match message {
+                            Ok(ProcedureMessage::Invocation(invocation)) => {
+                                invocation.respond_ok(RpcYield::default()).unwrap();
+                                return;
+                            }
+                            _ => (),
+                        }
+                    }
+                    _ = cancel_rx.recv() => {
+                        panic!("no invocation received for {uri}");
+                    }
+                }
+            }
+        }
+
+        tokio::spawn(handler(procedure, uri, cancel_rx))
+    }
+
+    async fn register_handler_that_expects_no_invocation<S>(
+        peer: &Peer<S>,
+        uri: WildcardUri,
+        match_style: MatchStyle,
+        cancel_rx: broadcast::Receiver<()>,
+    ) -> JoinHandle<()>
+    where
+        S: Send + 'static,
+    {
+        let procedure = match match_style {
+            MatchStyle::None => peer.register(Uri::try_from(&uri).unwrap()).await.unwrap(),
+            MatchStyle::Prefix => peer
+                .register_prefix(Uri::try_from(&uri).unwrap())
+                .await
+                .unwrap(),
+            MatchStyle::Wildcard => peer.register_wildcard(uri).await.unwrap(),
+        };
+
+        async fn handler(mut procedure: Procedure, mut cancel_rx: broadcast::Receiver<()>) {
+            loop {
+                tokio::select! {
+                    message = procedure.procedure_message_rx.recv() => {
+                        match message {
+                            Ok(ProcedureMessage::Invocation(invocation)) => {
+                                panic!("unexpected invocation {invocation:?}")
+                            }
+                            _ => (),
+                        }
+                    }
+                    _ = cancel_rx.recv() => {
+                        return;
+                    }
+                }
+            }
+        }
+
+        tokio::spawn(handler(procedure, cancel_rx))
+    }
+
+    #[tokio::test]
+    async fn uses_exact_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([register_handler_that_expects_invocation(
+            &callee,
+            WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
+            MatchStyle::None,
+            cancel_rx.resubscribe(),
+        )
+        .await]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a1.b2.c3.d4.e55").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
+
+    #[tokio::test]
+    async fn uses_single_prefix_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
+                MatchStyle::None,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a1.b2.c3.d98.e74").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
+
+    #[tokio::test]
+    async fn uses_longest_prefix_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a1.b2.c3.d4.325").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
+
+    #[tokio::test]
+    async fn uses_wildcard_match() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a1.b2.c55.d4.e5").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
+
+    #[tokio::test]
+    async fn uses_longer_wildcard_match_by_first_portion() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c33..e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a1.b2.c33.d4.e5").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
+
+    #[tokio::test]
+    async fn uses_longer_wildcard_match_by_second_portion() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            register_handler_that_expects_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4.e5..g7").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4..f6.g7").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a1.b2.c88.d4.e5.f6.g7").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Ok(_)
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
+
+    #[tokio::test]
+    async fn no_match_found() {
+        test_utils::setup::setup_test_environment();
+
+        let (router_handle, _) = start_router().await.unwrap();
+        let caller = create_peer("caller").unwrap();
+        let callee = create_peer("callee").unwrap();
+
+        assert_matches::assert_matches!(
+            caller
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+        assert_matches::assert_matches!(
+            callee
+                .connect(&format!("ws://{}", router_handle.local_addr()))
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let handles = Vec::from_iter([
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
+                MatchStyle::None,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
+                MatchStyle::Prefix,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2.c33..e5").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4.e5..g7").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+            register_handler_that_expects_no_invocation(
+                &callee,
+                WildcardUri::try_from("a1.b2..d4..f6.g7").unwrap(),
+                MatchStyle::Wildcard,
+                cancel_rx.resubscribe(),
+            )
+            .await,
+        ]);
+
+        assert_matches::assert_matches!(
+            caller
+                .call_and_wait(
+                    Uri::try_from("a2.b2.c2.d2.e2").unwrap(),
+                    RpcCall::default()
+                )
+                .await,
+            Err(err) => {
+                assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoSuchProcedure));
+            }
+        );
+
+        cancel_tx.send(()).unwrap();
+        futures_util::future::join_all(handles).await;
+    }
 }

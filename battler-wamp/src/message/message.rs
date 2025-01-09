@@ -14,7 +14,10 @@ use serde_struct_tuple_enum::{
 
 use crate::core::{
     id::Id,
-    uri::Uri,
+    uri::{
+        Uri,
+        WildcardUri,
+    },
 };
 
 /// A HELLO message for a peer to initiate a WAMP session in a realm.
@@ -151,7 +154,7 @@ pub struct ResultMessage {
 pub struct RegisterMessage {
     pub request: Id,
     pub options: Dictionary,
-    pub procedure: Uri,
+    pub procedure: WildcardUri,
 }
 
 /// A REGISTERED message for confirming a procedure has been registered.
