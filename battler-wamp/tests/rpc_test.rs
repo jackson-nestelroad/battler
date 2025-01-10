@@ -12,6 +12,7 @@ use battler_wamp::{
         },
         hash::HashMap,
         id::Id,
+        invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
         uri::{
             Uri,
@@ -1724,4 +1725,403 @@ mod procedure_wildcard_match_test {
             assert_matches::assert_matches!(result, Ok(()));
         }
     }
+}
+
+#[tokio::test]
+async fn no_available_callee_when_single_callee_returns_unavailable() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.fn").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    invocation
+                        .respond_error(InteractionError::Unavailable)
+                        .unwrap();
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoAvailableCallee));
+        }
+    );
+}
+
+#[tokio::test]
+async fn shared_registration_fails_with_single_invocation_policy() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let callee_1 = create_peer("callee_1").unwrap();
+    let callee_2 = create_peer("callee_2").unwrap();
+
+    assert_matches::assert_matches!(
+        callee_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_1.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_2.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_1
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::Single,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(_)
+    );
+
+    assert_matches::assert_matches!(
+        callee_2
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::Single,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<BasicError>(), Ok(BasicError::NotAllowed(_)));
+        }
+    );
+
+    assert_matches::assert_matches!(
+        callee_2
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::First,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::ProcedureAlreadyExists));
+        }
+    );
+}
+
+#[tokio::test]
+async fn shared_registration_fails_with_different_invocation_policy() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let callee_1 = create_peer("callee_1").unwrap();
+    let callee_2 = create_peer("callee_2").unwrap();
+
+    assert_matches::assert_matches!(
+        callee_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_1.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_2.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_1
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::Random,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(_)
+    );
+
+    assert_matches::assert_matches!(
+        callee_2
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::RoundRobin,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::ProcedureAlreadyExists));
+        }
+    );
+}
+
+#[tokio::test]
+async fn shared_registration_succeeds_with_same_invocation_policy() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let callee_1 = create_peer("callee_1").unwrap();
+    let callee_2 = create_peer("callee_2").unwrap();
+
+    assert_matches::assert_matches!(
+        callee_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_1.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_2.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_1
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::Random,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(_)
+    );
+
+    assert_matches::assert_matches!(
+        callee_2
+            .register_with_options(
+                WildcardUri::try_from("com.battler.fn").unwrap(),
+                ProcedureOptions {
+                    invocation_policy: InvocationPolicy::Random,
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(_)
+    );
+}
+
+#[tokio::test]
+async fn invokes_second_caller_when_first_reports_unavailable() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee_1 = create_peer("callee_1").unwrap();
+    let callee_2 = create_peer("callee_2").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_1.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_2.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee_1
+        .register_with_options(
+            WildcardUri::try_from("com.battler.fn").unwrap(),
+            ProcedureOptions {
+                invocation_policy: InvocationPolicy::First,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    async fn unavailable_handler(mut procedure: Procedure) {
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    invocation
+                        .respond_error(InteractionError::Unavailable)
+                        .unwrap();
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(unavailable_handler(procedure));
+
+    let procedure = callee_2
+        .register_with_options(
+            WildcardUri::try_from("com.battler.fn").unwrap(),
+            ProcedureOptions {
+                invocation_policy: InvocationPolicy::First,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    async fn available_handler(mut procedure: Procedure) {
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    invocation.respond_ok(RpcYield::default()).unwrap();
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(available_handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+            .await,
+        Ok(_)
+    );
+}
+
+#[tokio::test]
+async fn no_available_callee_when_all_callees_report_unavailable() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let caller = create_peer("caller").unwrap();
+    let callee_1 = create_peer("callee_1").unwrap();
+    let callee_2 = create_peer("callee_2").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_1.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        callee_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee_2.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee_1
+        .register_with_options(
+            WildcardUri::try_from("com.battler.fn").unwrap(),
+            ProcedureOptions {
+                invocation_policy: InvocationPolicy::First,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    async fn unavailable_handler(mut procedure: Procedure) {
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    invocation
+                        .respond_error(InteractionError::Unavailable)
+                        .unwrap();
+                }
+                _ => (),
+            }
+        }
+    }
+
+    tokio::spawn(unavailable_handler(procedure));
+
+    let procedure = callee_2
+        .register_with_options(
+            WildcardUri::try_from("com.battler.fn").unwrap(),
+            ProcedureOptions {
+                invocation_policy: InvocationPolicy::First,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    tokio::spawn(unavailable_handler(procedure));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
+            .await,
+        Err(err) => {
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::NoAvailableCallee));
+        }
+    );
 }

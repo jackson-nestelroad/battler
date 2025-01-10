@@ -150,6 +150,12 @@ pub enum InteractionError {
     /// A procedure call timed out.
     #[error("timeout")]
     Timeout,
+    /// A callee is unavailable to handle an invocation.
+    #[error("unavailable")]
+    Unavailable,
+    /// There is no available callee to handle a procedure call.
+    #[error("no available callee")]
+    NoAvailableCallee,
 }
 
 impl InteractionError {
@@ -164,6 +170,8 @@ impl InteractionError {
             Self::NoSuchRole => "no_such_role",
             Self::Canceled => "canceled",
             Self::Timeout => "timeout",
+            Self::Unavailable => "unavailable",
+            Self::NoAvailableCallee => "no_available_callee",
         }
     }
 }
@@ -196,6 +204,8 @@ fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
         "wamp.error.canceled" => InteractionError::Canceled.into(),
         "wamp.error.timeout" => InteractionError::Timeout.into(),
+        "wamp.error.unavailable" => InteractionError::Unavailable.into(),
+        "wamp.error.no_available_callee" => InteractionError::NoAvailableCallee.into(),
         "wamp.error.invalid_uri" => InvalidUri.into(),
         "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
         _ => WampError::new(reason, message).into(),

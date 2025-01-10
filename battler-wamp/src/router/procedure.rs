@@ -3,6 +3,7 @@ use std::{
     sync::Arc,
 };
 
+use ahash::HashSet;
 use anyhow::Result;
 use futures_util::lock::Mutex;
 use rand::Rng;
@@ -29,9 +30,18 @@ struct ProcedureState {
     active: bool,
 }
 
+/// The callee of a [`Procedure`].
+#[derive(Clone)]
+pub struct ProcedureCallee {
+    /// Session ID.
+    pub session: Id,
+    /// Registration ID, as known by the session.
+    pub registration: Id,
+}
+
 #[derive(Default)]
 struct ProcedureRegistration {
-    callees: Vec<Id>,
+    callees: Vec<ProcedureCallee>,
     last_callee_index: usize,
 }
 
@@ -40,41 +50,58 @@ impl ProcedureRegistration {
         self.callees.len()
     }
 
-    fn get_callee(&mut self, invocation_policy: InvocationPolicy) -> Result<Id> {
-        if self.callees.is_empty() {
-            return Err(BasicError::Internal("procedure has no callees".to_owned()).into());
+    fn filter_available_callees<'a>(
+        &'a self,
+        callees_attempted: &'a HashSet<Id>,
+    ) -> impl Iterator<Item = ProcedureCallee> + 'a {
+        self.callees
+            .iter()
+            .cloned()
+            .filter(move |callee| !callees_attempted.contains(&callee.session))
+    }
+
+    fn get_callee(
+        &mut self,
+        invocation_policy: InvocationPolicy,
+        callees_attempted: &HashSet<Id>,
+    ) -> Result<ProcedureCallee> {
+        let callees = self.filter_available_callees(callees_attempted);
+        let callees = callees.collect::<Vec<_>>();
+        if callees.is_empty() {
+            return Err(InteractionError::NoAvailableCallee.into());
         }
 
         match invocation_policy {
             InvocationPolicy::Single | InvocationPolicy::First => {
                 // SAFETY: callees is not empty.
-                Ok(*self.callees.first().unwrap())
+                Ok(callees.first().unwrap().clone())
             }
             InvocationPolicy::RoundRobin => {
+                // Pick the next one in the queue, regardless of if we already tried it.
                 self.last_callee_index = (self.last_callee_index + 1) % self.callees.len();
-                Ok(self.callees[self.last_callee_index])
+                Ok(self.callees[self.last_callee_index].clone())
             }
             InvocationPolicy::Random => {
-                let index = rand::thread_rng().gen_range(0..self.callees.len());
-                Ok(self.callees[index])
+                let index = rand::thread_rng().gen_range(0..callees.len());
+                Ok(callees[index].clone())
             }
             InvocationPolicy::Last => {
                 // SAFETY: callees is not empty.
-                Ok(*self.callees.last().unwrap())
+                Ok(callees.last().unwrap().clone())
             }
         }
     }
 
-    fn add_callee(&mut self, callee: Id) {
-        self.callees.push(callee);
+    fn add_callee(&mut self, session: Id, registration: Id) {
+        self.callees.push(ProcedureCallee {
+            session,
+            registration,
+        });
     }
 }
 
 /// A procedure that can be invoked by peers to perform some operation on the callee.
 pub struct Procedure {
-    /// The ID of the procedure.
-    pub registration_id: Id,
-
     match_style: Option<MatchStyle>,
     invocation_policy: InvocationPolicy,
     registration: Mutex<ProcedureRegistration>,
@@ -83,15 +110,15 @@ pub struct Procedure {
 
 impl Procedure {
     /// Gets a callee for a new invocation.
-    pub async fn get_callee(&self) -> Result<Id> {
+    pub async fn get_callee(&self, callees_attempted: &HashSet<Id>) -> Result<ProcedureCallee> {
         self.registration
             .lock()
             .await
-            .get_callee(self.invocation_policy)
+            .get_callee(self.invocation_policy, callees_attempted)
     }
 
     /// Adds a callee to the procedure registration.
-    async fn add_callee(&self, callee: Id) -> Result<()> {
+    async fn add_callee(&self, callee: Id, registration: Id) -> Result<()> {
         if self.invocation_policy == InvocationPolicy::Single
             && self.registration.lock().await.callees_len() > 0
         {
@@ -100,7 +127,10 @@ impl Procedure {
             )
             .into());
         }
-        self.registration.lock().await.add_callee(callee);
+        self.registration
+            .lock()
+            .await
+            .add_callee(callee, registration);
         Ok(())
     }
 }
@@ -226,14 +256,13 @@ impl ProcedureManager {
             .insert(
                 procedure.split(),
                 Procedure {
-                    registration_id,
                     match_style,
                     invocation_policy,
                     registration: Mutex::new(ProcedureRegistration::default()),
                     state: Mutex::new(ProcedureState { active: false }),
                 },
             )?;
-        procedure.add_callee(session).await?;
+        procedure.add_callee(session, registration_id).await?;
 
         Ok(registration_id)
     }

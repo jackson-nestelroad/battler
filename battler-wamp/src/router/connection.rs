@@ -241,10 +241,10 @@ impl Connection {
     async fn handle_invocation<S>(
         context: RouterContext<S>,
         session: Arc<Session>,
-        invocation_id: Id,
+        call_request_id: Id,
         handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
     ) {
-        if let Err(err) = session.handle_invocation(&context, invocation_id).await {
+        if let Err(err) = session.handle_invocation(&context, call_request_id).await {
             handle_message_result_tx.send(Err(err.into())).ok();
         }
     }
@@ -262,12 +262,12 @@ impl Connection {
                 message = procedure_message_rx.recv() => {
                     match message? {
                         ProcedureMessage::Call(call_message) => {
-                            let invocation = match session.handle_ordered_call(&context, call_message).await? {
-                                Some(invocation) => invocation,
+                            let call_request_id = match session.handle_ordered_call(&context, call_message).await? {
+                                Some(call_request_id) => call_request_id,
                                 None => continue,
                             };
                             // Handle the invocation asynchronously.
-                            tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), invocation, handle_message_result_tx.clone()));
+                            tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), call_request_id, handle_message_result_tx.clone()));
                         },
                         ProcedureMessage::Cancel(cancel_message) => {
                             session.handle_ordered_cancel(&context, cancel_message).await?;

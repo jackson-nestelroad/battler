@@ -6,12 +6,14 @@ use std::{
     time::Duration,
 };
 
+use ahash::HashSet;
 use anyhow::{
     Error,
     Result,
 };
 use battler_wamp_values::{
     Dictionary,
+    List,
     Value,
     WampDeserialize,
     WampSerialize,
@@ -92,8 +94,14 @@ use crate::{
         },
     },
     router::{
-        context::RouterContext,
-        procedure::ProcedureManager,
+        context::{
+            RealmContext,
+            RouterContext,
+        },
+        procedure::{
+            ProcedureCallee,
+            ProcedureManager,
+        },
         realm::RealmSession,
         topic::TopicManager,
     },
@@ -173,19 +181,28 @@ mod router_session_message {
 /// Details about the callee of an RPC invocation.
 #[derive(Clone)]
 struct RpcInvocationCalleeDetails {
-    callee_session_id: Id,
+    callee: ProcedureCallee,
     progressive_call_results: bool,
     forward_timeout_to_callee: bool,
+}
+
+#[derive(Default)]
+struct RpcInvocationState {
+    current_callee: Option<RpcInvocationCalleeDetails>,
+    callees_attempted: HashSet<Id>,
+    canceled: bool,
 }
 
 /// The result of an RPC invocation.
 #[derive(Clone)]
 struct RpcInvocation {
-    registration_id: Id,
     invocation_request_id: Id,
+    procedure: Uri,
+    arguments: List,
+    arguments_keyword: Dictionary,
+    progressive_call_results: bool,
     timeout: Duration,
-    callee: RpcInvocationCalleeDetails,
-    canceled: Arc<Mutex<bool>>,
+    state: Arc<Mutex<RpcInvocationState>>,
 }
 
 /// A message related to procedure calls that must be strongly ordered.
@@ -753,33 +770,12 @@ impl Session {
         .await
     }
 
-    async fn handle_call<S>(
-        &self,
-        context: &RouterContext<S>,
-        message: &CallMessage,
-    ) -> Result<()> {
-        let realm = self
-            .get_from_established_session_state(|state| state.realm.clone())
-            .await?;
-        let context = context.realm_context(&realm)?;
-        let procedure = context
-            .procedure(&message.procedure.clone().into())
-            .await
-            .ok_or_else(|| InteractionError::NoSuchProcedure)?;
-
-        let callee = procedure.get_callee().await?;
-        let callee = context
-            .session(callee)
-            .await
-            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?;
-
+    async fn handle_call<S>(&self, _: &RouterContext<S>, message: &CallMessage) -> Result<()> {
         let progressive_call_results = message
             .options
             .get("receive_progress")
-            .is_some_and(|val| val.bool().unwrap_or(false))
-            && callee.session.roles().await.callee.is_some_and(|features| {
-                features.call_canceling && features.progressive_call_results
-            });
+            .and_then(|val| val.bool())
+            .unwrap_or(false);
 
         let timeout = message
             .options
@@ -788,27 +784,16 @@ impl Session {
             .unwrap_or(0);
         let timeout = Duration::from_millis(timeout);
 
-        let registration_id = procedure.registration_id;
         let request_id = self.id_allocator.generate_id().await;
 
-        let callee_supports_timeout = callee
-            .session
-            .roles()
-            .await
-            .callee
-            .map(|features| features.call_timeout)
-            .unwrap_or(false);
-
         let invocation = RpcInvocation {
-            registration_id,
             invocation_request_id: request_id,
+            procedure: message.procedure.clone(),
+            arguments: message.arguments.clone(),
+            arguments_keyword: message.arguments_keyword.clone(),
+            progressive_call_results,
             timeout,
-            callee: RpcInvocationCalleeDetails {
-                callee_session_id: callee.session.id(),
-                progressive_call_results,
-                forward_timeout_to_callee: callee_supports_timeout,
-            },
-            canceled: Arc::new(Mutex::new(false)),
+            state: Arc::new(Mutex::new(RpcInvocationState::default())),
         };
 
         // Store the active invocation immediately before handling another message.
@@ -827,7 +812,8 @@ impl Session {
 
     /// Handles an ordered procedure call from the peer.
     ///
-    /// Returns when the invocation has been sent to the callee.
+    /// Returns when the invocation has been sent to the callee. Returns the original call request
+    /// ID for [`Self::handle_invocation`].
     pub async fn handle_ordered_call<S>(
         &self,
         context: &RouterContext<S>,
@@ -852,54 +838,141 @@ impl Session {
         if self.shared_state.read().await.roles.caller.is_none() {
             return Err(BasicError::NotAllowed("peer is not a caller".to_owned()).into());
         }
+        self.send_invocation(context, message.request).await?;
+        Ok(message.request)
+    }
+
+    async fn select_callee_for_invocation<S>(
+        &self,
+        context: &RealmContext<'_, S>,
+        invocation: &RpcInvocation,
+    ) -> Result<ProcedureCallee> {
+        let procedure = context
+            .procedure(&invocation.procedure.clone().into())
+            .await
+            .ok_or_else(|| InteractionError::NoSuchProcedure)?;
+        procedure
+            .get_callee(&invocation.state.lock().await.callees_attempted)
+            .await
+    }
+
+    async fn send_invocation<S>(&self, context: &RouterContext<S>, request_id: Id) -> Result<()> {
         let (realm, invocation) = self
             .get_from_established_session_state(|state| {
                 (
                     state.realm.clone(),
-                    state
-                        .active_invocations_by_call
-                        .get(&message.request)
-                        .cloned(),
+                    state.active_invocations_by_call.get(&request_id).cloned(),
                 )
             })
             .await?;
+        let context = context.realm_context(&realm)?;
         let invocation = match invocation {
             Some(invocation) => invocation,
             // Invocation was lost, likely due to immediate cancellation.
             None => return Err(InteractionError::Canceled.into()),
         };
-        let context = context.realm_context(&realm)?;
-        let callee = context
-            .session(invocation.callee.callee_session_id)
+
+        // Select a callee and send the invocation to them.
+        //
+        // If sending to the callee fails, try again with another callee.
+        loop {
+            let callee = self
+                .select_callee_for_invocation(&context, &invocation)
+                .await?;
+            if let Ok(id) = self
+                .send_invocation_to_callee(&context, &invocation, callee)
+                .await
+            {
+                return Ok(id);
+            }
+
+            // We will eventually run out of callees, and selection will fail.
+        }
+    }
+
+    async fn save_current_callee<S>(
+        &self,
+        context: &RealmContext<'_, S>,
+        invocation: &RpcInvocation,
+        callee: ProcedureCallee,
+    ) -> Result<RpcInvocationCalleeDetails> {
+        invocation
+            .state
+            .lock()
             .await
-            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
-            .clone();
+            .callees_attempted
+            .insert(callee.session);
+
+        let session = context.session(callee.session).await.ok_or_else(|| {
+            BasicError::NotFound(format!("callee session {} not found", callee.session))
+        })?;
+        let progressive_call_results = invocation.progressive_call_results
+            && session
+                .session
+                .roles()
+                .await
+                .callee
+                .is_some_and(|features| features.progressive_call_results);
+        let forward_timeout_to_callee = session
+            .session
+            .roles()
+            .await
+            .callee
+            .is_some_and(|features| features.call_timeout);
+
+        let callee_details = RpcInvocationCalleeDetails {
+            callee,
+            progressive_call_results,
+            forward_timeout_to_callee,
+        };
+        invocation.state.lock().await.current_callee = Some(callee_details.clone());
+        Ok(callee_details)
+    }
+
+    async fn send_invocation_to_callee<S>(
+        &self,
+        context: &RealmContext<'_, S>,
+        invocation: &RpcInvocation,
+        callee: ProcedureCallee,
+    ) -> Result<()> {
+        let callee_details = self
+            .save_current_callee(context, invocation, callee)
+            .await?;
 
         let mut details = Dictionary::default();
         details.insert(
             "procedure".to_owned(),
-            Value::String(message.procedure.to_string()),
+            Value::String(invocation.procedure.to_string()),
         );
-        if invocation.callee.progressive_call_results {
+        if callee_details.progressive_call_results {
             details.insert("receive_progress".to_owned(), Value::Bool(true));
         }
-        if !invocation.timeout.is_zero() && invocation.callee.forward_timeout_to_callee {
+        if !invocation.timeout.is_zero() && callee_details.forward_timeout_to_callee {
             details.insert(
                 "timeout".to_owned(),
                 Value::Integer(invocation.timeout.as_millis() as u64),
             );
         }
 
-        callee
+        let session = context
+            .session(callee_details.callee.session)
+            .await
+            .ok_or_else(|| {
+                BasicError::NotFound(format!(
+                    "callee session {} not found",
+                    callee_details.callee.session
+                ))
+            })?;
+        session
             .session
             .send_message(Message::Invocation(InvocationMessage {
                 request: invocation.invocation_request_id,
-                registered_registration: invocation.registration_id,
+                registered_registration: callee_details.callee.registration,
                 details,
-                call_arguments: message.arguments.clone(),
-                call_arguments_keyword: message.arguments_keyword.clone(),
+                call_arguments: invocation.arguments.clone(),
+                call_arguments_keyword: invocation.arguments_keyword.clone(),
             }))?;
-        Ok(message.request)
+        Ok(())
     }
 
     /// Handles the invocation mapped to the call request ID returned from
@@ -911,18 +984,31 @@ impl Session {
         context: &RouterContext<S>,
         call_request_id: Id,
     ) -> Result<()> {
-        if let Err(err) = self
-            .handle_invocation_internal(context, call_request_id)
-            .await
-        {
-            self.send_message(error_for_request(
-                &Message::Call(CallMessage {
-                    request: call_request_id,
-                    ..Default::default()
-                }),
-                &err,
-            ))
-            .await?;
+        loop {
+            if let Err(mut err) = self
+                .handle_invocation_internal(context, call_request_id)
+                .await
+            {
+                if let Some(&InteractionError::Unavailable) = err.downcast_ref::<InteractionError>()
+                {
+                    // Callee was unavailable, so retry.
+                    match self.send_invocation(context, call_request_id).await {
+                        Ok(()) => continue,
+                        Err(invoke_err) => err = invoke_err,
+                    }
+                }
+
+                self.send_message(error_for_request(
+                    &Message::Call(CallMessage {
+                        request: call_request_id,
+                        ..Default::default()
+                    }),
+                    &err,
+                ))
+                .await?;
+            }
+
+            break;
         }
 
         // Forget the invocation only when everything is done.
@@ -953,9 +1039,17 @@ impl Session {
         let invocation = invocation.ok_or_else(|| InteractionError::Canceled)?;
         let context = context.realm_context(&realm)?;
 
-        // Find the callee session again. If it is gone, the procedure should be canceled.
+        let callee_details = invocation
+            .state
+            .lock()
+            .await
+            .current_callee
+            .clone()
+            .ok_or_else(|| {
+                BasicError::Internal("expected invocation to have an assigned callee".to_owned())
+            })?;
         let callee = context
-            .session(invocation.callee.callee_session_id)
+            .session(callee_details.callee.session)
             .await
             .ok_or_else(|| Error::new(InteractionError::Canceled))?;
         let mut rpc_yield_rx = callee.session.rpc_yield_rx.resubscribe();
@@ -976,8 +1070,8 @@ impl Session {
                     .callee
                     .map(|feature| feature.call_canceling)
                     .unwrap_or(false),
-                invocation.callee.progressive_call_results,
-                if invocation.callee.forward_timeout_to_callee {
+                callee_details.progressive_call_results,
+                if callee_details.forward_timeout_to_callee {
                     Duration::ZERO
                 } else {
                     invocation.timeout
@@ -985,7 +1079,7 @@ impl Session {
             )
             .await?;
 
-            let progress = invocation.callee.progressive_call_results
+            let progress = callee_details.progressive_call_results
                 && rpc_yield
                     .options
                     .get("progress")
@@ -1002,7 +1096,7 @@ impl Session {
                 yield_arguments_keyword: rpc_yield.arguments_keyword,
             }))
             .await?;
-            let canceled = *invocation.canceled.lock().await;
+            let canceled = invocation.state.lock().await.canceled;
 
             if !progress || canceled {
                 break;
@@ -1133,7 +1227,11 @@ impl Session {
         let context = context.realm_context(&realm)?;
 
         // If there is no callee, the call should already be canceled.
-        let callee = match context.session(invocation.callee.callee_session_id).await {
+        let callee = match &invocation.state.lock().await.current_callee {
+            Some(callee_details) => callee_details.callee.session,
+            None => return Ok(()),
+        };
+        let callee = match context.session(callee).await {
             Some(callee) => callee,
             None => return Ok(()),
         };
@@ -1176,7 +1274,7 @@ impl Session {
         }
 
         // Mark the invocation as canceled, so the task waiting for YIELD messages knows to stop.
-        *invocation.canceled.lock().await = true;
+        invocation.state.lock().await.canceled = true;
 
         Ok(())
     }

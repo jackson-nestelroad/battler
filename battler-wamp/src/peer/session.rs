@@ -709,6 +709,12 @@ impl Session {
                     Message::PUBLISH_TAG => {
                         self.published_tx.send(Err(message.try_into()?))?;
                     }
+                    Message::REGISTER_TAG => {
+                        self.registered_tx.send(Err(message.try_into()?))?;
+                    }
+                    Message::UNREGISTER_TAG => {
+                        self.registered_tx.send(Err(message.try_into()?))?;
+                    }
                     Message::CALL_TAG => {
                         self.rpc_result_tx.send(Err(message.try_into()?))?;
                     }
