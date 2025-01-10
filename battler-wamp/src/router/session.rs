@@ -51,6 +51,8 @@ use crate::{
             IdAllocator,
             SequentialIdAllocator,
         },
+        invocation_policy::InvocationPolicy,
+        match_style::MatchStyle,
         roles::{
             PeerRoles,
             RouterRoles,
@@ -91,15 +93,9 @@ use crate::{
     },
     router::{
         context::RouterContext,
-        procedure::{
-            ProcedureManager,
-            ProcedureMatchStyle,
-        },
+        procedure::ProcedureManager,
         realm::RealmSession,
-        topic::{
-            SubscriptionMatchStyle,
-            TopicManager,
-        },
+        topic::TopicManager,
     },
 };
 
@@ -449,6 +445,7 @@ impl Session {
                     call_canceling: true,
                     progressive_call_results: true,
                     call_timeout: true,
+                    shared_registration: true,
                 };
                 details.insert(
                     "roles".to_owned(),
@@ -583,8 +580,7 @@ impl Session {
             .options
             .get("match")
             .and_then(|val| val.string())
-            .and_then(|val| SubscriptionMatchStyle::try_from(val).ok())
-            .unwrap_or_default();
+            .and_then(|val| MatchStyle::try_from(val).ok());
         let subscription =
             TopicManager::subscribe(&context, self.id, message.topic.clone(), match_style).await?;
         self.modify_established_session_state(|state| {
@@ -701,13 +697,19 @@ impl Session {
             .options
             .get("match")
             .and_then(|val| val.string())
-            .and_then(|val| ProcedureMatchStyle::try_from(val).ok())
+            .and_then(|val| MatchStyle::try_from(val).ok());
+        let invocation_policy = message
+            .options
+            .get("invoke")
+            .and_then(|val| val.string())
+            .and_then(|val| InvocationPolicy::try_from(val).ok())
             .unwrap_or_default();
         let registration = ProcedureManager::register(
             &mut context,
             self.id,
             message.procedure.clone(),
             match_style,
+            invocation_policy,
         )
         .await?;
         self.modify_established_session_state(|state| {
@@ -765,8 +767,9 @@ impl Session {
             .await
             .ok_or_else(|| InteractionError::NoSuchProcedure)?;
 
+        let callee = procedure.get_callee().await?;
         let callee = context
-            .session(procedure.callee)
+            .session(callee)
             .await
             .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?;
 

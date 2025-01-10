@@ -4,6 +4,8 @@ pub mod error;
 pub mod features;
 pub mod hash;
 pub mod id;
+pub mod invocation_policy;
+pub mod match_style;
 pub mod roles;
 pub mod service;
 pub mod stream;

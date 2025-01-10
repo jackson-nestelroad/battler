@@ -12,6 +12,7 @@ use battler_wamp::{
         },
         hash::HashSet,
         id::Id,
+        match_style::MatchStyle,
         roles::RouterRole,
         uri::{
             Uri,
@@ -24,6 +25,7 @@ use battler_wamp::{
         PublishedEvent,
         ReceivedEvent,
         Subscription,
+        SubscriptionOptions,
         WebSocketPeer,
     },
     router::{
@@ -413,7 +415,12 @@ async fn publish_matches_subscription_by_prefix() {
     assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
     let mut subscription = subscriber
-        .subscribe_prefix(Uri::try_from("com.battler.battle.abcd").unwrap())
+        .subscribe_with_options(
+            WildcardUri::try_from("com.battler.battle.abcd").unwrap(),
+            SubscriptionOptions {
+                match_style: Some(MatchStyle::Prefix),
+            },
+        )
         .await
         .unwrap();
 
@@ -517,7 +524,12 @@ async fn publish_matches_subscription_by_wildcard() {
     assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
     let mut subscription = subscriber
-        .subscribe_wildcard(WildcardUri::try_from("com.battler.battle..start").unwrap())
+        .subscribe_with_options(
+            WildcardUri::try_from("com.battler.battle..start").unwrap(),
+            SubscriptionOptions {
+                match_style: Some(MatchStyle::Wildcard),
+            },
+        )
         .await
         .unwrap();
 
@@ -589,14 +601,18 @@ mod subscription_wildcard_match_test {
     use std::time::Duration;
 
     use battler_wamp::{
-        core::uri::{
-            Uri,
-            WildcardUri,
+        core::{
+            match_style::MatchStyle,
+            uri::{
+                Uri,
+                WildcardUri,
+            },
         },
         peer::{
             Peer,
             PublishedEvent,
             Subscription,
+            SubscriptionOptions,
         },
     };
     use tokio::{
@@ -610,29 +626,19 @@ mod subscription_wildcard_match_test {
         REALM,
     };
 
-    enum MatchStyle {
-        None,
-        Prefix,
-        Wildcard,
-    }
-
     async fn subscribe_that_expects_event<S>(
         peer: &Peer<S>,
         uri: WildcardUri,
-        match_style: MatchStyle,
+        match_style: Option<MatchStyle>,
         cancel_rx: broadcast::Receiver<()>,
     ) -> JoinHandle<()>
     where
         S: Send + 'static,
     {
-        let subscription = match match_style {
-            MatchStyle::None => peer.subscribe(Uri::try_from(&uri).unwrap()).await.unwrap(),
-            MatchStyle::Prefix => peer
-                .subscribe_prefix(Uri::try_from(Uri::try_from(&uri).unwrap()).unwrap())
-                .await
-                .unwrap(),
-            MatchStyle::Wildcard => peer.subscribe_wildcard(uri.clone()).await.unwrap(),
-        };
+        let subscription = peer
+            .subscribe_with_options(uri.clone(), SubscriptionOptions { match_style })
+            .await
+            .unwrap();
 
         async fn handler(
             mut subscription: Subscription,
@@ -662,20 +668,16 @@ mod subscription_wildcard_match_test {
     async fn subscribe_that_expects_no_event<S>(
         peer: &Peer<S>,
         uri: WildcardUri,
-        match_style: MatchStyle,
+        match_style: Option<MatchStyle>,
         cancel_rx: broadcast::Receiver<()>,
     ) -> JoinHandle<()>
     where
         S: Send + 'static,
     {
-        let subscription = match match_style {
-            MatchStyle::None => peer.subscribe(Uri::try_from(&uri).unwrap()).await.unwrap(),
-            MatchStyle::Prefix => peer
-                .subscribe_prefix(Uri::try_from(Uri::try_from(&uri).unwrap()).unwrap())
-                .await
-                .unwrap(),
-            MatchStyle::Wildcard => peer.subscribe_wildcard(uri).await.unwrap(),
-        };
+        let subscription = peer
+            .subscribe_with_options(uri.clone(), SubscriptionOptions { match_style })
+            .await
+            .unwrap();
 
         async fn handler(mut subscription: Subscription, mut cancel_rx: broadcast::Receiver<()>) {
             loop {
@@ -726,7 +728,7 @@ mod subscription_wildcard_match_test {
         let handles = Vec::from_iter([subscribe_that_expects_event(
             &subscriber,
             WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
-            MatchStyle::None,
+            None,
             cancel_rx.resubscribe(),
         )
         .await]);
@@ -778,14 +780,14 @@ mod subscription_wildcard_match_test {
             subscribe_that_expects_no_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
-                MatchStyle::None,
+                None,
                 cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -838,14 +840,14 @@ mod subscription_wildcard_match_test {
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -898,14 +900,14 @@ mod subscription_wildcard_match_test {
             subscribe_that_expects_no_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -958,28 +960,28 @@ mod subscription_wildcard_match_test {
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4.e5").unwrap(),
-                MatchStyle::None,
+                None,
                 cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1....e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,

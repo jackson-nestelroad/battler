@@ -9,9 +9,11 @@ pub use peer::{
     PeerConfig,
     PeerNotConnectedError,
     Procedure,
+    ProcedureOptions,
     RpcCall,
     RpcResult,
     Subscription,
+    SubscriptionOptions,
     WebSocketConfig,
 };
 pub use session::{

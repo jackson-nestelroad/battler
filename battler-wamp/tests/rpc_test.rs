@@ -12,6 +12,7 @@ use battler_wamp::{
         },
         hash::HashMap,
         id::Id,
+        match_style::MatchStyle,
         uri::{
             Uri,
             WildcardUri,
@@ -24,6 +25,7 @@ use battler_wamp::{
         PeerNotConnectedError,
         Procedure,
         ProcedureMessage,
+        ProcedureOptions,
         RpcCall,
         RpcResult,
         RpcYield,
@@ -1043,7 +1045,13 @@ async fn procedure_call_matches_registration_by_prefix() {
     assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
     let procedure = callee
-        .register_prefix(Uri::try_from("com.battler.fn").unwrap())
+        .register_with_options(
+            WildcardUri::try_from("com.battler.fn").unwrap(),
+            ProcedureOptions {
+                match_style: Some(MatchStyle::Prefix),
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
 
@@ -1103,7 +1111,13 @@ async fn procedure_call_matches_registration_by_wildcard() {
     assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
     let procedure = callee
-        .register_wildcard(WildcardUri::try_from("com.battler.battle..start").unwrap())
+        .register_with_options(
+            WildcardUri::try_from("com.battler.battle..start").unwrap(),
+            ProcedureOptions {
+                match_style: Some(MatchStyle::Wildcard),
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
 
@@ -1164,6 +1178,7 @@ mod procedure_wildcard_match_test {
     use battler_wamp::{
         core::{
             error::InteractionError,
+            match_style::MatchStyle,
             uri::{
                 Uri,
                 WildcardUri,
@@ -1173,6 +1188,7 @@ mod procedure_wildcard_match_test {
             Peer,
             Procedure,
             ProcedureMessage,
+            ProcedureOptions,
             RpcCall,
             RpcYield,
         },
@@ -1188,29 +1204,25 @@ mod procedure_wildcard_match_test {
         REALM,
     };
 
-    enum MatchStyle {
-        None,
-        Prefix,
-        Wildcard,
-    }
-
     async fn register_handler_that_expects_invocation<S>(
         peer: &Peer<S>,
         uri: WildcardUri,
-        match_style: MatchStyle,
+        match_style: Option<MatchStyle>,
         cancel_rx: broadcast::Receiver<()>,
     ) -> JoinHandle<()>
     where
         S: Send + 'static,
     {
-        let procedure = match match_style {
-            MatchStyle::None => peer.register(Uri::try_from(&uri).unwrap()).await.unwrap(),
-            MatchStyle::Prefix => peer
-                .register_prefix(Uri::try_from(Uri::try_from(&uri).unwrap()).unwrap())
-                .await
-                .unwrap(),
-            MatchStyle::Wildcard => peer.register_wildcard(uri.clone()).await.unwrap(),
-        };
+        let procedure = peer
+            .register_with_options(
+                uri.clone(),
+                ProcedureOptions {
+                    match_style,
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
 
         async fn handler(
             mut procedure: Procedure,
@@ -1241,20 +1253,22 @@ mod procedure_wildcard_match_test {
     async fn register_handler_that_expects_no_invocation<S>(
         peer: &Peer<S>,
         uri: WildcardUri,
-        match_style: MatchStyle,
+        match_style: Option<MatchStyle>,
         cancel_rx: broadcast::Receiver<()>,
     ) -> JoinHandle<()>
     where
         S: Send + 'static,
     {
-        let procedure = match match_style {
-            MatchStyle::None => peer.register(Uri::try_from(&uri).unwrap()).await.unwrap(),
-            MatchStyle::Prefix => peer
-                .register_prefix(Uri::try_from(&uri).unwrap())
-                .await
-                .unwrap(),
-            MatchStyle::Wildcard => peer.register_wildcard(uri).await.unwrap(),
-        };
+        let procedure = peer
+            .register_with_options(
+                uri.clone(),
+                ProcedureOptions {
+                    match_style,
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
 
         async fn handler(mut procedure: Procedure, mut cancel_rx: broadcast::Receiver<()>) {
             loop {
@@ -1305,7 +1319,7 @@ mod procedure_wildcard_match_test {
         let handles = Vec::from_iter([register_handler_that_expects_invocation(
             &callee,
             WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
-            MatchStyle::None,
+            None,
             cancel_rx.resubscribe(),
         )
         .await]);
@@ -1355,14 +1369,14 @@ mod procedure_wildcard_match_test {
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
-                MatchStyle::None,
+                None,
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -1413,14 +1427,14 @@ mod procedure_wildcard_match_test {
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -1471,14 +1485,14 @@ mod procedure_wildcard_match_test {
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -1529,14 +1543,14 @@ mod procedure_wildcard_match_test {
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c33..e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -1587,14 +1601,14 @@ mod procedure_wildcard_match_test {
             register_handler_that_expects_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4.e5..g7").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4..f6.g7").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
@@ -1645,49 +1659,49 @@ mod procedure_wildcard_match_test {
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
-                MatchStyle::None,
+                None,
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
-                MatchStyle::Prefix,
+                Some(MatchStyle::Prefix),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2.c33..e5").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4.e5..g7").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,
             register_handler_that_expects_no_invocation(
                 &callee,
                 WildcardUri::try_from("a1.b2..d4..f6.g7").unwrap(),
-                MatchStyle::Wildcard,
+                Some(MatchStyle::Wildcard),
                 cancel_rx.resubscribe(),
             )
             .await,

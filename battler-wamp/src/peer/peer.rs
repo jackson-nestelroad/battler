@@ -56,6 +56,8 @@ use crate::{
             IdAllocator,
             SequentialIdAllocator,
         },
+        invocation_policy::InvocationPolicy,
+        match_style::MatchStyle,
         roles::{
             PeerRole,
             PeerRoles,
@@ -167,6 +169,22 @@ impl Default for PeerConfig {
             callee: CalleeConfig::default(),
         }
     }
+}
+
+/// Options for subscribing to a topic.
+#[derive(Debug, Default, Clone)]
+pub struct SubscriptionOptions {
+    /// How the subscription should be matched for published events.
+    pub match_style: Option<MatchStyle>,
+}
+
+/// Options for registering a procedure.
+#[derive(Debug, Default, Clone)]
+pub struct ProcedureOptions {
+    /// How the procedure should be matched for procedure calls.
+    pub match_style: Option<MatchStyle>,
+    /// How a callee should be selected for invocations.
+    pub invocation_policy: InvocationPolicy,
 }
 
 struct PeerState {
@@ -612,6 +630,7 @@ where
             call_canceling: true,
             progressive_call_results: true,
             call_timeout: self.config.callee.enforce_timeouts,
+            shared_registration: true,
         };
         details.insert(
             "roles".to_owned(),
@@ -679,7 +698,7 @@ where
     async fn subscribe_internal(
         &self,
         topic: WildcardUri,
-        match_style: Option<String>,
+        options: SubscriptionOptions,
     ) -> Result<Subscription> {
         let (message_tx, id_allocator, mut subscribed_rx) = self
             .get_from_peer_state(|peer_state| {
@@ -692,14 +711,14 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
-        let mut options = Dictionary::default();
-        if let Some(match_style) = match_style {
-            options.insert("match".to_owned(), Value::String(match_style));
+        let mut message_options = Dictionary::default();
+        if let Some(match_style) = options.match_style {
+            message_options.insert("match".to_owned(), Value::String(match_style.into()));
         }
 
         message_tx.send(Message::Subscribe(SubscribeMessage {
             request: request_id,
-            options,
+            options: message_options,
             topic,
         }))?;
 
@@ -736,27 +755,21 @@ where
     /// stream automatically closes when the peer unsubscribes from the topic or when the session
     /// ends.
     pub async fn subscribe(&self, topic: Uri) -> Result<Subscription> {
-        self.subscribe_internal(topic.into(), None).await
+        self.subscribe_internal(topic.into(), SubscriptionOptions::default())
+            .await
     }
 
-    /// Subscribes to a topic in the realm with prefix matching.
+    /// Subscribes to a topic in the realm with additional options.
     ///
     /// The resulting subscription contains an event receiver stream for published events. The
     /// stream automatically closes when the peer unsubscribes from the topic or when the session
     /// ends.
-    pub async fn subscribe_prefix(&self, topic: Uri) -> Result<Subscription> {
-        self.subscribe_internal(topic.into(), Some("prefix".to_owned()))
-            .await
-    }
-
-    /// Subscribes to a topic in the realm with wildcard matching.
-    ///
-    /// The resulting subscription contains an event receiver stream for published events. The
-    /// stream automatically closes when the peer unsubscribes from the topic or when the session
-    /// ends.
-    pub async fn subscribe_wildcard(&self, topic: WildcardUri) -> Result<Subscription> {
-        self.subscribe_internal(topic, Some("wildcard".to_owned()))
-            .await
+    pub async fn subscribe_with_options(
+        &self,
+        topic: WildcardUri,
+        options: SubscriptionOptions,
+    ) -> Result<Subscription> {
+        self.subscribe_internal(topic.into(), options).await
     }
 
     /// Removes a subscription.
@@ -855,7 +868,7 @@ where
     async fn register_internal(
         &self,
         procedure: WildcardUri,
-        match_style: Option<String>,
+        options: ProcedureOptions,
     ) -> Result<Procedure> {
         let (message_tx, id_allocator, mut registered_rx) = self
             .get_from_peer_state(|peer_state| {
@@ -868,14 +881,18 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
-        let mut options = Dictionary::default();
-        if let Some(match_style) = match_style {
-            options.insert("match".to_owned(), Value::String(match_style));
+        let mut message_options = Dictionary::default();
+        if let Some(match_style) = options.match_style {
+            message_options.insert("match".to_owned(), Value::String(match_style.into()));
         }
+        message_options.insert(
+            "invoke".to_owned(),
+            Value::String(options.invocation_policy.into()),
+        );
 
         message_tx.send(Message::Register(RegisterMessage {
             request: request_id,
-            options,
+            options: message_options,
             procedure: procedure.into(),
         }))?;
 
@@ -911,25 +928,17 @@ where
     /// The resulting procedure contains an invocation receiver stream. The stream automatically
     /// closes when the peer deregisters the procedure or when the session ends.
     pub async fn register(&self, procedure: Uri) -> Result<Procedure> {
-        self.register_internal(procedure.into(), None).await
-    }
-
-    /// Registers a procedure to an endpoint with prefix matching.
-    ///
-    /// The resulting procedure contains an invocation receiver stream. The stream automatically
-    /// closes when the peer deregisters the procedure or when the session ends.
-    pub async fn register_prefix(&self, procedure: Uri) -> Result<Procedure> {
-        self.register_internal(procedure.into(), Some("prefix".to_owned()))
+        self.register_internal(procedure.into(), ProcedureOptions::default())
             .await
     }
 
-    /// Registers a procedure to an endpoint with wildcard matching.
-    ///
-    /// The resulting procedure contains an invocation receiver stream. The stream automatically
-    /// closes when the peer deregisters the procedure or when the session ends.
-    pub async fn register_wildcard(&self, procedure: WildcardUri) -> Result<Procedure> {
-        self.register_internal(procedure, Some("wildcard".to_owned()))
-            .await
+    /// Registers a procedure to an endpoint with additional options.
+    pub async fn register_with_options(
+        &self,
+        procedure: WildcardUri,
+        options: ProcedureOptions,
+    ) -> Result<Procedure> {
+        self.register_internal(procedure.into(), options).await
     }
 
     /// Removes a procedure.

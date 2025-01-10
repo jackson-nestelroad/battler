@@ -13,4 +13,6 @@ pub struct RpcFeatures {
     pub progressive_call_results: bool,
     /// The peer can enforce call timeouts.
     pub call_timeout: bool,
+    /// A procedure can be shared by multiple callees.
+    pub shared_registration: bool,
 }

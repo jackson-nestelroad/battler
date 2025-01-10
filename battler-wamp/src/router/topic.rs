@@ -19,6 +19,7 @@ use crate::{
         error::BasicError,
         hash::HashMap,
         id::Id,
+        match_style::MatchStyle,
         roles::RouterRole,
         uri::{
             Uri,
@@ -32,35 +33,12 @@ use crate::{
     router::context::RealmContext,
 };
 
-/// The subscription match style.
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
-pub enum SubscriptionMatchStyle {
-    #[default]
-    None,
-    Prefix,
-    Wildcard,
-}
-
-impl TryFrom<&str> for SubscriptionMatchStyle {
-    type Error = anyhow::Error;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
-            "none" => Ok(Self::None),
-            "prefix" => Ok(Self::Prefix),
-            "wildcard" => Ok(Self::Wildcard),
-            _ => Err(Self::Error::msg(format!(
-                "invalid procedure match style: {value}"
-            ))),
-        }
-    }
-}
-
 /// A single subscriber to a topic.
 #[derive(Default)]
 pub struct TopicSubscriber {
     subscription_id: Id,
     active: bool,
-    match_style: SubscriptionMatchStyle,
+    match_style: Option<MatchStyle>,
 }
 
 /// A topic that events can be published to for subscribers.
@@ -107,17 +85,17 @@ impl TopicNode {
     fn get_all<'a>(
         &self,
         mut uri_components: impl Iterator<Item = &'a str> + Clone,
-        match_style: SubscriptionMatchStyle,
-        topics: &mut VecDeque<(Arc<Topic>, SubscriptionMatchStyle)>,
+        match_style: Option<MatchStyle>,
+        topics: &mut VecDeque<(Arc<Topic>, Option<MatchStyle>)>,
     ) {
         match uri_components.next() {
             Some(uri_component) => {
-                topics.push_back((self.topic.clone(), SubscriptionMatchStyle::Prefix));
+                topics.push_back((self.topic.clone(), Some(MatchStyle::Prefix)));
                 if let Some(topic) = self.tree.get(uri_component) {
                     topic.get_all(uri_components.clone(), match_style, topics);
                 }
                 if let Some(topic) = self.tree.get("") {
-                    topic.get_all(uri_components, SubscriptionMatchStyle::Wildcard, topics);
+                    topic.get_all(uri_components, Some(MatchStyle::Wildcard), topics);
                 }
             }
             None => {
@@ -140,7 +118,7 @@ impl TopicManager {
         context: &RealmContext<'_, S>,
         session: Id,
         topic: WildcardUri,
-        match_style: SubscriptionMatchStyle,
+        match_style: Option<MatchStyle>,
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
@@ -250,11 +228,13 @@ impl TopicManager {
         let published_id = context.router().id_allocator.generate_id().await;
 
         let mut topics = VecDeque::new();
-        context.realm().topic_manager.topics.read().await.get_all(
-            topic.split(),
-            SubscriptionMatchStyle::None,
-            &mut topics,
-        );
+        context
+            .realm()
+            .topic_manager
+            .topics
+            .read()
+            .await
+            .get_all(topic.split(), None, &mut topics);
 
         for (single_topic, required_match_style) in topics {
             Self::publish_to_topic(
@@ -280,7 +260,7 @@ impl TopicManager {
         published_id: Id,
         topic: &Uri,
         single_topic: Arc<Topic>,
-        required_match_style: SubscriptionMatchStyle,
+        required_match_style: Option<MatchStyle>,
         arguments: List,
         arguments_keyword: Dictionary,
         exclude_publisher: bool,
@@ -291,9 +271,9 @@ impl TopicManager {
             }
             match (required_match_style, subscription.match_style) {
                 // Exact match should match anything.
-                (SubscriptionMatchStyle::None, _) => (),
-                (SubscriptionMatchStyle::Prefix, SubscriptionMatchStyle::Prefix) => (),
-                (SubscriptionMatchStyle::Wildcard, SubscriptionMatchStyle::Wildcard) => (),
+                (None, _) => (),
+                (Some(MatchStyle::Prefix), Some(MatchStyle::Prefix)) => (),
+                (Some(MatchStyle::Wildcard), Some(MatchStyle::Wildcard)) => (),
                 _ => continue,
             }
             if *session == publisher && exclude_publisher {

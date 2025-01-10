@@ -5,6 +5,7 @@ use std::{
 
 use anyhow::Result;
 use futures_util::lock::Mutex;
+use rand::Rng;
 use tokio::sync::RwLock;
 
 use crate::{
@@ -15,50 +16,93 @@ use crate::{
         },
         hash::HashMap,
         id::Id,
+        invocation_policy::InvocationPolicy,
+        match_style::MatchStyle,
         roles::RouterRole,
         uri::WildcardUri,
     },
     router::context::RealmContext,
 };
 
-/// The procedure match style.
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
-pub enum ProcedureMatchStyle {
-    #[default]
-    None,
-    Prefix,
-    Wildcard,
-}
-
-impl TryFrom<&str> for ProcedureMatchStyle {
-    type Error = anyhow::Error;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
-            "none" => Ok(Self::None),
-            "prefix" => Ok(Self::Prefix),
-            "wildcard" => Ok(Self::Wildcard),
-            _ => Err(Self::Error::msg(format!(
-                "invalid procedure match style: {value}"
-            ))),
-        }
-    }
-}
-
 #[derive(Default)]
 struct ProcedureState {
     active: bool,
+}
+
+#[derive(Default)]
+struct ProcedureRegistration {
+    callees: Vec<Id>,
+    last_callee_index: usize,
+}
+
+impl ProcedureRegistration {
+    fn callees_len(&self) -> usize {
+        self.callees.len()
+    }
+
+    fn get_callee(&mut self, invocation_policy: InvocationPolicy) -> Result<Id> {
+        if self.callees.is_empty() {
+            return Err(BasicError::Internal("procedure has no callees".to_owned()).into());
+        }
+
+        match invocation_policy {
+            InvocationPolicy::Single | InvocationPolicy::First => {
+                // SAFETY: callees is not empty.
+                Ok(*self.callees.first().unwrap())
+            }
+            InvocationPolicy::RoundRobin => {
+                self.last_callee_index = (self.last_callee_index + 1) % self.callees.len();
+                Ok(self.callees[self.last_callee_index])
+            }
+            InvocationPolicy::Random => {
+                let index = rand::thread_rng().gen_range(0..self.callees.len());
+                Ok(self.callees[index])
+            }
+            InvocationPolicy::Last => {
+                // SAFETY: callees is not empty.
+                Ok(*self.callees.last().unwrap())
+            }
+        }
+    }
+
+    fn add_callee(&mut self, callee: Id) {
+        self.callees.push(callee);
+    }
 }
 
 /// A procedure that can be invoked by peers to perform some operation on the callee.
 pub struct Procedure {
     /// The ID of the procedure.
     pub registration_id: Id,
-    /// The session ID of the callee.
-    pub callee: Id,
 
-    match_style: ProcedureMatchStyle,
-
+    match_style: Option<MatchStyle>,
+    invocation_policy: InvocationPolicy,
+    registration: Mutex<ProcedureRegistration>,
     state: Mutex<ProcedureState>,
+}
+
+impl Procedure {
+    /// Gets a callee for a new invocation.
+    pub async fn get_callee(&self) -> Result<Id> {
+        self.registration
+            .lock()
+            .await
+            .get_callee(self.invocation_policy)
+    }
+
+    /// Adds a callee to the procedure registration.
+    async fn add_callee(&self, callee: Id) -> Result<()> {
+        if self.invocation_policy == InvocationPolicy::Single
+            && self.registration.lock().await.callees_len() > 0
+        {
+            return Err(BasicError::NotAllowed(
+                "procedure does not allow more than one callee".to_owned(),
+            )
+            .into());
+        }
+        self.registration.lock().await.add_callee(callee);
+        Ok(())
+    }
 }
 
 #[derive(Default)]
@@ -72,11 +116,13 @@ impl ProcedureNode {
         &mut self,
         mut uri_components: impl Iterator<Item = &'a str>,
         procedure: Procedure,
-    ) -> Result<()> {
+    ) -> Result<Arc<Procedure>> {
         match uri_components.next() {
             Some(uri_component) => {
                 if uri_component.is_empty()
-                    && procedure.match_style != ProcedureMatchStyle::Wildcard
+                    && !procedure
+                        .match_style
+                        .is_some_and(|match_style| match_style == MatchStyle::Wildcard)
                 {
                     return Err(BasicError::InvalidArgument("procedure uri described wildcard match, but wildcard matching was not enabled".to_owned()).into());
                 }
@@ -87,11 +133,17 @@ impl ProcedureNode {
                         .insert(uri_components, procedure),
                 }
             }
-            None => match self.procedure {
-                Some(_) => Err(InteractionError::ProcedureAlreadyExists.into()),
+            None => match &self.procedure {
+                Some(existing) => {
+                    if procedure.invocation_policy != existing.invocation_policy {
+                        return Err(InteractionError::ProcedureAlreadyExists.into());
+                    }
+                    Ok(existing.clone())
+                }
                 None => {
-                    self.procedure = Some(Arc::new(procedure));
-                    Ok(())
+                    let procedure = Arc::new(procedure);
+                    self.procedure = Some(procedure.clone());
+                    Ok(procedure)
                 }
             },
         }
@@ -115,10 +167,11 @@ impl ProcedureNode {
             Some(uri_component) => match self.tree.get(uri_component).or_else(|| self.tree.get(""))
             {
                 Some(procedure) => procedure.find(uri_components),
-                None => self
-                    .procedure
-                    .clone()
-                    .filter(|procedure| procedure.match_style == ProcedureMatchStyle::Prefix),
+                None => self.procedure.clone().filter(|procedure| {
+                    procedure
+                        .match_style
+                        .is_some_and(|match_style| match_style == MatchStyle::Prefix)
+                }),
             },
             None => self.procedure.clone(),
         }
@@ -138,7 +191,8 @@ impl ProcedureManager {
         context: &RealmContext<'_, S>,
         session: Id,
         procedure: WildcardUri,
-        match_style: ProcedureMatchStyle,
+        match_style: Option<MatchStyle>,
+        invocation_policy: InvocationPolicy,
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Dealer) {
             return Err(BasicError::NotAllowed("router is not a dealer".to_owned()).into());
@@ -163,7 +217,7 @@ impl ProcedureManager {
             .await?;
         let registration_id = context.router().id_allocator.generate_id().await;
 
-        context
+        let procedure = context
             .realm()
             .procedure_manager
             .procedures
@@ -173,11 +227,14 @@ impl ProcedureManager {
                 procedure.split(),
                 Procedure {
                     registration_id,
-                    callee: session,
                     match_style,
+                    invocation_policy,
+                    registration: Mutex::new(ProcedureRegistration::default()),
                     state: Mutex::new(ProcedureState { active: false }),
                 },
             )?;
+        procedure.add_callee(session).await?;
+
         Ok(registration_id)
     }
 
