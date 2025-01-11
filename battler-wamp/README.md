@@ -18,3 +18,28 @@ For writing peers that desire strongly-typed messaging (including procedure call
 **WAMP** is an open standard, routed protocol that provides two messaging patterns: Publish & Subscribe and routed Remote Procedure Calls. It is intended to connect application components in distributed applications. WAMP uses WebSocket as its default transport, but it can be transmitted via any other protocol that allows for ordered, reliable, bi-directional, and message-oriented communications.
 
 The WAMP protocol specification is described at https://wamp-proto.org/spec.html.
+
+## Features
+
+- Basic Profile
+  - Realms
+  - Publish and Subscribe (Pub/Sub)
+  - Remote Procedure Calls (RPC)
+  - Sessions
+  - Ordering Guarantees
+  - Error URIs
+- Advanced Profile
+  - Feature Announcement
+  - Advanced RPC Features
+    - Progressive Call Results
+    - Call Timeout
+    - Call Canceling
+    - Pattern-based Registration
+    - Shared Registration
+  - Advanced Pub/Sub Features
+    - Publisher Exclusion
+    - Pattern-based Subscription
+- Transports
+  - WebSocket
+  - JSON serializer
+  - MessagePack serializer
