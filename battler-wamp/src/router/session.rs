@@ -838,7 +838,7 @@ impl Session {
         if self.shared_state.read().await.roles.caller.is_none() {
             return Err(BasicError::NotAllowed("peer is not a caller".to_owned()).into());
         }
-        self.send_invocation(context, message.request).await?;
+        self.initiate_invocation(context, message.request).await?;
         Ok(message.request)
     }
 
@@ -856,7 +856,11 @@ impl Session {
             .await
     }
 
-    async fn send_invocation<S>(&self, context: &RouterContext<S>, request_id: Id) -> Result<()> {
+    async fn initiate_invocation<S>(
+        &self,
+        context: &RouterContext<S>,
+        request_id: Id,
+    ) -> Result<()> {
         let (realm, invocation) = self
             .get_from_established_session_state(|state| {
                 (
@@ -871,6 +875,11 @@ impl Session {
             // Invocation was lost, likely due to immediate cancellation.
             None => return Err(InteractionError::Canceled.into()),
         };
+
+        // Do not re-initiate the invocation if it was canceled.
+        if invocation.state.lock().await.canceled {
+            return Err(InteractionError::Canceled.into());
+        }
 
         // Select a callee and send the invocation to them.
         //
@@ -992,7 +1001,7 @@ impl Session {
                 if let Some(&InteractionError::Unavailable) = err.downcast_ref::<InteractionError>()
                 {
                     // Callee was unavailable, so retry.
-                    match self.send_invocation(context, call_request_id).await {
+                    match self.initiate_invocation(context, call_request_id).await {
                         Ok(()) => continue,
                         Err(invoke_err) => err = invoke_err,
                     }
