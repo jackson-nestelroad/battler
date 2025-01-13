@@ -27,12 +27,9 @@ use syn::{
     Ident,
     Index,
     ItemStruct,
-    LitFloat,
-    LitInt,
     LitStr,
     Member,
     Result,
-    Token,
     Type,
 };
 
