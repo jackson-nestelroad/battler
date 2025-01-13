@@ -364,7 +364,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         quote! {
             if uri != #uri_pattern {
                 return ::core::result::Result::Err(
-                    ::battler_wamprat_uri::WampUriMatchError::new("uri does not match static pattern");
+                    ::battler_wamprat_uri::WampUriMatchError::new("uri does not match the static pattern");
                 );
             }
         }
@@ -487,7 +487,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         quote! {
             // SAFETY: Pattern was validated at build time.
             static RE: ::std::sync::LazyLock<::regex::Regex> = ::std::sync::LazyLock::new(|| ::regex::Regex::new(#pattern_literal).unwrap());
-            let captures = RE.captures(uri).ok_or_else(|| ::battler_wamprat_uri::WampUriMatchError::new("uri did not match the configured pattern"))?;
+            let captures = RE.captures(uri).ok_or_else(|| ::battler_wamprat_uri::WampUriMatchError::new("uri does not match the configured pattern"))?;
             #(#matchers)*
         }
     };

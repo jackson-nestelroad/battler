@@ -96,7 +96,7 @@ fn matches_and_generates_uri_with_regex_with_named_fields() {
         });
     });
     assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.one.two.three"), Err(err) => {
-        assert_eq!(err.to_string(), "uri did not match the configured pattern");
+        assert_eq!(err.to_string(), "uri does not match the configured pattern");
     });
     assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.one_to_two.three.two.ending"), Err(err) => {
         assert_eq!(err.to_string(), "inconsistent value for abc in component 4");
@@ -117,7 +117,7 @@ fn matches_and_generates_uri_with_regex_with_unnamed_fields() {
         pretty_assertions::assert_eq!(uri, TestUri(27, 383));
     });
     assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn.add"), Err(err) => {
-        assert_eq!(err.to_string(), "uri did not match the configured pattern");
+        assert_eq!(err.to_string(), "uri does not match the configured pattern");
     });
     assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn.12addddd"), Err(err) => {
         assert_eq!(err.to_string(), "invalid component for 1");
