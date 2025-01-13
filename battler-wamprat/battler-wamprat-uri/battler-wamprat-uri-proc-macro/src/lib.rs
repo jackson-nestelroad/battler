@@ -10,15 +10,30 @@ use proc_macro2::{
 };
 use quote::{
     format_ident,
-    quote, quote_spanned,
+    quote,
+    quote_spanned,
 };
 use regex::Regex;
-use syn::parse::Parse;
-use syn::Result;
 use syn::{
-ext::IdentExt, parse::{
-        ParseStream, Parser,
-    }, parse_macro_input, Error, Field, Ident, Index, ItemStruct, LitFloat, LitInt, LitStr, Member, Token, Type
+    ext::IdentExt,
+    parse::{
+        Parse,
+        ParseStream,
+        Parser,
+    },
+    parse_macro_input,
+    Error,
+    Field,
+    Ident,
+    Index,
+    ItemStruct,
+    LitFloat,
+    LitInt,
+    LitStr,
+    Member,
+    Result,
+    Token,
+    Type,
 };
 
 struct InputFieldAttrs {
@@ -50,7 +65,11 @@ struct UriAttr {
 
 impl UriAttr {
     fn new(span: Span, fmt: LitStr, fields: &[InputField]) -> Result<Self> {
-        let mut attr = Self { fmt, args: TokenStream::new(), match_fields: Vec::new() };
+        let mut attr = Self {
+            fmt,
+            args: TokenStream::new(),
+            match_fields: Vec::new(),
+        };
         attr.extract_fields(fields)?;
         attr.validate_all_fields_matched(span, fields)?;
         Ok(attr)
@@ -58,15 +77,29 @@ impl UriAttr {
 
     fn validate_all_fields_matched(&self, span: Span, fields: &[InputField]) -> Result<()> {
         let matched_fields = self.match_fields.iter().cloned().collect::<BTreeSet<_>>();
-        let unmatched = (0..fields.len()).collect::<BTreeSet<_>>().difference(&matched_fields).cloned().collect::<Vec<_>>();
+        let unmatched = (0..fields.len())
+            .collect::<BTreeSet<_>>()
+            .difference(&matched_fields)
+            .cloned()
+            .collect::<Vec<_>>();
         if !unmatched.is_empty() {
-            return Err(Error::new(span, format!("uri format string is missing matches for {}", unmatched.iter().map(|i| {
-                // SAFETY: Indices stored in match_fields were generated from positions of input.fields.
-                match &fields.get(*i).unwrap().member {
-                    Member::Unnamed(index) => index.index.to_string(),
-                    Member::Named(ident) => ident.to_string(),
-                }
-            }).join(", "))));
+            return Err(Error::new(
+                span,
+                format!(
+                    "uri format string is missing matches for {}",
+                    unmatched
+                        .iter()
+                        .map(|i| {
+                            // SAFETY: Indices stored in match_fields were generated from positions
+                            // of input.fields.
+                            match &fields.get(*i).unwrap().member {
+                                Member::Unnamed(index) => index.index.to_string(),
+                                Member::Named(ident) => ident.to_string(),
+                            }
+                        })
+                        .join(", ")
+                ),
+            ));
         }
         Ok(())
     }
@@ -97,8 +130,15 @@ impl UriAttr {
                 '0'..='9' => {
                     let index = take_integer_from_string(&mut read);
                     match index.parse::<u32>() {
-                        Ok(index) => Member::Unnamed(Index { index, span}),
-                        Err(_) => return Err(Error::new(span, format!("format identifier {index} was expected to parse as an integer"))),
+                        Ok(index) => Member::Unnamed(Index { index, span }),
+                        Err(_) => {
+                            return Err(Error::new(
+                                span,
+                                format!(
+                                    "format identifier {index} was expected to parse as an integer"
+                                ),
+                            ))
+                        }
                     }
                 }
                 'a'..='z' | 'A'..='Z' | '_' => {
@@ -106,17 +146,34 @@ impl UriAttr {
                     ident.set_span(span);
                     Member::Named(ident)
                 }
-                _ => return Err(Error::new(span, format!("unexpected start of a formatting identifier: {next}"))),
+                _ => {
+                    return Err(Error::new(
+                        span,
+                        format!("unexpected start of a formatting identifier: {next}"),
+                    ))
+                }
             };
 
             // Find the field the identifier corresponds to.
             //
-            // Each identifier MUST correspond to a field, since we use this format string for parsing.
-            let (i, field) = fields.iter().find_position(|field| field.member == member).ok_or_else(|| Error::new(span, format!("struct does not have any member \"{}\"", match member {
-                Member::Unnamed(index) => index.index.to_string(),
-                Member::Named(ident) => ident.to_string()
-            })))?;
-            
+            // Each identifier MUST correspond to a field, since we use this format string for
+            // parsing.
+            let (i, field) = fields
+                .iter()
+                .find_position(|field| field.member == member)
+                .ok_or_else(|| {
+                    Error::new(
+                        span,
+                        format!(
+                            "struct does not have any member \"{}\"",
+                            match member {
+                                Member::Unnamed(index) => index.index.to_string(),
+                                Member::Named(ident) => ident.to_string(),
+                            }
+                        ),
+                    )
+                })?;
+
             // Remember the order in which fields should be matched.
             self.match_fields.push(i);
 
@@ -169,7 +226,6 @@ fn take_ident_from_string(read: &mut &str) -> Ident {
     // SAFETY: We only took characters that are valid for an identifier above.
     Ident::parse_any.parse_str(&ident).unwrap()
 }
-
 
 struct InputAttrs {
     uri: UriAttr,
@@ -241,7 +297,6 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
     let ident = input.ident;
     let uri_pattern = &input.attrs.uri.fmt;
     let uri_pattern_args = &input.attrs.uri.args;
-    
 
     // Constructing the type from all fields.
     let mut members = input.fields.iter().map(|field| &field.member).peekable();
@@ -257,13 +312,22 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         None => quote!({}),
     };
 
-    let uri_components = uri_pattern.value().split('.').map(|str| str.to_owned()).collect::<Vec<_>>();
-    
+    let uri_components = uri_pattern
+        .value()
+        .split('.')
+        .map(|str| str.to_owned())
+        .collect::<Vec<_>>();
+
     // Validate that the base pattern gives us a valid URI.
     let format_pattern = Regex::new(r"\{\}").unwrap();
-    let uri_sample = uri_components.iter().map(|uri_component| format_pattern.replace_all(uri_component, "foo")).join(".");
+    let uri_sample = uri_components
+        .iter()
+        .map(|uri_component| format_pattern.replace_all(uri_component, "foo"))
+        .join(".");
     if Uri::try_from(uri_sample).is_err() {
-        return proc_macro::TokenStream::from(Error::new(call_site, "invalid uri").into_compile_error());
+        return proc_macro::TokenStream::from(
+            Error::new(call_site, "invalid uri").into_compile_error(),
+        );
     }
 
     enum Matcher {
@@ -272,26 +336,30 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         Dynamic(String),
     }
 
-    let matchers = uri_components.into_iter().map(|uri_component| {
-        let matches = format_pattern.find_iter(&uri_component).collect::<Vec<_>>();
-        
-        // No matches, so we just need to match the static string.
-        if matches.is_empty() {
-            return Matcher::Static(LitStr::new(&uri_component, call_site));
-        }
-        let pattern = format_pattern.replace_all(&uri_component, "([^\\.]+)");
-        if pattern == "([^\\.]+)" && matches.len() == 1 {
-            // If we are only matching exactly one member, we can optimize this to just assign the string value directly.
-            return Matcher::Simple(pattern.into_owned());
-        }
+    let matchers = uri_components
+        .into_iter()
+        .map(|uri_component| {
+            let matches = format_pattern.find_iter(&uri_component).collect::<Vec<_>>();
 
-        // Otherwise, we must match a regular expression and assign to multiple members.
-        Matcher::Dynamic(pattern.into_owned())
-    }).collect::<Vec<_>>();
+            // No matches, so we just need to match the static string.
+            if matches.is_empty() {
+                return Matcher::Static(LitStr::new(&uri_component, call_site));
+            }
+            let pattern = format_pattern.replace_all(&uri_component, "([^\\.]+)");
+            if pattern == "([^\\.]+)" && matches.len() == 1 {
+                // If we are only matching exactly one member, we can optimize this to just assign
+                // the string value directly.
+                return Matcher::Simple(pattern.into_owned());
+            }
+
+            // Otherwise, we must match a regular expression and assign to multiple members.
+            Matcher::Dynamic(pattern.into_owned())
+        })
+        .collect::<Vec<_>>();
 
     let requires_regex = matchers.iter().any(|matcher| match matcher {
         Matcher::Dynamic { .. } => true,
-        _ => false, 
+        _ => false,
     });
 
     let generator = if input.attrs.uri.match_fields.is_empty() {
@@ -361,12 +429,20 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         }
     } else {
         // Compile the URI into a regular expression and match all fields in order.
-        let pattern = matchers.into_iter().map(|matcher| match matcher {
-            Matcher::Static(component) => component.value(),
-            Matcher::Simple(pattern) | Matcher::Dynamic(pattern) => pattern,
-        }).join("\\.");
+        let pattern = matchers
+            .into_iter()
+            .map(|matcher| match matcher {
+                Matcher::Static(component) => component.value(),
+                Matcher::Simple(pattern) | Matcher::Dynamic(pattern) => pattern,
+            })
+            .join("\\.");
         let pattern = format!("^{pattern}$");
-        let pattern = match Regex::new(&pattern).map_err(|err| Error::new(call_site, format!("failed to compile regular expression for matching uri: {err}"))) {
+        let pattern = match Regex::new(&pattern).map_err(|err| {
+            Error::new(
+                call_site,
+                format!("failed to compile regular expression for matching uri: {err}"),
+            )
+        }) {
             Ok(pattern) => pattern,
             Err(err) => return proc_macro::TokenStream::from(err.into_compile_error()),
         };
@@ -378,7 +454,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
             // SAFETY: Indices stored in match_fields were generated from positions of input.fields.
             let field = input.fields.get(*field_index).unwrap();
             let ty = &field.ty;
-            
+
             let field_name = match &field.member {
                 Member::Unnamed(index) => index.index.to_string(),
                 Member::Named(ident) => ident.to_string(),
@@ -433,7 +509,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 #generator
                 ::core::result::Result::Ok(Self #constructor_fields)
             }
-        
+
             fn wamp_generate_uri(&self) -> ::core::result::Result<::battler_wamp::core::uri::Uri, ::battler_wamp::core::uri::InvalidUri> {
                 ::battler_wamp::core::uri::Uri::try_from(self.to_string().as_str())
             }
