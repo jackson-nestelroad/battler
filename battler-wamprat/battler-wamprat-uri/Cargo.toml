@@ -1,0 +1,13 @@
+[package]
+name = "battler-wamprat-uri"
+version = "0.1.0"
+edition = "2021"
+description = "Procedural macro for dynamically matching WAMP URIs."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["wamp", "websocket", "message"]
+license = "MIT"
+
+[dependencies]
+battler-wamp = { path = "../../battler-wamp" }
+battler-wamprat-uri-proc-macro = { path = "battler-wamprat-uri-proc-macro" }
+thiserror = "1.0.65"

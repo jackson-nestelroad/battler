@@ -27,6 +27,7 @@
         "dashmap",
         "Deque",
         "msgpack",
+        "punct",
         "repr",
         "retryable",
         "thiserror",
