@@ -232,8 +232,8 @@ fn generates_match_style_and_uri_for_router() {
     );
 
     #[derive(WampUriMatcher)]
-    #[uri("com.battler.uri.{0}.fn")]
-    struct NotSimpleWildcardUri(u64);
+    #[uri("com.battler.uri.{0}.fn.{1}abc{2}")]
+    struct NotSimpleWildcardUri(u64, u64, u64);
 
     assert_matches::assert_matches!(
         NotSimpleWildcardUri::match_style(),
@@ -241,6 +241,6 @@ fn generates_match_style_and_uri_for_router() {
     );
     assert_eq!(
         NotSimpleWildcardUri::uri_for_router(),
-        WildcardUri::try_from("com.battler.uri..fn").unwrap()
+        WildcardUri::try_from("com.battler.uri..fn.").unwrap()
     );
 }
