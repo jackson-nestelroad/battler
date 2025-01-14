@@ -14,6 +14,7 @@
     "rust-analyzer.linkedProjects": [
         "${workspaceFolder}/Cargo.toml"
     ],
+    "rust-analyzer.procMacro.enable": true,
     "rust-analyzer.runnables.extraEnv": {
         "DATA_DIR": "${workspaceFolder}/battle-data/data",
         "TEST_CASE_DIR": "${workspaceFolder}/battler/test_cases",

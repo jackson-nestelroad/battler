@@ -1,4 +1,33 @@
+use battler_wamp::core::{
+    match_style::MatchStyle,
+    uri::WildcardUri,
+};
 use battler_wamprat_uri::WampUriMatcher;
+
+#[test]
+fn matches_and_generates_uri_with_no_fields() {
+    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[uri("com.battler.fn")]
+    struct TestUri {}
+
+    assert_matches::assert_matches!(TestUri {}.wamp_generate_uri(), Ok(uri) => {
+        assert_eq!(uri.as_ref(), "com.battler.fn");
+    });
+
+    assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn"), Ok(uri) => {
+        pretty_assertions::assert_eq!(uri, TestUri {});
+    });
+
+    assert_matches::assert_matches!(TestUri::wamp_match_uri(""), Err(err) => {
+        assert_eq!(err.to_string(), "uri does not match the static pattern");
+    });
+    assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battling"), Err(err) => {
+        assert_eq!(err.to_string(), "uri does not match the static pattern");
+    });
+    assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn.method"), Err(err) => {
+        assert_eq!(err.to_string(), "uri does not match the static pattern");
+    });
+}
 
 #[test]
 fn matches_and_generates_uri_with_named_fields() {
@@ -46,6 +75,52 @@ fn matches_and_generates_uri_with_unnamed_fields() {
 
     assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.test.z.y.x"), Ok(uri) => {
         pretty_assertions::assert_eq!(uri, TestUri("z".to_owned(), "y".to_owned(), "x".to_owned()));
+    });
+}
+
+#[test]
+fn matches_and_generates_prefix_uri() {
+    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[uri("com.battler.fn.{a}.{b}.{rest}")]
+    struct TestUri {
+        a: String,
+        b: u64,
+        #[rest]
+        rest: Vec<String>,
+    }
+
+    assert_matches::assert_matches!(TestUri { a: "foo".to_owned(), b: 256, rest: Vec::from_iter(["hello".to_owned(), "world".to_owned()]) }.wamp_generate_uri(), Ok(uri) => {
+        assert_eq!(uri.as_ref(), "com.battler.fn.foo.256.hello.world");
+    });
+
+    assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn.bar.123"), Ok(uri) => {
+        pretty_assertions::assert_eq!(uri, TestUri {
+            a: "bar".to_owned(),
+            b: 123,
+            rest: Vec::new(),
+        });
+    });
+    assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn.bar.123.a.b.c.d.e.f.g"), Ok(uri) => {
+        pretty_assertions::assert_eq!(uri, TestUri {
+            a: "bar".to_owned(),
+            b: 123,
+            rest: Vec::from_iter([
+                "a".to_owned(),
+                "b".to_owned(),
+                "c".to_owned(),
+                "d".to_owned(),
+                "e".to_owned(),
+                "f".to_owned(),
+                "g".to_owned(),
+            ]),
+        });
+    });
+
+    assert_matches::assert_matches!(TestUri::wamp_match_uri(""), Err(err) => {
+        assert_eq!(err.to_string(), "expected com for component 0");
+    });
+    assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battling"), Err(err) => {
+        assert_eq!(err.to_string(), "expected battler for component 1");
     });
 }
 
@@ -122,4 +197,50 @@ fn matches_and_generates_uri_with_regex_with_unnamed_fields() {
     assert_matches::assert_matches!(TestUri::wamp_match_uri("com.battler.fn.12addddd"), Err(err) => {
         assert_eq!(err.to_string(), "invalid component for 1");
     });
+}
+
+#[test]
+fn generates_match_style_and_uri_for_router() {
+    #[derive(WampUriMatcher)]
+    #[uri("com.battler.uri")]
+    struct StaticUri {}
+
+    assert_matches::assert_matches!(StaticUri::match_style(), None);
+    assert_eq!(
+        StaticUri::uri_for_router(),
+        WildcardUri::try_from("com.battler.uri").unwrap()
+    );
+
+    #[derive(WampUriMatcher)]
+    #[uri("com.battler.uri.{0}.{1}.{2}")]
+    struct WildcardPrefixUri(u64, u64, u64);
+
+    assert_matches::assert_matches!(WildcardPrefixUri::match_style(), Some(MatchStyle::Wildcard));
+    assert_eq!(
+        WildcardPrefixUri::uri_for_router(),
+        WildcardUri::try_from("com.battler.uri...").unwrap()
+    );
+
+    #[derive(WampUriMatcher)]
+    #[uri("com.battler.uri.{0}.{1}.{2}.{3}")]
+    struct PrefixUri(u64, u64, u64, #[rest] Vec<String>);
+
+    assert_matches::assert_matches!(PrefixUri::match_style(), Some(MatchStyle::Prefix));
+    assert_eq!(
+        PrefixUri::uri_for_router(),
+        WildcardUri::try_from("com.battler.uri").unwrap()
+    );
+
+    #[derive(WampUriMatcher)]
+    #[uri("com.battler.uri.{0}.fn")]
+    struct NotSimpleWildcardUri(u64);
+
+    assert_matches::assert_matches!(
+        NotSimpleWildcardUri::match_style(),
+        Some(MatchStyle::Wildcard)
+    );
+    assert_eq!(
+        NotSimpleWildcardUri::uri_for_router(),
+        WildcardUri::try_from("com.battler.uri..fn").unwrap()
+    );
 }

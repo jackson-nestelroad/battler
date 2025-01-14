@@ -180,7 +180,11 @@ impl UriAttr {
                 Member::Named(ident) => ident.clone(),
             };
             self.args.extend(quote_spanned!(span => ,));
-            self.args.extend(quote_spanned!(span => #local));
+            if field.attrs.rest {
+                self.args.extend(quote_spanned!(span => #local.join(".")));
+            } else {
+                self.args.extend(quote_spanned!(span => #local));
+            }
         }
 
         out += read;
@@ -261,6 +265,14 @@ impl Parse for Input {
             })
             .collect::<Result<Vec<_>>>()?;
 
+        let mut rest = false;
+        for field in &fields {
+            if field.attrs.rest && rest {
+                return Err(Error::new(call_site, "rest field must be the last field"));
+            }
+            rest = field.attrs.rest;
+        }
+
         let mut uri = None;
         for attr in input.attrs {
             if attr.path().is_ident("uri") {
@@ -295,6 +307,73 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
     let uri_pattern = &input.attrs.uri.fmt;
     let uri_pattern_args = &input.attrs.uri.args;
 
+    let format_pattern = Regex::new(r"\{\}").unwrap();
+
+    // Validate that the base pattern gives us a valid URI.
+    let uri_sample = uri_pattern.value();
+    let uri_sample = format_pattern.replace_all(&uri_sample, "foo");
+    if Uri::try_from(uri_sample.into_owned()).is_err() {
+        return proc_macro::TokenStream::from(
+            Error::new(call_site, "invalid uri").into_compile_error(),
+        );
+    }
+
+    enum Matcher {
+        Static(LitStr),
+        Simple(String),
+        Dynamic(String),
+    }
+
+    let uri_components = uri_pattern
+        .value()
+        .split('.')
+        .map(|str| str.to_owned())
+        .collect::<Vec<_>>();
+
+    // Generate the match style and registration URI.
+    let (match_style, uri_for_router) = match (|| {
+        if input.attrs.uri.match_fields.is_empty() {
+            return Ok(("::core::option::Option::None", input.attrs.uri.fmt.value()));
+        }
+        if input.fields.iter().any(|field| field.attrs.rest) {
+            let uri = uri_pattern.value();
+            let uri = format_pattern.replace_all(&uri, "");
+            let prefix_pattern = Regex::new(r"^((?:[^\.]+\.)*[^\.]+)\.+$").unwrap();
+            if let Some(captures) = prefix_pattern.captures(&uri) {
+                // SAFETY: This pattern has one capture group.
+                return Ok((
+                    "::core::option::Option::Some(::battler_wamp::core::match_style::MatchStyle::Prefix)",
+                    captures.get(1).unwrap().as_str().to_owned(),
+                ));
+            } else {
+                return Err(Error::new(
+                    call_site,
+                    "rest field does not make sense non-prefix uri",
+                ));
+            }
+        }
+
+        Ok((
+            "::core::option::Option::Some(::battler_wamp::core::match_style::MatchStyle::Wildcard)",
+            uri_components
+                .iter()
+                .map(|uri_component| {
+                    if format_pattern.is_match(uri_component) {
+                        ""
+                    } else {
+                        uri_component
+                    }
+                })
+                .join("."),
+        ))
+    })() {
+        Ok(result) => result,
+        Err(err) => return proc_macro::TokenStream::from(err.into_compile_error()),
+    };
+
+    let match_style = syn::parse_str::<TokenStream>(&match_style).unwrap();
+    let uri_for_router = LitStr::new(&uri_for_router, call_site);
+
     // Constructing the type from all fields.
     let mut members = input.fields.iter().map(|field| &field.member).peekable();
     let constructor_fields = match members.peek() {
@@ -309,34 +388,11 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         None => quote!({}),
     };
 
-    let uri_components = uri_pattern
-        .value()
-        .split('.')
-        .map(|str| str.to_owned())
-        .collect::<Vec<_>>();
-
-    // Validate that the base pattern gives us a valid URI.
-    let format_pattern = Regex::new(r"\{\}").unwrap();
-    let uri_sample = uri_components
+    // Generate matchers for each field.
+    let mut matchers = uri_components
         .iter()
-        .map(|uri_component| format_pattern.replace_all(uri_component, "foo"))
-        .join(".");
-    if Uri::try_from(uri_sample).is_err() {
-        return proc_macro::TokenStream::from(
-            Error::new(call_site, "invalid uri").into_compile_error(),
-        );
-    }
-
-    enum Matcher {
-        Static(LitStr),
-        Simple(String),
-        Dynamic(String),
-    }
-
-    let matchers = uri_components
-        .into_iter()
         .map(|uri_component| {
-            let matches = format_pattern.find_iter(&uri_component).collect::<Vec<_>>();
+            let matches = format_pattern.find_iter(uri_component).collect::<Vec<_>>();
 
             // No matches, so we just need to match the static string.
             if matches.is_empty() {
@@ -359,12 +415,24 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         _ => false,
     });
 
+    // If the last field is marked "rest," its pattern should be adjusted.
+    if let Some(field) = input.fields.last() {
+        if field.attrs.rest {
+            let pattern = "(.+)".to_owned();
+            *matchers.last_mut().unwrap() = if requires_regex {
+                Matcher::Dynamic(pattern)
+            } else {
+                Matcher::Simple(pattern)
+            };
+        }
+    }
+
     let generator = if input.attrs.uri.match_fields.is_empty() {
         // No fields to match, so we assume we can construct the type directly.
         quote! {
             if uri != #uri_pattern {
                 return ::core::result::Result::Err(
-                    ::battler_wamprat_uri::WampUriMatchError::new("uri does not match the static pattern");
+                    ::battler_wamprat_uri::WampUriMatchError::new("uri does not match the static pattern")
                 );
             }
         }
@@ -400,7 +468,11 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                     Member::Named(ident) => ident.clone(),
                 };
 
-                if parsed.insert(field_index) {
+                if field.attrs.rest {
+                    quote! {
+                        let #local = uri_components[#i..].iter().map(|uri_component| uri_component.to_string()).collect();
+                    }
+                } else if parsed.insert(field_index) {
                     quote! {
                         let #local = uri_components.get(#i).ok_or_else(|| ::battler_wamprat_uri::WampUriMatchError::new(#error))?;
                         let #local: #ty = ::core::str::FromStr::from_str(*#local).map_err(|err| ::battler_wamprat_uri::WampUriMatchError::new(#parse_error))?;
@@ -494,12 +566,12 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
 
     quote! {
         impl ::battler_wamprat_uri::WampUriMatcher for #ident {
-            fn uri_for_router(&self) -> ::battler_wamp::core::uri::WildcardUri {
-                todo!()
+            fn uri_for_router() -> ::battler_wamp::core::uri::WildcardUri {
+                ::battler_wamp::core::uri::WildcardUri::try_from(#uri_for_router).unwrap()
             }
 
-            fn match_style(&self) -> ::battler_wamp::core::match_style::MatchStyle {
-                todo!()
+            fn match_style() -> ::core::option::Option<::battler_wamp::core::match_style::MatchStyle> {
+                #match_style
             }
 
             fn wamp_match_uri(uri: &str) -> ::core::result::Result<Self, ::battler_wamprat_uri::WampUriMatchError> {
@@ -512,7 +584,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
             }
         }
 
-        impl core::fmt::Display for #ident {
+        impl ::core::fmt::Display for #ident {
             fn fmt(&self, __formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
                 #[allow(unused_variables, deprecated)]
                 let Self #constructor_fields = self;

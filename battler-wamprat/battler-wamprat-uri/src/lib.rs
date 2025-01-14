@@ -31,10 +31,10 @@ impl WampUriMatchError {
 /// invocations), or it can generate a URI based on itself (e.g., for caller-side invocations).
 pub trait WampUriMatcher: Sized {
     /// The wildcard URI for the router.
-    fn uri_for_router(&self) -> WildcardUri;
+    fn uri_for_router() -> WildcardUri;
 
     /// The match style of the URI matcher.
-    fn match_style(&self) -> MatchStyle;
+    fn match_style() -> Option<MatchStyle>;
 
     /// Matches an incoming URI to the configured pattern.
     fn wamp_match_uri(uri: &str) -> Result<Self, WampUriMatchError>;
