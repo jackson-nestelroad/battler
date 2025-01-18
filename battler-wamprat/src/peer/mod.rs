@@ -9,5 +9,7 @@ pub use peer::{
     PeerConnectionConfig,
     PeerConnectionType,
     PeerHandle,
+    TypedProgressivePendingRpc,
+    TypedSimplePendingRpc,
 };
 pub use peer_builder::PeerBuilder;
