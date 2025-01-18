@@ -9,6 +9,7 @@ use crate::{
 };
 
 /// The result of an [`Acceptor`] successfully accepting a WAMP connection.
+#[derive(Debug)]
 pub struct Acceptance<S> {
     /// The established stream.
     pub stream: S,

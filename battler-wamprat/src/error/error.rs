@@ -64,7 +64,7 @@ impl Into<WampError> for WampratDeserializeError {
     fn into(self) -> WampError {
         WampError::new(
             Uri::try_from("com.battler_wamprat.deserialize_error").unwrap(),
-            self.msg,
+            self.to_string(),
         )
     }
 }
@@ -76,6 +76,69 @@ impl TryFrom<WampError> for WampratDeserializeError {
             Ok(Self {
                 msg: value.message().to_owned(),
             })
+        } else {
+            Err(value)
+        }
+    }
+}
+
+/// An error resulting from a procedure invocation missing the original procedure called by the
+/// caller.
+#[derive(Debug, Error)]
+#[error("invocation is missing called procedure")]
+pub struct WampratInvocationMissingProcedure;
+
+impl From<WampDeserializeError> for WampratInvocationMissingProcedure {
+    fn from(_: WampDeserializeError) -> Self {
+        Self
+    }
+}
+
+impl Into<WampError> for WampratInvocationMissingProcedure {
+    fn into(self) -> WampError {
+        WampError::new(
+            Uri::try_from("com.battler_wamprat.invocation_missing_procedure").unwrap(),
+            self.to_string(),
+        )
+    }
+}
+
+impl TryFrom<WampError> for WampratInvocationMissingProcedure {
+    type Error = WampError;
+    fn try_from(value: WampError) -> Result<Self, Self::Error> {
+        if value.reason().as_ref() == "com.battler_wamprat.invocation_missing_procedure" {
+            Ok(Self)
+        } else {
+            Err(value)
+        }
+    }
+}
+
+/// An error resulting from a topic event missing the topic published by the publisher.
+#[derive(Debug, Error)]
+#[error("event is missing published topic")]
+pub struct WampratEventMissingTopic;
+
+impl From<WampDeserializeError> for WampratEventMissingTopic {
+    fn from(_: WampDeserializeError) -> Self {
+        Self
+    }
+}
+
+impl Into<WampError> for WampratEventMissingTopic {
+    fn into(self) -> WampError {
+        WampError::new(
+            Uri::try_from("com.battler_wamprat.event_missing_topic").unwrap(),
+            self.to_string(),
+        )
+    }
+}
+
+impl TryFrom<WampError> for WampratEventMissingTopic {
+    type Error = WampError;
+    fn try_from(value: WampError) -> Result<Self, Self::Error> {
+        if value.reason().as_ref() == "com.battler_wamprat.event_missing_topic" {
+            Ok(Self)
         } else {
             Err(value)
         }

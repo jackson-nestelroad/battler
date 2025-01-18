@@ -501,7 +501,8 @@ async fn peer_kills_call_and_gets_result() {
         .await
         .unwrap();
 
-    async fn handler(mut procedure: Procedure) {
+    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
+    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
         async fn handle_invocation(
             invocation: Invocation,
             mut interrupt_rx: UnboundedReceiver<()>,
@@ -524,6 +525,7 @@ async fn peer_kills_call_and_gets_result() {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
+                    invocation_received_tx.send(()).unwrap();
                     let (interrupt_tx, interrupt_rx) = unbounded_channel();
                     interrupt_txs.insert(invocation.id(), interrupt_tx);
                     tokio::spawn(handle_invocation(invocation, interrupt_rx));
@@ -537,12 +539,16 @@ async fn peer_kills_call_and_gets_result() {
         }
     }
 
-    tokio::spawn(handler(procedure));
+    tokio::spawn(handler(procedure, invocation_received_tx));
 
     let rpc = caller
         .call(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
         .await
         .unwrap();
+
+    // Wait for the invocation to be received. Or else, the router will cancel the call before the
+    // invocation begins at all.
+    invocation_received_rx.recv().await.unwrap();
 
     // Kill the call and wait for the result, which is successful.
     assert_matches::assert_matches!(rpc.kill().await, Ok(()));
@@ -753,7 +759,8 @@ async fn peer_kills_progressive_call_and_ends_stream() {
         .await
         .unwrap();
 
-    async fn handler(mut procedure: Procedure) {
+    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
+    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
         async fn handle_invocation(
             invocation: Invocation,
             mut interrupt_rx: UnboundedReceiver<()>,
@@ -776,6 +783,7 @@ async fn peer_kills_progressive_call_and_ends_stream() {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
+                    invocation_received_tx.send(()).unwrap();
                     let (interrupt_tx, interrupt_rx) = unbounded_channel();
                     interrupt_txs.insert(invocation.id(), interrupt_tx);
                     tokio::spawn(handle_invocation(invocation, interrupt_rx));
@@ -789,12 +797,16 @@ async fn peer_kills_progressive_call_and_ends_stream() {
         }
     }
 
-    tokio::spawn(handler(procedure));
+    tokio::spawn(handler(procedure, invocation_received_tx));
 
     let mut rpc = caller
         .call_with_progress(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
         .await
         .unwrap();
+
+    // Wait for the invocation to be received. Or else, the router will cancel the call before the
+    // invocation begins at all.
+    invocation_received_rx.recv().await.unwrap();
 
     // Kill the call and wait for the result.
     assert_matches::assert_matches!(rpc.kill().await, Ok(()));

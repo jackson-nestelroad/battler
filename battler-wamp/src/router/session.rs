@@ -179,14 +179,14 @@ mod router_session_message {
 }
 
 /// Details about the callee of an RPC invocation.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct RpcInvocationCalleeDetails {
     callee: ProcedureCallee,
     progressive_call_results: bool,
     forward_timeout_to_callee: bool,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct RpcInvocationState {
     current_callee: Option<RpcInvocationCalleeDetails>,
     callees_attempted: HashSet<Id>,
@@ -194,7 +194,7 @@ struct RpcInvocationState {
 }
 
 /// The result of an RPC invocation.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct RpcInvocation {
     invocation_request_id: Id,
     procedure: Uri,
@@ -1065,6 +1065,16 @@ impl Session {
         let mut cancel_rx = self.rpc_yield_cancel_rx.resubscribe();
         let mut closed_session_rx = self.closed_session_tx.subscribe();
 
+        // Check for cancellation before doing anything, since the call may already be canceled
+        // after the resubscribe call on the rpc_yield_cancel_rx channel above.
+        //
+        // Note that we could still let the procedure be invoked and just wait for the first result
+        // when the caller specifies the "kill" option. We do this as a sort of optimization, since
+        // we know the caller's intent, and to make the router cancellation flow a bit simpler.
+        if invocation.state.lock().await.canceled {
+            return Err(InteractionError::Canceled.into());
+        }
+
         loop {
             let rpc_yield = Self::wait_for_rpc_yield(
                 &callee,
@@ -1269,14 +1279,6 @@ impl Session {
         }
 
         if immediate_error {
-            // Remove the invocation.
-            self.modify_established_session_state(|state| {
-                state
-                    .active_invocations_by_call
-                    .remove(&message.call_request)
-            })
-            .await?;
-
             // Notify the task that is waiting for YIELD messages to stop.
             self.rpc_yield_cancel_tx
                 .send(invocation.invocation_request_id)?;

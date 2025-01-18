@@ -1,9 +1,11 @@
 use std::{
     fmt::Debug,
+    marker::PhantomData,
     sync::Arc,
     time::Duration,
 };
 
+use ahash::HashMap;
 use anyhow::{
     Error,
     Result,
@@ -15,16 +17,26 @@ use battler_wamp::{
             WampError,
         },
         id::Id,
-        uri::Uri,
+        invocation_policy::InvocationPolicy,
+        match_style::MatchStyle,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     peer::{
-        Event,
+        Invocation,
         ProcedureMessage,
+        ProcedureOptions,
+        ProgressivePendingRpc,
+        PublishedEvent,
         RpcCall,
         RpcResult,
+        SimplePendingRpc,
     },
     router::RouterHandle,
 };
+use battler_wamprat_message::WampApplicationMessage;
 use futures_util::lock::Mutex;
 use log::{
     error,
@@ -33,6 +45,10 @@ use log::{
 use tokio::{
     sync::{
         broadcast,
+        mpsc::{
+            unbounded_channel,
+            UnboundedSender,
+        },
         RwLock,
     },
     task::JoinHandle,
@@ -47,13 +63,18 @@ use crate::{
         subscriber::Subscriber,
     },
     procedure::Procedure,
-    subscription::TypedSubscription,
+    subscription::{
+        TypedPatternMatchedSubscription,
+        TypedSubscription,
+    },
 };
 
 /// A preregistered procedure that will be registered on every new connection to a router.
 pub(crate) struct PreregisteredProcedure {
     pub procedure: Arc<Box<dyn Procedure>>,
     pub ignore_registration_error: bool,
+    pub match_style: Option<MatchStyle>,
+    pub invocation_policy: InvocationPolicy,
 }
 
 /// The type of connection a [`Peer`] should continually establish with a router.
@@ -75,6 +96,7 @@ impl Debug for PeerConnectionType {
 }
 
 /// Configuration for a [`Peer`]'s connection to a router.
+#[derive(Debug)]
 pub struct PeerConnectionConfig {
     /// The type of connection.
     pub connection_type: PeerConnectionType,
@@ -118,6 +140,94 @@ where
             }
         }
         return result;
+    }
+}
+
+/// Options for calling a procedure.
+#[derive(Debug, Default)]
+pub struct CallOptions {
+    pub timeout: Option<Duration>,
+}
+
+/// A wrapper around [`SimplePendingRpc`] for strongly-typed procedure calls.
+#[derive(Debug)]
+pub struct TypedSimplePendingRpc<T> {
+    rpc: SimplePendingRpc,
+    _t: PhantomData<T>,
+}
+
+impl<T> TypedSimplePendingRpc<T>
+where
+    T: WampApplicationMessage,
+{
+    fn new(rpc: SimplePendingRpc) -> Self {
+        Self {
+            rpc,
+            _t: PhantomData,
+        }
+    }
+
+    /// Waits for the result of the procedure call.
+    pub async fn result(self) -> Result<T> {
+        let result = self.rpc.result().await?;
+        T::wamp_deserialize_application_message(result.arguments, result.arguments_keyword)
+            .map_err(Error::new)
+    }
+
+    /// Cancels the pending call.
+    pub async fn cancel(&self) -> Result<()> {
+        self.rpc.cancel().await
+    }
+
+    /// Kills the pending call.
+    ///
+    /// The end error, or result, can still be read from [`Self::result`].
+    pub async fn kill(&self) -> Result<()> {
+        self.rpc.kill().await
+    }
+}
+
+/// A wrapper around [`ProgressivePendingRpc`] for strongly-typed procedure calls.
+#[derive(Debug)]
+pub struct TypedProgressivePendingRpc<T> {
+    rpc: ProgressivePendingRpc,
+    _t: PhantomData<T>,
+}
+
+impl<T> TypedProgressivePendingRpc<T>
+where
+    T: WampApplicationMessage,
+{
+    fn new(rpc: ProgressivePendingRpc) -> Self {
+        Self {
+            rpc,
+            _t: PhantomData,
+        }
+    }
+
+    /// Waits for the result of the procedure call.
+    pub async fn next_result(&mut self) -> Result<Option<T>> {
+        let result = self.rpc.next_result().await?;
+        match result {
+            Some(result) => {
+                T::wamp_deserialize_application_message(result.arguments, result.arguments_keyword)
+                    .map(|val| Some(val))
+                    .map_err(Error::new)
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Cancels the pending call.
+    pub async fn cancel(&mut self) -> Result<()> {
+        self.rpc.cancel().await
+    }
+
+    /// Kills the pending call.
+    ///
+    /// The end error, or result, can still be read from [`Self::next_result`].
+    pub async fn kill(&mut self) -> Result<()> {
+        self.rpc.kill().await
     }
 }
 
@@ -206,9 +316,9 @@ where
     }
 
     /// Publishes an event to a topic, without type checking.
-    pub async fn publish_unchecked(&self, topic: Uri, event: Event) -> Result<()> {
+    pub async fn publish_unchecked(&self, topic: Uri, event: PublishedEvent) -> Result<()> {
         self.wait_until_session_established().await?;
-        let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, topic: Uri, event: Event| {
+        let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, topic: Uri, event: PublishedEvent| {
             async move || peer.publish(topic.clone(), event.clone()).await
         })(self.peer.clone(), topic, event);
         repeat_while_retryable(f).await
@@ -222,7 +332,7 @@ where
         let (arguments, arguments_keyword) = payload.wamp_serialize_application_message()?;
         self.publish_unchecked(
             topic,
-            Event {
+            PublishedEvent {
                 arguments,
                 arguments_keyword,
             },
@@ -239,12 +349,26 @@ where
         self.subscriber
             .lock()
             .await
-            .subscribe_typed(topic, subscription)
+            .subscribe(topic, subscription)
+            .await
+    }
+
+    /// Subscribes to a topic.
+    pub async fn subscribe_pattern_matched<T, Pattern, Event>(&self, subscription: T) -> Result<()>
+    where
+        T: TypedPatternMatchedSubscription<Pattern = Pattern, Event = Event> + 'static,
+        Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
+        Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+    {
+        self.subscriber
+            .lock()
+            .await
+            .subscribe_pattern_matched::<T, Pattern, Event>(subscription)
             .await
     }
 
     /// Unsubscribes from a topic.
-    pub async fn unsubscribe(&self, topic: &Uri) -> Result<()> {
+    pub async fn unsubscribe(&self, topic: &WildcardUri) -> Result<()> {
         self.subscriber.lock().await.unsubscribe(topic).await
     }
 
@@ -265,7 +389,12 @@ where
     }
 
     /// Calls a procedure and waits for its result.
-    pub async fn call_and_wait<Input, Output>(&self, procedure: Uri, input: Input) -> Result<Output>
+    pub async fn call_and_wait<Input, Output>(
+        &self,
+        procedure: Uri,
+        input: Input,
+        options: CallOptions,
+    ) -> Result<Output>
     where
         Input: battler_wamprat_message::WampApplicationMessage + 'static,
         Output: battler_wamprat_message::WampApplicationMessage + 'static,
@@ -277,6 +406,7 @@ where
                 RpcCall {
                     arguments,
                     arguments_keyword,
+                    timeout: options.timeout,
                 },
             )
             .await?;
@@ -285,6 +415,85 @@ where
             result.arguments_keyword,
         )?;
         Ok(output)
+    }
+
+    /// Calls a procedure, without type checking.
+    pub async fn call_unchecked(
+        &self,
+        procedure: Uri,
+        rpc_call: RpcCall,
+    ) -> Result<SimplePendingRpc> {
+        self.wait_until_session_established().await?;
+        let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, procedure: Uri, rpc_call: RpcCall| {
+            async move || peer.call(procedure.clone(), rpc_call.clone()).await
+        })(self.peer.clone(), procedure, rpc_call);
+        repeat_while_retryable(f).await
+    }
+
+    /// Calls a procedure.
+    pub async fn call<Input, Output>(
+        &self,
+        procedure: Uri,
+        input: Input,
+        options: CallOptions,
+    ) -> Result<TypedSimplePendingRpc<Output>>
+    where
+        Input: battler_wamprat_message::WampApplicationMessage + 'static,
+        Output: battler_wamprat_message::WampApplicationMessage + 'static,
+    {
+        let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
+        let rpc = self
+            .call_unchecked(
+                procedure,
+                RpcCall {
+                    arguments,
+                    arguments_keyword,
+                    timeout: options.timeout,
+                },
+            )
+            .await?;
+        Ok(TypedSimplePendingRpc::new(rpc))
+    }
+
+    /// Calls a procedure, expecting one or more progressive results, without type checking.
+    pub async fn call_with_progress_unchecked(
+        &self,
+        procedure: Uri,
+        rpc_call: RpcCall,
+    ) -> Result<ProgressivePendingRpc> {
+        self.wait_until_session_established().await?;
+        let f = (|peer: Arc<battler_wamp::peer::Peer<S>>, procedure: Uri, rpc_call: RpcCall| {
+            async move || {
+                peer.call_with_progress(procedure.clone(), rpc_call.clone())
+                    .await
+            }
+        })(self.peer.clone(), procedure, rpc_call);
+        repeat_while_retryable(f).await
+    }
+
+    /// Calls a procedure, expecting one or more progressive results.
+    pub async fn call_with_progress<Input, Output>(
+        &self,
+        procedure: Uri,
+        input: Input,
+        options: CallOptions,
+    ) -> Result<TypedProgressivePendingRpc<Output>>
+    where
+        Input: battler_wamprat_message::WampApplicationMessage + 'static,
+        Output: battler_wamprat_message::WampApplicationMessage + 'static,
+    {
+        let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
+        let rpc = self
+            .call_with_progress_unchecked(
+                procedure,
+                RpcCall {
+                    arguments,
+                    arguments_keyword,
+                    timeout: options.timeout,
+                },
+            )
+            .await?;
+        Ok(TypedProgressivePendingRpc::new(rpc))
     }
 }
 
@@ -344,7 +553,7 @@ pub struct Peer<S> {
     realm: Uri,
 
     subscriber: Arc<Mutex<Subscriber<S>>>,
-    procedures: ahash::HashMap<Uri, PreregisteredProcedure>,
+    procedures: ahash::HashMap<WildcardUri, PreregisteredProcedure>,
 
     peer_state: Arc<RwLock<PeerState>>,
     session_established_tx: broadcast::Sender<()>,
@@ -361,7 +570,7 @@ where
         peer: battler_wamp::peer::Peer<S>,
         connection_config: PeerConnectionConfig,
         realm: Uri,
-        procedures: impl Iterator<Item = (Uri, PreregisteredProcedure)>,
+        procedures: impl Iterator<Item = (WildcardUri, PreregisteredProcedure)>,
     ) -> Self {
         let peer = Arc::new(peer);
         let (session_established_tx, session_established_rx) = broadcast::channel(16);
@@ -489,15 +698,54 @@ where
         }
     }
 
+    async fn invocation(
+        procedure: Arc<Box<dyn Procedure>>,
+        uri: WildcardUri,
+        invocation: Invocation,
+        invocation_done_rx: UnboundedSender<Id>,
+    ) {
+        let id = invocation.id();
+        if let Err(err) = procedure.invoke(invocation).await {
+            error!("Procedure invocation {id} of {uri} failed: {err}");
+        }
+        invocation_done_rx.send(id).ok();
+    }
+
     async fn invocation_loop(
-        uri: Uri,
+        uri: WildcardUri,
         procedure: Arc<Box<dyn Procedure>>,
         mut procedure_message_rx: broadcast::Receiver<ProcedureMessage>,
     ) {
-        while let Ok(ProcedureMessage::Invocation(invocation)) = procedure_message_rx.recv().await {
-            let id = invocation.id();
-            if let Err(err) = procedure.invoke(invocation).await {
-                error!("Procedure invocation {id} of {uri} failed: {err}");
+        let (invocation_done_tx, mut invocation_done_rx) = unbounded_channel();
+        let mut invocations = HashMap::default();
+        loop {
+            tokio::select! {
+                message = procedure_message_rx.recv() => {
+                    match message {
+                        Ok(ProcedureMessage::Invocation(invocation)) => {
+                            let id = invocation.id();
+                            invocations.insert(id, tokio::spawn(Self::invocation(
+                                procedure.clone(),
+                                uri.clone(),
+                                invocation,
+                                invocation_done_tx.clone(),
+                            )));
+                        }
+                        Ok(ProcedureMessage::Interrupt(interrupt)) => {
+                            if let Some(handle) = invocations.remove(&interrupt.id()) {
+                                handle.abort();
+                            }
+                        }
+                        Err(_) => {
+                            break;
+                        }
+                    }
+                }
+                id = invocation_done_rx.recv() => {
+                    if let Some(id) = id {
+                        invocations.remove(&id);
+                    }
+                }
             }
         }
     }
@@ -514,7 +762,17 @@ where
 
         // Restart all procedure handlers.
         for (uri, procedure) in &self.procedures {
-            let procedure_message_rx = match self.peer.register(uri.clone()).await {
+            let procedure_message_rx = match self
+                .peer
+                .register_with_options(
+                    uri.clone(),
+                    ProcedureOptions {
+                        match_style: procedure.match_style,
+                        invocation_policy: procedure.invocation_policy,
+                    },
+                )
+                .await
+            {
                 Ok(procedure) => procedure.procedure_message_rx,
                 Err(err) => {
                     error!("Failed to register procedure {uri}: {err}");

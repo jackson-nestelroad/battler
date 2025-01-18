@@ -12,7 +12,7 @@ use crate::{
 };
 
 /// The type of serializer to use.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SerializerType {
     /// Serializes messages to and from JavaScript Object Notation.
     Json,

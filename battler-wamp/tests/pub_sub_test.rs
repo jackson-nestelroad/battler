@@ -597,6 +597,86 @@ async fn publish_matches_subscription_by_wildcard() {
     );
 }
 
+#[tokio::test]
+async fn publish_matches_subscription_by_wildcard_prefix() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let publisher = create_peer("publisher").unwrap();
+    let subscriber = create_peer("subscriber").unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        subscriber
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
+
+    let mut subscription = subscriber
+        .subscribe_with_options(
+            WildcardUri::try_from("com.battler.battle..").unwrap(),
+            SubscriptionOptions {
+                match_style: Some(MatchStyle::Wildcard),
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle1.start").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle2.update").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.battle.battle3.end").unwrap(),
+                PublishedEvent::default(),
+            )
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
+
+    let mut topics_seen = Vec::default();
+    while let Ok(event) = subscription.event_rx.recv().await {
+        topics_seen.push(event.topic);
+    }
+
+    pretty_assertions::assert_eq!(
+        topics_seen,
+        Vec::from_iter([
+            Some(Uri::try_from("com.battler.battle.battle1.start").unwrap()),
+            Some(Uri::try_from("com.battler.battle.battle2.update").unwrap()),
+            Some(Uri::try_from("com.battler.battle.battle3.end").unwrap()),
+        ])
+    );
+}
+
 mod subscription_wildcard_match_test {
     use std::time::Duration;
 

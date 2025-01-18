@@ -29,6 +29,7 @@ use crate::{
 };
 
 /// A WAMP message returned out from a [`MessageStream`].
+#[derive(Debug)]
 pub enum StreamMessage {
     Ping(Vec<u8>),
     Message(Message),

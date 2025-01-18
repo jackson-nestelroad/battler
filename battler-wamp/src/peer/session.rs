@@ -328,12 +328,12 @@ pub(crate) mod peer_session_message {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct Subscription {
     event_tx: broadcast::Sender<ReceivedEvent>,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct Procedure {
     procedure_tx: broadcast::Sender<ProcedureMessage>,
 }

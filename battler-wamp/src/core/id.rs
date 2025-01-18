@@ -107,7 +107,7 @@ pub trait IdAllocator: Send + Sync {
 /// An ID allocator that generates IDs from a random sequence.
 ///
 /// Used for global-scoped IDs.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct RandomIdAllocator {}
 
 #[async_trait]
@@ -123,7 +123,7 @@ impl IdAllocator for RandomIdAllocator {
 /// An ID allocator that generates IDs sequentially.
 ///
 /// Used for session-scoped IDs.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct SequentialIdAllocator {
     next: Mutex<Id>,
 }

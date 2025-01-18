@@ -4,10 +4,15 @@ use anyhow::{
 };
 use async_trait::async_trait;
 use battler_wamp::{
-    core::uri::Uri,
+    core::uri::{
+        Uri,
+        WildcardUri,
+    },
     peer::{
         new_web_socket_peer,
         PeerConfig,
+        PublishedEvent,
+        ReceivedEvent,
         WebSocketPeer,
     },
     router::{
@@ -30,9 +35,13 @@ use battler_wamprat::{
         PeerConnectionType,
         PeerHandle,
     },
-    subscription::TypedSubscription,
+    subscription::{
+        TypedPatternMatchedSubscription,
+        TypedSubscription,
+    },
 };
 use battler_wamprat_message::WampApplicationMessage;
+use battler_wamprat_uri::WampUriMatcher;
 use tokio::{
     sync::broadcast,
     task::JoinHandle,
@@ -71,10 +80,7 @@ struct MessageEvent(#[arguments] MessageEventArgs);
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum ReceivedMessageEvent {
     Valid(String),
-    Invalid {
-        event: battler_wamp::peer::Event,
-        error: String,
-    },
+    Invalid { event: ReceivedEvent, error: String },
 }
 
 struct MessageEventHandler {
@@ -91,7 +97,35 @@ impl TypedSubscription for MessageEventHandler {
             .unwrap();
     }
 
-    async fn handle_invalid_event(&self, event: battler_wamp::peer::Event, error: Error) {
+    async fn handle_invalid_event(&self, event: ReceivedEvent, error: Error) {
+        self.events_tx
+            .send(ReceivedMessageEvent::Invalid {
+                event,
+                error: error.to_string(),
+            })
+            .unwrap();
+    }
+}
+
+#[derive(WampUriMatcher)]
+#[uri("com.battler.event.{version}.{name}")]
+struct EventPattern {
+    version: u64,
+    name: String,
+}
+
+#[async_trait]
+impl TypedPatternMatchedSubscription for MessageEventHandler {
+    type Pattern = EventPattern;
+    type Event = MessageEvent;
+
+    async fn handle_event(&self, event: Self::Event, _: Self::Pattern) {
+        self.events_tx
+            .send(ReceivedMessageEvent::Valid(event.0 .0))
+            .unwrap();
+    }
+
+    async fn handle_invalid_event(&self, event: ReceivedEvent, error: Error) {
         self.events_tx
             .send(ReceivedMessageEvent::Invalid {
                 event,
@@ -153,7 +187,7 @@ async fn receives_events() {
         publisher_handle
             .publish_unchecked(
                 Uri::try_from("com.battler.message").unwrap(),
-                battler_wamp::peer::Event {
+                PublishedEvent {
                     arguments: List::from_iter([Value::Integer(123)]),
                     ..Default::default()
                 },
@@ -177,8 +211,9 @@ async fn receives_events() {
         Vec::from_iter([
             ReceivedMessageEvent::Valid("Hello, world!".to_owned()),
             ReceivedMessageEvent::Invalid {
-                event: battler_wamp::peer::Event {
+                event: ReceivedEvent {
                     arguments: List::from_iter([Value::Integer(123)]),
+                    topic: Some(Uri::try_from("com.battler.message").unwrap()),
                     ..Default::default()
                 },
                 error: "value must be a string; failed to deserialize list member field_0 of MessageEventArgs; failed to deserialize arguments of MessageEvent".to_owned()
@@ -189,7 +224,7 @@ async fn receives_events() {
     // Unsubscribe and show the next message is not received.
     assert_matches::assert_matches!(
         subscriber_handle
-            .unsubscribe(&Uri::try_from("com.battler.message").unwrap())
+            .unsubscribe(&WildcardUri::try_from("com.battler.message").unwrap())
             .await,
         Ok(())
     );
@@ -308,7 +343,7 @@ async fn resubscribes_on_reconnect() {
     // Unsubscribe and show the subscription is not restored on the next reconnect.
     assert_matches::assert_matches!(
         subscriber_handle
-            .unsubscribe(&Uri::try_from("com.battler.message").unwrap())
+            .unsubscribe(&WildcardUri::try_from("com.battler.message").unwrap())
             .await,
         Ok(())
     );
@@ -414,6 +449,130 @@ async fn retries_publish_during_reconnect() {
     );
 
     publish_handle.await.unwrap();
+
+    subscriber_handle.cancel().unwrap();
+    subscriber_handle_join_handle.await.unwrap();
+
+    publisher_handle.cancel().unwrap();
+    publisher_join_handle.await.unwrap();
+
+    router_handle.cancel().unwrap();
+    router_join_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn receives_pattern_based_events() {
+    test_utils::setup::setup_test_environment();
+
+    // Start a router.
+    let (router_handle, router_join_handle) = start_router(0).await.unwrap();
+
+    // Create a publisher and subscriber.
+    let (publisher_handle, publisher_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ))
+    .start(
+        create_peer("publisher").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    publisher_handle.wait_until_ready().await.unwrap();
+
+    let (subscriber_handle, subscriber_handle_join_handle) = PeerBuilder::new(
+        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
+    )
+    .start(
+        create_peer("publisher").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    subscriber_handle.wait_until_ready().await.unwrap();
+
+    // Create a subscription that writes events to a channel.
+    let (events_tx, mut events_rx) = broadcast::channel(16);
+    assert_matches::assert_matches!(
+        subscriber_handle
+            .subscribe_pattern_matched(MessageEventHandler { events_tx })
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.1.abc").unwrap(),
+                MessageEvent(MessageEventArgs("foo".to_owned())),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.2.def").unwrap(),
+                MessageEvent(MessageEventArgs("bar".to_owned())),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish_unchecked(
+                Uri::try_from("com.battler.event.3.ghi").unwrap(),
+                PublishedEvent {
+                    arguments: List::from_iter([Value::Integer(123)]),
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(())
+    );
+
+    // Receive the three events.
+    let mut events = Vec::new();
+    while let Ok(event) = events_rx.recv().await {
+        log::warn!("{event:?}");
+        events.push(event);
+        if events.len() >= 3 {
+            break;
+        }
+    }
+
+    // Validate the three events were received correctly.
+    pretty_assertions::assert_eq!(
+        events,
+        Vec::from_iter([
+            ReceivedMessageEvent::Valid("foo".to_owned()),
+            ReceivedMessageEvent::Valid("bar".to_owned()),
+            ReceivedMessageEvent::Invalid {
+                event: ReceivedEvent {
+                    arguments: List::from_iter([Value::Integer(123)]),
+                    topic: Some(Uri::try_from("com.battler.event.3.ghi").unwrap()),
+                    ..Default::default()
+                },
+                error: "value must be a string; failed to deserialize list member field_0 of MessageEventArgs; failed to deserialize arguments of MessageEvent".to_owned()
+            }
+        ])
+    );
+
+    // Unsubscribe and show the next message is not received.
+    assert_matches::assert_matches!(
+        subscriber_handle
+            .unsubscribe(&EventPattern::uri_for_router())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.4.jkl").unwrap(),
+                MessageEvent(MessageEventArgs("another message".to_owned())),
+            )
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(events_rx.recv().await, Err(err) => {
+        assert_eq!(err.to_string(), "channel closed");
+    });
 
     subscriber_handle.cancel().unwrap();
     subscriber_handle_join_handle.await.unwrap();

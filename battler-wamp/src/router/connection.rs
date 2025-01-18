@@ -42,6 +42,7 @@ use crate::{
 /// On its own, a connection is not very meaningful. When started, it uses a WAMP [`Service`] to
 /// send and receive messages on an underlying transport. Messages are used to set up and manage a
 /// [`Session`], which handles all interactions with the router.
+#[derive(Debug)]
 pub struct Connection {
     uuid: Uuid,
 }

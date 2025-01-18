@@ -1,4 +1,5 @@
 use battler_wamp::core::{
+    error::WampError,
     match_style::MatchStyle,
     uri::{
         InvalidUri,
@@ -22,6 +23,28 @@ impl WampUriMatchError {
         S: Into<String>,
     {
         Self { msg: msg.into() }
+    }
+}
+
+impl Into<WampError> for WampUriMatchError {
+    fn into(self) -> WampError {
+        WampError::new(
+            Uri::try_from("com.battler_wamprat.uri_match_error").unwrap(),
+            self.to_string(),
+        )
+    }
+}
+
+impl TryFrom<WampError> for WampUriMatchError {
+    type Error = WampError;
+    fn try_from(value: WampError) -> Result<Self, Self::Error> {
+        if value.reason().as_ref() == "com.battler_wamprat.uri_match_error" {
+            Ok(Self {
+                msg: value.message().to_owned(),
+            })
+        } else {
+            Err(value)
+        }
     }
 }
 

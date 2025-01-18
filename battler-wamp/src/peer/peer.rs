@@ -237,6 +237,7 @@ pub struct RpcResult {
     pub progress: bool,
 }
 
+#[derive(Debug)]
 struct PendingRpc {
     results_join_handle: JoinHandle<Result<()>>,
     result_rx: UnboundedReceiver<ChannelTransmittableResult<RpcResult>>,
@@ -250,6 +251,7 @@ impl Drop for PendingRpc {
 }
 
 /// A simple pending RPC, which is expected to produce one result.
+#[derive(Debug)]
 pub struct SimplePendingRpc {
     pending: PendingRpc,
 }
@@ -287,6 +289,7 @@ impl SimplePendingRpc {
 }
 
 /// A progressive pending RPC, which is expected to produce one or more results.
+#[derive(Debug)]
 pub struct ProgressivePendingRpc {
     pending: PendingRpc,
     done: bool,
@@ -342,7 +345,7 @@ impl ProgressivePendingRpc {
 
     /// Kills the pending call.
     ///
-    /// The end error, or result, can still be read from [`Self::result`].
+    /// The end error, or result, can still be read from [`Self::next_result`].
     pub async fn kill(&mut self) -> Result<()> {
         self.canceled = true;
         self.pending

@@ -4,6 +4,7 @@ mod peer_builder;
 mod subscriber;
 
 pub use peer::{
+    CallOptions,
     Peer,
     PeerConnectionConfig,
     PeerConnectionType,

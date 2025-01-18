@@ -22,7 +22,7 @@ pub trait RpcPolicies<S>: Send + Sync {
 }
 
 /// Default implementation of [`RpcPolicies`] with empty policies.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct EmptyRpcPolicies {}
 
 #[async_trait]

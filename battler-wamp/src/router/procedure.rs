@@ -25,13 +25,13 @@ use crate::{
     router::context::RealmContext,
 };
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct ProcedureState {
     active: bool,
 }
 
 /// The callee of a [`Procedure`].
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ProcedureCallee {
     /// Session ID.
     pub session: Id,
@@ -39,7 +39,7 @@ pub struct ProcedureCallee {
     pub registration: Id,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct ProcedureRegistration {
     callees: Vec<ProcedureCallee>,
     last_callee_index: usize,

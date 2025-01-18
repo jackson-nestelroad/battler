@@ -33,7 +33,7 @@ pub trait PubSubPolicies<S>: Send + Sync {
 }
 
 /// Default implementation of [`PubSubPolicies`] with empty policies.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct EmptyPubSubPolicies {}
 
 #[async_trait]

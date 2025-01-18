@@ -109,6 +109,7 @@ impl Default for RouterConfig {
 }
 
 /// A direct connection made to a router, managed externally in the same process.
+#[derive(Debug)]
 pub struct DirectConnection {
     uuid: Uuid,
     stream: Box<dyn MessageStream>,

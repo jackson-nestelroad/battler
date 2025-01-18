@@ -6,7 +6,7 @@ use crate::core::features::{
 };
 
 /// A role a peer can take on.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PeerRole {
     // Calls RPC endpoints.
     Caller,
@@ -55,7 +55,7 @@ impl ToString for PeerRole {
 }
 
 /// A role a router can take on.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RouterRole {
     // Supports RPC calls.
     Dealer,
