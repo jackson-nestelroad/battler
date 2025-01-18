@@ -11,15 +11,15 @@ license = "MIT"
 proc-macro = true
 
 [dependencies]
-battler-wamp = { path = "../../../battler-wamp" }
+battler-wamp = "0.2"
 itertools = "0.13.0"
 proc-macro2 = "1.0"
 quote = "1.0"
 regex = "1.9.3"
-syn = { version ="2.0", features = ["full"] }
+syn = { version = "2.0", features = ["full"] }
 
 [dev-dependencies]
 assert_matches = "1.5.0"
-battler-wamp = { path = "../../../battler-wamp" }
+battler-wamp = "0.2"
 battler-wamprat-uri = { path = ".." }
 pretty_assertions = "1.4.0"

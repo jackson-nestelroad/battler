@@ -8,6 +8,6 @@ keywords = ["wamp", "websocket", "message"]
 license = "MIT"
 
 [dependencies]
-battler-wamp = { path = "../../battler-wamp" }
-battler-wamprat-uri-proc-macro = { path = "battler-wamprat-uri-proc-macro" }
+battler-wamp = "0.2"
+battler-wamprat-uri-proc-macro = "0.1"
 thiserror = "1.0.65"
