@@ -336,7 +336,7 @@ impl ProgressivePendingRpc {
 
     /// Cancels the pending call.
     pub async fn cancel(&mut self) -> Result<()> {
-        self.canceled = true;
+        // Do not set the canceled flag, since we expect the router to send the final error.
         self.pending
             .cancel_tx
             .send(CallCancelMode::KillNoWait)
@@ -347,6 +347,8 @@ impl ProgressivePendingRpc {
     ///
     /// The end error, or result, can still be read from [`Self::next_result`].
     pub async fn kill(&mut self) -> Result<()> {
+        // Set the canceled flag, since whatever the last result is will be the termination of this
+        // call, even if it is not an error (in the case that the callee finishes the invocation).
         self.canceled = true;
         self.pending
             .cancel_tx

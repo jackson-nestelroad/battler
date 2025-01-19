@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 description = "Asynchronous library for strongly-typed WAMP peer messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -11,7 +11,7 @@ license = "MIT"
 ahash = "0.8.11"
 anyhow = "1.0"
 async-trait = "0.1.83"
-battler-wamp = "0.2"
+battler-wamp = "0.2.4"
 battler-wamp-values = "0.1"
 battler-wamprat-message = "0.1"
 battler-wamprat-uri = "0.1"
