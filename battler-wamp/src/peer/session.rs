@@ -21,9 +21,9 @@ use log::{
 };
 use thiserror::Error;
 use tokio::sync::{
+    RwLock,
     broadcast,
     mpsc::UnboundedSender,
-    RwLock,
 };
 
 use crate::{
@@ -233,7 +233,7 @@ impl Interrupt {
     }
 }
 
-/// A message for a single [`Procedure`] that must be strongly ordered.
+/// A message for a single procedure that must be strongly ordered.
 #[derive(Debug, Clone)]
 pub enum ProcedureMessage {
     Invocation(Invocation),
@@ -253,8 +253,8 @@ pub(crate) mod peer_session_message {
             uri::Uri,
         },
         peer::{
-            session::ProcedureMessage,
             ReceivedEvent,
+            session::ProcedureMessage,
         },
     };
 
@@ -544,7 +544,7 @@ impl Session {
         T: 'static,
     {
         match &mut *self.state.write().await {
-            SessionState::Established(ref mut state) => Ok(f(state)),
+            SessionState::Established(state) => Ok(f(state)),
             _ => Err(Error::msg("session is not in the established state")),
         }
     }

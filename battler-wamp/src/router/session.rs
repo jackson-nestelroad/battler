@@ -26,12 +26,12 @@ use log::{
     warn,
 };
 use tokio::sync::{
+    RwLock,
     broadcast::{
         self,
         error::RecvError,
     },
     mpsc::UnboundedSender,
-    RwLock,
 };
 
 use crate::{
@@ -369,7 +369,7 @@ impl Session {
         F: FnOnce(&mut EstablishedSessionState) -> T,
     {
         match &mut *self.state.write().await {
-            SessionState::Established(ref mut state) => Ok(f(state)),
+            SessionState::Established(state) => Ok(f(state)),
             _ => Err(Error::msg("session is not in the established state")),
         }
     }
@@ -1354,7 +1354,9 @@ impl Session {
         let mut context = match context.realm_context(&realm) {
             Ok(context) => context,
             Err(err) => {
-                error!("Failed to clean up session {id}, due to error getting context for realm {realm}: {err:?}");
+                error!(
+                    "Failed to clean up session {id}, due to error getting context for realm {realm}: {err:?}"
+                );
                 return;
             }
         };

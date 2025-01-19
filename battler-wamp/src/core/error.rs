@@ -21,7 +21,7 @@ use crate::{
 ///
 /// Errors that are passed into the library by applications must use this type, which can be
 /// consistently communicated via an ERROR message.
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone, Error, PartialEq, Eq)]
 #[error("{message}")]
 pub struct WampError {
     reason: Uri,

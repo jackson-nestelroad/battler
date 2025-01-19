@@ -6,6 +6,8 @@ use anyhow::{
 use async_trait::async_trait;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
+    MaybeTlsStream,
+    WebSocketStream,
     tungstenite::{
         handshake::server::{
             Callback,
@@ -14,13 +16,11 @@ use tokio_tungstenite::{
             Response,
         },
         http::{
-            header::SEC_WEBSOCKET_PROTOCOL,
             HeaderValue,
             StatusCode,
+            header::SEC_WEBSOCKET_PROTOCOL,
         },
     },
-    MaybeTlsStream,
-    WebSocketStream,
 };
 
 use crate::{
@@ -63,7 +63,7 @@ impl WebSocketWampNegotiator {
         response
     }
 
-    fn callback(&mut self) -> impl Callback + use<'_> {
+    fn callback(&mut self) -> impl Callback {
         |request: &Request, mut response: Response| -> Result<Response, ErrorResponse> {
             let selected_protocol = request
                 .headers()

@@ -21,12 +21,17 @@ use battler_wamp::{
 use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";
+const OTHER_REALM: &str = "com.battler.other";
 
 async fn start_router() -> Result<(RouterHandle, JoinHandle<()>)> {
     let mut config = RouterConfig::default();
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
+    });
+    config.realms.push(RealmConfig {
+        name: "other".to_owned(),
+        uri: Uri::try_from(OTHER_REALM)?,
     });
     let router = new_web_socket_router(
         config,
@@ -139,6 +144,28 @@ async fn peer_joins_and_leaves_realm() {
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
         assert!(err.to_string().contains("peer is not connected"));
     });
+
+    router_handle.cancel().unwrap();
+    router_join_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn peer_joins_another_realm_after_leaving() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, router_join_handle) = start_router().await.unwrap();
+    let peer = create_peer().unwrap();
+
+    assert_matches::assert_matches!(
+        peer.connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+    assert_matches::assert_matches!(peer.leave_realm().await, Ok(()));
+    assert_matches::assert_matches!(peer.join_realm(OTHER_REALM).await, Ok(()));
+    assert_matches::assert_matches!(peer.disconnect().await, Ok(()));
 
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();

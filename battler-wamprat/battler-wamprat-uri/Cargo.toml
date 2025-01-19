@@ -1,7 +1,7 @@
 [package]
 name = "battler-wamprat-uri"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 description = "Procedural macro for dynamically matching WAMP URIs."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["wamp", "websocket", "message"]

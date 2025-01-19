@@ -1,7 +1,7 @@
 [package]
 name = "battler-wamprat"
 version = "0.2.2"
-edition = "2021"
+edition = "2024"
 description = "Asynchronous library for strongly-typed WAMP peer messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["wamp", "websocket", "router", "peer"]
