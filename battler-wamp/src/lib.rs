@@ -409,7 +409,7 @@
 //!
 //! ### RPC
 //!
-//! Peers can register procedures that others peers can call.
+//! Peers can register procedures that other peers can call.
 //!
 //! #### Simple Example
 //!
