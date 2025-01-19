@@ -1,3 +1,108 @@
+//! # battler-wamp-values
+//!
+//! **battler-wamp-values** is a utility crate for [`battler-wamp`](https://crates.io/crates/battler-wamp). It provides core value type definitions, as well as procedural macros for serializing Rust structs into WAMP lists and dictionaries.
+//!
+//! In WAMP, all parts of a message can be boiled into a [`Value`]. For a Rust type to be encoded
+//! into a WAMP message, it must be convertible to a [`Value`]. This behavior is covered by the
+//! [`WampSerialize`] and [`WampDeserialize`] traits.
+//!
+//! For convenience, the [`WampDictionary`] and [`WampList`] procedural macros can be used to
+//! automatically derive the [`WampSerialize`] and [`WampDeserialize`] traits for complex Rust
+//! types. Both of these macros assume that all struct fields also implement these traits.
+//!
+//! These macro also have additional optional attributes for struct fields:
+//!
+//! * `default` - If the field is missing during deserialization, the field is initialized to its
+//!   default value.
+//! * `skip_serializing_if` - Checks if the field should be skipped during serialization using the
+//!   function provided. For lists, all subsequent fields will also be skipped, regardless of their
+//!   value.
+//!
+//!
+//! ## Example
+//!
+//! ```
+//! use battler_wamp_values::{
+//!     Dictionary,
+//!     Integer,
+//!     List,
+//!     Value,
+//!     WampDeserialize,
+//!     WampDictionary,
+//!     WampList,
+//!     WampSerialize,
+//! };
+//!
+//! #[derive(Debug, PartialEq, Eq, WampDictionary)]
+//! struct Metadata {
+//!     version: Integer,
+//!     #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
+//!     feature_enabled: Option<bool>,
+//!     name: String,
+//! }
+//!
+//! #[derive(Debug, PartialEq, Eq, WampList)]
+//! struct Args(
+//!     Integer,
+//!     Integer,
+//!     #[battler_wamp_values(default, skip_serializing_if = List::is_empty)] List,
+//! );
+//!
+//! fn main() {
+//!     // Serialization.
+//!     assert_eq!(
+//!         Metadata {
+//!             version: 1,
+//!             feature_enabled: None,
+//!             name: "foo".to_owned(),
+//!         }
+//!         .wamp_serialize()
+//!         .unwrap(),
+//!         Value::Dictionary(Dictionary::from_iter([
+//!             ("version".to_owned(), Value::Integer(1)),
+//!             ("name".to_owned(), Value::String("foo".to_owned())),
+//!         ]))
+//!     );
+//!     assert_eq!(
+//!         Args(1, 2, Vec::from_iter((3..6).map(Value::Integer)))
+//!             .wamp_serialize()
+//!             .unwrap(),
+//!         Value::List(List::from_iter([
+//!             Value::Integer(1),
+//!             Value::Integer(2),
+//!             Value::List(List::from_iter([
+//!                 Value::Integer(3),
+//!                 Value::Integer(4),
+//!                 Value::Integer(5),
+//!             ])),
+//!         ]))
+//!     );
+//!
+//!     // Deserialization.
+//!     assert_eq!(
+//!         Metadata::wamp_deserialize(Value::Dictionary(Dictionary::from_iter([
+//!             ("version".to_owned(), Value::Integer(2)),
+//!             ("name".to_owned(), Value::String("bar".to_owned())),
+//!             ("feature_enabled".to_owned(), Value::Bool(false)),
+//!         ])))
+//!         .unwrap(),
+//!         Metadata {
+//!             version: 2,
+//!             name: "bar".to_owned(),
+//!             feature_enabled: Some(false),
+//!         }
+//!     );
+//!     assert_eq!(
+//!         Args::wamp_deserialize(Value::List(List::from_iter([
+//!             Value::Integer(7),
+//!             Value::Integer(8),
+//!         ])))
+//!         .unwrap(),
+//!         Args(7, 8, List::default())
+//!     );
+//! }
+//! ```
+
 pub use battler_wamp_values_proc_macro::{
     WampDictionary,
     WampList,
@@ -18,6 +123,9 @@ pub type Dictionary = ahash::HashMap<String, Value>;
 pub type List = Vec<Value>;
 
 /// A value for WAMP messages.
+///
+/// In WAMP, all parts of a message can be boiled into a [`Value`]. The [`WampSerialize`] and
+/// [`WampDeserialize`] traits handle the conversion of Rust types into WAMP values.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Value {

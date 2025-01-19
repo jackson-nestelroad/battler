@@ -3,10 +3,11 @@ use battler_wamp::core::{
     uri::WildcardUri,
 };
 use battler_wamprat_uri::WampUriMatcher;
+use battler_wamprat_uri_proc_macro::WampUriMatcher as WampUriMatcherUnderTest;
 
 #[test]
 fn matches_and_generates_uri_with_no_fields() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.fn")]
     struct TestUri {}
 
@@ -31,7 +32,7 @@ fn matches_and_generates_uri_with_no_fields() {
 
 #[test]
 fn matches_and_generates_uri_with_named_fields() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.fn.{a}.method.{b}")]
     struct TestUri {
         a: String,
@@ -65,7 +66,7 @@ fn matches_and_generates_uri_with_named_fields() {
 
 #[test]
 fn matches_and_generates_uri_with_unnamed_fields() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.test.{0}.{1}.{2}")]
     struct TestUri(String, String, String);
 
@@ -80,7 +81,7 @@ fn matches_and_generates_uri_with_unnamed_fields() {
 
 #[test]
 fn matches_and_generates_prefix_uri() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.fn.{a}.{b}.{rest}")]
     struct TestUri {
         a: String,
@@ -126,7 +127,7 @@ fn matches_and_generates_prefix_uri() {
 
 #[test]
 fn validates_repeated_fields() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.test.{a}.{b}.{a}")]
     struct TestUri {
         a: u64,
@@ -147,7 +148,7 @@ fn validates_repeated_fields() {
 
 #[test]
 fn matches_and_generates_uri_with_regex_with_named_fields() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.{abc}_to_{def}.{xyz}.{abc}.ending")]
     struct TestUri {
         abc: String,
@@ -180,7 +181,7 @@ fn matches_and_generates_uri_with_regex_with_named_fields() {
 
 #[test]
 fn matches_and_generates_uri_with_regex_with_unnamed_fields() {
-    #[derive(Debug, PartialEq, Eq, WampUriMatcher)]
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
     #[uri("com.battler.fn.{0}add{1}")]
     struct TestUri(u32, u32);
 
@@ -201,7 +202,7 @@ fn matches_and_generates_uri_with_regex_with_unnamed_fields() {
 
 #[test]
 fn generates_match_style_and_uri_for_router() {
-    #[derive(WampUriMatcher)]
+    #[derive(WampUriMatcherUnderTest)]
     #[uri("com.battler.uri")]
     struct StaticUri {}
 
@@ -211,7 +212,7 @@ fn generates_match_style_and_uri_for_router() {
         WildcardUri::try_from("com.battler.uri").unwrap()
     );
 
-    #[derive(WampUriMatcher)]
+    #[derive(WampUriMatcherUnderTest)]
     #[uri("com.battler.uri.{0}.{1}.{2}")]
     struct WildcardPrefixUri(u64, u64, u64);
 
@@ -221,7 +222,7 @@ fn generates_match_style_and_uri_for_router() {
         WildcardUri::try_from("com.battler.uri...").unwrap()
     );
 
-    #[derive(WampUriMatcher)]
+    #[derive(WampUriMatcherUnderTest)]
     #[uri("com.battler.uri.{0}.{1}.{2}.{3}")]
     struct PrefixUri(u64, u64, u64, #[rest] Vec<String>);
 
@@ -231,7 +232,7 @@ fn generates_match_style_and_uri_for_router() {
         WildcardUri::try_from("com.battler.uri").unwrap()
     );
 
-    #[derive(WampUriMatcher)]
+    #[derive(WampUriMatcherUnderTest)]
     #[uri("com.battler.uri.{0}.fn.{1}abc{2}")]
     struct NotSimpleWildcardUri(u64, u64, u64);
 

@@ -4,13 +4,13 @@ use battler_wamp_values::{
     List,
     Value,
     WampDeserialize,
-    WampDictionary,
     WampSerialize,
 };
+use battler_wamp_values_proc_macro::WampDictionary as WampDictionaryUnderTest;
 
 #[test]
 fn serializes_fields() {
-    #[derive(WampDictionary)]
+    #[derive(WampDictionaryUnderTest)]
     struct Args {
         a: Integer,
         b: String,
@@ -46,7 +46,7 @@ fn serializes_fields() {
 
 #[test]
 fn deserializes_fields() {
-    #[derive(Debug, PartialEq, WampDictionary)]
+    #[derive(Debug, PartialEq, WampDictionaryUnderTest)]
     struct Args {
         a: Integer,
         b: String,
@@ -80,7 +80,7 @@ fn deserializes_fields() {
 
 #[test]
 fn allows_missing_optionals() {
-    #[derive(Debug, PartialEq, WampDictionary)]
+    #[derive(Debug, PartialEq, WampDictionaryUnderTest)]
     struct Args {
         a: Integer,
         #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]

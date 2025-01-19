@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-uri"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Procedural macro for dynamically matching WAMP URIs."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -12,3 +12,6 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 battler-wamp = "0.2"
 battler-wamprat-uri-proc-macro = "0.1"
 thiserror = "1.0.65"
+
+[dev-dependencies]
+regex = "1.9.3"

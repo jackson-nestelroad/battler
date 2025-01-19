@@ -144,7 +144,7 @@ pub fn derive_deserialize_struct_tuple(input: TokenStream) -> TokenStream {
                 DefaultAttr::False => {
                     quote!(return Err(serde::de::Error::missing_field(stringify!(#ident))))
                 }
-                DefaultAttr::True => quote!(#field_ty::default()),
+                DefaultAttr::True => quote!(<#field_ty as Default>::default()),
                 DefaultAttr::Path(path) => quote!(#path()),
             };
             quote!(#ident: match value.next_element()? {

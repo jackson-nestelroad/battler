@@ -1,6 +1,6 @@
 [package]
 name = "serde-struct-tuple"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Procedural macro for deserializing a struct from a tuple of its fields."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -9,5 +9,8 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp/serde-struct-tuple"
 
 [dependencies]
-serde = { version = "1.0", default-features = false }
-serde-struct-tuple-proc-macro = "0.1.0"
+serde = "1.0"
+serde-struct-tuple-proc-macro = "0.1.1"
+
+[dev-dependencies]
+serde_json = "1.0"

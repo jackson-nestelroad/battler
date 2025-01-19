@@ -4,13 +4,13 @@ use battler_wamp_values::{
     List,
     Value,
     WampDeserialize,
-    WampList,
     WampSerialize,
 };
+use battler_wamp_values_proc_macro::WampList as WampListUnderTest;
 
 #[test]
 fn serializes_fields_in_order() {
-    #[derive(WampList)]
+    #[derive(WampListUnderTest)]
     struct Args {
         a: Integer,
         b: String,
@@ -46,7 +46,7 @@ fn serializes_fields_in_order() {
 
 #[test]
 fn deserializes_fields_in_order() {
-    #[derive(Debug, PartialEq, WampList)]
+    #[derive(Debug, PartialEq, WampListUnderTest)]
     struct Args {
         a: Integer,
         b: String,
@@ -80,7 +80,7 @@ fn deserializes_fields_in_order() {
 
 #[test]
 fn allows_missing_optionals() {
-    #[derive(Debug, PartialEq, WampList)]
+    #[derive(Debug, PartialEq, WampListUnderTest)]
     struct Args {
         a: Integer,
         #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]

@@ -264,8 +264,11 @@ impl Parse for Input {
 
         let mut rest = false;
         for field in &fields {
-            if field.attrs.rest && rest {
-                return Err(Error::new(call_site, "rest field must be the last field"));
+            if rest {
+                return Err(Error::new(
+                    call_site,
+                    "no fields allowed after the rest field",
+                ));
             }
             rest = field.attrs.rest;
         }

@@ -7,6 +7,7 @@ use battler_wamp_values::{
     WampList,
 };
 use battler_wamprat_message::WampApplicationMessage;
+use battler_wamprat_message_proc_macro::WampApplicationMessage as WampApplicationMessageUnderTest;
 
 #[test]
 fn serializes_arguments_and_arguments_keyword() {
@@ -22,7 +23,7 @@ fn serializes_arguments_and_arguments_keyword() {
         agent: String,
     }
 
-    #[derive(WampApplicationMessage)]
+    #[derive(WampApplicationMessageUnderTest)]
     struct Output {
         #[arguments]
         args: Args,
@@ -64,7 +65,7 @@ fn deserializes_arguments_and_arguments_keyword() {
         agent: String,
     }
 
-    #[derive(Debug, PartialEq, WampApplicationMessage)]
+    #[derive(Debug, PartialEq, WampApplicationMessageUnderTest)]
     struct Output {
         #[arguments]
         args: Args,
@@ -97,7 +98,7 @@ fn allows_missing_arguments_keywords() {
         b: Integer,
     }
 
-    #[derive(Debug, PartialEq, WampApplicationMessage)]
+    #[derive(Debug, PartialEq, WampApplicationMessageUnderTest)]
     struct Output {
         #[arguments]
         args: Args,
@@ -134,7 +135,7 @@ fn allows_missing_arguments() {
         agent: String,
     }
 
-    #[derive(Debug, PartialEq, WampApplicationMessage)]
+    #[derive(Debug, PartialEq, WampApplicationMessageUnderTest)]
     struct Output {
         #[arguments_keyword]
         options: Options,
@@ -171,7 +172,7 @@ fn allows_missing_arguments() {
 
 #[test]
 fn allows_empty_struct() {
-    #[derive(Debug, PartialEq, WampApplicationMessage)]
+    #[derive(Debug, PartialEq, WampApplicationMessageUnderTest)]
     struct Output {}
 
     assert_matches::assert_matches!(Output {}.wamp_serialize_application_message(), Ok((arguments, arguments_keyword)) => {
