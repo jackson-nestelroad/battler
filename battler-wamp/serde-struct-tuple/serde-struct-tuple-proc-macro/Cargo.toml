@@ -6,6 +6,7 @@ description = "Procedural macro for deserializing a struct from a tuple of its f
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["serde", "struct", "tuple"]
 license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp/serde-struct-tuple/serde-struct-tuple-proc-macro"
 
 [lib]
 proc-macro = true

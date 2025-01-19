@@ -6,6 +6,7 @@ description = "Procedural macro for dynamically matching WAMP URIs."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["wamp", "websocket", "message"]
 license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-uri"
 
 [dependencies]
 battler-wamp = "0.2"

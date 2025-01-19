@@ -6,6 +6,7 @@ description = "Procedural macro for sending structs over WAMP messages."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["wamp", "websocket", "message"]
 license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-message"
 
 [dependencies]
 battler-wamp-values = "0.1"
