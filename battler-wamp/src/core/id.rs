@@ -4,12 +4,12 @@ use anyhow::Result;
 use async_trait::async_trait;
 use futures_util::lock::Mutex;
 use serde::{
+    Deserialize,
+    Serialize,
     de::{
         Unexpected,
         Visitor,
     },
-    Deserialize,
-    Serialize,
 };
 use thiserror::Error;
 

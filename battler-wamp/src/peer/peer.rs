@@ -18,9 +18,9 @@ use battler_wamp_values::{
     WampSerialize,
 };
 use futures_util::{
-    lock::Mutex,
     Stream,
     StreamExt,
+    lock::Mutex,
 };
 use log::{
     error,
@@ -34,9 +34,9 @@ use tokio::{
             error::RecvError,
         },
         mpsc::{
-            unbounded_channel,
             UnboundedReceiver,
             UnboundedSender,
+            unbounded_channel,
         },
     },
     task::JoinHandle,
@@ -92,17 +92,17 @@ use crate::{
     peer::{
         connector::connector::ConnectorFactory,
         session::{
-            peer_session_message,
             ProcedureMessage,
             PublishedEvent,
             ReceivedEvent,
             Session,
             SessionHandle,
+            peer_session_message,
         },
     },
     serializer::serializer::{
-        new_serializer,
         SerializerType,
+        new_serializer,
     },
     transport::transport::TransportFactory,
 };

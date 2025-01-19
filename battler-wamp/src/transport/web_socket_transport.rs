@@ -16,9 +16,9 @@ use futures_util::{
 };
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
-    tungstenite::Message,
     MaybeTlsStream,
     WebSocketStream,
+    tungstenite::Message,
 };
 
 use crate::{

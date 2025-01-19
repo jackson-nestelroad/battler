@@ -1,7 +1,7 @@
 use std::{
     collections::{
-        hash_map::Entry,
         VecDeque,
+        hash_map::Entry,
     },
     sync::Arc,
 };

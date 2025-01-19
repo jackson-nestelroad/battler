@@ -14,9 +14,9 @@ use tokio::sync::{
         error::RecvError,
     },
     mpsc::{
-        unbounded_channel,
         UnboundedReceiver,
         UnboundedSender,
+        unbounded_channel,
     },
 };
 use uuid::Uuid;

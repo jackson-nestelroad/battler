@@ -15,13 +15,6 @@ use quote::{
 };
 use regex::Regex;
 use syn::{
-    ext::IdentExt,
-    parse::{
-        Parse,
-        ParseStream,
-        Parser,
-    },
-    parse_macro_input,
     Error,
     Field,
     Ident,
@@ -31,6 +24,13 @@ use syn::{
     Member,
     Result,
     Type,
+    ext::IdentExt,
+    parse::{
+        Parse,
+        ParseStream,
+        Parser,
+    },
+    parse_macro_input,
 };
 
 struct InputFieldAttrs {
@@ -134,7 +134,7 @@ impl UriAttr {
                                 format!(
                                     "format identifier {index} was expected to parse as an integer"
                                 ),
-                            ))
+                            ));
                         }
                     }
                 }
@@ -147,7 +147,7 @@ impl UriAttr {
                     return Err(Error::new(
                         span,
                         format!("unexpected start of a formatting identifier: {next}"),
-                    ))
+                    ));
                 }
             };
 
@@ -161,13 +161,10 @@ impl UriAttr {
                 .ok_or_else(|| {
                     Error::new(
                         span,
-                        format!(
-                            "struct does not have any member \"{}\"",
-                            match member {
-                                Member::Unnamed(index) => index.index.to_string(),
-                                Member::Named(ident) => ident.to_string(),
-                            }
-                        ),
+                        format!("struct does not have any member \"{}\"", match member {
+                            Member::Unnamed(index) => index.index.to_string(),
+                            Member::Named(ident) => ident.to_string(),
+                        }),
                     )
                 })?;
 

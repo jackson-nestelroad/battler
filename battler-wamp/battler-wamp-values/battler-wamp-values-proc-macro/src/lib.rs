@@ -5,11 +5,6 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 use syn::{
-    parse::{
-        Parse,
-        ParseStream,
-    },
-    parse_macro_input,
     Error,
     Field,
     Ident,
@@ -18,6 +13,11 @@ use syn::{
     Meta,
     Path,
     Type,
+    parse::{
+        Parse,
+        ParseStream,
+    },
+    parse_macro_input,
 };
 
 #[derive(Default)]

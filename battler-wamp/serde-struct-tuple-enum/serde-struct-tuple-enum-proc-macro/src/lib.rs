@@ -17,11 +17,6 @@ use proc_macro2::{
 };
 use quote::quote;
 use syn::{
-    parse::{
-        Parse,
-        ParseStream,
-    },
-    parse_macro_input,
     Data,
     DeriveInput,
     Error,
@@ -30,6 +25,11 @@ use syn::{
     Ident,
     Lit,
     Meta,
+    parse::{
+        Parse,
+        ParseStream,
+    },
+    parse_macro_input,
 };
 
 struct VariantAttrs {
@@ -67,7 +67,7 @@ impl Parse for Input {
                             tag = Some(ident);
                         }
                         Some(_) | None => {
-                            return Err(Error::new(call_site, "tag attribute must have a type"))
+                            return Err(Error::new(call_site, "tag attribute must have a type"));
                         }
                     }
                 }
@@ -98,7 +98,7 @@ impl Parse for Input {
                         return Err(Error::new(
                             call_site,
                             "enum variants must have a tag attribute",
-                        ))
+                        ));
                     }
                 };
                 let attrs = VariantAttrs { tag };

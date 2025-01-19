@@ -26,6 +26,6 @@ pub use router::{
     RouterHandle,
 };
 pub use web_socket_router::{
-    new_web_socket_router,
     WebSocketRouter,
+    new_web_socket_router,
 };

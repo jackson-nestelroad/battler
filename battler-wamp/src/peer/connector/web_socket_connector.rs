@@ -5,13 +5,13 @@ use anyhow::{
 use async_trait::async_trait;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
-    connect_async,
-    tungstenite::{
-        http::header::SEC_WEBSOCKET_PROTOCOL,
-        ClientRequestBuilder,
-    },
     MaybeTlsStream,
     WebSocketStream,
+    connect_async,
+    tungstenite::{
+        ClientRequestBuilder,
+        http::header::SEC_WEBSOCKET_PROTOCOL,
+    },
 };
 
 use crate::{

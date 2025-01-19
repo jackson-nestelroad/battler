@@ -9,19 +9,19 @@ use battler_wamp::{
         WildcardUri,
     },
     peer::{
-        new_web_socket_peer,
         PeerConfig,
         PublishedEvent,
         ReceivedEvent,
         WebSocketPeer,
+        new_web_socket_peer,
     },
     router::{
-        new_web_socket_router,
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
         RealmConfig,
         RouterConfig,
         RouterHandle,
+        new_web_socket_router,
     },
 };
 use battler_wamp_values::{
@@ -93,7 +93,7 @@ impl TypedSubscription for MessageEventHandler {
 
     async fn handle_event(&self, event: Self::Event) {
         self.events_tx
-            .send(ReceivedMessageEvent::Valid(event.0 .0))
+            .send(ReceivedMessageEvent::Valid(event.0.0))
             .unwrap();
     }
 
@@ -121,7 +121,7 @@ impl TypedPatternMatchedSubscription for MessageEventHandler {
 
     async fn handle_event(&self, event: Self::Event, _: Self::Pattern) {
         self.events_tx
-            .send(ReceivedMessageEvent::Valid(event.0 .0))
+            .send(ReceivedMessageEvent::Valid(event.0.0))
             .unwrap();
     }
 

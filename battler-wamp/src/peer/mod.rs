@@ -28,6 +28,6 @@ pub use session::{
     RpcYield,
 };
 pub use web_socket_peer::{
-    new_web_socket_peer,
     WebSocketPeer,
+    new_web_socket_peer,
 };

@@ -25,9 +25,9 @@ use tokio::{
     sync::{
         broadcast,
         mpsc::{
-            unbounded_channel,
             UnboundedReceiver,
             UnboundedSender,
+            unbounded_channel,
         },
     },
     task::JoinHandle,
@@ -68,8 +68,8 @@ use crate::{
         },
     },
     serializer::serializer::{
-        new_serializer,
         SerializerType,
+        new_serializer,
     },
     transport::transport::TransportFactory,
 };

@@ -5,12 +5,12 @@ use std::{
 
 use regex::Regex;
 use serde::{
+    Deserialize,
+    Serialize,
     de::{
         Unexpected,
         Visitor,
     },
-    Deserialize,
-    Serialize,
 };
 use thiserror::Error;
 
@@ -231,10 +231,10 @@ impl<'de> Deserialize<'de> for WildcardUri {
 #[cfg(test)]
 mod uri_test {
     use crate::core::uri::{
-        validate_strict_uri,
-        validate_wildcard_uri,
         Uri,
         WildcardUri,
+        validate_strict_uri,
+        validate_wildcard_uri,
     };
 
     #[test]

@@ -5,17 +5,17 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 use syn::{
-    parse::{
-        Parse,
-        ParseStream,
-    },
-    parse_macro_input,
     Error,
     Field,
     Ident,
     Index,
     ItemStruct,
     Meta,
+    parse::{
+        Parse,
+        ParseStream,
+    },
+    parse_macro_input,
 };
 
 enum ApplicationMessageFieldType {
@@ -45,7 +45,7 @@ fn parse_application_message_input_field_attrs(field: &Field) -> syn::Result<Inp
             return Err(Error::new(
                 call_site,
                 "field must be marked `arguments` or `arguments_keyword`",
-            ))
+            ));
         }
     };
     Ok(InputFieldAttrs { field_type })

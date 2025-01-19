@@ -31,11 +31,11 @@ use crate::{
         WampratSerializeError,
     },
     peer::{
-        peer::PreregisteredProcedure,
         Peer,
         PeerConnectionConfig,
         PeerConnectionType,
         PeerHandle,
+        peer::PreregisteredProcedure,
     },
     procedure::{
         Procedure,
@@ -145,15 +145,12 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures.insert(
-            uri.into(),
-            PreregisteredProcedure {
-                procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
-                ignore_registration_error: false,
-                match_style: None,
-                invocation_policy: options.invocation_policy,
-            },
-        );
+        self.procedures.insert(uri.into(), PreregisteredProcedure {
+            procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
+            ignore_registration_error: false,
+            match_style: None,
+            invocation_policy: options.invocation_policy,
+        });
     }
 
     /// Adds a new strongly-typed, pattern-matched procedure, which will be registered on every new
@@ -184,11 +181,11 @@ impl PeerBuilder {
         impl<T, Pattern, Input, Output, Error> ProcedureWrapper<T, Pattern, Input, Output, Error>
         where
             T: TypedPatternMatchedProcedure<
-                Pattern = Pattern,
-                Input = Input,
-                Output = Output,
-                Error = Error,
-            >,
+                    Pattern = Pattern,
+                    Input = Input,
+                    Output = Output,
+                    Error = Error,
+                >,
             Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync,
             Input: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
@@ -241,11 +238,11 @@ impl PeerBuilder {
             for ProcedureWrapper<T, Pattern, Input, Output, Error>
         where
             T: TypedPatternMatchedProcedure<
-                Pattern = Pattern,
-                Input = Input,
-                Output = Output,
-                Error = Error,
-            >,
+                    Pattern = Pattern,
+                    Input = Input,
+                    Output = Output,
+                    Error = Error,
+                >,
             Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync,
             Input: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
@@ -266,15 +263,13 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures.insert(
-            Pattern::uri_for_router(),
-            PreregisteredProcedure {
+        self.procedures
+            .insert(Pattern::uri_for_router(), PreregisteredProcedure {
                 procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
                 ignore_registration_error: false,
                 match_style: Pattern::match_style(),
                 invocation_policy: options.invocation_policy,
-            },
-        );
+            });
     }
 
     /// Adds a new strongly-typed, progressive procedure, which will be registered on every new
@@ -367,15 +362,12 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures.insert(
-            uri.into(),
-            PreregisteredProcedure {
-                procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
-                ignore_registration_error: false,
-                match_style: None,
-                invocation_policy: options.invocation_policy,
-            },
-        );
+        self.procedures.insert(uri.into(), PreregisteredProcedure {
+            procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
+            ignore_registration_error: false,
+            match_style: None,
+            invocation_policy: options.invocation_policy,
+        });
     }
 
     /// Adds a new strongly-typed, pattern-matched, progressive procedure, which will be registered
@@ -408,11 +400,11 @@ impl PeerBuilder {
         impl<T, Pattern, Input, Output, Error> ProcedureWrapper<T, Pattern, Input, Output, Error>
         where
             T: TypedPatternMatchedProgressiveProcedure<
-                Pattern = Pattern,
-                Input = Input,
-                Output = Output,
-                Error = Error,
-            >,
+                    Pattern = Pattern,
+                    Input = Input,
+                    Output = Output,
+                    Error = Error,
+                >,
             Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync,
             Input: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
@@ -475,11 +467,11 @@ impl PeerBuilder {
             for ProcedureWrapper<T, Pattern, Input, Output, Error>
         where
             T: TypedPatternMatchedProgressiveProcedure<
-                Pattern = Pattern,
-                Input = Input,
-                Output = Output,
-                Error = Error,
-            >,
+                    Pattern = Pattern,
+                    Input = Input,
+                    Output = Output,
+                    Error = Error,
+                >,
             Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync,
             Input: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
@@ -500,15 +492,13 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures.insert(
-            Pattern::uri_for_router(),
-            PreregisteredProcedure {
+        self.procedures
+            .insert(Pattern::uri_for_router(), PreregisteredProcedure {
                 procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
                 ignore_registration_error: false,
                 match_style: Pattern::match_style(),
                 invocation_policy: options.invocation_policy,
-            },
-        );
+            });
     }
 
     /// Builds and starts a new [`Peer`] object in an asynchronous task, which can be managed

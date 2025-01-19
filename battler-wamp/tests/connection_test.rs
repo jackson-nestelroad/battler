@@ -2,17 +2,17 @@ use anyhow::Result;
 use battler_wamp::{
     core::uri::Uri,
     peer::{
-        new_web_socket_peer,
         PeerConfig,
         WebSocketPeer,
+        new_web_socket_peer,
     },
     router::{
-        new_web_socket_router,
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
         RealmConfig,
         RouterConfig,
         RouterHandle,
+        new_web_socket_router,
     },
 };
 use tokio::task::JoinHandle;

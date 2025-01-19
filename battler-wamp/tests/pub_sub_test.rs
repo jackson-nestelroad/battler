@@ -20,21 +20,21 @@ use battler_wamp::{
         },
     },
     peer::{
-        new_web_socket_peer,
         PeerConfig,
         PublishedEvent,
         ReceivedEvent,
         Subscription,
         SubscriptionOptions,
         WebSocketPeer,
+        new_web_socket_peer,
     },
     router::{
-        new_web_socket_router,
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
         RealmConfig,
         RouterConfig,
         RouterHandle,
+        new_web_socket_router,
     },
 };
 use battler_wamp_values::{
@@ -701,9 +701,9 @@ mod subscription_wildcard_match_test {
     };
 
     use crate::{
+        REALM,
         create_peer,
         start_router,
-        REALM,
     };
 
     async fn subscribe_that_expects_event<S>(

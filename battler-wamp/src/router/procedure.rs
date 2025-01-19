@@ -253,15 +253,12 @@ impl ProcedureManager {
             .procedures
             .write()
             .await
-            .insert(
-                procedure.split(),
-                Procedure {
-                    match_style,
-                    invocation_policy,
-                    registration: Mutex::new(ProcedureRegistration::default()),
-                    state: Mutex::new(ProcedureState { active: false }),
-                },
-            )?;
+            .insert(procedure.split(), Procedure {
+                match_style,
+                invocation_policy,
+                registration: Mutex::new(ProcedureRegistration::default()),
+                state: Mutex::new(ProcedureState { active: false }),
+            })?;
         procedure.add_callee(session, registration_id).await?;
 
         Ok(registration_id)
