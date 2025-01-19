@@ -6,6 +6,7 @@ description = "Procedural macro for deserializing an enum of structs from tuples
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["serde", "struct", "enum", "tuple"]
 license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp/serde-struct-tuple-enum/serde-struct-tuple-enum-proc-macro"
 
 [lib]
 proc-macro = true
