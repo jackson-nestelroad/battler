@@ -1,11 +1,12 @@
 [package]
 name = "battler-wamp"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2024"
 description = "Asynchronous library for WAMP messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["wamp", "websocket", "router", "peer"]
 license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp"
 
 [dependencies]
 ahash = "0.8.11"
