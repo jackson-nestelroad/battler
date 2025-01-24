@@ -1,0 +1,23 @@
+[package]
+name = "battler-wamprat-error-proc-macro"
+version = "0.1.1"
+edition = "2024"
+description = "Procedural macro for custom WAMP errors."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["wamp", "websocket", "error"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-error/battler-wamprat-error-proc-macro"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+battler-wamp = "0.2"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+battler-wamprat-error = { path = ".." }
+pretty_assertions = "1.4.0"

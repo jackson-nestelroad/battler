@@ -1,5 +1,7 @@
 # battler-wamprat
 
+## `battler-wamp` + **RaT (Reconnection and Typing)**
+
 [![Latest Version]][crates.io]
 
 [Latest Version]: https://img.shields.io/crates/v/battler-wamprat.svg

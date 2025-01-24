@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 description = "Asynchronous library for strongly-typed WAMP peer messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -14,6 +14,7 @@ anyhow = "1.0"
 async-trait = "0.1.83"
 battler-wamp = "0.2.4"
 battler-wamp-values = "0.1"
+battler-wamprat-error = "0.1"
 battler-wamprat-message = "0.1"
 battler-wamprat-uri = "0.1"
 futures-channel = "0.3"
@@ -25,4 +26,5 @@ tokio = { version = "1.41.0", features = ["full"] }
 [dev-dependencies]
 assert_matches = "1.5.0"
 pretty_assertions = "1.4.0"
+regex = "1.9.3"
 test-utils = { path = "../battler-wamp/test-utils" }

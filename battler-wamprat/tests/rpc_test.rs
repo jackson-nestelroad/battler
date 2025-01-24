@@ -45,6 +45,7 @@ use battler_wamprat::{
         TypedProgressiveProcedure,
     },
 };
+use battler_wamprat_error::WampError;
 use battler_wamprat_message::WampApplicationMessage;
 use battler_wamprat_uri::WampUriMatcher;
 use thiserror::Error;
@@ -469,21 +470,11 @@ struct UploadPattern {
     file_type: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, WampError)]
 enum UploadError {
     #[error("unsupported file type")]
+    #[uri("com.battler_wamprat.test.error.unsupported_file_type")]
     UnsupportedFileType,
-}
-
-impl Into<WampError> for UploadError {
-    fn into(self) -> WampError {
-        match self {
-            Self::UnsupportedFileType => WampError::new(
-                Uri::try_from("com.battler_wamprat.test.error.unsupported_file_type").unwrap(),
-                self.to_string(),
-            ),
-        }
-    }
 }
 
 #[async_trait]
