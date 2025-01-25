@@ -10,3 +10,6 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 
 [dependencies]
 battler-wamprat-error-proc-macro = "0.1"
+
+[dev-dependencies]
+battler-wamp = "0.2"
