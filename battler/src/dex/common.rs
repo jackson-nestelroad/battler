@@ -282,8 +282,8 @@ mod dex_tests {
 
     type TestDex<'d> = ResourceDex<'d, TestData, TestResource, TestDataLookup, TestResourceWrapper>;
 
-    #[tokio::test]
-    async fn finds_and_caches_resource() {
+    #[test]
+    fn finds_and_caches_resource() {
         let data = FakeDataStore::new();
         let dex = TestDex::new(&data);
         let first_resource = dex.get("first").unwrap();
@@ -297,8 +297,8 @@ mod dex_tests {
         );
     }
 
-    #[tokio::test]
-    async fn resolves_alias() {
+    #[test]
+    fn resolves_alias() {
         let mut data = FakeDataStore::new();
         data.aliases.insert(Id::from("alias3"), Id::from("alias2"));
         data.aliases.insert(Id::from("alias2"), Id::from("alias1"));
