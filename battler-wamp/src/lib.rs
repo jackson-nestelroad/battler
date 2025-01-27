@@ -483,7 +483,7 @@
 //!                         arguments: invocation.arguments.clone(),
 //!                         arguments_keyword: invocation.arguments_keyword.clone(),
 //!                     };
-//!                     invocation.respond_ok(result).unwrap();
+//!                     invocation.respond_ok(result).await.unwrap();
 //!                 }
 //!                 _ => (),
 //!             }
@@ -614,7 +614,7 @@
 //!                             )),
 //!                         }
 //!                     };
-//!                     invocation.respond(result).unwrap();
+//!                     invocation.respond(result).await.unwrap();
 //!                 }
 //!                 _ => (),
 //!             }
@@ -752,7 +752,7 @@
 //!                         arguments: invocation.arguments.clone(),
 //!                         arguments_keyword: invocation.arguments_keyword.clone(),
 //!                     };
-//!                     invocation.respond_ok(result).unwrap();
+//!                     invocation.respond_ok(result).await.unwrap();
 //!                 }
 //!                 _ => (),
 //!             }

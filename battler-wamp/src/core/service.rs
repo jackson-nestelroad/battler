@@ -12,11 +12,7 @@ use log::error;
 use tokio::{
     sync::{
         broadcast,
-        mpsc::{
-            UnboundedReceiver,
-            UnboundedSender,
-            unbounded_channel,
-        },
+        mpsc,
     },
     task::JoinHandle,
 };
@@ -39,7 +35,7 @@ use crate::{
 pub struct ServiceHandle {
     start_handle: JoinHandle<()>,
     cancel_tx: broadcast::Sender<()>,
-    message_tx: UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
 }
 
 impl ServiceHandle {
@@ -56,7 +52,7 @@ impl ServiceHandle {
     }
 
     /// The message transmission channel.
-    pub fn message_tx(&self) -> UnboundedSender<Message> {
+    pub fn message_tx(&self) -> mpsc::Sender<Message> {
         self.message_tx.clone()
     }
 }
@@ -82,8 +78,8 @@ pub struct Service {
     cancel_tx: broadcast::Sender<()>,
     cancel_rx: broadcast::Receiver<()>,
 
-    user_message_tx: UnboundedSender<Message>,
-    user_message_rx: UnboundedReceiver<Message>,
+    user_message_tx: mpsc::Sender<Message>,
+    user_message_rx: mpsc::Receiver<Message>,
 }
 
 impl Service {
@@ -92,7 +88,7 @@ impl Service {
         let (message_tx, _) = broadcast::channel(16);
         let (end_tx, end_rx) = broadcast::channel(1);
         let (cancel_tx, cancel_rx) = broadcast::channel(1);
-        let (user_message_tx, user_message_rx) = unbounded_channel();
+        let (user_message_tx, user_message_rx) = mpsc::channel(16);
         Self {
             name,
             stream,

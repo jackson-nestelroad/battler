@@ -33,11 +33,7 @@ use tokio::{
             self,
             error::RecvError,
         },
-        mpsc::{
-            UnboundedReceiver,
-            UnboundedSender,
-            unbounded_channel,
-        },
+        mpsc,
     },
     task::JoinHandle,
 };
@@ -191,7 +187,7 @@ struct PeerState {
     service: ServiceHandle,
     session: SessionHandle,
 
-    message_tx: UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
 }
 
 /// A subscription to a topic.
@@ -240,8 +236,8 @@ pub struct RpcResult {
 #[derive(Debug)]
 struct PendingRpc {
     results_join_handle: JoinHandle<Result<()>>,
-    result_rx: UnboundedReceiver<ChannelTransmittableResult<RpcResult>>,
-    cancel_tx: UnboundedSender<CallCancelMode>,
+    result_rx: mpsc::Receiver<ChannelTransmittableResult<RpcResult>>,
+    cancel_tx: mpsc::Sender<CallCancelMode>,
 }
 
 impl Drop for PendingRpc {
@@ -274,6 +270,7 @@ impl SimplePendingRpc {
         self.pending
             .cancel_tx
             .send(CallCancelMode::KillNoWait)
+            .await
             .map_err(Error::new)
     }
 
@@ -284,6 +281,7 @@ impl SimplePendingRpc {
         self.pending
             .cancel_tx
             .send(CallCancelMode::Kill)
+            .await
             .map_err(Error::new)
     }
 }
@@ -340,6 +338,7 @@ impl ProgressivePendingRpc {
         self.pending
             .cancel_tx
             .send(CallCancelMode::KillNoWait)
+            .await
             .map_err(Error::new)
     }
 
@@ -353,6 +352,7 @@ impl ProgressivePendingRpc {
         self.pending
             .cancel_tx
             .send(CallCancelMode::Kill)
+            .await
             .map_err(Error::new)
     }
 
@@ -462,7 +462,7 @@ where
     pub async fn direct_connect(&self, stream: Box<dyn MessageStream>) -> Result<()> {
         // Start the service and message handler.
         let service = Service::new(self.config.name.clone(), stream);
-        let (message_tx, message_rx) = unbounded_channel();
+        let (message_tx, message_rx) = mpsc::channel(16);
         let service_message_rx = service.message_rx();
         let end_rx = service.end_rx();
         let drop_rx = self.drop_tx.subscribe();
@@ -496,7 +496,7 @@ where
         mut session: Session,
         peer_state: Arc<Mutex<Option<PeerState>>>,
         session_finished_tx: broadcast::Sender<()>,
-        mut message_rx: UnboundedReceiver<Message>,
+        mut message_rx: mpsc::Receiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
         drop_rx: broadcast::Receiver<()>,
@@ -538,7 +538,7 @@ where
 
     async fn session_loop_with_errors(
         session: &mut Session,
-        message_rx: &mut UnboundedReceiver<Message>,
+        message_rx: &mut mpsc::Receiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         mut drop_rx: broadcast::Receiver<()>,
@@ -647,10 +647,12 @@ where
             .wamp_serialize()?,
         );
 
-        message_tx.send(Message::Hello(HelloMessage {
-            realm: Uri::try_from(realm)?,
-            details,
-        }))?;
+        message_tx
+            .send(Message::Hello(HelloMessage {
+                realm: Uri::try_from(realm)?,
+                details,
+            }))
+            .await?;
 
         let result = established_session_rx
             .recv()
@@ -677,7 +679,9 @@ where
             })
             .await?;
 
-        message_tx.send(goodbye_with_close_reason(CloseReason::Normal))?;
+        message_tx
+            .send(goodbye_with_close_reason(CloseReason::Normal))
+            .await?;
         closed_session_rx.recv().await?;
         Ok(())
     }
@@ -721,11 +725,13 @@ where
             message_options.insert("match".to_owned(), Value::String(match_style.into()));
         }
 
-        message_tx.send(Message::Subscribe(SubscribeMessage {
-            request: request_id,
-            options: message_options,
-            topic,
-        }))?;
+        message_tx
+            .send(Message::Subscribe(SubscribeMessage {
+                request: request_id,
+                options: message_options,
+                topic,
+            }))
+            .await?;
 
         let mut session_finished_rx = self.session_finished_rx();
         loop {
@@ -792,10 +798,12 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
-        message_tx.send(Message::Unsubscribe(UnsubscribeMessage {
-            request: request_id,
-            subscribed_subscription: id,
-        }))?;
+        message_tx
+            .send(Message::Unsubscribe(UnsubscribeMessage {
+                request: request_id,
+                subscribed_subscription: id,
+            }))
+            .await?;
 
         let mut session_finished_rx = self.session_finished_rx();
         loop {
@@ -834,13 +842,15 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
-        message_tx.send(Message::Publish(PublishMessage {
-            request: request_id,
-            options: Dictionary::default(),
-            topic,
-            arguments: event.arguments,
-            arguments_keyword: event.arguments_keyword,
-        }))?;
+        message_tx
+            .send(Message::Publish(PublishMessage {
+                request: request_id,
+                options: Dictionary::default(),
+                topic,
+                arguments: event.arguments,
+                arguments_keyword: event.arguments_keyword,
+            }))
+            .await?;
 
         let mut session_finished_rx = self.session_finished_rx();
         loop {
@@ -895,11 +905,13 @@ where
             Value::String(options.invocation_policy.into()),
         );
 
-        message_tx.send(Message::Register(RegisterMessage {
-            request: request_id,
-            options: message_options,
-            procedure: procedure.into(),
-        }))?;
+        message_tx
+            .send(Message::Register(RegisterMessage {
+                request: request_id,
+                options: message_options,
+                procedure: procedure.into(),
+            }))
+            .await?;
 
         let mut session_finished_rx = self.session_finished_rx();
         loop {
@@ -961,10 +973,12 @@ where
             .await?;
         let request_id = id_allocator.generate_id().await;
 
-        message_tx.send(Message::Unregister(UnregisterMessage {
-            request: request_id,
-            registered_registration: id,
-        }))?;
+        message_tx
+            .send(Message::Unregister(UnregisterMessage {
+                request: request_id,
+                registered_registration: id,
+            }))
+            .await?;
 
         let mut session_finished_rx = self.session_finished_rx();
         loop {
@@ -996,9 +1010,9 @@ where
             ChannelTransmittableResult<peer_session_message::RpcResult>,
         >,
         mut session_finished_rx: broadcast::Receiver<()>,
-        mut cancel_rx: UnboundedReceiver<CallCancelMode>,
-        message_tx: UnboundedSender<Message>,
-        rpc_result_tx: UnboundedSender<ChannelTransmittableResult<RpcResult>>,
+        mut cancel_rx: mpsc::Receiver<CallCancelMode>,
+        message_tx: mpsc::Sender<Message>,
+        rpc_result_tx: mpsc::Sender<ChannelTransmittableResult<RpcResult>>,
     ) -> Result<()> {
         loop {
             tokio::select! {
@@ -1010,12 +1024,12 @@ where
                                     arguments: rpc_result.arguments,
                                     arguments_keyword: rpc_result.arguments_keyword,
                                     progress: rpc_result.progress,
-                                }))?;
+                                })).await?;
                             }
                         }
                         Err(err) => {
                             if err.request_id.is_some_and(|id| id == request_id) {
-                                rpc_result_tx.send(Err(err))?;
+                                rpc_result_tx.send(Err(err)).await?;
                                 break;
                             }
                         }
@@ -1029,10 +1043,10 @@ where
                     message_tx.send(Message::Cancel(CancelMessage {
                         call_request: request_id,
                         options: Dictionary::from_iter([("mode".to_owned(), Value::String(cancel_mode.into()))]),
-                    }))?;
+                    })).await?;
                 }
                 _ = session_finished_rx.recv() => {
-                    rpc_result_tx.send(Err(Into::<Error>::into(PeerNotConnectedError).into()))?;
+                    rpc_result_tx.send(Err(Into::<Error>::into(PeerNotConnectedError).into())).await?;
                     break;
                 }
             }
@@ -1069,17 +1083,19 @@ where
             );
         }
 
-        message_tx.send(Message::Call(CallMessage {
-            request: request_id,
-            options,
-            procedure: procedure.into(),
-            arguments: rpc_call.arguments,
-            arguments_keyword: rpc_call.arguments_keyword,
-        }))?;
+        message_tx
+            .send(Message::Call(CallMessage {
+                request: request_id,
+                options,
+                procedure: procedure.into(),
+                arguments: rpc_call.arguments,
+                arguments_keyword: rpc_call.arguments_keyword,
+            }))
+            .await?;
 
         let session_finished_rx = self.session_finished_rx();
-        let (rpc_result_tx, rpc_result_rx) = unbounded_channel();
-        let (cancel_tx, cancel_rx) = unbounded_channel();
+        let (rpc_result_tx, rpc_result_rx) = mpsc::channel(16);
+        let (cancel_tx, cancel_rx) = mpsc::channel(16);
         let results_join_handle = tokio::spawn(Self::wait_for_results(
             request_id,
             session_rpc_result_rx,

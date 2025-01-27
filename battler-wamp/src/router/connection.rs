@@ -13,11 +13,7 @@ use tokio::sync::{
         self,
         error::RecvError,
     },
-    mpsc::{
-        UnboundedReceiver,
-        UnboundedSender,
-        unbounded_channel,
-    },
+    mpsc,
 };
 use uuid::Uuid;
 
@@ -106,12 +102,12 @@ impl Connection {
     async fn run_session<S>(
         &self,
         context: &RouterContext<S>,
-        service_message_tx: UnboundedSender<Message>,
+        service_message_tx: mpsc::Sender<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
-        let (message_tx, message_rx) = unbounded_channel();
+        let (message_tx, message_rx) = mpsc::channel(16);
         let session = Session::new(session_id, message_tx, service_message_tx);
 
         info!(
@@ -127,7 +123,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Session,
-        message_rx: UnboundedReceiver<Message>,
+        message_rx: mpsc::Receiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
@@ -171,7 +167,7 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         message: Message,
-        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
     ) {
         let message_name = message.message_name();
         handle_message_result_tx
@@ -184,6 +180,7 @@ impl Connection {
                             .into()
                     }),
             )
+            .await
             .ok();
     }
 
@@ -191,12 +188,12 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         session_loop_done_rx: broadcast::Receiver<()>,
-        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
     ) {
         if let Err(err) =
             Self::publish_loop_with_errors(context, session, session_loop_done_rx).await
         {
-            handle_message_result_tx.send(Err(err.into())).ok();
+            handle_message_result_tx.send(Err(err.into())).await.ok();
         }
     }
 
@@ -225,7 +222,7 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         session_loop_done_rx: broadcast::Receiver<()>,
-        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
     ) {
         if let Err(err) = Self::call_loop_with_errors(
             context,
@@ -235,7 +232,7 @@ impl Connection {
         )
         .await
         {
-            handle_message_result_tx.send(Err(err.into())).ok();
+            handle_message_result_tx.send(Err(err.into())).await.ok();
         }
     }
 
@@ -243,10 +240,10 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         call_request_id: Id,
-        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
     ) {
         if let Err(err) = session.handle_invocation(&context, call_request_id).await {
-            handle_message_result_tx.send(Err(err.into())).ok();
+            handle_message_result_tx.send(Err(err.into())).await.ok();
         }
     }
 
@@ -254,7 +251,7 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         mut session_loop_done_rx: broadcast::Receiver<()>,
-        handle_message_result_tx: UnboundedSender<ChannelTransmittableResult<()>>,
+        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
     ) -> Result<()> {
         let mut procedure_message_rx = session.procedure_message_rx();
         loop {
@@ -288,14 +285,14 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Arc<Session>,
-        mut message_rx: UnboundedReceiver<Message>,
+        mut message_rx: mpsc::Receiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         session_loop_done_rx: broadcast::Receiver<()>,
     ) -> Result<bool> {
         let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
-        let (handle_message_result_tx, mut handle_message_result_rx) = unbounded_channel();
+        let (handle_message_result_tx, mut handle_message_result_rx) = mpsc::channel(16);
 
         // Start two separate loops for ordering guarantees of PUBLISH and CALL messages.
         tokio::spawn(Self::publish_loop(

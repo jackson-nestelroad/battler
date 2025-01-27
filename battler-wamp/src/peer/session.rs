@@ -23,7 +23,7 @@ use thiserror::Error;
 use tokio::sync::{
     RwLock,
     broadcast,
-    mpsc::UnboundedSender,
+    mpsc,
 };
 
 use crate::{
@@ -157,7 +157,7 @@ pub struct Invocation {
     pub procedure: Option<Uri>,
 
     id: Id,
-    message_tx: UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
     receive_progress: bool,
 }
 
@@ -170,7 +170,7 @@ impl Invocation {
     /// Responds to the invocation with a progressive result.
     ///
     /// Fails if the invocation (a.k.a., the caller) does not support progressive results.
-    pub fn progress(&self, rpc_yield: RpcYield) -> Result<()> {
+    pub async fn progress(&self, rpc_yield: RpcYield) -> Result<()> {
         if !self.receive_progress {
             return Err(ProgressiveResultNotSupportedError.into());
         }
@@ -181,43 +181,52 @@ impl Invocation {
                 arguments: rpc_yield.arguments,
                 arguments_keyword: rpc_yield.arguments_keyword,
             }))
+            .await
             .map_err(Error::new)
     }
 
     /// Responds to the invocation with a result.
-    pub fn respond<E>(self, rpc_yield: Result<RpcYield, E>) -> Result<()>
+    pub async fn respond<E>(self, rpc_yield: Result<RpcYield, E>) -> Result<()>
     where
         E: Into<WampError>,
     {
         match rpc_yield {
-            Ok(rpc_yield) => self.message_tx.send(Message::Yield(YieldMessage {
-                invocation_request: self.id,
-                options: Dictionary::default(),
-                arguments: rpc_yield.arguments,
-                arguments_keyword: rpc_yield.arguments_keyword,
-            }))?,
-            Err(err) => self.message_tx.send(error_for_request(
-                &Message::Invocation(InvocationMessage {
-                    request: self.id,
-                    ..Default::default()
-                }),
-                &Into::<WampError>::into(err).into(),
-            ))?,
+            Ok(rpc_yield) => {
+                self.message_tx
+                    .send(Message::Yield(YieldMessage {
+                        invocation_request: self.id,
+                        options: Dictionary::default(),
+                        arguments: rpc_yield.arguments,
+                        arguments_keyword: rpc_yield.arguments_keyword,
+                    }))
+                    .await?
+            }
+            Err(err) => {
+                self.message_tx
+                    .send(error_for_request(
+                        &Message::Invocation(InvocationMessage {
+                            request: self.id,
+                            ..Default::default()
+                        }),
+                        &Into::<WampError>::into(err).into(),
+                    ))
+                    .await?
+            }
         }
         Ok(())
     }
 
     /// Responds to the invocation with a successful result.
-    pub fn respond_ok(self, rpc_yield: RpcYield) -> Result<()> {
-        self.respond::<WampError>(Ok(rpc_yield))
+    pub async fn respond_ok(self, rpc_yield: RpcYield) -> Result<()> {
+        self.respond::<WampError>(Ok(rpc_yield)).await
     }
 
     /// Responds to the invocation with an error.
-    pub fn respond_error<E>(self, error: E) -> Result<()>
+    pub async fn respond_error<E>(self, error: E) -> Result<()>
     where
         E: Into<WampError>,
     {
-        self.respond(Err(error))
+        self.respond(Err(error)).await
     }
 }
 
@@ -439,7 +448,7 @@ impl SessionHandle {
 /// Handles WAMP messages in a state machine and holds all session-scoped state.
 pub struct Session {
     name: String,
-    service_message_tx: UnboundedSender<Message>,
+    service_message_tx: mpsc::Sender<Message>,
     state: Arc<RwLock<SessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
@@ -461,7 +470,7 @@ pub struct Session {
 
 impl Session {
     /// Creates a new session over a service.
-    pub fn new(name: String, service_message_tx: UnboundedSender<Message>) -> Self {
+    pub fn new(name: String, service_message_tx: mpsc::Sender<Message>) -> Self {
         let id_allocator = SequentialIdAllocator::default();
         let (established_session_tx, _) = broadcast::channel(16);
         let (closed_session_tx, _) = broadcast::channel(16);
@@ -566,7 +575,10 @@ impl Session {
                 return Err(err);
             }
         }
-        self.service_message_tx.send(message).map_err(Error::new)
+        self.service_message_tx
+            .send(message)
+            .await
+            .map_err(Error::new)
     }
 
     async fn transition_state_from_sending_message(&self, message: &Message) -> Result<()> {

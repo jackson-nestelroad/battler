@@ -296,6 +296,7 @@ impl TopicManager {
                     publish_arguments: arguments.clone(),
                     publish_arguments_keyword: arguments_keyword.clone(),
                 }))
+                .await
                 .ok();
         }
     }

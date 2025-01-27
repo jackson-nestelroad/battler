@@ -51,11 +51,7 @@ use futures_util::{
     future::join_all,
 };
 use tokio::{
-    sync::mpsc::{
-        UnboundedReceiver,
-        UnboundedSender,
-        unbounded_channel,
-    },
+    sync::mpsc,
     task::JoinHandle,
 };
 
@@ -139,7 +135,7 @@ async fn peer_invokes_procedure_from_another_peer() {
                 arguments: List::from_iter([Value::Integer(sum)]),
                 ..Default::default()
             });
-            assert_matches::assert_matches!(invocation.respond(result), Ok(()));
+            assert_matches::assert_matches!(invocation.respond(result).await, Ok(()));
         }
     }
 
@@ -307,10 +303,12 @@ async fn calls_from_same_peer_processed_in_parallel() {
             for invocation in invocations {
                 let arguments = invocation.arguments.clone();
                 assert_matches::assert_matches!(
-                    invocation.respond_ok(RpcYield {
-                        arguments,
-                        ..Default::default()
-                    }),
+                    invocation
+                        .respond_ok(RpcYield {
+                            arguments,
+                            ..Default::default()
+                        })
+                        .await,
                     Ok(())
                 );
             }
@@ -429,15 +427,15 @@ async fn peer_cancels_call_after_invocation() {
         .await
         .unwrap();
 
-    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
 
-    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
+    async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         let mut invocation_id = Id::MAX;
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
                     invocation_id = invocation.id();
-                    invocation_received_tx.send(()).unwrap();
+                    invocation_received_tx.send(()).await.unwrap();
                 }
                 ProcedureMessage::Interrupt(interrupt) => {
                     if interrupt.id() == invocation_id {
@@ -495,20 +493,17 @@ async fn peer_kills_call_and_gets_result() {
         .await
         .unwrap();
 
-    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
-    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
-        async fn handle_invocation(
-            invocation: Invocation,
-            mut interrupt_rx: UnboundedReceiver<()>,
-        ) {
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
+        async fn handle_invocation(invocation: Invocation, mut interrupt_rx: mpsc::Receiver<()>) {
             loop {
                 tokio::select! {
                     _ = tokio::time::sleep(Duration::from_secs(10)) => {
-                        invocation.respond_error(Error::msg("timeout")).unwrap();
+                        invocation.respond_error(Error::msg("timeout")).await.unwrap();
                         return;
                     }
                     _ = interrupt_rx.recv() => {
-                        invocation.respond_ok(RpcYield::default()).unwrap();
+                        invocation.respond_ok(RpcYield::default()).await.unwrap();
                         return;
                     }
                 }
@@ -519,14 +514,14 @@ async fn peer_kills_call_and_gets_result() {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
-                    invocation_received_tx.send(()).unwrap();
-                    let (interrupt_tx, interrupt_rx) = unbounded_channel();
+                    invocation_received_tx.send(()).await.unwrap();
+                    let (interrupt_tx, interrupt_rx) = mpsc::channel(16);
                     interrupt_txs.insert(invocation.id(), interrupt_tx);
                     tokio::spawn(handle_invocation(invocation, interrupt_rx));
                 }
                 ProcedureMessage::Interrupt(interrupt) => {
                     if let Some(interrupt_tx) = interrupt_txs.get(&interrupt.id()) {
-                        interrupt_tx.send(()).unwrap();
+                        interrupt_tx.send(()).await.unwrap();
                     }
                 }
             }
@@ -581,27 +576,36 @@ async fn peer_receives_progressive_call_results() {
     async fn handler(mut procedure: Procedure) {
         async fn handle_invocation(invocation: Invocation) {
             assert_matches::assert_matches!(
-                invocation.progress(RpcYield {
-                    arguments: List::from_iter([Value::Integer(1)]),
-                    ..Default::default()
-                }),
+                invocation
+                    .progress(RpcYield {
+                        arguments: List::from_iter([Value::Integer(1)]),
+                        ..Default::default()
+                    })
+                    .await,
                 Ok(())
             );
             assert_matches::assert_matches!(
-                invocation.progress(RpcYield {
-                    arguments: List::from_iter([Value::Integer(2)]),
-                    ..Default::default()
-                }),
+                invocation
+                    .progress(RpcYield {
+                        arguments: List::from_iter([Value::Integer(2)]),
+                        ..Default::default()
+                    })
+                    .await,
                 Ok(())
             );
             assert_matches::assert_matches!(
-                invocation.progress(RpcYield {
-                    arguments: List::from_iter([Value::Integer(3)]),
-                    ..Default::default()
-                }),
+                invocation
+                    .progress(RpcYield {
+                        arguments: List::from_iter([Value::Integer(3)]),
+                        ..Default::default()
+                    })
+                    .await,
                 Ok(())
             );
-            assert_matches::assert_matches!(invocation.respond_ok(RpcYield::default()), Ok(()));
+            assert_matches::assert_matches!(
+                invocation.respond_ok(RpcYield::default()).await,
+                Ok(())
+            );
         }
 
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
@@ -684,13 +688,18 @@ async fn peer_receives_progressive_call_results_and_error() {
     async fn handler(mut procedure: Procedure) {
         async fn handle_invocation(invocation: Invocation) {
             assert_matches::assert_matches!(
-                invocation.progress(RpcYield {
-                    arguments: List::from_iter([Value::Integer(1)]),
-                    ..Default::default()
-                }),
+                invocation
+                    .progress(RpcYield {
+                        arguments: List::from_iter([Value::Integer(1)]),
+                        ..Default::default()
+                    })
+                    .await,
                 Ok(())
             );
-            assert_matches::assert_matches!(invocation.respond_error(Error::msg("failed")), Ok(()));
+            assert_matches::assert_matches!(
+                invocation.respond_error(Error::msg("failed")).await,
+                Ok(())
+            );
         }
 
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
@@ -753,20 +762,17 @@ async fn peer_kills_progressive_call_and_ends_stream() {
         .await
         .unwrap();
 
-    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
-    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
-        async fn handle_invocation(
-            invocation: Invocation,
-            mut interrupt_rx: UnboundedReceiver<()>,
-        ) {
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
+        async fn handle_invocation(invocation: Invocation, mut interrupt_rx: mpsc::Receiver<()>) {
             loop {
                 tokio::select! {
                     _ = tokio::time::sleep(Duration::from_secs(10)) => {
-                        invocation.respond_error(Error::msg("timeout")).unwrap();
+                        invocation.respond_error(Error::msg("timeout")).await.unwrap();
                         return;
                     }
                     _ = interrupt_rx.recv() => {
-                        invocation.progress(RpcYield::default()).unwrap();
+                        invocation.progress(RpcYield::default()).await.unwrap();
                         return;
                     }
                 }
@@ -777,14 +783,14 @@ async fn peer_kills_progressive_call_and_ends_stream() {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
-                    invocation_received_tx.send(()).unwrap();
-                    let (interrupt_tx, interrupt_rx) = unbounded_channel();
+                    invocation_received_tx.send(()).await.unwrap();
+                    let (interrupt_tx, interrupt_rx) = mpsc::channel(16);
                     interrupt_txs.insert(invocation.id(), interrupt_tx);
                     tokio::spawn(handle_invocation(invocation, interrupt_rx));
                 }
                 ProcedureMessage::Interrupt(interrupt) => {
                     if let Some(interrupt_tx) = interrupt_txs.get(&interrupt.id()) {
-                        interrupt_tx.send(()).unwrap();
+                        interrupt_tx.send(()).await.unwrap();
                     }
                 }
             }
@@ -846,13 +852,13 @@ async fn progressive_call_interrupted_when_caller_leaves() {
 
     // Must wait for the invocation to be received, since a canceled call could never be sent to the
     // callee.
-    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
 
-    async fn handler(mut procedure: Procedure, invocation_received_tx: UnboundedSender<()>) {
+    async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         async fn handle_invocation(invocation: Invocation) {
             loop {
                 tokio::time::sleep(Duration::from_secs(1)).await;
-                invocation.progress(RpcYield::default()).unwrap();
+                invocation.progress(RpcYield::default()).await.unwrap();
             }
         }
 
@@ -860,7 +866,7 @@ async fn progressive_call_interrupted_when_caller_leaves() {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
-                    invocation_received_tx.send(()).unwrap();
+                    invocation_received_tx.send(()).await.unwrap();
                     request_id = Some(invocation.id());
                     tokio::spawn(handle_invocation(invocation));
                 }
@@ -999,6 +1005,7 @@ async fn callee_times_out_procedure_call() {
             tokio::time::sleep(invocation.timeout).await;
             invocation
                 .respond_error(InteractionError::Canceled)
+                .await
                 .unwrap();
         }
 
@@ -1066,7 +1073,7 @@ async fn procedure_call_matches_registration_by_prefix() {
         async fn handle_invocation(invocation: Invocation) {
             assert_matches::assert_matches!(invocation.procedure.as_ref(), Some(procedure) => {
                 assert_eq!(procedure, &Uri::try_from("com.battler.fn.a.b.c").unwrap());
-                invocation.respond_ok(RpcYield::default()).unwrap();
+                invocation.respond_ok(RpcYield::default()).await.unwrap();
             });
         }
 
@@ -1132,7 +1139,7 @@ async fn procedure_call_matches_registration_by_wildcard() {
         async fn handle_invocation(invocation: Invocation) {
             assert_matches::assert_matches!(invocation.procedure.as_ref(), Some(procedure) => {
                 assert_eq!(procedure, &Uri::try_from("com.battler.battle.abcd.start").unwrap());
-                invocation.respond_ok(RpcYield::default()).unwrap();
+                invocation.respond_ok(RpcYield::default()).await.unwrap();
             });
         }
 
@@ -1238,7 +1245,7 @@ mod procedure_wildcard_match_test {
                     message = procedure.procedure_message_rx.recv() => {
                         match message {
                             Ok(ProcedureMessage::Invocation(invocation)) => {
-                                invocation.respond_ok(RpcYield::default()).unwrap();
+                                invocation.respond_ok(RpcYield::default()).await.unwrap();
                                 return;
                             }
                             _ => (),
@@ -1762,6 +1769,7 @@ async fn no_available_callee_when_single_callee_returns_unavailable() {
                 ProcedureMessage::Invocation(invocation) => {
                     invocation
                         .respond_error(InteractionError::Unavailable)
+                        .await
                         .unwrap();
                 }
                 _ => (),
@@ -2003,6 +2011,7 @@ async fn invokes_second_caller_when_first_reports_unavailable() {
                 ProcedureMessage::Invocation(invocation) => {
                     invocation
                         .respond_error(InteractionError::Unavailable)
+                        .await
                         .unwrap();
                 }
                 _ => (),
@@ -2027,7 +2036,7 @@ async fn invokes_second_caller_when_first_reports_unavailable() {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
-                    invocation.respond_ok(RpcYield::default()).unwrap();
+                    invocation.respond_ok(RpcYield::default()).await.unwrap();
                 }
                 _ => (),
             }
@@ -2094,6 +2103,7 @@ async fn no_available_callee_when_all_callees_report_unavailable() {
                 ProcedureMessage::Invocation(invocation) => {
                     invocation
                         .respond_error(InteractionError::Unavailable)
+                        .await
                         .unwrap();
                 }
                 _ => (),
@@ -2172,14 +2182,15 @@ async fn cancellation_occurs_for_shared_registration() {
 
     async fn unavailable_handler(
         mut procedure: Procedure,
-        invocation_received_tx: UnboundedSender<()>,
+        invocation_received_tx: mpsc::Sender<()>,
     ) {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
-                    invocation_received_tx.send(()).unwrap();
+                    invocation_received_tx.send(()).await.unwrap();
                     invocation
                         .respond_error(InteractionError::Unavailable)
+                        .await
                         .unwrap();
                 }
                 _ => (),
@@ -2187,7 +2198,7 @@ async fn cancellation_occurs_for_shared_registration() {
         }
     }
 
-    let (invocation_received_tx, mut invocation_received_rx) = unbounded_channel();
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
     tokio::spawn(unavailable_handler(
         procedure,
         invocation_received_tx.clone(),

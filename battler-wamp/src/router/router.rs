@@ -24,11 +24,7 @@ use tokio::{
     },
     sync::{
         broadcast,
-        mpsc::{
-            UnboundedReceiver,
-            UnboundedSender,
-            unbounded_channel,
-        },
+        mpsc,
     },
     task::JoinHandle,
 };
@@ -142,7 +138,7 @@ pub enum RouterControlMessage {
 pub struct RouterHandle {
     local_addr: SocketAddr,
     cancel_tx: broadcast::Sender<()>,
-    control_tx: UnboundedSender<RouterControlMessage>,
+    control_tx: mpsc::Sender<RouterControlMessage>,
     direct_connect_fn: Arc<Box<dyn Fn() -> DirectConnection + Send + Sync + 'static>>,
 }
 
@@ -166,9 +162,10 @@ impl RouterHandle {
     }
 
     /// Ends the session with the given ID in a realm.
-    pub fn end_session(&self, realm: Uri, id: Id) -> Result<()> {
+    pub async fn end_session(&self, realm: Uri, id: Id) -> Result<()> {
         self.control_tx
             .send(RouterControlMessage::EndSession { realm, id })
+            .await
             .map_err(Error::new)
     }
 }
@@ -259,7 +256,7 @@ where
         let cancel_rx = self.cancel_rx.resubscribe();
 
         let cancel_tx = self.cancel_tx.clone();
-        let (control_tx, control_rx) = unbounded_channel();
+        let (control_tx, control_rx) = mpsc::channel(16);
         let context = RouterContext::new(self);
         let start_handle = tokio::spawn(Self::handle_connections(
             context.clone(),
@@ -289,7 +286,7 @@ where
         context: RouterContext<S>,
         listener: TcpListener,
         cancel_rx: broadcast::Receiver<()>,
-        control_rx: UnboundedReceiver<RouterControlMessage>,
+        control_rx: mpsc::Receiver<RouterControlMessage>,
     ) {
         Self::connection_loop(&context, listener, cancel_rx, control_rx).await;
         Self::shut_down(&context).await;
@@ -302,7 +299,7 @@ where
         context: &RouterContext<S>,
         listener: TcpListener,
         mut cancel_rx: broadcast::Receiver<()>,
-        mut control_rx: UnboundedReceiver<RouterControlMessage>,
+        mut control_rx: mpsc::Receiver<RouterControlMessage>,
     ) {
         loop {
             tokio::select! {
@@ -401,7 +398,7 @@ where
     async fn end_session(context: &RouterContext<S>, realm: &Uri, id: Id) -> Result<()> {
         let context = context.realm_context(realm)?;
         match context.session(id).await {
-            Some(session) => session.session.close(CloseReason::Killed)?,
+            Some(session) => session.session.close(CloseReason::Killed).await?,
             None => (),
         }
         Ok(())
@@ -436,8 +433,8 @@ where
     }
 
     fn direct_connect(context: &RouterContext<S>) -> DirectConnection {
-        let (router_to_peer_tx, router_to_peer_rx) = unbounded_channel();
-        let (peer_to_router_tx, peer_to_router_rx) = unbounded_channel();
+        let (router_to_peer_tx, router_to_peer_rx) = mpsc::channel(16);
+        let (peer_to_router_tx, peer_to_router_rx) = mpsc::channel(16);
         let router_stream = DirectMessageStream::new(router_to_peer_tx, peer_to_router_rx);
         let peer_stream = DirectMessageStream::new(peer_to_router_tx, router_to_peer_rx);
         let uuid = Self::start_connection_over_stream(context, Box::new(router_stream));

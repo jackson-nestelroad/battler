@@ -14,10 +14,7 @@ use futures_util::{
     Stream,
     StreamExt,
 };
-use tokio::sync::mpsc::{
-    UnboundedReceiver,
-    UnboundedSender,
-};
+use tokio::sync::mpsc;
 
 use crate::{
     message::message::Message,
@@ -130,22 +127,40 @@ impl Sink<StreamMessage> for TransportMessageStream {
 /// A direct stream of messages.
 ///
 /// Used for connections running in the same local process, to skip serialization.
-#[derive(Debug)]
 pub struct DirectMessageStream {
-    message_tx: UnboundedSender<Message>,
-    message_rx: UnboundedReceiver<Message>,
+    stream: Pin<Box<dyn Stream<Item = StreamMessage> + Send + Sync>>,
+    sink: Pin<Box<dyn Sink<StreamMessage, Error = mpsc::error::SendError<Message>> + Send + Sync>>,
 }
 
 impl DirectMessageStream {
     /// Creates a direct message stream.
-    pub fn new(
-        message_tx: UnboundedSender<Message>,
-        message_rx: UnboundedReceiver<Message>,
-    ) -> Self {
-        Self {
+    pub fn new(message_tx: mpsc::Sender<Message>, message_rx: mpsc::Receiver<Message>) -> Self {
+        let stream = futures_util::stream::unfold(message_rx, move |mut message_rx| async {
+            match message_rx.recv().await {
+                Some(message) => Some((StreamMessage::Message(message), message_rx)),
+                None => None,
+            }
+        });
+        let sink = futures_util::sink::unfold(
             message_tx,
-            message_rx,
+            move |message_tx, message: StreamMessage| async {
+                match message {
+                    StreamMessage::Message(message) => message_tx.send(message).await?,
+                    StreamMessage::Ping(_) => (),
+                }
+                Ok::<_, mpsc::error::SendError<_>>(message_tx)
+            },
+        );
+        Self {
+            stream: Box::pin(stream),
+            sink: Box::pin(sink),
         }
+    }
+}
+
+impl Debug for DirectMessageStream {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message_stream_type())
     }
 }
 
@@ -162,8 +177,8 @@ impl Stream for DirectMessageStream {
         mut self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> task::Poll<Option<Self::Item>> {
-        match futures_util::ready!(self.message_rx.poll_recv(cx)) {
-            Some(message) => task::Poll::Ready(Some(Ok(StreamMessage::Message(message)))),
+        match futures_util::ready!(self.stream.poll_next_unpin(cx)) {
+            Some(message) => task::Poll::Ready(Some(Ok(message))),
             None => task::Poll::Ready(None),
         }
     }
@@ -173,38 +188,30 @@ impl Sink<StreamMessage> for DirectMessageStream {
     type Error = Error;
 
     fn poll_ready(
-        self: Pin<&mut Self>,
-        _: &mut task::Context<'_>,
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
     ) -> task::Poll<std::result::Result<(), Self::Error>> {
-        task::Poll::Ready(Ok(()))
+        self.sink.poll_ready_unpin(cx).map_err(Error::new)
     }
 
     fn start_send(
-        self: Pin<&mut Self>,
+        mut self: Pin<&mut Self>,
         item: StreamMessage,
     ) -> std::result::Result<(), Self::Error> {
-        match item {
-            StreamMessage::Message(message) => self.message_tx.send(message).map_err(Error::new),
-            StreamMessage::Ping(_) => Ok(()),
-        }
+        self.sink.start_send_unpin(item).map_err(Error::new)
     }
 
     fn poll_flush(
-        self: Pin<&mut Self>,
-        _: &mut task::Context<'_>,
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
     ) -> task::Poll<std::result::Result<(), Self::Error>> {
-        task::Poll::Ready(Ok(()))
+        self.sink.poll_flush_unpin(cx).map_err(Error::new)
     }
 
     fn poll_close(
         mut self: Pin<&mut Self>,
-        _: &mut task::Context<'_>,
+        cx: &mut task::Context<'_>,
     ) -> task::Poll<std::result::Result<(), Self::Error>> {
-        self.message_rx.close();
-        if self.message_tx.is_closed() {
-            task::Poll::Ready(Ok(()))
-        } else {
-            task::Poll::Pending
-        }
+        self.sink.poll_close_unpin(cx).map_err(Error::new)
     }
 }

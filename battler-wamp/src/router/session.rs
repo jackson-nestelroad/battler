@@ -31,7 +31,7 @@ use tokio::sync::{
         self,
         error::RecvError,
     },
-    mpsc::UnboundedSender,
+    mpsc,
 };
 
 use crate::{
@@ -217,7 +217,7 @@ pub struct SessionHandle {
     id: Id,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
-    message_tx: UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
     closed_session_rx: broadcast::Receiver<()>,
 
     rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
@@ -244,14 +244,15 @@ impl SessionHandle {
     }
 
     /// Sends a message over the session.
-    pub fn send_message(&self, message: Message) -> Result<()> {
-        self.message_tx.send(message).map_err(Error::new)
+    pub async fn send_message(&self, message: Message) -> Result<()> {
+        self.message_tx.send(message).await.map_err(Error::new)
     }
 
     /// Closes the session.
-    pub fn close(&self, close_reason: CloseReason) -> Result<()> {
+    pub async fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
             .send(goodbye_with_close_reason(close_reason))
+            .await
             .map_err(Error::new)
     }
 
@@ -273,8 +274,8 @@ impl SessionHandle {
 /// Handles WAMP messages in a state machine and holds all session-scoped state.
 pub struct Session {
     id: Id,
-    message_tx: UnboundedSender<Message>,
-    service_message_tx: UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
+    service_message_tx: mpsc::Sender<Message>,
     state: RwLock<SessionState>,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
@@ -293,8 +294,8 @@ impl Session {
     /// Creates a new session over a service.
     pub fn new(
         id: Id,
-        message_tx: UnboundedSender<Message>,
-        service_message_tx: UnboundedSender<Message>,
+        message_tx: mpsc::Sender<Message>,
+        service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
         let (closed_session_tx, _) = broadcast::channel(16);
@@ -376,7 +377,10 @@ impl Session {
 
     pub async fn send_message(&self, message: Message) -> Result<()> {
         self.transition_state_from_sending_message(&message).await?;
-        self.service_message_tx.send(message).map_err(Error::new)
+        self.service_message_tx
+            .send(message)
+            .await
+            .map_err(Error::new)
     }
 
     async fn transition_state_from_sending_message(&self, message: &Message) -> Result<()> {
@@ -980,7 +984,8 @@ impl Session {
                 details,
                 call_arguments: invocation.arguments.clone(),
                 call_arguments_keyword: invocation.arguments_keyword.clone(),
-            }))?;
+            }))
+            .await?;
         Ok(())
     }
 
@@ -1176,7 +1181,7 @@ impl Session {
                                 invocation_request: request_id,
                                 ..Default::default()
                             })
-                        )?;
+                        ).await?;
                         return Err(InteractionError::Canceled.into());
                     }
                 }
@@ -1188,7 +1193,7 @@ impl Session {
                                 invocation_request: request_id,
                                 ..Default::default()
                             })
-                        )?;
+                        ).await?;
                     }
                     return Err(InteractionError::Canceled.into());
                 }
@@ -1275,7 +1280,8 @@ impl Session {
                 .send_message(Message::Interrupt(InterruptMessage {
                     invocation_request: invocation.invocation_request_id,
                     ..Default::default()
-                }))?;
+                }))
+                .await?;
         }
 
         if immediate_error {
