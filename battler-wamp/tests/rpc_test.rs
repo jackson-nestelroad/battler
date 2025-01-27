@@ -85,7 +85,7 @@ fn create_peer(name: &str) -> Result<WebSocketPeer> {
     create_peer_with_config(name, PeerConfig::default())
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_invokes_procedure_from_another_peer() {
     test_utils::setup::setup_test_environment();
 
@@ -206,7 +206,7 @@ async fn peer_invokes_procedure_from_another_peer() {
     adder_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn caller_receives_cancelled_error_when_callee_leaves() {
     test_utils::setup::setup_test_environment();
 
@@ -258,7 +258,7 @@ async fn caller_receives_cancelled_error_when_callee_leaves() {
     handler_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn calls_from_same_peer_processed_in_parallel() {
     test_utils::setup::setup_test_environment();
 
@@ -345,7 +345,7 @@ async fn calls_from_same_peer_processed_in_parallel() {
     handler_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_cancels_call_immediately() {
     test_utils::setup::setup_test_environment();
 
@@ -398,7 +398,7 @@ async fn peer_cancels_call_immediately() {
     handler_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_cancels_call_after_invocation() {
     test_utils::setup::setup_test_environment();
 
@@ -464,7 +464,7 @@ async fn peer_cancels_call_after_invocation() {
     handler_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_kills_call_and_gets_result() {
     test_utils::setup::setup_test_environment();
 
@@ -544,7 +544,7 @@ async fn peer_kills_call_and_gets_result() {
     assert_matches::assert_matches!(rpc.result().await, Ok(_));
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_receives_progressive_call_results() {
     test_utils::setup::setup_test_environment();
 
@@ -656,7 +656,7 @@ async fn peer_receives_progressive_call_results() {
     assert_matches::assert_matches!(stream.next().await, None);
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_receives_progressive_call_results_and_error() {
     test_utils::setup::setup_test_environment();
 
@@ -733,7 +733,7 @@ async fn peer_receives_progressive_call_results_and_error() {
     assert_matches::assert_matches!(stream.next().await, None);
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_kills_progressive_call_and_ends_stream() {
     test_utils::setup::setup_test_environment();
 
@@ -821,7 +821,7 @@ async fn peer_kills_progressive_call_and_ends_stream() {
     assert_matches::assert_matches!(rpc.next_result().await, Ok(None));
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn progressive_call_interrupted_when_caller_leaves() {
     test_utils::setup::setup_test_environment();
 
@@ -901,7 +901,7 @@ async fn progressive_call_interrupted_when_caller_leaves() {
     handler_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn router_times_out_procedure_call() {
     test_utils::setup::setup_test_environment();
 
@@ -967,7 +967,7 @@ async fn router_times_out_procedure_call() {
     handler_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn callee_times_out_procedure_call() {
     test_utils::setup::setup_test_environment();
 
@@ -1034,7 +1034,7 @@ async fn callee_times_out_procedure_call() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn procedure_call_matches_registration_by_prefix() {
     test_utils::setup::setup_test_environment();
 
@@ -1100,7 +1100,7 @@ async fn procedure_call_matches_registration_by_prefix() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn procedure_call_matches_registration_by_wildcard() {
     test_utils::setup::setup_test_environment();
 
@@ -1299,7 +1299,7 @@ mod procedure_wildcard_match_test {
         tokio::spawn(handler(procedure, cancel_rx))
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_exact_match() {
         test_utils::setup::setup_test_environment();
 
@@ -1348,7 +1348,7 @@ mod procedure_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_single_prefix_match() {
         test_utils::setup::setup_test_environment();
 
@@ -1406,7 +1406,7 @@ mod procedure_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_longest_prefix_match() {
         test_utils::setup::setup_test_environment();
 
@@ -1464,7 +1464,7 @@ mod procedure_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_wildcard_match() {
         test_utils::setup::setup_test_environment();
 
@@ -1522,7 +1522,7 @@ mod procedure_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_longer_wildcard_match_by_first_portion() {
         test_utils::setup::setup_test_environment();
 
@@ -1580,7 +1580,7 @@ mod procedure_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_longer_wildcard_match_by_second_portion() {
         test_utils::setup::setup_test_environment();
 
@@ -1638,7 +1638,7 @@ mod procedure_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn no_match_found() {
         test_utils::setup::setup_test_environment();
 
@@ -1734,7 +1734,7 @@ mod procedure_wildcard_match_test {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn no_available_callee_when_single_callee_returns_unavailable() {
     test_utils::setup::setup_test_environment();
 
@@ -1789,7 +1789,7 @@ async fn no_available_callee_when_single_callee_returns_unavailable() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn shared_registration_fails_with_single_invocation_policy() {
     test_utils::setup::setup_test_environment();
 
@@ -1857,7 +1857,7 @@ async fn shared_registration_fails_with_single_invocation_policy() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn shared_registration_fails_with_different_invocation_policy() {
     test_utils::setup::setup_test_environment();
 
@@ -1910,7 +1910,7 @@ async fn shared_registration_fails_with_different_invocation_policy() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn shared_registration_succeeds_with_same_invocation_policy() {
     test_utils::setup::setup_test_environment();
 
@@ -1961,7 +1961,7 @@ async fn shared_registration_succeeds_with_same_invocation_policy() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn invokes_second_caller_when_first_reports_unavailable() {
     test_utils::setup::setup_test_environment();
 
@@ -2053,7 +2053,7 @@ async fn invokes_second_caller_when_first_reports_unavailable() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn no_available_callee_when_all_callees_report_unavailable() {
     test_utils::setup::setup_test_environment();
 
@@ -2136,7 +2136,7 @@ async fn no_available_callee_when_all_callees_report_unavailable() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn cancellation_occurs_for_shared_registration() {
     test_utils::setup::setup_test_environment();
 

@@ -74,7 +74,7 @@ fn create_peer(name: &str) -> Result<WebSocketPeer> {
     new_web_socket_peer(config)
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_receives_published_messages_for_topic() {
     test_utils::setup::setup_test_environment();
 
@@ -152,7 +152,7 @@ async fn peer_receives_published_messages_for_topic() {
     pretty_assertions::assert_eq!(seen, (0..seen.len() as u64).collect());
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn event_channel_closes_automatically_when_unsubscribing() {
     test_utils::setup::setup_test_environment();
 
@@ -178,7 +178,7 @@ async fn event_channel_closes_automatically_when_unsubscribing() {
     assert_matches::assert_matches!(subscription.event_rx.recv().await, Err(RecvError::Closed));
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn event_channel_closes_automatically_when_leaving_realm() {
     test_utils::setup::setup_test_environment();
 
@@ -203,7 +203,7 @@ async fn event_channel_closes_automatically_when_leaving_realm() {
     assert_matches::assert_matches!(subscription.event_rx.recv().await, Err(RecvError::Closed));
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn event_channel_closes_automatically_when_disconnecting() {
     test_utils::setup::setup_test_environment();
 
@@ -228,7 +228,7 @@ async fn event_channel_closes_automatically_when_disconnecting() {
     assert_matches::assert_matches!(subscription.event_rx.recv().await, Err(RecvError::Closed));
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_does_not_receive_events_for_different_topic() {
     test_utils::setup::setup_test_environment();
 
@@ -286,7 +286,7 @@ async fn peer_does_not_receive_events_for_different_topic() {
     });
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn cannot_unsubscribe_from_non_existent_subscription() {
     test_utils::setup::setup_test_environment();
 
@@ -316,7 +316,7 @@ async fn cannot_unsubscribe_from_non_existent_subscription() {
     });
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn pub_sub_not_allowed_without_broker_role() {
     test_utils::setup::setup_test_environment();
 
@@ -354,7 +354,7 @@ async fn pub_sub_not_allowed_without_broker_role() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn publisher_does_not_receive_event() {
     test_utils::setup::setup_test_environment();
 
@@ -390,7 +390,7 @@ async fn publisher_does_not_receive_event() {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn publish_matches_subscription_by_prefix() {
     test_utils::setup::setup_test_environment();
 
@@ -499,7 +499,7 @@ async fn publish_matches_subscription_by_prefix() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn publish_matches_subscription_by_wildcard() {
     test_utils::setup::setup_test_environment();
 
@@ -597,7 +597,7 @@ async fn publish_matches_subscription_by_wildcard() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn publish_matches_subscription_by_wildcard_prefix() {
     test_utils::setup::setup_test_environment();
 
@@ -780,7 +780,7 @@ mod subscription_wildcard_match_test {
         tokio::spawn(handler(subscription, cancel_rx))
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_exact_match() {
         test_utils::setup::setup_test_environment();
 
@@ -831,7 +831,7 @@ mod subscription_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_single_prefix_match() {
         test_utils::setup::setup_test_environment();
 
@@ -891,7 +891,7 @@ mod subscription_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_multiple_prefix_matches() {
         test_utils::setup::setup_test_environment();
 
@@ -951,7 +951,7 @@ mod subscription_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_wildcard_match() {
         test_utils::setup::setup_test_environment();
 
@@ -1011,7 +1011,7 @@ mod subscription_wildcard_match_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn uses_all_match_types_at_the_same_time() {
         test_utils::setup::setup_test_environment();
 

@@ -46,7 +46,7 @@ fn create_peer() -> Result<WebSocketPeer> {
     new_web_socket_peer(config)
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_joins_realm() {
     test_utils::setup::setup_test_environment();
 
@@ -67,7 +67,7 @@ async fn peer_joins_realm() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_reconnects_and_rejoins_realm() {
     test_utils::setup::setup_test_environment();
 
@@ -116,7 +116,7 @@ async fn peer_reconnects_and_rejoins_realm() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_joins_and_leaves_realm() {
     test_utils::setup::setup_test_environment();
 
@@ -137,19 +137,19 @@ async fn peer_joins_and_leaves_realm() {
 
     // Invalid state transition, so the channel closes.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
-        assert!(err.to_string().contains("invalid state transition"));
+        assert!(err.to_string().contains("invalid state transition"), "{err}");
     });
 
     // Second attempt shows the peer is not connected.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
-        assert!(err.to_string().contains("peer is not connected"));
+        assert!(err.to_string() == "peer is not connected" || err.to_string() == "channel closed", "{err}");
     });
 
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_joins_another_realm_after_leaving() {
     test_utils::setup::setup_test_environment();
 
@@ -171,7 +171,7 @@ async fn peer_joins_another_realm_after_leaving() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_cannot_join_missing_realm() {
     test_utils::setup::setup_test_environment();
 

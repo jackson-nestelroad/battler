@@ -329,8 +329,7 @@ impl Connection {
                         Err(err) => return Err(Error::context(err.into(), "failed to receive message")),
                     };
 
-                    // Handle the message asynchronously, so we can process multiple messages at a time.
-                    tokio::spawn(Self::handle_message(context.clone(), session.clone(), message, handle_message_result_tx.clone()));
+                    Self::handle_message(context.clone(), session.clone(), message, handle_message_result_tx.clone()).await;
                 }
                 // Finished handling a message.
                 result = handle_message_result_rx.recv() => {

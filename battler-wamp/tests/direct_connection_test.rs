@@ -38,7 +38,7 @@ fn create_peer() -> Result<WebSocketPeer> {
     new_web_socket_peer(config)
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn peer_directly_connects_to_router() {
     test_utils::setup::setup_test_environment();
 
