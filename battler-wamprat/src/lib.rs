@@ -46,6 +46,11 @@
 //! The [`battler_wamprat_uri::WampUriMatcher`] trait can be used to type check pattern-matched
 //! URIs. This trait is only required when URI pattern matching is used.
 //!
+//! Additionally [`battler_wamprat_error::WampError`] can be used for generating conversions to and
+//! from [`battler_wamp::core::error::WampError`] for custom error types. These error types are not
+//! necessarily enforced by the framework, though, as other types of errors can generate from the
+//! router during procedure calls.
+//!
 //! ## Usage
 //!
 //! A WAMP peer managed by `battler-wamprat` runs in an asynchronous task, which continually
@@ -518,7 +523,199 @@
 //!
 //! #### Pattern-Based Registration
 //!
-//! TODO
+//! ```
+//! use battler_wamp::{
+//!     core::{
+//!         error::WampError,
+//!         uri::{
+//!             Uri,
+//!             WildcardUri,
+//!         },
+//!     },
+//!     peer::{
+//!         PeerConfig,
+//!         new_web_socket_peer,
+//!     },
+//!     router::{
+//!         EmptyPubSubPolicies,
+//!         EmptyRpcPolicies,
+//!         RealmConfig,
+//!         RouterConfig,
+//!         RouterHandle,
+//!         new_web_socket_router,
+//!     },
+//! };
+//! use battler_wamp_values::{
+//!     Integer,
+//!     WampList,
+//! };
+//! use battler_wamprat::{
+//!     peer::{
+//!         CallOptions,
+//!         PeerBuilder,
+//!         PeerConnectionType,
+//!     },
+//!     procedure::{
+//!         ProgressReporter,
+//!         TypedPatternMatchedProgressiveProcedure,
+//!     },
+//! };
+//! use battler_wamprat_error::WampError;
+//! use battler_wamprat_message::WampApplicationMessage;
+//! use battler_wamprat_uri::WampUriMatcher;
+//! use tokio::{
+//!     sync::broadcast,
+//!     task::JoinHandle,
+//! };
+//!
+//! async fn start_router() -> anyhow::Result<(RouterHandle, JoinHandle<()>)> {
+//!     let mut config = RouterConfig::default();
+//!     config.realms.push(RealmConfig {
+//!         name: "Realm".to_owned(),
+//!         uri: Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!     });
+//!     let router = new_web_socket_router(
+//!         config,
+//!         Box::new(EmptyPubSubPolicies::default()),
+//!         Box::new(EmptyRpcPolicies::default()),
+//!     )?;
+//!     router.start().await
+//! }
+//!
+//! #[derive(WampApplicationMessage)]
+//! struct UploadInput;
+//!
+//! #[derive(Debug, PartialEq, WampList)]
+//! struct UploadOutputArgs {
+//!     percentage: u64,
+//! }
+//!
+//! #[derive(Debug, PartialEq, WampApplicationMessage)]
+//! struct UploadOutput(#[arguments] UploadOutputArgs);
+//!
+//! #[derive(WampUriMatcher)]
+//! #[uri("com.battler_wamprat.upload.{file_type}.v1")]
+//! struct UploadPattern {
+//!     file_type: String,
+//! }
+//!
+//! #[derive(Debug, PartialEq, thiserror::Error, WampError)]
+//! enum UploadError {
+//!     #[error("unsupported file type")]
+//!     #[uri("com.battler_wamprat.upload.error.unsupported_file_type")]
+//!     UnsupportedFileType,
+//! }
+//!
+//! struct UploadHandler;
+//!
+//! #[async_trait::async_trait]
+//! impl TypedPatternMatchedProgressiveProcedure for UploadHandler {
+//!     type Pattern = UploadPattern;
+//!     type Input = UploadInput;
+//!     type Output = UploadOutput;
+//!     type Error = UploadError;
+//!
+//!     async fn invoke<'rpc>(
+//!         &self,
+//!         _: Self::Input,
+//!         procedure: Self::Pattern,
+//!         progress: ProgressReporter<'rpc, Self::Output>,
+//!     ) -> Result<Self::Output, Self::Error> {
+//!         if procedure.file_type != "png" {
+//!             return Err(UploadError::UnsupportedFileType);
+//!         }
+//!         progress
+//!             .send(UploadOutput(UploadOutputArgs { percentage: 25 }))
+//!             .await
+//!             .unwrap();
+//!         progress
+//!             .send(UploadOutput(UploadOutputArgs { percentage: 50 }))
+//!             .await
+//!             .unwrap();
+//!         progress
+//!             .send(UploadOutput(UploadOutputArgs { percentage: 75 }))
+//!             .await
+//!             .unwrap();
+//!         Ok(UploadOutput(UploadOutputArgs { percentage: 100 }))
+//!     }
+//! }
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     let (router_handle, _) = start_router().await.unwrap();
+//!
+//!     // Set up the peer that provides the procedure definition.
+//!     let mut callee = PeerBuilder::new(PeerConnectionType::Remote(format!(
+//!         "ws://{}",
+//!         router_handle.local_addr()
+//!     )));
+//!     callee.add_procedure_pattern_matched_progressive(UploadHandler);
+//!     let (callee, _) = callee.start(
+//!         new_web_socket_peer(PeerConfig::default()).unwrap(),
+//!         Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!     );
+//!     callee.wait_until_ready().await.unwrap();
+//!
+//!     // Set up the caller.
+//!     let (caller, _) = PeerBuilder::new(PeerConnectionType::Remote(format!(
+//!         "ws://{}",
+//!         router_handle.local_addr()
+//!     )))
+//!     .start(
+//!         new_web_socket_peer(PeerConfig::default()).unwrap(),
+//!         Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!     );
+//!     caller.wait_until_ready().await.unwrap();
+//!
+//!     // Call the procedure.
+//!     let mut rpc = caller
+//!         .call_with_progress::<UploadInput, UploadOutput>(
+//!             UploadPattern {
+//!                 file_type: "png".to_owned(),
+//!             }
+//!             .wamp_generate_uri()
+//!             .unwrap(),
+//!             UploadInput,
+//!             CallOptions::default(),
+//!         )
+//!         .await
+//!         .unwrap();
+//!     let mut results = Vec::new();
+//!     while let Ok(Some(result)) = rpc.next_result().await {
+//!         results.push(result);
+//!     }
+//!     assert_eq!(
+//!         results,
+//!         Vec::from_iter([
+//!             UploadOutput(UploadOutputArgs { percentage: 25 }),
+//!             UploadOutput(UploadOutputArgs { percentage: 50 }),
+//!             UploadOutput(UploadOutputArgs { percentage: 75 }),
+//!             UploadOutput(UploadOutputArgs { percentage: 100 }),
+//!         ])
+//!     );
+//!
+//!     assert_eq!(
+//!         TryInto::<UploadError>::try_into(
+//!             caller
+//!                 .call_and_wait::<UploadInput, UploadOutput>(
+//!                     UploadPattern {
+//!                         file_type: "gif".to_owned(),
+//!                     }
+//!                     .wamp_generate_uri()
+//!                     .unwrap(),
+//!                     UploadInput,
+//!                     CallOptions::default(),
+//!                 )
+//!                 .await
+//!                 .unwrap_err()
+//!                 .downcast::<WampError>()
+//!                 .unwrap()
+//!         )
+//!         .unwrap(),
+//!         UploadError::UnsupportedFileType
+//!     );
+//! }
+//! ```
 pub mod error;
 pub mod peer;
 pub mod procedure;

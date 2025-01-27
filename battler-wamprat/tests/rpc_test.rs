@@ -113,7 +113,7 @@ impl TypedProcedure for AddHandler {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn registers_methods_on_start() {
     test_utils::setup::setup_test_environment();
 
@@ -178,7 +178,7 @@ async fn registers_methods_on_start() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn registers_methods_on_reconnect() {
     test_utils::setup::setup_test_environment();
 
@@ -232,7 +232,7 @@ async fn registers_methods_on_reconnect() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn retries_call_during_reconnect() {
     test_utils::setup::setup_test_environment();
 
@@ -288,6 +288,7 @@ async fn retries_call_during_reconnect() {
             Uri::try_from(REALM).unwrap(),
             caller_handle.current_session_id().await.unwrap(),
         )
+        .await
         .unwrap();
 
     call_handle.await.unwrap();
@@ -302,7 +303,7 @@ async fn retries_call_during_reconnect() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn persists_error_data() {
     #[derive(Debug, WampApplicationMessage)]
     struct Input;
@@ -397,13 +398,17 @@ impl TypedProgressiveProcedure for UploadHandler {
         _: Self::Input,
         progress: ProgressReporter<'rpc, Self::Output>,
     ) -> Result<Self::Output> {
-        progress(UploadOutput(UploadOutputArgs { percentage: 33 }))?;
-        progress(UploadOutput(UploadOutputArgs { percentage: 67 }))?;
+        progress
+            .send(UploadOutput(UploadOutputArgs { percentage: 33 }))
+            .await?;
+        progress
+            .send(UploadOutput(UploadOutputArgs { percentage: 67 }))
+            .await?;
         Ok(UploadOutput(UploadOutputArgs { percentage: 100 }))
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn calls_with_progressive_results() {
     test_utils::setup::setup_test_environment();
 
@@ -495,7 +500,7 @@ impl TypedPatternMatchedProcedure for UploadHandler {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn calls_pattern_matched_procedure() {
     test_utils::setup::setup_test_environment();
 
@@ -566,14 +571,23 @@ impl TypedPatternMatchedProgressiveProcedure for UploadHandler {
         if procedure.file_type != "png" {
             return Err(UploadError::UnsupportedFileType);
         }
-        progress(UploadOutput(UploadOutputArgs { percentage: 25 })).ok();
-        progress(UploadOutput(UploadOutputArgs { percentage: 50 })).ok();
-        progress(UploadOutput(UploadOutputArgs { percentage: 75 })).ok();
+        progress
+            .send(UploadOutput(UploadOutputArgs { percentage: 25 }))
+            .await
+            .ok();
+        progress
+            .send(UploadOutput(UploadOutputArgs { percentage: 50 }))
+            .await
+            .ok();
+        progress
+            .send(UploadOutput(UploadOutputArgs { percentage: 75 }))
+            .await
+            .ok();
         Ok(UploadOutput(UploadOutputArgs { percentage: 100 }))
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn calls_pattern_matched_procedure_with_progressive_results() {
     test_utils::setup::setup_test_environment();
 
@@ -659,7 +673,7 @@ async fn calls_pattern_matched_procedure_with_progressive_results() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn calls_procedure_with_timeout() {
     test_utils::setup::setup_test_environment();
 
@@ -688,7 +702,7 @@ async fn calls_procedure_with_timeout() {
             loop {
                 timeout = timeout + Duration::from_secs(1);
                 tokio::time::sleep(timeout).await;
-                progress(Output)?;
+                progress.send(Output).await?;
             }
         }
     }
@@ -750,7 +764,7 @@ async fn calls_procedure_with_timeout() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn call_cancellation_cancels_invocation() {
     test_utils::setup::setup_test_environment();
 
@@ -777,7 +791,7 @@ async fn call_cancellation_cancels_invocation() {
         ) -> Result<Self::Output> {
             loop {
                 tokio::time::sleep(Duration::ZERO).await;
-                progress(Output)?;
+                progress.send(Output).await?;
             }
         }
     }
@@ -839,7 +853,7 @@ async fn call_cancellation_cancels_invocation() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn shared_registration_persists_across_reconnects() {
     test_utils::setup::setup_test_environment();
 
@@ -941,6 +955,7 @@ async fn shared_registration_persists_across_reconnects() {
             Uri::try_from(REALM).unwrap(),
             callee_2_handle.current_session_id().await.unwrap(),
         )
+        .await
         .unwrap();
     callee_2_handle.wait_until_ready().await.unwrap();
 

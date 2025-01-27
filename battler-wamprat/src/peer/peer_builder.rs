@@ -39,6 +39,7 @@ use crate::{
     },
     procedure::{
         Procedure,
+        ProgressReporter,
         TypedPatternMatchedProcedure,
         TypedPatternMatchedProgressiveProcedure,
         TypedProcedure,
@@ -140,7 +141,7 @@ impl PeerBuilder {
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
                 let result = self.invoke_internal(arguments, arguments_keyword).await;
-                invocation.respond(result)
+                invocation.respond(result).await
             }
         }
 
@@ -258,7 +259,7 @@ impl PeerBuilder {
                 let result = self
                     .invoke_internal(arguments, arguments_keyword, procedure)
                     .await;
-                invocation.respond(result)
+                invocation.respond(result).await
             }
         }
 
@@ -316,18 +317,9 @@ impl PeerBuilder {
                     Input::wamp_deserialize_application_message(arguments, arguments_keyword)
                         .map_err(Into::<WampratDeserializeError>::into)
                         .map_err(Into::<WampError>::into)?;
-                let progress = Box::new(|output: Output| {
-                    let (arguments, arguments_keyword) =
-                        output.wamp_serialize_application_message()?;
-                    invocation.progress(RpcYield {
-                        arguments,
-                        arguments_keyword,
-                    })?;
-                    Ok(())
-                });
                 let output = self
                     .procedure
-                    .invoke(input, progress)
+                    .invoke(input, ProgressReporter::new(&invocation))
                     .await
                     .map_err(|err| Into::<WampError>::into(err))?;
                 let (arguments, arguments_keyword) = output
@@ -357,7 +349,7 @@ impl PeerBuilder {
                 let result = self
                     .invoke_internal(arguments, arguments_keyword, &invocation)
                     .await;
-                invocation.respond(result)
+                invocation.respond(result).await
             }
         }
 
@@ -437,18 +429,9 @@ impl PeerBuilder {
                         .as_ref(),
                 )
                 .map_err(Into::<WampError>::into)?;
-                let progress = Box::new(|output: Output| {
-                    let (arguments, arguments_keyword) =
-                        output.wamp_serialize_application_message()?;
-                    invocation.progress(RpcYield {
-                        arguments,
-                        arguments_keyword,
-                    })?;
-                    Ok(())
-                });
                 let output = self
                     .procedure
-                    .invoke(input, procedure, progress)
+                    .invoke(input, procedure, ProgressReporter::new(&invocation))
                     .await
                     .map_err(|err| Into::<WampError>::into(err))?;
                 let (arguments, arguments_keyword) = output
@@ -487,7 +470,7 @@ impl PeerBuilder {
                 let result = self
                     .invoke_internal(arguments, arguments_keyword, procedure, &invocation)
                     .await;
-                invocation.respond(result)
+                invocation.respond(result).await
             }
         }
 

@@ -46,10 +46,7 @@ use tokio::{
     sync::{
         RwLock,
         broadcast,
-        mpsc::{
-            UnboundedSender,
-            unbounded_channel,
-        },
+        mpsc,
     },
     task::JoinHandle,
 };
@@ -692,13 +689,13 @@ where
         procedure: Arc<Box<dyn Procedure>>,
         uri: WildcardUri,
         invocation: Invocation,
-        invocation_done_rx: UnboundedSender<Id>,
+        invocation_done_rx: mpsc::Sender<Id>,
     ) {
         let id = invocation.id();
         if let Err(err) = procedure.invoke(invocation).await {
             error!("Procedure invocation {id} of {uri} failed: {err}");
         }
-        invocation_done_rx.send(id).ok();
+        invocation_done_rx.send(id).await.ok();
     }
 
     async fn invocation_loop(
@@ -706,7 +703,7 @@ where
         procedure: Arc<Box<dyn Procedure>>,
         mut procedure_message_rx: broadcast::Receiver<ProcedureMessage>,
     ) {
-        let (invocation_done_tx, mut invocation_done_rx) = unbounded_channel();
+        let (invocation_done_tx, mut invocation_done_rx) = mpsc::channel(16);
         let mut invocations = HashMap::default();
         loop {
             tokio::select! {

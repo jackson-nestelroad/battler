@@ -135,7 +135,7 @@ impl TypedPatternMatchedSubscription for MessageEventHandler {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn receives_events() {
     test_utils::setup::setup_test_environment();
 
@@ -252,7 +252,7 @@ async fn receives_events() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn resubscribes_on_reconnect() {
     test_utils::setup::setup_test_environment();
 
@@ -377,7 +377,7 @@ async fn resubscribes_on_reconnect() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn retries_publish_during_reconnect() {
     test_utils::setup::setup_test_environment();
 
@@ -438,6 +438,7 @@ async fn retries_publish_during_reconnect() {
             Uri::try_from(REALM).unwrap(),
             publisher_handle.current_session_id().await.unwrap(),
         )
+        .await
         .unwrap();
 
     // Receive the event.
@@ -460,7 +461,7 @@ async fn retries_publish_during_reconnect() {
     router_join_handle.await.unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn receives_pattern_based_events() {
     test_utils::setup::setup_test_environment();
 

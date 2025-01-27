@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use battler_wamp::{
@@ -5,7 +7,10 @@ use battler_wamp::{
         error::WampError,
         invocation_policy::InvocationPolicy,
     },
-    peer::Invocation,
+    peer::{
+        Invocation,
+        RpcYield,
+    },
 };
 
 /// Options for registering a procedure.
@@ -73,8 +78,36 @@ pub trait TypedPatternMatchedProcedure: Send + Sync {
     }
 }
 
-/// Type for reporting progress of a procedure that produces progressive results.
-pub type ProgressReporter<'a, T> = Box<dyn Fn(T) -> Result<()> + Send + 'a>;
+/// Object for reporting progress of a procedure that produces progressive results.
+pub struct ProgressReporter<'rpc, T> {
+    invocation: &'rpc Invocation,
+    _phantom: PhantomData<T>,
+}
+
+impl<'rpc, T> ProgressReporter<'rpc, T>
+where
+    T: battler_wamprat_message::WampApplicationMessage,
+{
+    /// Creates a new progress reporter.
+    pub fn new(invocation: &'rpc Invocation) -> Self {
+        Self {
+            invocation,
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Sends a progress result for the RPC invocation.
+    pub async fn send(&self, value: T) -> Result<()> {
+        let (arguments, arguments_keyword) = value.wamp_serialize_application_message()?;
+        self.invocation
+            .progress(RpcYield {
+                arguments,
+                arguments_keyword,
+            })
+            .await?;
+        Ok(())
+    }
+}
 
 /// A strongly-typed procedure that generates progressive output based on some input.
 #[async_trait]
