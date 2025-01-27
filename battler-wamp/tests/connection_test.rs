@@ -61,7 +61,7 @@ async fn peer_connects_to_router() {
 
     // The channel is closed.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
-        assert!(err.to_string().contains("channel closed"));
+        assert!(err.to_string().contains("channel closed"), "{err}");
     });
 }
 
