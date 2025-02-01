@@ -18,4 +18,6 @@ members = [
     "battler-wamprat/battler-wamprat-message/battler-wamprat-message-proc-macro",
     "battler-wamprat/battler-wamprat-uri",
     "battler-wamprat/battler-wamprat-uri/battler-wamprat-uri-proc-macro",
+    "battler-wamprat-schema",
+    "battler-wamprat-schema/battler-wamprat-schema-proc-macro",
 ]
