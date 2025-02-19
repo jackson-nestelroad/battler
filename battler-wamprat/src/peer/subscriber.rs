@@ -249,9 +249,12 @@ where
         persistent_subscription: &mut PersistentSubscription,
     ) -> Result<()> {
         let subscription = peer
-            .subscribe_with_options(topic.clone(), SubscriptionOptions {
-                match_style: persistent_subscription.match_style,
-            })
+            .subscribe_with_options(
+                topic.clone(),
+                SubscriptionOptions {
+                    match_style: persistent_subscription.match_style,
+                },
+            )
             .await?;
         persistent_subscription.current_id = Some(subscription.id);
         tokio::spawn(Self::event_loop(

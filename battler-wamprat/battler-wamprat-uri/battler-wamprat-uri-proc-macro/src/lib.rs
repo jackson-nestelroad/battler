@@ -161,10 +161,13 @@ impl UriAttr {
                 .ok_or_else(|| {
                     Error::new(
                         span,
-                        format!("struct does not have any member \"{}\"", match member {
-                            Member::Unnamed(index) => index.index.to_string(),
-                            Member::Named(ident) => ident.to_string(),
-                        }),
+                        format!(
+                            "struct does not have any member \"{}\"",
+                            match member {
+                                Member::Unnamed(index) => index.index.to_string(),
+                                Member::Named(ident) => ident.to_string(),
+                            }
+                        ),
                     )
                 })?;
 

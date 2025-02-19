@@ -1,7 +1,6 @@
 #![feature(const_trait_impl)]
 #![feature(hasher_prefixfree_extras)]
 #![feature(pattern)]
-#![feature(trait_upcasting)]
 #![feature(try_trait_v2)]
 
 pub mod abilities;

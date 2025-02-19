@@ -319,14 +319,20 @@ async fn calls_from_same_peer_processed_in_parallel() {
     let handler_handle = tokio::spawn(handler(procedure));
 
     // Two calls made in parallel.
-    let call_1 = caller.call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall {
-        arguments: List::from_iter([Value::Integer(1)]),
-        ..Default::default()
-    });
-    let call_2 = caller.call_and_wait(Uri::try_from("com.battler.fn").unwrap(), RpcCall {
-        arguments: List::from_iter([Value::Integer(2)]),
-        ..Default::default()
-    });
+    let call_1 = caller.call_and_wait(
+        Uri::try_from("com.battler.fn").unwrap(),
+        RpcCall {
+            arguments: List::from_iter([Value::Integer(1)]),
+            ..Default::default()
+        },
+    );
+    let call_2 = caller.call_and_wait(
+        Uri::try_from("com.battler.fn").unwrap(),
+        RpcCall {
+            arguments: List::from_iter([Value::Integer(2)]),
+            ..Default::default()
+        },
+    );
 
     let results = join_all([call_1, call_2]).await;
     assert_eq!(results.len(), 2);
@@ -1228,10 +1234,13 @@ mod procedure_wildcard_match_test {
         S: Send + 'static,
     {
         let procedure = peer
-            .register_with_options(uri.clone(), ProcedureOptions {
-                match_style,
-                ..Default::default()
-            })
+            .register_with_options(
+                uri.clone(),
+                ProcedureOptions {
+                    match_style,
+                    ..Default::default()
+                },
+            )
             .await
             .unwrap();
 
@@ -1271,10 +1280,13 @@ mod procedure_wildcard_match_test {
         S: Send + 'static,
     {
         let procedure = peer
-            .register_with_options(uri.clone(), ProcedureOptions {
-                match_style,
-                ..Default::default()
-            })
+            .register_with_options(
+                uri.clone(),
+                ProcedureOptions {
+                    match_style,
+                    ..Default::default()
+                },
+            )
             .await
             .unwrap();
 

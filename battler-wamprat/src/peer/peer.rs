@@ -327,10 +327,13 @@ where
         Payload: battler_wamprat_message::WampApplicationMessage + 'static,
     {
         let (arguments, arguments_keyword) = payload.wamp_serialize_application_message()?;
-        self.publish_unchecked(topic, PublishedEvent {
-            arguments,
-            arguments_keyword,
-        })
+        self.publish_unchecked(
+            topic,
+            PublishedEvent {
+                arguments,
+                arguments_keyword,
+            },
+        )
         .await
     }
 
@@ -395,11 +398,14 @@ where
     {
         let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
         let result = self
-            .call_and_wait_unchecked(procedure, RpcCall {
-                arguments,
-                arguments_keyword,
-                timeout: options.timeout,
-            })
+            .call_and_wait_unchecked(
+                procedure,
+                RpcCall {
+                    arguments,
+                    arguments_keyword,
+                    timeout: options.timeout,
+                },
+            )
             .await?;
         let output = Output::wamp_deserialize_application_message(
             result.arguments,
@@ -434,11 +440,14 @@ where
     {
         let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
         let rpc = self
-            .call_unchecked(procedure, RpcCall {
-                arguments,
-                arguments_keyword,
-                timeout: options.timeout,
-            })
+            .call_unchecked(
+                procedure,
+                RpcCall {
+                    arguments,
+                    arguments_keyword,
+                    timeout: options.timeout,
+                },
+            )
             .await?;
         Ok(TypedSimplePendingRpc::new(rpc))
     }
@@ -472,11 +481,14 @@ where
     {
         let (arguments, arguments_keyword) = input.wamp_serialize_application_message()?;
         let rpc = self
-            .call_with_progress_unchecked(procedure, RpcCall {
-                arguments,
-                arguments_keyword,
-                timeout: options.timeout,
-            })
+            .call_with_progress_unchecked(
+                procedure,
+                RpcCall {
+                    arguments,
+                    arguments_keyword,
+                    timeout: options.timeout,
+                },
+            )
             .await?;
         Ok(TypedProgressivePendingRpc::new(rpc))
     }
@@ -751,10 +763,13 @@ where
         for (uri, procedure) in &self.procedures {
             let procedure_message_rx = match self
                 .peer
-                .register_with_options(uri.clone(), ProcedureOptions {
-                    match_style: procedure.match_style,
-                    invocation_policy: procedure.invocation_policy,
-                })
+                .register_with_options(
+                    uri.clone(),
+                    ProcedureOptions {
+                        match_style: procedure.match_style,
+                        invocation_policy: procedure.invocation_policy,
+                    },
+                )
                 .await
             {
                 Ok(procedure) => procedure.procedure_message_rx,

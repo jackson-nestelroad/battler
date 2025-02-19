@@ -146,12 +146,15 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures.insert(uri.into(), PreregisteredProcedure {
-            procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
-            ignore_registration_error: false,
-            match_style: None,
-            invocation_policy: options.invocation_policy,
-        });
+        self.procedures.insert(
+            uri.into(),
+            PreregisteredProcedure {
+                procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
+                ignore_registration_error: false,
+                match_style: None,
+                invocation_policy: options.invocation_policy,
+            },
+        );
     }
 
     /// Adds a new strongly-typed, pattern-matched procedure, which will be registered on every new
@@ -264,13 +267,15 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures
-            .insert(Pattern::uri_for_router(), PreregisteredProcedure {
+        self.procedures.insert(
+            Pattern::uri_for_router(),
+            PreregisteredProcedure {
                 procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
                 ignore_registration_error: false,
                 match_style: Pattern::match_style(),
                 invocation_policy: options.invocation_policy,
-            });
+            },
+        );
     }
 
     /// Adds a new strongly-typed, progressive procedure, which will be registered on every new
@@ -354,12 +359,15 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures.insert(uri.into(), PreregisteredProcedure {
-            procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
-            ignore_registration_error: false,
-            match_style: None,
-            invocation_policy: options.invocation_policy,
-        });
+        self.procedures.insert(
+            uri.into(),
+            PreregisteredProcedure {
+                procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
+                ignore_registration_error: false,
+                match_style: None,
+                invocation_policy: options.invocation_policy,
+            },
+        );
     }
 
     /// Adds a new strongly-typed, pattern-matched, progressive procedure, which will be registered
@@ -475,13 +483,15 @@ impl PeerBuilder {
         }
 
         let options = T::options();
-        self.procedures
-            .insert(Pattern::uri_for_router(), PreregisteredProcedure {
+        self.procedures.insert(
+            Pattern::uri_for_router(),
+            PreregisteredProcedure {
                 procedure: Arc::new(Box::new(ProcedureWrapper::new(procedure))),
                 ignore_registration_error: false,
                 match_style: Pattern::match_style(),
                 invocation_policy: options.invocation_policy,
-            });
+            },
+        );
     }
 
     /// Builds and starts a new [`Peer`] object in an asynchronous task, which can be managed
