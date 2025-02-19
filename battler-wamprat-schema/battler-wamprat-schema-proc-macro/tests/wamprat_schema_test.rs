@@ -30,6 +30,7 @@ fn derive() {
 
     #[derive(WampSchema)]
     #[realm("com.battler.realm")]
+    #[allow(unused)]
     enum Calculator {
         #[rpc(input = Input, output = Output, uri = "com.battler.add")]
         Add,
