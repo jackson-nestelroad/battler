@@ -16,11 +16,13 @@ use syn::{
     spanned::Spanned,
 };
 
+#[allow(dead_code)]
 enum UriAttribute {
     Uri(LitStr),
     Pattern(Path),
 }
 
+#[allow(dead_code)]
 struct RpcAttribute {
     input: Path,
     output: Path,
@@ -29,22 +31,26 @@ struct RpcAttribute {
     progressive: bool,
 }
 
+#[allow(dead_code)]
 struct PubSubAttribute {
     event: Path,
     uri: UriAttribute,
 }
 
+#[allow(dead_code)]
 enum Attribute {
     Rpc(RpcAttribute),
     PubSub(PubSubAttribute),
 }
 
+#[allow(dead_code)]
 struct Variant {
     span: Span,
     ident: Ident,
     attribute: Attribute,
 }
 
+#[allow(dead_code)]
 struct Input {
     ident: Ident,
     realm: LitStr,
@@ -168,6 +174,7 @@ impl Parse for Input {
 /// `battler_wamprat::Peer`.
 #[proc_macro_derive(WampSchema, attributes(realm, rpc, pubsub))]
 pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    #[allow(unused)]
     let input = parse_macro_input!(input as Input);
     quote! {}.into()
 }
