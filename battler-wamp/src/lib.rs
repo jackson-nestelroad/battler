@@ -269,14 +269,17 @@
 //!
 //!     // The subscription contains a channel for receiving events.
 //!     while let Ok(event) = subscription.event_rx.recv().await {
-//!         assert_eq!(event, ReceivedEvent {
-//!             arguments: List::from_iter([Value::Integer(123)]),
-//!             arguments_keyword: Dictionary::from_iter([(
-//!                 "foo".to_owned(),
-//!                 Value::String("bar".to_owned())
-//!             )]),
-//!             topic: Some(Uri::try_from("com.battler_wamp.topic1").unwrap()),
-//!         });
+//!         assert_eq!(
+//!             event,
+//!             ReceivedEvent {
+//!                 arguments: List::from_iter([Value::Integer(123)]),
+//!                 arguments_keyword: Dictionary::from_iter([(
+//!                     "foo".to_owned(),
+//!                     Value::String("bar".to_owned())
+//!                 )]),
+//!                 topic: Some(Uri::try_from("com.battler_wamp.topic1").unwrap()),
+//!             }
+//!         );
 //!
 //!         // Unsubscribe to close the event loop.
 //!         subscriber.unsubscribe(subscription.id).await.unwrap();
@@ -394,16 +397,22 @@
 //!
 //!     tokio::spawn(publisher(router_handle.clone()));
 //!
-//!     assert_eq!(subscription.event_rx.recv().await.unwrap(), ReceivedEvent {
-//!         arguments: List::from_iter([Value::Integer(123)]),
-//!         topic: Some(Uri::try_from("com.battler_wamp.topics.1").unwrap()),
-//!         ..Default::default()
-//!     });
-//!     assert_eq!(subscription.event_rx.recv().await.unwrap(), ReceivedEvent {
-//!         arguments: List::from_iter([Value::Integer(456)]),
-//!         topic: Some(Uri::try_from("com.battler_wamp.topics.2").unwrap()),
-//!         ..Default::default()
-//!     });
+//!     assert_eq!(
+//!         subscription.event_rx.recv().await.unwrap(),
+//!         ReceivedEvent {
+//!             arguments: List::from_iter([Value::Integer(123)]),
+//!             topic: Some(Uri::try_from("com.battler_wamp.topics.1").unwrap()),
+//!             ..Default::default()
+//!         }
+//!     );
+//!     assert_eq!(
+//!         subscription.event_rx.recv().await.unwrap(),
+//!         ReceivedEvent {
+//!             arguments: List::from_iter([Value::Integer(456)]),
+//!             topic: Some(Uri::try_from("com.battler_wamp.topics.2").unwrap()),
+//!             ..Default::default()
+//!         }
+//!     );
 //! }
 //! ```
 //!
@@ -508,24 +517,30 @@
 //!     caller.join_realm("com.battler_wamp.realm").await.unwrap();
 //!
 //!     let rpc = caller
-//!         .call(Uri::try_from("com.battler_wamp.echo").unwrap(), RpcCall {
+//!         .call(
+//!             Uri::try_from("com.battler_wamp.echo").unwrap(),
+//!             RpcCall {
+//!                 arguments: List::from_iter([Value::Integer(1), Value::Integer(2)]),
+//!                 arguments_keyword: Dictionary::from_iter([(
+//!                     "foo".to_owned(),
+//!                     Value::String("bar".to_owned()),
+//!                 )]),
+//!                 ..Default::default()
+//!             },
+//!         )
+//!         .await
+//!         .unwrap();
+//!     assert_eq!(
+//!         rpc.result().await.unwrap(),
+//!         RpcResult {
 //!             arguments: List::from_iter([Value::Integer(1), Value::Integer(2)]),
 //!             arguments_keyword: Dictionary::from_iter([(
 //!                 "foo".to_owned(),
 //!                 Value::String("bar".to_owned()),
 //!             )]),
 //!             ..Default::default()
-//!         })
-//!         .await
-//!         .unwrap();
-//!     assert_eq!(rpc.result().await.unwrap(), RpcResult {
-//!         arguments: List::from_iter([Value::Integer(1), Value::Integer(2)]),
-//!         arguments_keyword: Dictionary::from_iter([(
-//!             "foo".to_owned(),
-//!             Value::String("bar".to_owned()),
-//!         )]),
-//!         ..Default::default()
-//!     });
+//!         }
+//!     );
 //! }
 //! ```
 //!
@@ -656,10 +671,13 @@
 //!
 //!     assert_eq!(
 //!         caller
-//!             .call_and_wait(Uri::try_from("com.battler_wamp.add2").unwrap(), RpcCall {
-//!                 arguments: List::from_iter([Value::Integer(1), Value::Integer(2)]),
-//!                 ..Default::default()
-//!             })
+//!             .call_and_wait(
+//!                 Uri::try_from("com.battler_wamp.add2").unwrap(),
+//!                 RpcCall {
+//!                     arguments: List::from_iter([Value::Integer(1), Value::Integer(2)]),
+//!                     ..Default::default()
+//!                 }
+//!             )
 //!             .await
 //!             .unwrap(),
 //!         RpcResult {
