@@ -129,6 +129,7 @@ pub type List = Vec<Value>;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Value {
+    Null,
     Integer(Integer),
     String(String),
     Bool(bool),
@@ -230,6 +231,18 @@ impl From<List> for Value {
     }
 }
 
+impl<T> From<Option<T>> for Value
+where
+    T: Into<Value>,
+{
+    fn from(value: Option<T>) -> Self {
+        match value {
+            Some(value) => value.into(),
+            None => Value::Null,
+        }
+    }
+}
+
 /// An error resulting from serializing a Rust object into a WAMP value using the [`WampSerialize`]
 /// trait.
 #[derive(Debug, Error)]
@@ -315,9 +328,7 @@ where
     fn wamp_serialize(self) -> Result<Value, WampSerializeError> {
         match self {
             Some(val) => val.wamp_serialize(),
-            None => Err(WampSerializeError::new(
-                "empty optional cannot be serialized",
-            )),
+            None => Ok(Value::Null),
         }
     }
 }
@@ -378,6 +389,9 @@ where
     T: WampDeserialize,
 {
     fn wamp_deserialize(value: Value) -> Result<Self, WampDeserializeError> {
-        Ok(Some(T::wamp_deserialize(value)?))
+        match value {
+            Value::Null => Ok(None),
+            value @ _ => Ok(Some(T::wamp_deserialize(value)?)),
+        }
     }
 }

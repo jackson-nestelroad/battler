@@ -79,7 +79,44 @@ fn deserializes_fields() {
 }
 
 #[test]
-fn allows_missing_optionals() {
+fn allows_missing_optionals_with_nulls() {
+    #[derive(Debug, PartialEq, WampDictionaryUnderTest)]
+    struct Args {
+        a: Integer,
+        b: Option<Integer>,
+        c: Option<Integer>,
+    }
+
+    assert_matches::assert_matches!(Args { a: 123, b: None, c: Some(12) }.wamp_serialize(), Ok(value) => {
+        pretty_assertions::assert_eq!(value, Value::Dictionary(Dictionary::from_iter([
+            ("a".to_owned(), Value::Integer(123)),
+            ("b".to_owned(), Value::Null),
+            ("c".to_owned(), Value::Integer(12)),
+        ])));
+    });
+
+    assert_matches::assert_matches!(Args::wamp_deserialize(Value::Dictionary(Dictionary::from_iter([
+        ("a".to_owned(), Value::Integer(123)),
+        ("b".to_owned(), Value::Integer(456)),
+    ]))), Err(err) => {
+        assert_eq!(err.to_string(), "dictionary member c of Args is missing");
+    });
+
+    assert_matches::assert_matches!(Args::wamp_deserialize(Value::Dictionary(Dictionary::from_iter([
+        ("a".to_owned(), Value::Integer(123)),
+        ("b".to_owned(), Value::Integer(456)),
+        ("c".to_owned(), Value::Null),
+    ]))), Ok(value) => {
+        pretty_assertions::assert_eq!(value, Args {
+            a: 123,
+            b: Some(456),
+            c: None,
+        });
+    });
+}
+
+#[test]
+fn skips_missing_optionals() {
     #[derive(Debug, PartialEq, WampDictionaryUnderTest)]
     struct Args {
         a: Integer,
