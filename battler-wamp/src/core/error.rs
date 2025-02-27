@@ -144,6 +144,21 @@ pub enum InteractionError {
     /// The role being referenced does not exist.
     #[error("no such role")]
     NoSuchRole,
+    /// The principal being referenced does not exist.
+    #[error("no such principal")]
+    NoSuchPrincipal,
+    /// No authentication method the client offered is accepted.
+    #[error("no matching auth method")]
+    NoMatchingAuthMethod,
+    /// The authentication as presented by the client is denied.
+    #[error("authentication denied: {0}")]
+    AuthenticationDenied(String),
+    /// The authentication was rejected due to a technical runtime failure.
+    #[error("authentication failed: {0}")]
+    AuthenticationFailed(String),
+    /// The client did not provide the required, non-anonymous, authentication information.
+    #[error("authentication required")]
+    AuthenticationRequired,
     /// A procedure call was canceled due to the callee leaving.
     #[error("canceled")]
     Canceled,
@@ -168,6 +183,11 @@ impl InteractionError {
             Self::NoSuchSubscription => "no_such_subscription",
             Self::NoSuchRealm => "no_such_realm",
             Self::NoSuchRole => "no_such_role",
+            Self::NoSuchPrincipal => "no_such_principal",
+            Self::NoMatchingAuthMethod => "no_matching_auth_method",
+            Self::AuthenticationDenied(_) => "authentication_denied",
+            Self::AuthenticationFailed(_) => "authentication_failed",
+            Self::AuthenticationRequired => "authentication_required",
             Self::Canceled => "canceled",
             Self::Timeout => "timeout",
             Self::Unavailable => "unavailable",
@@ -202,6 +222,15 @@ fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
         "wamp.error.no_such_subscription" => InteractionError::NoSuchSubscription.into(),
         "wamp.error.no_such_realm" => InteractionError::NoSuchRealm.into(),
         "wamp.error.no_such_role" => InteractionError::NoSuchRole.into(),
+        "wamp.error.no_such_principal" => InteractionError::NoSuchPrincipal.into(),
+        "wamp.error.no_matching_auth_method" => InteractionError::NoMatchingAuthMethod.into(),
+        "wamp.error.authentication_denied" => {
+            InteractionError::AuthenticationDenied(message).into()
+        }
+        "wamp.error.authentication_failed" => {
+            InteractionError::AuthenticationFailed(message).into()
+        }
+        "wamp.error.authentication_required" => InteractionError::AuthenticationRequired.into(),
         "wamp.error.canceled" => InteractionError::Canceled.into(),
         "wamp.error.timeout" => InteractionError::Timeout.into(),
         "wamp.error.unavailable" => InteractionError::Unavailable.into(),

@@ -12,11 +12,14 @@ use serde_struct_tuple_enum::{
     SerializeStructTupleEnum,
 };
 
-use crate::core::{
-    id::Id,
-    uri::{
-        Uri,
-        WildcardUri,
+use crate::{
+    auth::auth_method::AuthMethod,
+    core::{
+        id::Id,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
 };
 
@@ -34,6 +37,22 @@ pub struct WelcomeMessage {
     pub session: Id,
     #[serde_struct_tuple(default, skip_serializing_if = Dictionary::is_empty)]
     pub details: Dictionary,
+}
+
+/// A CHALLENGE message for authenticated session establishment with a peer.
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
+pub struct ChallengeMessage {
+    pub auth_method: AuthMethod,
+    #[serde_struct_tuple(default, skip_serializing_if = Dictionary::is_empty)]
+    pub extra: Dictionary,
+}
+
+/// An AUTHENTICATE message for authenticating against a router's challenge.
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeStructTuple, DeserializeStructTuple)]
+pub struct AuthenticateMessage {
+    pub signature: String,
+    #[serde_struct_tuple(default, skip_serializing_if = Dictionary::is_empty)]
+    pub extra: Dictionary,
 }
 
 /// An ABORT message for quickly terminating a WAMP session.
@@ -259,6 +278,10 @@ pub enum Message {
     #[tag = 70]
     Yield(YieldMessage),
 
+    #[tag = 4]
+    Challenge(ChallengeMessage),
+    #[tag = 5]
+    Authenticate(AuthenticateMessage),
     #[tag = 49]
     Cancel(CancelMessage),
     #[tag = 69]
@@ -289,6 +312,8 @@ impl Message {
             Self::Unregistered(_) => "UNREGISTERED",
             Self::Invocation(_) => "INVOCATION",
             Self::Yield(_) => "YIELD",
+            Self::Challenge(_) => "CHALLENGE",
+            Self::Authenticate(_) => "AUTHENTICATE",
             Self::Cancel(_) => "CANCEL",
             Self::Interrupt(_) => "INTERRUPT",
         }

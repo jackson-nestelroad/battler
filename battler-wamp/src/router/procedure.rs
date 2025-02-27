@@ -82,7 +82,7 @@ impl ProcedureRegistration {
                 Ok(self.callees[self.last_callee_index].clone())
             }
             InvocationPolicy::Random => {
-                let index = rand::thread_rng().gen_range(0..callees.len());
+                let index = rand::rng().random_range(0..callees.len());
                 Ok(callees[index].clone())
             }
             InvocationPolicy::Last => {
