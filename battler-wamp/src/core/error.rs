@@ -258,6 +258,17 @@ fn extract_error_uri_reason_and_message(message: &Message) -> Result<(&Uri, &str
     Ok((reason, message))
 }
 
+impl Into<Error> for &Message {
+    fn into(self) -> Error {
+        match extract_error_uri_reason_and_message(self) {
+            Ok((reason, message)) => {
+                error_from_uri_reason_and_message(reason.clone(), message.to_owned())
+            }
+            Err(err) => err.context("message does not contain any error"),
+        }
+    }
+}
+
 /// An error that can be transmitted over channels.
 ///
 /// Maintains a [`WampError`] (reason URI and message), as well as a request ID for connecting

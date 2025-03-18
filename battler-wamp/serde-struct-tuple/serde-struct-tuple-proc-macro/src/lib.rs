@@ -197,22 +197,31 @@ pub fn derive_serialize_struct_tuple(input: TokenStream) -> TokenStream {
 
     let ident = input.ident;
 
+    let run_skipped_serializers = quote! {
+        for skipped in skipped {
+            skipped(seq)?;
+        }
+        skipped = std::vec::Vec::default();
+    };
+
     let field_serializers = input
         .fields
         .iter()
         .map(|field| {
             let ident = field.ident.as_ref().unwrap();
-            let field_serializer_check = match &field.attrs.skip_serializing_if {
-                Some(skip_serializing_if) => Some(quote! {
+            match &field.attrs.skip_serializing_if {
+                Some(skip_serializing_if) => quote! {
                     if #skip_serializing_if(&self.#ident) {
-                        return Ok(());
+                        skipped.push(std::boxed::Box::new(|seq| seq.serialize_element(&self.#ident)));
+                    } else {
+                        #run_skipped_serializers
+                        seq.serialize_element(&self.#ident)?;
                     }
-                }),
-                None => None,
-            };
-            quote! {
-                #field_serializer_check
-                seq.serialize_element(&self.#ident)?;
+                },
+                None => quote! {
+                    #run_skipped_serializers
+                        seq.serialize_element(&self.#ident)?;
+                },
             }
         })
         .collect::<Vec<_>>();
@@ -221,6 +230,7 @@ pub fn derive_serialize_struct_tuple(input: TokenStream) -> TokenStream {
         impl serde_struct_tuple::SerializeStructTuple for #ident {
             fn serialize_fields_to_seq<S>(&self, seq: &mut S) -> core::result::Result<(), S::Error> where S: serde::ser::SerializeSeq {
                 use serde::ser::SerializeSeq;
+                let mut skipped: std::vec::Vec<std::boxed::Box<dyn core::ops::FnOnce(&mut S) -> core::result::Result<(), S::Error>>> = std::vec::Vec::default();
                 #(#field_serializers)*
                 Ok(())
             }

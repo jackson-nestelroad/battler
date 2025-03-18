@@ -189,7 +189,7 @@ pub struct Router<S> {
     /// The factory for transports.
     pub(crate) transport_factory: Mutex<Box<dyn TransportFactory<S>>>,
 
-    // Allocator for global IDs.
+    /// Allocator for global IDs.
     pub(crate) id_allocator: Box<dyn IdAllocator>,
 
     cancel_tx: broadcast::Sender<()>,
@@ -248,6 +248,14 @@ where
             "Starting router {} at {addr}: {:?}",
             self.config.agent, self.config
         );
+
+        for (uri, realm) in &self.realm_manager.realms {
+            realm
+                .initialize()
+                .await
+                .map_err(|err| err.context(format!("failed to initialize realm {uri}")))?;
+        }
+
         let listener = TcpListener::bind(&addr).await?;
         let local_addr = listener.local_addr()?;
 

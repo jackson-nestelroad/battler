@@ -49,6 +49,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         new_web_socket_router,
@@ -62,6 +63,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Test Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm.test").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!
 //!     // Create the router.
@@ -115,6 +117,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -128,10 +131,12 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm A".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm.a").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm B".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm.b").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -191,6 +196,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -209,6 +215,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -310,6 +317,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -328,6 +336,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -442,6 +451,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -460,6 +470,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -567,6 +578,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -585,6 +597,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -715,6 +728,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -733,6 +747,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,

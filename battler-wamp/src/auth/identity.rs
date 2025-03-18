@@ -1,5 +1,5 @@
 /// The identity of an authenticated peer.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Identity {
     /// The authentication ID the client was actually authenticated as.
     pub id: String,

@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use password_hash::{
@@ -40,6 +42,12 @@ pub struct UserData {
 pub trait UserDatabase: Send + Sync {
     /// Looks up per-user data for WAMP-SCRAM.
     async fn user_data(&self, id: &str) -> Result<UserData>;
+}
+
+/// Factory for [`UserDatabase`] instances.
+#[async_trait]
+pub trait UserDatabaseFactory: Debug + Send + Sync {
+    async fn create_user_database(&self) -> Result<Box<dyn UserDatabase>>;
 }
 
 /// Generates a new user for the given password.

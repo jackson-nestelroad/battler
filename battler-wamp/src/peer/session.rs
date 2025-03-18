@@ -27,6 +27,7 @@ use tokio::sync::{
 };
 
 use crate::{
+    auth::Identity,
     core::{
         error::{
             BasicError,
@@ -49,8 +50,10 @@ use crate::{
             goodbye_and_out,
         },
         message::{
+            ChallengeMessage,
             InvocationMessage,
             Message,
+            WelcomeMessage,
             YieldMessage,
         },
     },
@@ -59,11 +62,13 @@ use crate::{
 #[derive(Debug)]
 struct EstablishingSessionState {
     realm: Uri,
+    authenticating: bool,
 }
 
 struct EstablishedSessionState {
     session_id: Id,
     realm: Uri,
+    welcome_message: WelcomeMessage,
     subscriptions: HashMap<Id, Subscription>,
     procedures: HashMap<Id, Procedure>,
     active_invocations: HashMap<Id, Id>,
@@ -155,6 +160,8 @@ pub struct Invocation {
 
     pub timeout: Duration,
     pub procedure: Option<Uri>,
+
+    pub identity: Identity,
 
     id: Id,
     message_tx: mpsc::Sender<Message>,
@@ -261,6 +268,7 @@ pub(crate) mod peer_session_message {
             id::Id,
             uri::Uri,
         },
+        message::message::WelcomeMessage,
         peer::{
             ReceivedEvent,
             session::ProcedureMessage,
@@ -271,6 +279,7 @@ pub(crate) mod peer_session_message {
     #[derive(Debug, Clone)]
     pub struct EstablishedSession {
         pub realm: Uri,
+        pub welcome_message: WelcomeMessage,
     }
 
     /// A subscription made on a topic.
@@ -356,6 +365,8 @@ pub struct SessionHandle {
         broadcast::Receiver<ChannelTransmittableResult<peer_session_message::EstablishedSession>>,
     closed_session_rx: broadcast::Receiver<()>,
 
+    auth_challenge_rx: broadcast::Receiver<ChallengeMessage>,
+
     subscribed_rx:
         broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Subscription>>,
     unsubscribed_rx:
@@ -393,6 +404,11 @@ impl SessionHandle {
     ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::EstablishedSession>>
     {
         self.established_session_rx.resubscribe()
+    }
+
+    /// The receiver channel for authentication challenges.
+    pub fn auth_challenge_rx(&self) -> broadcast::Receiver<ChallengeMessage> {
+        self.auth_challenge_rx.resubscribe()
     }
 
     /// The receiver channel, populated when the session moves to the CLOSED state.
@@ -456,6 +472,8 @@ pub struct Session {
         broadcast::Sender<ChannelTransmittableResult<peer_session_message::EstablishedSession>>,
     closed_session_tx: broadcast::Sender<()>,
 
+    auth_challenge_tx: broadcast::Sender<ChallengeMessage>,
+
     subscribed_tx:
         broadcast::Sender<ChannelTransmittableResult<peer_session_message::Subscription>>,
     unsubscribed_tx:
@@ -474,6 +492,7 @@ impl Session {
         let id_allocator = SequentialIdAllocator::default();
         let (established_session_tx, _) = broadcast::channel(16);
         let (closed_session_tx, _) = broadcast::channel(16);
+        let (auth_challenge_tx, _) = broadcast::channel(16);
         let (subscribed_tx, _) = broadcast::channel(16);
         let (unsubscribed_tx, _) = broadcast::channel(16);
         let (published_tx, _) = broadcast::channel(16);
@@ -487,6 +506,7 @@ impl Session {
             id_allocator: Arc::new(Box::new(id_allocator)),
             established_session_tx,
             closed_session_tx,
+            auth_challenge_tx,
             subscribed_tx,
             unsubscribed_tx,
             published_tx,
@@ -517,6 +537,7 @@ impl Session {
             id_allocator: self.id_allocator.clone(),
             established_session_rx: self.established_session_tx.subscribe(),
             closed_session_rx: self.closed_session_tx.subscribe(),
+            auth_challenge_rx: self.auth_challenge_tx.subscribe(),
             subscribed_rx: self.subscribed_tx.subscribe(),
             unsubscribed_rx: self.unsubscribed_tx.subscribe(),
             published_rx: self.published_tx.subscribe(),
@@ -532,6 +553,17 @@ impl Session {
     {
         match &*self.state.read().await {
             SessionState::Establishing(state) => Ok(f(&state)),
+            _ => Err(Error::msg("session is not in the establishing state")),
+        }
+    }
+
+    async fn modify_establishing_session_state<F, T>(&self, f: F) -> Result<T, Error>
+    where
+        F: FnOnce(&mut EstablishingSessionState) -> T,
+        T: 'static,
+    {
+        match &mut *self.state.write().await {
+            SessionState::Establishing(state) => Ok(f(state)),
             _ => Err(Error::msg("session is not in the establishing state")),
         }
     }
@@ -566,12 +598,9 @@ impl Session {
         match self.transition_state_from_sending_message(&message).await {
             Ok(()) => (),
             Err(err) => {
-                match &message {
-                    Message::Hello(_) => {
-                        self.established_session_tx.send(Err((&err).into()))?;
-                    }
-                    _ => (),
-                }
+                // If we failed to transition state, we may need to communicate the error to the
+                // peer waiting for join a realm.
+                self.established_session_tx.send(Err((&err).into())).ok();
                 return Err(err);
             }
         }
@@ -586,10 +615,20 @@ impl Session {
             Message::Hello(message) => {
                 self.transition_state(SessionState::Establishing(EstablishingSessionState {
                     realm: message.realm.clone(),
+                    authenticating: false,
                 }))
                 .await
             }
-            Message::Abort(_) => self.transition_state(SessionState::Closed).await,
+            Message::Abort(_) => {
+                self.transition_state(SessionState::Closed).await?;
+
+                // The peer may be waiting to join a realm, so we must communicate that the session
+                // closed.
+                self.established_session_tx
+                    .send(Err(Error::msg("session closed").into()))
+                    .ok();
+                Ok(())
+            }
             Message::Goodbye(_) => {
                 let next_state = match &*self.state.read().await {
                     SessionState::Closing => SessionState::Closed,
@@ -658,7 +697,12 @@ impl Session {
             ))
             .into())
         } else if establishing {
-            self.handle_establishing(message).await
+            let result = self.handle_establishing(message).await;
+            if let Err(err) = &result {
+                self.transition_state(SessionState::Closed).await?;
+                self.established_session_tx.send(Err(err.into())).ok();
+            }
+            result
         } else if closing {
             self.handle_closing(message).await
         } else {
@@ -672,21 +716,30 @@ impl Session {
                 let realm = self
                     .get_from_establishing_session_state(|state| state.realm.clone())
                     .await?;
+
                 self.transition_state(SessionState::Established(EstablishedSessionState {
                     session_id: message.session,
                     realm,
+                    welcome_message: message,
                     subscriptions: HashMap::default(),
                     procedures: HashMap::default(),
                     active_invocations: HashMap::default(),
                 }))
                 .await
             }
-            message @ Message::Abort(_) => {
-                self.transition_state(SessionState::Closed).await?;
-                self.established_session_tx
-                    .send(Err((&message).try_into()?))?;
+            Message::Challenge(message) => {
+                let authenticating = self
+                    .get_from_establishing_session_state(|state| state.authenticating)
+                    .await?;
+                if authenticating {
+                    return Err(Error::msg("duplicate challenge received"));
+                }
+                self.modify_establishing_session_state(|state| state.authenticating = true)
+                    .await?;
+                self.auth_challenge_tx.send(message)?;
                 Ok(())
             }
+            message @ Message::Abort(_) => Err((&message).into()),
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on an establishing session",
                 message.message_name()
@@ -855,6 +908,15 @@ impl Session {
                     .get("procedure")
                     .and_then(|val| val.string())
                     .and_then(|val| Uri::try_from(val).ok());
+
+                let mut identity = Identity::default();
+                if let Some(auth_id) = message.details.get("battler_wamp_authid") {
+                    identity.id = auth_id.string().unwrap_or_default().to_owned();
+                }
+                if let Some(auth_role) = message.details.get("battler_wamp_authrole") {
+                    identity.role = auth_role.string().unwrap_or_default().to_owned();
+                }
+
                 procedure
                     .procedure_tx
                     .send(ProcedureMessage::Invocation(Invocation {
@@ -862,6 +924,7 @@ impl Session {
                         arguments_keyword: message.call_arguments_keyword,
                         timeout,
                         procedure: reported_procedure,
+                        identity,
                         id: message.request,
                         message_tx: self.service_message_tx.clone(),
                         receive_progress,
@@ -962,6 +1025,7 @@ impl Session {
                 self.established_session_tx
                     .send(Ok(peer_session_message::EstablishedSession {
                         realm: state.realm.clone(),
+                        welcome_message: state.welcome_message.clone(),
                     }))?;
             }
             SessionState::Closed => {

@@ -31,6 +31,7 @@ use battler_wamp::{
     router::{
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
+        RealmAuthenticationConfig,
         RealmConfig,
         RouterConfig,
         RouterHandle,
@@ -55,6 +56,7 @@ async fn start_router_with_config(
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
+        authentication: RealmAuthenticationConfig::default(),
     });
     let router = new_web_socket_router(
         config,

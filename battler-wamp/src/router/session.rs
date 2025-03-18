@@ -35,6 +35,10 @@ use tokio::sync::{
 };
 
 use crate::{
+    auth::{
+        GenericServerAuthenticator,
+        Identity,
+    },
     core::{
         cancel::CallCancelMode,
         close::CloseReason,
@@ -72,6 +76,7 @@ use crate::{
             goodbye_with_close_reason,
         },
         message::{
+            AuthenticateMessage,
             CallMessage,
             CancelMessage,
             HelloMessage,
@@ -109,6 +114,7 @@ use crate::{
 
 struct EstablishedSessionState {
     realm: Uri,
+    identity: Option<Identity>,
     subscriptions: HashMap<Id, WildcardUri>,
     procedures: HashMap<Id, WildcardUri>,
     active_invocations_by_call: HashMap<Id, RpcInvocation>,
@@ -126,10 +132,31 @@ impl Debug for EstablishedSessionState {
     }
 }
 
+struct ChallengingSessionState {
+    hello_message: HelloMessage,
+    authenticator: Arc<Box<dyn GenericServerAuthenticator>>,
+}
+
+impl Debug for ChallengingSessionState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        #[derive(Debug)]
+        #[allow(unused)]
+        struct DebugChallengingSessionState<'a> {
+            hello_message: &'a HelloMessage,
+        }
+
+        DebugChallengingSessionState {
+            hello_message: &self.hello_message,
+        }
+        .fmt(f)
+    }
+}
+
 #[derive(Debug, Default)]
 enum SessionState {
     #[default]
     Closed,
+    Challenging(ChallengingSessionState),
     Established(EstablishedSessionState),
     Closing,
 }
@@ -146,7 +173,10 @@ impl SessionState {
 
     fn allowed_state_transition(&self, next: &Self) -> bool {
         match (self, next) {
+            (Self::Closed, Self::Challenging(_)) => true,
             (Self::Closed, Self::Established(_)) => true,
+            (Self::Challenging(_), Self::Established(_)) => true,
+            (Self::Challenging(_), Self::Closed) => true,
             (Self::Established(_), Self::Closing) => true,
             (Self::Established(_), Self::Closed) => true,
             (Self::Closing, Self::Closed) => true,
@@ -355,6 +385,16 @@ impl Session {
         self.procedure_message_tx.subscribe()
     }
 
+    async fn get_from_challenging_session_state<F, T>(&self, f: F) -> Result<T, Error>
+    where
+        F: Fn(&ChallengingSessionState) -> T,
+    {
+        match &*self.state.read().await {
+            SessionState::Challenging(state) => Ok(f(&state)),
+            _ => Err(Error::msg("session is not in the challenging state")),
+        }
+    }
+
     async fn get_from_established_session_state<F, T>(&self, f: F) -> Result<T, Error>
     where
         F: Fn(&EstablishedSessionState) -> T,
@@ -420,9 +460,11 @@ impl Session {
         // Read state separately from handling the message, so that we don't lock the session state.
         let mut closing = false;
         let mut closed = false;
+        let mut challenging = false;
         match *self.state.read().await {
             SessionState::Closed => closed = true,
             SessionState::Closing => closing = true,
+            SessionState::Challenging(_) => challenging = true,
             _ => (),
         }
 
@@ -430,6 +472,8 @@ impl Session {
             self.handle_closed(context, message).await
         } else if closing {
             self.handle_closing(context, message).await
+        } else if challenging {
+            self.handle_challenging(context, message).await
         } else {
             self.handle_established(context, message).await
         }
@@ -446,52 +490,10 @@ impl Session {
     async fn handle_closed<S>(&self, context: &RouterContext<S>, message: Message) -> Result<()> {
         match message {
             Message::Hello(message) => {
-                let context = context.realm_context(&message.realm)?;
-                context.realm().sessions.write().await.insert(
-                    self.id,
-                    Arc::new(RealmSession {
-                        session: self.session_handle(),
-                    }),
-                );
-                info!("Session {} joined realm {}", self.id, context.realm().uri());
-
-                let mut details = Dictionary::default();
-                details.insert(
-                    "agent".to_owned(),
-                    Value::String(context.router().config.agent.clone()),
-                );
-
-                let pub_sub_features = PubSubFeatures {};
-                let rpc_features = RpcFeatures {
-                    call_canceling: true,
-                    progressive_call_results: true,
-                    call_timeout: true,
-                    shared_registration: true,
-                };
-                details.insert(
-                    "roles".to_owned(),
-                    RouterRoles::new(
-                        context.router().config.roles.iter().cloned(),
-                        pub_sub_features,
-                        rpc_features,
-                    )
-                    .wamp_serialize()?,
-                );
-
-                self.shared_state.write().await.roles = Self::read_peer_roles(&message);
-                self.transition_state(SessionState::Established(EstablishedSessionState {
-                    realm: context.realm().uri().clone(),
-                    subscriptions: HashMap::default(),
-                    procedures: HashMap::default(),
-                    active_invocations_by_call: HashMap::default(),
-                }))
-                .await?;
-
-                self.send_message(Message::Welcome(WelcomeMessage {
-                    session: self.id,
-                    details,
-                }))
-                .await
+                if let Err(err) = self.handle_hello(context, &message).await {
+                    return self.send_message(abort_message_for_error(&err)).await;
+                }
+                Ok(())
             }
             _ => Err(InteractionError::ProtocolViolation(format!(
                 "received {} message on a closed session",
@@ -499,6 +501,181 @@ impl Session {
             ))
             .into()),
         }
+    }
+
+    async fn handle_hello<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: &HelloMessage,
+    ) -> Result<()> {
+        let realm_context = context.realm_context(&message.realm)?;
+        let challenged = self
+            .issue_authentication_challenge(&realm_context, &message)
+            .await?;
+        if challenged {
+            return Ok(());
+        }
+        if realm_context.realm().config.authentication.required {
+            return Err(InteractionError::AuthenticationRequired.into());
+        }
+        self.welcome_to_realm(context, &message, None, Box::new(|_| Ok(())))
+            .await
+    }
+
+    async fn find_supported_authenticator<S>(
+        &self,
+        context: &RealmContext<'_, S>,
+        message: &HelloMessage,
+    ) -> Result<Option<Box<dyn GenericServerAuthenticator>>> {
+        let auth_methods = message
+            .details
+            .get("authmethods")
+            .and_then(|val| val.list());
+        let auth_methods = match auth_methods {
+            Some(auth_methods) => auth_methods,
+            None => return Ok(None),
+        };
+        let mut authenticator = None;
+        for auth_method in &context.realm().config.authentication.methods {
+            if !auth_methods.contains(&Value::String(auth_method.auth_method().to_string())) {
+                continue;
+            }
+            authenticator = Some(auth_method.new_authenticator().await?);
+        }
+
+        Ok(authenticator)
+    }
+
+    async fn issue_authentication_challenge<S>(
+        &self,
+        context: &RealmContext<'_, S>,
+        message: &HelloMessage,
+    ) -> Result<bool> {
+        let authenticator = match self.find_supported_authenticator(context, message).await? {
+            Some(authenticator) => authenticator,
+            None => return Ok(false),
+        };
+
+        let challenge = authenticator.challenge(message).await?;
+
+        self.transition_state(SessionState::Challenging(ChallengingSessionState {
+            hello_message: message.clone(),
+            authenticator: Arc::new(authenticator),
+        }))
+        .await?;
+
+        self.send_message(Message::Challenge(challenge)).await?;
+        Ok(true)
+    }
+
+    async fn welcome_to_realm<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: &HelloMessage,
+        identity: Option<Identity>,
+        modify_welcome_message: Box<dyn FnOnce(&mut WelcomeMessage) -> Result<()> + Send>,
+    ) -> Result<()> {
+        let context = context.realm_context(&message.realm)?;
+        context.realm().sessions.write().await.insert(
+            self.id,
+            Arc::new(RealmSession {
+                session: self.session_handle(),
+            }),
+        );
+        info!("Session {} joined realm {}", self.id, context.realm().uri());
+
+        let mut details = Dictionary::default();
+        details.insert(
+            "agent".to_owned(),
+            Value::String(context.router().config.agent.clone()),
+        );
+
+        let pub_sub_features = PubSubFeatures {};
+        let rpc_features = RpcFeatures {
+            call_canceling: true,
+            progressive_call_results: true,
+            call_timeout: true,
+            shared_registration: true,
+        };
+        details.insert(
+            "roles".to_owned(),
+            RouterRoles::new(
+                context.router().config.roles.iter().cloned(),
+                pub_sub_features,
+                rpc_features,
+            )
+            .wamp_serialize()?,
+        );
+
+        self.shared_state.write().await.roles = Self::read_peer_roles(&message);
+        self.transition_state(SessionState::Established(EstablishedSessionState {
+            realm: context.realm().uri().clone(),
+            identity,
+            subscriptions: HashMap::default(),
+            procedures: HashMap::default(),
+            active_invocations_by_call: HashMap::default(),
+        }))
+        .await?;
+
+        let mut message = WelcomeMessage {
+            session: self.id,
+            details,
+        };
+
+        modify_welcome_message(&mut message)?;
+
+        self.send_message(Message::Welcome(message)).await
+    }
+
+    async fn handle_challenging<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: Message,
+    ) -> Result<()> {
+        match message {
+            Message::Abort(_) => {
+                warn!("Router session {} aborted by peer: {message:?}", self.id);
+                self.transition_state(SessionState::Closed).await
+            }
+            Message::Goodbye(_) => {
+                self.transition_state(SessionState::Closing).await?;
+                self.send_message(goodbye_and_out()).await
+            }
+            Message::Authenticate(ref authenticate_message) => {
+                if let Err(err) = self
+                    .handle_authenticate(context, authenticate_message)
+                    .await
+                {
+                    return self.send_message(abort_message_for_error(&err)).await;
+                }
+                Ok(())
+            }
+            _ => Err(InteractionError::ProtocolViolation(format!(
+                "received {} message on a challenging session",
+                message.message_name()
+            ))
+            .into()),
+        }
+    }
+
+    async fn handle_authenticate<S>(
+        &self,
+        context: &RouterContext<S>,
+        message: &AuthenticateMessage,
+    ) -> Result<()> {
+        let (hello_message, authenticator) = self
+            .get_from_challenging_session_state(|state| {
+                (state.hello_message.clone(), state.authenticator.clone())
+            })
+            .await?;
+        let result = authenticator.authenticate(message).await?;
+        self.welcome_to_realm(
+            context,
+            &hello_message,
+            Some(result.identity.clone()),
+            Box::new(|message| result.embed_into_welcome_message(message)),
+        )
+        .await
     }
 
     async fn handle_established<S>(
@@ -967,6 +1144,17 @@ impl Session {
             );
         }
 
+        let identity = self
+            .get_from_established_session_state(|state| state.identity.clone())
+            .await?;
+        if let Some(identity) = identity {
+            details.insert("battler_wamp_authid".to_owned(), Value::String(identity.id));
+            details.insert(
+                "battler_wamp_authrole".to_owned(),
+                Value::String(identity.role),
+            );
+        }
+
         let session = context
             .session(callee_details.callee.session)
             .await
@@ -1337,7 +1525,7 @@ impl Session {
                 self.id_allocator.reset().await;
             }
             SessionState::Closed => {
-                self.closed_session_tx.send(())?;
+                self.closed_session_tx.send(()).ok();
             }
             _ => (),
         }

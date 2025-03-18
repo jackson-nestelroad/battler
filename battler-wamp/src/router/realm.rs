@@ -11,6 +11,12 @@ use futures_util::future::join_all;
 use tokio::sync::RwLock;
 
 use crate::{
+    auth::{
+        AuthMethod,
+        GenericServerAuthenticator,
+        make_generic_server_authenticator,
+        scram,
+    },
     core::{
         close::CloseReason,
         hash::HashMap,
@@ -24,6 +30,42 @@ use crate::{
     },
 };
 
+/// Supported authentication types for a realm.
+#[derive(Debug, Clone)]
+pub enum SupportedAuthMethod {
+    /// WAMP-SCRAM.
+    WampScram(Arc<Box<dyn scram::UserDatabaseFactory>>),
+}
+
+impl SupportedAuthMethod {
+    /// The corresponding [`AuthMethod`].
+    pub fn auth_method(&self) -> AuthMethod {
+        match self {
+            Self::WampScram(_) => AuthMethod::WampScram,
+        }
+    }
+
+    /// Creates a new authenticator for the supported authentication method.
+    pub async fn new_authenticator(&self) -> Result<Box<dyn GenericServerAuthenticator>> {
+        match self {
+            Self::WampScram(user_database) => Ok(make_generic_server_authenticator(Box::new(
+                scram::ServerAuthenticator::new(user_database.create_user_database().await?),
+            ))),
+        }
+    }
+}
+
+/// Configuration for a realm's authentication.
+#[derive(Debug, Default, Clone)]
+pub struct RealmAuthenticationConfig {
+    /// Is authentication required?
+    pub required: bool,
+    /// Supported authentication methods.
+    ///
+    /// Listed in order of selection priority.
+    pub methods: Vec<SupportedAuthMethod>,
+}
+
 /// Configuration for a realm.
 #[derive(Debug, Clone)]
 pub struct RealmConfig {
@@ -31,6 +73,8 @@ pub struct RealmConfig {
     pub name: String,
     /// URI for peers to connect to the realm.
     pub uri: Uri,
+    /// Authentication configuration.
+    pub authentication: RealmAuthenticationConfig,
 }
 
 /// A single session on a realm.
@@ -69,6 +113,11 @@ impl Realm {
     /// The URI for accessing the realm.
     pub fn uri(&self) -> &Uri {
         &self.config.uri
+    }
+
+    /// Initializes the realm before use.
+    pub async fn initialize(&self) -> Result<()> {
+        Ok(())
     }
 
     /// Shuts down the realm by attempting to end all sessions cleanly.

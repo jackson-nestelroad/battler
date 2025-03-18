@@ -506,6 +506,24 @@ mod message_test {
                 ]),
             })
         });
+
+        assert_matches::assert_matches!(serde_json::from_str(r#"
+            [48, 7814135, {}, "com.myapp.user.new", [], {
+                "firstname": "John",
+                "surname": "Doe"
+            }]
+        "#), Ok(Message::Call(message)) => {
+            assert_eq!(message, CallMessage {
+                request: Id::try_from(7814135).unwrap(),
+                options: Dictionary::default(),
+                procedure: Uri::try_from("com.myapp.user.new").unwrap(),
+                arguments: List::default(),
+                arguments_keyword: Dictionary::from_iter([
+                    ("firstname".to_owned(), Value::String("John".to_owned())),
+                    ("surname".to_owned(), Value::String("Doe".to_owned())),
+                ]),
+            })
+        });
     }
 
     #[test]
@@ -523,10 +541,66 @@ mod message_test {
         assert_matches::assert_matches!(
             serde_json::to_string(&Message::Hello(HelloMessage {
                 realm: Uri::try_from("com.battler").unwrap(),
-               details: Dictionary::from_iter([("key".to_owned(), Value::Bool(true))]),
+                details: Dictionary::from_iter([("key".to_owned(), Value::Bool(true))]),
             })),
             Ok(serialized) => {
                 assert_eq!(serialized, r#"[1,"com.battler",{"key":true}]"#);
+            }
+        );
+
+        assert_matches::assert_matches!(
+            serde_json::to_string(&Message::Call(CallMessage {
+                request: Id::try_from(7814135).unwrap(),
+                options: Dictionary::default(),
+                procedure: Uri::try_from("com.myapp.add2").unwrap(),
+                arguments: List::default(),
+                arguments_keyword: Dictionary::default(),
+            })),
+            Ok(serialized) => {
+                assert_eq!(serialized, r#"[48,7814135,{},"com.myapp.add2"]"#);
+            }
+        );
+
+        assert_matches::assert_matches!(
+            serde_json::to_string(&Message::Call(CallMessage {
+                request: Id::try_from(7814135).unwrap(),
+                options: Dictionary::default(),
+                procedure: Uri::try_from("com.myapp.add2").unwrap(),
+                arguments: List::from_iter([Value::Integer(23), Value::Integer(7)]),
+                arguments_keyword: Dictionary::default(),
+            })),
+            Ok(serialized) => {
+                assert_eq!(serialized, r#"[48,7814135,{},"com.myapp.add2",[23,7]]"#);
+            }
+        );
+
+        assert_matches::assert_matches!(
+            serde_json::to_string(&Message::Call(CallMessage {
+                request: Id::try_from(7814135).unwrap(),
+                options: Dictionary::default(),
+                procedure: Uri::try_from("com.myapp.add2").unwrap(),
+                arguments: List::from_iter([Value::Integer(23), Value::Integer(7)]),
+                arguments_keyword: Dictionary::from_iter([
+                    ("firstname".to_owned(), Value::String("John".to_owned())),
+                ]),
+            })),
+            Ok(serialized) => {
+                assert_eq!(serialized, r#"[48,7814135,{},"com.myapp.add2",[23,7],{"firstname":"John"}]"#);
+            }
+        );
+
+        assert_matches::assert_matches!(
+            serde_json::to_string(&Message::Call(CallMessage {
+                request: Id::try_from(7814135).unwrap(),
+                options: Dictionary::default(),
+                procedure: Uri::try_from("com.myapp.add2").unwrap(),
+                arguments: List::default(),
+                arguments_keyword: Dictionary::from_iter([
+                    ("firstname".to_owned(), Value::String("John".to_owned())),
+                ]),
+            })),
+            Ok(serialized) => {
+                assert_eq!(serialized, r#"[48,7814135,{},"com.myapp.add2",[],{"firstname":"John"}]"#);
             }
         );
     }
@@ -588,6 +662,17 @@ mod message_test {
             options: Dictionary::default(),
             procedure: Uri::try_from("com.myapp.user.new").unwrap(),
             arguments: List::from_iter([Value::String("Johnny".to_owned())]),
+            arguments_keyword: Dictionary::from_iter([
+                ("firstname".to_owned(), Value::String("John".to_owned())),
+                ("surname".to_owned(), Value::String("Doe".to_owned())),
+            ]),
+        }));
+
+        assert_serialize_to_deserialize_equal(&Message::Call(CallMessage {
+            request: Id::try_from(7814135).unwrap(),
+            options: Dictionary::default(),
+            procedure: Uri::try_from("com.myapp.add2").unwrap(),
+            arguments: List::default(),
             arguments_keyword: Dictionary::from_iter([
                 ("firstname".to_owned(), Value::String("John".to_owned())),
                 ("surname".to_owned(), Value::String("Doe".to_owned())),

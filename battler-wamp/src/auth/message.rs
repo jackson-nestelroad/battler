@@ -4,6 +4,7 @@ use anyhow::{
 };
 use battler_wamp_values::{
     Dictionary,
+    List,
     Value,
     WampDeserialize,
     WampSerialize,
@@ -23,7 +24,7 @@ use crate::{
     },
 };
 
-/// The client's first message of the WAMP-SCRAM authentication method.
+/// The client's first message of a generic authentication method.
 #[derive(Debug)]
 pub struct ClientFirstMessage<Extra> {
     /// The identity of the user performing authentication.
@@ -39,22 +40,41 @@ where
     Extra: WampSerialize,
 {
     /// Embeds the authentication information into a HELLO message.
+    ///
+    /// Note that this operation can be constructive for peers that support multiple authentication
+    /// methods to the same realm. Authentication methods listed later can "overwrite" data from
+    /// previous methods.
     pub fn embed_into_hello_message(self, message: &mut HelloMessage) -> Result<()> {
-        message.details.insert(
-            "authmethods".to_owned(),
-            Value::List(
-                self.methods
-                    .into_iter()
-                    .map(|method| method.wamp_serialize())
-                    .collect::<Result<_, _>>()?,
-            ),
-        );
+        let methods = self
+            .methods
+            .into_iter()
+            .map(|method| method.wamp_serialize())
+            .collect::<Result<List, _>>()?;
+        message
+            .details
+            .entry("authmethods".to_owned())
+            .and_modify(|val| match val.list_mut() {
+                Some(list) => list.extend(methods.iter().cloned()),
+                None => *val = Value::List(methods.clone()),
+            })
+            .or_insert_with(|| Value::List(methods));
+
         message
             .details
             .insert("authid".to_owned(), Value::String(self.id));
+
+        let extra = self.extra.wamp_serialize()?;
+        let extra = extra
+            .dictionary()
+            .ok_or_else(|| Error::msg("expected extra data to serialize as a dictionary"))?;
         message
             .details
-            .insert("authextra".to_owned(), self.extra.wamp_serialize()?);
+            .entry("authextra".to_owned())
+            .and_modify(|val| match val.dictionary_mut() {
+                Some(dict) => dict.extend(extra.iter().map(|(k, v)| (k.clone(), v.clone()))),
+                None => *val = Value::Dictionary(extra.clone()),
+            })
+            .or_insert_with(|| Value::Dictionary(extra.clone()));
         Ok(())
     }
 
@@ -108,7 +128,7 @@ where
     }
 }
 
-/// The server's first message of the WAMP-SCRAM authentication method.
+/// The server's first message of a generic authentication method.
 #[derive(Debug)]
 pub struct ServerFirstMessage<Extra> {
     /// The selected authentication method.
@@ -149,7 +169,7 @@ where
     }
 }
 
-/// The client's final message of the WAMP-SCRAM authentication method.
+/// The client's final message of a generic authentication method.
 #[derive(Debug)]
 pub struct ClientFinalMessage<Extra> {
     /// Base64-encoded client proof.
@@ -190,8 +210,8 @@ where
     }
 }
 
-/// The server's final message of the WAMP-SCRAM authentication method.
-#[derive(Debug)]
+/// The server's final message of a generic authentication method.
+#[derive(Debug, Clone)]
 pub struct ServerFinalMessage<Extra> {
     /// The identity the client was actually authenticated as.
     pub identity: Identity,

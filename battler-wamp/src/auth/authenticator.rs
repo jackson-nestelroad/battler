@@ -51,7 +51,7 @@ pub trait ServerAuthenticator<
 
 /// Generic version of [`ServerAuthenticator`].
 #[async_trait]
-pub trait GenericServerAuthenticator {
+pub trait GenericServerAuthenticator: Send + Sync {
     /// Authentication method.
     fn auth_method(&self) -> AuthMethod;
 
@@ -143,7 +143,7 @@ pub trait ClientAuthenticator<
 
 /// Generic version of [`ClientAuthenticator`].
 #[async_trait]
-pub trait GenericClientAuthenticator {
+pub trait GenericClientAuthenticator: Send + Sync {
     /// Authentication method.
     fn auth_method(&self) -> AuthMethod;
 

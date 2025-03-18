@@ -16,6 +16,7 @@ pub use peer::{
     SimplePendingRpc,
     Subscription,
     SubscriptionOptions,
+    SupportedAuthMethod,
     WebSocketConfig,
 };
 pub use session::{

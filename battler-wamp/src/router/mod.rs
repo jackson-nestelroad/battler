@@ -19,7 +19,11 @@ pub use app::{
         RpcPolicies,
     },
 };
-pub use realm::RealmConfig;
+pub use realm::{
+    RealmAuthenticationConfig,
+    RealmConfig,
+    SupportedAuthMethod,
+};
 pub use router::{
     Router,
     RouterConfig,

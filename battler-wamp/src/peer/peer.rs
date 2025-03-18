@@ -39,6 +39,12 @@ use tokio::{
 };
 
 use crate::{
+    auth::{
+        AuthMethod,
+        GenericClientAuthenticator,
+        make_generic_client_authenticator,
+        scram,
+    },
     core::{
         cancel::CallCancelMode,
         close::CloseReason,
@@ -72,10 +78,15 @@ use crate::{
         },
     },
     message::{
-        common::goodbye_with_close_reason,
+        common::{
+            abort_message_for_error,
+            goodbye_with_close_reason,
+        },
         message::{
+            AuthenticateMessage,
             CallMessage,
             CancelMessage,
+            ChallengeMessage,
             HelloMessage,
             Message,
             PublishMessage,
@@ -371,9 +382,35 @@ impl ProgressivePendingRpc {
     }
 }
 
+/// Error for a peer not being connected for some operation.
 #[derive(Debug, Error)]
 #[error("peer is not connected")]
 pub struct PeerNotConnectedError;
+
+/// Supported authentication types for a peer.
+#[derive(Debug, Clone)]
+pub enum SupportedAuthMethod {
+    /// WAMP-SCRAM.
+    WampScram { id: String, password: String },
+}
+
+impl SupportedAuthMethod {
+    /// The corresponding [`AuthMethod`].
+    pub fn auth_method(&self) -> AuthMethod {
+        match self {
+            Self::WampScram { .. } => AuthMethod::WampScram,
+        }
+    }
+
+    /// Creates a new authenticator for the supported authentication method.
+    pub async fn new_authenticator(&self) -> Result<Box<dyn GenericClientAuthenticator>> {
+        match self {
+            Self::WampScram { id, password } => Ok(make_generic_client_authenticator(Box::new(
+                scram::ClientAuthenticator::new(id.clone(), password.clone()),
+            ))),
+        }
+    }
+}
 
 /// A WAMP peer (a.k.a., client) that connects to a WAMP router, establishes sessions in a realm,
 /// and interacts with resources in the realm.
@@ -618,11 +655,33 @@ where
     ///
     /// To join a different realm, [`Self::leave_realm`] should be called first.
     pub async fn join_realm(&self, realm: &str) -> Result<()> {
-        let (message_tx, mut established_session_rx) = self
+        self.join_realm_internal(realm, &[]).await
+    }
+
+    /// Joins the realm, establishing a WAMP session, with a list of supported authentication
+    /// methods.
+    ///
+    /// Behaves the same as [`Self::join_realm`], but allows authentication to be used if challenged
+    /// by the router.
+    pub async fn join_realm_with_authentication(
+        &self,
+        realm: &str,
+        auth_methods: &[SupportedAuthMethod],
+    ) -> Result<()> {
+        self.join_realm_internal(realm, auth_methods).await
+    }
+
+    async fn join_realm_internal(
+        &self,
+        realm: &str,
+        auth_methods: &[SupportedAuthMethod],
+    ) -> Result<()> {
+        let (message_tx, mut established_session_rx, mut auth_challenge_rx) = self
             .get_from_peer_state(|peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.established_session_rx(),
+                    peer_state.session.auth_challenge_rx(),
                 )
             })
             .await?;
@@ -647,24 +706,94 @@ where
             .wamp_serialize()?,
         );
 
-        message_tx
-            .send(Message::Hello(HelloMessage {
-                realm: Uri::try_from(realm)?,
-                details,
-            }))
-            .await?;
+        let mut message = HelloMessage {
+            realm: Uri::try_from(realm)?,
+            details,
+        };
 
-        let result = established_session_rx
-            .recv()
-            .await?
-            .map_err(|err| Into::<Error>::into(err))?;
-        if result.realm.as_ref() != realm {
-            return Err(Error::msg(format!(
-                "joined realm {}, expected {realm}",
-                result.realm
-            )));
+        let mut authenticators = HashMap::default();
+        for auth_method in auth_methods {
+            authenticators.insert(
+                auth_method.auth_method(),
+                auth_method.new_authenticator().await?,
+            );
         }
 
+        for (_, authenticator) in &authenticators {
+            authenticator
+                .hello()
+                .await?
+                .embed_into_hello_message(&mut message)?;
+        }
+
+        message_tx.send(Message::Hello(message)).await?;
+
+        let mut selected_auth_method = None;
+        loop {
+            tokio::select! {
+                result = established_session_rx.recv() => {
+                    let result = result?.map_err(|err| Into::<Error>::into(err))?;
+                    match self.validate_new_established_session(result, &authenticators, realm, &selected_auth_method).await {
+                        Ok(()) => break,
+                        Err(err) => {
+                            message_tx.send(abort_message_for_error(&err)).await?;
+                            return Err(err.context("failed to validate newly established session"));
+                        }
+                    }
+                }
+                challenge = auth_challenge_rx.recv() => {
+                    match self.handle_challenge(challenge?, &authenticators).await {
+                        Ok((auth_method, response)) =>  {
+                            message_tx.send(Message::Authenticate(response)).await?;
+                            selected_auth_method = Some(auth_method);
+                        },
+                        Err(err) => {
+                            message_tx.send(abort_message_for_error(&err)).await?;
+                            return Err(err.context("failed to handle authentication challenge"));
+                        },
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn handle_challenge(
+        &self,
+        challenge: ChallengeMessage,
+        authenticators: &HashMap<AuthMethod, Box<dyn GenericClientAuthenticator>>,
+    ) -> Result<(AuthMethod, AuthenticateMessage)> {
+        let authenticator = authenticators
+            .get(&challenge.auth_method)
+            .ok_or_else(|| Error::msg("received unsupported auth method"))?;
+        Ok((
+            challenge.auth_method,
+            authenticator.handle_challenge(&challenge).await?,
+        ))
+    }
+
+    async fn validate_new_established_session(
+        &self,
+        session: peer_session_message::EstablishedSession,
+        authenticators: &HashMap<AuthMethod, Box<dyn GenericClientAuthenticator>>,
+        realm: &str,
+        auth_method: &Option<AuthMethod>,
+    ) -> Result<()> {
+        if session.realm.as_ref() != realm {
+            return Err(Error::msg(format!(
+                "joined realm {}, expected {realm}",
+                session.realm
+            )));
+        }
+        if let Some(auth_method) = auth_method {
+            let authenticator = authenticators
+                .get(&auth_method)
+                .ok_or_else(|| Error::msg("expected authenticator to exist"))?;
+            authenticator
+                .verify_signature(&session.welcome_message)
+                .await?;
+        }
         Ok(())
     }
 
