@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-error-proc-macro"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Procedural macro for custom WAMP errors."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -12,7 +12,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 proc-macro = true
 
 [dependencies]
-battler-wamp = "0.2"
+battler-wamp = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }

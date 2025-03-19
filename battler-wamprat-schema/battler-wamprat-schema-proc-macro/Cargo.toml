@@ -12,15 +12,15 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 proc-macro = true
 
 [dependencies]
-battler-wamp = "0.2"
+battler-wamp = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 [dev-dependencies]
 assert_matches = "1.5.0"
-battler-wamp-values = "0.1"
-battler-wamprat = "0.2"
+battler-wamp-values = "0.2"
+battler-wamprat = "0.3"
 battler-wamprat-message = "0.1"
 battler-wamprat-error = "0.1"
 battler-wamprat-uri = "0.1"
