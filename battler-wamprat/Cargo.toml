@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat"
-version = "0.2.4"
+version = "0.3.0"
 edition = "2024"
 description = "Asynchronous library for strongly-typed WAMP peer messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -12,11 +12,11 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 ahash = "0.8.11"
 anyhow = "1.0"
 async-trait = "0.1.83"
-battler-wamp = "0.2.9"
-battler-wamp-values = "0.1"
+battler-wamp = "0.3"
+battler-wamp-values = "0.2"
 battler-wamprat-error = "0.1"
-battler-wamprat-message = "0.1"
-battler-wamprat-uri = "0.1"
+battler-wamprat-message = "0.1.3"
+battler-wamprat-uri = "0.1.2"
 futures-channel = "0.3"
 futures-util = "0.3"
 log = "0.4"

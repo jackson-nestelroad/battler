@@ -33,6 +33,7 @@ use battler_wamp::{
         RpcCall,
         RpcResult,
         SimplePendingRpc,
+        SupportedAuthMethod,
     },
     router::RouterHandle,
 };
@@ -548,6 +549,7 @@ pub struct Peer<S> {
     peer: Arc<battler_wamp::peer::Peer<S>>,
     connection_config: PeerConnectionConfig,
     realm: Uri,
+    auth_methods: Vec<SupportedAuthMethod>,
 
     subscriber: Arc<Mutex<Subscriber<S>>>,
     procedures: ahash::HashMap<WildcardUri, PreregisteredProcedure>,
@@ -567,6 +569,7 @@ where
         peer: battler_wamp::peer::Peer<S>,
         connection_config: PeerConnectionConfig,
         realm: Uri,
+        auth_methods: impl Iterator<Item = SupportedAuthMethod>,
         procedures: impl Iterator<Item = (WildcardUri, PreregisteredProcedure)>,
     ) -> Self {
         let peer = Arc::new(peer);
@@ -577,6 +580,7 @@ where
             peer: peer.clone(),
             connection_config,
             realm,
+            auth_methods: auth_methods.collect(),
             subscriber: Arc::new(Mutex::new(Subscriber::new(peer))),
             procedures: procedures.collect(),
             peer_state: Arc::new(RwLock::new(PeerState::Disconnected)),
@@ -751,7 +755,9 @@ where
 
     async fn restore_session_state(&self) -> Result<()> {
         // Rejoin the realm.
-        self.peer.join_realm(self.realm.as_ref()).await?;
+        self.peer
+            .join_realm_with_authentication(self.realm.as_ref(), &self.auth_methods)
+            .await?;
 
         *self.peer_state.write().await = PeerState::Established;
         self.session_established_tx.send(()).ok();

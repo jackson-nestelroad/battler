@@ -19,6 +19,7 @@ use battler_wamp::{
     router::{
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
+        RealmAuthenticationConfig,
         RealmConfig,
         RouterConfig,
         RouterHandle,
@@ -37,6 +38,7 @@ use battler_wamprat::{
         PeerHandle,
     },
     procedure::{
+        Invocation,
         ProcedureOptions,
         ProgressReporter,
         TypedPatternMatchedProcedure,
@@ -60,6 +62,7 @@ async fn start_router(port: u16) -> Result<(RouterHandle, JoinHandle<()>)> {
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
+        authentication: RealmAuthenticationConfig::default(),
     });
     let router = new_web_socket_router(
         config,
@@ -105,7 +108,7 @@ impl TypedProcedure for AddHandler {
     type Input = AddInput;
     type Output = AddOutput;
     type Error = anyhow::Error;
-    async fn invoke(&self, input: Self::Input) -> Result<Self::Output> {
+    async fn invoke(&self, _: Invocation, input: Self::Input) -> Result<Self::Output> {
         let sum = input.args.a + input.args.b;
         Ok(AddOutput {
             args: SumArgs { sum },
@@ -332,7 +335,7 @@ async fn persists_error_data() {
         type Input = Input;
         type Output = Output;
         type Error = Error;
-        async fn invoke(&self, _: Self::Input) -> Result<Self::Output, Self::Error> {
+        async fn invoke(&self, _: Invocation, _: Self::Input) -> Result<Self::Output, Self::Error> {
             Err(Error {
                 msg: "foo bar".to_owned(),
             })
@@ -395,6 +398,7 @@ impl TypedProgressiveProcedure for UploadHandler {
     type Error = anyhow::Error;
     async fn invoke<'rpc>(
         &self,
+        _: Invocation,
         _: Self::Input,
         progress: ProgressReporter<'rpc, Self::Output>,
     ) -> Result<Self::Output> {
@@ -490,6 +494,7 @@ impl TypedPatternMatchedProcedure for UploadHandler {
     type Error = UploadError;
     async fn invoke(
         &self,
+        _: Invocation,
         _: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
@@ -564,6 +569,7 @@ impl TypedPatternMatchedProgressiveProcedure for UploadHandler {
     type Error = UploadError;
     async fn invoke<'rpc>(
         &self,
+        _: Invocation,
         _: Self::Input,
         procedure: Self::Pattern,
         progress: ProgressReporter<'rpc, Self::Output>,
@@ -695,6 +701,7 @@ async fn calls_procedure_with_timeout() {
         type Error = anyhow::Error;
         async fn invoke<'rpc>(
             &self,
+            _: Invocation,
             _: Self::Input,
             progress: ProgressReporter<'rpc, Self::Output>,
         ) -> Result<Self::Output> {
@@ -786,6 +793,7 @@ async fn call_cancellation_cancels_invocation() {
         type Error = anyhow::Error;
         async fn invoke<'rpc>(
             &self,
+            _: Invocation,
             _: Self::Input,
             progress: ProgressReporter<'rpc, Self::Output>,
         ) -> Result<Self::Output> {
@@ -873,7 +881,7 @@ async fn shared_registration_persists_across_reconnects() {
         type Input = Input;
         type Output = Output;
         type Error = anyhow::Error;
-        async fn invoke(&self, _: Self::Input) -> Result<Self::Output> {
+        async fn invoke(&self, _: Invocation, _: Self::Input) -> Result<Self::Output> {
             Ok(Output)
         }
 
@@ -891,7 +899,7 @@ async fn shared_registration_persists_across_reconnects() {
         type Input = Input;
         type Output = Output;
         type Error = anyhow::Error;
-        async fn invoke(&self, _: Self::Input) -> Result<Self::Output> {
+        async fn invoke(&self, _: Invocation, _: Self::Input) -> Result<Self::Output> {
             Err(InteractionError::Unavailable.into())
         }
 

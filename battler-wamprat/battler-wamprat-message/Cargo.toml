@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-message"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 description = "Procedural macro for sending structs over WAMP messages."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -9,6 +9,6 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-message"
 
 [dependencies]
-battler-wamp-values = "0.1"
-battler-wamprat-message-proc-macro = "0.1"
+battler-wamp-values = "0.2"
+battler-wamprat-message-proc-macro = "0.1.2"
 thiserror = "1.0.65"

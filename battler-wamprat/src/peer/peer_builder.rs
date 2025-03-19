@@ -14,8 +14,9 @@ use battler_wamp::{
         },
     },
     peer::{
-        Invocation,
+        Invocation as NativeInvocation,
         RpcYield,
+        SupportedAuthMethod,
     },
 };
 use battler_wamp_values::{
@@ -38,6 +39,7 @@ use crate::{
         peer::PreregisteredProcedure,
     },
     procedure::{
+        Invocation,
         Procedure,
         ProgressReporter,
         TypedPatternMatchedProcedure,
@@ -50,6 +52,7 @@ use crate::{
 /// An object for building a [`Peer`][`crate::peer::Peer`].
 pub struct PeerBuilder {
     connection_config: PeerConnectionConfig,
+    auth_methods: Vec<SupportedAuthMethod>,
     procedures: ahash::HashMap<WildcardUri, PreregisteredProcedure>,
 }
 
@@ -58,6 +61,7 @@ impl PeerBuilder {
     pub fn new(connection_type: PeerConnectionType) -> Self {
         Self {
             connection_config: PeerConnectionConfig::new(connection_type),
+            auth_methods: Vec::default(),
             procedures: ahash::HashMap::default(),
         }
     }
@@ -65,6 +69,14 @@ impl PeerBuilder {
     /// The [`PeerConnectionConfig`] used to connect to the router.
     pub fn connection_config_mut(&mut self) -> &mut PeerConnectionConfig {
         &mut self.connection_config
+    }
+
+    /// Sets the supported authentication methods for connecting to the realm.
+    pub fn set_auth_methods(
+        &mut self,
+        auth_methods: impl IntoIterator<Item = SupportedAuthMethod>,
+    ) {
+        self.auth_methods = auth_methods.into_iter().collect();
     }
 
     /// Adds a new strongly-typed procedure, which will be registered on every new connection to a
@@ -103,6 +115,7 @@ impl PeerBuilder {
 
             async fn invoke_internal(
                 &self,
+                invocation: Invocation,
                 arguments: battler_wamp_values::List,
                 arguments_keyword: battler_wamp_values::Dictionary,
             ) -> Result<RpcYield, WampError> {
@@ -113,7 +126,7 @@ impl PeerBuilder {
 
                 let output = self
                     .procedure
-                    .invoke(input)
+                    .invoke(invocation, input)
                     .await
                     .map_err(|err| Into::<WampError>::into(err))?;
                 let (arguments, arguments_keyword) = output
@@ -135,12 +148,20 @@ impl PeerBuilder {
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Error: Into<WampError> + Send + Sync,
         {
-            async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
+            async fn invoke(&self, mut invocation: NativeInvocation) -> Result<()> {
                 let mut arguments = List::default();
                 let mut arguments_keyword = Dictionary::default();
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
-                let result = self.invoke_internal(arguments, arguments_keyword).await;
+
+                let mut inner_invocation = Invocation::default();
+                std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
+                std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
+                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+
+                let result = self
+                    .invoke_internal(inner_invocation, arguments, arguments_keyword)
+                    .await;
                 invocation.respond(result).await
             }
         }
@@ -207,23 +228,25 @@ impl PeerBuilder {
 
             async fn invoke_internal(
                 &self,
+                invocation: Invocation,
                 arguments: battler_wamp_values::List,
                 arguments_keyword: battler_wamp_values::Dictionary,
-                procedure: Option<Uri>,
             ) -> Result<RpcYield, WampError> {
                 let input =
                     Input::wamp_deserialize_application_message(arguments, arguments_keyword)
                         .map_err(Into::<WampratDeserializeError>::into)
                         .map_err(Into::<WampError>::into)?;
                 let procedure = Pattern::wamp_match_uri(
-                    procedure
+                    invocation
+                        .procedure
+                        .clone()
                         .ok_or_else(|| WampratInvocationMissingProcedure.into())?
                         .as_ref(),
                 )
                 .map_err(Into::<WampError>::into)?;
                 let output = self
                     .procedure
-                    .invoke(input, procedure)
+                    .invoke(invocation, input, procedure)
                     .await
                     .map_err(|err| Into::<WampError>::into(err))?;
                 let (arguments, arguments_keyword) = output
@@ -252,15 +275,19 @@ impl PeerBuilder {
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Error: Into<WampError> + Send + Sync,
         {
-            async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
+            async fn invoke(&self, mut invocation: NativeInvocation) -> Result<()> {
                 let mut arguments = List::default();
                 let mut arguments_keyword = Dictionary::default();
-                let mut procedure = None;
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
-                std::mem::swap(&mut invocation.procedure, &mut procedure);
+
+                let mut inner_invocation = Invocation::default();
+                std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
+                std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
+                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+
                 let result = self
-                    .invoke_internal(arguments, arguments_keyword, procedure)
+                    .invoke_internal(inner_invocation, arguments, arguments_keyword)
                     .await;
                 invocation.respond(result).await
             }
@@ -314,9 +341,10 @@ impl PeerBuilder {
 
             async fn invoke_internal(
                 &self,
+                invocation: Invocation,
                 arguments: battler_wamp_values::List,
                 arguments_keyword: battler_wamp_values::Dictionary,
-                invocation: &Invocation,
+                native_invocation: &NativeInvocation,
             ) -> Result<RpcYield, WampError> {
                 let input =
                     Input::wamp_deserialize_application_message(arguments, arguments_keyword)
@@ -324,7 +352,7 @@ impl PeerBuilder {
                         .map_err(Into::<WampError>::into)?;
                 let output = self
                     .procedure
-                    .invoke(input, ProgressReporter::new(&invocation))
+                    .invoke(invocation, input, ProgressReporter::new(&native_invocation))
                     .await
                     .map_err(|err| Into::<WampError>::into(err))?;
                 let (arguments, arguments_keyword) = output
@@ -346,13 +374,19 @@ impl PeerBuilder {
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Error: Into<WampError> + Send + Sync,
         {
-            async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
+            async fn invoke(&self, mut invocation: NativeInvocation) -> Result<()> {
                 let mut arguments = List::default();
                 let mut arguments_keyword = Dictionary::default();
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
+
+                let mut inner_invocation = Invocation::default();
+                std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
+                std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
+                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+
                 let result = self
-                    .invoke_internal(arguments, arguments_keyword, &invocation)
+                    .invoke_internal(inner_invocation, arguments, arguments_keyword, &invocation)
                     .await;
                 invocation.respond(result).await
             }
@@ -422,24 +456,31 @@ impl PeerBuilder {
 
             async fn invoke_internal(
                 &self,
+                invocation: Invocation,
                 arguments: battler_wamp_values::List,
                 arguments_keyword: battler_wamp_values::Dictionary,
-                procedure: Option<Uri>,
-                invocation: &Invocation,
+                native_invocation: &NativeInvocation,
             ) -> Result<RpcYield, WampError> {
                 let input =
                     Input::wamp_deserialize_application_message(arguments, arguments_keyword)
                         .map_err(Into::<WampratDeserializeError>::into)
                         .map_err(Into::<WampError>::into)?;
                 let procedure = Pattern::wamp_match_uri(
-                    procedure
+                    invocation
+                        .procedure
+                        .clone()
                         .ok_or_else(|| WampratInvocationMissingProcedure.into())?
                         .as_ref(),
                 )
                 .map_err(Into::<WampError>::into)?;
                 let output = self
                     .procedure
-                    .invoke(input, procedure, ProgressReporter::new(&invocation))
+                    .invoke(
+                        invocation,
+                        input,
+                        procedure,
+                        ProgressReporter::new(&native_invocation),
+                    )
                     .await
                     .map_err(|err| Into::<WampError>::into(err))?;
                 let (arguments, arguments_keyword) = output
@@ -468,15 +509,19 @@ impl PeerBuilder {
             Output: battler_wamprat_message::WampApplicationMessage + Send + Sync,
             Error: Into<WampError> + Send + Sync,
         {
-            async fn invoke(&self, mut invocation: Invocation) -> Result<()> {
+            async fn invoke(&self, mut invocation: NativeInvocation) -> Result<()> {
                 let mut arguments = List::default();
                 let mut arguments_keyword = Dictionary::default();
-                let mut procedure = None;
                 std::mem::swap(&mut invocation.arguments, &mut arguments);
                 std::mem::swap(&mut invocation.arguments_keyword, &mut arguments_keyword);
-                std::mem::swap(&mut invocation.procedure, &mut procedure);
+
+                let mut inner_invocation = Invocation::default();
+                std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
+                std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
+                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+
                 let result = self
-                    .invoke_internal(arguments, arguments_keyword, procedure, &invocation)
+                    .invoke_internal(inner_invocation, arguments, arguments_keyword, &invocation)
                     .await;
                 invocation.respond(result).await
             }
@@ -508,6 +553,7 @@ impl PeerBuilder {
             peer,
             self.connection_config,
             realm,
+            self.auth_methods.into_iter(),
             self.procedures.into_iter(),
         )
         .start()

@@ -43,6 +43,7 @@
 //!         serde_json::to_string(&Message {
 //!             a: 123,
 //!             b: "foo".to_owned(),
+//!             e: true,
 //!             ..Default::default()
 //!         })
 //!         .unwrap(),
@@ -52,12 +53,12 @@
 //!         serde_json::to_string(&Message {
 //!             a: 123,
 //!             b: "foo".to_owned(),
-//!             // Skipped because `c` is skipped.
 //!             d: BTreeMap::from_iter([(1, false), (2, true)]),
+//!             e: true,
 //!             ..Default::default()
 //!         })
 //!         .unwrap(),
-//!         r#"[123,"foo"]"#
+//!         r#"[123,"foo",[],{"1":false,"2":true}]"#
 //!     );
 //!     assert_eq!(
 //!         serde_json::to_string(&Message {

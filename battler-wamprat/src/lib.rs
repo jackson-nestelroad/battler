@@ -105,6 +105,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -130,6 +131,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -234,6 +236,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -260,6 +263,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -384,6 +388,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -400,7 +405,10 @@
 //!         PeerBuilder,
 //!         PeerConnectionType,
 //!     },
-//!     procedure::TypedProcedure,
+//!     procedure::{
+//!         Invocation,
+//!         TypedProcedure,
+//!     },
 //! };
 //! use battler_wamprat_error::WampError;
 //! use battler_wamprat_message::WampApplicationMessage;
@@ -414,6 +422,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -450,7 +459,11 @@
 //!     type Output = DivideOutput;
 //!     type Error = DivideError;
 //!
-//!     async fn invoke(&self, input: Self::Input) -> Result<Self::Output, Self::Error> {
+//!     async fn invoke(
+//!         &self,
+//!         _: Invocation,
+//!         input: Self::Input,
+//!     ) -> Result<Self::Output, Self::Error> {
 //!         if input.0.1 == 0 {
 //!             return Err(DivideError::DivideByZero);
 //!         }
@@ -539,6 +552,7 @@
 //!     router::{
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
+//!         RealmAuthenticationConfig,
 //!         RealmConfig,
 //!         RouterConfig,
 //!         RouterHandle,
@@ -556,6 +570,7 @@
 //!         PeerConnectionType,
 //!     },
 //!     procedure::{
+//!         Invocation,
 //!         ProgressReporter,
 //!         TypedPatternMatchedProgressiveProcedure,
 //!     },
@@ -573,6 +588,7 @@
 //!     config.realms.push(RealmConfig {
 //!         name: "Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamprat.realm").unwrap(),
+//!         authentication: RealmAuthenticationConfig::default(),
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
@@ -617,6 +633,7 @@
 //!
 //!     async fn invoke<'rpc>(
 //!         &self,
+//!         invocation: Invocation,
 //!         _: Self::Input,
 //!         procedure: Self::Pattern,
 //!         progress: ProgressReporter<'rpc, Self::Output>,

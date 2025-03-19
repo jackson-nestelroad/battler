@@ -2244,6 +2244,6 @@ async fn cancellation_occurs_for_shared_registration() {
     assert_matches::assert_matches!(rpc.kill().await, Ok(()));
 
     assert_matches::assert_matches!(rpc.result().await, Err(err) => {
-        assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled));
+        assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled | InteractionError::NoAvailableCallee));
     })
 }

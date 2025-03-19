@@ -39,6 +39,8 @@ The WAMP protocol specification is described at https://wamp-proto.org/spec.html
   - Advanced Pub/Sub Features
     - Publisher Exclusion
     - Pattern-based Subscription
+  - Authentication Methods
+    - Salted Challenge Response Authentication (WAMP-SCRAM)
 - Transports
   - WebSocket
   - JSON serializer
