@@ -151,7 +151,6 @@
 //!     ping_tx: broadcast::Sender<String>,
 //! }
 //!
-//! #[async_trait::async_trait]
 //! impl TypedSubscription for PingEventHandler {
 //!     type Event = PingEvent;
 //!
@@ -289,7 +288,6 @@
 //!     ping_tx: broadcast::Sender<(String, u64)>,
 //! }
 //!
-//! #[async_trait::async_trait]
 //! impl TypedPatternMatchedSubscription for PingEventHandler {
 //!     type Pattern = PingEventPattern;
 //!     type Event = PingEvent;
@@ -453,7 +451,6 @@
 //!
 //! struct DivideHandler;
 //!
-//! #[async_trait::async_trait]
 //! impl TypedProcedure for DivideHandler {
 //!     type Input = DivideInput;
 //!     type Output = DivideOutput;
@@ -624,7 +621,6 @@
 //!
 //! struct UploadHandler;
 //!
-//! #[async_trait::async_trait]
 //! impl TypedPatternMatchedProgressiveProcedure for UploadHandler {
 //!     type Pattern = UploadPattern;
 //!     type Input = UploadInput;
