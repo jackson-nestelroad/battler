@@ -2,7 +2,6 @@ use anyhow::{
     Error,
     Result,
 };
-use async_trait::async_trait;
 use battler_wamp::{
     core::uri::{
         Uri,
@@ -89,7 +88,6 @@ struct MessageEventHandler {
     events_tx: broadcast::Sender<ReceivedMessageEvent>,
 }
 
-#[async_trait]
 impl TypedSubscription for MessageEventHandler {
     type Event = MessageEvent;
 
@@ -116,7 +114,6 @@ struct EventPattern {
     name: String,
 }
 
-#[async_trait]
 impl TypedPatternMatchedSubscription for MessageEventHandler {
     type Pattern = EventPattern;
     type Event = MessageEvent;

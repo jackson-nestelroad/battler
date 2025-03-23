@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 description = "Procedural macro for strongly-typed WAMP peers."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
-keywords = ["wamp", "websocket", "router", "peer"]
+keywords = ["wamp", "websocket", "peer", "schema"]
 license = "MIT"
-repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat-schema"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat-schema/battler-wamprat-schema-proc-macro"
 
 [lib]
 proc-macro = true
@@ -18,11 +18,15 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 [dev-dependencies]
+anyhow = "1.0"
 assert_matches = "1.5.0"
 battler-wamp-values = "0.2"
 battler-wamprat = "0.3"
 battler-wamprat-message = "0.1"
 battler-wamprat-error = "0.1"
+battler-wamprat-schema = { path = ".." }
 battler-wamprat-uri = "0.1"
 pretty_assertions = "1.4.0"
+test-utils = { path = "../../battler-wamp/test-utils" }
 thiserror = "1.0.65"
+tokio = { version = "1.41.0", features = ["full"] }

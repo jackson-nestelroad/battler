@@ -175,7 +175,6 @@ struct AddOutput {
 
 struct AddHandler;
 
-#[async_trait]
 impl TypedProcedure for AddHandler {
     type Input = AddInput;
     type Output = AddOutput;

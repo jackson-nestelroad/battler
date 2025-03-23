@@ -43,7 +43,6 @@ pub trait Procedure: Send + Sync {
 }
 
 /// A strongly-typed procedure that generates some output based on some input.
-#[async_trait]
 pub trait TypedProcedure: Send + Sync {
     /// Input from the caller.
     type Input: battler_wamprat_message::WampApplicationMessage;
@@ -55,11 +54,11 @@ pub trait TypedProcedure: Send + Sync {
     type Error: Into<WampError>;
 
     /// Invokes the procedure and produces a result.
-    async fn invoke(
+    fn invoke(
         &self,
         invocation: Invocation,
         input: Self::Input,
-    ) -> Result<Self::Output, Self::Error>;
+    ) -> impl Future<Output = Result<Self::Output, Self::Error>> + Send;
 
     /// Options for the procedure.
     fn options() -> ProcedureOptions {
@@ -68,7 +67,6 @@ pub trait TypedProcedure: Send + Sync {
 }
 
 /// A strongly-typed, pattern-matched procedure that generates some output based on some input.
-#[async_trait]
 pub trait TypedPatternMatchedProcedure: Send + Sync {
     /// Pattern of the procedure.
     type Pattern: battler_wamprat_uri::WampUriMatcher;
@@ -83,12 +81,12 @@ pub trait TypedPatternMatchedProcedure: Send + Sync {
     type Error: Into<WampError>;
 
     /// Invokes the procedure and produces a result.
-    async fn invoke(
+    fn invoke(
         &self,
         invocation: Invocation,
         input: Self::Input,
         procedure: Self::Pattern,
-    ) -> Result<Self::Output, Self::Error>;
+    ) -> impl Future<Output = Result<Self::Output, Self::Error>> + Send;
 
     /// Options for the procedure.
     fn options() -> ProcedureOptions {
@@ -128,7 +126,6 @@ where
 }
 
 /// A strongly-typed procedure that generates progressive output based on some input.
-#[async_trait]
 pub trait TypedProgressiveProcedure: Send + Sync {
     /// Input from the caller.
     type Input: battler_wamprat_message::WampApplicationMessage;
@@ -140,12 +137,12 @@ pub trait TypedProgressiveProcedure: Send + Sync {
     type Error: Into<WampError>;
 
     /// Invokes the procedure and produces a result.
-    async fn invoke<'rpc>(
+    fn invoke<'rpc>(
         &self,
         invocation: Invocation,
         input: Self::Input,
         progress: ProgressReporter<'rpc, Self::Output>,
-    ) -> Result<Self::Output, Self::Error>;
+    ) -> impl Future<Output = Result<Self::Output, Self::Error>> + Send;
 
     /// Options for the procedure.
     fn options() -> ProcedureOptions {
@@ -155,7 +152,6 @@ pub trait TypedProgressiveProcedure: Send + Sync {
 
 /// A strongly-typed, pattern-matched procedure that generates progressive output based on some
 /// input.
-#[async_trait]
 pub trait TypedPatternMatchedProgressiveProcedure: Send + Sync {
     /// Pattern of the procedure.
     type Pattern: battler_wamprat_uri::WampUriMatcher;
@@ -164,19 +160,19 @@ pub trait TypedPatternMatchedProgressiveProcedure: Send + Sync {
     type Input: battler_wamprat_message::WampApplicationMessage;
 
     /// Output to the caller.
-    type Output: battler_wamprat_message::WampApplicationMessage;
+    type Output: battler_wamprat_message::WampApplicationMessage + Send;
 
     /// Error to the caller.
-    type Error: Into<WampError>;
+    type Error: Into<WampError> + Send;
 
     /// Invokes the procedure and produces a result.
-    async fn invoke<'rpc>(
+    fn invoke<'rpc>(
         &self,
         invocation: Invocation,
         input: Self::Input,
         procedure: Self::Pattern,
         progress: ProgressReporter<'rpc, Self::Output>,
-    ) -> Result<Self::Output, Self::Error>;
+    ) -> impl Future<Output = Result<Self::Output, Self::Error>> + Send;
 
     /// Options for the procedure.
     fn options() -> ProcedureOptions {

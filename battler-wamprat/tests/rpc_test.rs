@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use anyhow::Result;
-use async_trait::async_trait;
 use battler_wamp::{
     core::{
         error::{
@@ -103,7 +102,6 @@ struct AddOutput {
 
 struct AddHandler;
 
-#[async_trait]
 impl TypedProcedure for AddHandler {
     type Input = AddInput;
     type Output = AddOutput;
@@ -330,7 +328,6 @@ async fn persists_error_data() {
 
     struct Handler;
 
-    #[async_trait]
     impl TypedProcedure for Handler {
         type Input = Input;
         type Output = Output;
@@ -391,7 +388,6 @@ struct UploadOutput(#[arguments] UploadOutputArgs);
 
 struct UploadHandler;
 
-#[async_trait]
 impl TypedProgressiveProcedure for UploadHandler {
     type Input = UploadInput;
     type Output = UploadOutput;
@@ -486,7 +482,6 @@ enum UploadError {
     UnsupportedFileType,
 }
 
-#[async_trait]
 impl TypedPatternMatchedProcedure for UploadHandler {
     type Pattern = UploadPattern;
     type Input = UploadInput;
@@ -561,7 +556,6 @@ async fn calls_pattern_matched_procedure() {
     router_join_handle.await.unwrap();
 }
 
-#[async_trait]
 impl TypedPatternMatchedProgressiveProcedure for UploadHandler {
     type Pattern = UploadPattern;
     type Input = UploadInput;
@@ -694,7 +688,6 @@ async fn calls_procedure_with_timeout() {
 
     struct StallingHandler;
 
-    #[async_trait]
     impl TypedProgressiveProcedure for StallingHandler {
         type Input = Input;
         type Output = Output;
@@ -786,7 +779,6 @@ async fn call_cancellation_cancels_invocation() {
 
     struct StallingHandler;
 
-    #[async_trait]
     impl TypedProgressiveProcedure for StallingHandler {
         type Input = Input;
         type Output = Output;
@@ -876,7 +868,6 @@ async fn shared_registration_persists_across_reconnects() {
 
     struct AvailableHandler;
 
-    #[async_trait]
     impl TypedProcedure for AvailableHandler {
         type Input = Input;
         type Output = Output;
@@ -894,7 +885,6 @@ async fn shared_registration_persists_across_reconnects() {
 
     struct UnavailableHandler;
 
-    #[async_trait]
     impl TypedProcedure for UnavailableHandler {
         type Input = Input;
         type Output = Output;

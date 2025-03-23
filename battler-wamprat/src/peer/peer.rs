@@ -76,6 +76,7 @@ pub(crate) struct PreregisteredProcedure {
 }
 
 /// The type of connection a [`Peer`] should continually establish with a router.
+#[derive(Clone)]
 pub enum PeerConnectionType {
     /// A remote connection to some URI.
     Remote(String),
