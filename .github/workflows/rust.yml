@@ -22,8 +22,10 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: nightly
-      - name: Run tests
-        run: cargo test
+      - name: Run battler tests
+        run: cargo test -p battler
+      - name: Run battler-wamp tests
+        run: cargo test --workspace --exclude battler
 
   formatting:
     name: Check formatting
