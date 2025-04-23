@@ -156,6 +156,22 @@ impl<'battle, 'data> Context<'battle, 'data> {
         )
     }
 
+    /// Creates a new [`PlayerEffectContext`], scoped to the lifetime of this context.
+    pub fn player_effect_context<'context>(
+        &'context mut self,
+        effect_handle: EffectHandle,
+        player: usize,
+        source_handle: Option<MonHandle>,
+        source_effect_handle: Option<EffectHandle>,
+    ) -> Result<PlayerEffectContext<'context, 'context, 'battle, 'data>, Error> {
+        PlayerEffectContext::new(
+            self.effect_context(effect_handle, source_effect_handle)?
+                .into(),
+            player,
+            source_handle,
+        )
+    }
+
     /// Creates a new [`FieldEffectContext`], scoped to the lifetime of this context.
     pub fn field_effect_context<'context>(
         &'context mut self,
@@ -455,6 +471,22 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
         mon_handle: MonHandle,
     ) -> Result<MonContext<'player, 'side, 'context, 'battle, 'data>, Error> {
         MonContext::new_from_player_context(self, mon_handle)
+    }
+
+    /// Creates a new [`PlayerEffectContext`], scoped to the lifetime of this context.
+    pub fn player_effect_context<'mon>(
+        &'mon mut self,
+        effect_handle: EffectHandle,
+        source: Option<MonHandle>,
+        source_effect_handle: Option<EffectHandle>,
+    ) -> Result<PlayerEffectContext<'mon, 'mon, 'battle, 'data>, Error> {
+        let player = unsafe { &*self.player }.index;
+        self.as_battle_context_mut().player_effect_context(
+            effect_handle,
+            player,
+            source,
+            source_effect_handle,
+        )
     }
 
     /// Returns a reference to the [`CoreBattle`].
@@ -1928,6 +1960,195 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     /// Returns a mutable reference to the target [`Mon`].
     pub fn target_mut(&mut self) -> &mut Mon {
         &mut self.target
+    }
+}
+
+/// The context of an [`Effect`] applying on a [`Player`] in a battle.
+///
+/// See [`Context`] for more information on how context objects work.
+pub struct PlayerEffectContext<'effect, 'context, 'battle, 'data>
+where
+    'data: 'battle,
+    'battle: 'context,
+    'context: 'effect,
+{
+    context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
+    // SAFETY: [`CoreBattle::players`] cannot be modified for the lifetime of the battle.
+    player: *mut Player,
+    source_handle: Option<MonHandle>,
+    source: Option<&'context mut Mon>,
+}
+
+impl<'effect, 'context, 'battle, 'data> PlayerEffectContext<'effect, 'context, 'battle, 'data> {
+    fn new(
+        mut context: MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>,
+        player: usize,
+        source_handle: Option<MonHandle>,
+    ) -> Result<Self, Error> {
+        // SAFETY: No player is added or removed for the duration of the battle.
+        let player = unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
+        let source = match source_handle {
+            None => None,
+            Some(source_handle) => {
+                let source = context
+                    .as_battle_context()
+                    .cache
+                    .mon(context.battle(), source_handle)?;
+                // SAFETY: Mons live as long as the battle itself, since they are stored in a
+                // registry. The reference can be borrowed as long as the element reference exists
+                // in the root context. We ensure that element references are borrowed for the
+                // lifetime of the root context.
+                let source = unsafe { source.unsafely_detach_borrow_mut() };
+                Some(source)
+            }
+        };
+        Ok(Self {
+            context,
+            player,
+            source_handle,
+            source,
+        })
+    }
+
+    /// Returns a reference to the inner [`Context`].
+    pub fn as_battle_context<'side_effect>(
+        &'side_effect self,
+    ) -> &'side_effect Context<'battle, 'data> {
+        self.context.as_battle_context()
+    }
+
+    /// Returns a mutable reference to the inner [`Context`].
+    pub fn as_battle_context_mut<'side_effect>(
+        &'side_effect mut self,
+    ) -> &'side_effect mut Context<'battle, 'data> {
+        self.context.as_battle_context_mut()
+    }
+
+    /// Returns a reference to the inner [`EffectContext`].
+    pub fn as_effect_context<'side_effect>(
+        &'side_effect self,
+    ) -> &'side_effect EffectContext<'context, 'battle, 'data> {
+        &self.context
+    }
+
+    /// Returns a mutable reference to the inner [`EffectContext`].
+    pub fn as_effect_context_mut<'side_effect>(
+        &'side_effect mut self,
+    ) -> &'side_effect mut EffectContext<'context, 'battle, 'data> {
+        &mut self.context
+    }
+
+    /// Creates a new [`MonContext`] for the effect source, scoped to the lifetime of this context.
+    pub fn source_context<'applying_effect>(
+        &'applying_effect mut self,
+    ) -> Result<
+        Option<MonContext<'applying_effect, 'applying_effect, 'applying_effect, 'battle, 'data>>,
+        Error,
+    > {
+        match self.source_handle {
+            None => Ok(None),
+            Some(source_handle) => self
+                .as_battle_context_mut()
+                .mon_context(source_handle)
+                .map(|mon_context| Some(mon_context)),
+        }
+    }
+
+    /// Creates a new [`SideEffectContext`] for the same target side but different effect,
+    /// using this effect as its source, scoped to the lifetime of this context.
+    pub fn forward_player_effect_context<'side_effect>(
+        &'side_effect mut self,
+        effect_handle: EffectHandle,
+    ) -> Result<PlayerEffectContext<'side_effect, 'side_effect, 'battle, 'data>, Error> {
+        let source_effect_handle = self.effect_handle().clone();
+        let player = unsafe { &*self.player }.index;
+        let source_handle = self.source_handle;
+        self.as_battle_context_mut().player_effect_context(
+            effect_handle,
+            player,
+            source_handle,
+            Some(source_effect_handle),
+        )
+    }
+
+    /// Creates a new [`SideEffectContext`] for the source effect with the same target side, scoped
+    /// to the lifetime of this context.
+    pub fn source_side_effect_context<'side_effect>(
+        &'side_effect mut self,
+    ) -> Result<Option<SideEffectContext<'side_effect, 'side_effect, 'battle, 'data>>, Error> {
+        match self.source_effect_handle().cloned() {
+            Some(source_effect_handle) => {
+                let player = unsafe { &*self.player }.index;
+                let source_handle = self.source_handle;
+                Ok(Some(self.as_battle_context_mut().side_effect_context(
+                    source_effect_handle,
+                    player,
+                    source_handle,
+                    None,
+                )?))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Returns a reference to the [`CoreBattle`].
+    pub fn battle(&self) -> &CoreBattle<'data> {
+        self.context.battle()
+    }
+
+    /// Returns a mutable reference to the [`CoreBattle`].
+    pub fn battle_mut(&mut self) -> &mut CoreBattle<'data> {
+        self.context.battle_mut()
+    }
+
+    /// Returns the [`EffectHandle`] for the [`Effect`].
+    pub fn effect_handle(&self) -> &EffectHandle {
+        self.context.effect_handle()
+    }
+
+    /// Returns a reference to the [`Effect`].
+    pub fn effect(&self) -> &Effect {
+        self.context.effect()
+    }
+
+    /// Returns a mutable reference to the [`Effect`].
+    pub fn effect_mut(&mut self) -> &mut Effect<'context> {
+        self.context.effect_mut()
+    }
+
+    /// Returns a reference to the source [`EffectHandle`], if it exists.
+    pub fn source_effect_handle(&self) -> Option<&EffectHandle> {
+        self.context.source_effect_handle()
+    }
+
+    /// Returns a reference to the target [`Player`].
+    pub fn player(&self) -> &Player {
+        unsafe { &*self.player }
+    }
+
+    /// Returns a mutable reference to the target [`Player`].
+    pub fn player_mut(&mut self) -> &mut Player {
+        unsafe { &mut *self.player }
+    }
+
+    /// Returns the [`MonHandle`] for the source [`Mon`], if one exists.
+    pub fn source_handle(&self) -> Option<MonHandle> {
+        self.source_handle
+    }
+
+    /// Checks if the effect has a source [`Mon`].
+    pub fn has_source(&self) -> bool {
+        self.source.is_some()
+    }
+
+    /// Returns a reference to the source [`Mon`], if one exists.
+    pub fn source(&self) -> Option<&Mon> {
+        self.source.as_deref()
+    }
+
+    /// Returns a mutable reference to the source [`Mon`], if one exists.
+    pub fn source_mut(&mut self) -> Option<&mut Mon> {
+        self.source.as_deref_mut()
     }
 }
 

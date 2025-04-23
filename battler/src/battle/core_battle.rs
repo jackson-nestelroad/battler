@@ -52,6 +52,7 @@ use crate::{
         FastHashMap,
         Id,
         Identifiable,
+        UnsafelyDetachBorrowMut,
     },
     config::Format,
     dex::{
@@ -68,6 +69,7 @@ use crate::{
     error::{
         general_error,
         Error,
+        ValidationError,
         WrapOptionError,
         WrapResultError,
     },
@@ -91,6 +93,9 @@ use crate::{
         rand_util,
         PseudoRandomNumberGenerator,
     },
+    teams::TeamValidator,
+    TeamData,
+    WrapError,
 };
 
 /// The public interface for a [`CoreBattle`].
@@ -103,18 +108,6 @@ pub struct PublicCoreBattle<'d> {
 }
 
 impl<'d> PublicCoreBattle<'d> {
-    /// Constructs a new [`PublicCoreBattle`] from a
-    /// [`BattleBuilder`][`crate::battle::BattleBuilder`].
-    pub(crate) fn from_builder(
-        options: CoreBattleOptions,
-        dex: Dex<'d>,
-        format: Format,
-        engine_options: CoreBattleEngineOptions,
-    ) -> Result<Self, Error> {
-        let internal = CoreBattle::from_builder(options, dex, format, engine_options)?;
-        Ok(Self { internal })
-    }
-
     /// Creates a new battle.
     pub fn new(
         options: CoreBattleOptions,
@@ -123,6 +116,16 @@ impl<'d> PublicCoreBattle<'d> {
     ) -> Result<Self, Error> {
         let internal = CoreBattle::new(options, data, engine_options)?;
         Ok(Self { internal })
+    }
+
+    /// Updates a player's team.
+    pub fn update_team(&mut self, player_id: &str, team: TeamData) -> Result<(), Error> {
+        self.internal.update_team(player_id, team)
+    }
+
+    /// Validates a single player.
+    pub fn validate_player(&mut self, player_id: &str) -> Result<(), Error> {
+        self.internal.validate_player(player_id)
     }
 
     /// Has the battle started?
@@ -262,28 +265,16 @@ pub struct CoreBattle<'d> {
 // Block for constructors.
 impl<'d> CoreBattle<'d> {
     fn new(
-        mut options: CoreBattleOptions,
+        options: CoreBattleOptions,
         data: &'d dyn DataStore,
         engine_options: CoreBattleEngineOptions,
     ) -> Result<Self, Error> {
         options
             .validate()
             .wrap_error_with_message("battle options are invalid")?;
-        let dex = Dex::new(data)?;
-        let format_data = mem::replace(&mut options.format, None);
-        let format = Format::new(
-            format_data.wrap_expectation("missing format field for new battle")?,
-            &dex,
-        )?;
-        Self::from_builder(options, dex, format, engine_options)
-    }
 
-    fn from_builder(
-        options: CoreBattleOptions,
-        dex: Dex<'d>,
-        format: Format,
-        engine_options: CoreBattleEngineOptions,
-    ) -> Result<Self, Error> {
+        let dex = Dex::new(data)?;
+        let format = Format::new(options.format, &dex)?;
         let prng = (engine_options.rng_factory)(options.seed);
         let log = EventLog::new();
         let registry = BattleRegistry::new();
@@ -344,6 +335,7 @@ impl<'d> CoreBattle<'d> {
             _pin: PhantomPinned,
         };
         Self::initialize(&mut battle.context())?;
+        Self::initial_validation(&mut battle.context())?;
         Ok(battle)
     }
 }
@@ -585,6 +577,40 @@ impl<'d> CoreBattle<'d> {
 }
 
 impl<'d> CoreBattle<'d> {
+    pub fn update_team(&mut self, player_id: &str, mut team: TeamData) -> Result<(), Error> {
+        if self.started {
+            return Err(general_error(
+                "cannot update a team after a battle has started",
+            ));
+        }
+
+        if self.engine_options.validate_teams {
+            self.validate_and_modify_team(&mut team)?;
+        }
+
+        let player = self.player_index_by_id(player_id)?;
+        let player = self.player_mut(player)?;
+
+        // SAFETY: Players, dex, and registry are disjoint. We could use a context instead, but this
+        // method allows the team to be set from initialization logic as well.
+        let player = unsafe { player.unsafely_detach_borrow_mut() };
+        player.update_team(team, &self.dex, &self.registry)?;
+
+        // Reinitialize players and Mons.
+        Self::initialize(&mut self.context())?;
+
+        Ok(())
+    }
+
+    fn validate_and_modify_team(&self, team: &mut TeamData) -> Result<(), Error> {
+        let validator = TeamValidator::new(&self.format, &self.dex);
+        let problems = validator.validate_team(team);
+        if !problems.is_empty() {
+            return Err(ValidationError::from_iter(problems).wrap_error());
+        }
+        Ok(())
+    }
+
     pub fn log_private_public(&mut self, side: usize, private: Event, public: Event) {
         self.log
             .push_extend([log_event!("split", ("side", side)), private, public])
@@ -659,10 +685,91 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    fn initial_validation(context: &mut Context) -> Result<(), Error> {
+        let mut problems = Vec::new();
+        if let Some(players_per_side) = context.battle().format.rules.numeric_rules.players_per_side
+        {
+            for side in context.battle().side_indices() {
+                let found_on_side = context.battle().players_on_side(side).count() as u32;
+                if found_on_side != players_per_side {
+                    problems.push(format!(
+                        "{} must have exactly {players_per_side} player{}.",
+                        context.battle().side(side)?.name,
+                        if players_per_side == 1 { "" } else { "s" }
+                    ));
+                }
+            }
+        }
+        if !problems.is_empty() {
+            return Err(ValidationError::from_iter(problems).wrap_error());
+        }
+        Ok(())
+    }
+
+    pub fn validate_player(&mut self, player_id: &str) -> Result<(), Error> {
+        let player = self.player_index_by_id(player_id)?;
+        Self::validate_player_internal(&mut self.context().player_context(player)?)
+    }
+
+    fn validate_player_internal(context: &mut PlayerContext) -> Result<(), Error> {
+        let mut problems = core_battle_effects::run_event_for_player_expecting_string_list(
+            context,
+            fxlang::BattleEvent::ValidateTeam,
+        );
+        if context.player().mons.is_empty() {
+            problems.push("Empty team is not allowed.".to_owned());
+        }
+        for mon in context.player().mons.clone() {
+            let mut mon_problems = core_battle_effects::run_event_for_mon_expecting_string_list(
+                &mut context.mon_context(mon)?,
+                fxlang::BattleEvent::ValidateMon,
+            );
+            problems.append(&mut mon_problems);
+        }
+
+        // Commit logs, since debug logs end up here. This is somewhat fine because program errors
+        // during validation signal that the validation rules themselves are broken.
+        //
+        // TODO: Consider capturing validation error logs somewhere else, potentially here as a
+        // problem.
+        context.battle_mut().log.commit();
+
+        if !problems.is_empty() {
+            return Err(ValidationError::from_iter(problems).wrap_error());
+        }
+        Ok(())
+    }
+
+    fn validate(context: &mut Context) -> Result<(), Error> {
+        let mut problems = Vec::new();
+
+        for player in context.battle().player_indices() {
+            let mut context = context.player_context(player)?;
+            match Self::validate_player_internal(&mut context) {
+                Ok(()) => continue,
+                Err(err) => match err.as_ref().downcast_ref::<ValidationError>() {
+                    Some(err) => {
+                        problems.extend(err.problems().map(|problem| {
+                            format!("Validation failed for {}: {problem}", context.player().name)
+                        }));
+                    }
+                    None => return Err(err),
+                },
+            }
+        }
+        if !problems.is_empty() {
+            return Err(ValidationError::from_iter(problems).wrap_error());
+        }
+        Ok(())
+    }
+
     fn start_internal(context: &mut Context) -> Result<(), Error> {
         if context.battle().started {
             return Err(general_error("battle already started"));
         }
+
+        Self::validate(context)?;
+
         context.battle_mut().started = true;
         context.battle_mut().in_pre_battle = true;
 
@@ -1933,7 +2040,7 @@ impl<'d> CoreBattle<'d> {
                 .wrap_expectation("effect handle not found in cache after its key was found");
         }
 
-        let effect_handle = Self::lookup_effect_in_dex(self, id.clone());
+        let effect_handle = self.lookup_effect_in_dex(id.clone());
         self.effect_handle_cache.insert(id.clone(), effect_handle);
         self.effect_handle_cache
             .get(id)
@@ -1952,6 +2059,12 @@ impl<'d> CoreBattle<'d> {
         }
         if self.dex.items.get_by_id(&id).is_ok() {
             return EffectHandle::ItemCondition(id);
+        }
+        if self.dex.clauses.get_by_id(&id).is_ok() {
+            return EffectHandle::Clause(id);
+        }
+        if self.dex.species.get_by_id(&id).is_ok() {
+            return EffectHandle::Species(id);
         }
         EffectHandle::NonExistent(id)
     }
@@ -1990,6 +2103,12 @@ impl<'d> CoreBattle<'d> {
             }
             EffectHandle::ItemCondition(id) => Ok(Effect::for_item_condition(
                 context.battle().dex.items.get_by_id(id)?,
+            )),
+            EffectHandle::Clause(id) => Ok(Effect::for_clause(
+                context.battle().dex.clauses.get_by_id(id)?,
+            )),
+            EffectHandle::Species(id) => Ok(Effect::for_species(
+                context.battle().dex.species.get_by_id(id)?,
             )),
             EffectHandle::NonExistent(id) => Ok(Effect::for_non_existent(id.clone())),
         }

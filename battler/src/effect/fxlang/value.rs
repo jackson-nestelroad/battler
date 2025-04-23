@@ -413,6 +413,30 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a clause ID.
+    pub fn clause_id(self) -> Result<Id, Error> {
+        match self {
+            Self::Effect(EffectHandle::Clause(val)) => Ok(val),
+            Self::String(val) => Ok(Id::from(val)),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a clause id",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into a species ID.
+    pub fn species_id(self) -> Result<Id, Error> {
+        match self {
+            Self::Effect(EffectHandle::Species(val)) => Ok(val),
+            Self::String(val) => Ok(Id::from(val)),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a species id",
+                val.value_type(),
+            ))),
+        }
+    }
+
     /// Consumes the value into an [`EffectHandle`].
     pub fn effect_handle(self) -> Result<EffectHandle, Error> {
         match self {
@@ -508,6 +532,11 @@ impl Value {
             .collect()
     }
 
+    /// Consumes the value into a [`Vec<String>`].
+    pub fn strings_list(self) -> Result<Vec<String>, Error> {
+        self.list()?.into_iter().map(|val| val.string()).collect()
+    }
+
     /// Consumes the value into a [`HitEffect`].
     pub fn hit_effect(self) -> Result<HitEffect, Error> {
         match self {
@@ -541,6 +570,14 @@ impl Value {
             .into_iter()
             .map(|val| val.secondary_hit_effect())
             .collect()
+    }
+
+    /// Consumes the value into a [`FastHashMap<String, Value>`].
+    pub fn object(self) -> Result<FastHashMap<String, Value>, Error> {
+        match self {
+            Self::Object(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Object)),
+        }
     }
 }
 
@@ -1930,6 +1967,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::String(val) => (*val).clone(),
             Self::Str(val) => val.to_string(),
             Self::TempString(val) => val.clone(),
+            Self::Type(val) => val.to_string(),
             _ => {
                 return Err(general_error(format!(
                     "{} value is not string formattable",

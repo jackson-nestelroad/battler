@@ -5,15 +5,11 @@ use ahash::{
     HashSetExt,
 };
 use battler::{
-    BattleBuilder,
-    BattleBuilderFlags,
-    BattleBuilderOptions,
-    BattleBuilderPlayerData,
-    BattleBuilderSideData,
     BattleType,
     CoreBattleEngineOptions,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
+    CoreBattleOptions,
     DataStore,
     Error,
     FastHashMap,
@@ -21,20 +17,22 @@ use battler::{
     FieldEnvironment,
     FormatData,
     FormatOptions,
+    PlayerData,
     PlayerOptions,
     PlayerType,
     PublicCoreBattle,
     Rule,
     SerializedRuleSet,
+    SideData,
     TeamData,
     WildPlayerOptions,
 };
 
 use crate::ControlledRandomNumberGenerator;
 
-/// [`BattleBuilder`] object for integration tests.
+/// Battle builder object for integration tests.
 pub struct TestBattleBuilder {
-    options: BattleBuilderOptions,
+    options: CoreBattleOptions,
     engine_options: CoreBattleEngineOptions,
     teams: FastHashMap<String, TeamData>,
     controlled_rng: bool,
@@ -45,7 +43,7 @@ impl TestBattleBuilder {
     /// Creates a new [`TestBattleBuilder`].
     pub fn new() -> Self {
         Self {
-            options: BattleBuilderOptions {
+            options: CoreBattleOptions {
                 seed: None,
                 format: FormatData {
                     battle_type: BattleType::Singles,
@@ -53,16 +51,13 @@ impl TestBattleBuilder {
                     options: FormatOptions::default(),
                 },
                 field: FieldData::default(),
-                side_1: BattleBuilderSideData {
+                side_1: SideData {
                     name: "Side 1".to_string(),
                     players: Vec::new(),
                 },
-                side_2: BattleBuilderSideData {
+                side_2: SideData {
                     name: "Side 2".to_string(),
                     players: Vec::new(),
-                },
-                flags: BattleBuilderFlags {
-                    validate_team: true,
                 },
             },
             engine_options: CoreBattleEngineOptions::default(),
@@ -84,16 +79,16 @@ impl TestBattleBuilder {
             player.player_options.has_strict_bag = !infinite_bags;
         }
 
-        let mut builder = BattleBuilder::new(self.options, data)?;
+        let mut battle = PublicCoreBattle::new(self.options, data, self.engine_options)?;
 
         for (player_id, team) in self.teams {
-            builder.update_team(&player_id, team)?;
+            battle.update_team(&player_id, team)?;
         }
 
-        builder.build(self.engine_options)
+        Ok(battle)
     }
 
-    fn players_mut(&mut self) -> impl Iterator<Item = &mut BattleBuilderPlayerData> {
+    fn players_mut(&mut self) -> impl Iterator<Item = &mut PlayerData> {
         self.options
             .side_1
             .players
@@ -143,7 +138,7 @@ impl TestBattleBuilder {
     }
 
     pub fn with_team_validation(mut self, team_validation: bool) -> Self {
-        self.options.flags.validate_team = team_validation;
+        self.engine_options.validate_teams = team_validation;
         self
     }
 
@@ -164,17 +159,18 @@ impl TestBattleBuilder {
     }
 
     pub fn add_player_to_side_1(mut self, id: &str, name: &str) -> Self {
-        self.options.side_1.players.push(BattleBuilderPlayerData {
+        self.options.side_1.players.push(PlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Trainer,
             player_options: PlayerOptions::default(),
+            team: TeamData::default(),
         });
         self
     }
 
     pub fn add_protagonist_to_side_1(mut self, id: &str, name: &str) -> Self {
-        self.options.side_1.players.push(BattleBuilderPlayerData {
+        self.options.side_1.players.push(PlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Protagonist,
@@ -183,16 +179,18 @@ impl TestBattleBuilder {
                 has_strict_bag: true,
                 mons_caught: 151,
             },
+            team: TeamData::default(),
         });
         self
     }
 
     pub fn add_player_to_side_2(mut self, id: &str, name: &str) -> Self {
-        self.options.side_2.players.push(BattleBuilderPlayerData {
+        self.options.side_2.players.push(PlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Trainer,
             player_options: PlayerOptions::default(),
+            team: TeamData::default(),
         });
         self
     }
@@ -203,11 +201,12 @@ impl TestBattleBuilder {
         name: &str,
         options: WildPlayerOptions,
     ) -> Self {
-        self.options.side_2.players.push(BattleBuilderPlayerData {
+        self.options.side_2.players.push(PlayerData {
             id: id.to_owned(),
             name: name.to_owned(),
             player_type: PlayerType::Wild(options),
             player_options: PlayerOptions::default(),
+            team: TeamData::default(),
         });
         self
     }

@@ -76,13 +76,13 @@ impl From<anyhow::Error> for Error {
     }
 }
 
-/// Wraps an error into [`struct@Error`], optionally providing additional context.
+/// Wraps an error into [`Error`], optionally providing additional context.
 pub trait WrapError {
-    /// Wraps the object into an [`struct@Error`].
+    /// Wraps the object into an [`Error`].
     #[track_caller]
     fn wrap_error(self) -> Error;
 
-    /// Wraps the object into an [`struct@Error`], with an additional message.
+    /// Wraps the object into an [`Error`], with an additional message.
     #[track_caller]
     fn wrap_error_with_message<M>(self, message: M) -> Error
     where
@@ -107,7 +107,7 @@ where
     }
 }
 
-/// Wraps an object into a result producing an [`struct@Error`], optionally providing additional
+/// Wraps an object into a result producing an [`Error`], optionally providing additional
 /// context.
 pub trait WrapResultError<T> {
     /// Wraps the object into a [`Result<T, Error>`].
@@ -157,7 +157,7 @@ where
     }
 }
 
-/// Wraps an [`Option`] into a result producing an [`struct@Error`].
+/// Wraps an [`Option`] into a result producing an [`Error`].
 pub trait WrapOptionError<T> {
     /// Wraps the object into a [`Result<T, Error>`].
     #[track_caller]

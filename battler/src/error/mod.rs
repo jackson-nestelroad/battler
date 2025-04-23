@@ -2,6 +2,7 @@ mod battler_error;
 mod context;
 mod conversions;
 mod error;
+mod validation_error;
 
 pub use battler_error::{
     borrow_failed_error,
@@ -12,7 +13,6 @@ pub use battler_error::{
     GeneralError,
     IntegerOverflowError,
     NotFoundError,
-    TeamValidationError,
 };
 pub use conversions::ConvertError;
 pub use error::{
@@ -21,3 +21,4 @@ pub use error::{
     WrapOptionError,
     WrapResultError,
 };
+pub use validation_error::ValidationError;

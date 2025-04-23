@@ -16,6 +16,7 @@ use crate::{
 };
 
 /// Collection of all resources indexed by ID.
+#[derive(Clone)]
 pub struct Dex<'d> {
     /// Collection of abilities.
     pub abilities: AbilityDex<'d>,

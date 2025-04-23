@@ -65,6 +65,16 @@ mod abilities {
     }
 }
 
+mod clauses {
+    mod ability_clause_test;
+    mod force_mono_type_test;
+    mod item_clause_test;
+    mod nickname_clause_test;
+    mod same_type_clause_test;
+    mod sleep_clause_test;
+    mod species_clause_test;
+}
+
 mod items {
     mod battle {
         mod dire_hit_test;

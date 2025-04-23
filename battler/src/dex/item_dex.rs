@@ -14,6 +14,7 @@ use crate::{
 };
 
 /// Lookup type for [`ItemDex`].
+#[derive(Clone)]
 pub struct ItemLookup<'d> {
     data: &'d dyn DataStore,
 }

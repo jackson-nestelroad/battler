@@ -160,6 +160,22 @@ where
     }
 }
 
+impl<'d, D, T, L, W> Clone for ResourceDex<'d, D, T, L, W>
+where
+    L: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data,
+            cache: ResourceCache::new(),
+            lookup: self.lookup.clone(),
+            phantom_data: PhantomData,
+            phantom_wrapper: PhantomData,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct SingleValueDex<'d, T> {
     #[allow(unused)]
     data: &'d dyn DataStore,

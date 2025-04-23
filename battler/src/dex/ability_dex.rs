@@ -14,6 +14,7 @@ use crate::{
 };
 
 /// Lookup type for [`AbilityDex`].
+#[derive(Clone)]
 pub struct AbilityLookup<'d> {
     data: &'d dyn DataStore,
 }

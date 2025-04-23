@@ -7,7 +7,14 @@ use std::{
     mem,
 };
 
-use ahash::HashSetExt;
+use ahash::{
+    HashMapExt,
+    HashSetExt,
+};
+use itertools::{
+    EitherOrBoth,
+    Itertools,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -390,6 +397,11 @@ pub struct Player {
     pub choice: ChoiceState,
     pub request: Option<Request>,
 
+    /// List of Mons registered by the player.
+    ///
+    /// Only used for record keeping between team updates.
+    pub registered_mons: Vec<MonHandle>,
+    /// The player's current team.
     pub mons: Vec<MonHandle>,
     active: Vec<Option<MonHandle>>,
     /// A mirror of the above list, but exited Mons are not unset.
@@ -415,24 +427,8 @@ impl Player {
         dex: &Dex,
         registry: &BattleRegistry,
     ) -> Result<Self, Error> {
-        let mons = data
-            .team
-            .members
-            .into_iter()
-            .enumerate()
-            .map(|(team_position, mon_data)| {
-                Ok(registry.register_mon(Mon::new(mon_data, team_position, dex)?))
-            })
-            .collect::<Result<Vec<_>, Error>>()?;
         let active = vec![None; battle_type.active_per_player()];
-        let bag = data
-            .team
-            .bag
-            .items
-            .into_iter()
-            .map(|(key, val)| (Id::from(key), val))
-            .collect();
-        Ok(Self {
+        let mut player = Self {
             id: data.id,
             name: data.name,
             player_type: data.player_type,
@@ -440,16 +436,19 @@ impl Player {
             side,
             position,
             index: usize::MAX,
-            mons,
+            registered_mons: Vec::new(),
+            mons: Vec::new(),
             choice: ChoiceState::new(),
             active: active.clone(),
             active_or_exited: active,
             request: None,
             escape_attempts: 0,
             escaped: false,
-            bag,
+            bag: FastHashMap::new(),
             caught: Vec::new(),
-        })
+        };
+        player.update_team(data.team, dex, registry)?;
+        Ok(player)
     }
 
     /// Sets the index of the player, so that the player can safely reference itself.
@@ -467,6 +466,50 @@ impl Player {
 
 // Basic getters.
 impl Player {
+    /// Updates the player's team.
+    pub fn update_team(
+        &mut self,
+        team: TeamData,
+        dex: &Dex,
+        registry: &BattleRegistry,
+    ) -> Result<(), Error> {
+        // Overwrite previously-registered Mons first.
+        let mut mons = Vec::new();
+        for pair in self
+            .registered_mons
+            .clone()
+            .into_iter()
+            .zip_longest(team.members.into_iter().enumerate())
+        {
+            let mon_handle = match pair {
+                EitherOrBoth::Left(_) => break,
+                EitherOrBoth::Right((team_position, mon_data)) => {
+                    let mon_handle = registry.register_mon(Mon::new(mon_data, team_position, dex)?);
+                    self.registered_mons.push(mon_handle);
+                    mon_handle
+                }
+                EitherOrBoth::Both(mon_handle, (team_position, mon_data)) => {
+                    let mut mon = registry.mon_mut(mon_handle)?;
+                    *mon = Mon::new(mon_data, team_position, dex)?;
+                    mon_handle
+                }
+            };
+            mons.push(mon_handle);
+        }
+
+        let bag = team
+            .bag
+            .items
+            .into_iter()
+            .map(|(key, val)| (Id::from(key), val))
+            .collect();
+
+        self.mons = mons;
+        self.bag = bag;
+
+        Ok(())
+    }
+
     /// The active request for the player.
     pub fn active_request(&self) -> Option<Request> {
         if !self.choice.fulfilled {

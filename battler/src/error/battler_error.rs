@@ -45,25 +45,6 @@ impl NotFoundError {
     }
 }
 
-/// A team validation error, consisting of all problems.
-#[derive(Error, Debug)]
-#[error("team validation failed: {}", .problems.join("; "))]
-pub struct TeamValidationError {
-    problems: Vec<String>,
-}
-
-impl TeamValidationError {
-    /// Constructs a new team validation error.
-    pub fn new(problems: Vec<String>) -> Self {
-        Self { problems }
-    }
-
-    /// THe problems generated from team validation.
-    pub fn problems(&self) -> impl Iterator<Item = &str> {
-        self.problems.iter().map(|s| s.as_str())
-    }
-}
-
 /// A borrow failure.
 #[derive(Error, Debug)]
 #[error("failed to borrow {target}")]
@@ -74,7 +55,7 @@ pub struct BorrowFailedError {
 }
 
 impl BorrowFailedError {
-    /// Construcs a new borrow failure.
+    /// Constructs a new borrow failure.
     pub fn new<E, M>(error: E, target: M) -> Self
     where
         E: Into<anyhow::Error>,

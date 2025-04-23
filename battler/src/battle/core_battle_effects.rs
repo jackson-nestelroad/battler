@@ -19,6 +19,8 @@ use crate::{
         MonHandle,
         MoveEventResult,
         MoveOutcomeOnTarget,
+        PlayerContext,
+        PlayerEffectContext,
         SideContext,
         SideEffectContext,
         SpeedOrderable,
@@ -51,6 +53,7 @@ use crate::{
 enum UpcomingEvaluationContext<
     'field_effect,
     'side_effect,
+    'player_effect,
     'applying_effect,
     'effect,
     'mon,
@@ -67,6 +70,7 @@ enum UpcomingEvaluationContext<
     'player: 'mon,
     'context: 'effect,
     'effect: 'applying_effect,
+    'effect: 'player_effect,
     'effect: 'side_effect,
     'effect: 'field_effect,
 {
@@ -75,6 +79,10 @@ enum UpcomingEvaluationContext<
     ),
     Effect(MaybeOwnedMut<'effect, EffectContext<'context, 'battle, 'data>>),
     Mon(MaybeOwnedMut<'mon, MonContext<'player, 'side, 'context, 'battle, 'data>>),
+    PlayerEffect(
+        MaybeOwnedMut<'player_effect, PlayerEffectContext<'effect, 'context, 'battle, 'data>>,
+    ),
+    Player(MaybeOwnedMut<'player, PlayerContext<'side, 'context, 'battle, 'data>>),
     SideEffect(MaybeOwnedMut<'side_effect, SideEffectContext<'effect, 'context, 'battle, 'data>>),
     Side(MaybeOwnedMut<'side, SideContext<'context, 'battle, 'data>>),
     FieldEffect(
@@ -86,6 +94,7 @@ enum UpcomingEvaluationContext<
 impl<
         'field_effect,
         'side_effect,
+        'player_effect,
         'applying_effect,
         'effect,
         'mon,
@@ -98,6 +107,7 @@ impl<
     UpcomingEvaluationContext<
         'field_effect,
         'side_effect,
+        'player_effect,
         'applying_effect,
         'effect,
         'mon,
@@ -113,6 +123,8 @@ impl<
             Self::ApplyingEffect(context) => context.as_battle_context(),
             Self::Effect(context) => context.as_battle_context(),
             Self::Mon(context) => context.as_battle_context(),
+            Self::Player(context) => context.as_battle_context(),
+            Self::PlayerEffect(context) => context.as_battle_context(),
             Self::SideEffect(context) => context.as_battle_context(),
             Self::Side(context) => context.as_battle_context(),
             Self::FieldEffect(context) => context.as_battle_context(),
@@ -125,6 +137,8 @@ impl<
             Self::ApplyingEffect(context) => context.as_battle_context_mut(),
             Self::Effect(context) => context.as_battle_context_mut(),
             Self::Mon(context) => context.as_battle_context_mut(),
+            Self::Player(context) => context.as_battle_context_mut(),
+            Self::PlayerEffect(context) => context.as_battle_context_mut(),
             Self::SideEffect(context) => context.as_battle_context_mut(),
             Self::Side(context) => context.as_battle_context_mut(),
             Self::FieldEffect(context) => context.as_battle_context_mut(),
@@ -174,6 +188,14 @@ fn run_effect_event_with_errors(
         ),
         UpcomingEvaluationContext::Mon(context) => fxlang::EvaluationContext::ApplyingEffect(
             context.applying_effect_context(effect_handle.clone(), None, None)?,
+        ),
+        UpcomingEvaluationContext::PlayerEffect(context) => {
+            fxlang::EvaluationContext::PlayerEffect(
+                context.forward_player_effect_context(effect_handle.clone())?,
+            )
+        }
+        UpcomingEvaluationContext::Player(context) => fxlang::EvaluationContext::PlayerEffect(
+            context.player_effect_context(effect_handle.clone(), None, None)?,
         ),
         UpcomingEvaluationContext::SideEffect(context) => fxlang::EvaluationContext::SideEffect(
             context.forward_side_effect_context(effect_handle.clone())?,
@@ -283,7 +305,7 @@ fn run_active_move_event(
                 context.as_battle_context_mut(),
                 event,
                 active_move_name,
-                &error.to_string(),
+                &error.full_description(),
             );
             None
         }
@@ -317,7 +339,7 @@ fn run_effect_event_by_handle(
                 context.battle_context_mut(),
                 event,
                 &effect_name,
-                &error.to_string(),
+                &error.full_description(),
             );
             fxlang::ProgramEvalResult::default()
         }
@@ -889,6 +911,14 @@ fn find_callbacks_on_field(
         ));
     }
 
+    for rule in context.battle().format.rules.rules() {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Clause(rule.clone()),
+            event,
+            AppliedEffectLocation::None,
+        ));
+    }
+
     Ok(callbacks)
 }
 
@@ -953,12 +983,21 @@ fn find_callbacks_on_field_on_mon(
         ));
     }
 
+    for rule in context.battle().format.rules.rules() {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Clause(rule.clone()),
+            event,
+            AppliedEffectLocation::None,
+        ));
+    }
+
     Ok(callbacks)
 }
 
 #[derive(Clone, Copy)]
 enum AllEffectsTarget {
     Mon(MonHandle),
+    Player(usize),
     Side(usize),
     Field,
     Residual,
@@ -1035,6 +1074,42 @@ fn find_all_callbacks(
                 event,
                 mon,
             )?);
+        }
+        AllEffectsTarget::Player(player) => {
+            let mut context = context.player_context(player)?;
+            let side = context.side().index;
+            callbacks.extend(find_callbacks_on_side(
+                context.as_battle_context_mut(),
+                event,
+                side,
+            )?);
+            if let Some(foe_event) = event.foe_event() {
+                let foe_side = context.foe_side().index;
+                callbacks.extend(find_callbacks_on_side(
+                    context.as_battle_context_mut(),
+                    foe_event,
+                    foe_side,
+                )?);
+            }
+
+            callbacks.extend(find_callbacks_on_field(
+                context.as_battle_context_mut(),
+                event,
+            )?);
+
+            if let Some(side_event) = event.side_event() {
+                for mon in context
+                    .battle()
+                    .active_mon_handles_on_side(side)
+                    .collect::<Vec<_>>()
+                {
+                    callbacks.extend(find_callbacks_on_mon(
+                        context.as_battle_context_mut(),
+                        side_event,
+                        mon,
+                    )?);
+                }
+            }
         }
         AllEffectsTarget::Side(side) => {
             callbacks.extend(find_callbacks_on_side(context, event, side)?);
@@ -1304,6 +1379,42 @@ fn run_mon_callbacks_with_errors(
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Mon(context.into()),
+                &mut input,
+                callback_handle,
+                options,
+            )?,
+        };
+        if let Some(return_value) = result {
+            return Ok(Some(return_value));
+        }
+    }
+
+    // The first input variable is always returned as the result.
+    Ok(input.get(0).cloned())
+}
+
+fn run_player_callbacks_with_errors(
+    context: &mut PlayerContext,
+    source_effect: Option<&EffectHandle>,
+    source: Option<MonHandle>,
+    mut input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
+    callbacks: Vec<CallbackHandle>,
+) -> Result<Option<fxlang::Value>, Error> {
+    for callback_handle in callbacks {
+        let result = match source_effect {
+            Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
+                UpcomingEvaluationContext::PlayerEffect(
+                    context
+                        .player_effect_context(source_effect.clone(), source, None)?
+                        .into(),
+                ),
+                &mut input,
+                callback_handle,
+                options,
+            )?,
+            None => run_callbacks_with_forwarding_input_with_errors(
+                UpcomingEvaluationContext::Player(context.into()),
                 &mut input,
                 callback_handle,
                 options,
@@ -1606,6 +1717,14 @@ fn run_event_with_errors(
             options,
             callbacks,
         ),
+        AllEffectsTarget::Player(player) => run_player_callbacks_with_errors(
+            &mut context.player_context(player)?,
+            source_effect,
+            source,
+            input,
+            options,
+            callbacks,
+        ),
         AllEffectsTarget::Side(side) => run_side_callbacks_with_errors(
             &mut context.side_context(side)?,
             source_effect,
@@ -1651,7 +1770,7 @@ fn run_event_for_applying_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.to_string(),
+                &error.full_description(),
             );
             None
         }
@@ -1679,7 +1798,65 @@ fn run_event_for_mon_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.to_string(),
+                &error.full_description(),
+            );
+            None
+        }
+    }
+}
+
+fn run_event_for_player_internal(
+    context: &mut PlayerContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
+) -> Option<fxlang::Value> {
+    let target = AllEffectsTarget::Player(context.player().index);
+    match run_event_with_errors(
+        context.as_battle_context_mut(),
+        event,
+        None,
+        target,
+        None,
+        input,
+        options,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            core_battle_logs::debug_full_event_failure(
+                context.as_battle_context_mut(),
+                event,
+                &error.full_description(),
+            );
+            None
+        }
+    }
+}
+
+fn run_event_for_player_effect_internal(
+    context: &mut PlayerEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    options: &RunCallbacksOptions,
+) -> Option<fxlang::Value> {
+    let target = AllEffectsTarget::Player(context.player().index);
+    let effect = context.effect_handle().clone();
+    let source = context.source_handle();
+    match run_event_with_errors(
+        context.as_battle_context_mut(),
+        event,
+        Some(&effect),
+        target,
+        source,
+        input,
+        options,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            core_battle_logs::debug_full_event_failure(
+                context.as_battle_context_mut(),
+                event,
+                &error.full_description(),
             );
             None
         }
@@ -1709,7 +1886,7 @@ fn run_event_for_side_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.to_string(),
+                &error.full_description(),
             );
             None
         }
@@ -1739,7 +1916,7 @@ fn run_event_for_field_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.to_string(),
+                &error.full_description(),
             );
             None
         }
@@ -1763,7 +1940,7 @@ fn run_event_for_battle_internal(
     ) {
         Ok(value) => value,
         Err(error) => {
-            core_battle_logs::debug_full_event_failure(context, event, &error.to_string());
+            core_battle_logs::debug_full_event_failure(context, event, &error.full_description());
             None
         }
     }
@@ -1781,7 +1958,7 @@ fn run_event_for_residual_internal(context: &mut Context, event: fxlang::BattleE
     ) {
         Ok(_) => (),
         Err(error) => {
-            core_battle_logs::debug_full_event_failure(context, event, &error.to_string());
+            core_battle_logs::debug_full_event_failure(context, event, &error.full_description());
         }
     }
 }
@@ -2613,6 +2790,24 @@ pub fn run_event_for_mon_expecting_i32_quick_return(
     .flatten()
 }
 
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a string list.
+pub fn run_event_for_mon_expecting_string_list(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+) -> Vec<String> {
+    run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::List(Vec::new())]),
+        &RunCallbacksOptions::default(),
+    )
+    .map(|value| value.strings_list().ok())
+    .flatten()
+    .unwrap_or_default()
+}
+
 /// Runs an event on the [`CoreBattle`] for the residual effect, which
 /// occurs at the end of every turn.
 pub fn run_event_for_residual(context: &mut Context, event: fxlang::BattleEvent) {
@@ -2735,4 +2930,36 @@ pub fn run_event_for_each_active_mon(
         );
     }
     Ok(())
+}
+
+/// Runs an event on the target [`Player`][`crate::battle::Player`].
+///
+/// Expects a string list.
+pub fn run_event_for_player_expecting_string_list(
+    context: &mut PlayerContext,
+    event: fxlang::BattleEvent,
+) -> Vec<String> {
+    run_event_for_player_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::List(Vec::new())]),
+        &RunCallbacksOptions::default(),
+    )
+    .map(|value| value.strings_list().ok())
+    .flatten()
+    .unwrap_or_default()
+}
+
+/// Runs an event on the [`CoreBattle`] for a player-applying effect.
+///
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_player_effect(
+    context: &mut PlayerEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> bool {
+    run_event_for_player_effect_internal(context, event, input, &RunCallbacksOptions::default())
+        .map(|value| value.boolean().ok())
+        .flatten()
+        .unwrap_or(true)
 }

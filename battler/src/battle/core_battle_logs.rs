@@ -101,6 +101,12 @@ fn effect_activation_internal(
                         &condition.data.name,
                     );
                 }
+                Effect::Clause(clause) => {
+                    event.set("clause", &clause.data.name);
+                }
+                Effect::Species(species) => {
+                    event.set("species", &species.data.name);
+                }
                 Effect::NonExistent(_) => (),
             },
         }

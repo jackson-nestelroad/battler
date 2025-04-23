@@ -28,11 +28,6 @@ pub use abilities::{
 };
 pub use battle::{
     ActiveMonDetails,
-    BattleBuilder,
-    BattleBuilderFlags,
-    BattleBuilderOptions,
-    BattleBuilderPlayerData,
-    BattleBuilderSideData,
     BattleType,
     Boost,
     BoostOrderIterator,
@@ -121,7 +116,6 @@ pub use error::{
     GeneralError,
     IntegerOverflowError,
     NotFoundError,
-    TeamValidationError,
     WrapError,
     WrapOptionError,
     WrapResultError,

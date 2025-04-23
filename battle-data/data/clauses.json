@@ -44,7 +44,27 @@
     "name": "Ability Clause",
     "description": "Prevents teams from having more than a given number of Mons with the same ability.",
     "rule_log": "{} Ability Clause: Limit {} of each ability",
-    "value_type": "PositiveInteger"
+    "value_type": "PositiveInteger",
+    "default_value": "1",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$limit = func_call(clause_integer_value: $this)",
+          "$abilities = func_call(new_object)",
+          "foreach $mon in $player.team:",
+          ["$abilities = func_call(object_increment: $abilities $mon.ability)"],
+          "foreach $id in func_call(object_keys: $abilities):",
+          [
+            "$times = func_call(object_value: $abilities $id)",
+            "if !$times or $times <= $limit:",
+            ["continue"],
+            "$ability = func_call(get_ability: $id)",
+            "$problems = func_call(append: $problems str('Ability {} appears more than {} time{}.', $ability.name, $limit, func_call(plural: $limit)))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
   },
   "accuracymovesclause": {
     "name": "Accuracy Moves Clause",
@@ -89,16 +109,69 @@
     "name": "Force Mono Type",
     "description": "Forces all teams to have the same type.",
     "requires_value": true,
-    "value_type": "Type"
+    "value_type": "Type",
+    "effect": {
+      "callbacks": {
+        "on_validate_mon": [
+          "$type = func_call(clause_type_value: $this)",
+          "if !($mon.types has $type):",
+          [
+            "$problems = func_call(append: $problems str('{} is not {} type.', $mon.name, $type))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
   },
   "itemclause": {
     "name": "Item Clause",
     "description": "Prevents teams from having more than one Mon with the same item.",
-    "rule_log": "Item Clause: Limit one of each item"
+    "rule_log": "Item Clause: Limit one of each item",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$limit = 1",
+          "$items = func_call(new_object)",
+          "foreach $mon in $player.team:",
+          [
+            "if !$mon.item:",
+            ["continue"],
+            "$items = func_call(object_increment: $items $mon.item)"
+          ],
+          "foreach $id in func_call(object_keys: $items):",
+          [
+            "$times = func_call(object_value: $items $id)",
+            "if !$times or $times <= $limit:",
+            ["continue"],
+            "$item = func_call(get_item: $id)",
+            "$problems = func_call(append: $problems str('Item {} appears more than {} time{}.', $item.name, $limit, func_call(plural: $limit)))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
   },
   "nicknameclause": {
     "name": "Nickname Clause",
-    "description": "Prevents teams from having more than one Mon with the same nickname."
+    "description": "Prevents teams from having more than one Mon with the same nickname.",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$limit = 1",
+          "$names = func_call(new_object)",
+          "foreach $mon in $player.team:",
+          ["$names = func_call(object_increment: $names $mon.name)"],
+          "foreach $name in func_call(object_keys: $names):",
+          [
+            "$times = func_call(object_value: $names $name)",
+            "if !$times or $times <= $limit:",
+            ["continue"],
+            "$problems = func_call(append: $problems str('Nickname \"{}\" appears more than {} time{}.', $name, $limit, func_call(plural: $limit)))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
   },
   "ohkoclause": {
     "name": "OHKO Clause",
@@ -114,12 +187,52 @@
   "sametypeclause": {
     "name": "Same Type Clause",
     "description": "Forces all Mons on a team to share a type with each other.",
-    "rule_log": "Same Type Clause: Mons in a team must share a type"
+    "rule_log": "Same Type Clause: Mons in a team must share a type",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$types = func_call(new_object)",
+          "foreach $mon in $player.team:",
+          [
+            "foreach $type in $mon.types:",
+            ["$types = func_call(object_increment: $types str('{}', $type))"]
+          ],
+          "foreach $type in func_call(object_keys: $types):",
+          [
+            "$times = func_call(object_value: $types $type)",
+            "if $times.is_defined and $times >= $player.team.length:",
+            ["return $problems"]
+          ],
+          "$problems = func_call(append: $problems 'Your team does not share a common type to satisfy Same Type Clause.')",
+          "return $problems"
+        ]
+      }
+    }
   },
   "sleepclause": {
     "name": "Sleep Clause",
     "description": "Prevents players from putting more than one of their opponent's Mons to sleep at a time.",
-    "rule_log": "Sleep Clause: Limit one foe put to sleep"
+    "rule_log": "Sleep Clause: Limit one foe put to sleep",
+    "effect": {
+      "callbacks": {
+        "on_set_status": [
+          "if func_call(is_ally: $source $target):",
+          ["return"],
+          "if $status.id != slp:",
+          ["return"],
+          "foreach $mon in func_call(all_mons_on_side: $target.side):",
+          [
+            "if $mon.hp == 0 or $mon.status != slp:",
+            ["continue"],
+            "$status_state = func_call(status_effect_state: $mon)",
+            "if !$status_state or !$status_state.source or func_call(is_ally: $status_state.source $mon):",
+            ["continue"],
+            "log_activate",
+            "return false"
+          ]
+        ]
+      }
+    }
   },
   "sleepmovesclause": {
     "name": "Sleep Moves Clause",
@@ -139,7 +252,28 @@
   "speciesclause": {
     "name": "Species Clause",
     "description": "Prevents teams from having more than one Mon from the same species.",
-    "rule_log": "Item Clause: Limit one of each Mon"
+    "rule_log": "Species Clause: Limit one of each Mon",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$limit = 1",
+          "$species_seen = func_call(new_object)",
+          "foreach $mon in $player.team:",
+          [
+            "$species_seen = func_call(object_increment: $species_seen $mon.species)"
+          ],
+          "foreach $id in func_call(object_keys: $species_seen):",
+          [
+            "$times = func_call(object_value: $species_seen $id)",
+            "if !$times or $times <= $limit:",
+            ["continue"],
+            "$species = func_call(get_species: $id)",
+            "$problems = func_call(append: $problems str('Species {} appears more than {} time{}.', $species.name, $limit, func_call(plural: $limit)))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
   },
   "playersperside": {
     "name": "Players Per Side",

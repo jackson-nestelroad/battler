@@ -72,6 +72,7 @@ use crate::{
         SecondaryEffect,
     },
     rng::rand_util,
+    Type,
 };
 
 /// Runs an fxlang function.
@@ -112,6 +113,8 @@ pub fn run_function(
         "chance" => chance(context).map(|val| Some(val)),
         "check_immunity" => check_immunity(context).map(|val| Some(val)),
         "clamp_number" => clamp_number(context).map(|val| Some(val)),
+        "clause_integer_value" => clause_integer_value(context),
+        "clause_type_value" => clause_type_value(context),
         "clear_boosts" => clear_boosts(context).map(|()| None),
         "clear_negative_boosts" => clear_negative_boosts(context).map(|()| None),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
@@ -134,7 +137,9 @@ pub fn run_function(
         "get_all_moves" => get_all_moves(context).map(|val| Some(val)),
         "get_ability" => get_ability(context).map(|val| Some(val)),
         "get_boost" => get_boost(context).map(|val| Some(val)),
+        "get_item" => get_item(context).map(|val| Some(val)),
         "get_move" => get_move(context).map(|val| Some(val)),
+        "get_species" => get_species(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
@@ -187,7 +192,12 @@ pub fn run_function(
         "new_active_move_from_local_data" => {
             new_active_move_from_local_data(context).map(|val| Some(val))
         }
+        "new_object" => Ok(Some(new_object(context))),
+        "object_keys" => object_keys(context).map(|val| Some(val)),
+        "object_increment" => object_increment(context).map(|val| Some(val)),
+        "object_value" => object_value(context),
         "overwrite_move_slot" => overwrite_move_slot(context).map(|()| None),
+        "plural" => plural(context).map(|val| Some(val)),
         "prepare_direct_move" => prepare_direct_move(context).map(|val| Some(val)),
         "random" => random(context).map(|val| Some(val)),
         "random_target" => random_target(context),
@@ -1360,6 +1370,13 @@ fn run_event(mut context: FunctionContext) -> Result<Value, Error> {
                 VariableInput::default(),
             ),
         )),
+        EvaluationContext::PlayerEffect(context) => Ok(Value::Boolean(
+            core_battle_effects::run_event_for_player_effect(
+                context,
+                event,
+                VariableInput::default(),
+            ),
+        )),
         EvaluationContext::SideEffect(context) => Ok(Value::Boolean(
             core_battle_effects::run_event_for_side_effect(
                 context,
@@ -2437,9 +2454,27 @@ fn get_ability(mut context: FunctionContext) -> Result<Value, Error> {
     let ability_id = context
         .pop_front()
         .wrap_expectation("missing ability id")?
-        .move_id(context.evaluation_context_mut())
+        .ability_id()
         .wrap_error_with_message("invalid ability id")?;
     Ok(Value::Effect(EffectHandle::Ability(ability_id)))
+}
+
+fn get_item(mut context: FunctionContext) -> Result<Value, Error> {
+    let item_id = context
+        .pop_front()
+        .wrap_expectation("missing item id")?
+        .item_id()
+        .wrap_error_with_message("invalid item id")?;
+    Ok(Value::Effect(EffectHandle::Item(item_id)))
+}
+
+fn get_species(mut context: FunctionContext) -> Result<Value, Error> {
+    let species_id = context
+        .pop_front()
+        .wrap_expectation("missing item id")?
+        .species_id()
+        .wrap_error_with_message("invalid species id")?;
+    Ok(Value::Effect(EffectHandle::Species(species_id)))
 }
 
 fn get_all_moves(mut context: FunctionContext) -> Result<Value, Error> {
@@ -3268,4 +3303,109 @@ fn has_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
             .side_context(side_index)?,
         &condition,
     )))
+}
+
+fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+    let clause = context
+        .pop_front()
+        .wrap_expectation("missing clause")?
+        .clause_id()
+        .wrap_error_with_message("invalid clause")?;
+    Ok(context
+        .evaluation_context_mut()
+        .battle_context()
+        .battle()
+        .format
+        .rules
+        .numeric_value(&clause)
+        .map(|val| Value::UFraction(val.into())))
+}
+
+fn clause_type_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+    let clause = context
+        .pop_front()
+        .wrap_expectation("missing clause")?
+        .clause_id()
+        .wrap_error_with_message("invalid clause")?;
+    match context
+        .evaluation_context_mut()
+        .battle_context()
+        .battle()
+        .format
+        .rules
+        .value(&clause)
+    {
+        Some(val) => Ok(Some(Value::Type(
+            Type::from_str(val).map_err(general_error)?,
+        ))),
+        None => Ok(None),
+    }
+}
+
+fn new_object(_: FunctionContext) -> Value {
+    Value::Object(FastHashMap::new())
+}
+
+fn object_keys(mut context: FunctionContext) -> Result<Value, Error> {
+    let object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    Ok(Value::List(
+        object
+            .keys()
+            .cloned()
+            .map(|key| Value::String(key))
+            .collect(),
+    ))
+}
+
+fn object_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+    let object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    Ok(object.get(&key).cloned())
+}
+
+fn object_increment(mut context: FunctionContext) -> Result<Value, Error> {
+    let mut object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    let value = match object.get(&key).cloned() {
+        Some(val) => val
+            .integer_u64()
+            .wrap_error_with_message("cannot increment a non-integer value")?,
+        None => 0,
+    };
+    let value = value + 1;
+    object.insert(key, Value::UFraction(value.into()));
+    Ok(Value::Object(object))
+}
+
+fn plural(mut context: FunctionContext) -> Result<Value, Error> {
+    if context
+        .pop_front()
+        .wrap_expectation("missing number")?
+        .fraction_u64()
+        .is_ok_and(|val| val == 1)
+    {
+        Ok(Value::String("".to_owned()))
+    } else {
+        Ok(Value::String("s".to_owned()))
+    }
 }

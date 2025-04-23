@@ -14,6 +14,7 @@ use crate::{
 };
 
 /// Lookup type for [`MoveDex`].
+#[derive(Clone)]
 pub struct MoveLookup<'d> {
     data: &'d dyn DataStore,
 }

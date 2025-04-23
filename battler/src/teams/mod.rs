@@ -10,7 +10,4 @@ pub use team::{
     BagData,
     TeamData,
 };
-pub use validator::{
-    TeamValidationProblems,
-    TeamValidator,
-};
+pub use validator::TeamValidator;

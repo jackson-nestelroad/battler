@@ -52,6 +52,9 @@ pub enum CoreBattleEngineSpeedSortTieResolution {
 /// options will be common across all battle instances.
 #[derive(Debug)]
 pub struct CoreBattleEngineOptions {
+    /// Should all teams be validated prior to the battle being able to start?
+    pub validate_teams: bool,
+
     /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] automatically continue when it is
     /// able to?
     ///
@@ -133,6 +136,7 @@ pub struct CoreBattleEngineOptions {
 impl Default for CoreBattleEngineOptions {
     fn default() -> Self {
         Self {
+            validate_teams: true,
             auto_continue: true,
             reveal_actual_health: false,
             rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
@@ -147,14 +151,14 @@ impl Default for CoreBattleEngineOptions {
 }
 
 /// Core options for a new battle.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreBattleOptions {
     /// The initial seed for random number generation.
     ///
     /// This can be used to effectively replay or control a battle.
     pub seed: Option<u64>,
     /// The format of the battle.
-    pub format: Option<FormatData>,
+    pub format: FormatData,
     /// The field of the battle.
     #[serde(default)]
     pub field: FieldData,
@@ -165,16 +169,16 @@ pub struct CoreBattleOptions {
 }
 
 impl CoreBattleOptions {
-    fn validate_side(&self, format: &FormatData, side: &SideData) -> Result<(), Error> {
+    fn validate_side(&self, side: &SideData) -> Result<(), Error> {
         let players_on_side = side.players.len();
         if players_on_side == 0 {
-            return Err(general_error(format!("side {} has no players", side.name)));
+            return Err(general_error(format!("{} has no players", side.name)));
         }
-        match format.battle_type {
+        match self.format.battle_type {
             BattleType::Singles => {
                 if players_on_side > 1 {
                     return Err(general_error(format!(
-                        "side {} has too many players for a singles battle",
+                        "{} has too many players for a singles battle",
                         side.name
                     )));
                 }
@@ -182,7 +186,7 @@ impl CoreBattleOptions {
             BattleType::Doubles => {
                 if players_on_side > 1 {
                     return Err(general_error(format!(
-                        "side {} has too many players for a doubles battle (did you mean to start a multi battle?)",
+                        "{} has too many players for a doubles battle (did you mean to start a multi battle?)",
                         side.name
                     )));
                 }
@@ -190,75 +194,19 @@ impl CoreBattleOptions {
             _ => (),
         }
         for player in &side.players {
-            self.validate_player(format, side, player)?;
+            self.validate_player(side, player)?;
         }
         Ok(())
     }
 
-    fn validate_player(
-        &self,
-        _: &FormatData,
-        _: &SideData,
-        player: &PlayerData,
-    ) -> Result<(), Error> {
-        if player.team.members.is_empty() {
-            return Err(general_error("a player has an empty team"));
-        }
+    fn validate_player(&self, _: &SideData, _: &PlayerData) -> Result<(), Error> {
         Ok(())
     }
-}
 
-impl CoreBattleOptions {
     /// Validates the battle options.
     pub fn validate(&self) -> Result<(), Error> {
-        match &self.format {
-            Some(format) => self.validate_with_format(format),
-            None => Err(general_error("battle options has no format data")),
-        }
-    }
-
-    /// Validates the battle options against a given format.
-    pub fn validate_with_format(&self, format: &FormatData) -> Result<(), Error> {
-        self.validate_side(format, &self.side_1)?;
-        self.validate_side(format, &self.side_2)?;
+        self.validate_side(&self.side_1)?;
+        self.validate_side(&self.side_2)?;
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod battle_options_tests {
-    use serde::Deserialize;
-
-    use crate::{
-        battle::CoreBattleOptions,
-        common::read_test_cases,
-    };
-
-    #[derive(Deserialize)]
-    struct BattleOptionsValidateTestCase {
-        options: CoreBattleOptions,
-        ok: bool,
-        expected_error_substr: Option<String>,
-    }
-
-    #[test]
-    fn battle_options_validate_test_cases() {
-        let test_cases =
-            read_test_cases::<BattleOptionsValidateTestCase>("battle_options_validate_tests.json")
-                .unwrap();
-        for (test_name, test_case) in test_cases {
-            let result = test_case.options.validate();
-            assert_eq!(
-                result.is_ok(),
-                test_case.ok,
-                "Invalid result for {test_name}: {result:?}"
-            );
-            if let Some(expected_error_susbtr) = test_case.expected_error_substr {
-                assert_matches::assert_matches!(
-                    result,
-                    Err(err) => assert!(err.full_description().contains(&expected_error_susbtr))
-                );
-            }
-        }
     }
 }

@@ -14,6 +14,7 @@ use crate::{
 };
 
 /// Lookup type for [`ClauseDex`].
+#[derive(Clone)]
 pub struct ClauseLookup<'d> {
     data: &'d dyn DataStore,
 }

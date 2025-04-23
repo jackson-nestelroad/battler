@@ -19,9 +19,11 @@ use crate::{
         Identifiable,
     },
     conditions::Condition,
+    config::Clause,
     effect::fxlang,
     error::Error,
     items::Item,
+    mons::Species,
     moves::{
         Move,
         MoveHitEffectType,
@@ -85,6 +87,8 @@ pub enum EffectType {
     AbilityCondition,
     Item,
     ItemCondition,
+    Clause,
+    Species,
 }
 
 /// An [`Effect`] handle.
@@ -108,6 +112,10 @@ pub enum EffectHandle {
     Item(Id),
     /// A condition induced by an item.
     ItemCondition(Id),
+    /// A clause applied to a battle format.
+    Clause(Id),
+    /// A species.
+    Species(Id),
     /// Any effect that is applied to some part of the battle that does not really exist.
     NonExistent(Id),
 }
@@ -155,6 +163,8 @@ impl EffectHandle {
             Self::Condition(id) => Some(&id),
             Self::Item(id) => Some(&id),
             Self::ItemCondition(id) => Some(&id),
+            Self::Clause(id) => Some(&id),
+            Self::Species(id) => Some(&id),
             Self::NonExistent(id) => Some(&id),
         }
     }
@@ -220,6 +230,10 @@ pub enum Effect<'borrow> {
     Item(ElementRef<'borrow, Item>),
     /// A condition induced by an item.
     ItemCondition(ElementRef<'borrow, Item>),
+    /// A clause applied to a battle format.
+    Clause(ElementRef<'borrow, Clause>),
+    /// A species.
+    Species(ElementRef<'borrow, Species>),
     /// A non-existent effect, which does nothing.
     NonExistent(Id),
 }
@@ -263,6 +277,16 @@ impl<'borrow> Effect<'borrow> {
         Self::ItemCondition(item)
     }
 
+    /// Creates a new effect for the clause.
+    pub fn for_clause(clause: ElementRef<'borrow, Clause>) -> Self {
+        Self::Clause(clause)
+    }
+
+    /// Creates a new effect for the species.
+    pub fn for_species(species: ElementRef<'borrow, Species>) -> Self {
+        Self::Species(species)
+    }
+
     /// Creates a new effect for the move.
     pub fn for_inactive_move(mov: ElementRef<'borrow, Move>) -> Self {
         Self::InactiveMove(mov)
@@ -281,6 +305,8 @@ impl<'borrow> Effect<'borrow> {
             Self::Ability(ability) | Self::AbilityCondition(ability) => &ability.data.name,
             Self::Condition(condition) => &condition.data.name,
             Self::Item(item) | Self::ItemCondition(item) => &item.data.name,
+            Self::Clause(clause) => &clause.data.name,
+            Self::Species(species) => &species.data.name,
             Self::NonExistent(id) => id.as_ref(),
         }
     }
@@ -296,6 +322,8 @@ impl<'borrow> Effect<'borrow> {
             Self::Condition(_) => EffectType::Condition,
             Self::Item(_) => EffectType::Item,
             Self::ItemCondition(_) => EffectType::ItemCondition,
+            Self::Clause(_) => EffectType::Clause,
+            Self::Species(_) => EffectType::Species,
             Self::NonExistent(_) => EffectType::Condition,
         }
     }
@@ -306,6 +334,8 @@ impl<'borrow> Effect<'borrow> {
             Self::Ability(_) | Self::AbilityCondition(_) => "ability",
             Self::Condition(condition) => condition.condition_type_name(),
             Self::Item(_) | Self::ItemCondition(_) => "item",
+            Self::Clause(_) => "clause",
+            Self::Species(_) => "species",
             Self::NonExistent(_) => "",
         }
     }
@@ -333,6 +363,8 @@ impl<'borrow> Effect<'borrow> {
             Self::Condition(condition) => condition.condition_type_name().to_owned(),
             Self::Item(_) => "item".to_owned(),
             Self::ItemCondition(_) => "itemcondition".to_owned(),
+            Self::Clause(_) => "clause".to_owned(),
+            Self::Species(_) => "species".to_owned(),
             Self::NonExistent(_) => "condition".to_owned(),
         }
     }
@@ -375,6 +407,8 @@ impl<'borrow> Effect<'borrow> {
             Self::Condition(condition) => Some(&condition.data.condition.effect),
             Self::Item(item) => Some(&item.data.effect),
             Self::ItemCondition(item) => Some(&item.data.condition.effect),
+            Self::Clause(clause) => Some(&clause.data.effect),
+            Self::Species(_) => None,
             Self::NonExistent(_) => None,
         }
     }
@@ -407,6 +441,8 @@ impl Identifiable for Effect<'_> {
             Self::Ability(ability) | Self::AbilityCondition(ability) => ability.id(),
             Self::Condition(condition) => condition.id(),
             Self::Item(item) | Self::ItemCondition(item) => item.id(),
+            Self::Clause(clause) => clause.id(),
+            Self::Species(species) => species.id(),
             Self::NonExistent(id) => id,
         }
     }

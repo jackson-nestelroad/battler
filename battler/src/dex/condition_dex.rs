@@ -14,6 +14,7 @@ use crate::{
 };
 
 /// Lookup type for [`ConditionDex`].
+#[derive(Clone)]
 pub struct ConditionLookup<'d> {
     data: &'d dyn DataStore,
 }

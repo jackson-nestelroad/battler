@@ -28,6 +28,7 @@ use crate::{
         MonHandle,
         MoveHandle,
         Player,
+        PlayerEffectContext,
         SideEffectContext,
     },
     common::{
@@ -85,6 +86,7 @@ where
 {
     ApplyingEffect(ApplyingEffectContext<'effect, 'context, 'battle, 'data>),
     Effect(EffectContext<'context, 'battle, 'data>),
+    PlayerEffect(PlayerEffectContext<'effect, 'context, 'battle, 'data>),
     SideEffect(SideEffectContext<'effect, 'context, 'battle, 'data>),
     FieldEffect(FieldEffectContext<'effect, 'context, 'battle, 'data>),
 }
@@ -94,6 +96,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_battle_context(),
             Self::Effect(context) => context.as_battle_context(),
+            Self::PlayerEffect(context) => context.as_battle_context(),
             Self::SideEffect(context) => context.as_battle_context(),
             Self::FieldEffect(context) => context.as_battle_context(),
         }
@@ -103,6 +106,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_battle_context_mut(),
             Self::Effect(context) => context.as_battle_context_mut(),
+            Self::PlayerEffect(context) => context.as_battle_context_mut(),
             Self::SideEffect(context) => context.as_battle_context_mut(),
             Self::FieldEffect(context) => context.as_battle_context_mut(),
         }
@@ -112,6 +116,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_effect_context(),
             Self::Effect(context) => context,
+            Self::PlayerEffect(context) => context.as_effect_context(),
             Self::SideEffect(context) => context.as_effect_context(),
             Self::FieldEffect(context) => context.as_effect_context(),
         }
@@ -123,6 +128,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.as_effect_context_mut(),
             Self::Effect(context) => context,
+            Self::PlayerEffect(context) => context.as_effect_context_mut(),
             Self::SideEffect(context) => context.as_effect_context_mut(),
             Self::FieldEffect(context) => context.as_effect_context_mut(),
         }
@@ -293,6 +299,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 }
             }
             Self::Effect(context) => context.as_battle_context_mut().mon_context(mon_handle),
+            Self::PlayerEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context
+                        .source_context()?
+                        .wrap_expectation("expected source mon")
+                } else {
+                    context.as_battle_context_mut().mon_context(mon_handle)
+                }
+            }
             Self::SideEffect(context) => {
                 if context
                     .source_handle()
@@ -335,6 +353,16 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 }
             }
             Self::Effect(context) => context.as_battle_context().mon(mon_handle),
+            Self::PlayerEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context.source().wrap_expectation("expected source mon")
+                } else {
+                    context.as_battle_context().mon(mon_handle)
+                }
+            }
             Self::SideEffect(context) => {
                 if context
                     .source_handle()
@@ -373,6 +401,16 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
                 }
             }
             Self::Effect(context) => context.as_battle_context_mut().mon_mut(mon_handle),
+            Self::PlayerEffect(context) => {
+                if context
+                    .source_handle()
+                    .is_some_and(|source_handle| source_handle == mon_handle)
+                {
+                    context.source_mut().wrap_expectation("expected source mon")
+                } else {
+                    context.as_battle_context_mut().mon_mut(mon_handle)
+                }
+            }
             Self::SideEffect(context) => {
                 if context
                     .source_handle()
@@ -447,6 +485,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn source_handle(&self) -> Option<MonHandle> {
         match self {
             Self::ApplyingEffect(context) => context.source_handle(),
+            Self::PlayerEffect(context) => context.source_handle(),
             Self::SideEffect(context) => context.source_handle(),
             Self::FieldEffect(context) => context.source_handle(),
             _ => None,
@@ -457,6 +496,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.effect_handle(),
             Self::Effect(context) => context.effect_handle(),
+            Self::PlayerEffect(context) => context.effect_handle(),
             Self::SideEffect(context) => context.effect_handle(),
             Self::FieldEffect(context) => context.effect_handle(),
         }
@@ -466,6 +506,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => context.source_effect_handle(),
             Self::Effect(context) => context.source_effect_handle(),
+            Self::PlayerEffect(context) => context.source_effect_handle(),
             Self::SideEffect(context) => context.source_effect_handle(),
             Self::FieldEffect(context) => context.source_effect_handle(),
         }
@@ -483,7 +524,18 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         match self {
             Self::ApplyingEffect(context) => Some(context.target().side),
             Self::Effect(_) => None,
+            Self::PlayerEffect(context) => Some(context.player().side),
             Self::SideEffect(context) => Some(context.side().index),
+            Self::FieldEffect(_) => None,
+        }
+    }
+
+    pub fn player_index(&self) -> Option<usize> {
+        match self {
+            Self::ApplyingEffect(context) => Some(context.target().player),
+            Self::Effect(_) => None,
+            Self::PlayerEffect(context) => Some(context.player().index),
+            Self::SideEffect(_) => None,
             Self::FieldEffect(_) => None,
         }
     }
@@ -998,6 +1050,7 @@ where
                                 Mon::position_details(&context.mon_context(mon_handle)?)?
                             )),
                             "side" => ValueRef::Side(context.mon(mon_handle)?.side),
+                            "species" => ValueRef::Str(&context.mon(mon_handle)?.species.as_ref()),
                             "status" => match context.mon(mon_handle)?.status.as_ref() {
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
@@ -1009,6 +1062,16 @@ where
                                 ValueRef::Boolean(context.mon(mon_handle)?.transformed)
                             }
                             "true_nature" => ValueRef::Nature(context.mon(mon_handle)?.true_nature),
+                            "types" => ValueRef::TempList(
+                                context
+                                    .mon(mon_handle)?
+                                    .types
+                                    .iter()
+                                    .map(|val| {
+                                        ValueRefToStoredValue::new(None, ValueRef::Type(*val))
+                                    })
+                                    .collect(),
+                            ),
                             "weight" => ValueRef::UFraction(
                                 Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
                             ),
@@ -1022,10 +1085,22 @@ where
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Player(player) = value {
+                        let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
                             "can_escape" => ValueRef::Boolean(Player::can_escape(
                                 &context.battle_context_mut().player_context(player)?,
                             )),
+                            "mons" | "team" => ValueRef::TempList(
+                                context
+                                    .battle_context_mut()
+                                    .player_context(player)?
+                                    .player()
+                                    .mons
+                                    .iter()
+                                    .cloned()
+                                    .map(|mon| ValueRefToStoredValue::new(None, ValueRef::Mon(mon)))
+                                    .collect(),
+                            ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::MoveSlot(move_slot) = value {
@@ -1618,6 +1693,16 @@ impl Evaluator {
                 ),
             )?;
         }
+        if event.has_flag(CallbackFlag::TakesPlayer) {
+            self.vars.set(
+                "player",
+                Value::Player(
+                    context
+                        .player_index()
+                        .wrap_expectation("context has no player")?,
+                ),
+            )?;
+        }
 
         // Reverse the input so we can efficiently pop elements out of it.
         input.values.reverse();
@@ -1633,7 +1718,12 @@ impl Evaluator {
                 }
                 Some(value) => {
                     let real_value_type = value.value_type();
-                    let value = value.convert_to(*value_type).wrap_error_with_format(format_args!("input at position {} for variable {name} of type {real_value_type} cannot be converted to {value_type}", i + 1))?;
+                    // Undefined means we do not enforce the type of the input variable.
+                    let value = if *value_type == ValueType::Undefined {
+                        value
+                    } else {
+                        value.convert_to(*value_type).wrap_error_with_format(format_args!("input at position {} for variable {name} of type {real_value_type} cannot be converted to {value_type}", i + 1))?
+                    };
                     self.vars.set(name, value)?;
                 }
             }

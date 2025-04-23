@@ -1,9 +1,7 @@
 mod clause;
 mod format;
-mod hooks;
 mod ruleset;
 
-pub(in crate::config) use clause::ClauseStaticHooks;
 pub use clause::{
     Clause,
     ClauseData,

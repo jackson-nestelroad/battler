@@ -157,6 +157,7 @@ pub type SerializedRuleSet = FastHashSet<Rule>;
 /// New rules should likely not live here.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NumericRules {
+    pub players_per_side: Option<u32>,
     pub min_team_size: u32,
     pub max_team_size: u32,
     pub picked_team_size: Option<u32>,
@@ -251,6 +252,7 @@ impl NumericRules {
     fn parse_from_ruleset(ruleset: &RuleSet, battle_type: &BattleType) -> Result<Self, Error> {
         let mut rules = NumericRules::default();
 
+        rules.players_per_side = ruleset.numeric_value(&Id::from_known("playersperside"));
         rules.min_team_size = ruleset
             .numeric_value(&Id::from_known("minteamsize"))
             .unwrap_or(0);
@@ -287,6 +289,7 @@ impl NumericRules {
 impl Default for NumericRules {
     fn default() -> Self {
         Self {
+            players_per_side: None,
             min_team_size: 0,
             max_team_size: 0,
             picked_team_size: None,
@@ -383,7 +386,7 @@ impl RuleSet {
                     Rule::Unban(id) => {
                         self.unbans.insert(id);
                     }
-                    Rule::Value { name, value } => {
+                    Rule::Value { name, mut value } => {
                         if repeals.contains(&name) {
                             continue;
                         }
@@ -391,6 +394,9 @@ impl RuleSet {
                             if !clause.data.rules.is_empty() {
                                 next_layer.extend(clause.data.rules.clone());
                                 continue;
+                            }
+                            if value.is_empty() {
+                                value = clause.data.default_value.clone();
                             }
                         }
                         self.rules.insert(name, value);
@@ -419,7 +425,6 @@ impl RuleSet {
                 ))?;
             clause
                 .validate_value(value)
-                .and_then(|_| clause.on_validate_rule(self, value))
                 .wrap_error_with_format(format_args!("rule {} is invalid", clause.data.name))?;
         }
         Ok(())
@@ -663,6 +668,7 @@ mod rule_set_tests {
     fn resolves_numbers() {
         let ruleset = construct_ruleset(
             r#"[
+                "Players Per Side = 2",
                 "Min Team Size = 3",
                 "Max Team Size = 6",
                 "Picked Team Size = 2",
@@ -677,6 +683,7 @@ mod rule_set_tests {
             &BattleType::Singles,
         )
         .unwrap();
+        assert_eq!(ruleset.numeric_rules.players_per_side, Some(2));
         assert_eq!(ruleset.numeric_rules.min_team_size, 3);
         assert_eq!(ruleset.numeric_rules.max_team_size, 6);
         assert_eq!(ruleset.numeric_rules.picked_team_size, Some(2));
@@ -692,6 +699,7 @@ mod rule_set_tests {
     #[test]
     fn resolves_numbers_to_default_values() {
         let ruleset = construct_ruleset("[]", &BattleType::Doubles).unwrap();
+        assert_eq!(ruleset.numeric_rules.players_per_side, None);
         assert_eq!(ruleset.numeric_rules.min_team_size, 0);
         assert_eq!(ruleset.numeric_rules.max_team_size, 6);
         assert_eq!(ruleset.numeric_rules.picked_team_size, None);

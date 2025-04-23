@@ -29,7 +29,9 @@ pub mod CallbackFlag {
     pub const TakesSourceEffect: u32 = 1 << 8;
     pub const TakesSide: u32 = 1 << 9;
     pub const TakesOptionalEffect: u32 = 1 << 10;
+    pub const TakesPlayer: u32 = 1 << 11;
 
+    pub const ReturnsStrings: u32 = 1 << 22;
     pub const ReturnsSecondaryEffects: u32 = 1 << 23;
     pub const ReturnsTypes: u32 = 1 << 24;
     pub const ReturnsMon: u32 = 1 << 25;
@@ -166,6 +168,9 @@ enum CommonCallbackType {
     MonTypes = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes,
     MonBoostModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoosts | CallbackFlag::ReturnsVoid,
+    MonValidator = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsStrings,
+
+    PlayerValidator = CallbackFlag::TakesPlayer | CallbackFlag::ReturnsStrings,
 
     SideVoid = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
@@ -1033,6 +1038,16 @@ pub enum BattleEvent {
     /// Runs on the active move.
     #[string = "UseMoveMessage"]
     UseMoveMessage,
+    /// Runs when validating a Mon.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ValidateMon"]
+    ValidateMon,
+    /// Runs when validating a team.
+    ///
+    /// Runs in the context of a player.
+    #[string = "ValidateTeam"]
+    ValidateTeam,
     /// Runs when weather is activated at the end of each turn.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1210,6 +1225,8 @@ impl BattleEvent {
             Self::Use => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
+            Self::ValidateMon => CommonCallbackType::MonValidator as u32,
+            Self::ValidateTeam => CommonCallbackType::PlayerValidator as u32,
             Self::Weather => CommonCallbackType::ApplyingEffectResult as u32,
             Self::WeatherChange => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::WeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
@@ -1286,6 +1303,7 @@ impl BattleEvent {
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
+            Self::ValidateMon | Self::ValidateTeam => &[("problems", ValueType::List, true)],
             _ => &[],
         }
     }
@@ -1302,9 +1320,11 @@ impl BattleEvent {
             }
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
-            Some(ValueType::List) => {
-                self.has_flag(CallbackFlag::ReturnsTypes | CallbackFlag::ReturnsSecondaryEffects)
-            }
+            Some(ValueType::List) => self.has_flag(
+                CallbackFlag::ReturnsTypes
+                    | CallbackFlag::ReturnsSecondaryEffects
+                    | CallbackFlag::ReturnsStrings,
+            ),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -1703,6 +1723,9 @@ pub struct Callbacks {
     pub on_use: Callback,
     pub on_use_move: Callback,
     pub on_use_move_message: Callback,
+    pub on_validate_battle: Callback,
+    pub on_validate_mon: Callback,
+    pub on_validate_team: Callback,
     pub on_weather: Callback,
     pub on_weather_change: Callback,
     pub on_weather_modify_damage: Callback,
@@ -1872,6 +1895,8 @@ impl Callbacks {
             BattleEvent::Use => &self.on_use,
             BattleEvent::UseMove => &self.on_use_move,
             BattleEvent::UseMoveMessage => &self.on_use_move_message,
+            BattleEvent::ValidateMon => &self.on_validate_mon,
+            BattleEvent::ValidateTeam => &self.on_validate_team,
             BattleEvent::Weather => &self.on_weather,
             BattleEvent::WeatherChange => &self.on_weather_change,
             BattleEvent::WeatherModifyDamage => &self.on_weather_modify_damage,
