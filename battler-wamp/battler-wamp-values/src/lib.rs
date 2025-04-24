@@ -333,6 +333,32 @@ where
     }
 }
 
+impl<T> WampSerialize for Vec<T>
+where
+    T: WampSerialize,
+{
+    fn wamp_serialize(self) -> Result<Value, WampSerializeError> {
+        Ok(Value::List(
+            self.into_iter()
+                .map(|val| val.wamp_serialize())
+                .collect::<Result<Vec<_>, _>>()?,
+        ))
+    }
+}
+
+impl<T> WampSerialize for ahash::HashMap<String, T>
+where
+    T: WampSerialize,
+{
+    fn wamp_serialize(self) -> Result<Value, WampSerializeError> {
+        Ok(Value::Dictionary(
+            self.into_iter()
+                .map(|(key, val)| Ok((key, val.wamp_serialize()?)))
+                .collect::<Result<Dictionary, _>>()?,
+        ))
+    }
+}
+
 /// Trait for deserializing a Rust object from a WAMP value.
 pub trait WampDeserialize: Sized {
     /// Deserializes the object from a WAMP value.
@@ -392,6 +418,36 @@ where
         match value {
             Value::Null => Ok(None),
             value @ _ => Ok(Some(T::wamp_deserialize(value)?)),
+        }
+    }
+}
+
+impl<T> WampDeserialize for Vec<T>
+where
+    T: WampDeserialize,
+{
+    fn wamp_deserialize(value: Value) -> Result<Self, WampDeserializeError> {
+        match value {
+            Value::List(val) => val
+                .into_iter()
+                .map(|val| WampDeserialize::wamp_deserialize(val))
+                .collect::<Result<Vec<_>, _>>(),
+            _ => Err(WampDeserializeError::new("value must be a list")),
+        }
+    }
+}
+
+impl<T> WampDeserialize for ahash::HashMap<String, T>
+where
+    T: WampDeserialize,
+{
+    fn wamp_deserialize(value: Value) -> Result<Self, WampDeserializeError> {
+        match value {
+            Value::Dictionary(val) => val
+                .into_iter()
+                .map(|(key, val)| Ok((key, WampDeserialize::wamp_deserialize(val)?)))
+                .collect::<Result<ahash::HashMap<_, _>, _>>(),
+            _ => Err(WampDeserializeError::new("value must be a dictionary")),
         }
     }
 }

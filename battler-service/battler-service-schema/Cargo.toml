@@ -1,0 +1,19 @@
+[package]
+name = "battler-service-schema"
+version = "0.1.0"
+edition = "2024"
+description = "WAMP schema for managing Pokémon battles in Rust."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-service"
+
+[dependencies]
+anyhow = "1.0"
+battler-wamp = "0.3"
+battler-wamp-values = "0.2"
+battler-wamprat = "0.3"
+battler-wamprat-message = "0.1"
+battler-wamprat-schema = "0.1"
+battler-wamprat-uri = "0.1"
+tokio = { version = "1.41.0", features = ["full"] }
