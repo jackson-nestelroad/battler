@@ -12,8 +12,8 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-se
 anyhow = "1.0"
 battler-wamp = "0.3"
 battler-wamp-values = "0.2"
-battler-wamprat = "0.3"
+battler-wamprat = "0.4"
 battler-wamprat-message = "0.1"
-battler-wamprat-schema = "0.1"
+battler-wamprat-schema = "0.2"
 battler-wamprat-uri = "0.1"
 tokio = { version = "1.41.0", features = ["full"] }

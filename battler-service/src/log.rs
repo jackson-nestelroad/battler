@@ -1,9 +1,18 @@
 use tokio::sync::broadcast;
 
+/// A single entry of a [`Log`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LogEntry {
+    /// Index of the entry.
+    pub index: usize,
+    /// Content of the entry.
+    pub content: String,
+}
+
 /// A log of events for a battle.
 pub struct Log {
     entries: Vec<String>,
-    entry_tx: broadcast::Sender<String>,
+    entry_tx: broadcast::Sender<LogEntry>,
 }
 
 impl Log {
@@ -21,15 +30,25 @@ impl Log {
         S: Into<String>,
     {
         let new_entries = entries.into_iter().map(|s| s.into()).collect::<Vec<_>>();
+        let last_index = self.entries.len();
         self.entries.extend(new_entries.clone());
-        for entry in new_entries {
+        self.publish_from(last_index);
+    }
+
+    fn publish_from(&self, index: usize) {
+        for (i, entry) in self.entries[index..].iter().enumerate() {
             // If send fails, there is no receiver, which is OK.
-            self.entry_tx.send(entry).ok();
+            self.entry_tx
+                .send(LogEntry {
+                    index: i + index,
+                    content: entry.clone(),
+                })
+                .ok();
         }
     }
 
     /// Subscribes to new log entries.
-    pub fn subscribe(&self) -> broadcast::Receiver<String> {
+    pub fn subscribe(&self) -> broadcast::Receiver<LogEntry> {
         self.entry_tx.subscribe()
     }
 
@@ -128,6 +147,7 @@ impl SplitLogs {
 #[cfg(test)]
 mod log_test {
     use super::SplitLogs;
+    use crate::log::LogEntry;
 
     #[test]
     fn filters_split_logs() {
@@ -186,13 +206,13 @@ mod log_test {
         logs.append(["split|side:0", "ghi|hp:255/255", "ghi|hp:100/100"]);
 
         assert_matches::assert_matches!(public_log_rx.recv().await, Ok(entry) => {
-            assert_eq!(entry, "ghi|hp:100/100");
+            assert_eq!(entry, LogEntry { index: 0, content: "ghi|hp:100/100".to_owned() });
         });
         assert_matches::assert_matches!(side_1_log_rx.recv().await, Ok(entry) => {
-            assert_eq!(entry, "ghi|hp:255/255");
+            assert_eq!(entry, LogEntry { index: 0, content: "ghi|hp:255/255".to_owned() });
         });
         assert_matches::assert_matches!(side_2_log_rx.recv().await, Ok(entry) => {
-            assert_eq!(entry, "ghi|hp:100/100");
+            assert_eq!(entry, LogEntry { index: 0, content: "ghi|hp:100/100".to_owned() });
         });
     }
 }

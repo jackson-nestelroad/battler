@@ -29,6 +29,7 @@ use crate::{
     Side,
     log::{
         Log,
+        LogEntry,
         SplitLogs,
     },
 };
@@ -188,7 +189,7 @@ impl<'d> BattlerService<'d> {
     }
 
     /// Creates a new battle.
-    pub async fn create_battle(
+    pub async fn create(
         &self,
         options: CoreBattleOptions,
         mut engine_options: CoreBattleEngineOptions,
@@ -284,10 +285,26 @@ impl<'d> BattlerService<'d> {
         &self,
         battle: Uuid,
         side: Option<usize>,
-    ) -> Result<broadcast::Receiver<String>> {
+    ) -> Result<broadcast::Receiver<LogEntry>> {
         let battle = self.find_battle_or_error(battle).await?;
         let battle = battle.lock().await;
         Ok(battle.log_for_side(side).subscribe())
+    }
+
+    /// Deletes a battle.
+    pub async fn delete(&self, battle: Uuid) -> Result<()> {
+        {
+            let battle = match self.find_battle_or_error(battle).await {
+                Ok(battle) => battle,
+                Err(_) => return Ok(()),
+            };
+            let battle = battle.lock().await;
+            if battle.battle_state() != BattleState::Finished {
+                return Err(Error::msg("cannot delete an ongoing battle"));
+            }
+        }
+        self.battles.lock().await.remove(&battle);
+        Ok(())
     }
 }
 
@@ -327,6 +344,7 @@ mod battler_service_test {
         Player,
         PlayerState,
         Side,
+        log::LogEntry,
     };
 
     fn mon(
@@ -420,10 +438,12 @@ mod battler_service_test {
         }
     }
 
-    async fn read_all_entries_from_log_rx(log_rx: &mut broadcast::Receiver<String>) -> Vec<String> {
+    async fn read_all_entries_from_log_rx(
+        log_rx: &mut broadcast::Receiver<LogEntry>,
+    ) -> Vec<String> {
         let mut entries = Vec::new();
         while let Ok(entry) = log_rx.try_recv() {
-            entries.push(entry);
+            entries.push(entry.content);
         }
         entries
     }
@@ -433,7 +453,7 @@ mod battler_service_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let battler_service = BattlerService::new(&data);
         let battle = battler_service
-            .create_battle(
+            .create(
                 core_battle_options(TeamData::default()),
                 CoreBattleEngineOptions::default(),
             )
@@ -472,7 +492,7 @@ mod battler_service_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let battler_service = BattlerService::new(&data);
         let battle = battler_service
-            .create_battle(
+            .create(
                 core_battle_options(TeamData::default()),
                 CoreBattleEngineOptions::default(),
             )
@@ -491,7 +511,7 @@ mod battler_service_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let battler_service = BattlerService::new(&data);
         let battle = battler_service
-            .create_battle(
+            .create(
                 core_battle_options(TeamData::default()),
                 CoreBattleEngineOptions::default(),
             )
@@ -514,7 +534,7 @@ mod battler_service_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let battler_service = BattlerService::new(&data);
         let battle = battler_service
-            .create_battle(
+            .create(
                 core_battle_options(team(5)),
                 CoreBattleEngineOptions::default(),
             )
@@ -550,7 +570,7 @@ mod battler_service_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let battler_service = BattlerService::new(&data);
         let battle = battler_service
-            .create_battle(
+            .create(
                 core_battle_options(team(5)),
                 CoreBattleEngineOptions::default(),
             )
@@ -599,7 +619,7 @@ mod battler_service_test {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let battler_service = BattlerService::new(&data);
         let battle = battler_service
-            .create_battle(
+            .create(
                 core_battle_options(team(5)),
                 CoreBattleEngineOptions {
                     speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
