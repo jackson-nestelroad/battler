@@ -41,6 +41,7 @@ use crate::{
             IdAllocator,
             SequentialIdAllocator,
         },
+        publish_options::PublishOptions,
         uri::Uri,
     },
     message::{
@@ -128,6 +129,7 @@ impl SessionState {
 pub struct PublishedEvent {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
+    pub options: PublishOptions,
 }
 
 /// An event published to a topic.

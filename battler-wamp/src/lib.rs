@@ -246,6 +246,7 @@
 //!                     "foo".to_owned(),
 //!                     Value::String("bar".to_owned()),
 //!                 )]),
+//!                 ..Default::default()
 //!             },
 //!         )
 //!         .await

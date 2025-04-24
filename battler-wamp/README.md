@@ -37,6 +37,7 @@ The WAMP protocol specification is described at https://wamp-proto.org/spec.html
     - Pattern-based Registration
     - Shared Registration
   - Advanced Pub/Sub Features
+    - Subscriber Block- and Allow-listing
     - Publisher Exclusion
     - Pattern-based Subscription
   - Authentication Methods

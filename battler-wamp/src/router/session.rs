@@ -59,6 +59,7 @@ use crate::{
         },
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
+        publish_options::PublishOptions,
         roles::{
             PeerRoles,
             RouterRoles,
@@ -188,6 +189,7 @@ impl SessionState {
 #[derive(Default)]
 struct SharedSessionState {
     roles: PeerRoles,
+    identity: Option<Identity>,
 }
 
 mod router_session_message {
@@ -266,6 +268,11 @@ impl SessionHandle {
     /// does not break correctness of the protocol, this is acceptable.
     pub async fn roles(&self) -> PeerRoles {
         self.shared_state.read().await.roles.clone()
+    }
+
+    /// Returns the last known identity.
+    pub async fn identity(&self) -> Option<Identity> {
+        self.shared_state.read().await.identity.clone()
     }
 
     /// A reference to the session's ID generator.
@@ -669,6 +676,9 @@ impl Session {
             })
             .await?;
         let result = authenticator.authenticate(message).await?;
+
+        self.shared_state.write().await.identity = Some(result.identity.clone());
+
         self.welcome_to_realm(
             context,
             &hello_message,
@@ -856,11 +866,7 @@ impl Session {
         context: &RouterContext<S>,
         message: &PublishMessage,
     ) -> Result<()> {
-        let exclude_publisher = message
-            .options
-            .get("exclude_me")
-            .and_then(|val| val.bool())
-            .unwrap_or(true);
+        let options = PublishOptions::try_from(message)?;
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
@@ -871,7 +877,7 @@ impl Session {
             &message.topic,
             message.arguments.clone(),
             message.arguments_keyword.clone(),
-            exclude_publisher,
+            options,
         )
         .await?;
         self.send_message(Message::Published(PublishedMessage {

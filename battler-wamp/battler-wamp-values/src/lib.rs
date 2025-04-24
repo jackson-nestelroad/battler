@@ -103,6 +103,14 @@
 //! }
 //! ```
 
+use std::{
+    collections::HashSet,
+    hash::{
+        BuildHasher,
+        Hash,
+    },
+};
+
 pub use battler_wamp_values_proc_macro::{
     WampDictionary,
     WampList,
@@ -346,6 +354,19 @@ where
     }
 }
 
+impl<T, S> WampSerialize for std::collections::HashSet<T, S>
+where
+    T: WampSerialize,
+{
+    fn wamp_serialize(self) -> Result<Value, WampSerializeError> {
+        Ok(Value::List(
+            self.into_iter()
+                .map(|val| val.wamp_serialize())
+                .collect::<Result<Vec<_>, _>>()?,
+        ))
+    }
+}
+
 impl<T> WampSerialize for ahash::HashMap<String, T>
 where
     T: WampSerialize,
@@ -432,6 +453,22 @@ where
                 .into_iter()
                 .map(|val| WampDeserialize::wamp_deserialize(val))
                 .collect::<Result<Vec<_>, _>>(),
+            _ => Err(WampDeserializeError::new("value must be a list")),
+        }
+    }
+}
+
+impl<T, S> WampDeserialize for HashSet<T, S>
+where
+    T: WampDeserialize + Eq + Hash,
+    S: BuildHasher + Default,
+{
+    fn wamp_deserialize(value: Value) -> Result<Self, WampDeserializeError> {
+        match value {
+            Value::List(val) => val
+                .into_iter()
+                .map(|val| WampDeserialize::wamp_deserialize(val))
+                .collect::<Result<HashSet<_, S>, _>>(),
             _ => Err(WampDeserializeError::new("value must be a list")),
         }
     }

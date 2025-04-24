@@ -2,6 +2,14 @@ use std::fmt::Display;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use battler_wamp_values::{
+    Integer,
+    Value,
+    WampDeserialize,
+    WampDeserializeError,
+    WampSerialize,
+    WampSerializeError,
+};
 use futures_util::lock::Mutex;
 use serde::{
     Deserialize,
@@ -36,6 +44,19 @@ impl Default for Id {
 impl Display for Id {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl WampSerialize for Id {
+    fn wamp_serialize(self) -> Result<Value, WampSerializeError> {
+        self.0.wamp_serialize()
+    }
+}
+
+impl WampDeserialize for Id {
+    fn wamp_deserialize(value: Value) -> Result<Self, WampDeserializeError> {
+        Id::try_from(Integer::wamp_deserialize(value)?)
+            .map_err(|_| WampDeserializeError::new("invalid id"))
     }
 }
 

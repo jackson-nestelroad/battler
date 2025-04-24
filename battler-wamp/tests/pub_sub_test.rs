@@ -13,6 +13,7 @@ use battler_wamp::{
         hash::HashSet,
         id::Id,
         match_style::MatchStyle,
+        publish_options::PublishOptions,
         roles::RouterRole,
         uri::{
             Uri,
@@ -25,6 +26,7 @@ use battler_wamp::{
         ReceivedEvent,
         Subscription,
         SubscriptionOptions,
+        SupportedAuthMethod as PeerSupportedAuthMethod,
         WebSocketPeer,
         new_web_socket_peer,
     },
@@ -35,6 +37,7 @@ use battler_wamp::{
         RealmConfig,
         RouterConfig,
         RouterHandle,
+        SupportedAuthMethod as RouterSupportedAuthMethod,
         new_web_socket_router,
     },
 };
@@ -56,7 +59,10 @@ async fn start_router_with_config(
     config.realms.push(RealmConfig {
         name: "test".to_owned(),
         uri: Uri::try_from(REALM)?,
-        authentication: RealmAuthenticationConfig::default(),
+        authentication: RealmAuthenticationConfig {
+            required: false,
+            methods: Vec::from_iter([RouterSupportedAuthMethod::Undisputed]),
+        },
     });
     let router = new_web_socket_router(
         config,
@@ -117,6 +123,7 @@ async fn peer_receives_published_messages_for_topic() {
                             "index".to_owned(),
                             Value::Integer(i)
                         )]),
+                        ..Default::default()
                     }
                 )
                 .await,
@@ -266,6 +273,7 @@ async fn peer_does_not_receive_events_for_different_topic() {
                 PublishedEvent {
                     arguments: List::from_iter([Value::Bool(false)]),
                     arguments_keyword: Dictionary::default(),
+                    ..Default::default()
                 }
             )
             .await,
@@ -347,6 +355,7 @@ async fn pub_sub_not_allowed_without_broker_role() {
             PublishedEvent {
                 arguments: List::default(),
                 arguments_keyword: Dictionary::default(),
+                ..Default::default()
             }
         )
         .await,
@@ -378,7 +387,13 @@ async fn publisher_does_not_receive_event() {
     assert_matches::assert_matches!(
         peer.publish(
             Uri::try_from("com.battler.topic1").unwrap(),
-            PublishedEvent::default(),
+            PublishedEvent {
+                options: PublishOptions {
+                    exclude_me: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
         )
         .await,
         Ok(())
@@ -389,6 +404,397 @@ async fn publisher_does_not_receive_event() {
             assert!(false, "publisher received event for its own subscription");
         }
         _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn excludes_receiver_by_authenticated_id() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+
+    let publisher = create_peer("publisher").unwrap();
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    let subscriber_1 = create_peer("subscriber_1").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_1
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "foo".to_owned(),
+                    role: "user".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let subscriber_2 = create_peer("subscriber_2").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_2
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "bar".to_owned(),
+                    role: "admin".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let mut subscription_1 = subscriber_1
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+    let mut subscription_2 = subscriber_2
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.topic1").unwrap(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        exclude_authid: Some(HashSet::from_iter(["foo".to_owned()])),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(())
+    );
+
+    tokio::select! {
+        _ = subscription_1.event_rx.recv() => {
+            assert!(false, "subscriber_1 received event");
+        }
+        _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+    tokio::select! {
+        event = subscription_2.event_rx.recv() => {
+            assert_matches::assert_matches!(event, Ok(_));
+        },
+        _ = tokio::time::sleep(Duration::from_secs(5)) => {
+            assert!(false, "subscriber_2 did not receive event");
+        },
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn excludes_receiver_by_authenticated_role() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+
+    let publisher = create_peer("publisher").unwrap();
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    let subscriber_1 = create_peer("subscriber_1").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_1
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "foo".to_owned(),
+                    role: "user".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let subscriber_2 = create_peer("subscriber_2").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_2
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "bar".to_owned(),
+                    role: "admin".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let mut subscription_1 = subscriber_1
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+    let mut subscription_2 = subscriber_2
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.topic1").unwrap(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        exclude_authrole: Some(HashSet::from_iter(["admin".to_owned()])),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(())
+    );
+
+    tokio::select! {
+        event = subscription_1.event_rx.recv() => {
+            assert_matches::assert_matches!(event, Ok(_));
+        },
+        _ = tokio::time::sleep(Duration::from_secs(5)) => {
+            assert!(false, "subscriber_1 did not receive event");
+        },
+    }
+    tokio::select! {
+        _ = subscription_2.event_rx.recv() => {
+            assert!(false, "subscriber_2 received event");
+        }
+        _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn allows_receiver_by_authenticated_id() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+
+    let publisher = create_peer("publisher").unwrap();
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    let subscriber_1 = create_peer("subscriber_1").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_1
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "foo".to_owned(),
+                    role: "user".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let subscriber_2 = create_peer("subscriber_2").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_2
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "bar".to_owned(),
+                    role: "admin".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let mut subscription_1 = subscriber_1
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+    let mut subscription_2 = subscriber_2
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.topic1").unwrap(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        eligible_authid: Some(HashSet::from_iter(["bar".to_owned()])),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(())
+    );
+
+    tokio::select! {
+        _ = subscription_1.event_rx.recv() => {
+            assert!(false, "subscriber_1 received event");
+        }
+        _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+    tokio::select! {
+        event = subscription_2.event_rx.recv() => {
+            assert_matches::assert_matches!(event, Ok(_));
+        },
+        _ = tokio::time::sleep(Duration::from_secs(5)) => {
+            assert!(false, "subscriber_2 did not receive event");
+        },
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn authorizes_receivers_with_compound_rules() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+
+    let publisher = create_peer("publisher").unwrap();
+    assert_matches::assert_matches!(
+        publisher
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(publisher.join_realm(REALM).await, Ok(()));
+
+    let subscriber_1 = create_peer("subscriber_1").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_1
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_1
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "foo".to_owned(),
+                    role: "user".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let subscriber_2 = create_peer("subscriber_2").unwrap();
+    assert_matches::assert_matches!(
+        subscriber_2
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        subscriber_2
+            .join_realm_with_authentication(
+                REALM,
+                &[PeerSupportedAuthMethod::Undisputed {
+                    id: "bar".to_owned(),
+                    role: "admin".to_owned()
+                }]
+            )
+            .await,
+        Ok(())
+    );
+
+    let mut subscription_1 = subscriber_1
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+    let mut subscription_2 = subscriber_2
+        .subscribe(Uri::try_from("com.battler.topic1").unwrap())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        publisher
+            .publish(
+                Uri::try_from("com.battler.topic1").unwrap(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        exclude: Some(HashSet::from_iter([subscriber_1
+                            .current_session_id()
+                            .await
+                            .unwrap()])),
+                        eligible_authid: Some(HashSet::from_iter([
+                            "foo".to_owned(),
+                            "bar".to_owned()
+                        ])),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .await,
+        Ok(())
+    );
+
+    tokio::select! {
+        _ = subscription_1.event_rx.recv() => {
+            assert!(false, "subscriber_1 received event");
+        }
+        _ = tokio::time::sleep(Duration::from_secs(5)) => (),
+    }
+    tokio::select! {
+        event = subscription_2.event_rx.recv() => {
+            assert_matches::assert_matches!(event, Ok(_));
+        },
+        _ = tokio::time::sleep(Duration::from_secs(5)) => {
+            assert!(false, "subscriber_2 did not receive event");
+        },
     }
 }
 

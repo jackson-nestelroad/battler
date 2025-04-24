@@ -981,7 +981,14 @@ where
         message_tx
             .send(Message::Publish(PublishMessage {
                 request: request_id,
-                options: Dictionary::default(),
+                options: event
+                    .options
+                    .wamp_serialize()?
+                    .dictionary()
+                    .ok_or_else(|| {
+                        Error::msg("expected publish options to serialize as a dictionary")
+                    })?
+                    .clone(),
                 topic,
                 arguments: event.arguments,
                 arguments_keyword: event.arguments_keyword,

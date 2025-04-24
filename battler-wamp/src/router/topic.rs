@@ -20,6 +20,7 @@ use crate::{
         hash::HashMap,
         id::Id,
         match_style::MatchStyle,
+        publish_options::PublishOptions,
         roles::RouterRole,
         uri::{
             Uri,
@@ -30,7 +31,10 @@ use crate::{
         EventMessage,
         Message,
     },
-    router::context::RealmContext,
+    router::{
+        context::RealmContext,
+        realm::RealmSession,
+    },
 };
 
 /// A single subscriber to a topic.
@@ -202,7 +206,7 @@ impl TopicManager {
         topic: &Uri,
         arguments: List,
         arguments_keyword: Dictionary,
-        exclude_publisher: bool,
+        options: PublishOptions,
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
@@ -246,12 +250,43 @@ impl TopicManager {
                 required_match_style,
                 arguments.clone(),
                 arguments_keyword.clone(),
-                exclude_publisher,
+                &options,
             )
             .await;
         }
 
         Ok(published_id)
+    }
+
+    async fn authorized_to_receive_event(session: &RealmSession, options: &PublishOptions) -> bool {
+        let mut authorized = true;
+        if let Some(eligible) = &options.eligible {
+            authorized = authorized && eligible.contains(&session.session.id())
+        }
+        if let Some(eligible_authid) = &options.eligible_authid {
+            authorized = authorized
+                && eligible_authid
+                    .contains(&session.session.identity().await.unwrap_or_default().id)
+        }
+        if let Some(eligible_authrole) = &options.eligible_authrole {
+            authorized = authorized
+                && eligible_authrole
+                    .contains(&session.session.identity().await.unwrap_or_default().role)
+        }
+        if let Some(exclude) = &options.exclude {
+            authorized = authorized && !exclude.contains(&session.session.id())
+        }
+        if let Some(exclude_authid) = &options.exclude_authid {
+            authorized = authorized
+                && !exclude_authid
+                    .contains(&session.session.identity().await.unwrap_or_default().id)
+        }
+        if let Some(exclude_authrole) = &options.exclude_authrole {
+            authorized = authorized
+                && !exclude_authrole
+                    .contains(&session.session.identity().await.unwrap_or_default().role)
+        }
+        authorized
     }
 
     async fn publish_to_topic<S>(
@@ -263,7 +298,7 @@ impl TopicManager {
         required_match_style: Option<MatchStyle>,
         arguments: List,
         arguments_keyword: Dictionary,
-        exclude_publisher: bool,
+        options: &PublishOptions,
     ) {
         for (session, subscription) in single_topic.subscribers.read().await.iter() {
             if !subscription.active {
@@ -276,13 +311,19 @@ impl TopicManager {
                 (Some(MatchStyle::Wildcard), Some(MatchStyle::Wildcard)) => (),
                 _ => continue,
             }
-            if *session == publisher && exclude_publisher {
+
+            if *session == publisher && options.exclude_me {
                 continue;
             }
+
             let session = match context.realm().sessions.read().await.get(&session).cloned() {
                 Some(session) => session,
                 None => continue,
             };
+
+            if !Self::authorized_to_receive_event(&session, options).await {
+                continue;
+            }
 
             let mut details = Dictionary::default();
             details.insert("topic".to_owned(), Value::String(topic.to_string()));

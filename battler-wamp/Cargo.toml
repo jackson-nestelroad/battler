@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamp"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 description = "Asynchronous library for WAMP messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -14,7 +14,7 @@ anyhow = "1.0"
 argon2 = "0.5.3"
 async-trait = "0.1.83"
 base64 = "0.22.1"
-battler-wamp-values = "0.2.1"
+battler-wamp-values = "0.2.2"
 futures-channel = "0.3"
 futures-util = "0.3"
 hmac = "0.12.1"
