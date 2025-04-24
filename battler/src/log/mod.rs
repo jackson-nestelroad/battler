@@ -1,9 +1,9 @@
 mod log;
 
 pub use log::{
-    Event,
-    EventLog,
-    EventLogEntry,
-    EventLogEntryMut,
-    EventLoggable,
+    BattleLog,
+    BattleLogEntry,
+    BattleLogEntryMut,
+    BattleLoggable,
+    UncommittedBattleLogEntry,
 };

@@ -31,6 +31,7 @@ use crate::{
         Side,
         SideEffectContext,
     },
+    battle_log_entry,
     common::{
         FastHashMap,
         FastHashSet,
@@ -61,8 +62,7 @@ use crate::{
         WrapResultError,
     },
     items::ItemFlags,
-    log::Event,
-    log_event,
+    log::UncommittedBattleLogEntry,
     mons::TypeEffectiveness,
     moves::{
         HitEffect,
@@ -585,7 +585,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 }
 
 fn debug_log(mut context: FunctionContext) -> Result<(), Error> {
-    let mut event = log_event!("fxlang_debug");
+    let mut event = battle_log_entry!("fxlang_debug");
     let mut i = 0;
     while let Some(arg) = context.pop_front() {
         event.set(format!("arg{i}"), format!("{arg:?}"));
@@ -600,7 +600,7 @@ fn debug_log(mut context: FunctionContext) -> Result<(), Error> {
 }
 
 fn log_internal(mut context: FunctionContext, title: String) -> Result<(), Error> {
-    let mut event = Event::new(title);
+    let mut event = UncommittedBattleLogEntry::new(title);
     while let Some(arg) = context.pop_front() {
         let entry = arg.string().wrap_error_with_message("invalid log entry")?;
         match entry.split_once(':') {
@@ -813,7 +813,7 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
         .evaluation_context_mut()
         .source_active_move_context()?
         .wrap_expectation("source effect is not an active move")?;
-    let mut event = log_event!(
+    let mut event = battle_log_entry!(
         "prepare",
         ("mon", Mon::position_details(context.as_mon_context())?),
         ("move", context.active_move().data.name.to_owned())

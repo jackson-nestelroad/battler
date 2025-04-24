@@ -11,7 +11,7 @@ pub use log_util::{
     assert_logs_since_turn_eq,
     assert_new_logs_eq,
     assert_turn_logs_eq,
-    write_battle_logs_to_file,
+    write_battle_log_to_file,
     LogMatch,
 };
 pub use rng::{

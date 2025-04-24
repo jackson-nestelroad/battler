@@ -48,6 +48,7 @@ use crate::{
         TeamPreviewRequest,
         TurnRequest,
     },
+    battle_log_entry,
     common::{
         FastHashMap,
         Id,
@@ -75,11 +76,10 @@ use crate::{
     },
     items::ItemTarget,
     log::{
-        Event,
-        EventLog,
-        EventLogEntryMut,
+        BattleLog,
+        BattleLogEntryMut,
+        UncommittedBattleLogEntry,
     },
-    log_event,
     mons::{
         Type,
         TypeEffectiveness,
@@ -138,19 +138,20 @@ impl<'d> PublicCoreBattle<'d> {
         self.internal.ended
     }
 
-    /// Does the battle have new battle logs since the last call to [`Self::new_logs`]?
-    pub fn has_new_logs(&self) -> bool {
-        self.internal.has_new_logs()
+    /// Does the battle have new battle log entries since the last call to
+    /// [`Self::new_log_entries`]?
+    pub fn has_new_log_entries(&self) -> bool {
+        self.internal.has_new_log_entries()
     }
 
-    /// Returns all battle logs.
-    pub fn all_logs(&self) -> impl Iterator<Item = &str> {
-        self.internal.all_logs()
+    /// Returns the full battle log.
+    pub fn full_log(&self) -> impl Iterator<Item = &str> {
+        self.internal.full_log()
     }
 
-    /// Returns new battle logs since the last call to [`Self::new_logs`].
-    pub fn new_logs(&mut self) -> impl Iterator<Item = &str> {
-        self.internal.new_logs()
+    /// Returns new battle log entries since the last call to [`Self::new_log_entries`].
+    pub fn new_log_entries(&mut self) -> impl Iterator<Item = &str> {
+        self.internal.new_log_entries()
     }
 
     /// Starts the battle.
@@ -222,7 +223,7 @@ pub struct CatchEntry {
 ///
 /// All of the core battle logic runs through this object.
 pub struct CoreBattle<'d> {
-    log: EventLog,
+    log: BattleLog,
 
     // SAFETY: None of the objects below should be overwritten or destroyed for the lifetime of the
     // battle.
@@ -276,7 +277,7 @@ impl<'d> CoreBattle<'d> {
         let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
         let prng = (engine_options.rng_factory)(options.seed);
-        let log = EventLog::new();
+        let log = BattleLog::new();
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
         let faint_queue = VecDeque::new();
@@ -526,15 +527,15 @@ impl<'d> CoreBattle<'d> {
 
 // Block for methods that are only called from the public interface.
 impl<'d> CoreBattle<'d> {
-    fn has_new_logs(&self) -> bool {
+    fn has_new_log_entries(&self) -> bool {
         self.log.has_new_messages()
     }
 
-    fn all_logs(&self) -> impl Iterator<Item = &str> {
+    fn full_log(&self) -> impl Iterator<Item = &str> {
         self.log.logs()
     }
 
-    fn new_logs(&mut self) -> impl Iterator<Item = &str> {
+    fn new_log_entries(&mut self) -> impl Iterator<Item = &str> {
         self.log.read_out()
     }
 
@@ -611,29 +612,34 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    pub fn log_private_public(&mut self, side: usize, private: Event, public: Event) {
+    pub fn log_private_public(
+        &mut self,
+        side: usize,
+        private: UncommittedBattleLogEntry,
+        public: UncommittedBattleLogEntry,
+    ) {
         self.log
-            .push_extend([log_event!("split", ("side", side)), private, public])
+            .push_extend([battle_log_entry!("split", ("side", side)), private, public])
     }
 
-    pub fn log(&mut self, event: Event) {
+    pub fn log(&mut self, event: UncommittedBattleLogEntry) {
         self.log.push(event)
     }
 
     pub fn log_many<I>(&mut self, events: I)
     where
-        I: IntoIterator<Item = Event>,
+        I: IntoIterator<Item = UncommittedBattleLogEntry>,
     {
         self.log.push_extend(events)
     }
 
-    pub fn log_move(&mut self, event: Event) {
+    pub fn log_move(&mut self, event: UncommittedBattleLogEntry) {
         self.last_move_log = Some(self.log.len());
         self.log(event)
     }
 
     pub fn add_attribute_to_last_move(&mut self, attribute: &str) {
-        if let Some(EventLogEntryMut::Uncommitted(event)) =
+        if let Some(BattleLogEntryMut::Uncommitted(event)) =
             self.last_move_log.and_then(|index| self.log.get_mut(index))
         {
             event.add_flag(attribute);
@@ -645,7 +651,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     pub fn add_attribute_value_to_last_move(&mut self, attribute: &str, value: String) {
-        if let Some(EventLogEntryMut::Uncommitted(event)) =
+        if let Some(BattleLogEntryMut::Uncommitted(event)) =
             self.last_move_log.and_then(|index| self.log.get_mut(index))
         {
             event.set(attribute, value);
@@ -653,7 +659,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     pub fn remove_attribute_from_last_move(&mut self, attribute: &str) {
-        if let Some(EventLogEntryMut::Uncommitted(event)) =
+        if let Some(BattleLogEntryMut::Uncommitted(event)) =
             self.last_move_log.and_then(|index| self.log.get_mut(index))
         {
             event.remove(attribute);
@@ -774,7 +780,7 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().in_pre_battle = true;
 
         let battle_type_event =
-            log_event!("info", ("battletype", &context.battle().format.battle_type));
+            battle_log_entry!("info", ("battletype", &context.battle().format.battle_type));
         context.battle_mut().log(battle_type_event);
 
         // Extract and sort all rule logs.
@@ -805,18 +811,18 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().log_many(
             rule_logs
                 .into_iter()
-                .map(|rule_log| log_event!("info", ("rule", rule_log))),
+                .map(|rule_log| battle_log_entry!("info", ("rule", rule_log))),
         );
 
         let side_logs = context
             .battle()
             .sides()
-            .map(|side| log_event!("side", ("id", side.index), ("name", &side.name)))
+            .map(|side| battle_log_entry!("side", ("id", side.index), ("name", &side.name)))
             .collect::<Vec<_>>();
         context.battle_mut().log_many(side_logs);
 
         if context.battle().format.battle_type.can_have_uneven_sides() {
-            let event = log_event!(
+            let event = battle_log_entry!(
                 "maxsidelength",
                 ("length", context.battle().max_side_length())
             );
@@ -856,7 +862,7 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .players()
             .map(|player| {
-                log_event!(
+                battle_log_entry!(
                     "player",
                     ("id", &player.id),
                     ("name", &player.name),
@@ -890,7 +896,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn log_current_time(&mut self) {
-        self.log(log_event!("time", ("value", self.time_now())));
+        self.log(battle_log_entry!("time", ("value", self.time_now())));
     }
 
     fn log_team_sizes(&mut self) {
@@ -898,7 +904,7 @@ impl<'d> CoreBattle<'d> {
             .players()
             .filter(|player| !player.player_type.wild())
             .map(|player| {
-                log_event!(
+                battle_log_entry!(
                     "teamsize",
                     ("player", &player.id),
                     ("size", player.mons.len()),
@@ -913,7 +919,9 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn start_team_preview(context: &mut Context) -> Result<(), Error> {
-        context.battle_mut().log(log_event!("teampreviewstart"));
+        context
+            .battle_mut()
+            .log(battle_log_entry!("teampreviewstart"));
         let events = context
             .battle()
             .all_mon_handles()
@@ -921,7 +929,7 @@ impl<'d> CoreBattle<'d> {
             .into_iter()
             .map(|mon_handle| {
                 let context = context.mon_context(mon_handle)?;
-                Ok(log_event!(
+                Ok(battle_log_entry!(
                     "mon",
                     ("player", &context.player().id),
                     Mon::public_details(&context)?,
@@ -932,8 +940,8 @@ impl<'d> CoreBattle<'d> {
         match context.battle().format.rules.numeric_rules.picked_team_size {
             Some(picked_team_size) => context
                 .battle_mut()
-                .log(log_event!("teampreview", ("pick", picked_team_size))),
-            None => context.battle_mut().log(log_event!("teampreview")),
+                .log(battle_log_entry!("teampreview", ("pick", picked_team_size))),
+            None => context.battle_mut().log(battle_log_entry!("teampreview")),
         }
         Self::make_request(context, RequestType::TeamPreview)?;
         Ok(())
@@ -1145,7 +1153,7 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().log_team_sizes();
                 context.battle_mut().in_pre_battle = false;
 
-                context.battle_mut().log(log_event!("start"));
+                context.battle_mut().log(battle_log_entry!("start"));
 
                 let player_switch_in_orders = context
                     .battle()
@@ -1285,7 +1293,7 @@ impl<'d> CoreBattle<'d> {
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
                 core_battle_effects::run_event_for_residual(context, fxlang::BattleEvent::Residual);
-                context.battle_mut().log(log_event!("residual"));
+                context.battle_mut().log(battle_log_entry!("residual"));
             }
             Action::Experience(action) => {
                 core_battle_actions::gain_experience(
@@ -1466,7 +1474,7 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().turn += 1;
 
         if context.battle().turn >= 1000 {
-            context.battle_mut().log(log_event!("turnlimit"));
+            context.battle_mut().log(battle_log_entry!("turnlimit"));
             Self::schedule_tie(context)?;
             return Ok(());
         }
@@ -1497,7 +1505,7 @@ impl<'d> CoreBattle<'d> {
 
         // TODO: Endless battle clause.
 
-        let turn_event = log_event!("turn", ("turn", context.battle().turn));
+        let turn_event = battle_log_entry!("turn", ("turn", context.battle().turn));
         context.battle_mut().log(turn_event);
 
         Self::make_request(context, RequestType::Turn)?;
@@ -1531,10 +1539,12 @@ impl<'d> CoreBattle<'d> {
     fn win(context: &mut Context, side: Option<usize>) -> Result<(), Error> {
         match side {
             Some(side) => {
-                context.battle_mut().log(log_event!("win", ("side", side)));
+                context
+                    .battle_mut()
+                    .log(battle_log_entry!("win", ("side", side)));
             }
             None => {
-                context.battle_mut().log(log_event!("tie"));
+                context.battle_mut().log(battle_log_entry!("tie"));
             }
         }
         context.battle_mut().ended = true;

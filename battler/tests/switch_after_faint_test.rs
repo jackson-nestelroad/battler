@@ -103,7 +103,7 @@ fn must_switch_after_faint() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
-    let _ = battle.new_logs();
+    let _ = battle.new_log_entries();
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), None);
     assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Switch(request)) => {
@@ -233,7 +233,7 @@ fn must_switch_one_after_two_faint() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
-    let _ = battle.new_logs();
+    let _ = battle.new_log_entries();
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), None);
     assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Switch(request)) => {

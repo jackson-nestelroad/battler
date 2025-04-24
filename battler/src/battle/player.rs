@@ -216,14 +216,14 @@ pub struct PlayerData {
     pub id: String,
     /// Display name.
     pub name: String,
-    /// Team.
-    pub team: TeamData,
     /// Player type.
     #[serde(default)]
     pub player_type: PlayerType,
     /// Player options
     #[serde(default)]
     pub player_options: PlayerOptions,
+    /// Team.
+    pub team: TeamData,
 }
 
 /// What the player has chosen to happen in the current turn.

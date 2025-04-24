@@ -44,6 +44,7 @@ use crate::{
         Side,
         SpeedOrderable,
     },
+    battle_log_entry,
     common::{
         FastHashMap,
         FastHashSet,
@@ -65,10 +66,9 @@ use crate::{
         WrapResultError,
     },
     log::{
-        Event,
-        EventLoggable,
+        BattleLoggable,
+        UncommittedBattleLogEntry,
     },
-    log_event,
     mons::{
         Gender,
         Nature,
@@ -95,13 +95,13 @@ pub struct PublicMonDetails {
     pub shiny: bool,
 }
 
-impl EventLoggable for PublicMonDetails {
-    fn log(&self, event: &mut Event) {
-        event.set("species", self.species.clone());
-        event.set("level", self.level);
-        event.set("gender", &self.gender);
+impl BattleLoggable for PublicMonDetails {
+    fn log(&self, entry: &mut UncommittedBattleLogEntry) {
+        entry.set("species", self.species.clone());
+        entry.set("level", self.level);
+        entry.set("gender", &self.gender);
         if self.shiny {
-            event.add_flag("shiny");
+            entry.add_flag("shiny");
         }
     }
 }
@@ -117,16 +117,16 @@ pub struct ActiveMonDetails {
     pub status: String,
 }
 
-impl EventLoggable for ActiveMonDetails {
-    fn log(&self, event: &mut Event) {
-        event.set("player", self.player_id.clone());
-        event.set("position", self.side_position);
-        event.set("name", self.name.clone());
-        event.set("health", &self.health);
+impl BattleLoggable for ActiveMonDetails {
+    fn log(&self, entry: &mut UncommittedBattleLogEntry) {
+        entry.set("player", self.player_id.clone());
+        entry.set("position", self.side_position);
+        entry.set("name", self.name.clone());
+        entry.set("health", &self.health);
         if !self.status.is_empty() {
-            event.set("status", &self.status);
+            entry.set("status", &self.status);
         }
-        self.public_details.log(event);
+        self.public_details.log(entry);
     }
 }
 
@@ -2129,7 +2129,7 @@ impl Mon {
                     if forget_move_slot
                         >= context.battle().format.rules.numeric_rules.max_move_count as usize
                     {
-                        let event = log_event!(
+                        let event = battle_log_entry!(
                             "didnotlearnmove",
                             ("mon", Self::position_details(context)?),
                             ("move", mov.data.name.clone())
@@ -2178,7 +2178,7 @@ impl Mon {
             }
         }
 
-        let mut event = log_event!(
+        let mut event = battle_log_entry!(
             "learnedmove",
             ("mon", Self::position_details(context)?),
             ("move", mov.data.name.clone()),

@@ -12,6 +12,7 @@ use crate::{
         PlayerContext,
         SideEffectContext,
     },
+    battle_log_entry,
     common::Id,
     effect::{
         fxlang,
@@ -19,8 +20,7 @@ use crate::{
         EffectHandle,
     },
     error::Error,
-    log::Event,
-    log_event,
+    log::UncommittedBattleLogEntry,
     mons::{
         Stat,
         Type,
@@ -57,8 +57,8 @@ fn effect_activation_internal(
     context: &mut Context,
     header: String,
     activation_context: EffectActivationContext,
-) -> Result<Event, Error> {
-    let mut event = log_event!(header);
+) -> Result<UncommittedBattleLogEntry, Error> {
+    let mut event = battle_log_entry!(header);
 
     if let Some(side) = activation_context.side {
         event.set("side", side);
@@ -145,8 +145,8 @@ fn effect_activation_internal(
 }
 
 fn full_mon_details(context: &mut MonContext, header: &str) -> Result<(), Error> {
-    let private_event = log_event!(header, Mon::private_active_details(context)?);
-    let public_event = log_event!(header, Mon::public_active_details(context)?);
+    let private_event = battle_log_entry!(header, Mon::private_active_details(context)?);
+    let public_event = battle_log_entry!(header, Mon::public_active_details(context)?);
     let side = context.mon().side;
     context
         .battle_mut()
@@ -742,7 +742,7 @@ pub fn use_move(
     animate_only: bool,
 ) -> Result<(), Error> {
     let title = if animate_only { "animatemove" } else { "move" };
-    let mut event = log_event!(
+    let mut event = battle_log_entry!(
         title,
         ("mon", Mon::position_details(context)?),
         ("name", move_name)
@@ -783,7 +783,7 @@ where
 }
 
 pub fn hit_count(context: &mut Context, hits: u8) -> Result<(), Error> {
-    let event = log_event!("hitcount", ("hits", hits));
+    let event = battle_log_entry!("hitcount", ("hits", hits));
     context.battle_mut().log(event);
     Ok(())
 }
@@ -800,7 +800,7 @@ pub fn boost(
         (-delta as u8, "unboost")
     };
 
-    let event = log_event!(
+    let event = battle_log_entry!(
         message,
         ("mon", Mon::position_details(context)?),
         ("stat", boost),
@@ -816,7 +816,7 @@ pub fn debug_event_failure(
     effect_name: &str,
     error: &str,
 ) {
-    let log_event = log_event!(
+    let log_event = battle_log_entry!(
         "debug",
         ("event", event),
         ("effect", effect_name),
@@ -826,12 +826,12 @@ pub fn debug_event_failure(
 }
 
 pub fn debug_full_event_failure(context: &mut Context, event: fxlang::BattleEvent, error: &str) {
-    let log_event = log_event!("debug", ("event", event), ("error", error));
+    let log_event = battle_log_entry!("debug", ("event", event), ("error", error));
     context.battle_mut().log(log_event);
 }
 
 pub fn experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
-    let event = log_event!(
+    let event = battle_log_entry!(
         "exp",
         ("mon", Mon::position_details(context)?),
         ("exp", exp)
@@ -841,7 +841,7 @@ pub fn experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
 }
 
 pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
-    let event = log_event!(
+    let event = battle_log_entry!(
         "levelup",
         ("mon", Mon::position_details(context)?),
         ("level", context.mon().level),
@@ -857,19 +857,19 @@ pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
 }
 
 pub fn cannot_escape(context: &mut PlayerContext) -> Result<(), Error> {
-    let event = log_event!("cannotescape", ("player", &context.player().id));
+    let event = battle_log_entry!("cannotescape", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }
 
 pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
-    let event = log_event!("escaped", ("player", &context.player().id));
+    let event = battle_log_entry!("escaped", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }
 
 pub fn forfeited(context: &mut PlayerContext) -> Result<(), Error> {
-    let event = log_event!("forfeited", ("player", &context.player().id));
+    let event = battle_log_entry!("forfeited", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }
@@ -880,7 +880,7 @@ pub fn use_item(
     target: Option<MonHandle>,
 ) -> Result<(), Error> {
     let item = context.battle().dex.items.get_by_id(item)?;
-    let mut event = log_event!(
+    let mut event = battle_log_entry!(
         "useitem",
         ("player", &context.player().id),
         ("name", item.data.name.clone())

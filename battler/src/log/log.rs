@@ -10,40 +10,41 @@ use itertools::Itertools;
 
 use crate::common::FastHashMap;
 
-/// Trait for objects that can be added directly to the event log.
-pub trait EventLoggable {
-    /// Logs the object into the event.
-    fn log(&self, event: &mut Event);
+/// Trait for objects that can be added directly to the battle log.
+pub trait BattleLoggable {
+    /// Logs the object into the entry.
+    fn log(&self, entry: &mut UncommittedBattleLogEntry);
 }
 
-impl EventLoggable for &str {
-    fn log(&self, event: &mut Event) {
-        event.add_flag(*self)
+impl BattleLoggable for &str {
+    fn log(&self, entry: &mut UncommittedBattleLogEntry) {
+        entry.add_flag(*self)
     }
 }
 
-impl<T> EventLoggable for (&str, T)
+impl<T> BattleLoggable for (&str, T)
 where
     T: Display,
 {
-    fn log(&self, event: &mut Event) {
-        event.set(self.0, &self.1)
+    fn log(&self, entry: &mut UncommittedBattleLogEntry) {
+        entry.set(self.0, &self.1)
     }
 }
 
-/// An event that is added to the [`EventLog`].
+/// An uncommitted, mutable entry that is added to the [`BattleLog`] and can be modified after the
+/// fact.
 ///
 /// This object should not be constructed directly. Instead, use the
-/// [`log_event`][`crate::log_event`] macro.
+/// [`battle_log_entry`][`crate::battle_log_entry`] macro.
 #[derive(Debug, Clone)]
-pub struct Event {
+pub struct UncommittedBattleLogEntry {
     title: String,
     values: FastHashMap<String, String>,
     insertion_order: Vec<String>,
 }
 
-impl Event {
-    /// Creates a new event with the given title.
+impl UncommittedBattleLogEntry {
+    /// Creates a new entry with the given title.
     pub fn new<T>(title: T) -> Self
     where
         T: Into<String>,
@@ -55,10 +56,10 @@ impl Event {
         }
     }
 
-    /// Adds the given value to the event.
+    /// Adds the given value to the entry.
     pub fn extend<T>(&mut self, value: &T)
     where
-        T: EventLoggable,
+        T: BattleLoggable,
     {
         value.log(self)
     }
@@ -77,7 +78,7 @@ impl Event {
         }
     }
 
-    /// Adds a new flag (a property with no value) to the event.
+    /// Adds a new flag (a property with no value) to the entry.
     pub fn add_flag<K>(&mut self, key: K)
     where
         K: Into<String>,
@@ -85,7 +86,7 @@ impl Event {
         self.add_entry(key, "")
     }
 
-    /// Sets the value of a property on the event.
+    /// Sets the value of a property on the entry.
     ///
     /// If the property did not exist before, the pair is added. If the property did exist, the
     /// value is updated.
@@ -124,36 +125,36 @@ impl Event {
     }
 }
 
-impl Display for Event {
+impl Display for UncommittedBattleLogEntry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.commit())
     }
 }
 
-/// Constructs an [`Event`] to be added to the [`EventLog`].
+/// Constructs a [`UncommittedBattleLogEntry`] to be added to the [`BattleLog`].
 ///
-/// This macro enforces a common format for all messages in the event log.
+/// This macro enforces a common format for all messages in the battle log.
 #[macro_export]
-macro_rules! log_event {
+macro_rules! battle_log_entry {
     ($title:expr) => {{
-        $crate::log::Event::new($title)
+        $crate::log::UncommittedBattleLogEntry::new($title)
     }};
     ($title:expr $(, $entries:expr)+ $(,)?) => {{
-        let mut event = $crate::log::Event::new($title);
-        $($crate::log::EventLoggable::log(&$entries, &mut event);)*
-        event
+        let mut entry = $crate::log::UncommittedBattleLogEntry::new($title);
+        $($crate::log::BattleLoggable::log(&$entries, &mut entry);)*
+        entry
     }};
 }
 
-/// Event log entry.
+/// Battle log entry.
 #[derive(Debug)]
-pub enum EventLogEntry<'e> {
+pub enum BattleLogEntry<'e> {
     Committed(&'e str),
-    Uncommitted(&'e Event),
+    Uncommitted(&'e UncommittedBattleLogEntry),
 }
 
-impl EventLogEntry<'_> {
-    /// Is the log entry committed to the battle?
+impl BattleLogEntry<'_> {
+    /// Is the log entry committed and published for clients?
     pub fn committed(&self) -> bool {
         match self {
             Self::Committed(_) => true,
@@ -162,25 +163,25 @@ impl EventLogEntry<'_> {
     }
 }
 
-impl Display for EventLogEntry<'_> {
+impl Display for BattleLogEntry<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Committed(event) => write!(f, "{event}"),
-            Self::Uncommitted(event) => write!(f, "{event}"),
+            Self::Committed(entry) => write!(f, "{entry}"),
+            Self::Uncommitted(entry) => write!(f, "{entry}"),
         }
     }
 }
 
-/// Mutable event log entry.
+/// Mutable battle log entry.
 ///
 /// Only uncommitted logs are mutable.
 #[derive(Debug)]
-pub enum EventLogEntryMut<'e> {
+pub enum BattleLogEntryMut<'e> {
     Committed(&'e str),
-    Uncommitted(&'e mut Event),
+    Uncommitted(&'e mut UncommittedBattleLogEntry),
 }
 
-impl EventLogEntryMut<'_> {
+impl BattleLogEntryMut<'_> {
     pub fn committed(&self) -> bool {
         match self {
             Self::Committed(_) => true,
@@ -189,62 +190,62 @@ impl EventLogEntryMut<'_> {
     }
 }
 
-impl Display for EventLogEntryMut<'_> {
+impl Display for BattleLogEntryMut<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Committed(event) => write!(f, "{event}"),
-            Self::Uncommitted(event) => write!(f, "{event}"),
+            Self::Committed(entry) => write!(f, "{entry}"),
+            Self::Uncommitted(entry) => write!(f, "{entry}"),
         }
     }
 }
 
-/// A log of events that can be exported.
+/// A log of battle events that can be exported.
 ///
-/// When a new [`Event`] is added, it is considered uncommitted and is mutable (see
-/// [`EventLogEntryMut`]). Logs must be manually committed using the [`Self::commit`] method.
-/// Once a log is committed, it is considered immutable.
+/// When a new [`BattleLogEntry`] is added, it is considered uncommitted and is mutable (see
+/// [`BattleLogEntryMut`]). Logs must be manually committed using the [`Self::commit`] method in
+/// order to appear for clients. Once a log is committed, it is considered immutable.
 ///
 /// The log also keeps track of reads. Once a log is read out using [`Self::read_out`], it will not
 /// be read out again.
-pub struct EventLog {
+pub struct BattleLog {
     last_read: usize,
     committed_logs: Vec<String>,
-    new_logs: Vec<Event>,
+    new_log_entries: Vec<UncommittedBattleLogEntry>,
 }
 
-impl EventLog {
-    /// Creates a new event log.
+impl BattleLog {
+    /// Creates a new battle log.
     pub fn new() -> Self {
         Self {
             last_read: 0,
             committed_logs: Vec::new(),
-            new_logs: Vec::new(),
+            new_log_entries: Vec::new(),
         }
     }
 
     /// Does the log contain new messages since the last call to [`Self::read_out`]?
     pub fn has_new_messages(&self) -> bool {
-        !self.new_logs.is_empty()
+        !self.new_log_entries.is_empty()
     }
 
-    /// Pushes a new event to the log.
-    pub fn push(&mut self, event: Event) {
-        self.new_logs.push(event)
+    /// Pushes a new entry to the log.
+    pub fn push(&mut self, entry: UncommittedBattleLogEntry) {
+        self.new_log_entries.push(entry)
     }
 
-    /// Pushes multiple events to the log.
+    /// Pushes multiple entries to the log.
     pub fn push_extend<I>(&mut self, iterable: I)
     where
-        I: IntoIterator<Item = Event>,
+        I: IntoIterator<Item = UncommittedBattleLogEntry>,
     {
-        self.new_logs.extend(iterable.into_iter());
+        self.new_log_entries.extend(iterable.into_iter());
     }
 
     /// Commits all uncommitted logs.
     pub fn commit(&mut self) {
-        let new_logs = mem::replace(&mut self.new_logs, Vec::new());
+        let new_log_entries = mem::replace(&mut self.new_log_entries, Vec::new());
         self.committed_logs
-            .extend(new_logs.into_iter().map(|event| event.commit()))
+            .extend(new_log_entries.into_iter().map(|entry| entry.commit()))
     }
 
     /// Returns an iterator over all committed logs.
@@ -262,57 +263,57 @@ impl EventLog {
 
     /// Returns the total number of log entries.
     pub fn len(&self) -> usize {
-        self.committed_logs.len() + self.new_logs.len()
+        self.committed_logs.len() + self.new_log_entries.len()
     }
 
     /// Returns a reference to the log entry at the given index.
-    pub fn get(&self, index: usize) -> Option<EventLogEntry> {
+    pub fn get(&self, index: usize) -> Option<BattleLogEntry> {
         self.committed_logs
             .get(index)
-            .map(|s| EventLogEntry::Committed(s.as_ref()))
+            .map(|s| BattleLogEntry::Committed(s.as_ref()))
             .or_else(|| {
                 index
                     .checked_sub(self.committed_logs.len())
                     .and_then(|index| {
-                        self.new_logs
+                        self.new_log_entries
                             .get(index)
-                            .map(|event| EventLogEntry::Uncommitted(event))
+                            .map(|entry| BattleLogEntry::Uncommitted(entry))
                     })
             })
     }
 
     /// Returns a mutable reference to the log entry at the given index.
-    pub fn get_mut(&mut self, index: usize) -> Option<EventLogEntryMut> {
+    pub fn get_mut(&mut self, index: usize) -> Option<BattleLogEntryMut> {
         self.committed_logs
             .get(index)
-            .map(|s| EventLogEntryMut::Committed(s.as_ref()))
+            .map(|s| BattleLogEntryMut::Committed(s.as_ref()))
             .or_else(|| {
                 index
                     .checked_sub(self.committed_logs.len())
                     .and_then(|index| {
-                        self.new_logs
+                        self.new_log_entries
                             .get_mut(index)
-                            .map(|event| EventLogEntryMut::Uncommitted(event))
+                            .map(|entry| BattleLogEntryMut::Uncommitted(entry))
                     })
             })
     }
 }
 
 #[cfg(test)]
-mod event_log_tests {
+mod battle_log_tests {
     use std::{
         fmt,
         fmt::Display,
     };
 
     use crate::log::{
-        Event,
-        EventLog,
-        EventLogEntryMut,
-        EventLoggable,
+        BattleLog,
+        BattleLogEntryMut,
+        BattleLoggable,
+        UncommittedBattleLogEntry,
     };
 
-    fn last_log(log: &mut EventLog) -> String {
+    fn last_log(log: &mut BattleLog) -> String {
         log.get(log.len() - 1).unwrap().to_string()
     }
 
@@ -328,16 +329,16 @@ mod event_log_tests {
     }
 
     #[test]
-    fn formats_events() {
-        let mut log = EventLog::new();
+    fn formats_entries() {
+        let mut log = BattleLog::new();
 
-        log.push(log_event!("a", ("b", "c")));
+        log.push(battle_log_entry!("a", ("b", "c")));
         assert_eq!(last_log(&mut log), "a|b:c");
 
-        log.push(log_event!("time", ("time", 100000i32), "real"));
+        log.push(battle_log_entry!("time", ("time", 100000i32), "real"));
         assert_eq!(last_log(&mut log), "time|time:100000|real");
 
-        log.push(log_event!(
+        log.push(battle_log_entry!(
             "customdata",
             ("pi", 3.1415926535f64),
             (
@@ -362,8 +363,8 @@ mod event_log_tests {
         b: String,
     }
 
-    impl EventLoggable for CustomDataWithLogImplementation {
-        fn log(&self, log: &mut Event) {
+    impl BattleLoggable for CustomDataWithLogImplementation {
+        fn log(&self, log: &mut UncommittedBattleLogEntry) {
             log.set("a", format!("{}", self.a));
             log.set("b", &self.b);
         }
@@ -371,9 +372,9 @@ mod event_log_tests {
 
     #[test]
     fn allows_custom_implementation() {
-        let mut log = EventLog::new();
+        let mut log = BattleLog::new();
 
-        log.push(log_event!(
+        log.push(battle_log_entry!(
             "customdata",
             "abc",
             CustomDataWithLogImplementation {
@@ -387,31 +388,31 @@ mod event_log_tests {
 
     #[test]
     fn records_length() {
-        let mut log = EventLog::new();
+        let mut log = BattleLog::new();
         assert_eq!(log.len(), 0);
-        log.push(log_event!("one"));
+        log.push(battle_log_entry!("one"));
         assert_eq!(log.len(), 1);
-        log.push(log_event!("two", "three", "four"));
+        log.push(battle_log_entry!("two", "three", "four"));
         assert_eq!(log.len(), 2);
     }
 
     #[test]
     fn returns_entry_by_index() {
-        let mut log = EventLog::new();
+        let mut log = BattleLog::new();
         assert!(log.get(0).is_none());
-        log.push(log_event!("one"));
+        log.push(battle_log_entry!("one"));
         assert_eq!(log.get(0).unwrap().to_string(), "one");
         assert!(log.get(1).is_none());
-        log.push(log_event!("two", "three", "four"));
+        log.push(battle_log_entry!("two", "three", "four"));
         assert_eq!(log.get(1).unwrap().to_string(), "two|three|four");
     }
 
     #[test]
     fn reads_out_new_committed_logs() {
-        let mut log = EventLog::new();
+        let mut log = BattleLog::new();
         assert!(log.read_out().collect::<Vec<_>>().is_empty());
-        log.push(log_event!("one"));
-        log.push(log_event!("two", "three", "four"));
+        log.push(battle_log_entry!("one"));
+        log.push(battle_log_entry!("two", "three", "four"));
         assert!(log.read_out().collect::<Vec<_>>().is_empty());
         log.commit();
         assert_eq!(
@@ -419,8 +420,8 @@ mod event_log_tests {
             vec!["one", "two|three|four"]
         );
         assert!(log.read_out().collect::<Vec<_>>().is_empty());
-        log.push(log_event!("five", "six"));
-        log.push(log_event!("seven", "eight"));
+        log.push(battle_log_entry!("five", "six"));
+        log.push(battle_log_entry!("seven", "eight"));
         assert!(log.read_out().collect::<Vec<_>>().is_empty());
         log.commit();
         assert_eq!(
@@ -432,23 +433,23 @@ mod event_log_tests {
 
     #[test]
     fn returns_entry_type() {
-        let mut log = EventLog::new();
-        log.push(log_event!("move", "tackle"));
-        assert!(log.get(0).is_some_and(|event| !event.committed()));
+        let mut log = BattleLog::new();
+        log.push(battle_log_entry!("move", "tackle"));
+        assert!(log.get(0).is_some_and(|entry| !entry.committed()));
         log.commit();
-        assert!(log.get(0).is_some_and(|event| event.committed()));
+        assert!(log.get(0).is_some_and(|entry| entry.committed()));
 
-        log.push(log_event!("move", "name:tackle", "bad"));
-        if let Some(EventLogEntryMut::Uncommitted(event)) = log.get_mut(1) {
-            event.add_flag("noanim");
-            event.remove("bad");
-            event.set("damage", 12);
-            event.extend(&CustomDataWithLogImplementation {
+        log.push(battle_log_entry!("move", "name:tackle", "bad"));
+        if let Some(BattleLogEntryMut::Uncommitted(entry)) = log.get_mut(1) {
+            entry.add_flag("noanim");
+            entry.remove("bad");
+            entry.set("damage", 12);
+            entry.extend(&CustomDataWithLogImplementation {
                 a: 1,
                 b: "2".to_owned(),
             });
         }
-        assert!(log.get(1).is_some_and(|event| event
+        assert!(log.get(1).is_some_and(|entry| entry
             .to_string()
             .eq("move|name:tackle|noanim|damage:12|a:1|b:2")));
 

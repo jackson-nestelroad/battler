@@ -164,7 +164,7 @@ fn team_preview_orders_all_player_teams() {
         .collect::<FastHashMap<_, _>>()
         .contains_key("player-1"));
     assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
-    assert!(!battle.has_new_logs());
+    assert!(!battle.has_new_log_entries());
 
     // Auto choose.
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "team"), Ok(()));

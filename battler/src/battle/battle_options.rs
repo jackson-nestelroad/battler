@@ -69,9 +69,9 @@ pub struct CoreBattleEngineOptions {
     pub auto_continue: bool,
 
     /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] reveal the actual health of all Mons
-    /// in the public battle logs?
+    /// in the public battle log?
     ///
-    /// By default, the public logs will show the health of all Mons as a percentage (fraction out
+    /// By default, the public log will show the health of all Mons as a percentage (fraction out
     /// of 100). If this option is set to `true`, the battle will show the actual HP stat of each
     /// Mon.
     pub reveal_actual_health: bool,

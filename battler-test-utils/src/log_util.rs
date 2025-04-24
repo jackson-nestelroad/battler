@@ -52,7 +52,7 @@ impl PartialEq<&str> for LogMatch {
 /// Asserts that new logs in the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
-    let got = battle.new_logs().collect::<Vec<&str>>();
+    let got = battle.new_log_entries().collect::<Vec<&str>>();
     let want = want.into_iter().collect::<Vec<_>>();
     pretty_assertions::assert_eq!(want, got)
 }
@@ -60,7 +60,7 @@ pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
 /// Asserts that logs since the given turn in the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_logs_since_start_eq(battle: &PublicCoreBattle, want: &[LogMatch]) {
-    let got = battle.all_logs().collect::<Vec<&str>>();
+    let got = battle.full_log().collect::<Vec<&str>>();
     let start_log = "start";
     let start_log_index = got.iter().position(|log| log == &start_log).unwrap();
     let start_log_index = start_log_index + 1;
@@ -72,7 +72,7 @@ pub fn assert_logs_since_start_eq(battle: &PublicCoreBattle, want: &[LogMatch]) 
 /// Asserts that logs since the given turn in the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_logs_since_turn_eq(battle: &PublicCoreBattle, turn: usize, want: &[LogMatch]) {
-    let got = battle.all_logs().collect::<Vec<&str>>();
+    let got = battle.full_log().collect::<Vec<&str>>();
     let turn_log = format!("turn|turn:{turn}");
     let turn_log_index = got.iter().position(|log| log == &&turn_log).unwrap();
     // Skip turn logs that are always present.
@@ -88,7 +88,7 @@ pub fn assert_logs_since_turn_eq(battle: &PublicCoreBattle, turn: usize, want: &
 /// Asserts that logs for the given turn in the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_turn_logs_eq(battle: &PublicCoreBattle, turn: usize, want: &[LogMatch]) {
-    let got = battle.all_logs().collect::<Vec<_>>();
+    let got = battle.full_log().collect::<Vec<_>>();
     let turn_log = format!("turn|turn:{turn}");
     let next_turn_log = format!("turn|turn:{}", turn + 1);
     let turn_log_index = got.iter().position(|log| log == &&turn_log).unwrap();
@@ -103,6 +103,6 @@ pub fn assert_turn_logs_eq(battle: &PublicCoreBattle, turn: usize, want: &[LogMa
     pretty_assertions::assert_eq!(want, got)
 }
 
-pub fn write_battle_logs_to_file(file: &str, battle: &PublicCoreBattle) -> Result<(), io::Error> {
-    fs::write(file, battle.all_logs().join("\n"))
+pub fn write_battle_log_to_file(file: &str, battle: &PublicCoreBattle) -> Result<(), io::Error> {
+    fs::write(file, battle.full_log().join("\n"))
 }

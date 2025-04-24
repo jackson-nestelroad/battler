@@ -38,12 +38,12 @@ pub struct MonData {
     pub name: String,
     /// Species name, including forme if applicable.
     pub species: String,
-    /// Held item.
-    pub item: Option<String>,
     /// Ability.
     pub ability: String,
     /// Moves.
     pub moves: Vec<String>,
+    /// Held item.
+    pub item: Option<String>,
     #[serde(default)]
     // PP boosts.
     pub pp_boosts: Vec<u8>,
