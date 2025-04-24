@@ -2,7 +2,6 @@ use anyhow::Result;
 use battler::{
     error::ValidationError,
     BattleType,
-
     LocalDataStore,
     TeamData,
     WrapResultError,

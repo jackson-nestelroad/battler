@@ -4,7 +4,6 @@ use battler::{
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     LocalDataStore,
     PublicCoreBattle,
     TeamData,

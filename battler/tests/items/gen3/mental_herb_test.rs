@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     Gender,
     LocalDataStore,
     PublicCoreBattle,
