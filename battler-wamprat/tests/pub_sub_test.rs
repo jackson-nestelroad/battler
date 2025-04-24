@@ -3,9 +3,12 @@ use anyhow::{
     Result,
 };
 use battler_wamp::{
-    core::uri::{
-        Uri,
-        WildcardUri,
+    core::{
+        publish_options::PublishOptions,
+        uri::{
+            Uri,
+            WildcardUri,
+        },
     },
     peer::{
         PeerConfig,
@@ -178,6 +181,7 @@ async fn receives_events() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("Hello, world!".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -232,6 +236,7 @@ async fn receives_events() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("another message".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -295,6 +300,7 @@ async fn resubscribes_on_reconnect() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("first".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -316,6 +322,7 @@ async fn resubscribes_on_reconnect() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("second".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -357,6 +364,7 @@ async fn resubscribes_on_reconnect() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("third".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -423,6 +431,7 @@ async fn retries_publish_during_reconnect() {
                 .publish(
                     Uri::try_from("com.battler.message").unwrap(),
                     MessageEvent(MessageEventArgs("Hello, world!".to_owned())),
+                    PublishOptions::default(),
                 )
                 .await,
             Ok(())
@@ -500,6 +509,7 @@ async fn receives_pattern_based_events() {
             .publish(
                 Uri::try_from("com.battler.event.1.abc").unwrap(),
                 MessageEvent(MessageEventArgs("foo".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -509,6 +519,7 @@ async fn receives_pattern_based_events() {
             .publish(
                 Uri::try_from("com.battler.event.2.def").unwrap(),
                 MessageEvent(MessageEventArgs("bar".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())
@@ -565,6 +576,7 @@ async fn receives_pattern_based_events() {
             .publish(
                 Uri::try_from("com.battler.event.4.jkl").unwrap(),
                 MessageEvent(MessageEventArgs("another message".to_owned())),
+                PublishOptions::default(),
             )
             .await,
         Ok(())

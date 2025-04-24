@@ -19,6 +19,7 @@ use battler_wamp::{
         id::Id,
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
+        publish_options::PublishOptions,
         uri::{
             Uri,
             WildcardUri,
@@ -324,7 +325,12 @@ where
     }
 
     /// Publishes an event to a topic.
-    pub async fn publish<Payload>(&self, topic: Uri, payload: Payload) -> Result<()>
+    pub async fn publish<Payload>(
+        &self,
+        topic: Uri,
+        payload: Payload,
+        options: PublishOptions,
+    ) -> Result<()>
     where
         Payload: battler_wamprat_message::WampApplicationMessage + 'static,
     {
@@ -334,6 +340,7 @@ where
             PublishedEvent {
                 arguments,
                 arguments_keyword,
+                options,
             },
         )
         .await
