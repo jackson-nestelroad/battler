@@ -223,7 +223,7 @@ pub struct PublicLogPattern(String);
 /// A log entry.
 #[derive(WampList)]
 pub struct LogEntry {
-    /// INdex of the entry.
+    /// Index of the entry.
     pub index: Integer,
     /// Content of the entry.
     pub content: String,
