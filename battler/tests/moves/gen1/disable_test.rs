@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -67,7 +68,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -94,7 +95,7 @@ fn disable_disables_last_used_move() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Aerodactyl's Tackle is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Aerodactyl's Tackle is disabled")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -3,16 +3,14 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Error;
 use serde::{
     de::Visitor,
     Deserialize,
     Serialize,
 };
 
-use crate::error::{
-    general_error,
-    Error,
-};
+use crate::error::general_error;
 
 /// The chance that a Mon is shiny.
 #[derive(Debug, Default, Clone, PartialEq)]

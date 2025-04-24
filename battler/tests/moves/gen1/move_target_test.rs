@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     Id,
     MoveData,
     MoveTarget,
@@ -17,7 +18,7 @@ use battler_test_utils::{
     TestDataStore,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -45,7 +46,7 @@ fn team() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn test_move(target: MoveTarget) -> Result<MoveData, Error> {
+fn test_move(target: MoveTarget) -> Result<MoveData> {
     let mut move_data: MoveData = serde_json::from_str(
         r#"{
             "name": "Test Move",
@@ -63,7 +64,7 @@ fn test_move(target: MoveTarget) -> Result<MoveData, Error> {
     Ok(move_data)
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_seed(2)
         .with_battle_type(BattleType::Doubles)

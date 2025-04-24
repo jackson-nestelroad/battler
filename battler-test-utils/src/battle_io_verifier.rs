@@ -5,8 +5,8 @@ use std::{
 };
 
 use ahash::HashMap;
+use anyhow::Result;
 use battler::{
-    Error,
     PublicCoreBattle,
     Request,
     WrapResultError,
@@ -18,7 +18,7 @@ use crate::{
     LogMatch,
 };
 
-fn integration_test_expected_io_dir<'s>() -> Result<String, Error> {
+fn integration_test_expected_io_dir<'s>() -> Result<String> {
     env::var("INTEGRATION_TEST_EXPECTED_IO_DIR")
         .wrap_error_with_message("INTEGRATION_TEST_EXPECTED_IO_DIR is not defined")
 }
@@ -40,7 +40,7 @@ pub struct BattleIoVerifier {
 }
 
 impl BattleIoVerifier {
-    pub fn new(file: &str) -> Result<BattleIoVerifier, Error> {
+    pub fn new(file: &str) -> Result<BattleIoVerifier> {
         let expected = serde_json::from_reader(
             File::open(Path::new(&integration_test_expected_io_dir()?).join(file))
                 .wrap_error_with_format(format_args!(

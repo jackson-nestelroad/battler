@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 pub use crate::common::Id;
 use crate::{
     dex::{
@@ -6,7 +8,6 @@ use crate::{
         ResourceLookup,
         ResourceWrapper,
     },
-    error::Error,
     moves::{
         Move,
         MoveData,
@@ -24,7 +25,7 @@ impl<'d> ResourceLookup<'d, MoveData> for MoveLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> Result<MoveData, Error> {
+    fn lookup(&self, id: &Id) -> Result<MoveData> {
         self.data.get_move(id)
     }
 }

@@ -1,6 +1,7 @@
 use std::collections::hash_map::Entry;
 
 use ahash::HashMapExt;
+use anyhow::Result;
 use lazy_static::lazy_static;
 
 use crate::{
@@ -57,7 +58,6 @@ use crate::{
     error::{
         general_error,
         integer_overflow_error,
-        Error,
         WrapOptionError,
     },
     items::ItemFlags,
@@ -100,7 +100,7 @@ where
         .collect()
 }
 
-fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<bool, Error> {
+fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<bool> {
     if context.mon().hp > 0 {
         if run_switch_out_events {
             if !context.mon().skip_before_switch_out {
@@ -152,7 +152,7 @@ pub fn switch_in(
     position: usize,
     mut switch_type: Option<SwitchType>,
     is_drag: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if context.mon().active {
         return Ok(false);
     }
@@ -213,7 +213,7 @@ pub fn switch_in(
 }
 
 /// Runs events corresponding to a Mon switching into battle.
-pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
+pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool> {
     core_battle_effects::run_event_for_mon(
         context,
         fxlang::BattleEvent::SwitchIn,
@@ -250,7 +250,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool, Error> {
     Ok(true)
 }
 
-fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<(), Error> {
+fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<()> {
     Mon::clear_volatile(&mut context.target_context()?, true)?;
 
     let mut source_context = context.as_battle_context_mut().mon_context(source)?;
@@ -293,7 +293,7 @@ pub fn do_move_by_id(
     move_id: &Id,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let active_move_handle =
         CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
     do_move(
@@ -310,7 +310,7 @@ pub fn do_move(
     active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     context.mon_mut().active_move_actions += 1;
 
     do_move_internal(
@@ -330,7 +330,7 @@ fn do_move_internal(
     mut active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let move_id = context
         .as_battle_context()
         .active_move(active_move_handle)?
@@ -464,7 +464,7 @@ pub fn use_move(
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     external: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     let active_move_handle =
         CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
     use_active_move(
@@ -487,7 +487,7 @@ pub fn use_active_move(
     source_effect: Option<&EffectHandle>,
     external: bool,
     directly_used: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if directly_used {
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().set_active_move(active_move_handle);
@@ -562,7 +562,7 @@ fn use_active_move_internal(
     context: &mut ActiveMoveContext,
     mut target: Option<MonHandle>,
     directly_used: bool,
-) -> Result<MoveOutcome, Error> {
+) -> Result<MoveOutcome> {
     let use_move_input = fxlang::VariableInput::from_iter([target
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
@@ -681,7 +681,7 @@ pub fn faint(
     context: &mut MonContext,
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     Mon::faint(context, source, effect)
 }
 
@@ -689,7 +689,7 @@ pub fn faint(
 fn get_move_targets(
     context: &mut ActiveMoveContext,
     selected_target: Option<MonHandle>,
-) -> Result<Vec<MonHandle>, Error> {
+) -> Result<Vec<MonHandle>> {
     let mut targets = Vec::new();
     match context.active_move().data.target {
         MoveTarget::All => {
@@ -794,7 +794,7 @@ fn get_move_targets(
 }
 
 /// Runs all events prior to a move hitting any targets.
-fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcome, Error> {
+fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcome> {
     let result = core_battle_effects::run_active_move_event_expecting_move_event_result(
         context,
         fxlang::BattleEvent::TryUseMove,
@@ -836,7 +836,7 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcom
 fn try_indirect_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
-) -> Result<MoveOutcome, Error> {
+) -> Result<MoveOutcome> {
     let try_use_move_outcome = run_try_use_move_events(context)?;
     if !try_use_move_outcome.success() {
         return Ok(try_use_move_outcome);
@@ -897,7 +897,7 @@ impl MoveStepOutcomeOnTarget {
 fn prepare_direct_move_against_targets(
     context: &mut ActiveMoveContext,
     targets: &mut [MoveStepOutcomeOnTarget],
-) -> Result<(), Error> {
+) -> Result<()> {
     lazy_static! {
         static ref STEPS: Vec<direct_move_step::DirectMoveStep> = vec![
             direct_move_step::check_targets_invulnerability,
@@ -923,7 +923,7 @@ fn prepare_direct_move_against_targets(
 pub fn prepare_direct_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
-) -> Result<Vec<MonHandle>, Error> {
+) -> Result<Vec<MonHandle>> {
     let mut targets = targets
         .iter()
         .map(|target| MoveStepOutcomeOnTarget::new(*target))
@@ -942,10 +942,7 @@ pub fn prepare_direct_move(
 }
 
 /// Tries to use a move directly against several target Mons.
-fn try_direct_move(
-    context: &mut ActiveMoveContext,
-    targets: &[MonHandle],
-) -> Result<MoveOutcome, Error> {
+fn try_direct_move(context: &mut ActiveMoveContext, targets: &[MonHandle]) -> Result<MoveOutcome> {
     if targets.len() > 1 {
         context.active_move_mut().spread_hit = true;
     }
@@ -977,7 +974,7 @@ fn try_direct_move(
 fn move_hit_loop(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
-) -> Result<Vec<MoveStepOutcomeOnTarget>, Error> {
+) -> Result<Vec<MoveStepOutcomeOnTarget>> {
     context.active_move_mut().total_damage = 0;
 
     let hits = match context.active_move().data.multihit {
@@ -1180,7 +1177,7 @@ fn move_hit_loop(
 fn move_hit_determine_success(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
-) -> Result<MoveOutcome, Error> {
+) -> Result<MoveOutcome> {
     let mut targets = hit_targets_state_from_targets(targets.iter().cloned());
     move_hit(context, &mut targets)?;
     if targets.into_iter().all(|target| target.outcome.failed()) {
@@ -1194,17 +1191,14 @@ fn move_hit_determine_success(
 fn move_hit(
     context: &mut ActiveMoveContext,
     hit_targets_state: &mut [HitTargetState],
-) -> Result<(), Error> {
+) -> Result<()> {
     hit_targets(context, hit_targets_state)
 }
 
 /// Hits all targets with a move, recording the state of the hit.
 ///
 /// This function will run once for each "hit effect" of the move.
-fn hit_targets(
-    context: &mut ActiveMoveContext,
-    targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
     let move_target = context.active_move().data.target.clone();
     let try_move_result = match move_target {
         MoveTarget::All => core_battle_effects::run_active_move_event_expecting_move_event_result(
@@ -1326,10 +1320,7 @@ fn hit_targets(
 /// the target is invulnerable to the rest of the move's hit effects.
 ///
 /// For practically every other move, this function is a no-op.
-fn try_primary_hit(
-    context: &mut ActiveMoveContext,
-    targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+fn try_primary_hit(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
     for target in targets {
         if target.outcome.failed() {
             continue;
@@ -1348,7 +1339,7 @@ fn try_primary_hit(
 fn calculate_spread_damage(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+) -> Result<()> {
     for target in targets {
         if !target.outcome.hit_target() {
             continue;
@@ -1367,7 +1358,7 @@ fn calculate_spread_damage(
 }
 
 /// Calculates damage for an active move on a target.
-pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTarget, Error> {
+pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTarget> {
     let target_mon_handle = context.target_mon_handle();
     // Type immunity.
     let move_type = context.active_move().data.primary_type;
@@ -1542,7 +1533,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
 }
 
 /// Calculates the type effectiveness of a move against a target.
-pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8, Error> {
+pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8> {
     if context.active_move().data.typeless {
         return Ok(0);
     }
@@ -1579,7 +1570,7 @@ pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8, Error
 fn modify_damage(
     context: &mut ActiveTargetContext,
     mut base_damage: u32,
-) -> Result<MoveOutcomeOnTarget, Error> {
+) -> Result<MoveOutcomeOnTarget> {
     base_damage += 2;
     if context.active_move().spread_hit {
         let spread_modifier = Fraction::new(3, 4);
@@ -1670,10 +1661,7 @@ fn calculate_recoil_damage(context: &ActiveMoveContext, damage_dealt: u64) -> u6
 }
 
 /// Applies recoil damage to the user of an active move.
-pub fn apply_recoil_damage(
-    context: &mut ActiveMoveContext,
-    damage_dealt: u64,
-) -> Result<(), Error> {
+pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -> Result<()> {
     let recoil_damage = calculate_recoil_damage(context, damage_dealt);
     if recoil_damage > 0 {
         let recoil_damage = recoil_damage.min(u16::MAX as u64) as u16;
@@ -1704,6 +1692,8 @@ pub fn apply_recoil_damage(
 mod direct_move_step {
     use std::ops::Mul;
 
+    use anyhow::Result;
+
     use super::MoveStepOutcomeOnTarget;
     use crate::{
         battle::{
@@ -1718,7 +1708,6 @@ mod direct_move_step {
         },
         common::Fraction,
         effect::fxlang,
-        error::Error,
         moves::{
             Accuracy,
             MoveCategory,
@@ -1730,13 +1719,13 @@ mod direct_move_step {
 
     /// The interface for any direct move step.
     pub type DirectMoveStep =
-        fn(&mut ActiveMoveContext, &mut [MoveStepOutcomeOnTarget]) -> Result<(), Error>;
+        fn(&mut ActiveMoveContext, &mut [MoveStepOutcomeOnTarget]) -> Result<()>;
 
     /// Checks if targets are invulnerable.
     pub fn check_targets_invulnerability(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             if !core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
                 &mut context.applying_effect_context_for_target(target.handle)?,
@@ -1754,7 +1743,7 @@ mod direct_move_step {
     pub fn check_try_hit_event(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             let result =
                 core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
@@ -1776,7 +1765,7 @@ mod direct_move_step {
     pub fn check_type_immunity(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let move_type = context.active_move().data.primary_type;
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             // TODO: IgnoreImmunity event for the move (Thousand Arrows has a special rule).
@@ -1798,7 +1787,7 @@ mod direct_move_step {
     pub fn check_general_immunity(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
             let immune = !core_battle_effects::run_active_move_event_expecting_bool(
                 context,
@@ -1822,7 +1811,7 @@ mod direct_move_step {
     pub fn handle_accuracy(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         if !context.active_move().data.multiaccuracy && context.active_move().hit > 1 {
             return Ok(());
         }
@@ -1837,7 +1826,7 @@ mod direct_move_step {
     }
 
     /// Runs a single accuracy check of a move against a target.
-    fn accuracy_check(context: &mut ActiveTargetContext) -> Result<bool, Error> {
+    fn accuracy_check(context: &mut ActiveTargetContext) -> Result<bool> {
         let mut accuracy = context.active_move().data.accuracy;
         // OHKO moves bypass accuracy modifiers.
         if let Some(ohko) = context.active_move().data.ohko_type.clone() {
@@ -1938,7 +1927,7 @@ pub fn direct_damage(
     damage: u16,
     source: Option<MonHandle>,
     effect: Option<&EffectHandle>,
-) -> Result<u16, Error> {
+) -> Result<u16> {
     if context.mon().hp == 0 || damage == 0 {
         return Ok(0);
     }
@@ -1951,7 +1940,7 @@ pub fn direct_damage(
 /// Damages a Mon.
 ///
 /// This is the normal path that damage should take.
-pub fn damage(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Error> {
+pub fn damage(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     let target = context.target_handle();
     let source = context.source_handle();
     let mut targets = [HitTargetState::new(
@@ -1971,7 +1960,7 @@ fn apply_spread_damage(
     context: &mut EffectContext,
     source: Option<MonHandle>,
     targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+) -> Result<()> {
     for target in targets {
         let mut context = context.applying_effect_context(source, target.handle)?;
         let damage = match &mut target.outcome {
@@ -2028,7 +2017,7 @@ fn apply_spread_damage(
 }
 
 /// Applies the drain effect to the user of an effect.
-pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(), Error> {
+pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<()> {
     if let Some(Some(drain_percent)) = context
         .effect()
         .move_effect()
@@ -2052,7 +2041,7 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
     Ok(())
 }
 
-fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Error> {
+fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     if damage == 0 {
         return Ok(0);
     }
@@ -2065,7 +2054,7 @@ fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, E
 }
 
 /// Heals a Mon.
-pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Error> {
+pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     if damage == 0 || context.target().hp == 0 || context.target().hp > context.target().max_hp {
         return Ok(0);
     }
@@ -2088,7 +2077,7 @@ pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16, Err
 }
 
 /// Drags a random Mon into a player's position.
-pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Error> {
+pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool> {
     let old = context
         .player()
         .active_mon_handle(position)
@@ -2127,7 +2116,7 @@ pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool, Err
 fn apply_move_effects(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+) -> Result<()> {
     // We have two goals in this function:
     //  1. Apply all properties on the context's HitEffect object.
     //  2. Determine if the move did anything in this hit.
@@ -2398,7 +2387,7 @@ fn apply_move_effects(
 }
 
 /// Checks if the given stat boosts can be applied to the Mon.
-pub fn can_boost(context: &mut MonContext, boosts: BoostTable) -> Result<bool, Error> {
+pub fn can_boost(context: &mut MonContext, boosts: BoostTable) -> Result<bool> {
     if context.mon().hp == 0
         || !context.mon().active
         || Side::mons_left(context.as_side_context_mut())? == 0
@@ -2421,7 +2410,7 @@ pub fn boost(
     original_boosts: BoostTable,
     is_secondary: bool,
     is_self: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if context.target().hp == 0
         || !context.target().active
         || Side::mons_left(context.target_context()?.as_side_context_mut())? == 0
@@ -2476,7 +2465,7 @@ pub fn boost(
 fn apply_user_effect(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+) -> Result<()> {
     let mon_handle = context.mon_handle();
     let mut context = context.hit_self_active_move_context();
     if context.hit_effect().is_none() {
@@ -2548,7 +2537,7 @@ fn apply_user_effect(
 fn apply_secondary_effects(
     context: &mut ActiveMoveContext,
     targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+) -> Result<()> {
     if context.active_move().data.secondary_effects.is_empty() {
         return Ok(());
     }
@@ -2594,10 +2583,7 @@ fn apply_secondary_effects(
 }
 
 /// Forces all targets of the move to switch out at the end of the move.
-fn force_switch(
-    context: &mut ActiveMoveContext,
-    targets: &mut [HitTargetState],
-) -> Result<(), Error> {
+fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
     if !context
         .hit_effect()
         .is_some_and(|hit_effect| hit_effect.force_switch)
@@ -2653,7 +2639,7 @@ pub fn try_set_status(
     context: &mut ApplyingEffectContext,
     status: Option<Id>,
     is_primary_move_effect: bool,
-) -> Result<ApplyMoveEffectResult, Error> {
+) -> Result<ApplyMoveEffectResult> {
     if context.target().hp == 0 {
         return Ok(ApplyMoveEffectResult::Failed);
     }
@@ -2769,7 +2755,7 @@ pub fn try_set_status(
 }
 
 /// Checks the immunity of a Mon from an effect.
-pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(true);
     }
@@ -2787,7 +2773,7 @@ pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool, Error
 pub fn clear_status(
     context: &mut ApplyingEffectContext,
     is_primary_move_effect: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if context.target().hp == 0 || context.target().status.is_none() {
         return Ok(false);
     }
@@ -2795,7 +2781,7 @@ pub fn clear_status(
 }
 
 /// Cures the status of a Mon.
-pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Result<bool, Error> {
+pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -2814,7 +2800,7 @@ pub fn try_add_volatile(
     volatile: &Id,
     is_primary_move_effect: bool,
     link_to: Option<&AppliedEffectHandle>,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -2933,7 +2919,7 @@ pub fn remove_volatile(
     context: &mut ApplyingEffectContext,
     volatile: &Id,
     no_events: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -2973,7 +2959,7 @@ pub fn remove_volatile(
 }
 
 /// Tries to trap a Mon.
-pub fn trap_mon(context: &mut MonContext) -> Result<(), Error> {
+pub fn trap_mon(context: &mut MonContext) -> Result<()> {
     let effect_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&Id::from_known("trapped"))?
@@ -2992,7 +2978,7 @@ pub fn trap_mon(context: &mut MonContext) -> Result<(), Error> {
 /// Calculates confusion damage.
 ///
 /// The games use a special damage formula for confusion damage, with less modifiers.
-pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> Result<u16, Error> {
+pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> Result<u16> {
     let attack_stat = Stat::Atk;
     let defense_stat = Stat::Def;
     let attack_boosts = context.mon().boosts.get(attack_stat.try_into()?);
@@ -3025,7 +3011,7 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
 }
 
 /// Adds a condition to a side.
-pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool, Error> {
+pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool> {
     let side_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -3109,10 +3095,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
 }
 
 /// Removes a condition from a side.
-pub fn remove_side_condition(
-    context: &mut SideEffectContext,
-    condition: &Id,
-) -> Result<bool, Error> {
+pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool> {
     let side_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -3147,7 +3130,7 @@ pub fn remove_side_condition(
 }
 
 /// Sets the types of a Mon.
-pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool, Error> {
+pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool> {
     // TODO: SetTypes event (block Arceus and Silvally).
     if types.is_empty() {
         return Ok(false);
@@ -3164,10 +3147,7 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
 }
 
 /// Calculates the experience gained for the Mon for the given Mon fainting.
-fn calculate_exp_gain(
-    context: &mut MonContext,
-    fainted_mon_handle: MonHandle,
-) -> Result<u32, Error> {
+fn calculate_exp_gain(context: &mut MonContext, fainted_mon_handle: MonHandle) -> Result<u32> {
     let mon_handle = context.mon_handle();
     let mon_level = context.mon().level as u32;
     let mon_friendship = context.mon().friendship;
@@ -3214,7 +3194,7 @@ fn calculate_exp_gain(
 }
 
 /// Levels up a Mon directly to the given level.
-pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<(), Error> {
+pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<()> {
     let old_level = context.mon().level;
     context.mon_mut().level = target_level;
 
@@ -3229,7 +3209,7 @@ pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<(), Error>
     return Ok(());
 }
 
-fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<(), Error> {
+fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<()> {
     let mut learnable_moves_at_level = context
         .battle()
         .dex
@@ -3272,7 +3252,7 @@ fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<(), Error
 /// Gives experience to a single Mon.
 ///
 /// Experience is calculated by [`give_out_experience`].
-pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
+pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<()> {
     if context.mon().level == 100 {
         return Ok(());
     }
@@ -3317,10 +3297,7 @@ pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<(), Error> 
 }
 
 /// Schedules actions for giving out experience to all foe Mons after a Mon faints.
-pub fn give_out_experience(
-    context: &mut Context,
-    fainted_mon_handle: MonHandle,
-) -> Result<(), Error> {
+pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle) -> Result<()> {
     let foe_side = context.mon_context(fainted_mon_handle)?.foe_side().index;
     for foe_handle in context
         .battle()
@@ -3402,7 +3379,7 @@ pub fn give_out_experience(
     Ok(())
 }
 
-fn leave_battle(context: &mut PlayerContext) -> Result<(), Error> {
+fn leave_battle(context: &mut PlayerContext) -> Result<()> {
     context.player_mut().escaped = true;
     for mon in context
         .player()
@@ -3419,7 +3396,7 @@ fn leave_battle(context: &mut PlayerContext) -> Result<(), Error> {
 }
 
 /// Attempts to escape the battle, using the speed of the given Mon.
-pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> {
+pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool> {
     if context.player().escaped {
         return Ok(true);
     }
@@ -3467,14 +3444,14 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool, Error> 
 }
 
 /// Forfeits the battle.
-pub fn forfeit(context: &mut PlayerContext) -> Result<(), Error> {
+pub fn forfeit(context: &mut PlayerContext) -> Result<()> {
     leave_battle(context)?;
     core_battle_logs::forfeited(context)?;
     Ok(())
 }
 
 /// Sets the weather on the field.
-pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<bool, Error> {
+pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<bool> {
     let weather_handle = context
         .battle_mut()
         .get_effect_handle_by_id(weather)?
@@ -3560,7 +3537,7 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
 }
 
 /// Clears the weather on the field.
-pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
+pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
     if let Some(weather) = context.battle().field.weather.clone() {
         if !core_battle_effects::run_event_for_field_effect(
             context,
@@ -3601,7 +3578,7 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool, Error> {
 }
 
 /// Sets the terrain on the field.
-pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<bool, Error> {
+pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<bool> {
     let terrain_handle = context
         .battle_mut()
         .get_effect_handle_by_id(terrain)?
@@ -3684,7 +3661,7 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
 }
 
 /// Clears the terrain on the field.
-pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool, Error> {
+pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
     if let Some(terrain) = context.battle().field.terrain.clone() {
         if !core_battle_effects::run_event_for_field_effect(
             context,
@@ -3715,10 +3692,7 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool, Error> {
 }
 
 /// Adds a pseudo-weather to the field.
-pub fn add_pseudo_weather(
-    context: &mut FieldEffectContext,
-    pseudo_weather: &Id,
-) -> Result<bool, Error> {
+pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id) -> Result<bool> {
     let pseudo_weather_handle = context
         .battle_mut()
         .get_effect_handle_by_id(pseudo_weather)?
@@ -3812,7 +3786,7 @@ pub fn add_pseudo_weather(
 pub fn remove_pseudo_weather(
     context: &mut FieldEffectContext,
     pseudo_weather: &Id,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     core_battle_effects::run_pseudo_weather_event(
         context,
         fxlang::BattleEvent::FieldEnd,
@@ -3840,7 +3814,7 @@ pub fn set_ability(
     ability: &Id,
     dry_run: bool,
     silent: bool,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -3893,10 +3867,7 @@ pub fn set_ability(
 /// Transforms the Mon into the target Mon.
 ///
 /// Used to implement the move "Transform."
-pub fn transform_into(
-    context: &mut ApplyingEffectContext,
-    target: MonHandle,
-) -> Result<bool, Error> {
+pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
     if context.target().transformed {
         return Ok(false);
     }
@@ -3963,7 +3934,7 @@ pub fn forme_change(
     context: &mut ApplyingEffectContext,
     species: &Id,
     forme_change_type: FormeChangeType,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     // TODO: Validate forme change type is allowed.
 
     if !Mon::set_species(&mut context.target_context()?, species)? {
@@ -3999,7 +3970,7 @@ pub fn add_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
     condition: &Id,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     let slot_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -4100,7 +4071,7 @@ pub fn remove_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
     condition: &Id,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     let slot_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -4146,7 +4117,7 @@ pub fn remove_slot_condition(
 }
 
 /// Sets the target Mon's item.
-pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, Error> {
+pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
@@ -4186,7 +4157,7 @@ pub fn take_item(
     context: &mut ApplyingEffectContext,
     dry_run: bool,
     silent: bool,
-) -> Result<Option<Id>, Error> {
+) -> Result<Option<Id>> {
     if !context.target().active {
         return Ok(None);
     }
@@ -4232,7 +4203,7 @@ pub fn take_item(
     Ok(Some(item_id))
 }
 
-fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool, Error> {
+fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool> {
     context.target_mut().item_used_this_turn = true;
     context.target_mut().last_item = Some(item);
     context.target_mut().item = None;
@@ -4243,7 +4214,7 @@ fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool,
 }
 
 /// Makes the target Mon eat its held item (berries).
-pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
@@ -4294,7 +4265,7 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
 }
 
 /// Makes the target Mon eat the given item.
-pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool, Error> {
+pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -4309,7 +4280,7 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
 }
 
 /// Makes the target Mon use its held item.
-pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool, Error> {
+pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
@@ -4352,7 +4323,7 @@ pub fn player_use_item(
     item: &Id,
     target: Option<isize>,
     input: PlayerUseItemInput,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     if !context.battle().format.options.bag_items {
         return Ok(false);
     }
@@ -4391,7 +4362,7 @@ pub fn player_use_item_internal(
     item: &Id,
     target: Option<MonHandle>,
     input: PlayerUseItemInput,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     let item = context.battle().dex.items.get_by_id(item)?;
     let item_id = item.id().clone();
     let item_target = item.data.target;
@@ -4446,7 +4417,7 @@ pub fn player_use_item_internal(
 }
 
 /// Revives a fainted Mon.
-pub fn revive(context: &mut ApplyingEffectContext, hp: u16) -> Result<u16, Error> {
+pub fn revive(context: &mut ApplyingEffectContext, hp: u16) -> Result<u16> {
     if context.target().exited != Some(MonExitType::Fainted) {
         return Ok(0);
     }
@@ -4460,11 +4431,7 @@ pub fn revive(context: &mut ApplyingEffectContext, hp: u16) -> Result<u16, Error
 }
 
 /// Deducts PP from the given move.
-pub fn deduct_pp(
-    context: &mut ApplyingEffectContext,
-    move_id: &Id,
-    amount: u8,
-) -> Result<u8, Error> {
+pub fn deduct_pp(context: &mut ApplyingEffectContext, move_id: &Id, amount: u8) -> Result<u8> {
     let delta = context.target_mut().deduct_pp(move_id, amount);
     if delta != 0 {
         core_battle_logs::deduct_pp(context, move_id, delta)?;
@@ -4473,11 +4440,7 @@ pub fn deduct_pp(
 }
 
 /// Restores PP to the given move.
-pub fn restore_pp(
-    context: &mut ApplyingEffectContext,
-    move_id: &Id,
-    amount: u8,
-) -> Result<u8, Error> {
+pub fn restore_pp(context: &mut ApplyingEffectContext, move_id: &Id, amount: u8) -> Result<u8> {
     let amount = core_battle_effects::run_event_for_applying_effect_expecting_u8(
         context,
         fxlang::BattleEvent::RestorePp,
@@ -4491,14 +4454,14 @@ pub fn restore_pp(
 }
 
 /// Restores PP to the given move.
-pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Result<u8, Error> {
+pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Result<u8> {
     let pp = context.target_mut().set_pp(move_id, pp);
     core_battle_logs::set_pp(context, move_id, pp)?;
     Ok(pp)
 }
 
 /// Clears all negative boosts on the target Mon.
-pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     context.target_mut().boosts = context
         .target()
         .boosts
@@ -4510,7 +4473,7 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), 
 }
 
 /// Tries to catch the target Mon in the given ball.
-pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Result<bool, Error> {
+pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Result<bool> {
     let item = context.battle().dex.items.get_by_id(item)?;
     if !item.data.flags.contains(&ItemFlags::Ball) {
         return Ok(false);
@@ -4579,7 +4542,7 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
     Ok(true)
 }
 
-fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<u64, Error> {
+fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<u64> {
     let max_hp_factor = Fraction::from(3 * context.target().max_hp as u64);
     let hp_factor = max_hp_factor - 2 * context.target().hp as u64;
     let hp_factor = hp_factor / max_hp_factor;
@@ -4611,7 +4574,7 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
     Ok(a)
 }
 
-fn calculate_shake_probability(catch_rate: u64) -> Result<u64, Error> {
+fn calculate_shake_probability(catch_rate: u64) -> Result<u64> {
     let b = Fraction::new(catch_rate, 1044480);
     let b = b
         .pow(Fraction::new(3u32, 16u32))

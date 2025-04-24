@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use anyhow::Result;
 use serde::{
     Deserialize,
     Serialize,
@@ -16,10 +17,7 @@ use crate::{
     },
     config::SerializedRuleSet,
     effect::fxlang,
-    error::{
-        general_error,
-        Error,
-    },
+    error::general_error,
     mons::Type,
 };
 
@@ -82,7 +80,7 @@ impl Clause {
     }
 
     /// Validates the given value according to clause's configuration.
-    pub fn validate_value(&self, value: &str) -> Result<(), Error> {
+    pub fn validate_value(&self, value: &str) -> Result<()> {
         if value.is_empty() {
             if self.data.requires_value {
                 return Err(general_error("missing value"));

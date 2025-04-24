@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     MonSummaryData,
     PublicCoreBattle,
@@ -17,7 +18,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn pikachu() -> Result<TeamData, Error> {
+fn pikachu() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -41,7 +42,7 @@ fn pikachu() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn magikarp() -> Result<TeamData, Error> {
+fn magikarp() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -63,7 +64,7 @@ fn magikarp() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn magikarp_gyarados() -> Result<TeamData, Error> {
+fn magikarp_gyarados() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -95,7 +96,7 @@ fn magikarp_gyarados() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn blissey() -> Result<TeamData, Error> {
+fn blissey() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -126,7 +127,7 @@ fn blissey() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn metagross() -> Result<TeamData, Error> {
+fn metagross() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -150,7 +151,7 @@ fn make_wild_singles_battle(
     team_1: TeamData,
     team_2: TeamData,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -173,7 +174,7 @@ fn make_wild_multi_battle<'d>(
     team: TeamData,
     wild: Vec<TeamData>,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle<'d>, Error> {
+) -> Result<PublicCoreBattle<'d>> {
     let mut builder = TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_seed(seed)
@@ -200,7 +201,7 @@ fn make_trainer_singles_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -350,12 +351,12 @@ fn catching_mon_continues_battle() {
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("wild", "switch 0"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a caught mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a caught mon")
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("wild", "item revive,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Revive cannot be used on Magikarp")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Revive cannot be used on Magikarp")
     );
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -398,19 +399,19 @@ fn ball_can_only_be_used_on_isolated_foe() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Great Ball requires one target")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Great Ball requires one target")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Great Ball")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Great Ball")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Great Ball")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Great Ball")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Great Ball")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Great Ball")
     );
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
@@ -787,7 +788,7 @@ fn cannot_throw_ball_at_semi_invulnerable_mon() {
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokeball"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Poké Ball cannot be used on Magikarp")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Poké Ball cannot be used on Magikarp")
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 }

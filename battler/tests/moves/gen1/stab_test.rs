@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn squirtle() -> Result<TeamData, Error> {
+fn squirtle() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -36,7 +37,7 @@ fn squirtle() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn pikachu() -> Result<TeamData, Error> {
+fn pikachu() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -72,7 +73,7 @@ fn make_battle(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     test_battle_builder(team_1, team_2).build(data)
 }
 

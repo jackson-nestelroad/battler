@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     battle::{
         Context,
@@ -9,9 +11,7 @@ use crate::{
         fxlang,
         AppliedEffectLocation,
     },
-    error::Error,
 };
-
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for an
 /// active move.
 #[derive(Debug, Clone)]
@@ -26,14 +26,11 @@ impl ActiveMoveEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for ActiveMoveEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context.active_move(self.active_move).is_ok())
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(Some(
             &mut context.active_move_mut(self.active_move)?.effect_state,
         ))
@@ -62,14 +59,11 @@ impl MonAbilityEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for MonAbilityEffectStateConnector {
-    fn exists(&self, _: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, _: &mut Context) -> Result<bool> {
         Ok(true)
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(Some(&mut context.mon_mut(self.mon)?.ability.effect_state))
     }
 
@@ -96,14 +90,11 @@ impl MonItemEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for MonItemEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context.mon(self.mon)?.item.is_some())
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(context
             .mon_mut(self.mon)?
             .item
@@ -134,14 +125,11 @@ impl MonStatusEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for MonStatusEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context.mon(self.mon)?.status.is_some())
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(Some(&mut context.mon_mut(self.mon)?.status_state))
     }
 
@@ -169,17 +157,14 @@ impl MonVolatileStatusEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for MonVolatileStatusEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context
             .mon(self.mon)?
             .volatiles
             .contains_key(&self.volatile))
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(context.mon_mut(self.mon)?.volatiles.get_mut(&self.volatile))
     }
 
@@ -207,7 +192,7 @@ impl SideConditionEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for SideConditionEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context
             .side_context(self.side)?
             .side()
@@ -215,10 +200,7 @@ impl fxlang::EffectStateConnector for SideConditionEffectStateConnector {
             .contains_key(&self.condition))
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(context
             .battle_mut()
             .side_mut(self.side)?
@@ -255,7 +237,7 @@ impl SlotConditionEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for SlotConditionEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context
             .side_context(self.side)?
             .side()
@@ -264,10 +246,7 @@ impl fxlang::EffectStateConnector for SlotConditionEffectStateConnector {
             .is_some_and(|conditions| conditions.contains_key(&self.condition)))
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         match context
             .battle_mut()
             .side_mut(self.side)?
@@ -300,14 +279,11 @@ impl TerrainEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for TerrainEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context.battle().field.terrain.is_some())
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(Some(&mut context.battle_mut().field.terrain_state))
     }
 
@@ -332,14 +308,11 @@ impl WeatherEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for WeatherEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context.battle().field.weather.is_some())
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(Some(&mut context.battle_mut().field.weather_state))
     }
 
@@ -366,7 +339,7 @@ impl PseudoWeatherEffectStateConnector {
 }
 
 impl fxlang::EffectStateConnector for PseudoWeatherEffectStateConnector {
-    fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context
             .battle()
             .field
@@ -374,10 +347,7 @@ impl fxlang::EffectStateConnector for PseudoWeatherEffectStateConnector {
             .contains_key(&self.pseudo_weather))
     }
 
-    fn get_mut<'a>(
-        &self,
-        context: &'a mut Context,
-    ) -> Result<Option<&'a mut fxlang::EffectState>, Error> {
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
         Ok(context
             .battle_mut()
             .field

@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 ahash = "0.8.3"
+anyhow = "1.0"
 battler = { path = "../battler" }
 itertools = "0.11.0"
 pretty_assertions = "1.4.0"

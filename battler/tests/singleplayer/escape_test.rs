@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn jolteon() -> Result<TeamData, Error> {
+fn jolteon() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -38,7 +39,7 @@ fn jolteon() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn primeape() -> Result<TeamData, Error> {
+fn primeape() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -59,7 +60,7 @@ fn primeape() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn low_level_pikachu() -> Result<TeamData, Error> {
+fn low_level_pikachu() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -80,7 +81,7 @@ fn low_level_pikachu() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn ralts() -> Result<TeamData, Error> {
+fn ralts() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -107,7 +108,7 @@ fn make_wild_singles_battle(
     team_1: TeamData,
     team_2: TeamData,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -128,7 +129,7 @@ fn make_wild_multi_battle<'d>(
     team: TeamData,
     wild: Vec<TeamData>,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle<'d>, Error> {
+) -> Result<PublicCoreBattle<'d>> {
     let mut builder = TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_seed(seed)
@@ -153,7 +154,7 @@ fn make_trainer_singles_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -210,7 +211,7 @@ fn mon_cannot_escape_with_locked_move() {
     assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "escape"),
-        Err(err) => assert_eq!(err.full_description(), "cannot escape: Jolteon must use a move")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot escape: Jolteon must use a move")
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 }
@@ -389,11 +390,11 @@ fn cannot_escape_trainer_battle() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "escape"),
-        Err(err) => assert!(err.full_description().contains("you cannot escape"))
+        Err(err) => assert!(format!("{err:#}").contains("you cannot escape"))
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("trainer", "escape"),
-        Err(err) => assert!(err.full_description().contains("you cannot escape"))
+        Err(err) => assert!(format!("{err:#}").contains("you cannot escape"))
     );
 }
 
@@ -499,7 +500,7 @@ fn cannot_escape_partially_trapping_move() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("wild", "escape"),
-        Err(err) => assert!(err.full_description().contains("you cannot escape"))
+        Err(err) => assert!(format!("{err:#}").contains("you cannot escape"))
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 

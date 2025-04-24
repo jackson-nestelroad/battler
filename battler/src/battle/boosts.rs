@@ -1,5 +1,9 @@
 use std::marker::PhantomData;
 
+use anyhow::{
+    Error,
+    Result,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -10,10 +14,7 @@ use serde_string_enum::{
 };
 
 use crate::{
-    error::{
-        general_error,
-        Error,
-    },
+    error::general_error,
     mons::Stat,
 };
 

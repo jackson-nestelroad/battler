@@ -10,6 +10,10 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::{
+    Error,
+    Result,
+};
 use serde_string_enum::{
     DeserializeStringEnum,
     SerializeStringEnum,
@@ -28,7 +32,6 @@ use crate::{
     dex::Dex,
     error::{
         general_error,
-        Error,
         WrapOptionError,
         WrapResultError,
     },
@@ -171,7 +174,7 @@ pub struct NumericRules {
 }
 
 impl NumericRules {
-    fn validate(&self, battle_type: &BattleType) -> Result<(), Error> {
+    fn validate(&self, battle_type: &BattleType) -> Result<()> {
         let battle_type_min_team_size = battle_type.min_team_size() as u32;
 
         if self.max_team_size > 6 {
@@ -249,7 +252,7 @@ impl NumericRules {
         }
         Ok(())
     }
-    fn parse_from_ruleset(ruleset: &RuleSet, battle_type: &BattleType) -> Result<Self, Error> {
+    fn parse_from_ruleset(ruleset: &RuleSet, battle_type: &BattleType) -> Result<Self> {
         let mut rules = NumericRules::default();
 
         rules.players_per_side = ruleset.numeric_value(&Id::from_known("playersperside"));
@@ -341,11 +344,7 @@ pub struct RuleSet {
 
 impl RuleSet {
     /// Constructs a new [`RuleSet`] from a [`SerializedRuleSet`].
-    pub fn new(
-        rules: SerializedRuleSet,
-        battle_type: &BattleType,
-        dex: &Dex,
-    ) -> Result<Self, Error> {
+    pub fn new(rules: SerializedRuleSet, battle_type: &BattleType, dex: &Dex) -> Result<Self> {
         let mut ruleset = Self {
             original: rules.clone(),
             bans: FastHashSet::new(),
@@ -409,13 +408,13 @@ impl RuleSet {
     }
 
     /// Resolves numeric rules that are used for battle validation.
-    fn resolve_numbers(&mut self, battle_type: &BattleType) -> Result<(), Error> {
+    fn resolve_numbers(&mut self, battle_type: &BattleType) -> Result<()> {
         self.numeric_rules = NumericRules::parse_from_ruleset(self, battle_type)?;
         Ok(())
     }
 
     /// Validates all clauses in the ruleset.
-    fn validate_clauses(&mut self, dex: &Dex) -> Result<(), Error> {
+    fn validate_clauses(&mut self, dex: &Dex) -> Result<()> {
         for clause in self.clauses(dex) {
             let value = self
                 .value(clause.id())
@@ -526,6 +525,8 @@ mod rule_tests {
 
 #[cfg(test)]
 mod rule_set_tests {
+    use anyhow::Result;
+
     use crate::{
         battle::BattleType,
         common::{
@@ -543,10 +544,9 @@ mod rule_set_tests {
             Dex,
             LocalDataStore,
         },
-        error::Error,
     };
 
-    fn construct_ruleset(serialized: &str, battle_type: &BattleType) -> Result<RuleSet, Error> {
+    fn construct_ruleset(serialized: &str, battle_type: &BattleType) -> Result<RuleSet> {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let dex = Dex::new(&data)?;
         let ruleset = serde_json::from_str::<SerializedRuleSet>(serialized).unwrap();
@@ -749,11 +749,11 @@ mod rule_set_tests {
     }
 
     fn resolves_numbers_fails_with_error(input: &str, battle_type: BattleType, error: &str) {
-        assert!(construct_ruleset(input, &battle_type)
-            .err()
-            .unwrap()
-            .full_description()
-            .contains(error));
+        assert!(format!(
+            "{:#}",
+            construct_ruleset(input, &battle_type).err().unwrap()
+        )
+        .contains(error));
     }
 
     #[test]
@@ -855,29 +855,33 @@ mod rule_set_tests {
 
     #[test]
     fn enforces_required_rule_value() {
-        assert!(construct_ruleset(
-            r#"[
+        assert!(format!(
+            "{:#}",
+            construct_ruleset(
+                r#"[
                 "Adjust Level Down"
             ]"#,
-            &BattleType::Singles,
+                &BattleType::Singles,
+            )
+            .err()
+            .unwrap()
         )
-        .err()
-        .unwrap()
-        .full_description()
         .contains("Adjust Level Down is invalid: missing value"));
     }
 
     #[test]
     fn enforces_rule_value_type() {
-        assert!(construct_ruleset(
-            r#"[
+        assert!(format!(
+            "{:#}",
+            construct_ruleset(
+                r#"[
                 "Adjust Level Down = abc"
             ]"#,
-            &BattleType::Singles,
+                &BattleType::Singles,
+            )
+            .err()
+            .unwrap()
         )
-        .err()
-        .unwrap()
-        .full_description()
         .contains("rule Adjust Level Down is invalid"));
     }
 

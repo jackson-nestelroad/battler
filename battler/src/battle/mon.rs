@@ -13,6 +13,7 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::Result;
 use lazy_static::lazy_static;
 use serde::{
     Deserialize,
@@ -61,7 +62,6 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         WrapOptionError,
         WrapResultError,
     },
@@ -218,7 +218,7 @@ pub struct MonMoveSlotData {
 }
 
 impl MonMoveSlotData {
-    pub fn from(context: &mut MonContext, move_slot: &MoveSlot) -> Result<Self, Error> {
+    pub fn from(context: &mut MonContext, move_slot: &MoveSlot) -> Result<Self> {
         let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
@@ -458,7 +458,7 @@ pub struct Mon {
 // Construction and initialization logic.
 impl Mon {
     /// Creates a new Mon.
-    pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self, Error> {
+    pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self> {
         let name = data.name;
         let species = Id::from(data.species);
         let ivs = data.ivs;
@@ -609,7 +609,7 @@ impl Mon {
     ///
     /// This *must* be called at the very beginning of a battle, as it sets up important fields on
     /// the Mon, such as its stats.
-    pub fn initialize(context: &mut MonContext) -> Result<(), Error> {
+    pub fn initialize(context: &mut MonContext) -> Result<()> {
         let base_species = context.mon().base_species.clone();
         Self::set_base_species(context, &base_species, false)?;
 
@@ -693,7 +693,7 @@ impl Mon {
     }
 
     /// The public details for the Mon.
-    pub fn public_details(context: &MonContext) -> Result<PublicMonDetails, Error> {
+    pub fn public_details(context: &MonContext) -> Result<PublicMonDetails> {
         let species = context
             .battle()
             .dex
@@ -710,7 +710,7 @@ impl Mon {
         })
     }
 
-    fn active_details(context: &mut MonContext, secret: bool) -> Result<ActiveMonDetails, Error> {
+    fn active_details(context: &mut MonContext, secret: bool) -> Result<ActiveMonDetails> {
         let status = match context.mon().status.clone() {
             Some(status) => CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
                 .name()
@@ -734,17 +734,17 @@ impl Mon {
     }
 
     /// The public details for the active Mon.
-    pub fn public_active_details(context: &mut MonContext) -> Result<ActiveMonDetails, Error> {
+    pub fn public_active_details(context: &mut MonContext) -> Result<ActiveMonDetails> {
         Self::active_details(context, false)
     }
 
     /// The private details for the active Mon.
-    pub fn private_active_details(context: &mut MonContext) -> Result<ActiveMonDetails, Error> {
+    pub fn private_active_details(context: &mut MonContext) -> Result<ActiveMonDetails> {
         Self::active_details(context, true)
     }
 
     /// The public details for the Mon when an action is made.
-    pub fn position_details(context: &MonContext) -> Result<MonPositionDetails, Error> {
+    pub fn position_details(context: &MonContext) -> Result<MonPositionDetails> {
         Ok(MonPositionDetails {
             name: context.mon().name.clone(),
             player_id: context.player().id.clone(),
@@ -754,7 +754,7 @@ impl Mon {
 
     /// Same as [`Self::position_details`], but it also considers the previous active position of
     /// the Mon.
-    pub fn position_details_or_previous(context: &MonContext) -> Result<MonPositionDetails, Error> {
+    pub fn position_details_or_previous(context: &MonContext) -> Result<MonPositionDetails> {
         Ok(MonPositionDetails {
             name: context.mon().name.clone(),
             player_id: context.player().id.clone(),
@@ -775,7 +775,7 @@ impl Mon {
     }
 
     /// Looks up the Mon's types, which may be dynamic based on volatile effects.
-    pub fn types(context: &mut MonContext) -> Result<Vec<Type>, Error> {
+    pub fn types(context: &mut MonContext) -> Result<Vec<Type>> {
         let types = core_battle_effects::run_event_for_mon_expecting_types(
             context,
             fxlang::BattleEvent::Types,
@@ -788,13 +788,13 @@ impl Mon {
     }
 
     /// Checks if the Mon has the given type.
-    pub fn has_type(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
+    pub fn has_type(context: &mut MonContext, typ: Type) -> Result<bool> {
         let types = Self::types(context)?;
         return Ok(types.contains(&typ));
     }
 
     /// Looks up the Mon's locked move, if any.
-    pub fn locked_move(context: &mut MonContext) -> Result<Option<String>, Error> {
+    pub fn locked_move(context: &mut MonContext) -> Result<Option<String>> {
         let locked_move = core_battle_effects::run_event_for_mon_expecting_string(
             context,
             fxlang::BattleEvent::LockMove,
@@ -810,7 +810,7 @@ impl Mon {
 
     fn moves_and_locked_move(
         context: &mut MonContext,
-    ) -> Result<(Vec<MonMoveSlotData>, Option<String>), Error> {
+    ) -> Result<(Vec<MonMoveSlotData>, Option<String>)> {
         let locked_move = Self::locked_move(context)?;
         let moves = Self::moves_with_locked_move(context, locked_move.as_deref())?;
         let has_usable_move = moves.iter().any(|mov| !mov.disabled);
@@ -822,7 +822,7 @@ impl Mon {
     ///
     /// If a Mon has a locked move, only that move will appear. Thus, this data is effectively
     /// viewed as the Mon's available move options.
-    pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>, Error> {
+    pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>> {
         Self::moves_and_locked_move(context).map(|(moves, _)| moves)
     }
 
@@ -887,7 +887,7 @@ impl Mon {
         context: &MonContext,
         target_side: usize,
         target_position: usize,
-    ) -> Result<isize, Error> {
+    ) -> Result<isize> {
         let mon = context.mon();
         let mon_side = mon.side;
         let mon_position =
@@ -920,7 +920,7 @@ impl Mon {
     }
 
     /// Gets the target Mon based on this Mon's position.
-    pub fn get_target(context: &mut MonContext, target: isize) -> Result<Option<MonHandle>, Error> {
+    pub fn get_target(context: &mut MonContext, target: isize) -> Result<Option<MonHandle>> {
         if target == 0 {
             return Err(general_error("target cannot be 0"));
         }
@@ -930,10 +930,7 @@ impl Mon {
     }
 
     /// Gets the target Mon's position based on this Mon's position.
-    pub fn get_target_location(
-        context: &mut MonContext,
-        target: MonHandle,
-    ) -> Result<isize, Error> {
+    pub fn get_target_location(context: &mut MonContext, target: MonHandle) -> Result<isize> {
         let target_context = context.as_battle_context_mut().mon_context(target)?;
         let target_side = target_context.mon().side;
         let target_position = Self::position_on_side(&target_context)
@@ -952,7 +949,7 @@ impl Mon {
     }
 
     /// Checks if the given Mon is adjacent to this Mon.
-    pub fn is_adjacent(context: &mut MonContext, other: MonHandle) -> Result<bool, Error> {
+    pub fn is_adjacent(context: &mut MonContext, other: MonHandle) -> Result<bool> {
         let side = context.mon().side;
         let position = match Self::position_on_side(context) {
             Some(position) => position,
@@ -995,9 +992,7 @@ impl Mon {
     }
 
     /// Creates an iterator over all adjacent allies.
-    pub fn adjacent_allies(
-        context: &mut MonContext,
-    ) -> Result<impl Iterator<Item = MonHandle>, Error> {
+    pub fn adjacent_allies(context: &mut MonContext) -> Result<impl Iterator<Item = MonHandle>> {
         let allies = context
             .battle()
             .active_mon_handles_on_side(context.mon().side)
@@ -1014,7 +1009,7 @@ impl Mon {
     /// Creates an iterator over all adjacent allies and this Mon.
     pub fn adjacent_allies_and_self(
         context: &mut MonContext,
-    ) -> Result<impl Iterator<Item = MonHandle>, Error> {
+    ) -> Result<impl Iterator<Item = MonHandle>> {
         Ok(Self::adjacent_allies(context)?.chain(iter::once(context.mon_handle())))
     }
 
@@ -1030,9 +1025,7 @@ impl Mon {
     }
 
     /// Creates an iterator over all adjacent foes.
-    pub fn adjacent_foes(
-        context: &mut MonContext,
-    ) -> Result<impl Iterator<Item = MonHandle>, Error> {
+    pub fn adjacent_foes(context: &mut MonContext) -> Result<impl Iterator<Item = MonHandle>> {
         let foes = Self::active_foes(context).collect::<Vec<_>>();
         let mut adjacent_foes = Vec::new();
         for foe in foes {
@@ -1052,7 +1045,7 @@ impl Mon {
         modifier: Option<Fraction<u16>>,
         stat_user: Option<MonHandle>,
         calculate_stat_context: Option<CalculateStatContext>,
-    ) -> Result<u16, Error> {
+    ) -> Result<u16> {
         let stat_user = stat_user.unwrap_or(context.mon_handle());
 
         if stat == Stat::HP {
@@ -1132,7 +1125,7 @@ impl Mon {
         modifier: Fraction<u16>,
         stat_user: Option<MonHandle>,
         calculate_stat_context: Option<CalculateStatContext>,
-    ) -> Result<u16, Error> {
+    ) -> Result<u16> {
         Self::calculate_stat_internal(
             context,
             stat,
@@ -1152,19 +1145,19 @@ impl Mon {
         stat: Stat,
         unboosted: bool,
         unmodified: bool,
-    ) -> Result<u16, Error> {
+    ) -> Result<u16> {
         Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None, None)
     }
 
     /// Calculates the speed value to use for battle action ordering.
-    pub fn action_speed(context: &mut MonContext) -> Result<u16, Error> {
+    pub fn action_speed(context: &mut MonContext) -> Result<u16> {
         let speed = Self::get_stat(context, Stat::Spe, false, false)?;
         // TODO: If Trick Room, return u16::MAX - speed. CalculateSpeed event?
         Ok(speed)
     }
 
     /// Updates the speed of the Mon, called at the end of each turn.
-    pub fn update_speed(context: &mut MonContext) -> Result<(), Error> {
+    pub fn update_speed(context: &mut MonContext) -> Result<()> {
         context.mon_mut().speed = Self::action_speed(context)?;
         Ok(())
     }
@@ -1228,7 +1221,7 @@ impl Mon {
 // Request getters.
 impl Mon {
     /// Generates battle request data.
-    pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData, Error> {
+    pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData> {
         let side_position = Self::position_on_side(context);
         let species = context
             .battle()
@@ -1277,7 +1270,7 @@ impl Mon {
                 .clone()
                 .into_iter()
                 .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
-                .collect::<Result<Vec<_>, Error>>()?,
+                .collect::<Result<Vec<_>>>()?,
             ability,
             item,
             status: context
@@ -1289,7 +1282,7 @@ impl Mon {
     }
 
     /// Generates summary request data.
-    pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryData, Error> {
+    pub fn summary_request_data(context: &mut MonContext) -> Result<MonSummaryData> {
         let species = context
             .battle()
             .dex
@@ -1354,7 +1347,7 @@ impl Mon {
     }
 
     /// Generates request data for a turn.
-    pub fn move_request(context: &mut MonContext) -> Result<MonMoveRequest, Error> {
+    pub fn move_request(context: &mut MonContext) -> Result<MonMoveRequest> {
         let (mut moves, mut locked_move) = Self::moves_and_locked_move(context)?;
         if moves.is_empty() {
             // No moves, the Mon must use Struggle.
@@ -1389,9 +1382,7 @@ impl Mon {
     }
 
     /// Generates request data for learnable moves.
-    pub fn learn_move_request(
-        context: &mut MonContext,
-    ) -> Result<Option<MonLearnMoveRequest>, Error> {
+    pub fn learn_move_request(context: &mut MonContext) -> Result<Option<MonLearnMoveRequest>> {
         // Stable sort the moves that can be learned for consistency.
         context.mon_mut().learnable_moves.sort_by(|a, b| a.cmp(&b));
 
@@ -1435,7 +1426,7 @@ impl Mon {
 
 impl Mon {
     /// Clears all volatile effects.
-    pub fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<(), Error> {
+    pub fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<()> {
         if clear_switch_flags {
             context.mon_mut().needs_switch = None;
             context.mon_mut().force_switch = None;
@@ -1480,7 +1471,7 @@ impl Mon {
     /// Recalculates a Mon's base stats.
     ///
     /// Should only be used when a Mon levels up.
-    pub fn recalculate_base_stats(context: &mut MonContext) -> Result<(), Error> {
+    pub fn recalculate_base_stats(context: &mut MonContext) -> Result<()> {
         let species = context
             .battle()
             .dex
@@ -1517,7 +1508,7 @@ impl Mon {
     }
 
     /// Recalculates a Mon's stats.
-    pub fn recalculate_stats(context: &mut MonContext) -> Result<(), Error> {
+    pub fn recalculate_stats(context: &mut MonContext) -> Result<()> {
         let species = context
             .battle()
             .dex
@@ -1552,7 +1543,7 @@ impl Mon {
         context: &mut MonContext,
         base_species: &Id,
         change_ability: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let species = context.battle().dex.species.get_by_id(base_species)?;
 
         // Base ability can change.
@@ -1595,7 +1586,7 @@ impl Mon {
     }
 
     /// Sets the species of the Mon.
-    pub fn set_species(context: &mut MonContext, species: &Id) -> Result<bool, Error> {
+    pub fn set_species(context: &mut MonContext, species: &Id) -> Result<bool> {
         // TODO: ModifySpecies event.
         let species = context.battle().dex.species.get_by_id(species)?;
 
@@ -1621,7 +1612,7 @@ impl Mon {
         index: usize,
         new_move_slot: MoveSlot,
         override_base_slot: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         if override_base_slot {
             *self
                 .base_move_slots
@@ -1645,7 +1636,7 @@ impl Mon {
     fn moves_with_locked_move(
         context: &mut MonContext,
         locked_move: Option<&str>,
-    ) -> Result<Vec<MonMoveSlotData>, Error> {
+    ) -> Result<Vec<MonMoveSlotData>> {
         // First, check if the Mon is locked into a certain move.
         if let Some(locked_move) = locked_move {
             let locked_move_id = Id::from(locked_move.as_ref());
@@ -1691,7 +1682,7 @@ impl Mon {
     }
 
     /// Switches the Mon into the given position for the player.
-    pub fn switch_in(context: &mut MonContext, position: usize) -> Result<(), Error> {
+    pub fn switch_in(context: &mut MonContext, position: usize) -> Result<()> {
         context.mon_mut().active = true;
         context.mon_mut().active_turns = 0;
         context.mon_mut().active_move_actions = 0;
@@ -1712,7 +1703,7 @@ impl Mon {
     }
 
     /// Switches the Mon out of its active position.
-    pub fn switch_out(context: &mut MonContext) -> Result<(), Error> {
+    pub fn switch_out(context: &mut MonContext) -> Result<()> {
         context.mon_mut().active = false;
         context.mon_mut().being_called_back = false;
         context.mon_mut().needs_switch = None;
@@ -1861,7 +1852,7 @@ impl Mon {
     }
 
     /// Checks if the Mon is immune to the given type.
-    pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool, Error> {
+    pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool> {
         if !context.mon().active {
             return Ok(false);
         }
@@ -1894,7 +1885,7 @@ impl Mon {
         damage: u16,
         source: Option<MonHandle>,
         effect: Option<&EffectHandle>,
-    ) -> Result<u16, Error> {
+    ) -> Result<u16> {
         if context.mon().hp == 0 || damage == 0 {
             return Ok(0);
         }
@@ -1911,7 +1902,7 @@ impl Mon {
         context: &mut MonContext,
         source: Option<MonHandle>,
         effect: Option<&EffectHandle>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         if !context.mon().active {
             return Ok(());
         }
@@ -1933,7 +1924,7 @@ impl Mon {
         item: Id,
         shakes: u8,
         critical: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         if !context.mon().active {
             return Ok(());
         }
@@ -1950,7 +1941,7 @@ impl Mon {
     }
 
     /// Heals the Mon.
-    pub fn heal(context: &mut MonContext, mut damage: u16) -> Result<u16, Error> {
+    pub fn heal(context: &mut MonContext, mut damage: u16) -> Result<u16> {
         if context.mon().hp == 0 || damage == 0 || context.mon().hp > context.mon().max_hp {
             return Ok(0);
         }
@@ -1963,10 +1954,7 @@ impl Mon {
     }
 
     /// Clears the Mon's state when it exits the battle.
-    pub fn clear_state_on_exit(
-        context: &mut MonContext,
-        exit_type: MonExitType,
-    ) -> Result<(), Error> {
+    pub fn clear_state_on_exit(context: &mut MonContext, exit_type: MonExitType) -> Result<()> {
         let effect = match exit_type {
             MonExitType::Fainted => EffectHandle::Condition(Id::from_known("faint")),
             MonExitType::Caught => EffectHandle::Condition(Id::from_known("catch")),
@@ -1993,7 +1981,7 @@ impl Mon {
     }
 
     /// Revives the Mon so that it can be used again.
-    pub fn revive(context: &mut MonContext, hp: u16) -> Result<u16, Error> {
+    pub fn revive(context: &mut MonContext, hp: u16) -> Result<u16> {
         if context.mon().exited != Some(MonExitType::Fainted) {
             return Ok(0);
         }
@@ -2041,7 +2029,7 @@ impl Mon {
     }
 
     /// Resets the Mon's state for the next turn.
-    pub fn reset_state_for_next_turn(context: &mut MonContext) -> Result<(), Error> {
+    pub fn reset_state_for_next_turn(context: &mut MonContext) -> Result<()> {
         context.mon_mut().active_turns += 1;
 
         context.mon_mut().old_active_position = None;
@@ -2085,7 +2073,7 @@ impl Mon {
     }
 
     /// Disables the given move.
-    pub fn disable_move(context: &mut MonContext, move_id: &Id) -> Result<(), Error> {
+    pub fn disable_move(context: &mut MonContext, move_id: &Id) -> Result<()> {
         match context.mon_mut().move_slot_mut(move_id) {
             Some(move_slot) => {
                 move_slot.disabled = true;
@@ -2118,7 +2106,7 @@ impl Mon {
         context: &mut MonContext,
         move_id: &Id,
         forget_move_slot: usize,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let mov = context.battle().dex.moves.get_by_id(move_id)?;
         // SAFETY: The move is borrowed with reference counting, so no mutable reference can be
         // taken without causing an error elsewhere.
@@ -2193,7 +2181,7 @@ impl Mon {
     }
 
     /// Checks if the Mon can escape from battle.
-    pub fn can_escape(context: &mut MonContext) -> Result<bool, Error> {
+    pub fn can_escape(context: &mut MonContext) -> Result<bool> {
         let can_escape = !context.mon().trapped;
         let can_escape = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
             context,
@@ -2204,7 +2192,7 @@ impl Mon {
     }
 
     /// Sets the HP on the Mon directly, returning the delta.
-    pub fn set_hp(context: &mut MonContext, mut hp: u16) -> Result<i32, Error> {
+    pub fn set_hp(context: &mut MonContext, mut hp: u16) -> Result<i32> {
         if context.mon().hp == 0 {
             return Ok(0);
         }

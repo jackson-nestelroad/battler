@@ -4,6 +4,7 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Error;
 use serde::{
     de::{
         Unexpected,
@@ -14,10 +15,7 @@ use serde::{
     Serializer,
 };
 
-use crate::error::{
-    general_error,
-    Error,
-};
+use crate::error::general_error;
 
 /// How the user self destructs after a move.
 #[derive(Debug, Clone, PartialEq, Eq)]

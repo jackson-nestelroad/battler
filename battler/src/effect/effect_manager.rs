@@ -3,6 +3,8 @@ use std::{
     rc::Rc,
 };
 
+use anyhow::Result;
+
 use crate::{
     battle::CoreBattle,
     common::LruCache,
@@ -21,11 +23,9 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         WrapOptionError,
     },
 };
-
 /// Module for managing fxlang effect programs and their evaluation.
 pub struct EffectManager {
     callbacks: LruCache<String, Rc<ParsedCallbacks>>,
@@ -51,7 +51,7 @@ impl EffectManager {
         event: BattleEvent,
         input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
-    ) -> Result<ProgramEvalResult, Error> {
+    ) -> Result<ProgramEvalResult> {
         let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect_handle)
         {
             Ok(effect) => effect,
@@ -103,7 +103,7 @@ impl EffectManager {
         &mut self,
         effect_handle: &EffectHandle,
         effect: &Effect,
-    ) -> Result<Rc<ParsedCallbacks>, Error> {
+    ) -> Result<Rc<ParsedCallbacks>> {
         let id = if effect.unlinked() {
             effect_handle.unlinked_internal_fxlang_id().wrap_expectation_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
         } else {
@@ -139,7 +139,7 @@ impl EffectManager {
         event: BattleEvent,
         input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
-    ) -> Result<ProgramEvalResult, Error> {
+    ) -> Result<ProgramEvalResult> {
         let mut evaluator = Evaluator::new();
         let callbacks = context
             .battle_context_mut()

@@ -4,6 +4,7 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Error;
 use serde::{
     de::{
         Unexpected,
@@ -15,10 +16,7 @@ use serde::{
 };
 
 use crate::{
-    error::{
-        general_error,
-        Error,
-    },
+    error::general_error,
     mons::Type,
 };
 

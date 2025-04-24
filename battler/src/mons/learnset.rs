@@ -4,6 +4,7 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Error;
 use serde_string_enum::{
     DeserializeStringEnum,
     SerializeStringEnum,
@@ -16,7 +17,6 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         WrapResultError,
     },
 };

@@ -1,9 +1,10 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn scizor() -> Result<TeamData, Error> {
+fn scizor() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -35,7 +36,7 @@ fn scizor() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn blissey() -> Result<TeamData, Error> {
+fn blissey() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -68,7 +69,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)

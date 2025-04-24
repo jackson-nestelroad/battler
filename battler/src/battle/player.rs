@@ -11,6 +11,10 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::{
+    Error,
+    Result,
+};
 use itertools::{
     EitherOrBoth,
     Itertools,
@@ -66,7 +70,6 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         WrapOptionError,
         WrapResultError,
     },
@@ -284,7 +287,7 @@ impl MoveChoice {
     /// 2 while also Mega Evolving.
     ///
     /// The `move` prefix should already be trimmed off.
-    pub fn new(data: &str) -> Result<Self, Error> {
+    pub fn new(data: &str) -> Result<Self> {
         let mut args = data
             .split(',')
             .map(|str| str.trim())
@@ -331,7 +334,7 @@ struct LearnMoveChoice {
 }
 
 impl LearnMoveChoice {
-    pub fn new(data: &str) -> Result<Self, Error> {
+    pub fn new(data: &str) -> Result<Self> {
         let move_slot = data
             .trim()
             .parse()
@@ -351,7 +354,7 @@ struct ItemChoice {
 }
 
 impl ItemChoice {
-    pub fn new(data: &str) -> Result<Self, Error> {
+    pub fn new(data: &str) -> Result<Self> {
         let mut args = data
             .split(',')
             .map(|str| str.trim())
@@ -426,7 +429,7 @@ impl Player {
         battle_type: &BattleType,
         dex: &Dex,
         registry: &BattleRegistry,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self> {
         let active = vec![None; battle_type.active_per_player()];
         let mut player = Self {
             id: data.id,
@@ -452,7 +455,7 @@ impl Player {
     }
 
     /// Sets the index of the player, so that the player can safely reference itself.
-    pub(crate) fn set_index(context: &mut PlayerContext, index: usize) -> Result<(), Error> {
+    pub(crate) fn set_index(context: &mut PlayerContext, index: usize) -> Result<()> {
         context.player_mut().index = index;
         let side_index = context.player().side;
         for mon_handle in context.player().mons.clone() {
@@ -472,7 +475,7 @@ impl Player {
         team: TeamData,
         dex: &Dex,
         registry: &BattleRegistry,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         // Overwrite previously-registered Mons first.
         let mut mons = Vec::new();
         for pair in self
@@ -530,11 +533,7 @@ impl Player {
     }
 
     /// Sets the active position.
-    pub fn set_active_position(
-        &mut self,
-        position: usize,
-        mon: Option<MonHandle>,
-    ) -> Result<(), Error> {
+    pub fn set_active_position(&mut self, position: usize, mon: Option<MonHandle>) -> Result<()> {
         *self
             .active
             .get_mut(position)
@@ -625,7 +624,7 @@ impl Player {
     }
 
     /// Counts the number of Mons left that the player owns.
-    pub fn mons_left(context: &PlayerContext) -> Result<usize, Error> {
+    pub fn mons_left(context: &PlayerContext) -> Result<usize> {
         if context.player().escaped {
             return Ok(0);
         }
@@ -639,7 +638,7 @@ impl Player {
     }
 
     /// Request data for the player in a battle.
-    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleData, Error> {
+    pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleData> {
         let mon_handles = context.player().mon_handles().cloned().collect::<Vec<_>>();
         let caught = context.player().caught.iter().cloned().collect::<Vec<_>>();
         Ok(PlayerBattleData {
@@ -659,7 +658,7 @@ impl Player {
     }
 
     /// Is the player's choice done?
-    pub fn choice_done(context: &mut PlayerContext) -> Result<bool, Error> {
+    pub fn choice_done(context: &mut PlayerContext) -> Result<bool> {
         match context.player().request_type() {
             None => Ok(true),
             Some(RequestType::TeamPreview) => {
@@ -741,7 +740,7 @@ impl Player {
         mem::replace(&mut self.choice, ChoiceState::new())
     }
 
-    fn emit_choice_error(_: &mut PlayerContext, error: Error) -> Result<(), Error> {
+    fn emit_choice_error(_: &mut PlayerContext, error: Error) -> Result<()> {
         Err(error)
     }
 
@@ -759,7 +758,7 @@ impl Player {
         )
     }
 
-    fn choose_team(context: &mut PlayerContext, input: Option<&str>) -> Result<(), Error> {
+    fn choose_team(context: &mut PlayerContext, input: Option<&str>) -> Result<()> {
         let player = context.player_mut();
         match player.request_type() {
             Some(RequestType::TeamPreview) => (),
@@ -832,7 +831,7 @@ impl Player {
     }
 
     /// Makes a choice on the player.
-    pub fn make_choice(context: &mut PlayerContext, input: &str) -> Result<(), Error> {
+    pub fn make_choice(context: &mut PlayerContext, input: &str) -> Result<()> {
         let player = context.player_mut();
         if player.request.is_none() {
             let reason = if context.battle().ended() {
@@ -892,7 +891,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_switch(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+    fn choose_switch(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::Turn | RequestType::Switch) => (),
             _ => return Err(general_error("you cannot switch out of turn")),
@@ -991,10 +990,7 @@ impl Player {
         Ok(())
     }
 
-    fn get_position_for_next_choice(
-        context: &mut PlayerContext,
-        pass: bool,
-    ) -> Result<usize, Error> {
+    fn get_position_for_next_choice(context: &mut PlayerContext, pass: bool) -> Result<usize> {
         if context.player().escaped {
             return Err(general_error(format!(
                 "you {} the battle",
@@ -1053,7 +1049,7 @@ impl Player {
         Ok(next_mon)
     }
 
-    fn choose_pass(context: &mut PlayerContext) -> Result<(), Error> {
+    fn choose_pass(context: &mut PlayerContext) -> Result<()> {
         let position = Self::get_position_for_next_choice(context, true)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
@@ -1093,7 +1089,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+    fn choose_move(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot move out of turn")),
@@ -1234,7 +1230,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_learn_move(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+    fn choose_learn_move(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::LearnMove) => (),
             _ => return Err(general_error("you cannot learn move out of turn")),
@@ -1264,7 +1260,7 @@ impl Player {
         Ok(())
     }
 
-    fn all_mons_can_escape(context: &mut PlayerContext) -> Result<bool, Error> {
+    fn all_mons_can_escape(context: &mut PlayerContext) -> Result<bool> {
         for mon in context
             .player()
             .active_mon_handles()
@@ -1279,7 +1275,7 @@ impl Player {
         Ok(true)
     }
 
-    fn choose_escape(context: &mut PlayerContext) -> Result<(), Error> {
+    fn choose_escape(context: &mut PlayerContext) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot escape out of turn")),
@@ -1322,7 +1318,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_forfeit(context: &mut PlayerContext) -> Result<(), Error> {
+    fn choose_forfeit(context: &mut PlayerContext) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot forfeit out of turn")),
@@ -1344,7 +1340,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_item(context: &mut PlayerContext, data: Option<&str>) -> Result<(), Error> {
+    fn choose_item(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
         if !context.battle().format.options.bag_items {
             return Err(general_error("you cannot use items"));
         }
@@ -1482,7 +1478,7 @@ impl Player {
     }
 
     /// Checks if the player needs to switch a Mon out.
-    pub fn needs_switch(context: &PlayerContext) -> Result<bool, Error> {
+    pub fn needs_switch(context: &PlayerContext) -> Result<bool> {
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.needs_switch.is_some() {
                 return Ok(true);
@@ -1519,7 +1515,7 @@ impl Player {
     pub fn get_item_target(
         context: &mut PlayerContext,
         target: isize,
-    ) -> Result<Option<MonHandle>, Error> {
+    ) -> Result<Option<MonHandle>> {
         if target == 0 {
             return Err(general_error("target cannot be 0"));
         } else if target < 0 {
@@ -1607,7 +1603,7 @@ mod move_choice_tests {
     fn fails_empty_string() {
         assert_matches::assert_matches!(
             MoveChoice::new(""),
-            Err(err) => assert!(err.full_description().contains("invalid move slot"))
+            Err(err) => assert!(format!("{err:#}").contains("invalid move slot"))
         );
     }
 }

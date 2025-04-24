@@ -3,6 +3,7 @@ use std::ops::{
     DerefMut,
 };
 
+use anyhow::Result;
 use zone_alloc::{
     ElementRef,
     ElementRefMut,
@@ -21,7 +22,6 @@ use crate::{
     conditions::Condition,
     config::Clause,
     effect::fxlang,
-    error::Error,
     items::Item,
     mons::Species,
     moves::{
@@ -173,7 +173,7 @@ impl EffectHandle {
     ///
     /// Every effect handle is stable except for active moves, since active moves can be destroyed
     /// after a few turns. Active move handles will reference their inactive version.
-    pub fn stable_effect_handle(&self, context: &Context) -> Result<EffectHandle, Error> {
+    pub fn stable_effect_handle(&self, context: &Context) -> Result<EffectHandle> {
         match self {
             Self::ActiveMove(active_move_handle, _) => Ok(EffectHandle::InactiveMove(
                 context.active_move(*active_move_handle)?.id().clone(),
@@ -185,7 +185,7 @@ impl EffectHandle {
     /// Returns the associated condition handle.
     ///
     /// Only applicable for active moves.
-    pub fn condition_handle(&self, context: &Context) -> Result<Option<EffectHandle>, Error> {
+    pub fn condition_handle(&self, context: &Context) -> Result<Option<EffectHandle>> {
         match self {
             Self::ActiveMove(active_move_handle, _) => Ok(Some(EffectHandle::MoveCondition(
                 context.active_move(*active_move_handle)?.id().clone(),

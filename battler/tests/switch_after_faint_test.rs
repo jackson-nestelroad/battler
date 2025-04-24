@@ -1,8 +1,8 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -16,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -64,7 +64,7 @@ fn make_battle_builder() -> TestBattleBuilder {
         .add_player_to_side_2("player-2", "Player 2")
 }
 
-fn make_battle(data: &dyn DataStore, auto_continue: bool) -> Result<PublicCoreBattle, Error> {
+fn make_battle(data: &dyn DataStore, auto_continue: bool) -> Result<PublicCoreBattle> {
     make_battle_builder()
         .with_auto_continue(auto_continue)
         .with_team("player-1", team()?)
@@ -112,19 +112,19 @@ fn must_switch_after_faint() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2"),
-        Err(err) => assert_eq!(err.full_description(), "you cannot do anything: no action requested")
+        Err(err) => assert_eq!(format!("{err:#}"), "you cannot do anything: no action requested")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;move 0,1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot move out of turn")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot move out of turn")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to an active mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to an active mon")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a fainted mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a fainted mon")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
 
@@ -242,27 +242,27 @@ fn must_switch_one_after_two_faint() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2"),
-        Err(err) => assert_eq!(err.full_description(), "you cannot do anything: no action requested")
+        Err(err) => assert_eq!(format!("{err:#}"), "you cannot do anything: no action requested")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;move 0,1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot move out of turn")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot move out of turn")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a fainted mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a fainted mon")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;switch 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you cannot switch to a fainted mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a fainted mon")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;switch 0"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: the mon in slot 0 can only switch in once")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: the mon in slot 0 can only switch in once")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0"),
-        Err(err) => assert_eq!(err.full_description(), "incomplete choice: missing actions for mons")
+        Err(err) => assert_eq!(format!("{err:#}"), "incomplete choice: missing actions for mons")
     );
 
     // We have a choice as to where the single Mon can be switched into.

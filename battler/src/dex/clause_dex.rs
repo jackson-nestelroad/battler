@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     common::Id,
     config::{
@@ -10,7 +12,6 @@ use crate::{
         ResourceLookup,
         ResourceWrapper,
     },
-    error::Error,
 };
 
 /// Lookup type for [`ClauseDex`].
@@ -24,7 +25,7 @@ impl<'d> ResourceLookup<'d, ClauseData> for ClauseLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> Result<ClauseData, Error> {
+    fn lookup(&self, id: &Id) -> Result<ClauseData> {
         self.data.get_clause(id)
     }
 }

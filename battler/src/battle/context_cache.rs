@@ -4,6 +4,7 @@ use std::{
 };
 
 use ahash::HashMapExt;
+use anyhow::Result;
 use zone_alloc::ElementRefMut;
 
 use crate::{
@@ -14,10 +15,7 @@ use crate::{
         MoveHandle,
     },
     common::FastHashMap,
-    error::{
-        Error,
-        WrapOptionError,
-    },
+    error::WrapOptionError,
     moves::Move,
 };
 
@@ -51,7 +49,7 @@ impl<'borrow> ContextCache<'borrow> {
     }
 
     /// Borrows a new [`Mon`] by handle.
-    pub fn mon(&self, battle: &CoreBattle, mon_handle: MonHandle) -> Result<&mut Mon, Error> {
+    pub fn mon(&self, battle: &CoreBattle, mon_handle: MonHandle) -> Result<&mut Mon> {
         // SAFETY: This is the only method that accesses this map.
         let mons = unsafe { &mut *self.mons.get() };
         // Multiple map look ups because the borrow checker cannot handle otherwise.
@@ -82,11 +80,7 @@ impl<'borrow> ContextCache<'borrow> {
     }
 
     /// Borrows a new [`Move`] by handle.
-    pub fn active_move(
-        &self,
-        battle: &CoreBattle,
-        move_handle: MoveHandle,
-    ) -> Result<&mut Move, Error> {
+    pub fn active_move(&self, battle: &CoreBattle, move_handle: MoveHandle) -> Result<&mut Move> {
         // SAFETY: This is the only method that accesses this map.
         let moves = unsafe { &mut *self.active_moves.get() };
         // Multiple map look ups because the borrow checker cannot handle otherwise.

@@ -4,6 +4,7 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineOptions,
@@ -11,7 +12,6 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     CoreBattleOptions,
     DataStore,
-    Error,
     FastHashMap,
     FieldData,
     FieldEnvironment,
@@ -68,7 +68,7 @@ impl TestBattleBuilder {
     }
 
     /// Builds a new [`PublicCoreBattle`] from the battle builder.
-    pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+    pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle> {
         if self.controlled_rng {
             self.engine_options.rng_factory =
                 |seed: Option<u64>| Box::new(ControlledRandomNumberGenerator::new(seed));

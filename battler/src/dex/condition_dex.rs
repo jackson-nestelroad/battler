@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     common::Id,
     conditions::{
@@ -10,7 +12,6 @@ use crate::{
         ResourceLookup,
         ResourceWrapper,
     },
-    error::Error,
 };
 
 /// Lookup type for [`ConditionDex`].
@@ -24,7 +25,7 @@ impl<'d> ResourceLookup<'d, ConditionData> for ConditionLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> Result<ConditionData, Error> {
+    fn lookup(&self, id: &Id) -> Result<ConditionData> {
         self.data.get_condition(id)
     }
 }

@@ -1,6 +1,7 @@
 use std::iter;
 
 use ahash::HashSetExt;
+use anyhow::Result;
 
 use crate::{
     battle::{
@@ -42,10 +43,7 @@ use crate::{
         EffectHandle,
         EffectManager,
     },
-    error::{
-        Error,
-        WrapOptionError,
-    },
+    error::WrapOptionError,
     mons::Type,
     moves::SecondaryEffect,
 };
@@ -154,7 +152,7 @@ fn run_effect_event_with_errors(
     input: fxlang::VariableInput,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
     suppressed: bool,
-) -> Result<fxlang::ProgramEvalResult, Error> {
+) -> Result<fxlang::ProgramEvalResult> {
     // Effect was suppressed somewhere up the stack, so we should skip the callback.
     //
     // This is important for residual callbacks, which can be suppressed but should still attempt to
@@ -224,7 +222,7 @@ fn run_active_move_event_with_errors(
     event: fxlang::BattleEvent,
     target: MoveTargetForEvent,
     input: fxlang::VariableInput,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     let effect_state_connector =
         ActiveMoveEffectStateConnector::new(context.active_move_handle()).make_dynamic();
     let effect_handle = context.effect_handle().clone();
@@ -305,7 +303,7 @@ fn run_active_move_event(
                 context.as_battle_context_mut(),
                 event,
                 active_move_name,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -339,7 +337,7 @@ fn run_effect_event_by_handle(
                 context.battle_context_mut(),
                 event,
                 &effect_name,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             fxlang::ProgramEvalResult::default()
         }
@@ -386,7 +384,7 @@ impl CallbackHandle {
     }
 
     /// The speed of the callback.
-    pub fn speed(&self, context: &mut Context) -> Result<u32, Error> {
+    pub fn speed(&self, context: &mut Context) -> Result<u32> {
         if let Some(mon_handle) = self.applied_effect_handle.location.mon_handle() {
             return Ok(context.mon(mon_handle)?.speed as u32);
         }
@@ -398,7 +396,7 @@ fn run_callback_with_errors(
     mut context: UpcomingEvaluationContext,
     input: fxlang::VariableInput,
     callback_handle: CallbackHandle,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     // Run the event callback for the event.
     let result = run_effect_event_by_handle(
         &mut context,
@@ -697,7 +695,7 @@ fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     mon: MonHandle,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
 
@@ -781,7 +779,7 @@ fn find_callbacks_on_side(
     context: &mut Context,
     event: fxlang::BattleEvent,
     side: usize,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
     let mut context = context.side_context(side)?;
 
@@ -816,7 +814,7 @@ fn find_callbacks_on_side_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     mon: MonHandle,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
     let side = context.mon().side;
@@ -855,7 +853,7 @@ fn find_callbacks_on_side_on_mon(
 fn find_callbacks_on_field(
     context: &mut Context,
     event: fxlang::BattleEvent,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
 
     if event.callback_lookup_layer()
@@ -926,7 +924,7 @@ fn find_callbacks_on_field_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     mon: MonHandle,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
     let mut context = context.mon_context(mon)?;
 
@@ -1008,7 +1006,7 @@ fn find_all_callbacks(
     event: fxlang::BattleEvent,
     target: AllEffectsTarget,
     source: Option<MonHandle>,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
 
     match target {
@@ -1240,7 +1238,7 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
 fn get_speed_orderable_effect_handle_internal(
     context: &mut Context,
     callback_handle: CallbackHandle,
-) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
+) -> Result<Option<SpeedOrderableCallbackHandle>> {
     // Ensure the effect is not ending.
     if let Some(effect_state) = callback_handle
         .applied_effect_handle
@@ -1289,7 +1287,7 @@ fn get_speed_orderable_effect_handle_internal(
 fn get_speed_orderable_effect_handle(
     context: &mut Context,
     callback_handle: CallbackHandle,
-) -> Result<Option<SpeedOrderableCallbackHandle>, Error> {
+) -> Result<Option<SpeedOrderableCallbackHandle>> {
     match get_speed_orderable_effect_handle_internal(context, callback_handle.clone())? {
         Some(handle) => Ok(Some(handle)),
         None => {
@@ -1305,7 +1303,7 @@ fn get_speed_orderable_effect_handle(
 fn filter_and_order_effects_for_event(
     context: &mut Context,
     callback_handles: Vec<CallbackHandle>,
-) -> Result<Vec<CallbackHandle>, Error> {
+) -> Result<Vec<CallbackHandle>> {
     let mut speed_orderable_handles = Vec::new();
     speed_orderable_handles.reserve(callback_handles.len());
     for effect_handle in callback_handles {
@@ -1339,7 +1337,7 @@ fn run_callbacks_with_forwarding_input_with_errors(
     input: &mut fxlang::VariableInput,
     callback_handle: CallbackHandle,
     options: &RunCallbacksOptions,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     let value = run_callback_with_errors(context, input.clone(), callback_handle)?;
     // Support for early exit.
     if let Some(value) = value {
@@ -1364,7 +1362,7 @@ fn run_mon_callbacks_with_errors(
     mut input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     for callback_handle in callbacks {
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
@@ -1400,7 +1398,7 @@ fn run_player_callbacks_with_errors(
     mut input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     for callback_handle in callbacks {
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
@@ -1436,7 +1434,7 @@ fn run_side_callbacks_with_errors(
     mut input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     for callback_handle in callbacks {
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
@@ -1472,7 +1470,7 @@ fn run_field_callbacks_with_errors(
     mut input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     for callback_handle in callbacks {
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
@@ -1504,7 +1502,7 @@ fn run_field_callbacks_with_errors(
 fn run_residual_callbacks_with_errors(
     context: &mut Context,
     callbacks: Vec<CallbackHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     // Ensure we only decrease the duration of each event once.
     let mut duration_decreased = FastHashSet::new();
 
@@ -1694,7 +1692,7 @@ fn run_event_with_errors(
     source: Option<MonHandle>,
     input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
-) -> Result<Option<fxlang::Value>, Error> {
+) -> Result<Option<fxlang::Value>> {
     let mut callbacks = find_all_callbacks(context, event, target, source)?;
     if event.run_callback_on_source_effect() {
         if let Some(source_effect) = source_effect {
@@ -1770,7 +1768,7 @@ fn run_event_for_applying_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -1798,7 +1796,7 @@ fn run_event_for_mon_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -1826,7 +1824,7 @@ fn run_event_for_player_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -1856,7 +1854,7 @@ fn run_event_for_player_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -1886,7 +1884,7 @@ fn run_event_for_side_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -1916,7 +1914,7 @@ fn run_event_for_field_effect_internal(
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &error.full_description(),
+                &&format!("{error:#}"),
             );
             None
         }
@@ -1940,7 +1938,7 @@ fn run_event_for_battle_internal(
     ) {
         Ok(value) => value,
         Err(error) => {
-            core_battle_logs::debug_full_event_failure(context, event, &error.full_description());
+            core_battle_logs::debug_full_event_failure(context, event, &&format!("{error:#}"));
             None
         }
     }
@@ -1958,7 +1956,7 @@ fn run_event_for_residual_internal(context: &mut Context, event: fxlang::BattleE
     ) {
         Ok(_) => (),
         Err(error) => {
-            core_battle_logs::debug_full_event_failure(context, event, &error.full_description());
+            core_battle_logs::debug_full_event_failure(context, event, &&format!("{error:#}"));
         }
     }
 }
@@ -2902,7 +2900,7 @@ pub fn run_event_for_battle_expecting_bool_quick_return(
 pub fn run_event_for_each_active_mon_with_effect(
     context: &mut EffectContext,
     event: fxlang::BattleEvent,
-) -> Result<(), Error> {
+) -> Result<()> {
     for mon_handle in
         CoreBattle::all_active_mon_handles_in_speed_order(context.as_battle_context_mut())?
     {
@@ -2921,7 +2919,7 @@ pub fn run_event_for_each_active_mon_with_effect(
 pub fn run_event_for_each_active_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
-) -> Result<(), Error> {
+) -> Result<()> {
     for mon_handle in CoreBattle::all_active_mon_handles_in_speed_order(context)? {
         run_event_for_mon(
             &mut context.mon_context(mon_handle)?,

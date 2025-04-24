@@ -1,7 +1,7 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     DataStore,
-    Error,
     Id,
     MoveData,
     PublicCoreBattle,
@@ -15,7 +15,7 @@ use battler_test_utils::{
     TestDataStore,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -73,7 +73,7 @@ fn team() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn test_move(name: &str, priority: i8) -> Result<MoveData, Error> {
+fn test_move(name: &str, priority: i8) -> Result<MoveData> {
     let mut move_data: MoveData = serde_json::from_str(
         r#"{
             "name": "",
@@ -92,7 +92,7 @@ fn test_move(name: &str, priority: i8) -> Result<MoveData, Error> {
     Ok(move_data)
 }
 
-fn add_test_moves(data: &mut TestDataStore) -> Result<(), Error> {
+fn add_test_moves(data: &mut TestDataStore) -> Result<()> {
     data.add_fake_move(Id::from("High Priority"), test_move("High Priority", 5)?);
     data.add_fake_move(
         Id::from("Normal Priority"),
@@ -102,7 +102,7 @@ fn add_test_moves(data: &mut TestDataStore) -> Result<(), Error> {
     Ok(())
 }
 
-fn test_battle_builder() -> Result<TestBattleBuilder, Error> {
+fn test_battle_builder() -> Result<TestBattleBuilder> {
     Ok(TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_pass_allowed(true)
@@ -113,7 +113,7 @@ fn test_battle_builder() -> Result<TestBattleBuilder, Error> {
         .with_team("player-2", team()?))
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     test_battle_builder()?.build(data)
 }
 
@@ -238,7 +238,7 @@ fn moves_ordered_by_priority() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
 
-fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle, Error> {
+fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle> {
     test_battle_builder()?.with_seed(seed).build(data)
 }
 

@@ -1,11 +1,9 @@
 use std::fmt::Display;
 
+use anyhow::Error;
 use thiserror::Error;
 
-use crate::error::{
-    Error,
-    WrapError,
-};
+use crate::error::WrapError;
 
 /// A general error, consisting of only a message.
 #[derive(Error, Debug)]
@@ -15,7 +13,7 @@ pub struct GeneralError {
 }
 
 impl GeneralError {
-    /// Construcs a new general error.
+    /// Constructs a new general error.
     pub fn new<M>(message: M) -> Self
     where
         M: Display,
@@ -34,7 +32,7 @@ pub struct NotFoundError {
 }
 
 impl NotFoundError {
-    /// Construcs a new not found error.
+    /// Constructs a new not found error.
     pub fn new<M>(target: M) -> Self
     where
         M: Display,

@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     abilities::{
         Ability,
@@ -10,9 +12,7 @@ use crate::{
         ResourceLookup,
         ResourceWrapper,
     },
-    error::Error,
 };
-
 /// Lookup type for [`AbilityDex`].
 #[derive(Clone)]
 pub struct AbilityLookup<'d> {
@@ -24,7 +24,7 @@ impl<'d> ResourceLookup<'d, AbilityData> for AbilityLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> Result<AbilityData, Error> {
+    fn lookup(&self, id: &Id) -> Result<AbilityData> {
         self.data.get_ability(id)
     }
 }

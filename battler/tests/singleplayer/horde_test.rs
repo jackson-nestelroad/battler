@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -48,7 +49,7 @@ fn team() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn rattata() -> Result<TeamData, Error> {
+fn rattata() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -74,7 +75,7 @@ fn make_horde_battle(
     seed: u64,
     team: TeamData,
     wild: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     let mut builder = TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_adjacenecy_reach(3)

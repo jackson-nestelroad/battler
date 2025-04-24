@@ -7,6 +7,10 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::{
+    Error,
+    Result,
+};
 use zone_alloc::ElementRef;
 
 use crate::{
@@ -36,7 +40,6 @@ use crate::{
     error::{
         general_error,
         integer_overflow_error,
-        Error,
         WrapOptionError,
     },
     mons::{
@@ -195,7 +198,7 @@ impl Value {
     }
 
     /// Converts the value to the given type.
-    pub fn convert_to(&self, value_type: ValueType) -> Result<Self, Error> {
+    pub fn convert_to(&self, value_type: ValueType) -> Result<Self> {
         if self.value_type() == value_type {
             return Ok(self.clone());
         }
@@ -230,7 +233,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`String`].
-    pub fn string(self) -> Result<String, Error> {
+    pub fn string(self) -> Result<String> {
         match self {
             Self::String(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::String)),
@@ -238,7 +241,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`u64`].
-    pub fn integer_u64(self) -> Result<u64, Error> {
+    pub fn integer_u64(self) -> Result<u64> {
         match self {
             Self::Fraction(val) => Ok(val.floor() as u64),
             Self::UFraction(val) => Ok(val.floor() as u64),
@@ -247,7 +250,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`i64`].
-    pub fn integer_i64(self) -> Result<i64, Error> {
+    pub fn integer_i64(self) -> Result<i64> {
         match self {
             Self::Fraction(val) => Ok(val.floor() as i64),
             Self::UFraction(val) => Ok(val.floor() as i64),
@@ -256,56 +259,56 @@ impl Value {
     }
 
     /// Consumes the value into an [`i32`].
-    pub fn integer_i32(self) -> Result<i32, Error> {
+    pub fn integer_i32(self) -> Result<i32> {
         self.integer_i64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into an [`i8`].
-    pub fn integer_i8(self) -> Result<i8, Error> {
+    pub fn integer_i8(self) -> Result<i8> {
         self.integer_i64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u8`].
-    pub fn integer_u8(self) -> Result<u8, Error> {
+    pub fn integer_u8(self) -> Result<u8> {
         self.integer_u64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u16`].
-    pub fn integer_u16(self) -> Result<u16, Error> {
+    pub fn integer_u16(self) -> Result<u16> {
         self.integer_u64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u32`].
-    pub fn integer_u32(self) -> Result<u32, Error> {
+    pub fn integer_u32(self) -> Result<u32> {
         self.integer_u64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into an [`isize`].
-    pub fn integer_isize(self) -> Result<isize, Error> {
+    pub fn integer_isize(self) -> Result<isize> {
         self.integer_i64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`usize`].
-    pub fn integer_usize(self) -> Result<usize, Error> {
+    pub fn integer_usize(self) -> Result<usize> {
         self.integer_u64()?
             .try_into()
             .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`Fraction<u64>`].
-    pub fn fraction_u64(self) -> Result<Fraction<u64>, Error> {
+    pub fn fraction_u64(self) -> Result<Fraction<u64>> {
         match self {
             Self::Fraction(val) => val.try_convert().map_err(integer_overflow_error),
             Self::UFraction(val) => Ok(val),
@@ -314,7 +317,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`Fraction<u16>`].
-    pub fn fraction_u16(self) -> Result<Fraction<u16>, Error> {
+    pub fn fraction_u16(self) -> Result<Fraction<u16>> {
         self.fraction_u64()?
             .try_convert()
             .map_err(integer_overflow_error)
@@ -329,7 +332,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`bool`].
-    pub fn boolean(self) -> Result<bool, Error> {
+    pub fn boolean(self) -> Result<bool> {
         match self {
             Self::Undefined => Ok(false),
             Self::Boolean(val) => Ok(val),
@@ -338,7 +341,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`MonHandle`].
-    pub fn mon_handle(self) -> Result<MonHandle, Error> {
+    pub fn mon_handle(self) -> Result<MonHandle> {
         match self {
             Self::Mon(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Mon)),
@@ -346,7 +349,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`MoveHandle`].
-    pub fn active_move(self) -> Result<MoveHandle, Error> {
+    pub fn active_move(self) -> Result<MoveHandle> {
         match self {
             Self::ActiveMove(val) => Ok(val),
             Self::Effect(EffectHandle::ActiveMove(val, _)) => Ok(val),
@@ -355,7 +358,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`MoveEventResult`].
-    pub fn move_result(self) -> Result<MoveEventResult, Error> {
+    pub fn move_result(self) -> Result<MoveEventResult> {
         match self {
             Self::Boolean(val) => Ok(MoveEventResult::from(val)),
             Self::String(val) => MoveEventResult::from_str(&val).map_err(general_error),
@@ -367,7 +370,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`MoveOutcomeOnTarget`].
-    pub fn move_outcome_on_target(self) -> Result<MoveOutcomeOnTarget, Error> {
+    pub fn move_outcome_on_target(self) -> Result<MoveOutcomeOnTarget> {
         match self {
             Self::Boolean(val) => Ok(MoveOutcomeOnTarget::from(val)),
             _ => Ok(MoveOutcomeOnTarget::Damage(self.integer_u16()?)),
@@ -375,7 +378,7 @@ impl Value {
     }
 
     /// Consumes the value into a move ID.
-    pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id, Error> {
+    pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id> {
         match self {
             Self::ActiveMove(val) | Self::Effect(EffectHandle::ActiveMove(val, _)) => {
                 Ok(context.active_move(val)?.id().clone())
@@ -390,7 +393,7 @@ impl Value {
     }
 
     /// Consumes the value into an ability ID.
-    pub fn ability_id(self) -> Result<Id, Error> {
+    pub fn ability_id(self) -> Result<Id> {
         match self {
             Self::Effect(EffectHandle::Ability(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
@@ -402,7 +405,7 @@ impl Value {
     }
 
     /// Consumes the value into a item ID.
-    pub fn item_id(self) -> Result<Id, Error> {
+    pub fn item_id(self) -> Result<Id> {
         match self {
             Self::Effect(EffectHandle::Item(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
@@ -414,7 +417,7 @@ impl Value {
     }
 
     /// Consumes the value into a clause ID.
-    pub fn clause_id(self) -> Result<Id, Error> {
+    pub fn clause_id(self) -> Result<Id> {
         match self {
             Self::Effect(EffectHandle::Clause(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
@@ -426,7 +429,7 @@ impl Value {
     }
 
     /// Consumes the value into a species ID.
-    pub fn species_id(self) -> Result<Id, Error> {
+    pub fn species_id(self) -> Result<Id> {
         match self {
             Self::Effect(EffectHandle::Species(val)) => Ok(val),
             Self::String(val) => Ok(Id::from(val)),
@@ -438,7 +441,7 @@ impl Value {
     }
 
     /// Consumes the value into an [`EffectHandle`].
-    pub fn effect_handle(self) -> Result<EffectHandle, Error> {
+    pub fn effect_handle(self) -> Result<EffectHandle> {
         match self {
             Self::Effect(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Effect)),
@@ -446,7 +449,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`Boost`].
-    pub fn boost(self) -> Result<Boost, Error> {
+    pub fn boost(self) -> Result<Boost> {
         match self {
             Self::Boost(val) => Ok(val),
             Self::String(val) => Boost::from_str(&val).map_err(general_error),
@@ -455,7 +458,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`BoostTable`].
-    pub fn boost_table(self) -> Result<BoostTable, Error> {
+    pub fn boost_table(self) -> Result<BoostTable> {
         match self {
             Self::BoostTable(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
@@ -463,7 +466,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`Type`].
-    pub fn mon_type(self) -> Result<Type, Error> {
+    pub fn mon_type(self) -> Result<Type> {
         match self {
             Self::Type(val) => Ok(val),
             Self::String(val) => Type::from_str(&val).map_err(general_error),
@@ -472,7 +475,7 @@ impl Value {
     }
 
     /// Consumes the value into a side index.
-    pub fn side_index(self) -> Result<usize, Error> {
+    pub fn side_index(self) -> Result<usize> {
         match self {
             Self::Side(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Side)),
@@ -480,7 +483,7 @@ impl Value {
     }
 
     /// Consumes the value into a player index.
-    pub fn player_index(self) -> Result<usize, Error> {
+    pub fn player_index(self) -> Result<usize> {
         match self {
             Self::Player(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Player)),
@@ -488,7 +491,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`MoveSlot`].
-    pub fn move_slot(self) -> Result<MoveSlot, Error> {
+    pub fn move_slot(self) -> Result<MoveSlot> {
         match self {
             Self::MoveSlot(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveSlot)),
@@ -496,7 +499,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`MoveTarget`].
-    pub fn move_target(self) -> Result<MoveTarget, Error> {
+    pub fn move_target(self) -> Result<MoveTarget> {
         match self {
             Self::MoveTarget(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveTarget)),
@@ -512,7 +515,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`Vec<Value>`].
-    pub fn list(self) -> Result<Vec<Value>, Error> {
+    pub fn list(self) -> Result<Vec<Value>> {
         match self {
             Self::List(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::List)),
@@ -520,12 +523,12 @@ impl Value {
     }
 
     /// Consumes the value into a [`Vec<Type>`].
-    pub fn types_list(self) -> Result<Vec<Type>, Error> {
+    pub fn types_list(self) -> Result<Vec<Type>> {
         self.list()?.into_iter().map(|val| val.mon_type()).collect()
     }
 
     /// Consumes the value into a [`Vec<MonHandle>`].
-    pub fn mons_list(self) -> Result<Vec<MonHandle>, Error> {
+    pub fn mons_list(self) -> Result<Vec<MonHandle>> {
         self.list()?
             .into_iter()
             .map(|val| val.mon_handle())
@@ -533,12 +536,12 @@ impl Value {
     }
 
     /// Consumes the value into a [`Vec<String>`].
-    pub fn strings_list(self) -> Result<Vec<String>, Error> {
+    pub fn strings_list(self) -> Result<Vec<String>> {
         self.list()?.into_iter().map(|val| val.string()).collect()
     }
 
     /// Consumes the value into a [`HitEffect`].
-    pub fn hit_effect(self) -> Result<HitEffect, Error> {
+    pub fn hit_effect(self) -> Result<HitEffect> {
         match self {
             Self::HitEffect(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::HitEffect)),
@@ -546,7 +549,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`SecondaryEffect`].
-    pub fn secondary_hit_effect(self) -> Result<SecondaryEffect, Error> {
+    pub fn secondary_hit_effect(self) -> Result<SecondaryEffect> {
         match self {
             Self::SecondaryHitEffect(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(
@@ -557,7 +560,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`DynamicEffectStateConnector`].
-    pub fn effect_state(self) -> Result<DynamicEffectStateConnector, Error> {
+    pub fn effect_state(self) -> Result<DynamicEffectStateConnector> {
         match self {
             Self::EffectState(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::EffectState)),
@@ -565,7 +568,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`Vec<SecondaryEffect>`].
-    pub fn secondary_hit_effects_list(self) -> Result<Vec<SecondaryEffect>, Error> {
+    pub fn secondary_hit_effects_list(self) -> Result<Vec<SecondaryEffect>> {
         self.list()?
             .into_iter()
             .map(|val| val.secondary_hit_effect())
@@ -573,7 +576,7 @@ impl Value {
     }
 
     /// Consumes the value into a [`FastHashMap<String, Value>`].
-    pub fn object(self) -> Result<FastHashMap<String, Value>, Error> {
+    pub fn object(self) -> Result<FastHashMap<String, Value>> {
         match self {
             Self::Object(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Object)),
@@ -1428,7 +1431,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     /// - `undefined`
     /// - `false`
     /// - `0`
-    pub fn negate(self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn negate(self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match self {
             Self::Undefined => MaybeReferenceValue::Boolean(true),
             Self::Boolean(val) => MaybeReferenceValue::Boolean(!val),
@@ -1441,7 +1444,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements the unary plus operator.
-    pub fn unary_plus(self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn unary_plus(self) -> Result<MaybeReferenceValue<'eval>> {
         match self {
             Self::Fraction(val) => Ok(MaybeReferenceValue::Fraction(val)),
             Self::UFraction(val) => Ok(MaybeReferenceValue::Fraction(
@@ -1455,7 +1458,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements exponentiation.
-    pub fn pow(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn pow(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
                 lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
@@ -1485,7 +1488,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements multiplication.
-    pub fn multiply(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn multiply(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match Self::sort_for_commutative_operation(self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(lhs.wrapping_mul(&rhs))
@@ -1508,7 +1511,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements division.
-    pub fn divide(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn divide(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(lhs / rhs),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
@@ -1532,7 +1535,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements modulo.
-    pub fn modulo(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn modulo(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(Fraction::from(lhs.floor() % rhs.floor()))
@@ -1564,7 +1567,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements addition.
-    pub fn add(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn add(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match Self::sort_for_commutative_operation(self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(lhs.wrapping_add(&rhs))
@@ -1587,7 +1590,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements subtraction.
-    pub fn subtract(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn subtract(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => {
                 MaybeReferenceValue::Fraction(lhs.wrapping_sub(&rhs))
@@ -1614,7 +1617,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         Ok(result)
     }
 
-    fn compare_ref(&'eval self, rhs: &'eval Self) -> Result<Ordering, Error> {
+    fn compare_ref(&'eval self, rhs: &'eval Self) -> Result<Ordering> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => lhs.partial_cmp(rhs),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => {
@@ -1648,34 +1651,34 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements less than comparison.
-    pub fn less_than(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn less_than(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_lt(),
         ))
     }
 
     /// Implements greater than comparison.
-    pub fn greater_than(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn greater_than(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_gt(),
         ))
     }
 
     /// Implements less than or equal to comparison.
-    pub fn less_than_or_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn less_than_or_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_le(),
         ))
     }
 
     /// Implements greater than or equal to comparison.
-    pub fn greater_than_or_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn greater_than_or_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         Ok(MaybeReferenceValue::Boolean(
             self.compare_ref(&rhs)?.is_ge(),
         ))
     }
 
-    fn equal_lists<T, U>(lhs: &'eval Vec<T>, rhs: &'eval Vec<U>) -> Result<bool, Error>
+    fn equal_lists<T, U>(lhs: &'eval Vec<T>, rhs: &'eval Vec<U>) -> Result<bool>
     where
         &'eval T: Into<Self> + 'eval,
         &'eval U: Into<Self> + 'eval,
@@ -1694,7 +1697,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     fn equal_objects<T, U>(
         lhs: &'eval FastHashMap<String, T>,
         rhs: &'eval FastHashMap<String, U>,
-    ) -> Result<bool, Error>
+    ) -> Result<bool>
     where
         &'eval T: Into<Self> + 'eval,
         &'eval U: Into<Self> + 'eval,
@@ -1711,7 +1714,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 .all(|eq| eq))
     }
 
-    fn equal_ref(&'eval self, rhs: &'eval Self) -> Result<bool, Error> {
+    fn equal_ref(&'eval self, rhs: &'eval Self) -> Result<bool> {
         let result = match Self::sort_for_commutative_operation_ref(self, rhs) {
             (Self::Undefined, Self::Undefined) => true,
             (Self::Undefined, _) => false,
@@ -1852,12 +1855,12 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements equality.
-    pub fn equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         Ok(MaybeReferenceValue::Boolean(self.equal_ref(&rhs)?))
     }
 
     /// Implements inequality.
-    pub fn not_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn not_equal(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         Ok(MaybeReferenceValue::Boolean(!self.equal_ref(&rhs)?))
     }
 
@@ -1871,7 +1874,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements list lookup.
-    pub fn has(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn has(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::List(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
             (Self::StoredList(lhs), rhs @ _) => Self::list_has_value(lhs, rhs),
@@ -1896,7 +1899,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements list subset check.
-    pub fn has_any(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn has_any(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::List(lhs), Self::List(rhs)) => Self::list_has_any_value(lhs, rhs),
             (Self::List(lhs), Self::StoredList(rhs)) => Self::list_has_any_value(lhs, rhs),
@@ -1917,7 +1920,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements boolean conjunction.
-    pub fn and(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn and(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Undefined, Self::Undefined) => false,
             (Self::Undefined, Self::Boolean(_)) => false,
@@ -1935,7 +1938,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Implements boolean disjunction.
-    pub fn or(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>, Error> {
+    pub fn or(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Undefined, Self::Undefined) => false,
             (Self::Undefined, Self::Boolean(rhs)) => rhs,
@@ -1953,7 +1956,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     /// Converts the value to a string for a formatted string.
-    pub fn for_formatted_string(&self) -> Result<String, Error> {
+    pub fn for_formatted_string(&self) -> Result<String> {
         let string = match self {
             Self::Boolean(val) => {
                 if *val {

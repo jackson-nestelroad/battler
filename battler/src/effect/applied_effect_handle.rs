@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     battle::{
         core_battle_actions,
@@ -20,12 +22,8 @@ use crate::{
         TerrainEffectStateConnector,
         WeatherEffectStateConnector,
     },
-    error::{
-        Error,
-        WrapOptionError,
-    },
+    error::WrapOptionError,
 };
-
 /// The location of an applied effect, which is an effect that is active in a battle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AppliedEffectLocation {
@@ -141,7 +139,7 @@ impl AppliedEffectHandle {
     }
 
     /// Ends the applied effect.
-    pub fn end(&self, context: &mut EffectContext) -> Result<bool, Error> {
+    pub fn end(&self, context: &mut EffectContext) -> Result<bool> {
         match self.location {
             AppliedEffectLocation::None
             | AppliedEffectLocation::Mon(_)

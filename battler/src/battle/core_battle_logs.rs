@@ -1,3 +1,4 @@
+use anyhow::Result;
 use itertools::Itertools;
 
 use crate::{
@@ -19,7 +20,6 @@ use crate::{
         Effect,
         EffectHandle,
     },
-    error::Error,
     log::UncommittedBattleLogEntry,
     mons::{
         Stat,
@@ -47,7 +47,7 @@ pub fn effect_activation(
     context: &mut Context,
     header: String,
     activation_context: EffectActivationContext,
-) -> Result<(), Error> {
+) -> Result<()> {
     let event = effect_activation_internal(context, header, activation_context)?;
     context.battle_mut().log(event);
     Ok(())
@@ -57,7 +57,7 @@ fn effect_activation_internal(
     context: &mut Context,
     header: String,
     activation_context: EffectActivationContext,
-) -> Result<UncommittedBattleLogEntry, Error> {
+) -> Result<UncommittedBattleLogEntry> {
     let mut event = battle_log_entry!(header);
 
     if let Some(side) = activation_context.side {
@@ -144,7 +144,7 @@ fn effect_activation_internal(
     Ok(event)
 }
 
-fn full_mon_details(context: &mut MonContext, header: &str) -> Result<(), Error> {
+fn full_mon_details(context: &mut MonContext, header: &str) -> Result<()> {
     let private_event = battle_log_entry!(header, Mon::private_active_details(context)?);
     let public_event = battle_log_entry!(header, Mon::public_active_details(context)?);
     let side = context.mon().side;
@@ -154,7 +154,7 @@ fn full_mon_details(context: &mut MonContext, header: &str) -> Result<(), Error>
     Ok(())
 }
 
-pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<(), Error> {
+pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<()> {
     let title = if is_drag {
         "drag"
     } else if context.player().player_type.wild() {
@@ -165,11 +165,11 @@ pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<(), Error> {
     full_mon_details(context, title)
 }
 
-pub fn species_change(context: &mut MonContext) -> Result<(), Error> {
+pub fn species_change(context: &mut MonContext) -> Result<()> {
     full_mon_details(context, "specieschange")
 }
 
-pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
@@ -187,7 +187,7 @@ pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,
     source: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let activation = EffectActivationContext {
         effect_flag_name: Some("reason".to_owned()),
         effect: Some(effect),
@@ -206,7 +206,7 @@ pub fn fail(
     context: &mut MonContext,
     what: Option<EffectHandle>,
     from: Option<EffectHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let activation = EffectActivationContext {
         effect_flag_name: Some("what".to_owned()),
         effect: what,
@@ -226,7 +226,7 @@ pub fn fail_unboost(
     context: &mut MonContext,
     boosts: &[Boost],
     from: Option<EffectHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let mut activation = EffectActivationContext {
         effect_flag_name: Some("what".to_owned()),
         effect: Some(EffectHandle::NonExistent(Id::from_known("unboost"))),
@@ -250,7 +250,7 @@ pub fn fail_unboost(
     )
 }
 
-pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
+pub fn fail_heal(context: &mut MonContext) -> Result<()> {
     let activation = EffectActivationContext {
         effect_flag_name: Some("what".to_owned()),
         effect: Some(EffectHandle::NonExistent(Id::from_known("heal"))),
@@ -264,7 +264,7 @@ pub fn fail_heal(context: &mut MonContext) -> Result<(), Error> {
     )
 }
 
-pub fn immune(context: &mut MonContext, effect: Option<EffectHandle>) -> Result<(), Error> {
+pub fn immune(context: &mut MonContext, effect: Option<EffectHandle>) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.mon_handle()),
         ignore_active_move_source_effect: true,
@@ -278,7 +278,7 @@ pub fn immune(context: &mut MonContext, effect: Option<EffectHandle>) -> Result<
     )
 }
 
-fn move_event_on_target(context: &mut MonContext, event: &str) -> Result<(), Error> {
+fn move_event_on_target(context: &mut MonContext, event: &str) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.mon_handle()),
         ..Default::default()
@@ -290,31 +290,31 @@ fn move_event_on_target(context: &mut MonContext, event: &str) -> Result<(), Err
     )
 }
 
-pub fn fail_target(context: &mut MonContext) -> Result<(), Error> {
+pub fn fail_target(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "fail")
 }
 
-pub fn miss(context: &mut MonContext) -> Result<(), Error> {
+pub fn miss(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "miss")
 }
 
-pub fn super_effective(context: &mut MonContext) -> Result<(), Error> {
+pub fn super_effective(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "supereffective")
 }
 
-pub fn resisted(context: &mut MonContext) -> Result<(), Error> {
+pub fn resisted(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "resisted")
 }
 
-pub fn critical_hit(context: &mut MonContext) -> Result<(), Error> {
+pub fn critical_hit(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "crit")
 }
 
-pub fn ohko(context: &mut MonContext) -> Result<(), Error> {
+pub fn ohko(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "ohko")
 }
 
-pub fn faint(context: &mut MonContext) -> Result<(), Error> {
+pub fn faint(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "faint")
 }
 
@@ -322,7 +322,7 @@ pub fn damage(
     context: &mut MonContext,
     effect: Option<EffectHandle>,
     source: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.mon_handle()),
         ignore_active_move_source_effect: true,
@@ -347,7 +347,7 @@ pub fn damage(
     Ok(())
 }
 
-pub fn heal(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn heal(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
@@ -377,7 +377,7 @@ pub fn set_hp(
     context: &mut MonContext,
     effect: Option<EffectHandle>,
     source: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.mon_handle()),
         ignore_active_move_source_effect: true,
@@ -406,7 +406,7 @@ pub fn revive(
     context: &mut MonContext,
     effect: Option<EffectHandle>,
     source: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.mon_handle()),
         ignore_active_move_source_effect: true,
@@ -425,7 +425,7 @@ pub fn cure_status(
     context: &mut ApplyingEffectContext,
     status: &Id,
     log_effect: bool,
-) -> Result<(), Error> {
+) -> Result<()> {
     let status = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &status)?
         .name()
         .to_owned();
@@ -448,7 +448,7 @@ pub fn cure_status(
     )
 }
 
-pub fn add_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Result<(), Error> {
+pub fn add_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Result<()> {
     if !context.battle().engine_options.log_volatile_statuses {
         return Ok(());
     }
@@ -469,7 +469,7 @@ pub fn add_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Resul
     )
 }
 
-pub fn remove_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Result<(), Error> {
+pub fn remove_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Result<()> {
     if !context.battle().engine_options.log_volatile_statuses {
         return Ok(());
     }
@@ -490,7 +490,7 @@ pub fn remove_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Re
     )
 }
 
-pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<(), Error> {
+pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<()> {
     if !context.battle().engine_options.log_side_conditions {
         return Ok(());
     }
@@ -511,7 +511,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
     )
 }
 
-pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<(), Error> {
+pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<()> {
     if !context.battle().engine_options.log_side_conditions {
         return Ok(());
     }
@@ -536,7 +536,7 @@ pub fn add_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
     condition: &Id,
-) -> Result<(), Error> {
+) -> Result<()> {
     if !context.battle().engine_options.log_slot_conditions {
         return Ok(());
     }
@@ -562,7 +562,7 @@ pub fn remove_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
     condition: &Id,
-) -> Result<(), Error> {
+) -> Result<()> {
     if !context.battle().engine_options.log_slot_conditions {
         return Ok(());
     }
@@ -589,7 +589,7 @@ pub fn type_change(
     types: &[Type],
     effect: Option<EffectHandle>,
     source: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let types = types.iter().map(|typ| typ.to_string()).join("/");
     let activation = EffectActivationContext {
         target: Some(context.mon_handle()),
@@ -606,7 +606,7 @@ pub fn type_change(
     )
 }
 
-pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<(), Error> {
+pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<()> {
     let into = Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?;
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
@@ -623,7 +623,7 @@ pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Resu
     )
 }
 
-pub fn ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
     let ability = context
         .battle()
         .dex
@@ -646,7 +646,7 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
     )
 }
 
-pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<()> {
     let ability = context
         .battle()
         .dex
@@ -674,7 +674,7 @@ pub fn item(
     item: &Id,
     effect: Option<EffectHandle>,
     source: Option<MonHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let item = context
         .battle()
         .dex
@@ -705,7 +705,7 @@ pub fn item_end(
     source: Option<MonHandle>,
     silent: bool,
     eat: bool,
-) -> Result<(), Error> {
+) -> Result<()> {
     let item = context
         .battle()
         .dex
@@ -740,7 +740,7 @@ pub fn use_move(
     move_name: &str,
     target: Option<MonHandle>,
     animate_only: bool,
-) -> Result<(), Error> {
+) -> Result<()> {
     let title = if animate_only { "animatemove" } else { "move" };
     let mut event = battle_log_entry!(
         title,
@@ -765,7 +765,7 @@ pub fn do_not_animate_last_move(context: &mut Context) {
     context.battle_mut().add_attribute_to_last_move("noanim");
 }
 
-pub fn last_move_spread_targets<I>(context: &mut Context, targets: I) -> Result<(), Error>
+pub fn last_move_spread_targets<I>(context: &mut Context, targets: I) -> Result<()>
 where
     I: IntoIterator<Item = MonHandle>,
 {
@@ -782,18 +782,13 @@ where
     Ok(())
 }
 
-pub fn hit_count(context: &mut Context, hits: u8) -> Result<(), Error> {
+pub fn hit_count(context: &mut Context, hits: u8) -> Result<()> {
     let event = battle_log_entry!("hitcount", ("hits", hits));
     context.battle_mut().log(event);
     Ok(())
 }
 
-pub fn boost(
-    context: &mut MonContext,
-    boost: Boost,
-    delta: i8,
-    original_delta: i8,
-) -> Result<(), Error> {
+pub fn boost(context: &mut MonContext, boost: Boost, delta: i8, original_delta: i8) -> Result<()> {
     let (delta, message) = if original_delta >= 0 {
         (delta as u8, "boost")
     } else {
@@ -830,7 +825,7 @@ pub fn debug_full_event_failure(context: &mut Context, event: fxlang::BattleEven
     context.battle_mut().log(log_event);
 }
 
-pub fn experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
+pub fn experience(context: &mut MonContext, exp: u32) -> Result<()> {
     let event = battle_log_entry!(
         "exp",
         ("mon", Mon::position_details(context)?),
@@ -840,7 +835,7 @@ pub fn experience(context: &mut MonContext, exp: u32) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
+pub fn level_up(context: &mut MonContext) -> Result<()> {
     let event = battle_log_entry!(
         "levelup",
         ("mon", Mon::position_details(context)?),
@@ -856,29 +851,25 @@ pub fn level_up(context: &mut MonContext) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn cannot_escape(context: &mut PlayerContext) -> Result<(), Error> {
+pub fn cannot_escape(context: &mut PlayerContext) -> Result<()> {
     let event = battle_log_entry!("cannotescape", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }
 
-pub fn escaped(context: &mut PlayerContext) -> Result<(), Error> {
+pub fn escaped(context: &mut PlayerContext) -> Result<()> {
     let event = battle_log_entry!("escaped", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }
 
-pub fn forfeited(context: &mut PlayerContext) -> Result<(), Error> {
+pub fn forfeited(context: &mut PlayerContext) -> Result<()> {
     let event = battle_log_entry!("forfeited", ("player", &context.player().id));
     context.battle_mut().log(event);
     Ok(())
 }
 
-pub fn use_item(
-    context: &mut PlayerContext,
-    item: &Id,
-    target: Option<MonHandle>,
-) -> Result<(), Error> {
+pub fn use_item(context: &mut PlayerContext, item: &Id, target: Option<MonHandle>) -> Result<()> {
     let item = context.battle().dex.items.get_by_id(item)?;
     let mut event = battle_log_entry!(
         "useitem",
@@ -899,7 +890,7 @@ pub fn fail_use_item(
     context: &mut PlayerContext,
     item: &Id,
     from: Option<EffectHandle>,
-) -> Result<(), Error> {
+) -> Result<()> {
     let activation = EffectActivationContext {
         effect_flag_name: Some("what".to_owned()),
         effect: Some(EffectHandle::Item(item.clone())),
@@ -914,11 +905,7 @@ pub fn fail_use_item(
     )
 }
 
-pub fn deduct_pp(
-    context: &mut ApplyingEffectContext,
-    move_id: &Id,
-    delta: u8,
-) -> Result<(), Error> {
+pub fn deduct_pp(context: &mut ApplyingEffectContext, move_id: &Id, delta: u8) -> Result<()> {
     let activation = EffectActivationContext {
         effect: Some(EffectHandle::InactiveMove(move_id.clone())),
         target: Some(context.target_handle()),
@@ -935,11 +922,7 @@ pub fn deduct_pp(
     )
 }
 
-pub fn restore_pp(
-    context: &mut ApplyingEffectContext,
-    move_id: &Id,
-    delta: u8,
-) -> Result<(), Error> {
+pub fn restore_pp(context: &mut ApplyingEffectContext, move_id: &Id, delta: u8) -> Result<()> {
     let activation = EffectActivationContext {
         effect: Some(EffectHandle::InactiveMove(move_id.clone())),
         target: Some(context.target_handle()),
@@ -956,7 +939,7 @@ pub fn restore_pp(
     )
 }
 
-pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Result<(), Error> {
+pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Result<()> {
     let activation = EffectActivationContext {
         effect: Some(EffectHandle::InactiveMove(move_id.clone())),
         target: Some(context.target_handle()),
@@ -973,7 +956,7 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
     )
 }
 
-pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), Error> {
+pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
@@ -988,11 +971,7 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<(), 
     )
 }
 
-pub fn uncatchable(
-    context: &mut PlayerContext,
-    target: MonHandle,
-    wild: bool,
-) -> Result<(), Error> {
+pub fn uncatchable(context: &mut PlayerContext, target: MonHandle, wild: bool) -> Result<()> {
     let mut additional = Vec::new();
     if !wild {
         additional.push("thief".to_owned());
@@ -1016,7 +995,7 @@ pub fn catch_failed(
     item: &Id,
     shakes: u8,
     critical: bool,
-) -> Result<(), Error> {
+) -> Result<()> {
     let mut additional = vec![format!("shakes:{shakes}")];
     if critical {
         additional.push("critical".to_owned());
@@ -1041,7 +1020,7 @@ pub fn catch(
     item: &Id,
     shakes: u8,
     critical: bool,
-) -> Result<(), Error> {
+) -> Result<()> {
     let mut additional = vec![format!("shakes:{shakes}")];
     if critical {
         additional.push("critical".to_owned());

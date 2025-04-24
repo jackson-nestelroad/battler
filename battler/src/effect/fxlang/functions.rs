@@ -8,6 +8,10 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::{
+    Error,
+    Result,
+};
 
 use crate::{
     abilities::AbilityFlags,
@@ -57,7 +61,6 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         WrapOptionError,
         WrapResultError,
     },
@@ -83,7 +86,7 @@ pub fn run_function(
     function_name: &str,
     args: VecDeque<Value>,
     effect_state: Option<DynamicEffectStateConnector>,
-) -> Result<Option<Value>, Error> {
+) -> Result<Option<Value>> {
     let context = FunctionContext::new(context, args, effect_state);
     match function_name {
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
@@ -284,7 +287,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.effect_state.clone()
     }
 
-    fn applied_effect_handle(&mut self) -> Result<Option<AppliedEffectHandle>, Error> {
+    fn applied_effect_handle(&mut self) -> Result<Option<AppliedEffectHandle>> {
         let effect_state = match self.effect_state() {
             Some(effect_state) => effect_state,
             None => return Ok(None),
@@ -334,7 +337,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.flags.insert(flag.to_owned(), val);
     }
 
-    fn boosts_from_rest_of_args(&mut self) -> Result<BoostTable, Error> {
+    fn boosts_from_rest_of_args(&mut self) -> Result<BoostTable> {
         let mut args = VecDeque::new();
         mem::swap(&mut args, &mut self.args);
         let has_boost_table = args
@@ -351,7 +354,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             .into_iter()
             .map(|boost| StatBoost::from_str(&boost.string()?))
             .map(|res| res.wrap_error_with_message("invalid boost"))
-            .collect::<Result<Vec<_>, Error>>()?;
+            .collect::<Result<Vec<_>>>()?;
         Ok(BoostTable::from_iter(
             boosts.into_iter().map(|boost| (boost.0, boost.1)),
         ))
@@ -365,7 +368,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("link")
     }
 
-    fn link_handle(&mut self) -> Result<Option<AppliedEffectHandle>, Error> {
+    fn link_handle(&mut self) -> Result<Option<AppliedEffectHandle>> {
         if self.link() {
             self.applied_effect_handle()
         } else {
@@ -486,7 +489,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         }
     }
 
-    fn effect_handle(&mut self) -> Result<EffectHandle, Error> {
+    fn effect_handle(&mut self) -> Result<EffectHandle> {
         if self.use_effect_state_source_effect() {
             self.effect_state()
                 .wrap_expectation("effect has no effect state")?
@@ -503,7 +506,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         }
     }
 
-    fn effect_handle_positional(&mut self) -> Result<EffectHandle, Error> {
+    fn effect_handle_positional(&mut self) -> Result<EffectHandle> {
         match self.front().map(|val| val.value_type()) {
             Some(ValueType::Effect) => self
                 .pop_front()
@@ -521,7 +524,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     #[allow(unused)]
     fn effect_context<'function>(
         &'function mut self,
-    ) -> Result<EffectContext<'function, 'battle, 'data>, Error> {
+    ) -> Result<EffectContext<'function, 'battle, 'data>> {
         let effect_handle = self.effect_handle()?;
         let source_effect_handle = self.evaluation_context().source_effect_handle().cloned();
         self.evaluation_context_mut()
@@ -532,7 +535,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     #[allow(unused)]
     fn forward_to_applying_effect_context<'function>(
         &'function mut self,
-    ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>, Error> {
+    ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>> {
         let target_handle = self
             .target_handle()
             .wrap_expectation("effect has no target")?;
@@ -542,7 +545,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn forward_to_applying_effect_context_with_target<'function>(
         &'function mut self,
         target_handle: MonHandle,
-    ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>, Error> {
+    ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>> {
         if self.use_source_effect() {
             let source = self.source_handle();
             self.evaluation_context_mut()
@@ -557,7 +560,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn forward_to_side_effect<'function>(
         &'function mut self,
         side: usize,
-    ) -> Result<SideEffectContext<'function, 'function, 'battle, 'data>, Error> {
+    ) -> Result<SideEffectContext<'function, 'function, 'battle, 'data>> {
         if self.use_source_effect() {
             let source = self.source_handle();
             self.evaluation_context_mut()
@@ -571,7 +574,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn forward_to_field_effect<'function>(
         &'function mut self,
-    ) -> Result<FieldEffectContext<'function, 'function, 'battle, 'data>, Error> {
+    ) -> Result<FieldEffectContext<'function, 'function, 'battle, 'data>> {
         if self.use_source_effect() {
             let source = self.source_handle();
             self.evaluation_context_mut()
@@ -584,7 +587,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     }
 }
 
-fn debug_log(mut context: FunctionContext) -> Result<(), Error> {
+fn debug_log(mut context: FunctionContext) -> Result<()> {
     let mut event = battle_log_entry!("fxlang_debug");
     let mut i = 0;
     while let Some(arg) = context.pop_front() {
@@ -599,7 +602,7 @@ fn debug_log(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn log_internal(mut context: FunctionContext, title: String) -> Result<(), Error> {
+fn log_internal(mut context: FunctionContext, title: String) -> Result<()> {
     let mut event = UncommittedBattleLogEntry::new(title);
     while let Some(arg) = context.pop_front() {
         let entry = arg.string().wrap_error_with_message("invalid log entry")?;
@@ -616,7 +619,7 @@ fn log_internal(mut context: FunctionContext, title: String) -> Result<(), Error
     Ok(())
 }
 
-fn log(mut context: FunctionContext) -> Result<(), Error> {
+fn log(mut context: FunctionContext) -> Result<()> {
     let title = context
         .pop_front()
         .wrap_expectation("missing log title")?
@@ -635,7 +638,7 @@ fn log_effect_activation_base(
     mut context: FunctionContext,
     header: &str,
     activation_base_context: LogEffectActivationBaseContext,
-) -> Result<(), Error> {
+) -> Result<()> {
     let mut activation = core_battle_logs::EffectActivationContext {
         effect: if !context.no_effect() {
             Some(context.effect_handle_positional()?)
@@ -680,7 +683,7 @@ fn log_effect_activation_base(
     )
 }
 
-fn log_ability(mut context: FunctionContext) -> Result<(), Error> {
+fn log_ability(mut context: FunctionContext) -> Result<()> {
     context.set_with_target(true);
     log_effect_activation_base(
         context,
@@ -689,7 +692,7 @@ fn log_ability(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_activate(context: FunctionContext) -> Result<(), Error> {
+fn log_activate(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "activate",
@@ -697,11 +700,11 @@ fn log_activate(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_block(context: FunctionContext) -> Result<(), Error> {
+fn log_block(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(context, "block", LogEffectActivationBaseContext::default())
 }
 
-fn log_field_activate(context: FunctionContext) -> Result<(), Error> {
+fn log_field_activate(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "fieldactivate",
@@ -709,7 +712,7 @@ fn log_field_activate(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_single_turn(context: FunctionContext) -> Result<(), Error> {
+fn log_single_turn(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "singleturn",
@@ -717,7 +720,7 @@ fn log_single_turn(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_single_move(context: FunctionContext) -> Result<(), Error> {
+fn log_single_move(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "singlemove",
@@ -725,7 +728,7 @@ fn log_single_move(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_animate_move(mut context: FunctionContext) -> Result<(), Error> {
+fn log_animate_move(mut context: FunctionContext) -> Result<()> {
     let user_handle = context
         .pop_front()
         .wrap_expectation("missing user")?
@@ -752,17 +755,17 @@ fn log_animate_move(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_start(mut context: FunctionContext) -> Result<(), Error> {
+fn log_start(mut context: FunctionContext) -> Result<()> {
     context.set_with_target(context.evaluation_context().target_handle().is_some());
     log_effect_activation_base(context, "start", LogEffectActivationBaseContext::default())
 }
 
-fn log_end(mut context: FunctionContext) -> Result<(), Error> {
+fn log_end(mut context: FunctionContext) -> Result<()> {
     context.set_with_target(context.evaluation_context().target_handle().is_some());
     log_effect_activation_base(context, "end", LogEffectActivationBaseContext::default())
 }
 
-fn log_side_start(context: FunctionContext) -> Result<(), Error> {
+fn log_side_start(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "sidestart",
@@ -773,7 +776,7 @@ fn log_side_start(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_side_end(context: FunctionContext) -> Result<(), Error> {
+fn log_side_end(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "sideend",
@@ -784,7 +787,7 @@ fn log_side_end(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_field_start(context: FunctionContext) -> Result<(), Error> {
+fn log_field_start(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "fieldstart",
@@ -792,7 +795,7 @@ fn log_field_start(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_field_end(context: FunctionContext) -> Result<(), Error> {
+fn log_field_end(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
         context,
         "fieldend",
@@ -800,7 +803,7 @@ fn log_field_end(context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
+fn log_prepare_move(mut context: FunctionContext) -> Result<()> {
     let target = match context.pop_front() {
         Some(value) => Some(
             value
@@ -828,7 +831,7 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn log_cant(mut context: FunctionContext) -> Result<(), Error> {
+fn log_cant(mut context: FunctionContext) -> Result<()> {
     let effect = context.effect_handle()?;
     let source = if context.with_source() {
         context.source_handle()
@@ -842,7 +845,7 @@ fn log_cant(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_status(mut context: FunctionContext) -> Result<(), Error> {
+fn log_status(mut context: FunctionContext) -> Result<()> {
     let status = context
         .pop_front()
         .wrap_expectation("missing status")?
@@ -862,7 +865,7 @@ fn log_status(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_weather(mut context: FunctionContext) -> Result<(), Error> {
+fn log_weather(mut context: FunctionContext) -> Result<()> {
     let weather = match context.pop_front() {
         Some(value) => value.string().wrap_error_with_message("invalid weather")?,
         None => "Clear".to_owned(),
@@ -883,7 +886,7 @@ fn log_weather(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
+fn log_fail(mut context: FunctionContext) -> Result<()> {
     let effect_handle = if context.from_effect() {
         Some(context.effect_handle()?)
     } else {
@@ -908,7 +911,7 @@ fn log_fail(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
+fn log_fail_unboost(mut context: FunctionContext) -> Result<()> {
     let effect_handle = if context.from_effect() {
         Some(context.effect_handle()?)
     } else {
@@ -939,7 +942,7 @@ fn log_fail_unboost(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_immune(mut context: FunctionContext) -> Result<(), Error> {
+fn log_immune(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -956,7 +959,7 @@ fn log_immune(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn log_fail_heal(mut context: FunctionContext) -> Result<(), Error> {
+fn log_fail_heal(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -965,7 +968,7 @@ fn log_fail_heal(mut context: FunctionContext) -> Result<(), Error> {
     core_battle_logs::fail_heal(&mut context.evaluation_context_mut().mon_context(mon_handle)?)
 }
 
-fn log_ohko(mut context: FunctionContext) -> Result<(), Error> {
+fn log_ohko(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -974,7 +977,7 @@ fn log_ohko(mut context: FunctionContext) -> Result<(), Error> {
     core_battle_logs::ohko(&mut context.evaluation_context_mut().mon_context(mon_handle)?)
 }
 
-fn random(mut context: FunctionContext) -> Result<Value, Error> {
+fn random(mut context: FunctionContext) -> Result<Value> {
     let a = context
         .pop_front()
         .map(|val| val.integer_u64().ok())
@@ -1015,7 +1018,7 @@ fn random(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::UFraction(val.into()))
 }
 
-fn chance(mut context: FunctionContext) -> Result<Value, Error> {
+fn chance(mut context: FunctionContext) -> Result<Value> {
     let a = context
         .pop_front()
         .map(|val| val.integer_u64().ok())
@@ -1051,7 +1054,7 @@ fn chance(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Boolean(val))
 }
 
-fn sample(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn sample(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context
         .pop_front()
         .wrap_expectation("missing list")?
@@ -1069,7 +1072,7 @@ fn sample(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     .cloned())
 }
 
-fn damage(mut context: FunctionContext) -> Result<Value, Error> {
+fn damage(mut context: FunctionContext) -> Result<Value> {
     let source_handle = context.source_handle();
 
     let target_handle = context
@@ -1102,7 +1105,7 @@ fn damage(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|damage| Value::UFraction(damage.into()))
 }
 
-fn direct_damage(mut context: FunctionContext) -> Result<(), Error> {
+fn direct_damage(mut context: FunctionContext) -> Result<()> {
     let source_handle = context.source_handle();
 
     let target_handle = context
@@ -1130,7 +1133,7 @@ fn direct_damage(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn has_ability(mut context: FunctionContext) -> Result<Value, Error> {
+fn has_ability(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1146,7 +1149,7 @@ fn has_ability(mut context: FunctionContext) -> Result<Value, Error> {
             .wrap_error_with_message("invalid ability list")?
             .into_iter()
             .map(|val| Ok(Id::from(val.string()?)))
-            .collect::<Result<Vec<_>, Error>>()
+            .collect::<Result<Vec<_>>>()
             .wrap_error_with_message("invalid ability list")?
     } else {
         Vec::from_iter([Id::from(
@@ -1163,7 +1166,7 @@ fn has_ability(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn has_item(mut context: FunctionContext) -> Result<Value, Error> {
+fn has_item(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1181,7 +1184,7 @@ fn has_item(mut context: FunctionContext) -> Result<Value, Error> {
     )))
 }
 
-fn has_volatile(mut context: FunctionContext) -> Result<Value, Error> {
+fn has_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1199,7 +1202,7 @@ fn has_volatile(mut context: FunctionContext) -> Result<Value, Error> {
     )))
 }
 
-fn cure_status(mut context: FunctionContext) -> Result<Value, Error> {
+fn cure_status(mut context: FunctionContext) -> Result<Value> {
     let no_effect = context.no_effect();
     context.has_flag("log_active_move");
     let mon_handle = context
@@ -1211,7 +1214,7 @@ fn cure_status(mut context: FunctionContext) -> Result<Value, Error> {
     core_battle_actions::cure_status(&mut context, !no_effect).map(|val| Value::Boolean(val))
 }
 
-fn move_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
+fn move_has_flag(mut context: FunctionContext) -> Result<Value> {
     let move_id = context
         .pop_front()
         .wrap_expectation("missing move")?
@@ -1237,7 +1240,7 @@ fn move_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
+fn item_has_flag(mut context: FunctionContext) -> Result<Value> {
     let item_id = context
         .pop_front()
         .wrap_expectation("missing item")?
@@ -1264,7 +1267,7 @@ fn item_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn ability_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
+fn ability_has_flag(mut context: FunctionContext) -> Result<Value> {
     let ability_id = context
         .pop_front()
         .wrap_expectation("missing ability")?
@@ -1291,7 +1294,7 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn remove_move_flag(mut context: FunctionContext) -> Result<(), Error> {
+fn remove_move_flag(mut context: FunctionContext) -> Result<()> {
     let active_move = context
         .pop_front()
         .wrap_expectation("missing move")?
@@ -1312,7 +1315,7 @@ fn remove_move_flag(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {
+fn add_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1335,7 +1338,7 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn remove_volatile(mut context: FunctionContext) -> Result<Value, Error> {
+fn remove_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1354,7 +1357,7 @@ fn remove_volatile(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| Value::Boolean(val))
 }
 
-fn run_event(mut context: FunctionContext) -> Result<Value, Error> {
+fn run_event(mut context: FunctionContext) -> Result<Value> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
@@ -1397,7 +1400,7 @@ fn run_event(mut context: FunctionContext) -> Result<Value, Error> {
     }
 }
 
-fn run_event_for_mon(mut context: FunctionContext) -> Result<Value, Error> {
+fn run_event_for_mon(mut context: FunctionContext) -> Result<Value> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
@@ -1411,7 +1414,7 @@ fn run_event_for_mon(mut context: FunctionContext) -> Result<Value, Error> {
     )))
 }
 
-fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<(), Error> {
+fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
@@ -1424,7 +1427,7 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<(), Err
     )
 }
 
-fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<(), Error> {
+fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<()> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
@@ -1440,7 +1443,7 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn run_event_on_mon_item(mut context: FunctionContext) -> Result<(), Error> {
+fn run_event_on_mon_item(mut context: FunctionContext) -> Result<()> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
@@ -1456,7 +1459,7 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn run_event_on_move(mut context: FunctionContext) -> Result<(), Error> {
+fn run_event_on_move(mut context: FunctionContext) -> Result<()> {
     let on_user = context.on_user();
     let target = match (on_user, context.target_handle()) {
         (true, _) => core_battle_effects::MoveTargetForEvent::User,
@@ -1485,14 +1488,14 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn do_not_animate_last_move(mut context: FunctionContext) -> Result<(), Error> {
+fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
     core_battle_logs::do_not_animate_last_move(
         context.evaluation_context_mut().battle_context_mut(),
     );
     Ok(())
 }
 
-fn calculate_damage(mut context: FunctionContext) -> Result<Value, Error> {
+fn calculate_damage(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context
         .pop_front()
         .wrap_expectation("missing target")?
@@ -1511,7 +1514,7 @@ fn calculate_damage(mut context: FunctionContext) -> Result<Value, Error> {
     }
 }
 
-fn calculate_confusion_damage(mut context: FunctionContext) -> Result<Value, Error> {
+fn calculate_confusion_damage(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1529,7 +1532,7 @@ fn calculate_confusion_damage(mut context: FunctionContext) -> Result<Value, Err
     .map(|value| Value::UFraction(value.into()))
 }
 
-fn max(mut context: FunctionContext) -> Result<Value, Error> {
+fn max(mut context: FunctionContext) -> Result<Value> {
     let mut first = context
         .pop_front()
         .wrap_expectation("max requires at least one argument")?;
@@ -1545,7 +1548,7 @@ fn max(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(first)
 }
 
-fn floor(mut context: FunctionContext) -> Result<Value, Error> {
+fn floor(mut context: FunctionContext) -> Result<Value> {
     let value = match context.pop_front().wrap_expectation("missing number")? {
         Value::Fraction(number) => Value::Fraction(number.floor().into()),
         Value::UFraction(number) => Value::UFraction(number.floor().into()),
@@ -1556,7 +1559,7 @@ fn floor(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(value)
 }
 
-fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
+fn clamp_number(mut context: FunctionContext) -> Result<Value> {
     let number = context.pop_front().wrap_expectation("missing number")?;
     let min = context.pop_front().wrap_expectation("missing minimum")?;
     let max = context.pop_front().wrap_expectation("missing maximum")?;
@@ -1586,7 +1589,7 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value, Error> {
     }
 }
 
-fn heal(mut context: FunctionContext) -> Result<Value, Error> {
+fn heal(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1604,7 +1607,7 @@ fn heal(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::UFraction(val.into()))
 }
 
-fn revive(mut context: FunctionContext) -> Result<Value, Error> {
+fn revive(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1622,7 +1625,7 @@ fn revive(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::UFraction(val.into()))
 }
 
-fn apply_drain(mut context: FunctionContext) -> Result<(), Error> {
+fn apply_drain(mut context: FunctionContext) -> Result<()> {
     let target_handle = context
         .pop_front()
         .wrap_expectation("missing target")?
@@ -1647,7 +1650,7 @@ fn apply_drain(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn apply_recoil_damage(mut context: FunctionContext) -> Result<(), Error> {
+fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
     let damage = context
         .pop_front()
         .wrap_expectation("missing damage")?
@@ -1660,7 +1663,7 @@ fn apply_recoil_damage(mut context: FunctionContext) -> Result<(), Error> {
     core_battle_actions::apply_recoil_damage(&mut context, damage)
 }
 
-fn set_status(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_status(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1681,7 +1684,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val.success()))
 }
 
-fn is_ally(mut context: FunctionContext) -> Result<Value, Error> {
+fn is_ally(mut context: FunctionContext) -> Result<Value> {
     let left_mon_handle = context
         .pop_front()
         .wrap_expectation("missing first mon")?
@@ -1706,7 +1709,7 @@ fn boostable_stats() -> Value {
     ))
 }
 
-fn get_boost(mut context: FunctionContext) -> Result<Value, Error> {
+fn get_boost(mut context: FunctionContext) -> Result<Value> {
     let boosts = context
         .pop_front()
         .wrap_expectation("missing boosts")?
@@ -1720,7 +1723,7 @@ fn get_boost(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Fraction(boosts.get(boost).into()))
 }
 
-fn set_boost(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_boost(mut context: FunctionContext) -> Result<Value> {
     let mut boosts = context
         .pop_front()
         .wrap_expectation("missing boosts")?
@@ -1740,7 +1743,7 @@ fn set_boost(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::BoostTable(boosts))
 }
 
-fn has_type(mut context: FunctionContext) -> Result<Value, Error> {
+fn has_type(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1758,7 +1761,7 @@ fn has_type(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>> {
     let side_index = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -1779,7 +1782,7 @@ fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>, Error>
     .map(|mon| Value::Mon(mon)))
 }
 
-fn disable_move(mut context: FunctionContext) -> Result<(), Error> {
+fn disable_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1797,7 +1800,7 @@ fn disable_move(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1817,7 +1820,7 @@ fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>, 
     }
 }
 
-fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1831,7 +1834,7 @@ fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Er
     }
 }
 
-fn side_condition_effect_state(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn side_condition_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let side = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -1864,7 +1867,7 @@ impl FromStr for StatBoost {
     }
 }
 
-fn can_boost(mut context: FunctionContext) -> Result<Value, Error> {
+fn can_boost(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1879,7 +1882,7 @@ fn can_boost(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn boost(mut context: FunctionContext) -> Result<Value, Error> {
+fn boost(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1900,11 +1903,11 @@ fn boost(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn boost_table(mut context: FunctionContext) -> Result<Value, Error> {
+fn boost_table(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::BoostTable(context.boosts_from_rest_of_args()?))
 }
 
-fn can_switch(mut context: FunctionContext) -> Result<Value, Error> {
+fn can_switch(mut context: FunctionContext) -> Result<Value> {
     let player_index = context
         .pop_front()
         .wrap_expectation("missing player")?
@@ -1918,7 +1921,7 @@ fn can_switch(mut context: FunctionContext) -> Result<Value, Error> {
     )))
 }
 
-fn has_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn has_move(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1938,7 +1941,7 @@ fn has_move(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn move_slot_index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn move_slot_index(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1963,7 +1966,7 @@ fn move_slot_index(mut context: FunctionContext) -> Result<Option<Value>, Error>
     }
 }
 
-fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1983,7 +1986,7 @@ fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>, Err
         .map(|move_slot| Value::MoveSlot(move_slot)))
 }
 
-fn move_slot(mut context: FunctionContext) -> Result<Value, Error> {
+fn move_slot(mut context: FunctionContext) -> Result<Value> {
     let active_move_handle = context
         .pop_front()
         .wrap_expectation("missing active move")?
@@ -2002,7 +2005,7 @@ fn move_slot(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::MoveSlot(move_slot))
 }
 
-fn overwrite_move_slot(mut context: FunctionContext) -> Result<(), Error> {
+fn overwrite_move_slot(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2028,7 +2031,7 @@ fn overwrite_move_slot(mut context: FunctionContext) -> Result<(), Error> {
         .overwrite_move_slot(index, move_slot, override_base_slot)
 }
 
-fn move_crit_target(mut context: FunctionContext) -> Result<Value, Error> {
+fn move_crit_target(mut context: FunctionContext) -> Result<Value> {
     let active_move_handle = context
         .pop_front()
         .wrap_expectation("missing active move")?
@@ -2049,7 +2052,7 @@ fn move_crit_target(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<Value>> {
     let active_move_handle = context
         .pop_front()
         .wrap_expectation("missing active move")?
@@ -2067,7 +2070,7 @@ fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<V
         .map(|hit_data| Value::Fraction(hit_data.type_modifier.into())))
 }
 
-fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Result<(), Error> {
+fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Result<()> {
     let active_move_handle = context
         .pop_front()
         .wrap_expectation("missing active move")?
@@ -2093,7 +2096,7 @@ fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Resul
     Ok(())
 }
 
-fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result<Value, Error> {
+fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result<Value> {
     let active_move_handle = context
         .pop_front()
         .wrap_expectation("missing active move")?
@@ -2120,7 +2123,7 @@ fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result
     ))
 }
 
-fn all_active_mons(context: FunctionContext) -> Result<Value, Error> {
+fn all_active_mons(context: FunctionContext) -> Result<Value> {
     Ok(Value::List(
         context
             .evaluation_context()
@@ -2132,7 +2135,7 @@ fn all_active_mons(context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
+fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value> {
     let side = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -2149,7 +2152,7 @@ fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value, Error>
     ))
 }
 
-fn all_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
+fn all_mons_on_side(mut context: FunctionContext) -> Result<Value> {
     let side = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -2166,7 +2169,7 @@ fn all_mons_on_side(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn all_mons_in_party(mut context: FunctionContext) -> Result<Value, Error> {
+fn all_mons_in_party(mut context: FunctionContext) -> Result<Value> {
     let player = context
         .pop_front()
         .wrap_expectation("missing player")?
@@ -2184,7 +2187,7 @@ fn all_mons_in_party(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn adjacent_foes(mut context: FunctionContext) -> Result<Value, Error> {
+fn adjacent_foes(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2197,7 +2200,7 @@ fn adjacent_foes(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn clear_boosts(mut context: FunctionContext) -> Result<(), Error> {
+fn clear_boosts(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2211,7 +2214,7 @@ fn clear_boosts(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn clear_negative_boosts(mut context: FunctionContext) -> Result<(), Error> {
+fn clear_negative_boosts(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2222,7 +2225,7 @@ fn clear_negative_boosts(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn random_target(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2242,7 +2245,7 @@ fn random_target(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     .map(|mon| Value::Mon(mon)))
 }
 
-fn clone_active_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
     let active_move = context
         .pop_front()
         .wrap_expectation("missing move")?
@@ -2259,7 +2262,7 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::ActiveMove(active_move_handle))
 }
 
-fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value, Error> {
+fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value> {
     let effect_handle = context
         .pop_front()
         .wrap_expectation("missing effect")?
@@ -2292,7 +2295,7 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
     Ok(Value::ActiveMove(active_move_handle))
 }
 
-fn use_active_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn use_active_move(mut context: FunctionContext) -> Result<Value> {
     let indirect = context.has_flag("indirect");
     let mon_handle = context
         .pop_front()
@@ -2330,7 +2333,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn use_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn use_move(mut context: FunctionContext) -> Result<Value> {
     let indirect = context.has_flag("indirect");
     let mon_handle = context
         .pop_front()
@@ -2367,7 +2370,7 @@ fn use_move(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn do_move(mut context: FunctionContext) -> Result<(), Error> {
+fn do_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2402,7 +2405,7 @@ fn do_move(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn mon_at_target_location(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn mon_at_target_location(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2420,7 +2423,7 @@ fn mon_at_target_location(mut context: FunctionContext) -> Result<Option<Value>,
     .map(|mon| Some(Value::Mon(mon?)))
 }
 
-fn target_location_of_mon(mut context: FunctionContext) -> Result<Value, Error> {
+fn target_location_of_mon(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2441,7 +2444,7 @@ fn target_location_of_mon(mut context: FunctionContext) -> Result<Value, Error> 
     ))
 }
 
-fn get_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn get_move(mut context: FunctionContext) -> Result<Value> {
     let move_id = context
         .pop_front()
         .wrap_expectation("missing move id")?
@@ -2450,7 +2453,7 @@ fn get_move(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Effect(EffectHandle::InactiveMove(move_id)))
 }
 
-fn get_ability(mut context: FunctionContext) -> Result<Value, Error> {
+fn get_ability(mut context: FunctionContext) -> Result<Value> {
     let ability_id = context
         .pop_front()
         .wrap_expectation("missing ability id")?
@@ -2459,7 +2462,7 @@ fn get_ability(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Effect(EffectHandle::Ability(ability_id)))
 }
 
-fn get_item(mut context: FunctionContext) -> Result<Value, Error> {
+fn get_item(mut context: FunctionContext) -> Result<Value> {
     let item_id = context
         .pop_front()
         .wrap_expectation("missing item id")?
@@ -2468,7 +2471,7 @@ fn get_item(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Effect(EffectHandle::Item(item_id)))
 }
 
-fn get_species(mut context: FunctionContext) -> Result<Value, Error> {
+fn get_species(mut context: FunctionContext) -> Result<Value> {
     let species_id = context
         .pop_front()
         .wrap_expectation("missing item id")?
@@ -2477,7 +2480,7 @@ fn get_species(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Effect(EffectHandle::Species(species_id)))
 }
 
-fn get_all_moves(mut context: FunctionContext) -> Result<Value, Error> {
+fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
     let mut with_flags = FastHashSet::new();
     let mut without_flags = FastHashSet::new();
     while let Some(arg) = context.pop_front() {
@@ -2515,7 +2518,7 @@ fn get_all_moves(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2534,7 +2537,7 @@ fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>
         .map(|move_slot| Value::Effect(EffectHandle::InactiveMove(move_slot.id.clone()))))
 }
 
-fn set_types(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_types(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2550,7 +2553,7 @@ fn set_types(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| Value::Boolean(val))
 }
 
-fn set_weather(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_weather(mut context: FunctionContext) -> Result<Value> {
     let weather = context
         .pop_front()
         .wrap_expectation("missing weather")?
@@ -2561,11 +2564,11 @@ fn set_weather(mut context: FunctionContext) -> Result<Value, Error> {
         .map(Value::Boolean)
 }
 
-fn clear_weather(mut context: FunctionContext) -> Result<Value, Error> {
+fn clear_weather(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::clear_weather(&mut context.forward_to_field_effect()?).map(Value::Boolean)
 }
 
-fn transform_into(mut context: FunctionContext) -> Result<Value, Error> {
+fn transform_into(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2584,7 +2587,7 @@ fn transform_into(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn can_escape(mut context: FunctionContext) -> Result<Value, Error> {
+fn can_escape(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2594,7 +2597,7 @@ fn can_escape(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| Value::Boolean(val))
 }
 
-fn escape(mut context: FunctionContext) -> Result<Value, Error> {
+fn escape(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2607,15 +2610,15 @@ fn escape(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn hit_effect() -> Result<Value, Error> {
+fn hit_effect() -> Result<Value> {
     Ok(Value::HitEffect(HitEffect::default()))
 }
 
-fn secondary_hit_effect() -> Result<Value, Error> {
+fn secondary_hit_effect() -> Result<Value> {
     Ok(Value::SecondaryHitEffect(SecondaryEffect::default()))
 }
 
-fn all_types(context: FunctionContext) -> Result<Value, Error> {
+fn all_types(context: FunctionContext) -> Result<Value> {
     let mut types = context
         .evaluation_context()
         .battle_context()
@@ -2631,7 +2634,7 @@ fn all_types(context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::List(types))
 }
 
-fn type_is_weak_against(mut context: FunctionContext) -> Result<Value, Error> {
+fn type_is_weak_against(mut context: FunctionContext) -> Result<Value> {
     let offense = context
         .pop_front()
         .wrap_expectation("missing offensive type")?
@@ -2660,7 +2663,7 @@ fn type_is_weak_against(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value, Error> {
+fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value> {
     let offense = context
         .pop_front()
         .wrap_expectation("missing offensive type")?
@@ -2689,7 +2692,7 @@ fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value, Err
     ))
 }
 
-fn append(mut context: FunctionContext) -> Result<Value, Error> {
+fn append(mut context: FunctionContext) -> Result<Value> {
     let mut list = context
         .pop_front()
         .wrap_expectation("missing list")?
@@ -2700,7 +2703,7 @@ fn append(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::List(list))
 }
 
-fn remove(mut context: FunctionContext) -> Result<Value, Error> {
+fn remove(mut context: FunctionContext) -> Result<Value> {
     let list = context
         .pop_front()
         .wrap_expectation("missing list")?
@@ -2718,7 +2721,7 @@ fn remove(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::List(list))
 }
 
-fn index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn index(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context
         .pop_front()
         .wrap_expectation("missing list")?
@@ -2732,7 +2735,7 @@ fn index(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     Ok(list.get(index).cloned())
 }
 
-fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value, Error> {
+fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value> {
     Ok(Value::Boolean(
         context
             .evaluation_context()
@@ -2743,7 +2746,7 @@ fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value, Error>
     ))
 }
 
-fn remove_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
+fn remove_side_condition(mut context: FunctionContext) -> Result<Value> {
     let side = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -2761,7 +2764,7 @@ fn remove_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
     )?))
 }
 
-fn faint(mut context: FunctionContext) -> Result<(), Error> {
+fn faint(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2776,7 +2779,7 @@ fn faint(mut context: FunctionContext) -> Result<(), Error> {
     )
 }
 
-fn prepare_direct_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn prepare_direct_move(mut context: FunctionContext) -> Result<Value> {
     let targets = context
         .pop_front()
         .wrap_expectation("missing targets list")?
@@ -2795,7 +2798,7 @@ fn prepare_direct_move(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn check_immunity(mut context: FunctionContext) -> Result<Value, Error> {
+fn check_immunity(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2829,7 +2832,7 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn set_hp(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_hp(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2849,7 +2852,7 @@ fn set_hp(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn deduct_pp(mut context: FunctionContext) -> Result<Value, Error> {
+fn deduct_pp(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2874,7 +2877,7 @@ fn deduct_pp(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::UFraction(val.into()))
 }
 
-fn restore_pp(mut context: FunctionContext) -> Result<Value, Error> {
+fn restore_pp(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2899,7 +2902,7 @@ fn restore_pp(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::UFraction(val.into()))
 }
 
-fn set_pp(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_pp(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2924,7 +2927,7 @@ fn set_pp(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::UFraction(val.into()))
 }
 
-fn add_slot_condition(mut context: FunctionContext) -> Result<Value, Error> {
+fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
     let side_index = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -2947,7 +2950,7 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value, Error> {
     value.map(|val| Value::Boolean(val))
 }
 
-fn add_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
+fn add_side_condition(mut context: FunctionContext) -> Result<Value> {
     let side_index = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -2965,7 +2968,7 @@ fn add_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
     value.map(|val| Value::Boolean(val))
 }
 
-fn is_adjacent(mut context: FunctionContext) -> Result<Value, Error> {
+fn is_adjacent(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2983,7 +2986,7 @@ fn is_adjacent(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn cancel_move(mut context: FunctionContext) -> Result<Value, Error> {
+fn cancel_move(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -2999,7 +3002,7 @@ fn cancel_move(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn take_item(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3015,7 +3018,7 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     .map(|val| Value::String(val.to_string())))
 }
 
-fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3034,7 +3037,7 @@ fn set_item(mut context: FunctionContext) -> Result<Value, Error> {
     )?))
 }
 
-fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
+fn eat_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3044,7 +3047,7 @@ fn eat_item(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| Value::Boolean(val))
 }
 
-fn eat_given_item(mut context: FunctionContext) -> Result<Value, Error> {
+fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3063,7 +3066,7 @@ fn eat_given_item(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn use_item(mut context: FunctionContext) -> Result<Value, Error> {
+fn use_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3073,7 +3076,7 @@ fn use_item(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| Value::Boolean(val))
 }
 
-fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {
+fn valid_target(mut context: FunctionContext) -> Result<Value> {
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3095,7 +3098,7 @@ fn valid_target(mut context: FunctionContext) -> Result<Value, Error> {
         .map(|val| Value::Boolean(val))
 }
 
-fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
+fn set_ability(mut context: FunctionContext) -> Result<Value> {
     let silent = context.silent();
     let dry_run = context.has_flag("dry_run");
     let mon = context
@@ -3118,7 +3121,7 @@ fn set_ability(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn received_attack(mut context: FunctionContext) -> Result<Value, Error> {
+fn received_attack(mut context: FunctionContext) -> Result<Value> {
     let has_damage = context.has_flag("has_damage");
     let this_turn = context.has_flag("this_turn");
     let target = context
@@ -3150,7 +3153,7 @@ fn received_attack(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<(), Error> {
+fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<()> {
     let active_move = context
         .pop_front()
         .wrap_expectation("missing move")?
@@ -3170,7 +3173,7 @@ fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<(), Erro
     Ok(())
 }
 
-fn move_makes_contact(mut context: FunctionContext) -> Result<Value, Error> {
+fn move_makes_contact(mut context: FunctionContext) -> Result<Value> {
     let active_move = context
         .pop_front()
         .wrap_expectation("missing move")?
@@ -3183,7 +3186,7 @@ fn move_makes_contact(mut context: FunctionContext) -> Result<Value, Error> {
     )))
 }
 
-fn type_effectiveness(mut context: FunctionContext) -> Result<Value, Error> {
+fn type_effectiveness(mut context: FunctionContext) -> Result<Value> {
     let active_move = context
         .pop_front()
         .wrap_expectation("missing move")?
@@ -3203,7 +3206,7 @@ fn type_effectiveness(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Fraction(val.into()))
 }
 
-fn forme_change(mut context: FunctionContext) -> Result<Value, Error> {
+fn forme_change(mut context: FunctionContext) -> Result<Value> {
     let permanent = context.has_flag("permanent");
     let target = context
         .pop_front()
@@ -3228,7 +3231,7 @@ fn forme_change(mut context: FunctionContext) -> Result<Value, Error> {
     .map(|val| Value::Boolean(val))
 }
 
-fn increase_friendship(mut context: FunctionContext) -> Result<(), Error> {
+fn increase_friendship(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3256,7 +3259,7 @@ fn increase_friendship(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn decrease_friendship(mut context: FunctionContext) -> Result<(), Error> {
+fn decrease_friendship(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3284,7 +3287,7 @@ fn decrease_friendship(mut context: FunctionContext) -> Result<(), Error> {
     Ok(())
 }
 
-fn has_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
+fn has_side_condition(mut context: FunctionContext) -> Result<Value> {
     let side_index = context
         .pop_front()
         .wrap_expectation("missing side")?
@@ -3305,7 +3308,7 @@ fn has_side_condition(mut context: FunctionContext) -> Result<Value, Error> {
     )))
 }
 
-fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>> {
     let clause = context
         .pop_front()
         .wrap_expectation("missing clause")?
@@ -3321,7 +3324,7 @@ fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>, E
         .map(|val| Value::UFraction(val.into())))
 }
 
-fn clause_type_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn clause_type_value(mut context: FunctionContext) -> Result<Option<Value>> {
     let clause = context
         .pop_front()
         .wrap_expectation("missing clause")?
@@ -3346,7 +3349,7 @@ fn new_object(_: FunctionContext) -> Value {
     Value::Object(FastHashMap::new())
 }
 
-fn object_keys(mut context: FunctionContext) -> Result<Value, Error> {
+fn object_keys(mut context: FunctionContext) -> Result<Value> {
     let object = context
         .pop_front()
         .wrap_expectation("missing object")?
@@ -3361,7 +3364,7 @@ fn object_keys(mut context: FunctionContext) -> Result<Value, Error> {
     ))
 }
 
-fn object_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
+fn object_value(mut context: FunctionContext) -> Result<Option<Value>> {
     let object = context
         .pop_front()
         .wrap_expectation("missing object")?
@@ -3375,7 +3378,7 @@ fn object_value(mut context: FunctionContext) -> Result<Option<Value>, Error> {
     Ok(object.get(&key).cloned())
 }
 
-fn object_increment(mut context: FunctionContext) -> Result<Value, Error> {
+fn object_increment(mut context: FunctionContext) -> Result<Value> {
     let mut object = context
         .pop_front()
         .wrap_expectation("missing object")?
@@ -3397,7 +3400,7 @@ fn object_increment(mut context: FunctionContext) -> Result<Value, Error> {
     Ok(Value::Object(object))
 }
 
-fn plural(mut context: FunctionContext) -> Result<Value, Error> {
+fn plural(mut context: FunctionContext) -> Result<Value> {
     if context
         .pop_front()
         .wrap_expectation("missing number")?

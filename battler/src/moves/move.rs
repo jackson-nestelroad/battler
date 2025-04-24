@@ -4,6 +4,7 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::Error;
 use serde::{
     Deserialize,
     Serialize,
@@ -22,10 +23,7 @@ use crate::{
         Identifiable,
     },
     effect::fxlang,
-    error::{
-        general_error,
-        Error,
-    },
+    error::general_error,
     mons::{
         Stat,
         Type,

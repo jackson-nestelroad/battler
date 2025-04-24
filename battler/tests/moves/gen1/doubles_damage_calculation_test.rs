@@ -1,9 +1,10 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn blastoise() -> Result<TeamData, Error> {
+fn blastoise() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -49,7 +50,7 @@ fn blastoise() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn venusaur_charizard() -> Result<TeamData, Error> {
+fn venusaur_charizard() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -127,7 +128,7 @@ fn make_battle_with_max_damage(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)
@@ -139,7 +140,7 @@ fn make_battle_with_min_damage(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)

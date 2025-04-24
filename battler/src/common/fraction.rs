@@ -14,6 +14,7 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Error;
 use num::{
     integer::Roots,
     pow::Pow,
@@ -36,10 +37,7 @@ use serde::{
     Serializer,
 };
 
-use crate::error::{
-    Error,
-    WrapResultError,
-};
+use crate::error::WrapResultError;
 
 /// An integer type that can be used as the inner type of [`Fraction`].
 pub trait FractionInteger: Integer + FromPrimitive + Copy {}

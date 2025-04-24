@@ -1,9 +1,10 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn swampert() -> Result<TeamData, Error> {
+fn swampert() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -41,7 +42,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -69,7 +70,7 @@ fn choice_band_boosts_attack_and_locks_choice() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Swampert's Hyper Voice is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Swampert's Hyper Voice is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -117,7 +118,7 @@ fn choice_scarf_boosts_speed_and_locks_choice() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-       Err(err) => assert_eq!(err.full_description(), "cannot move: Swampert's Hyper Voice is disabled")
+       Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Swampert's Hyper Voice is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -165,7 +166,7 @@ fn choice_specs_boosts_special_attack_and_locks_choice() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Swampert's Tackle is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Swampert's Tackle is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

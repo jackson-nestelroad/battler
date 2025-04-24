@@ -1,7 +1,8 @@
+use anyhow::Result;
 use battler::{
     error::ValidationError,
     BattleType,
-    Error,
+
     LocalDataStore,
     TeamData,
     WrapResultError,
@@ -18,7 +19,7 @@ fn make_battle_builder() -> TestBattleBuilder {
         .add_player_to_side_2("player-2", "Player 2")
 }
 
-fn three_starters() -> Result<TeamData, Error> {
+fn three_starters() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -55,7 +56,7 @@ fn three_starters() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn three_water_mons() -> Result<TeamData, Error> {
+fn three_water_mons() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -106,12 +107,12 @@ fn enforces_shared_type() {
     );
 
     assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
-        assert_matches::assert_matches!(err.as_ref().downcast_ref::<ValidationError>(), Some(err) => {
+        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Your team does not share a common type to satisfy Same Type Clause."), "{err:?}");
         });
     });
     assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.as_ref().downcast_ref::<ValidationError>(), Some(err) => {
+        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Validation failed for Player 1: Your team does not share a common type to satisfy Same Type Clause."), "{err:?}");
         });
     });

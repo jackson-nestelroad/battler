@@ -4,6 +4,10 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::{
+    Error,
+    Result,
+};
 use zone_alloc::{
     BorrowError,
     ElementRef,
@@ -63,7 +67,6 @@ use crate::{
     error::{
         general_error,
         integer_overflow_error,
-        Error,
         WrapOptionError,
         WrapResultError,
     },
@@ -136,7 +139,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn source_effect_context<'eval>(
         &'eval mut self,
-    ) -> Result<Option<EffectContext<'eval, 'battle, 'data>>, Error> {
+    ) -> Result<Option<EffectContext<'eval, 'battle, 'data>>> {
         self.effect_context_mut().source_effect_context()
     }
 
@@ -144,7 +147,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         &'eval mut self,
         target_handle: MonHandle,
         source_handle: Option<MonHandle>,
-    ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>> {
         let context: ApplyingEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .applying_effect_context(source_handle, target_handle)?;
@@ -159,7 +162,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         &'eval mut self,
         target_handle: MonHandle,
         source_handle: Option<MonHandle>,
-    ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>> {
         let source_effect = self
             .source_effect_handle()
             .wrap_expectation("context has no source effect")?
@@ -176,7 +179,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         &'eval mut self,
         side: usize,
         source_handle: Option<MonHandle>,
-    ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>> {
         let context: SideEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .side_effect_context(side, source_handle)?;
@@ -191,7 +194,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         &'eval mut self,
         side: usize,
         source_handle: Option<MonHandle>,
-    ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<SideEffectContext<'eval, 'eval, 'battle, 'data>> {
         let source_effect = self
             .source_effect_handle()
             .wrap_expectation("context has no source effect")?
@@ -203,7 +206,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_effect_to_field_effect<'eval>(
         &'eval mut self,
         source_handle: Option<MonHandle>,
-    ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>> {
         let context: FieldEffectContext<'eval, 'context, 'battle, 'data> = self
             .effect_context_mut()
             .field_effect_context(source_handle)?;
@@ -217,7 +220,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn forward_source_effect_to_field_effect<'eval>(
         &'eval mut self,
         source_handle: Option<MonHandle>,
-    ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<FieldEffectContext<'eval, 'eval, 'battle, 'data>> {
         let source_effect = self
             .source_effect_handle()
             .wrap_expectation("context has no source effect")?
@@ -228,7 +231,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn applying_effect_context<'eval>(
         &'eval self,
-    ) -> Result<&'eval ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+    ) -> Result<&'eval ApplyingEffectContext<'effect, 'context, 'battle, 'data>> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
             _ => Err(general_error("context is not an applying effect")),
@@ -237,7 +240,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn applying_effect_context_mut<'eval>(
         &'eval mut self,
-    ) -> Result<&'eval mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>, Error> {
+    ) -> Result<&'eval mut ApplyingEffectContext<'effect, 'context, 'battle, 'data>> {
         match self {
             Self::ApplyingEffect(context) => Ok(context),
             _ => Err(general_error("context is not an applying effect")),
@@ -246,7 +249,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn source_applying_effect_context<'eval>(
         &'eval mut self,
-    ) -> Result<Option<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>, Error> {
+    ) -> Result<Option<ApplyingEffectContext<'eval, 'eval, 'battle, 'data>>> {
         match self {
             Self::ApplyingEffect(context) => context.source_applying_effect_context(),
             _ => Err(general_error("context is not an applying effect")),
@@ -255,13 +258,13 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn source_active_move_context<'eval>(
         &'eval mut self,
-    ) -> Result<Option<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+    ) -> Result<Option<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>>> {
         self.effect_context_mut().source_active_move_context()
     }
 
     pub fn target_context<'eval>(
         &'eval mut self,
-    ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>> {
         match self {
             Self::ApplyingEffect(context) => context.target_context(),
             _ => Err(general_error("effect cannot have a target")),
@@ -270,7 +273,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
 
     pub fn source_context<'eval>(
         &'eval mut self,
-    ) -> Result<Option<MonContext<'eval, 'eval, 'eval, 'battle, 'data>>, Error> {
+    ) -> Result<Option<MonContext<'eval, 'eval, 'eval, 'battle, 'data>>> {
         match self {
             Self::ApplyingEffect(context) => context.source_context(),
             Self::SideEffect(context) => context.source_context(),
@@ -282,7 +285,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn mon_context<'eval>(
         &'eval mut self,
         mon_handle: MonHandle,
-    ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<MonContext<'eval, 'eval, 'eval, 'battle, 'data>> {
         match self {
             Self::ApplyingEffect(context) => {
                 if context
@@ -338,7 +341,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
-    pub fn mon<'eval>(&'eval self, mon_handle: MonHandle) -> Result<&'eval Mon, Error> {
+    pub fn mon<'eval>(&'eval self, mon_handle: MonHandle) -> Result<&'eval Mon> {
         match self {
             Self::ApplyingEffect(context) => {
                 if context
@@ -386,7 +389,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
-    fn mon_mut<'eval>(&'eval mut self, mon_handle: MonHandle) -> Result<&'eval mut Mon, Error> {
+    fn mon_mut<'eval>(&'eval mut self, mon_handle: MonHandle) -> Result<&'eval mut Mon> {
         match self {
             Self::ApplyingEffect(context) => {
                 if context
@@ -437,7 +440,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn effect_context_for_handle<'eval>(
         &'eval mut self,
         effect_handle: &EffectHandle,
-    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>, Error> {
+    ) -> Result<MaybeOwnedMut<'eval, EffectContext<'eval, 'battle, 'data>>> {
         if self.effect_handle() == effect_handle {
             let context = self.effect_context_mut();
             // SAFETY: We are shortening the lifetimes of this context to the lifetime of this
@@ -452,17 +455,14 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             .into())
     }
 
-    pub fn active_move<'eval>(
-        &'eval self,
-        active_move_handle: MoveHandle,
-    ) -> Result<&'eval Move, Error> {
+    pub fn active_move<'eval>(&'eval self, active_move_handle: MoveHandle) -> Result<&'eval Move> {
         self.battle_context().active_move(active_move_handle)
     }
 
     pub fn active_move_mut<'eval>(
         &'eval mut self,
         active_move_handle: MoveHandle,
-    ) -> Result<&'eval mut Move, Error> {
+    ) -> Result<&'eval mut Move> {
         self.battle_context_mut()
             .active_move_mut(active_move_handle)
     }
@@ -470,7 +470,7 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
     pub fn active_move_context<'eval>(
         &'eval mut self,
         active_move_handle: MoveHandle,
-    ) -> Result<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>, Error> {
+    ) -> Result<ActiveMoveContext<'eval, 'eval, 'eval, 'eval, 'battle, 'data>> {
         self.battle_context_mut()
             .active_move_context(active_move_handle, MoveHitEffectType::PrimaryEffect)
     }
@@ -553,7 +553,7 @@ impl VariableRegistry {
         }
     }
 
-    fn get(&self, var: &str) -> Result<Option<ElementRef<Value>>, Error> {
+    fn get(&self, var: &str) -> Result<Option<ElementRef<Value>>> {
         match self.vars.get(var) {
             Ok(val) => Ok(Some(val)),
             Err(BorrowError::OutOfBounds) => Ok(None),
@@ -561,7 +561,7 @@ impl VariableRegistry {
         }
     }
 
-    fn get_mut(&self, var: &str) -> Result<Option<ElementRefMut<Value>>, Error> {
+    fn get_mut(&self, var: &str) -> Result<Option<ElementRefMut<Value>>> {
         match self.vars.get_mut(var) {
             Ok(val) => Ok(Some(val)),
             Err(BorrowError::OutOfBounds) => Ok(None),
@@ -569,7 +569,7 @@ impl VariableRegistry {
         }
     }
 
-    fn set(&self, var: &str, value: Value) -> Result<(), Error> {
+    fn set(&self, var: &str, value: Value) -> Result<()> {
         match self.vars.get_mut(var) {
             Ok(mut var) => {
                 *var = value;
@@ -609,10 +609,7 @@ where
         general_error(format!("value of type {value_type} has no member {member}"))
     }
 
-    fn get_ref<'var>(
-        &'var self,
-        context: &'eval mut EvaluationContext,
-    ) -> Result<ValueRef<'var>, Error> {
+    fn get_ref<'var>(&'var self, context: &'eval mut EvaluationContext) -> Result<ValueRef<'var>> {
         let mut value = match &self.stored {
             Some(stored) => ValueRef::from(stored),
             None => ValueRef::Undefined,
@@ -1259,10 +1256,7 @@ where
         Ok(value)
     }
 
-    fn get(
-        self,
-        context: &'eval mut EvaluationContext,
-    ) -> Result<ValueRefToStoredValue<'eval>, Error> {
+    fn get(self, context: &'eval mut EvaluationContext) -> Result<ValueRefToStoredValue<'eval>> {
         let value_ref = self.get_ref(context)?;
         // SAFETY: This ValueRef references some internal part of `self.stored`. Since we are
         // bundling this reference alongside the owner object (which has runtime borrow checking),
@@ -1302,7 +1296,7 @@ where
     fn get_ref_mut<'var>(
         &'var mut self,
         context: &'eval mut EvaluationContext,
-    ) -> Result<ValueRefMut<'var>, Error> {
+    ) -> Result<ValueRefMut<'var>> {
         let mut value = ValueRefMut::from(self.stored.as_mut());
 
         for member in &self.member_access {
@@ -1479,7 +1473,7 @@ where
     fn get_mut<'var>(
         &'var mut self,
         context: &'eval mut EvaluationContext,
-    ) -> Result<ValueRefMut<'var>, Error> {
+    ) -> Result<ValueRefMut<'var>> {
         self.get_ref_mut(context)
     }
 }
@@ -1596,7 +1590,7 @@ impl Evaluator {
         event: BattleEvent,
         mut input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         if let Some(effect_state_connector) = effect_state_connector {
             if effect_state_connector.exists(context.battle_context_mut())? {
                 self.vars
@@ -1747,7 +1741,7 @@ impl Evaluator {
         input: VariableInput,
         program: &ParsedProgram,
         effect_state_connector: Option<DynamicEffectStateConnector>,
-    ) -> Result<ProgramEvalResult, Error> {
+    ) -> Result<ProgramEvalResult> {
         self.initialize_vars(context, event, input, effect_state_connector)?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
@@ -1776,7 +1770,7 @@ impl Evaluator {
         context: &mut EvaluationContext,
         block: &'program ParsedProgramBlock,
         parent_state: &'eval ProgramBlockEvalState,
-    ) -> Result<ProgramStatementEvalResult<'program>, Error>
+    ) -> Result<ProgramStatementEvalResult<'program>>
     where
         'program: 'eval,
     {
@@ -1837,7 +1831,7 @@ impl Evaluator {
         &'eval mut self,
         context: &mut EvaluationContext,
         blocks: &'program [ParsedProgramBlock],
-    ) -> Result<ProgramStatementEvalResult<'program>, Error>
+    ) -> Result<ProgramStatementEvalResult<'program>>
     where
         'program: 'eval,
     {
@@ -1896,7 +1890,7 @@ impl Evaluator {
         context: &'eval mut EvaluationContext,
         statement: &'program tree::Statement,
         parent_state: &'eval ProgramBlockEvalState,
-    ) -> Result<ProgramStatementEvalResult<'program>, Error>
+    ) -> Result<ProgramStatementEvalResult<'program>>
     where
         'program: 'eval,
     {
@@ -1964,7 +1958,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         statement: &'program tree::IfStatement,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool> {
         let condition = self.evaluate_expr(context, &statement.0)?;
         let condition = match condition.boolean() {
             Some(value) => value,
@@ -1982,7 +1976,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         function_call: &'program tree::FunctionCall,
-    ) -> Result<Option<MaybeReferenceValue<'eval>>, Error>
+    ) -> Result<Option<MaybeReferenceValue<'eval>>>
     where
         'program: 'eval,
     {
@@ -1997,7 +1991,7 @@ impl Evaluator {
         context: &mut EvaluationContext,
         function_name: &'program str,
         args: VecDeque<Value>,
-    ) -> Result<Option<MaybeReferenceValue<'eval>>, Error> {
+    ) -> Result<Option<MaybeReferenceValue<'eval>>> {
         let effect_state = self
             .vars
             .get("effect_state")?
@@ -2010,7 +2004,7 @@ impl Evaluator {
     fn evaluate_prefix_operator<'eval>(
         op: tree::Operator,
         value: MaybeReferenceValueForOperation<'eval>,
-    ) -> Result<MaybeReferenceValue<'eval>, Error> {
+    ) -> Result<MaybeReferenceValue<'eval>> {
         match op {
             tree::Operator::Not => value.negate(),
             tree::Operator::UnaryPlus => value.unary_plus(),
@@ -2022,7 +2016,7 @@ impl Evaluator {
         lhs: MaybeReferenceValueForOperation<'eval>,
         op: tree::Operator,
         rhs: MaybeReferenceValueForOperation<'eval>,
-    ) -> Result<MaybeReferenceValue<'eval>, Error> {
+    ) -> Result<MaybeReferenceValue<'eval>> {
         match op {
             tree::Operator::Exponent => lhs.pow(rhs),
             tree::Operator::Multiply => lhs.multiply(rhs),
@@ -2048,7 +2042,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         expr: &'program tree::Expr,
-    ) -> Result<MaybeReferenceValue<'eval>, Error>
+    ) -> Result<MaybeReferenceValue<'eval>>
     where
         'program: 'eval,
     {
@@ -2105,7 +2099,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         formatted_string: &'program tree::FormattedString,
-    ) -> Result<MaybeReferenceValue<'eval>, Error>
+    ) -> Result<MaybeReferenceValue<'eval>>
     where
         'program: 'eval,
     {
@@ -2167,7 +2161,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         value: &'program tree::Value,
-    ) -> Result<MaybeReferenceValue<'eval>, Error>
+    ) -> Result<MaybeReferenceValue<'eval>>
     where
         'program: 'eval,
     {
@@ -2207,7 +2201,7 @@ impl Evaluator {
         &'eval self,
         context: &'eval mut EvaluationContext,
         values: &'program tree::Values,
-    ) -> Result<Vec<MaybeReferenceValue<'eval>>, Error>
+    ) -> Result<Vec<MaybeReferenceValue<'eval>>>
     where
         'program: 'eval,
     {
@@ -2227,7 +2221,7 @@ impl Evaluator {
         context: &mut EvaluationContext,
         var: &'program tree::Var,
         value: MaybeReferenceValue<'eval>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         // Drop the reference as soon as possible, because holding it might block a mutable
         // reference to what we want to assign to.
         //
@@ -2438,7 +2432,7 @@ impl Evaluator {
     fn create_var<'eval, 'program>(
         &'eval self,
         var: &'program tree::Var,
-    ) -> Result<Variable<'eval, 'program>, Error>
+    ) -> Result<Variable<'eval, 'program>>
     where
         'program: 'eval,
     {
@@ -2454,7 +2448,7 @@ impl Evaluator {
     fn create_var_mut<'eval, 'program>(
         &'eval self,
         var: &'program tree::Var,
-    ) -> Result<VariableMut<'eval, 'program>, Error>
+    ) -> Result<VariableMut<'eval, 'program>>
     where
         'program: 'eval,
     {

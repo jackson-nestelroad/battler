@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -17,7 +18,7 @@ fn make_battle(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(555432123456)
@@ -178,7 +179,7 @@ fn move_can_switch_user() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 2"),
-        Err(err) => assert!(err.full_description().contains("you cannot do anything"))
+        Err(err) => assert!(format!("{err:#}").contains("you cannot do anything"))
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
 

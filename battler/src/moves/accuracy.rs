@@ -3,6 +3,7 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Error;
 use serde::{
     de::Visitor,
     Deserialize,
@@ -10,10 +11,7 @@ use serde::{
     Serializer,
 };
 
-use crate::error::{
-    general_error,
-    Error,
-};
+use crate::error::general_error;
 
 /// The base accuracy of a move.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

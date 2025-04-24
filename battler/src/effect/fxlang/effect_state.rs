@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use ahash::HashMapExt;
+use anyhow::Result;
 use uuid::Uuid;
 
 use crate::{
@@ -20,7 +21,6 @@ use crate::{
     },
     error::{
         integer_overflow_error,
-        Error,
         WrapOptionError,
     },
 };
@@ -51,7 +51,7 @@ impl EffectState {
         source_effect: Option<&EffectHandle>,
         target: Option<MonHandle>,
         source: Option<MonHandle>,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self> {
         let mut effect_state = Self::new();
         effect_state.initialize(context, source_effect, target, source)?;
         Ok(effect_state)
@@ -64,7 +64,7 @@ impl EffectState {
         source_effect: Option<&EffectHandle>,
         target: Option<MonHandle>,
         source: Option<MonHandle>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         if let Some(source_effect) = source_effect {
             self.set_source_effect(source_effect.stable_effect_handle(context)?);
         }
@@ -184,7 +184,7 @@ impl EffectState {
     }
 
     /// Sets the source position of the effect.
-    pub fn set_source_position(&mut self, source_position: usize) -> Result<(), Error> {
+    pub fn set_source_position(&mut self, source_position: usize) -> Result<()> {
         self.values.insert(
             Self::SOURCE_POSITION.to_owned(),
             Value::UFraction(Fraction::from(
@@ -235,10 +235,10 @@ impl EffectState {
 /// Used for dynamically reading an [`EffectState`] instance during fxlang program evaluation.
 pub trait EffectStateConnector: Debug {
     /// Checks if the underlying effect state exists.
-    fn exists(&self, context: &mut Context) -> Result<bool, Error>;
+    fn exists(&self, context: &mut Context) -> Result<bool>;
 
     /// Gets a mutable reference to the effect state, for reading and assignment.
-    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut EffectState>, Error>;
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut EffectState>>;
 
     /// The applied effect location.
     fn applied_effect_location(&self) -> AppliedEffectLocation;
@@ -261,12 +261,12 @@ impl DynamicEffectStateConnector {
     }
 
     /// Checks if the underlying effect state exists.
-    pub fn exists(&self, context: &mut Context) -> Result<bool, Error> {
+    pub fn exists(&self, context: &mut Context) -> Result<bool> {
         self.0.exists(context)
     }
 
     /// Gets a mutable reference to the effect state, for reading and assignment.
-    pub fn get_mut<'a>(&self, context: &'a mut Context) -> Result<&'a mut EffectState, Error> {
+    pub fn get_mut<'a>(&self, context: &'a mut Context) -> Result<&'a mut EffectState> {
         Ok(self
             .0
             .get_mut(context)?

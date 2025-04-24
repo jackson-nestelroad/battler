@@ -16,7 +16,6 @@ pub use battler_error::{
 };
 pub use conversions::ConvertError;
 pub use error::{
-    Error,
     WrapError,
     WrapOptionError,
     WrapResultError,

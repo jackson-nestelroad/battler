@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn two_pidgeot() -> Result<TeamData, Error> {
+fn two_pidgeot() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -53,7 +54,7 @@ fn two_pidgeot() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn blastoise() -> Result<TeamData, Error> {
+fn blastoise() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -80,7 +81,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -141,11 +142,11 @@ fn razor_wind_uses_two_turns() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Pidgeot does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Pidgeot does not have a move in slot 1")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: Pidgeot is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Pidgeot is trapped")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -234,11 +235,11 @@ fn fly_grants_invulnerability() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Pidgeot does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Pidgeot does not have a move in slot 1")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: Pidgeot is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Pidgeot is trapped")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

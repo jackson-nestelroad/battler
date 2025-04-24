@@ -1,4 +1,5 @@
 use ahash::HashMapExt;
+use anyhow::Result;
 use uuid::Uuid;
 
 use crate::{
@@ -15,10 +16,7 @@ use crate::{
         AppliedEffectLocation,
         EffectHandle,
     },
-    error::{
-        Error,
-        WrapOptionError,
-    },
+    error::WrapOptionError,
 };
 
 /// Object for managing applied effects in battle and how they link to one another.
@@ -36,10 +34,7 @@ impl LinkedEffectsManager {
         }
     }
 
-    fn get_linked_id(
-        context: &mut Context,
-        effect: &AppliedEffectHandle,
-    ) -> Result<Option<Uuid>, Error> {
+    fn get_linked_id(context: &mut Context, effect: &AppliedEffectHandle) -> Result<Option<Uuid>> {
         let connector = match effect.effect_state_connector() {
             Some(connector) => connector,
             None => return Ok(None),
@@ -65,7 +60,7 @@ impl LinkedEffectsManager {
         context: &mut Context,
         from: &AppliedEffectHandle,
         to: &AppliedEffectHandle,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool> {
         let from_uuid = match Self::get_linked_id(context, from)? {
             Some(uuid) => uuid,
             None => return Ok(false),
@@ -90,7 +85,7 @@ impl LinkedEffectsManager {
         context: &mut EffectContext,
         id: &Id,
         location: AppliedEffectLocation,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let effect_handle = context.battle_mut().get_effect_handle_by_id(id)?.clone();
         Self::remove(context, effect_handle, location)
     }
@@ -100,7 +95,7 @@ impl LinkedEffectsManager {
         context: &mut EffectContext,
         effect: EffectHandle,
         location: AppliedEffectLocation,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let effect = AppliedEffectHandle::new(effect, location);
         let connector = match effect.effect_state_connector() {
             Some(connector) => connector,

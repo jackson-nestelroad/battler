@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -53,7 +54,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -79,7 +80,7 @@ fn revive_revives_fainted_mon_to_half_health() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item revive,-2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Revive cannot be used on Pichu")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Revive cannot be used on Pichu")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item revive,-1"),
@@ -147,7 +148,7 @@ fn max_revive_revives_fainted_mon_to_full_health() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item maxrevive,-2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Max Revive cannot be used on Pichu")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Max Revive cannot be used on Pichu")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item maxrevive,-1"),

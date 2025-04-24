@@ -10,6 +10,7 @@ use std::{
 };
 
 use ahash::HashMapExt;
+use anyhow::Result;
 use itertools::Itertools;
 use zone_alloc::{
     ElementRef,
@@ -69,7 +70,6 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         ValidationError,
         WrapOptionError,
         WrapResultError,
@@ -113,18 +113,18 @@ impl<'d> PublicCoreBattle<'d> {
         options: CoreBattleOptions,
         data: &'d dyn DataStore,
         engine_options: CoreBattleEngineOptions,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self> {
         let internal = CoreBattle::new(options, data, engine_options)?;
         Ok(Self { internal })
     }
 
     /// Updates a player's team.
-    pub fn update_team(&mut self, player_id: &str, team: TeamData) -> Result<(), Error> {
+    pub fn update_team(&mut self, player_id: &str, team: TeamData) -> Result<()> {
         self.internal.update_team(player_id, team)
     }
 
     /// Validates a single player.
-    pub fn validate_player(&mut self, player_id: &str) -> Result<(), Error> {
+    pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
         self.internal.validate_player(player_id)
     }
 
@@ -155,12 +155,12 @@ impl<'d> PublicCoreBattle<'d> {
     }
 
     /// Starts the battle.
-    pub fn start(&mut self) -> Result<(), Error> {
+    pub fn start(&mut self) -> Result<()> {
         self.internal.start()
     }
 
     /// Is the battle ready to continue?
-    pub fn ready_to_continue(&mut self) -> Result<bool, Error> {
+    pub fn ready_to_continue(&mut self) -> Result<bool> {
         self.internal.ready_to_continue()
     }
 
@@ -168,7 +168,7 @@ impl<'d> PublicCoreBattle<'d> {
     ///
     /// [`Self::ready_to_continue`] should return `Ok(true)` before this method
     /// is called.
-    pub fn continue_battle(&mut self) -> Result<(), Error> {
+    pub fn continue_battle(&mut self) -> Result<()> {
         self.internal.continue_battle()
     }
 
@@ -176,7 +176,7 @@ impl<'d> PublicCoreBattle<'d> {
     ///
     /// Individual requests to players also contain this data, but this method can be useful for
     /// viewing for the player's team at other points in the battle and even after the battle ends.
-    pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleData, Error> {
+    pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleData> {
         self.internal.player_data(player)
     }
 
@@ -191,7 +191,7 @@ impl<'d> PublicCoreBattle<'d> {
     }
 
     /// Sets the player's choice for their active request.
-    pub fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
+    pub fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<()> {
         self.internal.set_player_choice(player_id, input)
     }
 }
@@ -269,7 +269,7 @@ impl<'d> CoreBattle<'d> {
         options: CoreBattleOptions,
         data: &'d dyn DataStore,
         engine_options: CoreBattleEngineOptions,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self> {
         options
             .validate()
             .wrap_error_with_message("battle options are invalid")?;
@@ -359,13 +359,13 @@ impl<'d> CoreBattle<'d> {
         self.sides.iter_mut()
     }
 
-    pub fn side(&self, side: usize) -> Result<&Side, Error> {
+    pub fn side(&self, side: usize) -> Result<&Side> {
         self.sides
             .get(side)
             .wrap_not_found_error_with_format(format_args!("side {side}"))
     }
 
-    pub fn side_mut(&mut self, side: usize) -> Result<&mut Side, Error> {
+    pub fn side_mut(&mut self, side: usize) -> Result<&mut Side> {
         self.sides
             .get_mut(side)
             .wrap_not_found_error_with_format(format_args!("side {side}"))
@@ -383,13 +383,13 @@ impl<'d> CoreBattle<'d> {
         self.players.iter_mut()
     }
 
-    pub fn player(&self, player: usize) -> Result<&Player, Error> {
+    pub fn player(&self, player: usize) -> Result<&Player> {
         self.players
             .get(player)
             .wrap_not_found_error_with_format(format_args!("player {player}"))
     }
 
-    pub fn player_mut(&mut self, player: usize) -> Result<&mut Player, Error> {
+    pub fn player_mut(&mut self, player: usize) -> Result<&mut Player> {
         self.players
             .get_mut(player)
             .wrap_not_found_error_with_format(format_args!("player {player}"))
@@ -407,35 +407,32 @@ impl<'d> CoreBattle<'d> {
         self.players().filter(move |player| player.side == side)
     }
 
-    fn player_index_by_id(&self, player_id: &str) -> Result<usize, Error> {
+    fn player_index_by_id(&self, player_id: &str) -> Result<usize> {
         self.player_ids
             .get(player_id)
             .wrap_not_found_error_with_format(format_args!("player {player_id}"))
             .cloned()
     }
 
-    pub unsafe fn mon<'b>(&'b self, mon_handle: MonHandle) -> Result<ElementRef<'b, Mon>, Error> {
+    pub unsafe fn mon<'b>(&'b self, mon_handle: MonHandle) -> Result<ElementRef<'b, Mon>> {
         self.registry.mon(mon_handle)
     }
 
-    pub unsafe fn mon_mut<'b>(
-        &'b self,
-        mon_handle: MonHandle,
-    ) -> Result<ElementRefMut<'b, Mon>, Error> {
+    pub unsafe fn mon_mut<'b>(&'b self, mon_handle: MonHandle) -> Result<ElementRefMut<'b, Mon>> {
         self.registry.mon_mut(mon_handle)
     }
 
     pub unsafe fn active_move<'b>(
         &'b self,
         move_handle: MoveHandle,
-    ) -> Result<ElementRef<'b, Move>, Error> {
+    ) -> Result<ElementRef<'b, Move>> {
         self.registry.active_move(move_handle)
     }
 
     pub unsafe fn active_move_mut<'b>(
         &'b self,
         move_handle: MoveHandle,
-    ) -> Result<ElementRefMut<'b, Move>, Error> {
+    ) -> Result<ElementRefMut<'b, Move>> {
         self.registry.active_move_mut(move_handle)
     }
 
@@ -478,9 +475,7 @@ impl<'d> CoreBattle<'d> {
             .flatten()
     }
 
-    pub fn all_active_mon_handles_in_speed_order(
-        context: &mut Context,
-    ) -> Result<Vec<MonHandle>, Error> {
+    pub fn all_active_mon_handles_in_speed_order(context: &mut Context) -> Result<Vec<MonHandle>> {
         let active_mons = context
             .battle()
             .all_active_mon_handles()
@@ -539,22 +534,22 @@ impl<'d> CoreBattle<'d> {
         self.log.read_out()
     }
 
-    fn start(&mut self) -> Result<(), Error> {
+    fn start(&mut self) -> Result<()> {
         Self::start_internal(&mut self.context())
     }
 
-    fn ready_to_continue(&mut self) -> Result<bool, Error> {
+    fn ready_to_continue(&mut self) -> Result<bool> {
         Self::all_player_choices_done(&mut self.context())
     }
 
-    fn continue_battle(&mut self) -> Result<(), Error> {
+    fn continue_battle(&mut self) -> Result<()> {
         if !self.ready_to_continue()? {
             return Err(general_error("battle is not ready to continue"));
         }
         Self::continue_battle_internal(&mut self.context())
     }
 
-    fn player_data(&mut self, player: &str) -> Result<PlayerBattleData, Error> {
+    fn player_data(&mut self, player: &str) -> Result<PlayerBattleData> {
         let player = self.player_index_by_id(player)?;
         Player::request_data(&mut self.context().player_context(player)?)
     }
@@ -572,13 +567,13 @@ impl<'d> CoreBattle<'d> {
         self.player(player).ok()?.active_request()
     }
 
-    fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<(), Error> {
+    fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<()> {
         Self::set_player_choice_internal(&mut self.context(), player_id, input)
     }
 }
 
 impl<'d> CoreBattle<'d> {
-    pub fn update_team(&mut self, player_id: &str, mut team: TeamData) -> Result<(), Error> {
+    pub fn update_team(&mut self, player_id: &str, mut team: TeamData) -> Result<()> {
         if self.started {
             return Err(general_error(
                 "cannot update a team after a battle has started",
@@ -603,7 +598,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn validate_and_modify_team(&self, team: &mut TeamData) -> Result<(), Error> {
+    fn validate_and_modify_team(&self, team: &mut TeamData) -> Result<()> {
         let validator = TeamValidator::new(&self.format, &self.dex);
         let problems = validator.validate_team(team);
         if !problems.is_empty() {
@@ -678,7 +673,7 @@ impl<'d> CoreBattle<'d> {
         self.ended
     }
 
-    fn initialize(context: &mut Context) -> Result<(), Error> {
+    fn initialize(context: &mut Context) -> Result<()> {
         for player in 0..context.battle().players.len() {
             let mut context = context.player_context(player)?;
             Player::set_index(&mut context, player)?;
@@ -691,7 +686,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn initial_validation(context: &mut Context) -> Result<(), Error> {
+    fn initial_validation(context: &mut Context) -> Result<()> {
         let mut problems = Vec::new();
         if let Some(players_per_side) = context.battle().format.rules.numeric_rules.players_per_side
         {
@@ -712,12 +707,12 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    pub fn validate_player(&mut self, player_id: &str) -> Result<(), Error> {
+    pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
         let player = self.player_index_by_id(player_id)?;
         Self::validate_player_internal(&mut self.context().player_context(player)?)
     }
 
-    fn validate_player_internal(context: &mut PlayerContext) -> Result<(), Error> {
+    fn validate_player_internal(context: &mut PlayerContext) -> Result<()> {
         let mut problems = core_battle_effects::run_event_for_player_expecting_string_list(
             context,
             fxlang::BattleEvent::ValidateTeam,
@@ -746,21 +741,25 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn validate(context: &mut Context) -> Result<(), Error> {
+    fn validate(context: &mut Context) -> Result<()> {
         let mut problems = Vec::new();
 
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
             match Self::validate_player_internal(&mut context) {
                 Ok(()) => continue,
-                Err(err) => match err.as_ref().downcast_ref::<ValidationError>() {
-                    Some(err) => {
-                        problems.extend(err.problems().map(|problem| {
-                            format!("Validation failed for {}: {problem}", context.player().name)
-                        }));
-                    }
-                    None => return Err(err),
-                },
+                Err(err) => {
+                    problems.extend(
+                        err.downcast::<ValidationError>()?
+                            .problems()
+                            .map(|problem| {
+                                format!(
+                                    "Validation failed for {}: {problem}",
+                                    context.player().name
+                                )
+                            }),
+                    );
+                }
             }
         }
         if !problems.is_empty() {
@@ -769,7 +768,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn start_internal(context: &mut Context) -> Result<(), Error> {
+    fn start_internal(context: &mut Context) -> Result<()> {
         if context.battle().started {
             return Err(general_error("battle already started"));
         }
@@ -806,7 +805,7 @@ impl<'d> CoreBattle<'d> {
                     Ok(rule_log)
                 })
             })
-            .collect::<Result<Vec<_>, Error>>()?;
+            .collect::<Result<Vec<_>>>()?;
         rule_logs.sort();
         context.battle_mut().log_many(
             rule_logs
@@ -918,7 +917,7 @@ impl<'d> CoreBattle<'d> {
         self.format.rules.has_rule(&Id::from_known("teampreview"))
     }
 
-    fn start_team_preview(context: &mut Context) -> Result<(), Error> {
+    fn start_team_preview(context: &mut Context) -> Result<()> {
         context
             .battle_mut()
             .log(battle_log_entry!("teampreviewstart"));
@@ -935,7 +934,7 @@ impl<'d> CoreBattle<'d> {
                     Mon::public_details(&context)?,
                 ))
             })
-            .collect::<Result<Vec<_>, Error>>()?;
+            .collect::<Result<Vec<_>>>()?;
         context.battle_mut().log_many(events);
         match context.battle().format.rules.numeric_rules.picked_team_size {
             Some(picked_team_size) => context
@@ -951,7 +950,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut Context,
         player: usize,
         request_type: RequestType,
-    ) -> Result<Option<Request>, Error> {
+    ) -> Result<Option<Request>> {
         match request_type {
             RequestType::TeamPreview => {
                 let max_team_size = context
@@ -1032,7 +1031,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut Context,
         player_id: &str,
         input: &str,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let player = context.battle().player_index_by_id(player_id)?;
         Player::make_choice(&mut context.player_context(player)?, input)?;
         let turn = context.battle().turn;
@@ -1051,7 +1050,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn make_request(context: &mut Context, request_type: RequestType) -> Result<(), Error> {
+    fn make_request(context: &mut Context, request_type: RequestType) -> Result<()> {
         context.battle_mut().log.commit();
         Self::clear_requests(context)?;
         context.battle_mut().request = Some(request_type);
@@ -1065,7 +1064,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn all_player_choices_done(context: &mut Context) -> Result<bool, Error> {
+    fn all_player_choices_done(context: &mut Context) -> Result<bool> {
         for player in 0..context.battle().players.len() {
             let mut context = context.player_context(player)?;
             if !Player::choice_done(&mut context)? {
@@ -1075,7 +1074,7 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
-    fn clear_requests(context: &mut Context) -> Result<(), Error> {
+    fn clear_requests(context: &mut Context) -> Result<()> {
         context.battle_mut().request = None;
         for player in 0..context.battle().players.len() {
             let mut context = context.player_context(player)?;
@@ -1085,7 +1084,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn commit_choices(context: &mut Context) -> Result<(), Error> {
+    fn commit_choices(context: &mut Context) -> Result<()> {
         // Take all player actions and insert them into the battle queue.
         let choices = context
             .battle_mut()
@@ -1103,7 +1102,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn continue_battle_internal(context: &mut Context) -> Result<(), Error> {
+    fn continue_battle_internal(context: &mut Context) -> Result<()> {
         if !context.battle().engine_options.auto_continue {
             if !Self::all_player_choices_done(context)? {
                 return Err(general_error(
@@ -1142,7 +1141,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn run_action(context: &mut Context, action: Action) -> Result<(), Error> {
+    fn run_action(context: &mut Context, action: Action) -> Result<()> {
         // Actions don't matter anymore if the battle ended.
         if context.battle().ended {
             return Ok(());
@@ -1336,7 +1335,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn after_action(context: &mut Context) -> Result<(), Error> {
+    fn after_action(context: &mut Context) -> Result<()> {
         Self::faint_messages(context)?;
         Self::catch_messages(context)?;
 
@@ -1452,7 +1451,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn check_for_exited_mons(context: &mut Context) -> Result<(), Error> {
+    fn check_for_exited_mons(context: &mut Context) -> Result<()> {
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
             for mon in context
@@ -1470,7 +1469,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn next_turn(context: &mut Context) -> Result<(), Error> {
+    fn next_turn(context: &mut Context) -> Result<()> {
         context.battle_mut().turn += 1;
 
         if context.battle().turn >= 1000 {
@@ -1512,11 +1511,11 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn schedule_tie(context: &mut Context) -> Result<(), Error> {
+    fn schedule_tie(context: &mut Context) -> Result<()> {
         Self::schedule_win(context, None)
     }
 
-    fn schedule_win(context: &mut Context, mut side: Option<usize>) -> Result<(), Error> {
+    fn schedule_win(context: &mut Context, mut side: Option<usize>) -> Result<()> {
         if context.battle().ending {
             return Ok(());
         }
@@ -1536,7 +1535,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn win(context: &mut Context, side: Option<usize>) -> Result<(), Error> {
+    fn win(context: &mut Context, side: Option<usize>) -> Result<()> {
         match side {
             Some(side) => {
                 context
@@ -1553,7 +1552,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<(), Error> {
+    fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<()> {
         if let Action::Move(action) = action {
             let mov = context.battle().dex.moves.get_by_id(&action.id)?;
             let priority = mov.data.priority as i32;
@@ -1589,24 +1588,18 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    pub fn register_active_move(
-        context: &mut Context,
-        active_move: Move,
-    ) -> Result<MoveHandle, Error> {
+    pub fn register_active_move(context: &mut Context, active_move: Move) -> Result<MoveHandle> {
         let active_move_handle = context.battle_mut().register_move(active_move);
         Ok(active_move_handle)
     }
 
-    pub fn register_active_move_by_id(
-        context: &mut Context,
-        move_id: &Id,
-    ) -> Result<MoveHandle, Error> {
+    pub fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<MoveHandle> {
         let active_move = (*context.battle_mut().dex.moves.get_by_id(move_id)?).clone();
         Self::register_active_move(context, active_move)
     }
 
     /// Resolves the given action by calculating its priority in the context of the battle.
-    pub fn resolve_action(context: &mut Context, action: &mut Action) -> Result<(), Error> {
+    pub fn resolve_action(context: &mut Context, action: &mut Action) -> Result<()> {
         if let Action::Move(action) = action {
             let mut context = context.mon_context(action.mon_action.mon)?;
             if let Some(target) = action.target {
@@ -1622,10 +1615,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     /// Selects a random switchable Mon from the player.
-    pub fn random_switchable(
-        context: &mut Context,
-        player: usize,
-    ) -> Result<Option<MonHandle>, Error> {
+    pub fn random_switchable(context: &mut Context, player: usize) -> Result<Option<MonHandle>> {
         let prng = context.battle_mut().prng.as_mut();
         // SAFETY: PRNG is completely disjoint from the iterator created below.
         let prng = unsafe { mem::transmute(prng) };
@@ -1641,7 +1631,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut Context,
         mon: MonHandle,
         move_target: MoveTarget,
-    ) -> Result<Option<MonHandle>, Error> {
+    ) -> Result<Option<MonHandle>> {
         if move_target.can_target_user() {
             // Target the user if possible.
             return Ok(Some(mon));
@@ -1685,7 +1675,7 @@ impl<'d> CoreBattle<'d> {
         move_id: &Id,
         target: Option<isize>,
         original_target: Option<MonHandle>,
-    ) -> Result<Option<MonHandle>, Error> {
+    ) -> Result<Option<MonHandle>> {
         let mov = context.battle().dex.moves.get_by_id(move_id)?;
         let tracks_target = mov.data.tracks_target;
         let move_target = mov.data.target.clone();
@@ -1734,7 +1724,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut MonContext,
         item: &Id,
         target: Option<isize>,
-    ) -> Result<Option<MonHandle>, Error> {
+    ) -> Result<Option<MonHandle>> {
         let item = context.battle().dex.items.get_by_id(item)?;
         let item_target = item.data.target.wrap_expectation("item is not usable")?;
 
@@ -1773,7 +1763,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut MonContext,
         move_target: MoveTarget,
         target_location: isize,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool> {
         if target_location == 0 {
             return Err(general_error("target position cannot be 0"));
         }
@@ -1803,7 +1793,7 @@ impl<'d> CoreBattle<'d> {
         context: &mut PlayerContext,
         item_target: ItemTarget,
         target_location: isize,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool> {
         match item_target {
             ItemTarget::Party => {
                 if target_location >= 0 {
@@ -1846,7 +1836,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     /// Clears all active moves for all Mons.
-    pub fn clear_all_active_moves(context: &mut Context) -> Result<(), Error> {
+    pub fn clear_all_active_moves(context: &mut Context) -> Result<()> {
         for mon in context
             .battle()
             .all_active_mon_handles()
@@ -1859,7 +1849,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     /// Updates the speed of all Mons.
-    pub fn update_speed(context: &mut Context) -> Result<(), Error> {
+    pub fn update_speed(context: &mut Context) -> Result<()> {
         for mon_handle in context
             .battle()
             .all_active_mon_handles()
@@ -1916,7 +1906,7 @@ impl<'d> CoreBattle<'d> {
     /// Logs all faint messages.
     ///
     /// A Mon is considered truly fainted only after this method runs.
-    pub fn faint_messages(context: &mut Context) -> Result<(), Error> {
+    pub fn faint_messages(context: &mut Context) -> Result<()> {
         if context.battle().ending {
             return Ok(());
         }
@@ -1964,7 +1954,7 @@ impl<'d> CoreBattle<'d> {
     /// Logs all catch messages.
     ///
     /// A Mon is considered truly caught only after this method runs.
-    pub fn catch_messages(context: &mut Context) -> Result<(), Error> {
+    pub fn catch_messages(context: &mut Context) -> Result<()> {
         while let Some(entry) = context.battle_mut().catch_queue.pop_front() {
             let mut context = context.mon_context(entry.target)?;
 
@@ -2013,7 +2003,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     /// Checks if anyone has won the battle.
-    pub fn check_win(context: &mut Context) -> Result<(), Error> {
+    pub fn check_win(context: &mut Context) -> Result<()> {
         if context.battle().in_pre_battle {
             return Ok(());
         }
@@ -2033,7 +2023,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     /// Gets an [`EffectHandle`] by name.
-    pub fn get_effect_handle(&mut self, name: &str) -> Result<&EffectHandle, Error> {
+    pub fn get_effect_handle(&mut self, name: &str) -> Result<&EffectHandle> {
         self.get_effect_handle_by_id(&Id::from(name))
     }
 
@@ -2042,7 +2032,7 @@ impl<'d> CoreBattle<'d> {
     /// An [`Effect`] has many variants. An ID is not enough on its own to lookup a generic effect.
     /// For the duration of a battle, an ID will map to a single [`EffectHandle`]. This method
     /// handles the caching of this translation.
-    pub fn get_effect_handle_by_id(&mut self, id: &Id) -> Result<&EffectHandle, Error> {
+    pub fn get_effect_handle_by_id(&mut self, id: &Id) -> Result<&EffectHandle> {
         if self.effect_handle_cache.contains_key(id) {
             return self
                 .effect_handle_cache
@@ -2085,7 +2075,7 @@ impl<'d> CoreBattle<'d> {
     pub fn get_effect_by_handle<'context>(
         context: &'context Context,
         effect_handle: &EffectHandle,
-    ) -> Result<Effect<'context>, Error> {
+    ) -> Result<Effect<'context>> {
         match effect_handle {
             EffectHandle::ActiveMove(active_move_handle, hit_effect_type) => {
                 Ok(Effect::for_active_move(
@@ -2128,7 +2118,7 @@ impl<'d> CoreBattle<'d> {
     pub fn get_effect_by_id<'context>(
         context: &'context mut Context,
         id: &Id,
-    ) -> Result<Effect<'context>, Error> {
+    ) -> Result<Effect<'context>> {
         let effect_handle = context.battle_mut().get_effect_handle_by_id(id)?.clone();
         Self::get_effect_by_handle(context, &effect_handle)
     }
@@ -2146,7 +2136,7 @@ impl<'d> CoreBattle<'d> {
     }
 
     /// Updates the battle, triggering any miscellaneous effects on Mons that could activate.
-    pub fn update(context: &mut Context) -> Result<(), Error> {
+    pub fn update(context: &mut Context) -> Result<()> {
         core_battle_effects::run_event_for_each_active_mon_with_effect(
             &mut context.effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
             fxlang::BattleEvent::Update,

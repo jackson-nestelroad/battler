@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     common::Id,
     dex::{
@@ -10,7 +12,6 @@ use crate::{
         SingleValueDex,
         SpeciesDex,
     },
-    error::Error,
     mons::TypeChart,
     moves::MoveData,
 };
@@ -38,7 +39,7 @@ pub struct Dex<'d> {
 
 impl<'d> Dex<'d> {
     /// Creates a new [`Dex`], backed by the given [`DataStore`].
-    pub fn new(data: &'d dyn DataStore) -> Result<Self, Error> {
+    pub fn new(data: &'d dyn DataStore) -> Result<Self> {
         let type_chart = SingleValueDex::new(data, data.get_type_chart()?);
         Ok(Self {
             abilities: AbilityDex::new(data),
@@ -58,7 +59,7 @@ impl<'d> Dex<'d> {
     }
 
     /// Gets all move IDs, applying the given filter on the underlying data.
-    pub fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error> {
+    pub fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         self.data.all_move_ids(filter)
     }
 }

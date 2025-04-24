@@ -1,7 +1,7 @@
+use anyhow::Result;
 use battler::{
     error::ValidationError,
     BattleType,
-    Error,
     LocalDataStore,
     TeamData,
     WrapResultError,
@@ -17,7 +17,7 @@ fn make_battle_builder() -> TestBattleBuilder {
         .add_player_to_side_2("player-2", "Player 2")
 }
 
-fn three_starters() -> Result<TeamData, Error> {
+fn three_starters() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -64,7 +64,7 @@ fn validates_empty_side() {
             .build(&data)
             .err(),
         Some(err) => {
-            assert!(err.full_description().contains("Side 2 has no players"), "{err:?}");
+            assert!(format!("{err:#}").contains("Side 2 has no players"), "{err:?}");
         }
     );
 }
@@ -81,7 +81,7 @@ fn validates_players_per_side() {
             .build(&data)
             .err(),
         Some(err) => {
-            assert!(err.full_description().contains("Side 1 has too many players for a singles battle"), "{err:?}");
+            assert!(format!("{err:#}").contains("Side 1 has too many players for a singles battle"), "{err:?}");
         }
     );
 }
@@ -99,7 +99,7 @@ fn validates_players_per_side_clause() {
             .build(&data)
             .err(),
         Some(err) => {
-            assert!(err.full_description().contains("Side 2 must have exactly 2 players."), "{err:?}");
+            assert!(format!("{err:#}").contains("Side 2 must have exactly 2 players."), "{err:?}");
         }
     );
 }
@@ -109,7 +109,7 @@ fn validates_empty_teams_before_start() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle_builder().build(&data).unwrap();
     assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.as_ref().downcast_ref::<ValidationError>(), Some(err) => {
+        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
             assert!(err.problems().contains(&"Validation failed for Player 2: Empty team is not allowed."), "{err:?}");
         });
@@ -120,7 +120,7 @@ fn validates_empty_teams_before_start() {
         Ok(())
     );
     assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.as_ref().downcast_ref::<ValidationError>(), Some(err) => {
+        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(!err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
             assert!(err.problems().contains(&"Validation failed for Player 2: Empty team is not allowed."), "{err:?}");
         });
@@ -144,7 +144,7 @@ fn validates_team_legality_during_update() {
     assert_matches::assert_matches!(
         battle.update_team("player-1", three_starters().unwrap()),
         Err(err) => {
-            assert_matches::assert_matches!(err.as_ref().downcast_ref::<ValidationError>(), Some(err) => {
+            assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
                 assert!(err.problems().contains(&"You may only bring up to 2 Mons (your team has 3)."), "{err:?}");
             });
         }
@@ -152,7 +152,7 @@ fn validates_team_legality_during_update() {
 
     // Team is not saved.
     assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.as_ref().downcast_ref::<ValidationError>(), Some(err) => {
+        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
         });
     });
@@ -166,7 +166,7 @@ fn fails_to_update_team_for_nonexistent_player() {
     assert_matches::assert_matches!(
         battle.update_team("player-3", three_starters().unwrap()),
         Err(err) => {
-            assert!(err.full_description().contains("not found"), "{err:?}");
+            assert!(format!("{err:#}").contains("not found"), "{err:?}");
         }
     );
 }

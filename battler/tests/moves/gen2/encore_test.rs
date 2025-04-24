@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn togepi() -> Result<TeamData, Error> {
+fn togepi() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -41,7 +42,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -70,11 +71,11 @@ fn encore_disables_all_moves_except_last_move() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0"),
-        Err(err) => assert!(err.full_description().contains("is disabled"))
+        Err(err) => assert!(format!("{err:#}").contains("is disabled"))
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 2"),
-        Err(err) => assert!(err.full_description().contains("is disabled"))
+        Err(err) => assert!(format!("{err:#}").contains("is disabled"))
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -2,12 +2,12 @@ use ahash::{
     HashMap,
     HashMapExt,
 };
+use anyhow::Result;
 use battler::{
     AbilityData,
     ClauseData,
     ConditionData,
     DataStore,
-    Error,
     Id,
     ItemData,
     LocalDataStore,
@@ -26,7 +26,7 @@ pub struct TestDataStore {
 }
 
 impl TestDataStore {
-    pub fn new_from_env(env_var: &str) -> Result<Self, Error> {
+    pub fn new_from_env(env_var: &str) -> Result<Self> {
         let local = LocalDataStore::new_from_env(env_var)?;
         Ok(Self {
             local,
@@ -40,7 +40,7 @@ impl TestDataStore {
 }
 
 impl DataStore for TestDataStore {
-    fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>, Error> {
+    fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         let mut all_moves = self.local.all_move_ids(filter)?;
         let mut fake_moves = self
             .fake_moves
@@ -51,38 +51,38 @@ impl DataStore for TestDataStore {
         Ok(all_moves)
     }
 
-    fn get_type_chart(&self) -> Result<TypeChart, Error> {
+    fn get_type_chart(&self) -> Result<TypeChart> {
         self.local.get_type_chart()
     }
 
-    fn translate_alias(&self, id: &Id) -> Result<Id, Error> {
+    fn translate_alias(&self, id: &Id) -> Result<Id> {
         self.local.translate_alias(id)
     }
 
-    fn get_ability(&self, id: &Id) -> Result<AbilityData, Error> {
+    fn get_ability(&self, id: &Id) -> Result<AbilityData> {
         self.local.get_ability(id)
     }
 
-    fn get_clause(&self, id: &Id) -> Result<ClauseData, Error> {
+    fn get_clause(&self, id: &Id) -> Result<ClauseData> {
         self.local.get_clause(id)
     }
 
-    fn get_condition(&self, id: &Id) -> Result<ConditionData, Error> {
+    fn get_condition(&self, id: &Id) -> Result<ConditionData> {
         self.local.get_condition(id)
     }
 
-    fn get_item(&self, id: &Id) -> Result<ItemData, Error> {
+    fn get_item(&self, id: &Id) -> Result<ItemData> {
         self.local.get_item(id)
     }
 
-    fn get_move(&self, id: &Id) -> Result<MoveData, Error> {
+    fn get_move(&self, id: &Id) -> Result<MoveData> {
         match self.fake_moves.get(id) {
             Some(fake_move) => Ok(fake_move.clone()),
             None => self.local.get_move(id),
         }
     }
 
-    fn get_species(&self, id: &Id) -> Result<SpeciesData, Error> {
+    fn get_species(&self, id: &Id) -> Result<SpeciesData> {
         self.local.get_species(id)
     }
 }

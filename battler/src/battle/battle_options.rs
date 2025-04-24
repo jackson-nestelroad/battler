@@ -1,3 +1,4 @@
+use anyhow::Result;
 use serde::{
     Deserialize,
     Serialize,
@@ -11,10 +12,7 @@ use crate::{
         SideData,
     },
     config::FormatData,
-    error::{
-        general_error,
-        Error,
-    },
+    error::general_error,
     rng::{
         PseudoRandomNumberGenerator,
         RealPseudoRandomNumberGenerator,
@@ -169,7 +167,7 @@ pub struct CoreBattleOptions {
 }
 
 impl CoreBattleOptions {
-    fn validate_side(&self, side: &SideData) -> Result<(), Error> {
+    fn validate_side(&self, side: &SideData) -> Result<()> {
         let players_on_side = side.players.len();
         if players_on_side == 0 {
             return Err(general_error(format!("{} has no players", side.name)));
@@ -199,12 +197,12 @@ impl CoreBattleOptions {
         Ok(())
     }
 
-    fn validate_player(&self, _: &SideData, _: &PlayerData) -> Result<(), Error> {
+    fn validate_player(&self, _: &SideData, _: &PlayerData) -> Result<()> {
         Ok(())
     }
 
     /// Validates the battle options.
-    pub fn validate(&self) -> Result<(), Error> {
+    pub fn validate(&self) -> Result<()> {
         self.validate_side(&self.side_1)?;
         self.validate_side(&self.side_2)?;
         Ok(())

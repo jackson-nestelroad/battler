@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use anyhow::Result;
 use zone_alloc::{
     BorrowError,
     ElementRef,
@@ -14,7 +15,6 @@ use crate::{
     error::{
         general_error,
         ConvertError,
-        Error,
         NotFoundError,
     },
 };
@@ -32,13 +32,13 @@ pub trait ResourceLookup<'d, T> {
     /// Looks up a resource by ID.
     ///
     /// The ID is guaranteed to not be an alias.
-    fn lookup(&self, id: &Id) -> Result<T, Error>;
+    fn lookup(&self, id: &Id) -> Result<T>;
 
     /// Looks up a resource by alias and its real ID.
     ///
     /// `alias` is the original input. `real_id` is the end of the alias chain, as defined in
     /// [`DataStore`].
-    fn lookup_alias(&self, _alias: &Id, real_id: &Id) -> Result<T, Error> {
+    fn lookup_alias(&self, _alias: &Id, real_id: &Id) -> Result<T> {
         self.lookup(real_id)
     }
 }
@@ -105,7 +105,7 @@ where
         }
     }
 
-    fn cache_data(&self, id: &Id) -> Result<(), Error> {
+    fn cache_data(&self, id: &Id) -> Result<()> {
         let data = self.lookup_data_by_id(id)?;
         let resource = W::wrap(id.clone(), data);
         if !self.cache.save(id, resource) {
@@ -118,12 +118,12 @@ where
     }
 
     /// Retrieves a resource by name.
-    pub fn get(&self, name: &str) -> Result<ElementRef<T>, Error> {
+    pub fn get(&self, name: &str) -> Result<ElementRef<T>> {
         self.get_by_id(&Id::from(name))
     }
 
     /// Retrieves a resource by ID.
-    pub fn get_by_id(&self, id: &Id) -> Result<ElementRef<T>, Error> {
+    pub fn get_by_id(&self, id: &Id) -> Result<ElementRef<T>> {
         let id = self.resolve_alias(id.clone())?;
         // The borrow checker struggles if we use pattern matching here, so we have to do two
         // lookups.
@@ -139,12 +139,12 @@ where
             .map_err(|err| err.convert_error_with_message(format!("cached resource {id}")))
     }
 
-    fn resolve_alias(&self, mut id: Id) -> Result<Id, Error> {
+    fn resolve_alias(&self, mut id: Id) -> Result<Id> {
         loop {
             match self.data.translate_alias(&id) {
                 Ok(alias) => id = alias,
                 Err(error) => {
-                    if error.as_ref().is::<NotFoundError>() {
+                    if error.is::<NotFoundError>() {
                         return Ok(id);
                     } else {
                         return Err(error);
@@ -155,7 +155,7 @@ where
     }
 
     /// Looks up a resource by ID using the internal [`ResourceLookup`] implementation.
-    fn lookup_data_by_id(&self, id: &Id) -> Result<D, Error> {
+    fn lookup_data_by_id(&self, id: &Id) -> Result<D> {
         self.lookup.lookup(&id)
     }
 }
@@ -235,6 +235,7 @@ mod dex_tests {
     };
 
     use ahash::HashMapExt;
+    use anyhow::Result;
     use rand::random;
 
     use crate::{
@@ -249,7 +250,6 @@ mod dex_tests {
             ResourceLookup,
             ResourceWrapper,
         },
-        error::Error,
     };
 
     #[derive(Debug, Clone, PartialEq)]
@@ -275,7 +275,7 @@ mod dex_tests {
             }
         }
 
-        fn lookup(&self, id: &Id) -> Result<TestData, Error> {
+        fn lookup(&self, id: &Id) -> Result<TestData> {
             *self
                 .lookup_calls
                 .borrow_mut()

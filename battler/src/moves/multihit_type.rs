@@ -3,6 +3,7 @@ use std::{
     fmt::Display,
 };
 
+use anyhow::Error;
 use serde::{
     de::Visitor,
     ser::SerializeSeq,
@@ -11,10 +12,7 @@ use serde::{
     Serializer,
 };
 
-use crate::error::{
-    general_error,
-    Error,
-};
+use crate::error::general_error;
 
 /// The number of hits done by a multihit move.
 #[derive(Debug, Clone, PartialEq, Eq)]

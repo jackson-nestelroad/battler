@@ -4,6 +4,7 @@ use ahash::{
     HashMapExt,
     HashSetExt,
 };
+use anyhow::Result;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -22,10 +23,7 @@ use crate::{
         ResourceCheck,
     },
     dex::Dex,
-    error::{
-        Error,
-        NotFoundError,
-    },
+    error::NotFoundError,
     items::Item,
     mons::{
         Gender,
@@ -162,7 +160,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let species = match self.dex.species.get(&mon.species) {
             Ok(species) => species,
             Err(error) => {
-                if error.as_ref().is::<NotFoundError>() {
+                if error.is::<NotFoundError>() {
                     problems.push(format!("Species {} does not exist.", mon.species));
                 } else {
                     problems.push(format!(
@@ -176,7 +174,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let ability = match self.dex.abilities.get(&mon.ability) {
             Ok(ability) => ability,
             Err(error) => {
-                if error.as_ref().is::<NotFoundError>() {
+                if error.is::<NotFoundError>() {
                     problems.push(format!(
                         "Ability {} (on {}) does not exist.",
                         mon.ability, mon.name
@@ -194,7 +192,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             match self.dex.items.get(&item) {
                 Ok(item) => Some(item),
                 Err(error) => {
-                    if error.as_ref().is::<NotFoundError>() {
+                    if error.is::<NotFoundError>() {
                         problems.push(format!("Item {} (on {}) does not exist.", item, mon.name));
                     } else {
                         problems.push(format!("Failed to look up item {}: {error}.", item));
@@ -292,7 +290,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let species = match self.dex.species.get(&mon.species) {
             Ok(species) => species,
             Err(error) => {
-                if error.as_ref().is::<NotFoundError>() {
+                if error.is::<NotFoundError>() {
                     problems.push(format!(
                         "Species {} ({} was forced into it) does not exist.",
                         mon.species, mon.name
@@ -462,7 +460,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             let mov = match self.dex.moves.get(move_name) {
                 Ok(mov) => mov,
                 Err(error) => {
-                    if error.as_ref().is::<NotFoundError>() {
+                    if error.is::<NotFoundError>() {
                         problems.push(format!(
                             "Move {} (on {}) does not exist.",
                             move_name, mon.name
@@ -566,14 +564,14 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         'b: 'state,
     {
         let mut seen = FastHashSet::<Id>::new();
-        let mut current_species: Result<ElementRef<'_, Species>, Error> = Ok(species.clone());
+        let mut current_species: Result<ElementRef<'_, Species>> = Ok(species.clone());
         let mut possible_events = FastHashMap::new();
 
         loop {
             let species = match &current_species {
                 Ok(species) => species.clone(),
                 Err(error) => {
-                    if error.as_ref().is::<NotFoundError>() {
+                    if error.is::<NotFoundError>() {
                         break;
                     } else {
                         return MoveLegality::Illegal(format!("could not be looked up: {error}."));
@@ -848,7 +846,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             let item = match self.dex.items.get(&item) {
                 Ok(item) => item,
                 Err(error) => {
-                    if error.as_ref().is::<NotFoundError>() {
+                    if error.is::<NotFoundError>() {
                         problems.push(format!("Item {item} (in bag) does not exist."));
                     } else {
                         problems.push(format!("Failed to look up item {}: {error}.", item));

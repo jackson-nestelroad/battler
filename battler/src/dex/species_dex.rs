@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     common::Id,
     dex::{
@@ -6,7 +8,6 @@ use crate::{
         ResourceLookup,
         ResourceWrapper,
     },
-    error::Error,
     mons::{
         Species,
         SpeciesData,
@@ -24,11 +25,11 @@ impl<'d> ResourceLookup<'d, SpeciesData> for SpeciesLookup<'d> {
         Self { data }
     }
 
-    fn lookup(&self, id: &Id) -> Result<SpeciesData, Error> {
+    fn lookup(&self, id: &Id) -> Result<SpeciesData> {
         self.data.get_species(id)
     }
 
-    fn lookup_alias(&self, alias: &Id, real_id: &Id) -> Result<SpeciesData, Error> {
+    fn lookup_alias(&self, alias: &Id, real_id: &Id) -> Result<SpeciesData> {
         let data = self.data.get_species(real_id)?;
 
         // Cosmetic formes do not have their own SpeciesData, so we must generate it ourselves.

@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -55,7 +56,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -126,7 +127,7 @@ fn using_item_removes_from_bag() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: bag contains no Potion")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: bag contains no Potion")
     );
 }
 
@@ -181,7 +182,7 @@ fn potion_fails_at_max_hp() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Potion cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Potion cannot be used on Pikachu")
     );
 }
 
@@ -204,7 +205,7 @@ fn potion_fails_on_fainted_mon() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Potion cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Potion cannot be used on Pikachu")
     );
 }
 
@@ -216,7 +217,7 @@ fn potion_fails_on_foe() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: invalid target for Potion")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Potion")
     );
 }
 
@@ -232,6 +233,6 @@ fn embargo_prevents_potion_usage_from_bag() {
     assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Potion cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Potion cannot be used on Pikachu")
     );
 }

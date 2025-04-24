@@ -1,9 +1,13 @@
+use anyhow::{
+    Error,
+    Result,
+};
+
 use crate::{
     common::Fraction,
     effect::fxlang::tree,
     error::{
         general_error,
-        Error,
         WrapOptionError,
         WrapResultError,
     },
@@ -86,6 +90,8 @@ impl NextTokenContext {
 }
 
 mod token {
+    use anyhow::Result;
+
     use super::{
         byte,
         NextTokenContext,
@@ -93,7 +99,6 @@ mod token {
     };
     use crate::error::{
         general_error,
-        Error,
         WrapOptionError,
     };
 
@@ -230,7 +235,7 @@ mod token {
             true
         }
 
-        fn try_read_string(&mut self) -> Result<Option<String>, Error> {
+        fn try_read_string(&mut self) -> Result<Option<String>> {
             match self.peek_next_byte() {
                 Some(b'\'') => (),
                 _ => return Ok(None),
@@ -460,7 +465,7 @@ mod token {
             string
         }
 
-        fn parse_next_token(&mut self, _: NextTokenContext) -> Result<Option<Token>, Error> {
+        fn parse_next_token(&mut self, _: NextTokenContext) -> Result<Option<Token>> {
             // Skip whitespace bytes, so that the next byte is important for the next token.
             self.skip_whitespace_bytes();
 
@@ -514,7 +519,7 @@ mod token {
         /// previous lexeme parsed by the previous [`next_token`] call must have been consumed using
         /// [`consume_lexeme`] (or [`consume_string`] for strings). If it has not been consumed,
         /// this method merely returns the current token.
-        pub fn next_token(&mut self, context: NextTokenContext) -> Result<Option<Token>, Error> {
+        pub fn next_token(&mut self, context: NextTokenContext) -> Result<Option<Token>> {
             if !self.lexeme_buffer_empty() {
                 return Ok(self.next_token);
             }
@@ -568,7 +573,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn down_one_level(&mut self) -> Result<(), Error> {
+    fn down_one_level(&mut self) -> Result<()> {
         if self.depth == Self::MAX_DEPTH {
             Err(general_error(format!(
                 "stack overflow: exceeded maximum depth of {}",
@@ -587,7 +592,7 @@ impl<'s> StatementParser<'s> {
     }
 
     /// Parses a single [`tree::Statement`] from the input line.
-    pub fn parse(&mut self) -> Result<tree::Statement, Error> {
+    pub fn parse(&mut self) -> Result<tree::Statement> {
         self.down_one_level()?;
         let statement = self.parse_statement()?;
         self.up_one_level();
@@ -600,7 +605,7 @@ impl<'s> StatementParser<'s> {
         Ok(statement)
     }
 
-    fn parse_statement(&mut self) -> Result<tree::Statement, Error> {
+    fn parse_statement(&mut self) -> Result<tree::Statement> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             None => Ok(tree::Statement::Empty),
             Some(Token::LineCommentStart) => Ok(tree::Statement::Empty),
@@ -625,7 +630,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_assignment(&mut self) -> Result<tree::Assignment, Error> {
+    fn parse_assignment(&mut self) -> Result<tree::Assignment> {
         let lhs = self.parse_var()?;
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Assignment) => self.token_parser.consume_lexeme(),
@@ -635,7 +640,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::Assignment { lhs, rhs })
     }
 
-    fn parse_if_statement(&mut self) -> Result<tree::IfStatement, Error> {
+    fn parse_if_statement(&mut self) -> Result<tree::IfStatement> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::IfKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("if")),
@@ -648,7 +653,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::IfStatement(expr))
     }
 
-    fn parse_else_if_statement(&mut self) -> Result<tree::ElseIfStatement, Error> {
+    fn parse_else_if_statement(&mut self) -> Result<tree::ElseIfStatement> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::ElseKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("else")),
@@ -664,7 +669,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::ElseIfStatement(if_statement))
     }
 
-    fn parse_for_each_statement(&mut self) -> Result<tree::ForEachStatement, Error> {
+    fn parse_for_each_statement(&mut self) -> Result<tree::ForEachStatement> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::ForEachKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("foreach")),
@@ -685,7 +690,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::ForEachStatement { var, range })
     }
 
-    fn parse_return_statement(&mut self) -> Result<tree::ReturnStatement, Error> {
+    fn parse_return_statement(&mut self) -> Result<tree::ReturnStatement> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::ReturnKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("return")),
@@ -697,12 +702,12 @@ impl<'s> StatementParser<'s> {
         Ok(tree::ReturnStatement(expr))
     }
 
-    fn parse_continue_statement(&mut self) -> Result<tree::ContinueStatement, Error> {
+    fn parse_continue_statement(&mut self) -> Result<tree::ContinueStatement> {
         self.token_parser.consume_lexeme();
         Ok(tree::ContinueStatement)
     }
 
-    fn parse_function_call(&mut self) -> Result<tree::FunctionCall, Error> {
+    fn parse_function_call(&mut self) -> Result<tree::FunctionCall> {
         let identifier = self.parse_identifier()?;
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Colon) => self.token_parser.consume_lexeme(),
@@ -720,7 +725,7 @@ impl<'s> StatementParser<'s> {
         })
     }
 
-    fn parse_identifier(&mut self) -> Result<tree::Identifier, Error> {
+    fn parse_identifier(&mut self) -> Result<tree::Identifier> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Identifier) => Ok(tree::Identifier(
                 self.token_parser.consume_lexeme().to_owned(),
@@ -729,7 +734,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_values(&mut self, none_allowed: bool) -> Result<tree::Values, Error> {
+    fn parse_values(&mut self, none_allowed: bool) -> Result<tree::Values> {
         let mut values = Vec::new();
         loop {
             match self.token_parser.next_token(NextTokenContext::new())? {
@@ -753,7 +758,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_value(&mut self) -> Result<Option<tree::Value>, Error> {
+    fn parse_value(&mut self) -> Result<Option<tree::Value>> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::FalseKeyword | Token::TrueKeyword) => {
                 Ok(Some(tree::Value::BoolLiteral(self.parse_bool_literal()?)))
@@ -781,7 +786,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_bool_literal(&mut self) -> Result<tree::BoolLiteral, Error> {
+    fn parse_bool_literal(&mut self) -> Result<tree::BoolLiteral> {
         let result = match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::FalseKeyword) => {
                 self.token_parser.consume_lexeme();
@@ -796,7 +801,7 @@ impl<'s> StatementParser<'s> {
         Ok(result)
     }
 
-    fn parse_undefined_literal(&mut self) -> Result<(), Error> {
+    fn parse_undefined_literal(&mut self) -> Result<()> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::UndefinedKeyword) => {
                 self.token_parser.consume_lexeme();
@@ -806,7 +811,7 @@ impl<'s> StatementParser<'s> {
         Ok(())
     }
 
-    fn parse_number_literal(&mut self) -> Result<tree::NumberLiteral, Error> {
+    fn parse_number_literal(&mut self) -> Result<tree::NumberLiteral> {
         let (signed, negative) = match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Plus) => {
                 self.token_parser.consume_lexeme();
@@ -864,7 +869,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_string_literal(&mut self) -> Result<tree::StringLiteral, Error> {
+    fn parse_string_literal(&mut self) -> Result<tree::StringLiteral> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::Identifier) => Ok(tree::StringLiteral(
                 self.token_parser.consume_lexeme().to_owned(),
@@ -878,7 +883,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_list(&mut self) -> Result<tree::List, Error> {
+    fn parse_list(&mut self) -> Result<tree::List> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::LeftBracket) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("[")),
@@ -891,7 +896,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::List(values))
     }
 
-    fn parse_var(&mut self) -> Result<tree::Var, Error> {
+    fn parse_var(&mut self) -> Result<tree::Var> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::VariableStart) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("$")),
@@ -908,7 +913,7 @@ impl<'s> StatementParser<'s> {
         })
     }
 
-    fn parse_value_expr(&mut self) -> Result<tree::ValueExpr, Error> {
+    fn parse_value_expr(&mut self) -> Result<tree::ValueExpr> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::ExprKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("expr")),
@@ -927,7 +932,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::ValueExpr(Box::new(expr)))
     }
 
-    fn parse_value_func_call(&mut self) -> Result<tree::ValueFunctionCall, Error> {
+    fn parse_value_func_call(&mut self) -> Result<tree::ValueFunctionCall> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::FuncCallKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("func_call")),
@@ -946,7 +951,7 @@ impl<'s> StatementParser<'s> {
         Ok(tree::ValueFunctionCall(function_call))
     }
 
-    fn parse_formatted_string(&mut self) -> Result<tree::FormattedString, Error> {
+    fn parse_formatted_string(&mut self) -> Result<tree::FormattedString> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::StrKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("str")),
@@ -970,11 +975,11 @@ impl<'s> StatementParser<'s> {
         Ok(tree::FormattedString { template, args })
     }
 
-    fn parse_expr(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr(&mut self) -> Result<tree::Expr> {
         self.parse_expr_prec_9()
     }
 
-    fn parse_expr_prec_9(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_9(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_8()?;
         let mut rhs = Vec::new();
         loop {
@@ -1001,7 +1006,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_8(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_8(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_7()?;
         let mut rhs = Vec::new();
         loop {
@@ -1028,7 +1033,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_7(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_7(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_6()?;
         let mut rhs = Vec::new();
         loop {
@@ -1059,7 +1064,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_6(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_6(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_5()?;
         let mut rhs = Vec::new();
         loop {
@@ -1106,7 +1111,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_5(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_5(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_4()?;
         let mut rhs = Vec::new();
         loop {
@@ -1137,7 +1142,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_4(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_4(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_3()?;
         let mut rhs = Vec::new();
         loop {
@@ -1172,7 +1177,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_3(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_3(&mut self) -> Result<tree::Expr> {
         let lhs = self.parse_expr_prec_2()?;
         let mut rhs = Vec::new();
         loop {
@@ -1199,7 +1204,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_2(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_2(&mut self) -> Result<tree::Expr> {
         let mut ops = Vec::new();
         loop {
             match self.token_parser.next_token(NextTokenContext::new())? {
@@ -1225,7 +1230,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_expr_prec_1(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_expr_prec_1(&mut self) -> Result<tree::Expr> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::LeftParenthesis) => self.parse_parenthesis_expr(),
             _ => match self.parse_value()? {
@@ -1235,7 +1240,7 @@ impl<'s> StatementParser<'s> {
         }
     }
 
-    fn parse_parenthesis_expr(&mut self) -> Result<tree::Expr, Error> {
+    fn parse_parenthesis_expr(&mut self) -> Result<tree::Expr> {
         match self.token_parser.next_token(NextTokenContext::new())? {
             Some(Token::LeftParenthesis) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("(")),
@@ -1284,7 +1289,7 @@ mod statement_parser_tests {
     fn fails_invalid_function_identifier() {
         assert_matches::assert_matches!(
             StatementParser::new("23456").parse(),
-            Err(err) => assert_eq!(err.full_description(), "unexpected token at index 0: 23456")
+            Err(err) => assert_eq!(format!("{err:#}"), "unexpected token at index 0: 23456")
         );
     }
 
@@ -1469,7 +1474,7 @@ mod statement_parser_tests {
                 "a:func_call(b:func_call(c:func_call(d:func_call(e:func_call(f)))))",
             )
             .parse(),
-            Err(err) => assert_eq!(err.full_description(), "stack overflow: exceeded maximum depth of 5")
+            Err(err) => assert_eq!(format!("{err:#}"), "stack overflow: exceeded maximum depth of 5")
         );
     }
 
@@ -2037,7 +2042,7 @@ mod statement_parser_tests {
     fn fails_if_statement_missing_colon() {
         assert_matches::assert_matches!(
             StatementParser::new("if $test == expr($other / 3)").parse(),
-            Err(err) => assert_eq!(err.full_description(), "unexpected end of line (expected :)")
+            Err(err) => assert_eq!(format!("{err:#}"), "unexpected end of line (expected :)")
         );
     }
 
@@ -2045,7 +2050,7 @@ mod statement_parser_tests {
     fn fails_else_statement_missing_colon() {
         assert_matches::assert_matches!(
             StatementParser::new("else").parse(),
-            Err(err) => assert_eq!(err.full_description(), "unexpected end of line (expected :)")
+            Err(err) => assert_eq!(format!("{err:#}"), "unexpected end of line (expected :)")
         );
     }
 
@@ -2053,7 +2058,7 @@ mod statement_parser_tests {
     fn fails_foreach_missing_in() {
         assert_matches::assert_matches!(
             StatementParser::new("foreach $var").parse(),
-            Err(err) => assert_eq!(err.full_description(), "unexpected end of line (expected in)")
+            Err(err) => assert_eq!(format!("{err:#}"), "unexpected end of line (expected in)")
         );
     }
 
@@ -2061,7 +2066,7 @@ mod statement_parser_tests {
     fn fails_foreach_wrong_keyword() {
         assert_matches::assert_matches!(
             StatementParser::new("foreach $var of $list:").parse(),
-            Err(err) => assert_eq!(err.full_description(), "unexpected token at index 13: of (expected in)")
+            Err(err) => assert_eq!(format!("{err:#}"), "unexpected token at index 13: of (expected in)")
         );
     }
 }

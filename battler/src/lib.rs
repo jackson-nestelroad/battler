@@ -112,7 +112,6 @@ pub use error::{
     not_found_error,
     BorrowFailedError,
     ConvertError,
-    Error,
     GeneralError,
     IntegerOverflowError,
     NotFoundError,

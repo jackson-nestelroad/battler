@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -11,7 +12,7 @@ use battler::{
 };
 use battler_test_utils::TestBattleBuilder;
 
-fn singles_team() -> Result<TeamData, Error> {
+fn singles_team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -35,7 +36,7 @@ fn singles_team() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_auto_continue(false)
@@ -47,7 +48,7 @@ fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> 
         .build(data)
 }
 
-fn singles_team_no_moves() -> Result<TeamData, Error> {
+fn singles_team_no_moves() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -66,7 +67,7 @@ fn singles_team_no_moves() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_auto_continue(false)
@@ -97,7 +98,7 @@ fn too_many_moves() {
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0; move 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: you sent more choices than active mons")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you sent more choices than active mons")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -110,7 +111,7 @@ fn missing_move() {
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: missing move choice")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: missing move choice")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -123,7 +124,7 @@ fn invalid_move() {
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 5"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Blastoise does not have a move in slot 5")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Blastoise does not have a move in slot 5")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -136,15 +137,15 @@ fn target_not_allowed() {
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0, 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot choose a target for Blizzard")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot choose a target for Blizzard")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1, 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot choose a target for Counter")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot choose a target for Counter")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2, 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: you cannot choose a target for Hail")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot choose a target for Hail")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -177,7 +178,7 @@ fn target_out_of_bounds() {
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3, 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Scald")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
@@ -202,7 +203,7 @@ fn struggle_when_no_available_moves() {
     assert!(!player_has_active_request(&battle, "player-1"));
 }
 
-fn triples_team() -> Result<TeamData, Error> {
+fn triples_team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -254,7 +255,7 @@ fn triples_team() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     // Adjacency rules really only matter for Triples, so we use a Triples battle to verify our
     // adjacency rules.
     TestBattleBuilder::new()
@@ -279,11 +280,11 @@ fn target_normal() {
     // Target foes.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,1; move 1,1; move 3,3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Giga Drain")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Giga Drain")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2; move 1,1; move 3,3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Scald")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,3; move 1,2; move 3,2"),
@@ -297,23 +298,23 @@ fn target_normal() {
     // Target allies.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-1; move 1,1; move 3,-3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Giga Drain")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Giga Drain")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-3; move 1,1; move 3,-3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Giga Drain")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Giga Drain")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-2; move 3,-3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Blast Burn")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Blast Burn")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-1; move 3,-3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Scald")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-3; move 3,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Scald")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,-2; move 1,-3; move 3,-2"),
@@ -337,7 +338,7 @@ fn target_any_except_user() {
     // But it cannot hit itself.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2; move 2; move 1,-3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Water Pulse")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Water Pulse")
     );
 }
 
@@ -351,17 +352,17 @@ fn target_adjacent_foe() {
     // Adjacent ally or self is not allowed.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,-2; move 2; move 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Me First")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Me First")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,-1; move 2; move 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Me First")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Me First")
     );
 
     // Adjacent foe is allowed.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,1; move 2; move 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Me First")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Me First")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,2; move 2; move 2"),
@@ -383,15 +384,15 @@ fn target_adjacent_ally() {
     // Adjacent foe or self is not allowed.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,3; move 2; move 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Helping Hand")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Helping Hand")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,2; move 2; move 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Helping Hand")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Helping Hand")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,-1; move 2; move 2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Helping Hand")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Helping Hand")
     );
 
     // Adjacent ally is allowed.
@@ -409,7 +410,7 @@ fn target_adjacent_ally_or_user() {
     // Acupressure is the only move that does this.
 }
 
-fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_auto_continue(false)
@@ -439,7 +440,7 @@ fn adjacency_rules_apply_across_players() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 3,1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Scald")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3,2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3,3"), Ok(()));
@@ -452,6 +453,6 @@ fn adjacency_rules_apply_across_players() {
     assert_matches::assert_matches!(battle.set_player_choice("player-3", "move 3,2"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-3", "move 3,3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: invalid target for Scald")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: invalid target for Scald")
     );
 }

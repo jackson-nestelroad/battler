@@ -1,7 +1,7 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     DataStore,
-    Error,
     FastHashMap,
     LocalDataStore,
     PublicCoreBattle,
@@ -14,7 +14,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -78,7 +78,7 @@ fn team() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle, Error> {
+fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_rule("Standard")
@@ -276,33 +276,33 @@ fn team_preview_orders_all_player_teams() {
     // Turn 3: each player tries to switch to Mon 3.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-3", "switch 3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-4", "switch 3"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 3 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 3 to switch to")
     );
 
     // Verify other slots fail for good measure.
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 4"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 4 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 4 to switch to")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 5"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 5 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 5 to switch to")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 6"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: you do not have a mon in slot 6 to switch to")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you do not have a mon in slot 6 to switch to")
     );
 
     // Switch back to Mon 0 (the lead that started the battle).

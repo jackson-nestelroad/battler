@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     Id,
     MoveData,
     PublicCoreBattle,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestDataStore,
 };
 
-fn team(pp_boosts: Vec<u8>) -> Result<TeamData, Error> {
+fn team(pp_boosts: Vec<u8>) -> Result<TeamData> {
     let mut team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -41,7 +42,7 @@ fn team(pp_boosts: Vec<u8>) -> Result<TeamData, Error> {
     Ok(team)
 }
 
-fn test_move(name: &str, pp: u8) -> Result<MoveData, Error> {
+fn test_move(name: &str, pp: u8) -> Result<MoveData> {
     let mut move_data: MoveData = serde_json::from_str(
         r#"{
             "name": "",
@@ -60,7 +61,7 @@ fn test_move(name: &str, pp: u8) -> Result<MoveData, Error> {
     Ok(move_data)
 }
 
-fn add_test_moves(data: &mut TestDataStore) -> Result<(), Error> {
+fn add_test_moves(data: &mut TestDataStore) -> Result<()> {
     data.add_fake_move(Id::from("Test Move 1"), test_move("Test Move 1", 5)?);
     data.add_fake_move(Id::from("Test Move 2"), test_move("Test Move 2", 10)?);
     data.add_fake_move(Id::from("Test Move 3"), test_move("Test Move 3", 35)?);
@@ -68,7 +69,7 @@ fn add_test_moves(data: &mut TestDataStore) -> Result<(), Error> {
     Ok(())
 }
 
-fn make_battle(data: &dyn DataStore, pp_boosts: Vec<u8>) -> Result<PublicCoreBattle, Error> {
+fn make_battle(data: &dyn DataStore, pp_boosts: Vec<u8>) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_actual_health(true)
@@ -238,7 +239,7 @@ fn move_runs_out_of_pp() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0"),
-        Err(err) => assert_eq!(err.full_description(), "cannot move: Venusaur's Test Move 1 is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Venusaur's Test Move 1 is disabled")
     );
     assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
 }

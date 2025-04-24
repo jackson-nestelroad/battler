@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     effect::fxlang::{
         effect::Program,
@@ -6,11 +8,9 @@ use crate::{
     },
     error::{
         general_error,
-        Error,
         WrapResultError,
     },
 };
-
 /// A parsed program block, which should be executed as a unit.
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParsedProgramBlock {
@@ -42,7 +42,7 @@ impl ParsedProgram {
     ///
     /// The produced program is syntactically valid, but it may not be semantically valid. For
     /// instance, some operations may fail due to mismatched types (e.g., `'string' + 10`).
-    pub fn from(program: &Program) -> Result<Self, Error> {
+    pub fn from(program: &Program) -> Result<Self> {
         let mut parser = ProgramParser::new();
         parser.parse(program)
     }
@@ -61,7 +61,7 @@ impl ProgramParser {
         Self { line: 0, depth: 0 }
     }
 
-    fn down_one_level(&mut self) -> Result<(), Error> {
+    fn down_one_level(&mut self) -> Result<()> {
         if self.depth == Self::MAX_DEPTH {
             Err(general_error(format!(
                 "exceeded maximum depth of {}",
@@ -79,7 +79,7 @@ impl ProgramParser {
         }
     }
 
-    fn down_one_line(&mut self) -> Result<(), Error> {
+    fn down_one_line(&mut self) -> Result<()> {
         if self.line > Self::MAX_LENGTH {
             Err(general_error(format!(
                 "program too long: exceeded maximum length of {}",
@@ -91,7 +91,7 @@ impl ProgramParser {
         }
     }
 
-    pub fn parse(&mut self, program: &Program) -> Result<ParsedProgram, Error> {
+    pub fn parse(&mut self, program: &Program) -> Result<ParsedProgram> {
         let block = self.parse_program(program)?;
         match block {
             ParsedProgramBlock::Leaf(tree::Statement::Empty) => {
@@ -103,7 +103,7 @@ impl ProgramParser {
         Ok(program)
     }
 
-    fn parse_program(&mut self, program: &Program) -> Result<ParsedProgramBlock, Error> {
+    fn parse_program(&mut self, program: &Program) -> Result<ParsedProgramBlock> {
         self.down_one_level()?;
         let block = match program {
             Program::Leaf(line) => {
@@ -126,7 +126,7 @@ impl ProgramParser {
         Ok(block)
     }
 
-    fn parse_line(&mut self, line: &str) -> Result<tree::Statement, Error> {
+    fn parse_line(&mut self, line: &str) -> Result<tree::Statement> {
         self.down_one_line()?;
         StatementParser::new(line)
             .parse()
@@ -151,7 +151,7 @@ mod program_parser_tests {
     fn fails_empty_program() {
         assert_matches::assert_matches!(
             ParsedProgram::from(&serde_json::from_str(r#""""#).unwrap()),
-            Err(err) => assert_eq!(err.full_description(), "program cannot be empty")
+            Err(err) => assert_eq!(format!("{err:#}"), "program cannot be empty")
         )
     }
 
@@ -166,7 +166,7 @@ mod program_parser_tests {
                 )
                 .unwrap(),
             ),
-            Err(err) => assert_eq!(err.full_description(), "program cannot be empty")
+            Err(err) => assert_eq!(format!("{err:#}"), "program cannot be empty")
         )
     }
 
@@ -443,7 +443,7 @@ mod program_parser_tests {
                 )
                 .unwrap(),
             ),
-            Err(err) => assert_eq!(err.full_description(), "exceeded maximum depth of 6")
+            Err(err) => assert_eq!(format!("{err:#}"), "exceeded maximum depth of 6")
         )
     }
 
@@ -465,7 +465,7 @@ mod program_parser_tests {
                 )
                 .unwrap(),
             ),
-            Err(err) => assert_eq!(err.full_description(), "invalid statement on line 3: unexpected token at index 3: == (expected =)")
+            Err(err) => assert_eq!(format!("{err:#}"), "invalid statement on line 3: unexpected token at index 3: == (expected =)")
         )
     }
 }

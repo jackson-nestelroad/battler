@@ -3,6 +3,8 @@ use std::{
     mem,
 };
 
+use anyhow::Result;
+
 use crate::{
     battle::{
         compare_priority,
@@ -15,7 +17,6 @@ use crate::{
         CoreBattleEngineSpeedSortTieResolution,
         MonHandle,
     },
-    error::Error,
     rng::{
         rand_util,
         PseudoRandomNumberGenerator,
@@ -39,14 +40,14 @@ impl BattleQueue {
     }
 
     /// Adds a new [`Action`] to the queue.
-    pub fn add_action(context: &mut Context, action: Action) -> Result<(), Error> {
+    pub fn add_action(context: &mut Context, action: Action) -> Result<()> {
         let actions = Self::resolve_action(context, action)?;
         context.battle_mut().queue.actions.extend(actions);
         Ok(())
     }
 
     /// Adds multiple [`Action`]s to the queue.
-    pub fn add_actions<I>(context: &mut Context, actions: I) -> Result<(), Error>
+    pub fn add_actions<I>(context: &mut Context, actions: I) -> Result<()>
     where
         I: Iterator<Item = Action>,
     {
@@ -78,7 +79,7 @@ impl BattleQueue {
         }
     }
 
-    fn resolve_action(context: &mut Context, action: Action) -> Result<Vec<Action>, Error> {
+    fn resolve_action(context: &mut Context, action: Action) -> Result<Vec<Action>> {
         match action {
             Action::Pass => Ok(Vec::new()),
             _ => {
@@ -188,10 +189,7 @@ impl BattleQueue {
     /// originally.
     ///
     /// Assumes the queue is already sorted.
-    pub fn insert_action_into_sorted_position(
-        context: &mut Context,
-        action: Action,
-    ) -> Result<(), Error> {
+    pub fn insert_action_into_sorted_position(context: &mut Context, action: Action) -> Result<()> {
         for action in Self::resolve_action(context, action)? {
             Self::insert_resolved_action_into_sorted_position(context, action)?;
         }
@@ -201,7 +199,7 @@ impl BattleQueue {
     fn insert_resolved_action_into_sorted_position(
         context: &mut Context,
         action: Action,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let prng = context.battle_mut().prng.as_mut();
         // SAFETY: PRNG and battle queue are completely disjoint.
         let prng = unsafe { mem::transmute(prng) };

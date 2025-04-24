@@ -1,4 +1,5 @@
 use ahash::HashMapExt;
+use anyhow::Result;
 use num::Integer;
 use serde::{
     Deserialize,
@@ -20,7 +21,6 @@ use crate::{
     },
     dex::Dex,
     effect::fxlang,
-    error::Error,
 };
 
 /// Data about a single side of a battle.
@@ -59,7 +59,7 @@ impl Side {
         battle_type: &BattleType,
         dex: &Dex,
         registry: &BattleRegistry,
-    ) -> Result<(Self, Vec<Player>), Error> {
+    ) -> Result<(Self, Vec<Player>)> {
         let players = data
             .players
             .into_iter()
@@ -93,7 +93,7 @@ impl Side {
     pub fn mon_in_position(
         context: &mut SideContext,
         position: usize,
-    ) -> Result<Option<MonHandle>, Error> {
+    ) -> Result<Option<MonHandle>> {
         let active_per_player = context.battle().format.battle_type.active_per_player();
         let (player_position, position) = position.div_mod_floor(&active_per_player);
         let player_context = match context.player_context(player_position) {
@@ -104,7 +104,7 @@ impl Side {
     }
 
     /// Counts the number of Mons left on the side.
-    pub fn mons_left(context: &mut SideContext) -> Result<usize, Error> {
+    pub fn mons_left(context: &mut SideContext) -> Result<usize> {
         let mut count = 0;
         for player in context
             .battle()

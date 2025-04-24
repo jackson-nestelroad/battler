@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team() -> Result<TeamData, Error> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -48,7 +49,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -72,7 +73,7 @@ fn cheri_berry_heals_paralysis() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item Cheri Berry,-1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Cheri Berry cannot be used on Bulbasaur")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Cheri Berry cannot be used on Bulbasaur")
     );
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
@@ -148,7 +149,7 @@ fn cheri_berry_can_be_eaten_automatically() {
     assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item Cheri Berry,-2"),
-        Err(err) => assert_eq!(err.full_description(), "cannot use item: Cheri Berry cannot be used on Charmander")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Cheri Berry cannot be used on Charmander")
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

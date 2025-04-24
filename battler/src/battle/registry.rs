@@ -4,6 +4,7 @@ use std::{
     mem,
 };
 
+use anyhow::Result;
 use zone_alloc::{
     BorrowError,
     ElementRef,
@@ -19,7 +20,6 @@ use crate::{
     error::{
         general_error,
         ConvertError,
-        Error,
     },
     moves::Move,
 };
@@ -86,14 +86,14 @@ impl BattleRegistry {
     }
 
     /// Returns a reference to the [`Mon`] by [`MonHandle`].
-    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>, Error> {
+    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>> {
         self.mons
             .get(mon)
             .map_err(|err| err.convert_error_with_message(format!("mon {mon}")))
     }
 
     /// Returns a mutable reference to the [`Mon`] by [`MonHandle`].
-    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>, Error> {
+    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>> {
         self.mons
             .get_mut(mon)
             .map_err(|err| err.convert_error_with_message(format!("mon {mon}")))
@@ -115,7 +115,7 @@ impl BattleRegistry {
     /// Returns a reference to the [`Move`] by [`MoveHandle`].
     ///
     /// The move must be from this turn or last turn.
-    pub fn active_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>, Error> {
+    pub fn active_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>> {
         match self.this_turn_moves.get(&mov) {
             Ok(active_move) => Ok(active_move),
             _ => match self.last_turn_moves.get(&mov) {
@@ -130,7 +130,7 @@ impl BattleRegistry {
     /// Returns a mutable reference to the [`Move`] by [`MoveHandle`].
     ///
     /// The move must be from this turn or last turn.
-    pub fn active_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>, Error> {
+    pub fn active_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>> {
         match self.this_turn_moves.get_mut(&mov) {
             Ok(active_move) => Ok(active_move),
             _ => match self.last_turn_moves.get_mut(&mov) {
@@ -143,7 +143,7 @@ impl BattleRegistry {
     }
 
     /// Saves the given [`Move`] at [`MoveHandle`] from being dropped at the next turn.
-    pub fn save_active_move_from_next_turn(&self, mov: MoveHandle) -> Result<(), Error> {
+    pub fn save_active_move_from_next_turn(&self, mov: MoveHandle) -> Result<()> {
         match self.last_turn_moves.get_mut(&mov) {
             Ok(active_move) => {
                 self.this_turn_moves.register(mov, active_move.clone());
@@ -162,7 +162,7 @@ impl BattleRegistry {
     ///
     /// All move objects from last turn are dropped. Moves from this turn are moved to the last turn
     /// registry.
-    pub fn next_turn(&mut self) -> Result<(), Error> {
+    pub fn next_turn(&mut self) -> Result<()> {
         // We detach element references in context chains, so we must check at runtime that no
         // dangling references will exist.
         if !self.last_turn_moves.safe_to_drop() {

@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn whimsicott() -> Result<TeamData, Error> {
+fn whimsicott() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -34,7 +35,7 @@ fn whimsicott() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn ninjask() -> Result<TeamData, Error> {
+fn ninjask() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -54,7 +55,7 @@ fn ninjask() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn sableye() -> Result<TeamData, Error> {
+fn sableye() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -77,7 +78,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)

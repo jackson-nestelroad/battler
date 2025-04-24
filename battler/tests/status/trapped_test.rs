@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -14,7 +15,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn team_1() -> Result<TeamData, Error> {
+fn team_1() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -46,7 +47,7 @@ fn team_1() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn team_2() -> Result<TeamData, Error> {
+fn team_2() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -83,7 +84,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -108,7 +109,7 @@ fn trapped_mon_cannot_switch_out_while_source_is_active() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(err.full_description(), "cannot switch: Pikachu is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Pikachu is trapped")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

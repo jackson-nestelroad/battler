@@ -10,6 +10,7 @@ use std::{
     path::Path,
 };
 
+use anyhow::Result;
 use serde::{
     de::DeserializeOwned,
     Serialize,
@@ -17,10 +18,7 @@ use serde::{
 
 use crate::{
     common::FastHashMap,
-    error::{
-        Error,
-        WrapResultError,
-    },
+    error::WrapResultError,
 };
 
 #[track_caller]
@@ -60,11 +58,11 @@ where
     test_serialization(v, format!("\"{expected}\""))
 }
 
-fn test_case_dir<'s>() -> Result<String, Error> {
+fn test_case_dir<'s>() -> Result<String> {
     env::var("TEST_CASE_DIR").wrap_error_with_message("TEST_CASE_DIR is not defined")
 }
 
-pub fn read_test_json<T: DeserializeOwned>(file: &str) -> Result<T, Error> {
+pub fn read_test_json<T: DeserializeOwned>(file: &str) -> Result<T> {
     serde_json::from_reader(
         File::open(Path::new(&test_case_dir()?).join(""))
             .wrap_error_with_format(format_args!("failed to read from {file}"))?,
@@ -72,7 +70,7 @@ pub fn read_test_json<T: DeserializeOwned>(file: &str) -> Result<T, Error> {
     .wrap_error_with_format(format_args!("failed to read object from {file}"))
 }
 
-pub fn read_test_cases<T: DeserializeOwned>(file: &str) -> Result<FastHashMap<String, T>, Error> {
+pub fn read_test_cases<T: DeserializeOwned>(file: &str) -> Result<FastHashMap<String, T>> {
     serde_json::from_reader(
         File::open(Path::new(&test_case_dir()?).join(file))
             .wrap_error_with_format(format_args!("failed to read test cases from {file}"))?,

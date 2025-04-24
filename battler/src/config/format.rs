@@ -1,5 +1,6 @@
 use std::u8;
 
+use anyhow::Result;
 use serde::{
     Deserialize,
     Serialize,
@@ -12,7 +13,6 @@ use crate::{
         SerializedRuleSet,
     },
     dex::Dex,
-    error::Error,
 };
 
 /// Customizable options for any format.
@@ -83,7 +83,7 @@ pub struct Format {
 
 impl Format {
     /// Creates a new format.
-    pub fn new(data: FormatData, dex: &Dex) -> Result<Self, Error> {
+    pub fn new(data: FormatData, dex: &Dex) -> Result<Self> {
         let rules = RuleSet::new(data.rules, &data.battle_type, dex)?;
         Ok(Self {
             battle_type: data.battle_type,

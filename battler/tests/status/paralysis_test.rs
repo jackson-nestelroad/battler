@@ -1,8 +1,9 @@
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-    Error,
+
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -15,7 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
 };
 
-fn pikachu() -> Result<TeamData, Error> {
+fn pikachu() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -37,7 +38,7 @@ fn pikachu() -> Result<TeamData, Error> {
     .wrap_error()
 }
 
-fn alakazam() -> Result<TeamData, Error> {
+fn alakazam() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
         "members": [
@@ -62,7 +63,7 @@ fn make_battle(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle, Error> {
+) -> Result<PublicCoreBattle> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(48205749111)

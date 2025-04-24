@@ -1,11 +1,11 @@
 use std::fmt::Display;
 
+use anyhow::Error;
 use zone_alloc::BorrowError;
 
 use crate::error::{
     borrow_failed_error,
     not_found_error,
-    Error,
 };
 
 /// Trait for implementing manual conversions to [`Error`].
