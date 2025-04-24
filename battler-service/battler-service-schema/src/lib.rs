@@ -198,6 +198,9 @@ pub struct FullLogPattern(String);
 /// Arguments for reading the full log of a battle.
 #[derive(WampList)]
 pub struct FullLogInputArgs {
+    /// Side of the battle.
+    ///
+    /// If `None`, the public log is used.
     pub side: Option<u64>,
 }
 
