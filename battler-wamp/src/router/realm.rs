@@ -16,6 +16,7 @@ use crate::{
         GenericServerAuthenticator,
         make_generic_server_authenticator,
         scram,
+        undisputed,
     },
     core::{
         close::CloseReason,
@@ -35,6 +36,8 @@ use crate::{
 pub enum SupportedAuthMethod {
     /// WAMP-SCRAM.
     WampScram(Arc<Box<dyn scram::UserDatabaseFactory>>),
+    /// Undisputed.
+    Undisputed,
 }
 
 impl SupportedAuthMethod {
@@ -42,6 +45,7 @@ impl SupportedAuthMethod {
     pub fn auth_method(&self) -> AuthMethod {
         match self {
             Self::WampScram(_) => AuthMethod::WampScram,
+            Self::Undisputed => AuthMethod::Undisputed,
         }
     }
 
@@ -50,6 +54,9 @@ impl SupportedAuthMethod {
         match self {
             Self::WampScram(user_database) => Ok(make_generic_server_authenticator(Box::new(
                 scram::ServerAuthenticator::new(user_database.create_user_database().await?),
+            ))),
+            Self::Undisputed => Ok(make_generic_server_authenticator(Box::new(
+                undisputed::ServerAuthenticator::new(),
             ))),
         }
     }

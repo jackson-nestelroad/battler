@@ -44,6 +44,7 @@ use crate::{
         GenericClientAuthenticator,
         make_generic_client_authenticator,
         scram,
+        undisputed,
     },
     core::{
         cancel::CallCancelMode,
@@ -392,6 +393,8 @@ pub struct PeerNotConnectedError;
 pub enum SupportedAuthMethod {
     /// WAMP-SCRAM.
     WampScram { id: String, password: String },
+    /// Undisputed.
+    Undisputed { id: String, role: String },
 }
 
 impl SupportedAuthMethod {
@@ -399,6 +402,7 @@ impl SupportedAuthMethod {
     pub fn auth_method(&self) -> AuthMethod {
         match self {
             Self::WampScram { .. } => AuthMethod::WampScram,
+            Self::Undisputed { .. } => AuthMethod::Undisputed,
         }
     }
 
@@ -407,6 +411,9 @@ impl SupportedAuthMethod {
         match self {
             Self::WampScram { id, password } => Ok(make_generic_client_authenticator(Box::new(
                 scram::ClientAuthenticator::new(id.clone(), password.clone()),
+            ))),
+            Self::Undisputed { id, role } => Ok(make_generic_client_authenticator(Box::new(
+                undisputed::ClientAuthenticator::new(id.clone(), role.clone()),
             ))),
         }
     }

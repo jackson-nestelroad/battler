@@ -26,6 +26,10 @@ pub enum AuthMethod {
     /// stored as cleartext.
     #[default]
     WampScram,
+    /// Undisputed authentication.
+    ///
+    /// The client reports its authentication information and it is blindly accepted by the server.
+    Undisputed,
 }
 
 impl TryFrom<&str> for AuthMethod {
@@ -33,6 +37,7 @@ impl TryFrom<&str> for AuthMethod {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "wamp-scram" => Ok(Self::WampScram),
+            "wamp-battler-undisputed" => Ok(Self::Undisputed),
             _ => Err(Self::Error::msg(format!("invalid auth method: {value}"))),
         }
     }
@@ -49,6 +54,7 @@ impl Into<&'static str> for AuthMethod {
     fn into(self) -> &'static str {
         match self {
             Self::WampScram => "wamp-scram",
+            Self::Undisputed => "wamp-battler-undisputed",
         }
     }
 }

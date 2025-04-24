@@ -5,6 +5,7 @@ pub mod identity;
 pub mod key_derivation_function;
 pub mod message;
 pub mod scram;
+pub mod undisputed;
 
 pub use auth_method::AuthMethod;
 pub use authenticator::{
