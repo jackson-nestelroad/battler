@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     Id,
     LocalDataStore,
     MonMoveSlotData,
@@ -102,25 +101,21 @@ fn mimic_overwrites_move_slot_as_volatile() {
         Ok(())
     );
 
-    assert!(battle
-        .request_for_player("player-1")
-        .is_some_and(|request| match request {
-            Request::Turn(request) => request.active.first().is_some_and(|mon| {
-                pretty_assertions::assert_eq!(
-                    mon.moves.get(1),
-                    Some(&MonMoveSlotData {
-                        name: "Quick Attack".to_owned(),
-                        id: Id::from("quickattack"),
-                        pp: 30,
-                        max_pp: 30,
-                        target: Some(MoveTarget::Normal),
-                        disabled: false,
-                    })
-                );
-                true
-            }),
-            _ => false,
-        }));
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(request.active.first(), Some(mon) => {
+            pretty_assertions::assert_eq!(
+                mon.moves.get(1),
+                Some(&MonMoveSlotData {
+                    name: "Quick Attack".to_owned(),
+                    id: Id::from("quickattack"),
+                    pp: 30,
+                    max_pp: 30,
+                    target: Some(MoveTarget::Normal),
+                    disabled: false,
+                })
+            );
+        });
+    });
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
@@ -131,25 +126,21 @@ fn mimic_overwrites_move_slot_as_volatile() {
         Ok(())
     );
 
-    assert!(battle
-        .request_for_player("player-1")
-        .is_some_and(|request| match request {
-            Request::Turn(request) => request.active.first().is_some_and(|mon| {
-                pretty_assertions::assert_eq!(
-                    mon.moves.get(1),
-                    Some(&MonMoveSlotData {
-                        name: "Quick Attack".to_owned(),
-                        id: Id::from("quickattack"),
-                        pp: 29,
-                        max_pp: 30,
-                        target: Some(MoveTarget::Normal),
-                        disabled: false,
-                    })
-                );
-                true
-            }),
-            _ => false,
-        }));
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(request.active.first(), Some(mon) => {
+            pretty_assertions::assert_eq!(
+                mon.moves.get(1),
+                Some(&MonMoveSlotData {
+                    name: "Quick Attack".to_owned(),
+                    id: Id::from("quickattack"),
+                    pp: 29,
+                    max_pp: 30,
+                    target: Some(MoveTarget::Normal),
+                    disabled: false,
+                })
+            );
+        });
+    });
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2;pass"),
@@ -166,25 +157,21 @@ fn mimic_overwrites_move_slot_as_volatile() {
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
-    assert!(battle
-        .request_for_player("player-1")
-        .is_some_and(|request| match request {
-            Request::Turn(request) => request.active.first().is_some_and(|mon| {
-                pretty_assertions::assert_eq!(
-                    mon.moves.get(1),
-                    Some(&MonMoveSlotData {
-                        name: "Mimic".to_owned(),
-                        id: Id::from("mimic"),
-                        pp: 8,
-                        max_pp: 10,
-                        target: Some(MoveTarget::Normal),
-                        disabled: false,
-                    })
-                );
-                true
-            }),
-            _ => false,
-        }));
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(request.active.first(), Some(mon) => {
+            pretty_assertions::assert_eq!(
+                mon.moves.get(1),
+                Some(&MonMoveSlotData {
+                    name: "Mimic".to_owned(),
+                    id: Id::from("mimic"),
+                    pp: 8,
+                    max_pp: 10,
+                    target: Some(MoveTarget::Normal),
+                    disabled: false,
+                })
+            );
+        });
+    });
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),
@@ -192,25 +179,21 @@ fn mimic_overwrites_move_slot_as_volatile() {
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
-    assert!(battle
-        .request_for_player("player-1")
-        .is_some_and(|request| match request {
-            Request::Turn(request) => request.active.first().is_some_and(|mon| {
-                pretty_assertions::assert_eq!(
-                    mon.moves.get(1),
-                    Some(&MonMoveSlotData {
-                        name: "Flamethrower".to_owned(),
-                        id: Id::from("flamethrower"),
-                        pp: 15,
-                        max_pp: 15,
-                        target: Some(MoveTarget::Normal),
-                        disabled: false,
-                    })
-                );
-                true
-            }),
-            _ => false,
-        }));
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(request.active.first(), Some(mon) => {
+            pretty_assertions::assert_eq!(
+                mon.moves.get(1),
+                Some(&MonMoveSlotData {
+                    name: "Flamethrower".to_owned(),
+                    id: Id::from("flamethrower"),
+                    pp: 15,
+                    max_pp: 15,
+                    target: Some(MoveTarget::Normal),
+                    disabled: false,
+                })
+            );
+        });
+    });
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,2;pass"),

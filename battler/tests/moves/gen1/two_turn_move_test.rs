@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -131,6 +130,7 @@ fn razor_wind_uses_two_turns() {
     assert_eq!(
         battle
             .request_for_player("player-1")
+            .unwrap()
             .map(|req| if let Request::Turn(req) = req {
                 req.active.get(0).cloned()
             } else {
@@ -155,6 +155,7 @@ fn razor_wind_uses_two_turns() {
     assert_matches::assert_matches!(
         battle
             .request_for_player("player-1")
+            .unwrap()
             .map(|req| {
                 if let Request::Turn(req) = req {
                     Some(req.active.get(0)?.moves.get(0)?.pp)
@@ -224,6 +225,7 @@ fn fly_grants_invulnerability() {
     assert_eq!(
         battle
             .request_for_player("player-1")
+            .unwrap()
             .map(|req| if let Request::Turn(req) = req {
                 req.active.get(0).cloned()
             } else {
@@ -248,6 +250,7 @@ fn fly_grants_invulnerability() {
     assert_matches::assert_matches!(
         battle
             .request_for_player("player-1")
+            .unwrap()
             .map(|req| {
                 if let Request::Turn(req) = req {
                     Some(req.active.get(0)?.moves.get(1)?.pp)
@@ -337,6 +340,7 @@ fn fly_locks_target() {
     assert_eq!(
         battle
             .request_for_player("player-1")
+            .unwrap()
             .map(|req| if let Request::Turn(req) = req {
                 req.active.get(0).cloned()
             } else {

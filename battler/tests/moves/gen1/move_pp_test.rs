@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     Id,
     MoveData,
     PublicCoreBattle,
@@ -91,7 +90,7 @@ fn using_move_reduces_pp() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -106,7 +105,7 @@ fn using_move_reduces_pp() {
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 0"), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -121,21 +120,23 @@ fn using_move_reduces_pp() {
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 0"), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {assert_eq!(
-        request.active[0]
-            .moves
-            .iter()
-            .map(|mov| mov.pp)
-            .collect::<Vec<_>>(),
-        vec![3, 10, 35, 40]
-    );
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
+        assert_eq!(
+            request.active[0]
+                .moves
+                .iter()
+                .map(|mov| mov.pp)
+                .collect::<Vec<_>>(),
+            vec![3, 10, 35, 40]
+        );
     });
 
     assert_matches::assert_matches!(battle.set_player_choice("foe", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 1"), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {assert_eq!(
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
+        assert_eq!(
             request.active[0]
                 .moves
                 .iter()
@@ -154,7 +155,7 @@ fn pp_boosts_increase_pp() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -169,7 +170,7 @@ fn pp_boosts_increase_pp() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -184,7 +185,7 @@ fn pp_boosts_increase_pp() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -200,7 +201,7 @@ fn pp_boosts_increase_pp() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves
@@ -226,7 +227,7 @@ fn move_runs_out_of_pp() {
     }
 
     let request = battle.request_for_player("test-player");
-    assert_matches::assert_matches!(request, Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(request, Ok(Some(Request::Turn(request))) => {
         assert_eq!(
             request.active[0]
                 .moves

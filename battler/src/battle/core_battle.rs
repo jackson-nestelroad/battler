@@ -186,7 +186,7 @@ impl<'d> PublicCoreBattle<'d> {
     }
 
     /// Returns the active request for the player ID.
-    pub fn request_for_player(&self, player: &str) -> Option<Request> {
+    pub fn request_for_player(&self, player: &str) -> Result<Option<Request>> {
         self.internal.request_for_player(player)
     }
 
@@ -562,9 +562,9 @@ impl<'d> CoreBattle<'d> {
         })
     }
 
-    fn request_for_player(&self, player: &str) -> Option<Request> {
-        let player = self.player_index_by_id(player).ok()?;
-        self.player(player).ok()?.active_request()
+    fn request_for_player(&self, player: &str) -> Result<Option<Request>> {
+        let player = self.player_index_by_id(player)?;
+        Ok(self.player(player)?.active_request())
     }
 
     fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<()> {

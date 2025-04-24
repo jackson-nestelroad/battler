@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -139,7 +138,7 @@ fn massive_level_up_before_battle_ends() {
 
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
 
-    assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
         assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
             "Dark Pulse".to_owned(),
             "Shadow Ball".to_owned(),
@@ -256,7 +255,7 @@ fn inactive_mon_levels_up_directly_to_level() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    assert_matches::assert_matches!(battle.request_for_player("player-1"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
         assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
             "Shadow Ball".to_owned(),
             "Dream Eater".to_owned(),

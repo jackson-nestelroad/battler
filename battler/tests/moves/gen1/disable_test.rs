@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -181,16 +180,15 @@ fn disable_ends_locked_move_and_forces_struggle() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
-    assert!(battle
-        .request_for_player("player-2")
-        .is_some_and(|request| match request {
-            Request::Turn(request) => request.active.first().is_some_and(|mon| mon.moves.len()
-                == 1
-                && mon.moves.first().is_some_and(
-                    |move_slot| move_slot.name == "Struggle" && move_slot.id.eq("struggle")
-                )),
-            _ => false,
-        }));
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(request.active.first(), Some(mon) => {
+            assert_eq!(mon.moves.len(), 1);
+            assert_matches::assert_matches!(mon.moves.first(), Some(move_slot) => {
+                assert_eq!(move_slot.name, "Struggle");
+                assert_eq!(&move_slot.id, "struggle");
+            });
+        });
+    });
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));

@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -69,7 +68,7 @@ fn spite_deducts_pp_from_targets_last_move() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    assert_matches::assert_matches!(battle.request_for_player("player-2"), Some(Request::Turn(request)) => {
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Turn(request))) => {
         assert_eq!(request.active[0].moves[1].pp, 10);
     });
 

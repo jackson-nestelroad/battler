@@ -3,7 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
-
     LocalDataStore,
     PublicCoreBattle,
     Request,
@@ -90,6 +89,7 @@ fn thrash_locks_move_and_confuses_user() {
     assert_eq!(
         battle
             .request_for_player("player-1")
+            .unwrap()
             .map(|req| if let Request::Turn(req) = req {
                 req.active.get(0).cloned()
             } else {
