@@ -3,12 +3,9 @@ use anyhow::{
     Result,
 };
 use battler_wamp::{
-    core::{
-        publish_options::PublishOptions,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
+    core::uri::{
+        Uri,
+        WildcardUri,
     },
     peer::{
         PeerConfig,
@@ -37,6 +34,7 @@ use battler_wamprat::{
         PeerBuilder,
         PeerConnectionType,
         PeerHandle,
+        PublishOptions,
     },
     subscription::{
         TypedPatternMatchedSubscription,

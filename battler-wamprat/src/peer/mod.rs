@@ -9,6 +9,7 @@ pub use peer::{
     PeerConnectionConfig,
     PeerConnectionType,
     PeerHandle,
+    PublishOptions,
     TypedProgressivePendingRpc,
     TypedSimplePendingRpc,
 };

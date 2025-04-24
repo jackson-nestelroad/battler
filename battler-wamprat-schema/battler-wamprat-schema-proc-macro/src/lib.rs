@@ -381,8 +381,8 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                     #[doc = "Publishes an event to the"]
                     #[doc = concat!("[`", stringify!(#ident), "::", stringify!(#variant_ident), "`]")]
                     #[doc = "topic."]
-                    pub async fn #name(&self, #uri_input event: #event) -> ::anyhow::Result<()> {
-                        #peer.publish(#uri_arg, event).await
+                    pub async fn #name(&self, #uri_input event: #event, options: ::battler_wamprat::peer::PublishOptions) -> ::anyhow::Result<()> {
+                        #peer.publish(#uri_arg, event, options).await
                     }
                 }
             }

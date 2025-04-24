@@ -24,6 +24,7 @@ use battler_wamprat::{
         CallOptions,
         PeerConnectionConfig,
         PeerConnectionType,
+        PublishOptions,
     },
     procedure::{
         Invocation,
@@ -245,9 +246,18 @@ async fn generates_pub_sub_for_calculator_topics() {
         Ok(())
     );
 
-    assert_matches::assert_matches!(producer.publish_ping(Ping).await, Ok(()));
-    assert_matches::assert_matches!(producer.publish_ping(Ping).await, Ok(()));
-    assert_matches::assert_matches!(producer.publish_ping(Ping).await, Ok(()));
+    assert_matches::assert_matches!(
+        producer.publish_ping(Ping, PublishOptions::default()).await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        producer.publish_ping(Ping, PublishOptions::default()).await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        producer.publish_ping(Ping, PublishOptions::default()).await,
+        Ok(())
+    );
 
     assert_matches::assert_matches!(events_rx.recv().await, Ok(Ping));
     assert_matches::assert_matches!(events_rx.recv().await, Ok(Ping));
@@ -256,7 +266,10 @@ async fn generates_pub_sub_for_calculator_topics() {
 
     assert_matches::assert_matches!(consumer.unsubscribe_ping().await, Ok(()));
 
-    assert_matches::assert_matches!(producer.publish_ping(Ping).await, Ok(()));
+    assert_matches::assert_matches!(
+        producer.publish_ping(Ping, PublishOptions::default()).await,
+        Ok(())
+    );
     assert_matches::assert_matches!(events_rx.recv().await, Err(RecvError::Closed));
 }
 
@@ -411,7 +424,8 @@ async fn generates_pub_sub_for_chat_topics() {
                 MessageEvent(Message {
                     author: "user1".to_owned(),
                     content: "foo".to_owned()
-                })
+                }),
+                PublishOptions::default()
             )
             .await,
         Ok(())
@@ -426,7 +440,8 @@ async fn generates_pub_sub_for_chat_topics() {
                 MessageEvent(Message {
                     author: "user2".to_owned(),
                     content: "bar".to_owned()
-                })
+                }),
+                PublishOptions::default()
             )
             .await,
         Ok(())
@@ -458,7 +473,8 @@ async fn generates_pub_sub_for_chat_topics() {
                 MessageEvent(Message {
                     author: "user1".to_owned(),
                     content: "baz".to_owned()
-                })
+                }),
+                PublishOptions::default()
             )
             .await,
         Ok(())

@@ -93,12 +93,9 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         publish_options::PublishOptions,
-//!         uri::{
-//!             Uri,
-//!             WildcardUri,
-//!         },
+//!     core::uri::{
+//!         Uri,
+//!         WildcardUri,
 //!     },
 //!     peer::{
 //!         PeerConfig,
@@ -120,6 +117,7 @@
 //!     peer::{
 //!         PeerBuilder,
 //!         PeerConnectionType,
+//!         PublishOptions,
 //!     },
 //!     subscription::TypedSubscription,
 //! };
@@ -228,12 +226,9 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         publish_options::PublishOptions,
-//!         uri::{
-//!             Uri,
-//!             WildcardUri,
-//!         },
+//!     core::uri::{
+//!         Uri,
+//!         WildcardUri,
 //!     },
 //!     peer::{
 //!         PeerConfig,
@@ -254,6 +249,7 @@
 //!     peer::{
 //!         PeerBuilder,
 //!         PeerConnectionType,
+//!         PublishOptions,
 //!     },
 //!     subscription::TypedPatternMatchedSubscription,
 //! };

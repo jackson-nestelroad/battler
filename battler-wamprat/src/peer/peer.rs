@@ -19,7 +19,6 @@ use battler_wamp::{
         id::Id,
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
-        publish_options::PublishOptions,
         uri::{
             Uri,
             WildcardUri,
@@ -142,6 +141,9 @@ where
         return result;
     }
 }
+
+/// Options for publishing an event.
+pub type PublishOptions = battler_wamp::core::publish_options::PublishOptions;
 
 /// Options for calling a procedure.
 #[derive(Debug, Default)]

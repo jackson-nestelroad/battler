@@ -83,6 +83,7 @@
 //! use battler_wamprat::{
 //!     peer::{
 //!         CallOptions,
+//!         PublishOptions,
 //!         PeerConnectionConfig,
 //!         PeerConnectionType,
 //!     },
@@ -252,7 +253,7 @@
 //!         select! {
 //!             _ = done_rx.recv() => break,
 //!             _ = tokio::time::sleep(Duration::from_secs(1)) => {
-//!                 producer.publish_ping(Ping).await.unwrap();
+//!                 producer.publish_ping(Ping, PublishOptions::default()).await.unwrap();
 //!                 producer.publish_message(
 //!                     MessagePattern {
 //!                         version: 1,
@@ -261,7 +262,7 @@
 //!                     MessageEvent(Message {
 //!                         author: "user".to_owned(),
 //!                         content: "foo".to_owned(),
-//!                     })
+//!                     }), PublishOptions::default()
 //!                 )
 //!                 .await.unwrap();
 //!             }
