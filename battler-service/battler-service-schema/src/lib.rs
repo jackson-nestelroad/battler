@@ -283,7 +283,7 @@ pub struct SideLogPattern(String, usize);
 #[realm("com.battler")]
 pub enum BattlerService {
     /// Creates a new battle.
-    #[rpc(uri = "com.battler.battler_service.create", input = CreateInput, output = BattleOutput)]
+    #[rpc(uri = "com.battler.battler_service.battles.create", input = CreateInput, output = BattleOutput)]
     Create,
     /// Lists battles.
     #[rpc(uri = "com.battler.battler_service.battles", input = BattlesInput, output = BattlesOutput)]
