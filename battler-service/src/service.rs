@@ -1,4 +1,10 @@
-use std::sync::Arc;
+use std::{
+    collections::{
+        BTreeMap,
+        BTreeSet,
+    },
+    sync::Arc,
+};
 
 use ahash::HashMap;
 use anyhow::{
@@ -22,11 +28,14 @@ use uuid::Uuid;
 
 use crate::{
     Battle,
+    BattlePreview,
     BattleState,
     Player,
+    PlayerPreview,
     PlayerState,
     PlayerValidation,
     Side,
+    SidePreview,
     log::{
         Log,
         LogEntry,
@@ -125,6 +134,30 @@ impl<'d> LiveBattle<'d> {
         }
     }
 
+    fn side_preview(side: &Side) -> SidePreview {
+        SidePreview {
+            players: side
+                .players
+                .iter()
+                .map(|player| PlayerPreview {
+                    id: player.id.clone(),
+                    name: player.name.clone(),
+                })
+                .collect(),
+        }
+    }
+
+    fn battle_preview(&self) -> BattlePreview {
+        BattlePreview {
+            uuid: self.uuid,
+            sides: self
+                .sides
+                .iter()
+                .map(|side| Self::side_preview(side))
+                .collect(),
+        }
+    }
+
     fn log_for_side(&self, side: Option<usize>) -> &Log {
         side.and_then(|side| self.logs.side_log(side))
             .unwrap_or(self.logs.public_log())
@@ -159,7 +192,8 @@ impl<'d> LiveBattle<'d> {
 /// Service for managing multiple battles on the [`battler`] battle engine.
 pub struct BattlerService<'d> {
     data: &'d dyn DataStore,
-    battles: Arc<Mutex<HashMap<Uuid, Arc<Mutex<LiveBattle<'d>>>>>>,
+    battles: Arc<Mutex<BTreeMap<Uuid, Arc<Mutex<LiveBattle<'d>>>>>>,
+    battles_by_player: Arc<Mutex<HashMap<String, BTreeSet<Uuid>>>>,
 }
 
 impl<'d> BattlerService<'d> {
@@ -167,7 +201,8 @@ impl<'d> BattlerService<'d> {
     pub fn new(data: &'d dyn DataStore) -> Self {
         Self {
             data,
-            battles: Arc::new(Mutex::new(HashMap::default())),
+            battles: Arc::new(Mutex::new(BTreeMap::default())),
+            battles_by_player: Arc::new(Mutex::new(HashMap::default())),
         }
     }
 
@@ -199,10 +234,20 @@ impl<'d> BattlerService<'d> {
 
         let battle = LiveBattle::new(options, engine_options, self.data)?;
         let uuid = battle.uuid;
+        let players = battle.players().map(|s| s.to_owned()).collect::<Vec<_>>();
         self.battles
             .lock()
             .await
             .insert(uuid, Arc::new(Mutex::new(battle)));
+
+        for player in players {
+            self.battles_by_player
+                .lock()
+                .await
+                .entry(player)
+                .or_default()
+                .insert(uuid);
+        }
 
         self.battle(uuid).await
     }
@@ -303,10 +348,74 @@ impl<'d> BattlerService<'d> {
                 return Err(Error::msg("cannot delete an ongoing battle"));
             }
         }
-        self.battles.lock().await.remove(&battle);
+        let uuid = battle;
+        let battle = self.battles.lock().await.remove(&battle);
+
+        if let Some(battle) = battle {
+            let players = battle
+                .lock()
+                .await
+                .players()
+                .map(|s| s.to_owned())
+                .collect::<Vec<_>>();
+            for player in players {
+                match self.battles_by_player.lock().await.entry(player) {
+                    std::collections::hash_map::Entry::Occupied(mut entry) => {
+                        entry.get_mut().remove(&uuid);
+                        if entry.get().is_empty() {
+                            entry.remove_entry();
+                        }
+                    }
+                    _ => (),
+                }
+            }
+        }
+
         Ok(())
     }
+
+    /// Looks up a list of battles.
+    pub async fn battles(&self, count: usize, offset: usize) -> Vec<BattlePreview> {
+        let battles = self.battles.lock().await;
+        let mut previews = Vec::with_capacity(count);
+        for (_, battle) in battles.iter().skip(offset).take(count) {
+            previews.push(battle.lock().await.battle_preview());
+        }
+        previews
+    }
+
+    /// Looks up battles for a single player.
+    pub async fn battles_for_player(
+        &self,
+        player: &str,
+        count: usize,
+        offset: usize,
+    ) -> Vec<BattlePreview> {
+        let battles = self.battles_by_player.lock().await;
+        let battles = match battles.get(player) {
+            Some(battles) => battles,
+            None => return Vec::default(),
+        };
+        let uuids = battles
+            .iter()
+            .skip(offset)
+            .take(count)
+            .cloned()
+            .collect::<Vec<_>>();
+        let mut previews = Vec::with_capacity(count);
+        let battles = self.battles.lock().await;
+        for battle in uuids {
+            if let Some(battle) = battles.get(&battle) {
+                previews.push(battle.lock().await.battle_preview());
+            }
+        }
+        previews
+    }
 }
+
+// SAFETY: Each battle is protected by a Mutex to prevent parallel access.
+unsafe impl<'d> Send for BattlerService<'d> {}
+unsafe impl<'d> Sync for BattlerService<'d> {}
 
 #[cfg(test)]
 mod battler_service_test {
@@ -340,10 +449,13 @@ mod battler_service_test {
 
     use super::BattlerService;
     use crate::{
+        BattlePreview,
         BattleState,
         Player,
+        PlayerPreview,
         PlayerState,
         Side,
+        SidePreview,
         log::LogEntry,
     };
 
@@ -686,6 +798,231 @@ mod battler_service_test {
                 "residual",
                 "turn|turn:2"
             ],
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn lists_battles_in_uuid_order() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let battler_service = BattlerService::new(&data);
+        let mut battles = Vec::new();
+        battles.push(
+            battler_service
+                .create(
+                    core_battle_options(team(5)),
+                    CoreBattleEngineOptions::default(),
+                )
+                .await
+                .unwrap()
+                .uuid,
+        );
+        battles.push(
+            battler_service
+                .create(
+                    core_battle_options(team(5)),
+                    CoreBattleEngineOptions::default(),
+                )
+                .await
+                .unwrap()
+                .uuid,
+        );
+        battles.push(
+            battler_service
+                .create(
+                    core_battle_options(team(5)),
+                    CoreBattleEngineOptions::default(),
+                )
+                .await
+                .unwrap()
+                .uuid,
+        );
+
+        battles.sort();
+
+        pretty_assertions::assert_eq!(
+            battler_service.battles(2, 0).await,
+            Vec::from_iter([
+                BattlePreview {
+                    uuid: battles[0],
+                    sides: Vec::from_iter([
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-1".to_owned(),
+                                name: "Player 1".to_owned(),
+                            }]),
+                        },
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-2".to_owned(),
+                                name: "Player 2".to_owned(),
+                            }]),
+                        }
+                    ]),
+                },
+                BattlePreview {
+                    uuid: battles[1],
+                    sides: Vec::from_iter([
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-1".to_owned(),
+                                name: "Player 1".to_owned(),
+                            }]),
+                        },
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-2".to_owned(),
+                                name: "Player 2".to_owned(),
+                            }]),
+                        }
+                    ]),
+                }
+            ])
+        );
+
+        pretty_assertions::assert_eq!(
+            battler_service.battles(2, 2).await,
+            Vec::from_iter([BattlePreview {
+                uuid: battles[2],
+                sides: Vec::from_iter([
+                    SidePreview {
+                        players: Vec::from_iter([PlayerPreview {
+                            id: "player-1".to_owned(),
+                            name: "Player 1".to_owned(),
+                        }]),
+                    },
+                    SidePreview {
+                        players: Vec::from_iter([PlayerPreview {
+                            id: "player-2".to_owned(),
+                            name: "Player 2".to_owned(),
+                        }]),
+                    }
+                ]),
+            }])
+        );
+
+        pretty_assertions::assert_eq!(battler_service.battles(2, 3).await, Vec::default());
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn lists_battles_for_player_in_uuid_order() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let battler_service = BattlerService::new(&data);
+        let mut battles = Vec::new();
+        battles.push(
+            battler_service
+                .create(
+                    core_battle_options(team(5)),
+                    CoreBattleEngineOptions::default(),
+                )
+                .await
+                .unwrap()
+                .uuid,
+        );
+        battles.push(
+            battler_service
+                .create(
+                    core_battle_options(team(5)),
+                    CoreBattleEngineOptions::default(),
+                )
+                .await
+                .unwrap()
+                .uuid,
+        );
+        battles.push(
+            battler_service
+                .create(
+                    core_battle_options(team(5)),
+                    CoreBattleEngineOptions::default(),
+                )
+                .await
+                .unwrap()
+                .uuid,
+        );
+
+        battles.sort();
+
+        pretty_assertions::assert_eq!(
+            battler_service.battles_for_player("player-2", 2, 0).await,
+            Vec::from_iter([
+                BattlePreview {
+                    uuid: battles[0],
+                    sides: Vec::from_iter([
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-1".to_owned(),
+                                name: "Player 1".to_owned(),
+                            }]),
+                        },
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-2".to_owned(),
+                                name: "Player 2".to_owned(),
+                            }]),
+                        }
+                    ]),
+                },
+                BattlePreview {
+                    uuid: battles[1],
+                    sides: Vec::from_iter([
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-1".to_owned(),
+                                name: "Player 1".to_owned(),
+                            }]),
+                        },
+                        SidePreview {
+                            players: Vec::from_iter([PlayerPreview {
+                                id: "player-2".to_owned(),
+                                name: "Player 2".to_owned(),
+                            }]),
+                        }
+                    ]),
+                }
+            ])
+        );
+
+        pretty_assertions::assert_eq!(
+            battler_service.battles_for_player("player-2", 2, 2).await,
+            Vec::from_iter([BattlePreview {
+                uuid: battles[2],
+                sides: Vec::from_iter([
+                    SidePreview {
+                        players: Vec::from_iter([PlayerPreview {
+                            id: "player-1".to_owned(),
+                            name: "Player 1".to_owned(),
+                        }]),
+                    },
+                    SidePreview {
+                        players: Vec::from_iter([PlayerPreview {
+                            id: "player-2".to_owned(),
+                            name: "Player 2".to_owned(),
+                        }]),
+                    }
+                ]),
+            }])
+        );
+
+        pretty_assertions::assert_eq!(
+            battler_service.battles_for_player("player-2", 2, 3).await,
+            Vec::default()
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn returns_empty_list_for_player_with_no_battles() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let battler_service = BattlerService::new(&data);
+        battler_service
+            .create(
+                core_battle_options(team(5)),
+                CoreBattleEngineOptions::default(),
+            )
+            .await
+            .unwrap();
+
+        pretty_assertions::assert_eq!(
+            battler_service.battles_for_player("player-3", 2, 0).await,
+            Vec::default()
         );
     }
 }

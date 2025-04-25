@@ -6,25 +6,50 @@ use battler_wamprat_message::WampApplicationMessage;
 use battler_wamprat_schema::WampSchema;
 use battler_wamprat_uri::WampUriMatcher;
 
-/// URI pattern for looking up a single battle.
-#[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}")]
-pub struct BattlePattern(String);
-
-/// Input for looking up a battle.
-#[derive(WampApplicationMessage)]
-pub struct BattleInput;
-
-/// Arguments for an active battle.
+/// An active battle.
 #[derive(WampList)]
-pub struct BattleOutputArgs {
+pub struct Battle {
     /// JSON-serialized [`battler_service::Battle`].
     pub battle_json: String,
 }
 
-/// An active battle.
+/// Arguments for listing battles.
+#[derive(WampList)]
+pub struct BattlesInputArgs {
+    /// Number of battles.
+    pub count: Integer,
+    /// Offset.
+    pub offset: Integer,
+}
+
+/// Input for listing battles.
 #[derive(WampApplicationMessage)]
-pub struct BattleOutput(#[arguments] BattleOutputArgs);
+pub struct BattlesInput;
+
+/// Arguments for the output of listing battles.
+#[derive(WampList)]
+pub struct BattlesOutputArgs {
+    /// Battles.
+    pub battles: Vec<Battle>,
+}
+
+/// Arguments for listing battles for a player.
+#[derive(WampList)]
+pub struct BattlesForPlayerInputArgs {
+    /// Player.
+    pub player: String,
+    /// Number of battles.
+    pub count: Integer,
+    /// Offset.
+    pub offset: Integer,
+}
+/// Input for listing battles for a player.
+#[derive(WampApplicationMessage)]
+pub struct BattlesForPlayerInput(#[arguments] BattlesForPlayerInputArgs);
+
+/// Output of listing battles.
+#[derive(WampApplicationMessage)]
+pub struct BattlesOutput;
 
 /// Arguments for creating a new battle.
 #[derive(WampList)]
@@ -39,9 +64,22 @@ pub struct CreateInputArgs {
 #[derive(WampApplicationMessage)]
 pub struct CreateInput(#[arguments] CreateInputArgs);
 
+/// An application message around an active battle.
+#[derive(WampApplicationMessage)]
+pub struct BattleOutput(#[arguments] Battle);
+
+/// URI pattern for looking up a single battle.
+#[derive(WampUriMatcher)]
+#[uri("com.battler.battler_service.battles.{0}")]
+pub struct BattlePattern(String);
+
+/// Input for looking up a battle.
+#[derive(WampApplicationMessage)]
+pub struct BattleInput;
+
 /// URI pattern for updating a player's team in a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.update_team")]
+#[uri("com.battler.battler_service.battles.{0}.update_team")]
 pub struct UpdateTeamPattern(String);
 
 /// Arguments for updating a team.
@@ -63,7 +101,7 @@ pub struct UpdateTeamOutput;
 
 /// URI pattern for validating a player in a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.validate_player")]
+#[uri("com.battler.battler_service.battles.{0}.validate_player")]
 pub struct ValidatePlayerPattern(String);
 
 /// Arguments for validating a player.
@@ -90,7 +128,7 @@ pub struct ValidatePlayerOutput(#[arguments] ValidatePlayerOutputArgs);
 
 /// URI pattern for starting a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.start")]
+#[uri("com.battler.battler_service.battles.{0}.start")]
 pub struct StartPattern(String);
 
 /// Input for starting a battle.
@@ -103,7 +141,7 @@ pub struct StartOutput;
 
 /// URI pattern for reading a player's data in a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.player_data")]
+#[uri("com.battler.battler_service.battles.{0}.player_data")]
 pub struct PlayerDataPattern(String);
 
 /// Arguments for reading a player's data in a battle.
@@ -130,7 +168,7 @@ pub struct PlayerDataOutput(#[arguments] PlayerDataOutputArgs);
 
 /// URI pattern for reading a player's current request in a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.request")]
+#[uri("com.battler.battler_service.battles.{0}.request")]
 pub struct RequestPattern(String);
 
 /// Arguments for reading a player's current request in a battle.
@@ -157,7 +195,7 @@ pub struct RequestOutput(#[arguments] RequestOutputArgs);
 
 /// URI pattern for a player making a choice in a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.make_choice")]
+#[uri("com.battler.battler_service.battles.{0}.make_choice")]
 pub struct MakeChoicePattern(String);
 
 /// Arguments for a player making a choice in a battle.
@@ -179,7 +217,7 @@ pub struct MakeChoiceOutput;
 
 /// URI pattern for deleting a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.delete")]
+#[uri("com.battler.battler_service.battles.{0}.delete")]
 pub struct DeletePattern(String);
 
 /// Input for deleting a battle.
@@ -192,7 +230,7 @@ pub struct DeleteOutput;
 
 /// URI pattern for reading the full log of a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.full_log")]
+#[uri("com.battler.battler_service.battles.{0}.full_log")]
 pub struct FullLogPattern(String);
 
 /// Arguments for reading the full log of a battle.
@@ -220,7 +258,7 @@ pub struct FullLogOutput(#[arguments] FullLogOutputArgs);
 
 /// URI pattern for reading the public log of a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.log.public")]
+#[uri("com.battler.battler_service.battles.{0}.log.public")]
 pub struct PublicLogPattern(String);
 
 /// A log entry.
@@ -238,18 +276,24 @@ pub struct LogEvent(#[arguments] LogEntry);
 
 /// URI pattern for reading the private log for a specific side of a battle.
 #[derive(WampUriMatcher)]
-#[uri("com.battler.battler_service.{0}.log.side.{1}")]
+#[uri("com.battler.battler_service.battles.{0}.log.side.{1}")]
 pub struct SideLogPattern(String, usize);
 
 #[derive(WampSchema)]
 #[realm("com.battler")]
 pub enum BattlerService {
-    /// Looks up an active battle.
-    #[rpc(pattern = BattlePattern, input = BattleInput, output = BattleOutput)]
-    Battle,
     /// Creates a new battle.
     #[rpc(uri = "com.battler.battler_service.create", input = CreateInput, output = BattleOutput)]
     Create,
+    /// Lists battles.
+    #[rpc(uri = "com.battler.battler_service.battles", input = BattlesInput, output = BattlesOutput)]
+    Battles,
+    /// Lists battles for a player.
+    #[rpc(uri = "com.battler.battler_service.battles_for_player", input = BattlesForPlayerInput, output = BattlesOutput)]
+    BattlesForPlayer,
+    /// Looks up an active battle.
+    #[rpc(pattern = BattlePattern, input = BattleInput, output = BattleOutput)]
+    Battle,
     /// Updates a player's team in a battle.
     #[rpc(pattern = UpdateTeamPattern, input = UpdateTeamInput, output = UpdateTeamOutput)]
     UpdateTeam,

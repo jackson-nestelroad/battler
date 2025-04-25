@@ -75,3 +75,29 @@ pub struct Battle {
     /// The error that occurred when continuing the battle.
     pub error: Option<String>,
 }
+
+/// A preview of a [`Player`] in a [`Battle`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PlayerPreview {
+    /// The unique identifier of the player.
+    pub id: String,
+    /// Name of the player.
+    pub name: String,
+}
+
+/// A preview of a [`Side`] in a [`Battle`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SidePreview {
+    /// Players on the side.
+    pub players: Vec<PlayerPreview>,
+}
+
+/// A preview of a [`Battle`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BattlePreview {
+    /// The unique identifier of the battle.
+    #[serde(with = "uuid::serde::simple")]
+    pub uuid: Uuid,
+    /// The sides participating in the battle.
+    pub sides: Vec<SidePreview>,
+}
