@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use anyhow::{
     Error,
     Result,
@@ -42,7 +44,10 @@ use battler_wamprat::{
     },
 };
 use battler_wamprat_message::WampApplicationMessage;
-use battler_wamprat_uri::WampUriMatcher;
+use battler_wamprat_uri::{
+    WampUriMatcher,
+    Wildcard,
+};
 use tokio::{
     sync::broadcast,
     task::JoinHandle,
@@ -110,6 +115,7 @@ impl TypedSubscription for MessageEventHandler {
 
 #[derive(WampUriMatcher)]
 #[uri("com.battler.event.{version}.{name}")]
+#[generator(EventV2Pattern, fixed(version = 2u64))]
 struct EventPattern {
     version: u64,
     name: String,
@@ -573,6 +579,142 @@ async fn receives_pattern_based_events() {
         publisher_handle
             .publish(
                 Uri::try_from("com.battler.event.4.jkl").unwrap(),
+                MessageEvent(MessageEventArgs("another message".to_owned())),
+                PublishOptions::default(),
+            )
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(events_rx.recv().await, Err(err) => {
+        assert_eq!(err.to_string(), "channel closed");
+    });
+
+    subscriber_handle.cancel().unwrap();
+    subscriber_handle_join_handle.await.unwrap();
+
+    publisher_handle.cancel().unwrap();
+    publisher_join_handle.await.unwrap();
+
+    router_handle.cancel().unwrap();
+    router_join_handle.await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn receives_pattern_based_events_with_generator() {
+    test_utils::setup::setup_test_environment();
+
+    // Start a router.
+    let (router_handle, router_join_handle) = start_router(0).await.unwrap();
+
+    // Create a publisher and subscriber.
+    let (publisher_handle, publisher_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ))
+    .start(
+        create_peer("publisher").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    publisher_handle.wait_until_ready().await.unwrap();
+
+    let (subscriber_handle, subscriber_handle_join_handle) = PeerBuilder::new(
+        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
+    )
+    .start(
+        create_peer("publisher").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    subscriber_handle.wait_until_ready().await.unwrap();
+
+    // Create a subscription that writes events to a channel.
+    let (events_tx, mut events_rx) = broadcast::channel(16);
+    assert_matches::assert_matches!(
+        subscriber_handle
+            .subscribe_pattern_matched_with_generator(
+                &EventV2Pattern {
+                    version: PhantomData,
+                    name: Wildcard::Wildcard
+                },
+                MessageEventHandler { events_tx }
+            )
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.1.abc").unwrap(),
+                MessageEvent(MessageEventArgs("foo".to_owned())),
+                PublishOptions::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.2.def").unwrap(),
+                MessageEvent(MessageEventArgs("bar".to_owned())),
+                PublishOptions::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.3.ghi").unwrap(),
+                MessageEvent(MessageEventArgs("baz".to_owned())),
+                PublishOptions::default(),
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.2.jkl").unwrap(),
+                MessageEvent(MessageEventArgs("hello".to_owned())),
+                PublishOptions::default(),
+            )
+            .await,
+        Ok(())
+    );
+
+    // Receive the two events.
+    let mut events = Vec::new();
+    while let Ok(event) = events_rx.recv().await {
+        log::warn!("{event:?}");
+        events.push(event);
+        if events.len() >= 2 {
+            break;
+        }
+    }
+
+    // Validate the three events were received correctly.
+    pretty_assertions::assert_eq!(
+        events,
+        Vec::from_iter([
+            ReceivedMessageEvent::Valid("bar".to_owned()),
+            ReceivedMessageEvent::Valid("hello".to_owned()),
+        ])
+    );
+
+    // Unsubscribe and show the next message is not received.
+    assert_matches::assert_matches!(
+        subscriber_handle
+            .unsubscribe_with_generator(&EventV2Pattern {
+                version: PhantomData,
+                name: Wildcard::Wildcard
+            })
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        publisher_handle
+            .publish(
+                Uri::try_from("com.battler.event.2.mno").unwrap(),
                 MessageEvent(MessageEventArgs("another message".to_owned())),
                 PublishOptions::default(),
             )

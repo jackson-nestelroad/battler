@@ -44,7 +44,10 @@ use battler_wamprat_schema::{
     WampSchemaError,
 };
 use battler_wamprat_schema_proc_macro::WampSchema as WampSchemaUnderTest;
-use battler_wamprat_uri::WampUriMatcher;
+use battler_wamprat_uri::{
+    WampUriMatcher,
+    Wildcard,
+};
 use thiserror::Error;
 use tokio::{
     sync::broadcast::{
@@ -284,6 +287,7 @@ struct MessageEvent(#[arguments_keyword] Message);
 
 #[derive(Debug, WampUriMatcher)]
 #[uri("com.battler.message.{version}.{channel}")]
+#[generator(ChannelMessagePattern, require(channel))]
 struct MessagePattern {
     version: u64,
     channel: String,
@@ -319,6 +323,8 @@ enum UploadError {
 enum Chat {
     #[pubsub(pattern = MessagePattern, event = MessageEvent)]
     Message,
+    #[pubsub(pattern = MessagePattern, subscription = ChannelMessagePattern, event = MessageEvent)]
+    ChannelMessage,
     #[rpc(pattern = UploadPattern, input = UploadInput, output = UploadOutput, error = UploadError, progressive)]
     Upload,
 }
@@ -327,6 +333,7 @@ struct MessageHandler {
     events_tx: broadcast::Sender<(Message, u64, String)>,
 }
 impl MessageSubscription for MessageHandler {}
+impl ChannelMessageSubscription for MessageHandler {}
 
 impl TypedPatternMatchedSubscription for MessageHandler {
     type Event = MessageEvent;
@@ -462,6 +469,113 @@ async fn generates_pub_sub_for_chat_topics() {
     assert_matches::assert_matches!(events_rx.try_recv(), Err(TryRecvError::Empty));
 
     assert_matches::assert_matches!(consumer.unsubscribe_message().await, Ok(()));
+
+    assert_matches::assert_matches!(
+        producer
+            .publish_message(
+                MessagePattern {
+                    version: 1,
+                    channel: "main".to_owned()
+                },
+                MessageEvent(Message {
+                    author: "user1".to_owned(),
+                    content: "baz".to_owned()
+                }),
+                PublishOptions::default()
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(events_rx.recv().await, Err(RecvError::Closed));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn generates_pub_sub_for_chat_topics_for_particular_channel() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router(0, "com.battler.realm").await.unwrap();
+
+    let producer_builder = Chat::producer_builder(PeerConfig {
+        connection: PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
+            "ws://{}",
+            router_handle.local_addr()
+        ))),
+        auth_methods: Vec::default(),
+    });
+
+    let producer = producer_builder
+        .start(create_peer("producer").unwrap())
+        .unwrap();
+    producer.wait_until_ready().await.unwrap();
+
+    let consumer = Chat::consumer(
+        PeerConfig {
+            connection: PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
+                "ws://{}",
+                router_handle.local_addr()
+            ))),
+            auth_methods: Vec::default(),
+        },
+        create_peer("consumer").unwrap(),
+    )
+    .unwrap();
+    consumer.wait_until_ready().await.unwrap();
+
+    let pattern = ChannelMessagePattern {
+        version: Wildcard::Wildcard,
+        channel: "main".to_owned(),
+    };
+
+    let (events_tx, mut events_rx) = broadcast::channel(16);
+    assert_matches::assert_matches!(
+        consumer
+            .subscribe_channel_message(&pattern, MessageHandler { events_tx })
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(
+        producer
+            .publish_message(
+                MessagePattern {
+                    version: 1,
+                    channel: "main".to_owned()
+                },
+                MessageEvent(Message {
+                    author: "user1".to_owned(),
+                    content: "foo".to_owned()
+                }),
+                PublishOptions::default()
+            )
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        producer
+            .publish_message(
+                MessagePattern {
+                    version: 2,
+                    channel: "home".to_owned()
+                },
+                MessageEvent(Message {
+                    author: "user2".to_owned(),
+                    content: "bar".to_owned()
+                }),
+                PublishOptions::default()
+            )
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(events_rx.recv().await, Ok((message, version, channel)) => {
+        assert_eq!(message.author, "user1");
+        assert_eq!(message.content, "foo");
+        assert_eq!(version, 1);
+        assert_eq!(channel, "main");
+    });
+    assert_matches::assert_matches!(events_rx.try_recv(), Err(TryRecvError::Empty));
+
+    assert_matches::assert_matches!(consumer.unsubscribe_channel_message(&pattern).await, Ok(()));
 
     assert_matches::assert_matches!(
         producer

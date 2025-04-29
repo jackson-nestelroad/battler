@@ -1,0 +1,23 @@
+[package]
+name = "battler-service-client"
+version = "0.1.0"
+edition = "2024"
+description = "Client wrapper for battler-service."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-service-client"
+
+[dependencies]
+anyhow = "1.0"
+async-trait = "0.1"
+battler = { path = "../battler" }
+battler-service = { path = "../battler-service" }
+battler-service-schema = { path = "../battler-service/battler-service-schema" }
+battler-wamp-values = "0.2"
+battler-wamprat = "0.6"
+serde_json = "1.0"
+tokio = { version = "1.41.0", features = ["full"] }
+uuid = "1.16.0"
+
+[dev-dependencies]

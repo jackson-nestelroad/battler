@@ -121,6 +121,56 @@
 //! be rejected by the peer, while `com.test.math.2log12` will be accepted.
 //!
 //! *Note: URI such as the one above will generate a dependency on the `regex` crate.*
+//!
+//! ### Generators
+//!
+//! It can sometimes be useful to generate partial-wildcard URIs based on a URI pattern. For
+//! example, one peer may be publishing messages to `com.chat.{version}.{channel}.{author}`, and
+//! another peer may want to subscribe to messages for a specific channel using the
+//! `com.chat.1.main.{author}`. Rather than requiring the subscriber to generate this
+//! wildcard URI manually, it can use a **derived generator struct** from base URI pattern.
+//!
+//! A generator struct implements the [`WampWildcardUriGenerator`] trait and can be generated
+//! automatically with the `generator` macro attribute. You can generate multiple generators for a
+//! single matcher.
+//!
+//! ```
+//! use std::marker::PhantomData;
+//!
+//! use battler_wamprat_uri::{
+//!     WampUriMatcher,
+//!     Wildcard,
+//!     WampWildcardUriGenerator,
+//! };
+//!
+//! #[derive(Clone, WampUriMatcher)]
+//! #[uri("com.chat.{version}.{channel}.{author}")]
+//! #[generator(ChannelMessageUri, fixed(version = 1u64), require(channel), derive(Clone))]
+//! struct MessageUri {
+//!     version: u64,
+//!     channel: String,
+//!     author: String,
+//! }
+//!
+//! fn main() {
+//!     assert_matches::assert_matches!(ChannelMessageUri {
+//!         version: PhantomData,
+//!         channel: "main".to_owned(),
+//!         author: Wildcard::Wildcard,
+//!     }.wamp_generate_wildcard_uri(), Ok(uri) => {
+//!         assert_eq!(uri.as_ref(), "com.chat.1.main.");
+//!     });
+//! }
+//! ```
+//!
+//! You can also create generators for patterns with unnamed fields, but indices must be prefixed
+//! with an underscore (e.g., `_0`, `_1`) in the `generator` attribute.
+//!
+//! **Note:** Generators are limited to wildcard URI patterns only. URI patterns with prefix
+//! matching **cannot** use the `generator` attribute. You may, however, create your own generator
+//! structs manually.
+
+#![feature(slice_concat_trait)]
 use battler_wamp::core::{
     error::WampError,
     match_style::MatchStyle,
@@ -187,4 +237,61 @@ pub trait WampUriMatcher: Sized {
 
     /// Generates an outgoing URI for the configured values.
     fn wamp_generate_uri(&self) -> Result<Uri, InvalidUri>;
+}
+
+/// A field of a custom generator of a [`WampUriMatcher`] implementation (a.k.a., an implementation
+/// of [`WampWildcardUriGenerator`]) where wildcard is allowed.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Wildcard<T> {
+    #[default]
+    Wildcard,
+    Value(T),
+}
+
+impl<T> std::fmt::Display for Wildcard<T>
+where
+    T: std::fmt::Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Wildcard => write!(f, ""),
+            Self::Value(val) => val.fmt(f),
+        }
+    }
+}
+
+impl<T> std::str::FromStr for Wildcard<T>
+where
+    T: std::str::FromStr,
+{
+    type Err = <T as std::str::FromStr>::Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            Ok(Self::Wildcard)
+        } else {
+            Ok(Self::Value(T::from_str(s)?))
+        }
+    }
+}
+
+impl<T> From<T> for Wildcard<T> {
+    fn from(value: T) -> Self {
+        Wildcard::Value(value)
+    }
+}
+
+/// A custom generator of a [`WampUriMatcher`] implementation where wildcards may be used to
+/// generate [`WildcardUri`]s.
+pub trait WampWildcardUriGenerator<T> {
+    /// Generates an outgoing URI for the configured values.
+    fn wamp_generate_wildcard_uri(&self) -> Result<WildcardUri, InvalidUri>;
+}
+
+impl<T> WampWildcardUriGenerator<T> for T
+where
+    T: WampUriMatcher,
+{
+    fn wamp_generate_wildcard_uri(&self) -> Result<WildcardUri, InvalidUri> {
+        Ok(WildcardUri::from(self.wamp_generate_uri()?))
+    }
 }

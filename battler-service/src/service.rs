@@ -323,7 +323,7 @@ impl<'d> BattlerService<'d> {
             .collect())
     }
 
-    /// Subscribes to battle log updates for the player.
+    /// Subscribes to battle log updates.
     ///
     /// If `side` is `None`, the public log is used.
     pub async fn subscribe(
@@ -374,7 +374,7 @@ impl<'d> BattlerService<'d> {
         Ok(())
     }
 
-    /// Looks up a list of battles.
+    /// Lists battles.
     pub async fn battles(&self, count: usize, offset: usize) -> Vec<BattlePreview> {
         let battles = self.battles.lock().await;
         let mut previews = Vec::with_capacity(count);
@@ -384,7 +384,7 @@ impl<'d> BattlerService<'d> {
         previews
     }
 
-    /// Looks up battles for a single player.
+    /// Looks up battles for a player.
     pub async fn battles_for_player(
         &self,
         player: &str,

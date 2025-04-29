@@ -35,6 +35,7 @@ struct RpcAttribute {
 struct PubSubAttribute {
     event: Path,
     uri: UriAttribute,
+    subscription: Option<Path>,
 }
 
 #[allow(dead_code)]
@@ -127,6 +128,7 @@ impl Parse for Input {
                     .map(|attr| {
                         let mut event = None;
                         let mut uri = None;
+                        let mut subscription = None;
                         attr.parse_nested_meta(|meta| {
                             if meta.path.is_ident("event") {
                                 event = Some(meta.value()?.parse::<Path>()?);
@@ -137,6 +139,9 @@ impl Parse for Input {
                             } else if meta.path.is_ident("pattern") {
                                 uri = Some(UriAttribute::Pattern(meta.value()?.parse::<Path>()?));
                                 Ok(())
+                            } else if meta.path.is_ident("subscription") {
+                                subscription = Some(meta.value()?.parse::<Path>()?);
+                                Ok(())
                             } else {
                                 Ok(())
                             }
@@ -146,6 +151,7 @@ impl Parse for Input {
                                 .ok_or_else(|| Error::new(span, "missing event attribute"))?,
                             uri: uri
                                 .ok_or_else(|| Error::new(span, "missing uri/pattern attribute"))?,
+                            subscription,
                         })
                     });
                 let attribute = match (rpc, pub_sub) {
@@ -190,7 +196,7 @@ fn variant_to_function_name(s: &str) -> String {
 }
 
 /// Procedural macro for generating strongly-typed producer and consumer services around a
-/// [`battler_wamprat::peer::Peer`].
+/// `battler_wamprat::peer::Peer`.
 #[proc_macro_derive(WampSchema, attributes(realm, rpc, pubsub))]
 pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     #[allow(unused)]
@@ -259,23 +265,27 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                 let name = variant_to_function_name(&variant_ident.to_string());
                 let subscribe_name = Ident::new(&format!("subscribe_{name}"), variant.span);
                 let unsubscribe_name = Ident::new(&format!("unsubscribe_{name}"), variant.span);
-                let (subscribe_method_call, unsubscribe_method_call) = match &pubsub.uri {
-                    UriAttribute::Uri(uri) => (quote!(subscribe(::battler_wamp::core::uri::Uri::try_from(#uri)?, subscription)), quote!(unsubscribe(&::battler_wamp::core::uri::WildcardUri::try_from(#uri)?))),
-                    UriAttribute::Pattern(pattern) => (quote!(subscribe_pattern_matched(subscription)), quote!(unsubscribe(&#pattern::uri_for_router()))),
+                let (parameters, subscribe_method_call, unsubscribe_method_call) = match &pubsub.uri {
+                    UriAttribute::Uri(uri) => (quote!(), quote!(subscribe(::battler_wamp::core::uri::Uri::try_from(#uri)?, subscription)), quote!(unsubscribe(&::battler_wamp::core::uri::WildcardUri::try_from(#uri)?))),
+                    UriAttribute::Pattern(pattern) => match &pubsub.subscription {
+                        Some(subscription) => (quote!(, generator: &#subscription), quote!(subscribe_pattern_matched_with_generator(generator, subscription)), quote!(unsubscribe_with_generator(generator))),
+                        None => (quote!(), quote!(subscribe_pattern_matched(subscription)), quote!(unsubscribe(&#pattern::uri_for_router()))),
+                    },
                 };
                 let subscription_type = Ident::new(&format!("{variant_ident}Subscription"), variant.span);
+
                 quote! {
                     #[doc = "Subscribes to the"]
                     #[doc = concat!("[`", stringify!(#ident), "::", stringify!(#variant_ident), "`]")]
                     #[doc = "topic."]
-                    pub async fn #subscribe_name<T>(&self, subscription: T) -> ::anyhow::Result<()> where T: #subscription_type + 'static {
+                    pub async fn #subscribe_name<T>(&self #parameters, subscription: T) -> ::anyhow::Result<()> where T: #subscription_type + 'static {
                         #peer.#subscribe_method_call.await
                     }
 
                     #[doc = "Unsubscribes from the"]
                     #[doc = concat!("[`", stringify!(#ident), "::", stringify!(#variant_ident), "`]")]
                     #[doc = "topic."]
-                    pub async fn #unsubscribe_name(&self) -> ::anyhow::Result<()> {
+                    pub async fn #unsubscribe_name(&self #parameters) -> ::anyhow::Result<()> {
                         #peer.#unsubscribe_method_call.await
                     }
                 }

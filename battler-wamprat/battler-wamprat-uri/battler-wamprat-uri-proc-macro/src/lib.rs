@@ -1,6 +1,10 @@
 extern crate proc_macro;
 
-use std::collections::BTreeSet;
+use std::collections::{
+    BTreeMap,
+    BTreeSet,
+    HashMap,
+};
 
 use battler_wamp::core::uri::Uri;
 use itertools::Itertools;
@@ -16,6 +20,7 @@ use quote::{
 use regex::Regex;
 use syn::{
     Error,
+    Expr,
     Field,
     Ident,
     Index,
@@ -23,8 +28,10 @@ use syn::{
     LitStr,
     Member,
     Result,
+    Token,
     Type,
     ext::IdentExt,
+    parenthesized,
     parse::{
         Parse,
         ParseStream,
@@ -52,6 +59,15 @@ struct InputField {
     member: Member,
     ty: Type,
     attrs: InputFieldAttrs,
+}
+
+impl InputField {
+    fn name(&self) -> String {
+        match &self.member {
+            Member::Unnamed(index) => index.index.to_string(),
+            Member::Named(ident) => ident.to_string(),
+        }
+    }
 }
 
 struct UriAttr {
@@ -193,6 +209,13 @@ impl UriAttr {
     }
 }
 
+struct GeneratorAttr {
+    name: Ident,
+    required_fields: BTreeSet<usize>,
+    fixed_fields: BTreeMap<usize, Expr>,
+    derive: Option<TokenStream>,
+}
+
 fn take_integer_from_string(read: &mut &str) -> String {
     let mut int = String::new();
     for (i, ch) in read.char_indices() {
@@ -230,6 +253,7 @@ fn take_ident_from_string(read: &mut &str) -> Ident {
 
 struct InputAttrs {
     uri: UriAttr,
+    generators: Vec<GeneratorAttr>,
 }
 
 struct Input {
@@ -277,6 +301,7 @@ impl Parse for Input {
         }
 
         let mut uri = None;
+        let mut generators = Vec::new();
         for attr in input.attrs {
             if attr.path().is_ident("uri") {
                 if uri.is_some() {
@@ -287,11 +312,81 @@ impl Parse for Input {
                     uri = Some(UriAttr::new(call_site, fmt, &fields)?);
                     Ok(())
                 })?;
+            } else if attr.path().is_ident("generator") {
+                let mut name = None;
+                let mut required = None;
+                let mut fixed = HashMap::new();
+                let mut derive = None;
+                attr.parse_nested_meta(|meta| {
+                    if meta.path.is_ident("require") {
+                        let content;
+                        parenthesized!(content in meta.input);
+                        required = Some(content.parse_terminated(Ident::parse, Token![,])?);
+                    } else if meta.path.is_ident("fixed") {
+                        meta.parse_nested_meta(|meta| {
+                            let ident = meta.path.require_ident()?;
+                            let value = meta.value()?.parse::<Expr>()?;
+                            fixed.insert(ident.clone(), value);
+                            Ok(())
+                        })?;
+                    } else if meta.path.is_ident("derive") {
+                        let content;
+                        parenthesized!(content in meta.input);
+                        derive = Some(content.parse()?);
+                    } else if name.is_some() {
+                        return Err(Error::new(call_site, "only one name allowed"));
+                    } else {
+                        name = Some(meta.path.require_ident()?.clone());
+                    }
+                    Ok(())
+                })?;
+                let name = name.ok_or_else(|| {
+                    Error::new(call_site, "missing name for \"generator\" attribute")
+                })?;
+
+                let required = required
+                    .map(|fields| fields.into_iter().collect::<BTreeSet<_>>())
+                    .unwrap_or_default();
+
+                let get_field_index = |ident: &Ident| {
+                    fields
+                        .iter()
+                        .enumerate()
+                        .find_map(|(i, field)| match &field.member {
+                            Member::Named(member) => (member == ident).then_some(i),
+                            Member::Unnamed(index) => (index.index
+                                == ident.to_string().strip_prefix('_')?.parse::<u32>().ok()?)
+                            .then_some(i),
+                        })
+                        .ok_or_else(|| {
+                            Error::new(ident.span(), format!("struct has no field \"{ident}\""))
+                        })
+                };
+
+                let required = required
+                    .iter()
+                    .map(get_field_index)
+                    .collect::<Result<BTreeSet<_>>>()?;
+
+                let fixed = fixed
+                    .into_iter()
+                    .map(|(ident, value)| {
+                        let index = get_field_index(&ident)?;
+                        Ok((index, value))
+                    })
+                    .collect::<Result<BTreeMap<_, _>>>()?;
+
+                generators.push(GeneratorAttr {
+                    name,
+                    required_fields: required,
+                    fixed_fields: fixed,
+                    derive,
+                })
             }
         }
 
         let uri = uri.ok_or_else(|| Error::new(call_site, "missing required \"uri\" attribute"))?;
-        let attrs = InputAttrs { uri };
+        let attrs = InputAttrs { uri, generators };
         Ok(Self {
             ident,
             attrs,
@@ -301,7 +396,7 @@ impl Parse for Input {
 }
 
 /// Procedural macro for deriving `battler_wamprat_uri::WampUriMatcher` for a struct.
-#[proc_macro_derive(WampUriMatcher, attributes(uri, rest))]
+#[proc_macro_derive(WampUriMatcher, attributes(uri, rest, generator))]
 pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as Input);
     let call_site = Span::call_site();
@@ -324,7 +419,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
     enum Matcher {
         Static(LitStr),
         Simple(String),
-        Dynamic(String),
+        Dynamic(String, usize),
     }
 
     let uri_components = uri_pattern
@@ -351,7 +446,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
             } else {
                 return Err(Error::new(
                     call_site,
-                    "rest field does not make sense non-prefix uri",
+                    "rest field does not make sense for a non-prefix uri",
                 ));
             }
         }
@@ -374,6 +469,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         Err(err) => return proc_macro::TokenStream::from(err.into_compile_error()),
     };
 
+    let is_prefix_style = match_style.contains("Prefix");
     let match_style = syn::parse_str::<TokenStream>(&match_style).unwrap();
     let uri_for_router = LitStr::new(&uri_for_router, call_site);
 
@@ -409,7 +505,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
             }
 
             // Otherwise, we must match a regular expression and assign to multiple members.
-            Matcher::Dynamic(pattern.into_owned())
+            Matcher::Dynamic(pattern.into_owned(), matches.len())
         })
         .collect::<Vec<_>>();
 
@@ -423,7 +519,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         if field.attrs.rest {
             let pattern = "(.+)".to_owned();
             *matchers.last_mut().unwrap() = if requires_regex {
-                Matcher::Dynamic(pattern)
+                Matcher::Dynamic(pattern, 1)
             } else {
                 Matcher::Simple(pattern)
             };
@@ -442,7 +538,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
     } else if !requires_regex {
         let mut parsed = BTreeSet::new();
         let mut match_index = 0;
-        let matchers = matchers.into_iter().enumerate().map(|(i, matcher)| match matcher {
+        let matchers = matchers.iter().enumerate().map(|(i, matcher)| match matcher {
             Matcher::Static(component) => {
                 let error = LitStr::new(&format!("expected {} for component {i}", component.value()), call_site);
                 quote! {
@@ -459,10 +555,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 let field = input.fields.get(field_index).unwrap();
 
                 let ty = &field.ty;
-                let field_name = match &field.member {
-                    Member::Unnamed(index) => index.index.to_string(),
-                    Member::Named(ident) => ident.to_string(),
-                };
+                let field_name = field.name();
                 let error = LitStr::new(&format!("missing component for {field_name}"), call_site);
                 let parse_error = LitStr::new(&format!("invalid component for {field_name}"), call_site);
 
@@ -493,7 +586,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                     }
                 }
             }
-            Matcher::Dynamic(_) => unreachable!(),
+            Matcher::Dynamic { .. } => unreachable!(),
         }).collect::<Vec<_>>();
         quote! {
             let uri_components = uri.split('.').collect::<Vec<_>>();
@@ -502,10 +595,10 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
     } else {
         // Compile the URI into a regular expression and match all fields in order.
         let pattern = matchers
-            .into_iter()
+            .iter()
             .map(|matcher| match matcher {
                 Matcher::Static(component) => component.value(),
-                Matcher::Simple(pattern) | Matcher::Dynamic(pattern) => pattern,
+                Matcher::Simple(pattern) | Matcher::Dynamic(pattern, _) => pattern.clone(),
             })
             .join("\\.");
         let pattern = format!("^{pattern}$");
@@ -527,11 +620,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
             let field = input.fields.get(*field_index).unwrap();
             let ty = &field.ty;
 
-            let field_name = match &field.member {
-                Member::Unnamed(index) => index.index.to_string(),
-                Member::Named(ident) => ident.to_string(),
-            };
-
+            let field_name = field.name();
             let error = LitStr::new(&format!("missing component for {field_name}"), call_site);
             let parse_error = LitStr::new(&format!("invalid component for {field_name}"), call_site);
 
@@ -567,6 +656,123 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         }
     };
 
+    let named = input.fields.iter().any(|field| match &field.member {
+        Member::Named(_) => true,
+        Member::Unnamed(_) => false,
+    });
+
+    // Generators currently only assume wildcard URI patterns in their implementation.
+    if !input.attrs.generators.is_empty() {
+        if is_prefix_style {
+            return proc_macro::TokenStream::from(
+                Error::new(
+                    call_site,
+                    "custom generators are not supported for prefix-style URI patterns",
+                )
+                .into_compile_error(),
+            );
+        }
+    }
+
+    let generators = match input
+        .attrs
+        .generators
+        .iter()
+        .map(|generator| {
+            // Validate that fields requiring dynamic matching are not set as wildcards.
+            let mut match_field_iter = input.attrs.uri.match_fields.iter();
+            for matcher in &matchers {
+                let matches = match matcher {
+                    Matcher::Dynamic(_, matches) => *matches,
+                    Matcher::Simple(_) => 1,
+                    Matcher::Static(_) => 0,
+                };
+                for index in (0..matches).map(|_| {
+                    // SAFETY: Matchers were generated from format patterns in the URI pattern string, and
+                    // each format pattern was pushed into the match_fields list.
+                    match_field_iter.next().unwrap()
+                }) {
+                    if matches <= 1 {
+                        continue;
+                    }
+                    // SAFETY: Indices stored in match_fields were generated from positions of input.fields.
+                    let field = input.fields.get(*index).unwrap();
+                    if !generator.fixed_fields.contains_key(index)
+                        && !generator.required_fields.contains(index) {
+                        return Err(Error::new(generator.name.span(), format!("component for {} requires dynamic matching, so it cannot be a wildcard", field.name())));
+                    }
+                }
+            }
+
+            let generator_ident = &generator.name;
+            let field_declarations = input.fields.iter().enumerate().map(|(i, field)| {
+                let ty = &field.ty;
+                let ty = if generator.fixed_fields.contains_key(&i) {
+                    quote!(::core::marker::PhantomData<#ty>)
+                } else if generator.required_fields.contains(&i) {
+                    quote!(#ty)
+                } else if is_prefix_style {
+                    quote!(::core::marker::PhantomData<#ty>)
+                } else {
+                    quote!(::battler_wamprat_uri::Wildcard<#ty>)
+                };
+                match &field.member {
+                    Member::Named(ident) => quote!(pub #ident: #ty),
+                    Member::Unnamed(_) => quote!(pub #ty),
+                }
+            });
+            let fixed_fields = generator.fixed_fields.iter().map(|(field, value)| {
+                // SAFETY: Indices stored in fixed_fields were generated from positions of input.fields.
+                let field = input.fields.get(*field).unwrap();
+                let ident = match &field.member {
+                    Member::Named(ident) => format_ident!("{ident}"), // Required to avoid unused variable warning.
+                    Member::Unnamed(index) => format_ident!("_{}", index.index),
+                };
+                let ty = &field.ty;
+                Ok(quote! {
+                    let #ident = #value;
+                    let #ident: #ty = #value.into();
+                })
+            }).collect::<Result<Vec<_>>>()?;
+            let field_declarations = if named {
+                quote!({ #(#field_declarations,)* })
+            } else {
+                quote!(( #(#field_declarations,)* );)
+            };
+            let derive = match &generator.derive {
+                Some(derive) => quote!(#[derive(#derive)]),
+                None => quote!(),
+            };
+            Ok(quote! {
+                #[doc = "Custom generator for"]
+                #[doc = concat!("[`", stringify!(#ident),"`]")]
+                #[doc = "."]
+                #[allow(unused_variables, dead_code)]
+                #derive
+                pub struct #generator_ident #field_declarations
+
+                impl ::battler_wamprat_uri::WampWildcardUriGenerator<#ident> for #generator_ident {
+                    fn wamp_generate_wildcard_uri(&self) -> ::core::result::Result<::battler_wamp::core::uri::WildcardUri, ::battler_wamp::core::uri::InvalidUri> {
+                        ::battler_wamp::core::uri::WildcardUri::try_from(self.to_string().as_str())
+                    }
+                }
+
+                impl ::core::fmt::Display for #generator_ident {
+                    fn fmt(&self, __formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        #[allow(unused_variables, deprecated)]
+                        let Self #constructor_fields = self;
+                        #(#fixed_fields)*
+                        ::core::write!(__formatter, #uri_pattern #uri_pattern_args)
+                    }
+                }
+            })
+        })
+        .collect::<Result<Vec<_>>>()
+    {
+        Ok(generators) => generators,
+        Err(err) => return proc_macro::TokenStream::from(err.into_compile_error()),
+    };
+
     quote! {
         impl ::battler_wamprat_uri::WampUriMatcher for #ident {
             fn uri_for_router() -> ::battler_wamp::core::uri::WildcardUri {
@@ -594,5 +800,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 ::core::write!(__formatter, #uri_pattern #uri_pattern_args)
             }
         }
+
+        #(#generators)*
     }.into()
 }

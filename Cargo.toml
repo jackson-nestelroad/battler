@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "battler-service",
     "battler-service/battler-service-schema",
+    "battler-service-client",
     "battler",
     "battler-test-utils",
     "battler-wamp",

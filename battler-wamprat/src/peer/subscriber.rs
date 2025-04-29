@@ -138,6 +138,30 @@ where
         Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
         Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
     {
+        self.subscribe_pattern_matched_with_uri(
+            Pattern::uri_for_router(),
+            Pattern::match_style(),
+            subscription,
+        )
+        .await
+    }
+
+    /// Adds a new strongly-typed, pattern-matched subscription with a specific URI, which will be
+    /// created on every new connection to a router.
+    ///
+    /// Use carefully; the URI passed in must properly overlap with the `Pattern` type parameter for
+    /// the subscription handler to work as expected.
+    pub async fn subscribe_pattern_matched_with_uri<T, Pattern, Event>(
+        &mut self,
+        topic: WildcardUri,
+        match_style: Option<MatchStyle>,
+        subscription: T,
+    ) -> Result<()>
+    where
+        T: TypedPatternMatchedSubscription<Pattern = Pattern, Event = Event> + 'static,
+        Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
+        Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+    {
         // Wrap the typed subscription with a generic wrapper that serializes and deserializes
         // application messages.
         struct SubscriptionWrapper<T, Pattern, Event> {
@@ -203,7 +227,6 @@ where
             }
         }
 
-        let topic = Pattern::uri_for_router();
         match self.subscriptions.entry(topic.clone()) {
             Entry::Occupied(_) => Err(AlreadySubscribedError::new(format!(
                 "already actively subscribed to {topic}"
@@ -212,7 +235,7 @@ where
             Entry::Vacant(entry) => {
                 let subscription = entry.insert(PersistentSubscription {
                     subscription: Arc::new(Box::new(SubscriptionWrapper::new(subscription))),
-                    match_style: Pattern::match_style(),
+                    match_style,
                     current_id: None,
                 });
                 Self::restore_subscription(&self.peer, &topic, subscription).await

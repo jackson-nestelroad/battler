@@ -375,9 +375,47 @@ where
             .await
     }
 
+    /// Subscribes to a topic.
+    pub async fn subscribe_pattern_matched_with_generator<T, Pattern, Generator, Event>(
+        &self,
+        generator: &Generator,
+        subscription: T,
+    ) -> Result<()>
+    where
+        T: TypedPatternMatchedSubscription<Pattern = Pattern, Event = Event> + 'static,
+        Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
+        Generator: battler_wamprat_uri::WampWildcardUriGenerator<Pattern> + Send + Sync + 'static,
+        Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+    {
+        self.subscriber
+            .lock()
+            .await
+            .subscribe_pattern_matched_with_uri(
+                generator.wamp_generate_wildcard_uri()?,
+                Pattern::match_style(),
+                subscription,
+            )
+            .await
+    }
+
     /// Unsubscribes from a topic.
     pub async fn unsubscribe(&self, topic: &WildcardUri) -> Result<()> {
         self.subscriber.lock().await.unsubscribe(topic).await
+    }
+
+    /// Unsubscribes from a topic.
+    pub async fn unsubscribe_with_generator<Generator, T>(
+        &self,
+        generator: &Generator,
+    ) -> Result<()>
+    where
+        Generator: battler_wamprat_uri::WampWildcardUriGenerator<T>,
+    {
+        self.subscriber
+            .lock()
+            .await
+            .unsubscribe(&generator.wamp_generate_wildcard_uri()?)
+            .await
     }
 
     /// Calls a procedure, without type checking, and waits for its result.

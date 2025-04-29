@@ -1,8 +1,14 @@
+use std::marker::PhantomData;
+
 use battler_wamp::core::{
     match_style::MatchStyle,
     uri::WildcardUri,
 };
-use battler_wamprat_uri::WampUriMatcher;
+use battler_wamprat_uri::{
+    WampUriMatcher,
+    WampWildcardUriGenerator,
+    Wildcard,
+};
 use battler_wamprat_uri_proc_macro::WampUriMatcher as WampUriMatcherUnderTest;
 
 #[test]
@@ -244,4 +250,132 @@ fn generates_match_style_and_uri_for_router() {
         NotSimpleWildcardUri::uri_for_router(),
         WildcardUri::try_from("com.battler.uri..fn.").unwrap()
     );
+}
+
+#[test]
+fn generates_custom_generator_with_named_fields() {
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
+    #[uri("com.battler.fn.{a}.method.{b}")]
+    #[generator(TestUriWithA, require(a), derive(Clone))]
+    #[generator(TestUriWithB, require(b), derive(Clone))]
+    #[generator(TestUriWithAllWildcards, derive(Clone))]
+    #[generator(TestUriWithFixedA, fixed(a = "baz"))]
+    #[generator(TestUriWithFixedB, fixed(b = 255u64), require(a))]
+    #[generator(TestUriWithAllFixed, fixed(a = "foo", b = 255u64))]
+    struct TestUri {
+        a: String,
+        b: u64,
+    }
+
+    assert_matches::assert_matches!(TestUriWithA {
+        a: "foo".to_owned(),
+        b: Wildcard::Wildcard,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.foo.method.").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithB {
+        a: Wildcard::Wildcard,
+        b: 12345,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn..method.12345").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithB {
+        a: Wildcard::Value("bar".to_owned()),
+        b: 12345,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.bar.method.12345").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithAllWildcards {
+        a: Wildcard::Wildcard,
+        b: Wildcard::Wildcard,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn..method.").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithFixedA {
+        a: PhantomData,
+        b: Wildcard::Wildcard,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.baz.method.").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithFixedB {
+        a: "hello".to_owned(),
+        b: PhantomData,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.hello.method.255").unwrap());
+    });
+}
+
+#[test]
+fn generates_custom_generator_with_unnamed_fields() {
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
+    #[uri("com.battler.fn.{1}.method.{0}")]
+    #[generator(TestUriWith0, require(_0), derive(Clone))]
+    #[generator(TestUriWith1, require(_1), derive(Clone))]
+    #[generator(TestUriWithAllWildcards, derive(Clone))]
+    #[generator(TestUriWithFixed0, fixed(_0 = 123u32))]
+    #[generator(TestUriWithFixed1, fixed(_1 = "foobar"), require(_0))]
+    #[generator(TestUriWithAllFixed, fixed(_0 = 1u32, _1 = "baz"))]
+    struct TestUri(u32, String);
+
+    assert_matches::assert_matches!(TestUriWith0(256, Wildcard::Wildcard).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn..method.256").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWith1(Wildcard::Wildcard, "foo".to_owned()).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.foo.method.").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWith1(9999.into(), "foo".to_owned()).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.foo.method.9999").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithAllWildcards(Wildcard::Wildcard, Wildcard::Wildcard).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn..method.").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithFixed0(PhantomData, Wildcard::Wildcard).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn..method.123").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithFixed1(246, PhantomData).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.foobar.method.246").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithAllFixed(PhantomData, PhantomData).wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.baz.method.1").unwrap());
+    });
+}
+
+#[test]
+fn generates_custom_generator_with_regex_with_named_fields() {
+    #[derive(Debug, PartialEq, Eq, WampUriMatcherUnderTest)]
+    #[uri("com.battler.fn.{a}log{b}.{c}")]
+    #[generator(TestUriWithAAndB, require(a, b))]
+    #[generator(TestUriWithFixedAAndB, fixed(a = 64u64, b = 2u64))]
+    struct TestUri {
+        a: u64,
+        b: u64,
+        c: u64,
+    }
+
+    assert_matches::assert_matches!(TestUriWithAAndB {
+        a: 125,
+        b: 5,
+        c: Wildcard::Wildcard,
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.125log5.").unwrap());
+    });
+
+    assert_matches::assert_matches!(TestUriWithFixedAAndB {
+        a: PhantomData,
+        b: PhantomData,
+        c: Wildcard::Value(16),
+    }.wamp_generate_wildcard_uri(), Ok(uri) => {
+        assert_eq!(uri, WildcardUri::try_from("com.battler.fn.64log2.16").unwrap());
+    });
 }
