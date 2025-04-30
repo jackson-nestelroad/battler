@@ -392,6 +392,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("no_source")
     }
 
+    fn no_source_effect(&mut self) -> bool {
+        self.has_flag("no_source_effect")
+    }
+
     fn on_user(&mut self) -> bool {
         self.has_flag("on_user")
     }
@@ -402,6 +406,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn silent(&mut self) -> bool {
         self.has_flag("silent")
+    }
+
+    fn use_effect_as_source_effect(&mut self) -> bool {
+        self.has_flag("use_effect_as_source_effect")
     }
 
     fn use_effect_state_source(&mut self) -> bool {
@@ -517,8 +525,14 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         }
     }
 
-    fn source_effect_handle(&mut self) -> Option<&EffectHandle> {
-        self.evaluation_context().source_effect_handle()
+    fn source_effect_handle(&mut self) -> Result<Option<EffectHandle>> {
+        if self.no_source_effect() {
+            Ok(None)
+        } else if self.use_effect_as_source_effect() {
+            Ok(Some(self.effect_handle()?))
+        } else {
+            Ok(self.evaluation_context().source_effect_handle().cloned())
+        }
     }
 
     #[allow(unused)]
@@ -659,7 +673,7 @@ fn log_effect_activation_base(
         ignore_source_effect_equal_to_effect: true,
         source_effect: if context.with_source_effect() {
             context.set_with_source(true);
-            context.source_effect_handle().cloned()
+            context.source_effect_handle()?
         } else {
             None
         },
@@ -729,6 +743,7 @@ fn log_single_move(context: FunctionContext) -> Result<()> {
 }
 
 fn log_animate_move(mut context: FunctionContext) -> Result<()> {
+    let source_effect = context.source_effect_handle()?;
     let user_handle = context
         .pop_front()
         .wrap_expectation("missing user")?
@@ -751,6 +766,7 @@ fn log_animate_move(mut context: FunctionContext) -> Result<()> {
         &mut context.evaluation_context_mut().mon_context(user_handle)?,
         &move_name,
         target_handle,
+        source_effect.as_ref(),
         true,
     )
 }
@@ -1088,7 +1104,7 @@ fn damage(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid damage amount")?;
 
     let damaging_effect = context.effect_handle_positional()?;
-    let source_effect_handle = context.source_effect_handle().cloned();
+    let source_effect_handle = context.source_effect_handle()?;
 
     core_battle_actions::damage(
         &mut context
@@ -2321,7 +2337,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
         }
         None => None,
     };
-    let source_effect = context.evaluation_context().source_effect_handle().cloned();
+    let source_effect = context.source_effect_handle()?;
     core_battle_actions::use_active_move(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         active_move_handle,
@@ -2334,6 +2350,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn use_move(mut context: FunctionContext) -> Result<Value> {
+    let source_effect = context.source_effect_handle()?;
     let indirect = context.has_flag("indirect");
     let mon_handle = context
         .pop_front()
@@ -2359,7 +2376,6 @@ fn use_move(mut context: FunctionContext) -> Result<Value> {
         }
         None => None,
     };
-    let source_effect = context.evaluation_context().source_effect_handle().cloned();
     core_battle_actions::use_move(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         &move_id,
@@ -2817,7 +2833,7 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value> {
         .get_effect_handle_by_id(&effect_id)?
         .clone();
     let source_handle = context.source_handle();
-    let source_effect_handle = context.evaluation_context().source_effect_handle().cloned();
+    let source_effect_handle = context.source_effect_handle()?;
     core_battle_actions::check_immunity(
         &mut context
             .evaluation_context_mut()

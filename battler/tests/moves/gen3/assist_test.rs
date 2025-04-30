@@ -77,12 +77,12 @@ fn assist_uses_random_move_from_side() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Skitty,player-1,1|name:Assist|target:Skitty,player-1,1",
-            "move|mon:Skitty,player-1,1|name:Tackle|target:Zigzagoon,player-2,2",
+            "move|mon:Skitty,player-1,1|name:Tackle|target:Zigzagoon,player-2,2|from:move:Assist",
             "split|side:1",
             "damage|mon:Zigzagoon,player-2,2|health:70/98",
             "damage|mon:Zigzagoon,player-2,2|health:72/100",
             "move|mon:Skitty,player-2,1|name:Assist|target:Skitty,player-2,1",
-            "move|mon:Skitty,player-2,1|name:Quick Attack|target:Zigzagoon,player-1,2",
+            "move|mon:Skitty,player-2,1|name:Quick Attack|target:Zigzagoon,player-1,2|from:move:Assist",
             "split|side:0",
             "damage|mon:Zigzagoon,player-1,2|health:71/98",
             "damage|mon:Zigzagoon,player-1,2|health:73/100",

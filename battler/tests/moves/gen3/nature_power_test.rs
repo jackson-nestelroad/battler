@@ -69,7 +69,7 @@ fn nature_power_uses_tri_attack_by_default() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ludicolo,player-1,1|name:Nature Power|target:Ludicolo,player-2,1",
-            "move|mon:Ludicolo,player-1,1|name:Tri Attack|target:Ludicolo,player-2,1",
+            "move|mon:Ludicolo,player-1,1|name:Tri Attack|target:Ludicolo,player-2,1|from:move:Nature Power",
             "split|side:1",
             "damage|mon:Ludicolo,player-2,1|health:108/140",
             "damage|mon:Ludicolo,player-2,1|health:78/100",
@@ -95,7 +95,7 @@ fn electric_terrain_uses_thunderbolt() {
             "move|mon:Ludicolo,player-1,1|name:Electric Terrain",
             "fieldstart|move:Electric Terrain",
             "move|mon:Ludicolo,player-2,1|name:Nature Power|target:Ludicolo,player-1,1",
-            "move|mon:Ludicolo,player-2,1|name:Thunderbolt|target:Ludicolo,player-1,1",
+            "move|mon:Ludicolo,player-2,1|name:Thunderbolt|target:Ludicolo,player-1,1|from:move:Nature Power",
             "split|side:0",
             "damage|mon:Ludicolo,player-1,1|health:94/140",
             "damage|mon:Ludicolo,player-1,1|health:68/100",
@@ -126,7 +126,7 @@ fn field_environment_changes_nature_power() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ludicolo,player-1,1|name:Nature Power|target:Ludicolo,player-2,1",
-            "move|mon:Ludicolo,player-1,1|name:Ice Beam|target:Ludicolo,player-2,1",
+            "move|mon:Ludicolo,player-1,1|name:Ice Beam|target:Ludicolo,player-2,1|from:move:Nature Power",
             "split|side:1",
             "damage|mon:Ludicolo,player-2,1|health:105/140",
             "damage|mon:Ludicolo,player-2,1|health:75/100",

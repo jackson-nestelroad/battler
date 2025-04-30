@@ -588,10 +588,12 @@ fn use_active_move_internal(
 
     // Log that the move is being used.
     let move_name = context.active_move().data.name.clone();
+    let source_effect = context.source_effect_handle();
     core_battle_logs::use_move(
         context.as_mon_context_mut(),
         &move_name,
         target,
+        source_effect.as_ref(),
         !directly_used,
     )?;
 
@@ -1030,7 +1032,14 @@ fn move_hit_loop(
                 None
             };
             let move_name = context.active_move().data.name.clone();
-            core_battle_logs::use_move(context.as_mon_context_mut(), &move_name, target, true)?;
+            let source_effect = context.source_effect_handle();
+            core_battle_logs::use_move(
+                context.as_mon_context_mut(),
+                &move_name,
+                target,
+                source_effect.as_ref(),
+                true,
+            )?;
         }
 
         // Prepare to directly hit targets.

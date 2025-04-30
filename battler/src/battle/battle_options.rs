@@ -20,7 +20,7 @@ use crate::{
 };
 
 /// Battle engine option for how base damage should be randomized in the damage calculation.
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CoreBattleEngineRandomizeBaseDamage {
     /// Randomize the base damage.
     ///
@@ -33,7 +33,7 @@ pub enum CoreBattleEngineRandomizeBaseDamage {
 }
 
 /// How the battle engine should resolve ties when sorting by speed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CoreBattleEngineSpeedSortTieResolution {
     /// Resolves ties randomly by advancing RNG.
     Random,
@@ -43,12 +43,16 @@ pub enum CoreBattleEngineSpeedSortTieResolution {
     Reverse,
 }
 
+fn default_rng_factory() -> fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberGenerator> {
+    |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed))
+}
+
 /// Options that change how the battle engine itself behaves, which is not necessarily specific to
 /// any individual battle.
 ///
 /// Options defined here relate to how the battle engine is operated, so it is likely that these
 /// options will be common across all battle instances.
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreBattleEngineOptions {
     /// Should all teams be validated prior to the battle being able to start?
     pub validate_teams: bool,
@@ -77,6 +81,7 @@ pub struct CoreBattleEngineOptions {
     /// Function for creating the battle's random number generator.
     ///
     /// Primarily useful for tests where we wish to have fine-grained control over battle RNG.
+    #[serde(skip, default = "default_rng_factory")]
     pub rng_factory: fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberGenerator>,
 
     /// Are players allowed to pass for unfainted Mons?
@@ -137,7 +142,7 @@ impl Default for CoreBattleEngineOptions {
             validate_teams: true,
             auto_continue: true,
             reveal_actual_health: false,
-            rng_factory: |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed)),
+            rng_factory: default_rng_factory(),
             allow_pass_for_unfainted_mon: false,
             randomize_base_damage: CoreBattleEngineRandomizeBaseDamage::Randomize,
             speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Random,

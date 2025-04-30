@@ -100,7 +100,7 @@ fn sleep_talk_uses_random_move_while_asleep() {
             ["time"],
             "cant|mon:Snorlax,player-1,1|reason:status:Sleep",
             "move|mon:Snorlax,player-1,1|name:Sleep Talk|target:Snorlax,player-1,1",
-            "move|mon:Snorlax,player-1,1|name:Pound|target:Snorlax,player-2,1",
+            "move|mon:Snorlax,player-1,1|name:Pound|target:Snorlax,player-2,1|from:move:Sleep Talk",
             "split|side:1",
             "damage|mon:Snorlax,player-2,1|health:180/220",
             "damage|mon:Snorlax,player-2,1|health:82/100",

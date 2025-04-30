@@ -53,6 +53,48 @@ pub fn effect_activation(
     Ok(())
 }
 
+fn add_effect_to_log_entry(
+    context: &mut Context,
+    entry: &mut UncommittedBattleLogEntry,
+    effect_handle: &EffectHandle,
+    effect_flag_name: Option<&str>,
+) -> Result<()> {
+    let effect = CoreBattle::get_effect_by_handle(context, effect_handle)?;
+    match effect_flag_name {
+        Some(effect_flag_name) => {
+            entry.set(effect_flag_name, effect.full_name());
+        }
+        None => match effect {
+            Effect::ActiveMove(active_move, _) => {
+                entry.set("move", &active_move.data.name);
+            }
+            Effect::MoveCondition(condition) | Effect::InactiveMove(condition) => {
+                entry.set("move", &condition.data.name);
+            }
+            Effect::Ability(ability) | Effect::AbilityCondition(ability) => {
+                entry.set("ability", &ability.data.name);
+            }
+            Effect::Item(item) | Effect::ItemCondition(item) => {
+                entry.set("item", &item.data.name);
+            }
+            Effect::Condition(condition) => {
+                entry.set(
+                    condition.non_empty_condition_type_name(),
+                    &condition.data.name,
+                );
+            }
+            Effect::Clause(clause) => {
+                entry.set("clause", &clause.data.name);
+            }
+            Effect::Species(species) => {
+                entry.set("species", &species.data.name);
+            }
+            Effect::NonExistent(_) => (),
+        },
+    }
+    Ok(())
+}
+
 fn effect_activation_internal(
     context: &mut Context,
     header: String,
@@ -77,39 +119,15 @@ fn effect_activation_internal(
     }
 
     if let Some(effect) = &activation_context.effect {
-        let effect = CoreBattle::get_effect_by_handle(context, effect)?;
-        match activation_context.effect_flag_name {
-            Some(effect_flag_name) => {
-                event.set(effect_flag_name, effect.full_name());
-            }
-            None => match effect {
-                Effect::ActiveMove(active_move, _) => {
-                    event.set("move", &active_move.data.name);
-                }
-                Effect::MoveCondition(condition) | Effect::InactiveMove(condition) => {
-                    event.set("move", &condition.data.name);
-                }
-                Effect::Ability(ability) | Effect::AbilityCondition(ability) => {
-                    event.set("ability", &ability.data.name);
-                }
-                Effect::Item(item) | Effect::ItemCondition(item) => {
-                    event.set("item", &item.data.name);
-                }
-                Effect::Condition(condition) => {
-                    event.set(
-                        condition.non_empty_condition_type_name(),
-                        &condition.data.name,
-                    );
-                }
-                Effect::Clause(clause) => {
-                    event.set("clause", &clause.data.name);
-                }
-                Effect::Species(species) => {
-                    event.set("species", &species.data.name);
-                }
-                Effect::NonExistent(_) => (),
-            },
-        }
+        add_effect_to_log_entry(
+            context,
+            &mut event,
+            effect,
+            activation_context
+                .effect_flag_name
+                .as_ref()
+                .map(|s| s.as_str()),
+        )?;
     }
 
     for additional in activation_context.additional {
@@ -130,8 +148,7 @@ fn effect_activation_internal(
                     .is_some_and(|effect| effect == source_effect));
         ignore_source = ignore_source_effect;
         if !ignore_source_effect {
-            let effect = CoreBattle::get_effect_by_handle(context, &source_effect)?;
-            event.set("from", effect.full_name());
+            add_effect_to_log_entry(context, &mut event, &source_effect, Some("from"))?
         }
     }
 
@@ -739,6 +756,7 @@ pub fn use_move(
     context: &mut MonContext,
     move_name: &str,
     target: Option<MonHandle>,
+    from: Option<&EffectHandle>,
     animate_only: bool,
 ) -> Result<()> {
     let title = if animate_only { "animatemove" } else { "move" };
@@ -752,6 +770,16 @@ pub fn use_move(
             "target",
             Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?,
         ));
+    }
+    if !animate_only {
+        if let Some(from) = from {
+            add_effect_to_log_entry(
+                context.as_battle_context_mut(),
+                &mut event,
+                &from,
+                Some("from"),
+            )?
+        }
     }
     context.battle_mut().log_move(event);
     Ok(())
