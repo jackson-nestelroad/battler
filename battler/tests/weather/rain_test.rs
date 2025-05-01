@@ -242,7 +242,7 @@ fn rain_lasts_for_five_turns() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -314,7 +314,7 @@ fn rain_lasts_for_eight_turns_with_damp_rock() {
             "residual",
             "turn|turn:8",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:9"
         ]"#,
@@ -513,7 +513,7 @@ fn drizzle_starts_rain_on_switch() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -628,7 +628,7 @@ fn rain_finishes_normally_with_air_lock() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:6",
             ["time"],

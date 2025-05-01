@@ -159,7 +159,7 @@ fn snow_lasts_for_five_turns() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -231,7 +231,7 @@ fn snow_lasts_for_eight_turns_with_icy_rock() {
             "residual",
             "turn|turn:8",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:9"
         ]"#,

@@ -882,11 +882,16 @@ fn log_status(mut context: FunctionContext) -> Result<()> {
 }
 
 fn log_weather(mut context: FunctionContext) -> Result<()> {
-    let weather = match context.pop_front() {
-        Some(value) => value.string().wrap_error_with_message("invalid weather")?,
-        None => "Clear".to_owned(),
+    let (title, mut additional) = match context.pop_front() {
+        Some(value) => (
+            "weather",
+            vec![format!(
+                "weather:{}",
+                value.string().wrap_error_with_message("invalid weather")?
+            )],
+        ),
+        None => ("clearweather", vec![]),
     };
-    let mut additional = vec![format!("weather:{weather}")];
     if context.residual() {
         additional.push("residual".to_owned());
     }
@@ -894,7 +899,7 @@ fn log_weather(mut context: FunctionContext) -> Result<()> {
     context.set_no_effect(true);
     log_effect_activation_base(
         context,
-        "weather",
+        title,
         LogEffectActivationBaseContext {
             additional,
             ..Default::default()

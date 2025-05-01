@@ -125,7 +125,7 @@ fn player_can_hit_all_adjacent_foes() {
             "player|id:wild-4|name:Horde|side:1|position:4",
             ["time"],
             "teamsize|player:protagonist|size:2",
-            "start",
+            "battlestart",
             "split|side:1",
             "appear|player:wild-0|position:1|name:Rattata|health:18/18|species:Rattata|level:5|gender:M",
             "appear|player:wild-0|position:1|name:Rattata|health:100/100|species:Rattata|level:5|gender:M",

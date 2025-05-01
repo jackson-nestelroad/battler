@@ -187,7 +187,7 @@ fn harsh_sunlight_lasts_five_turns() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -259,7 +259,7 @@ fn harsh_sunlight_lasts_eight_turns_with_heat_rock() {
             "residual",
             "turn|turn:8",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:9"
         ]"#,
@@ -439,7 +439,7 @@ fn drought_starts_harsh_sunlight_on_switch() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "residual",
             "turn|turn:6"
         ]"#,

@@ -263,7 +263,7 @@ fn desolate_land_stops_when_last_mon_with_ability_switches_out() {
             "residual",
             "turn|turn:3",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "split|side:1",
             ["switch", "player-2", "Blastoise"],
             ["switch", "player-2", "Blastoise"],

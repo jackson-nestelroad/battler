@@ -254,7 +254,7 @@ fn battle_goes_back_to_default_weather() {
             "residual",
             "turn|turn:5",
             ["time"],
-            "weather|weather:Clear",
+            "clearweather",
             "weather|weather:Rain|from:Start",
             "residual",
             "turn|turn:6"

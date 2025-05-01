@@ -1152,7 +1152,7 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().log_team_sizes();
                 context.battle_mut().in_pre_battle = false;
 
-                context.battle_mut().log(battle_log_entry!("start"));
+                context.battle_mut().log(battle_log_entry!("battlestart"));
 
                 let player_switch_in_orders = context
                     .battle()

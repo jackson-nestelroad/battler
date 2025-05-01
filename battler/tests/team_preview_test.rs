@@ -190,7 +190,7 @@ fn team_preview_orders_all_player_teams() {
             "teamsize|player:player-2|size:3",
             "teamsize|player:player-3|size:3",
             "teamsize|player:player-4|size:3",
-            "start",
+            "battlestart",
             "split|side:0",
             "switch|player:player-1|position:1|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
             "switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
