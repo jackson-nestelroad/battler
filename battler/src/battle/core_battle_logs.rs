@@ -681,7 +681,7 @@ pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<()> {
     };
     effect_activation(
         context.as_battle_context_mut(),
-        "endability".to_owned(),
+        "abilityend".to_owned(),
         activation,
     )
 }
