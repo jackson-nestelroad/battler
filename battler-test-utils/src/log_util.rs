@@ -61,7 +61,7 @@ pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
 #[track_caller]
 pub fn assert_logs_since_start_eq(battle: &PublicCoreBattle, want: &[LogMatch]) {
     let got = battle.full_log().collect::<Vec<&str>>();
-    let start_log = "start";
+    let start_log = "battlestart";
     let start_log_index = got.iter().position(|log| log == &start_log).unwrap();
     let start_log_index = start_log_index + 1;
     let got = &got[start_log_index..];
