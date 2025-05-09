@@ -187,10 +187,19 @@ pub fn species_change(context: &mut MonContext) -> Result<()> {
 }
 
 pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.target().species)?
+        .data
+        .name
+        .clone();
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
+        additional: vec![format!("species:{species}")],
         ..Default::default()
     };
     effect_activation(

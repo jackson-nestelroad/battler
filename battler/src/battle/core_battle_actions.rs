@@ -3950,9 +3950,8 @@ pub fn forme_change(
         return Ok(false);
     }
 
-    core_battle_logs::species_change(&mut context.target_context()?)?;
-
     if forme_change_type.permanent() {
+        core_battle_logs::species_change(&mut context.target_context()?)?;
         Mon::set_base_species(&mut context.target_context()?, species, true)?;
 
         // TODO: Mega Evolution and Primal Reversion logs.
@@ -3965,7 +3964,7 @@ pub fn forme_change(
         _ => todo!("forme change log not implemented"),
     }
 
-    // CHange the ability after logs, since battle effects start triggering.
+    // Change the ability after logs, since battle effects start triggering.
     if forme_change_type.permanent() {
         let new_ability = context.target().base_ability.id.clone();
         set_ability(context, &new_ability, false, true)?;
