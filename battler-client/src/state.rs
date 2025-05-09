@@ -1,6 +1,7 @@
 use std::{
     collections::{
         BTreeMap,
+        BTreeSet,
         VecDeque,
     },
     usize,
@@ -42,31 +43,31 @@ enum Ambiguity {
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ConditionData {
     pub since_turn: usize,
-}
-
-/// Data about some condition specifically attached to a Mon.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct MonConditionData {
-    pub condition_data: ConditionData,
-    pub until_target_moves: bool,
+    pub data: HashMap<String, String>,
 }
 
 /// Volatile data for a Mon, which applies only when the Mon is active.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct MonVolatileData {
+    pub moves: BTreeSet<String>,
     pub ability: Option<String>,
-    pub conditions: BTreeMap<String, MonConditionData>,
+    pub conditions: BTreeMap<String, ConditionData>,
     pub types: Vec<String>,
     pub stat_boosts: BTreeMap<String, i64>,
     pub forme_change: Option<String>,
+    pub transformed: Option<(MonPhysicalAppearance, MonBattleAppearanceReference)>,
 }
 
 impl MonVolatileData {
+    fn record_move(&mut self, name: String) {
+        self.moves.insert(name);
+    }
+
     fn record_ability(&mut self, name: String) {
         self.ability = Some(name);
     }
 
-    fn record_condition(&mut self, condition: String, condition_data: MonConditionData) {
+    fn record_condition(&mut self, condition: String, condition_data: ConditionData) {
         self.conditions.insert(condition, condition_data);
     }
 
@@ -87,6 +88,14 @@ impl MonVolatileData {
 
     fn record_forme_change(&mut self, forme: String) {
         self.forme_change = Some(forme);
+    }
+
+    fn record_transformation(
+        &mut self,
+        appearance: MonPhysicalAppearance,
+        reference: MonBattleAppearanceReference,
+    ) {
+        self.transformed = Some((appearance, reference));
     }
 }
 
@@ -254,13 +263,6 @@ pub enum MonBattleAppearanceWithRecovery {
 }
 
 impl MonBattleAppearanceWithRecovery {
-    fn is_active(&self) -> bool {
-        match self {
-            Self::Inactive(_) => false,
-            Self::Active { .. } => true,
-        }
-    }
-
     fn take_primary(self) -> MonBattleAppearance {
         match self {
             Self::Inactive(appearance) => appearance,
@@ -273,16 +275,6 @@ impl MonBattleAppearanceWithRecovery {
 
     /// The primary battle appearance data.
     pub fn primary(&self) -> &MonBattleAppearance {
-        match self {
-            Self::Inactive(appearance) => appearance,
-            Self::Active {
-                primary_battle_appearance,
-                ..
-            } => primary_battle_appearance,
-        }
-    }
-
-    fn primary_mut(&mut self) -> &mut MonBattleAppearance {
         match self {
             Self::Inactive(appearance) => appearance,
             Self::Active {
@@ -444,8 +436,8 @@ impl Mon {
     }
 
     fn switch_in(&mut self) {
+        self.switch_out();
         self.revive();
-        self.volatile_data = MonVolatileData::default();
     }
 
     fn switch_out(&mut self) {
@@ -896,6 +888,12 @@ pub struct Field {
 }
 
 impl Field {
+    fn side_or_else(&self, side: usize) -> Result<&Side> {
+        self.sides
+            .get(side)
+            .ok_or_else(|| Error::msg(format!("side {side} does not exist")))
+    }
+
     fn side_mut_or_else(&mut self, side: usize) -> Result<&mut Side> {
         self.sides
             .get_mut(side)
@@ -950,6 +948,12 @@ impl Field {
             .flat_map(|side| side.active.iter().cloned().filter_map(|val| val))
     }
 
+    fn mon_by_reference_or_else(&self, reference: &MonBattleAppearanceReference) -> Result<&Mon> {
+        let side = self.side_for_player(&reference.player)?;
+        let side = self.side_or_else(side)?;
+        side.mon_by_reference_or_else(reference)
+    }
+
     fn mon_mut_by_reference_or_else(
         &mut self,
         reference: &MonBattleAppearanceReference,
@@ -957,6 +961,15 @@ impl Field {
         let side = self.side_for_player(&reference.player)?;
         let side = self.side_mut_or_else(side)?;
         side.mon_mut_by_reference_or_else(reference)
+    }
+
+    fn mon_battle_appearance_with_recovery_by_reference_or_else(
+        &self,
+        reference: &MonBattleAppearanceReference,
+    ) -> Result<&MonBattleAppearanceWithRecovery> {
+        let side = self.side_for_player(&reference.player)?;
+        let side = self.side_or_else(side)?;
+        side.mon_battle_appearance_with_recovery_by_reference_or_else(reference)
     }
 
     fn mon_battle_appearance_with_recovery_mut_by_reference_or_else(
@@ -977,19 +990,6 @@ impl Field {
         Ok(side.active_mon_reference_by_position(position))
     }
 
-    fn active_mon_reference_by_position_or_else(
-        &mut self,
-        side: usize,
-        position: usize,
-    ) -> Result<MonBattleAppearanceReference> {
-        self.active_mon_reference_by_position(side, position)?
-            .ok_or_else(|| {
-                Error::msg(format!(
-                    "side {side} has no active mon in position {position}"
-                ))
-            })
-    }
-
     fn mons_by_name(
         &mut self,
         player: &str,
@@ -999,20 +999,6 @@ impl Field {
         let (side, _) = self.side_and_player_mut_or_else(player)?;
         self.side_mut_or_else(side)?
             .mons_by_name(player, name, active_filter)
-    }
-
-    fn mon_by_appearance(
-        &mut self,
-        player: &str,
-        physical_appearance: &MonPhysicalAppearance,
-        battle_appearance: Option<&MonBattleAppearanceFromSwitchIn>,
-    ) -> Result<MonBattleAppearanceReference> {
-        let (side, _) = self.side_and_player_mut_or_else(player)?;
-        self.side_mut_or_else(side)?.mon_by_appearance(
-            player,
-            physical_appearance,
-            battle_appearance,
-        )
     }
 }
 
@@ -1220,6 +1206,22 @@ fn mons_by_mon_name(
     }
 }
 
+fn mons_by_mon_name_require_one(
+    state: &mut BattleState,
+    mon: &MonName,
+) -> Result<MonBattleAppearanceReference> {
+    mons_by_mon_name(state, mon).and_then(|mut mons| {
+        if mons.is_empty() {
+            Err(Error::msg("no mons found"))
+        } else if mons.len() != 1 {
+            Err(Error::msg("more than one mon found"))
+        } else {
+            // SAFETY: mons has exactly 1 element.
+            Ok(mons.pop().unwrap())
+        }
+    })
+}
+
 fn apply_for_each_mon_reference<F>(state: &mut BattleState, mon: &MonName, f: F) -> Result<()>
 where
     F: Fn(&mut BattleState, MonBattleAppearanceReference, Ambiguity) -> Result<()>,
@@ -1291,9 +1293,9 @@ fn record_effect_from_mon(
 fn modify_state_from_effect(
     state: &mut BattleState,
     entry: &LogEntry,
-    effect: &ui::EffectData,
+    effect_data: &ui::EffectData,
 ) -> Result<()> {
-    match (&effect.source_effect, entry.value::<MonName>("of")) {
+    match (&effect_data.source_effect, entry.value::<MonName>("of")) {
         (Some(source_effect), Some(source)) => {
             record_effect_from_mon(state, source_effect, &source)?
         }
@@ -1303,7 +1305,7 @@ fn modify_state_from_effect(
     match entry.title() {
         "ability" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_ability(effect.name.clone());
                 })?;
@@ -1315,7 +1317,7 @@ fn modify_state_from_effect(
                 mon.volatile_data.record_ability(String::default());
             })?;
         }
-        "activate" => match (&effect.effect, entry.value::<MonName>("mon")) {
+        "activate" => match (&effect_data.effect, entry.value::<MonName>("mon")) {
             (Some(effect), Some(mon)) => record_effect_from_mon(state, effect, &mon)?,
             _ => (),
         },
@@ -1357,7 +1359,7 @@ fn modify_state_from_effect(
         }
         "end" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.remove_condition(&effect.name);
                 })?;
@@ -1372,12 +1374,12 @@ fn modify_state_from_effect(
             })?;
         }
         "fieldend" => {
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 state.field.conditions.remove(&effect.name);
             }
         }
         "fieldstart" => {
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 state.field.conditions.insert(
                     effect.name.clone(),
                     ConditionData {
@@ -1396,7 +1398,7 @@ fn modify_state_from_effect(
         }
         "item" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
                     mon.record_item(effect.name.clone().into(), ambiguity);
                 })?;
@@ -1410,17 +1412,14 @@ fn modify_state_from_effect(
         }
         "prepare" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 let turn = state.turn;
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         effect.name.clone(),
-                        MonConditionData {
-                            condition_data: ConditionData {
-                                since_turn: turn,
-                                ..Default::default()
-                            },
-                            ..Default::default()
+                        ConditionData {
+                            since_turn: turn,
+                            data: effect_data.additional.clone(),
                         },
                     );
                 })?;
@@ -1429,14 +1428,14 @@ fn modify_state_from_effect(
         "sideend" => {
             let side = entry.value_or_else("side")?;
             let side = state.field.side_mut_or_else(side)?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 side.conditions.remove(&effect.name);
             }
         }
         "sidestart" => {
             let side = entry.value_or_else("side")?;
             let side = state.field.side_mut_or_else(side)?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 side.conditions.insert(
                     effect.name.clone(),
                     ConditionData {
@@ -1448,18 +1447,16 @@ fn modify_state_from_effect(
         }
         "singlemove" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 let turn = state.turn;
+                let mut data = effect_data.additional.clone();
+                data.insert("singlemove".to_owned(), "".to_owned());
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         effect.name.clone(),
-                        MonConditionData {
-                            condition_data: ConditionData {
-                                since_turn: turn,
-                                ..Default::default()
-                            },
-                            until_target_moves: true,
-                            ..Default::default()
+                        ConditionData {
+                            since_turn: turn,
+                            data: data.clone(),
                         },
                     );
                 })?;
@@ -1477,7 +1474,7 @@ fn modify_state_from_effect(
         }
         "status" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
                     mon.record_status(effect.name.clone().into(), ambiguity);
                 })?;
@@ -1485,23 +1482,68 @@ fn modify_state_from_effect(
         }
         "start" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 let turn = state.turn;
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         effect.name.clone(),
-                        MonConditionData {
-                            condition_data: ConditionData {
-                                since_turn: turn,
-                                ..Default::default()
-                            },
-                            ..Default::default()
+                        ConditionData {
+                            since_turn: turn,
+                            data: effect_data.additional.clone(),
                         },
                     );
                 })?;
 
                 record_effect_from_mon(state, &effect, &mon)?;
             }
+        }
+        "transform" => {
+            let mon = entry.value_or_else("mon")?;
+            let species = entry.value_or_else("species")?;
+            let into = entry.value_or_else("into")?;
+            let target = mons_by_mon_name_require_one(state, &into)
+                .context("transform attempted to transform into an ambiguous target")?;
+
+            let target_battle_appearance = state
+                .field
+                .mon_battle_appearance_with_recovery_by_reference_or_else(&target)?;
+
+            let target_volatile = &state.field.mon_by_reference_or_else(&target)?.volatile_data;
+
+            let mut target_appearance = state
+                .field
+                .mon_by_reference_or_else(&target)?
+                .physical_appearance
+                .clone();
+            target_appearance.species = species;
+
+            // Copy over volatile data that we know is transformed.
+            let ability = target_volatile
+                .ability
+                .as_ref()
+                .or_else(|| target_battle_appearance.primary().ability.known())
+                .cloned();
+            let types = if target_volatile.types != Vec::from_iter(["None"]) {
+                Some(target_volatile.types.clone())
+            } else {
+                None
+            };
+            let stat_boosts = target_volatile.stat_boosts.clone();
+
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.volatile_data
+                    .record_transformation(target_appearance.clone(), target.clone());
+            })?;
+
+            apply_for_each_mon(state, &mon, |mon, _| {
+                if let Some(ability) = &ability {
+                    mon.volatile_data.record_ability(ability.clone());
+                }
+                if let Some(types) = &types {
+                    mon.volatile_data.types = types.clone();
+                }
+                mon.volatile_data.stat_boosts = stat_boosts.clone();
+            })?;
         }
         "typechange" => {
             let mon = entry.value_or_else("mon")?;
@@ -1512,7 +1554,7 @@ fn modify_state_from_effect(
             })?;
         }
         "weather" => {
-            if let Some(effect) = &effect.effect {
+            if let Some(effect) = &effect_data.effect {
                 state.field.weather = Some(effect.name.clone());
             }
         }
@@ -1568,6 +1610,7 @@ fn alter_battle_state_for_entry(
         | "status"
         | "start"
         | "supereffective"
+        | "transform"
         | "typechange"
         | "uncatchable"
         | "weather" => {
@@ -1591,9 +1634,13 @@ fn alter_battle_state_for_entry(
                 "faint" => {
                     ui_log.push(ui::UiLogEntry::Faint { effect });
                 }
-                "formechange" | "specieschange" => {
+                "formechange" | "specieschange" | "transform" => {
                     let species = entry.value_or_else("species")?;
-                    ui_log.push(ui::UiLogEntry::UpdateAppearance { species, effect });
+                    ui_log.push(ui::UiLogEntry::UpdateAppearance {
+                        title: entry.title().to_owned(),
+                        species,
+                        effect,
+                    });
                 }
                 "heal" => {
                     let health = health_from_log_entry(entry)?;
@@ -1771,10 +1818,29 @@ fn alter_battle_state_for_entry(
             let from: Option<EffectName> = entry.value("from");
             let animate = entry.value_ref("noanim").is_none();
 
-            if used_directly && from.is_none() {
+            if used_directly && from.is_none() && name != "Struggle" {
                 apply_for_each_mon_reference(state, &mon, |state, mon_reference, ambiguity| {
                     let mon = state.field.mon_mut_by_reference_or_else(&mon_reference)?;
-                    if !mon.volatile_data.conditions.contains_key(&name) {
+
+                    if mon.volatile_data.conditions.contains_key(&name)
+                        || mon.volatile_data.moves.contains(&name)
+                    {
+                        return Ok(());
+                    }
+
+                    if let Some(condition) = mon.volatile_data.conditions.get("Mimic")
+                        && let Some(mimic) = condition.data.get("mimic")
+                        && mimic == &name
+                    {
+                        return Ok(());
+                    }
+
+                    let volatile = mon.volatile_data.transformed.is_some();
+
+                    if volatile {
+                        let mon = state.field.mon_mut_by_reference_or_else(&mon_reference)?;
+                        mon.volatile_data.record_move(name.clone());
+                    } else {
                         let mon = state
                             .field
                             .mon_battle_appearance_with_recovery_mut_by_reference_or_else(
@@ -1782,6 +1848,7 @@ fn alter_battle_state_for_entry(
                             )?;
                         mon.record_move(name.clone(), ambiguity);
                     }
+
                     Ok(())
                 })?;
             }
@@ -1793,7 +1860,8 @@ fn alter_battle_state_for_entry(
                     .volatile_data
                     .conditions
                     .iter()
-                    .filter_map(|(key, val)| val.until_target_moves.then_some(key))
+                    .filter(|(_, condition)| condition.data.contains_key("singlemove"))
+                    .map(|(name, _)| name)
                     .cloned()
                     .collect::<Vec<_>>()
                 {
@@ -1933,7 +2001,7 @@ fn alter_battle_state_for_entry(
             *side.active.get_mut(position).unwrap() = Some(mon.clone());
 
             ui_log.push(ui::UiLogEntry::Switch {
-                switch_type: entry.title().to_owned(),
+                title: entry.title().to_owned(),
                 player,
                 mon: mon_index,
                 into_position: ui::FieldPosition {
@@ -1963,7 +2031,6 @@ fn alter_battle_state_for_entry(
             ui_log.push(ui::UiLogEntry::Tie);
         }
         "time" => (),
-        "transform" => todo!(),
         "turn" => (),
         "turnlimit" => {
             ui_log.push(ui::UiLogEntry::Message {
@@ -2225,7 +2292,7 @@ mod state_test {
                 },
                 ui_log: Vec::from_iter([Vec::from_iter([
                     ui::UiLogEntry::Switch {
-                        switch_type: "switch".to_owned(),
+                        title: "switch".to_owned(),
                         player: "player-1".to_owned(),
                         mon: 0,
                         into_position: ui::FieldPosition {
@@ -2234,7 +2301,7 @@ mod state_test {
                         }
                     },
                     ui::UiLogEntry::Switch {
-                        switch_type: "switch".to_owned(),
+                        title: "switch".to_owned(),
                         player: "player-2".to_owned(),
                         mon: 0,
                         into_position: ui::FieldPosition {
@@ -2391,7 +2458,7 @@ mod state_test {
                 ui_log: Vec::from_iter([
                     Vec::from_iter([
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-1".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -2400,7 +2467,7 @@ mod state_test {
                             }
                         },
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-2".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -2612,7 +2679,7 @@ mod state_test {
                 ui_log: Vec::from_iter([
                     Vec::from_iter([
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-1".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -2621,7 +2688,7 @@ mod state_test {
                             }
                         },
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-2".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -2661,7 +2728,7 @@ mod state_test {
                         }
                     ]),
                     Vec::from_iter([ui::UiLogEntry::Switch {
-                        switch_type: "switch".to_owned(),
+                        title: "switch".to_owned(),
                         player: "player-1".to_owned(),
                         mon: 1,
                         into_position: ui::FieldPosition {
@@ -2866,7 +2933,7 @@ mod state_test {
                 ui_log: Vec::from_iter([
                     Vec::from_iter([
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-1".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -2875,7 +2942,7 @@ mod state_test {
                             }
                         },
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-2".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -2915,7 +2982,7 @@ mod state_test {
                         }
                     ]),
                     Vec::from_iter([ui::UiLogEntry::Switch {
-                        switch_type: "switch".to_owned(),
+                        title: "switch".to_owned(),
                         player: "player-1".to_owned(),
                         mon: 1,
                         into_position: ui::FieldPosition {
@@ -2924,7 +2991,7 @@ mod state_test {
                         }
                     }]),
                     Vec::from_iter([ui::UiLogEntry::Switch {
-                        switch_type: "switch".to_owned(),
+                        title: "switch".to_owned(),
                         player: "player-1".to_owned(),
                         mon: 0,
                         into_position: ui::FieldPosition {
@@ -3186,7 +3253,7 @@ mod state_test {
                 ui_log: Vec::from_iter([
                     Vec::from_iter([
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-1".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {
@@ -3195,7 +3262,7 @@ mod state_test {
                             }
                         },
                         ui::UiLogEntry::Switch {
-                            switch_type: "switch".to_owned(),
+                            title: "switch".to_owned(),
                             player: "player-2".to_owned(),
                             mon: 0,
                             into_position: ui::FieldPosition {

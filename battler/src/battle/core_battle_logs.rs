@@ -633,13 +633,21 @@ pub fn type_change(
 }
 
 pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<()> {
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.target().species)?
+        .data
+        .name
+        .clone();
     let into = Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?;
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("into:{into}")],
+        additional: vec![format!("into:{into}"), format!("species:{species}")],
         ..Default::default()
     };
     effect_activation(

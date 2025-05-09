@@ -66,6 +66,8 @@ pub enum Type {
     Dark,
     #[string = "Fairy"]
     Fairy,
+    #[string = "None"]
+    None,
 }
 
 impl Type {

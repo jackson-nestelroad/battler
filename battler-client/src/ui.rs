@@ -135,15 +135,21 @@ pub enum UiLogEntry {
     StatBoost { mon: Mon, stat: String, by: i64 },
     /// A Mon switched in.
     Switch {
-        switch_type: String,
+        title: String,
         player: String,
         mon: usize,
         into_position: FieldPosition,
     },
     /// The battle resulted in a tie.
     Tie,
+    /// A Mon transformed into another Mon.
+    Transform { target: Mon, effect: EffectData },
     /// A Mon's appearance updated.
-    UpdateAppearance { species: String, effect: EffectData },
+    UpdateAppearance {
+        title: String,
+        species: String,
+        effect: EffectData,
+    },
     /// A player used an item.
     UseItem {
         player: String,

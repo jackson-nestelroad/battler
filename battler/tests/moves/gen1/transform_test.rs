@@ -263,7 +263,7 @@ fn transform_transforms_into_target() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ditto,player-1,1|name:Transform|target:Charizard,player-2,1",
-            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1",
+            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1|species:Charizard",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -307,7 +307,7 @@ fn transform_copies_stat_boosts() {
             "turn|turn:2",
             ["time"],
             "move|mon:Ditto,player-1,1|name:Transform|target:Charizard,player-2,1",
-            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1",
+            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1|species:Charizard",
             "residual",
             "turn|turn:3",
             ["time"],
@@ -358,7 +358,7 @@ fn transform_copies_type_change() {
             "turn|turn:2",
             ["time"],
             "move|mon:Ditto,player-1,1|name:Transform|target:Charizard,player-2,1",
-            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1",
+            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1|species:Charizard",
             "residual",
             "turn|turn:3",
             ["time"],

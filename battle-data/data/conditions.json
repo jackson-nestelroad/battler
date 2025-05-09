@@ -198,6 +198,10 @@
     "name": "Fairy",
     "condition_type": "Type"
   },
+  "nonetype": {
+    "name": "None",
+    "condition_type": "Type"
+  },
   "brn": {
     "name": "Burn",
     "condition_type": "Status",

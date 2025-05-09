@@ -217,7 +217,7 @@ fn forecast_fails_for_transformed_ditto() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ditto,player-2,1|name:Transform|target:Castform,player-1,1",
-            "transform|mon:Ditto,player-2,1|into:Castform,player-1,1",
+            "transform|mon:Ditto,player-2,1|into:Castform,player-1,1|species:Castform",
             "residual",
             "turn|turn:2",
             ["time"],
