@@ -213,10 +213,17 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         }
         lazy_static! {
             static ref NAME_PATTERN: Regex = Regex::new(r"^[^|]+$").unwrap();
+            static ref DISAMBIGUATION_PATTERN: Regex = Regex::new(r"#{3}\d+$").unwrap();
         }
         if !NAME_PATTERN.is_match(&mon.name) {
             problems.push(format!(
                 "Nickname \"{}\" contains illegal characters.",
+                mon.name
+            ));
+        }
+        if DISAMBIGUATION_PATTERN.is_match(&mon.name) {
+            problems.push(format!(
+                "Nickname \"{}\" contains a disambiguation number at its end.",
                 mon.name
             ));
         }

@@ -293,7 +293,17 @@ impl<'d> CoreBattle<'d> {
             .iter()
             .enumerate()
             .map(move |(player_index, player)| (player.id.to_owned(), player_index))
-            .collect();
+            .collect::<FastHashMap<_, _>>();
+
+        for id in player_ids.keys() {
+            if id.is_empty()
+                || id.contains(',')
+                || !id.chars().next().unwrap().is_ascii_alphabetic()
+            {
+                return Err(general_error(format!("invalid player id: {id}")));
+            }
+        }
+
         let input_log = FastHashMap::from_iter(
             players
                 .iter()
@@ -721,8 +731,10 @@ impl<'d> CoreBattle<'d> {
             problems.push("Empty team is not allowed.".to_owned());
         }
         for mon in context.player().mons.clone() {
+            let mut context = context.mon_context(mon)?;
+
             let mut mon_problems = core_battle_effects::run_event_for_mon_expecting_string_list(
-                &mut context.mon_context(mon)?,
+                &mut context,
                 fxlang::BattleEvent::ValidateMon,
             );
             problems.append(&mut mon_problems);
@@ -1141,6 +1153,26 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    fn disambiguate_identical_mon_names(context: &mut Context) -> Result<()> {
+        for player in context.battle().player_indices() {
+            let mut context = context.player_context(player)?;
+            let mut seen = FastHashMap::new();
+            for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
+                let mut context = context.mon_context(mon)?;
+                match seen.entry(context.mon().name.clone()) {
+                    std::collections::hash_map::Entry::Occupied(mut entry) => {
+                        context.mon_mut().name += &format!("###{}", entry.get());
+                        *entry.get_mut() += 1;
+                    }
+                    std::collections::hash_map::Entry::Vacant(entry) => {
+                        entry.insert(1);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn run_action(context: &mut Context, action: Action) -> Result<()> {
         // Actions don't matter anymore if the battle ended.
         if context.battle().ended {
@@ -1153,6 +1185,12 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().in_pre_battle = false;
 
                 context.battle_mut().log(battle_log_entry!("battlestart"));
+
+                // At this point, Mons can start participating in the battle, so we must
+                // disambiguate identical names.
+                if context.battle().engine_options.disambiguate_identical_names {
+                    Self::disambiguate_identical_mon_names(context)?;
+                }
 
                 let player_switch_in_orders = context
                     .battle()

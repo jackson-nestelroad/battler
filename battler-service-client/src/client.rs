@@ -66,7 +66,7 @@ pub trait BattlerServiceClient {
 /// Creates a new client around a WAMP service consumer.
 pub fn battler_service_client_over_simple_wamp_consumer<S>(
     consumer: Arc<battler_service_schema::BattlerServiceConsumer<S>>,
-) -> Box<dyn BattlerServiceClient>
+) -> Box<dyn BattlerServiceClient + 'static>
 where
     S: Send + 'static,
 {

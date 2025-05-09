@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "battler-client",
     "battler-service",
     "battler-service/battler-service-schema",
     "battler-service-client",

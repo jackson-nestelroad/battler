@@ -134,6 +134,13 @@ pub struct CoreBattleEngineOptions {
     /// helpful, especially for debugging purposes, to view all slot conditions added to and
     /// removed from sides through the course of a battle.
     pub log_slot_conditions: bool,
+
+    /// Should identical Mon names for a single player be disambiguated?
+    ///
+    /// If set to true, Mons with the same name for a single player will have a disambiguation
+    /// string appended to their name of the pattern `###N` (where `N` is a number). Clients can
+    /// simply strip off this string when displaying the Mon name.
+    pub disambiguate_identical_names: bool,
 }
 
 impl Default for CoreBattleEngineOptions {
@@ -149,6 +156,7 @@ impl Default for CoreBattleEngineOptions {
             log_volatile_statuses: false,
             log_side_conditions: false,
             log_slot_conditions: false,
+            disambiguate_identical_names: false,
         }
     }
 }

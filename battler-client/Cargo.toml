@@ -1,0 +1,25 @@
+[package]
+name = "battler-client"
+version = "0.1.0"
+edition = "2024"
+description = "Client battles managed via battler."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-client"
+
+[dependencies]
+ahash = "0.8.11"
+anyhow = "1.0"
+battler = { path = "../battler" }
+battler-service = { path = "../battler-service" }
+battler-service-client = { path = "../battler-service-client" }
+futures-util = "0.3"
+regex = "1.11"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.41.0", features = ["full"] }
+uuid = "1.16.0"
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+pretty_assertions = "1.4.0"

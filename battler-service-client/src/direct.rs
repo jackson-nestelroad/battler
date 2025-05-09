@@ -25,12 +25,21 @@ use crate::BattlerServiceClient;
 /// [`battler_service::BattlerService`] directly for managing battles remotely via a WAMP router.
 pub struct DirectBattlerServiceClient<'d> {
     service: Arc<BattlerService<'d>>,
+    engine_options: CoreBattleEngineOptions,
 }
 
 impl<'d> DirectBattlerServiceClient<'d> {
     /// Creates a new client around a service object.
     pub fn new(service: Arc<BattlerService<'d>>) -> Self {
-        Self { service }
+        Self {
+            service,
+            engine_options: CoreBattleEngineOptions::default(),
+        }
+    }
+
+    /// Mutable reference to the battle engine options.
+    pub fn engine_options_mut(&mut self) -> &mut CoreBattleEngineOptions {
+        &mut self.engine_options
     }
 }
 
@@ -42,7 +51,7 @@ impl<'d> BattlerServiceClient for DirectBattlerServiceClient<'d> {
 
     async fn create(&self, options: CoreBattleOptions) -> Result<Battle> {
         self.service
-            .create(options, CoreBattleEngineOptions::default())
+            .create(options, self.engine_options.clone())
             .await
     }
 
