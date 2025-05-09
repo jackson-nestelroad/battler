@@ -909,9 +909,14 @@ impl Field {
     fn active_mons_on_side<'a>(
         &'a mut self,
         side: usize,
-    ) -> Box<dyn Iterator<Item = MonBattleAppearanceReference> + 'a> {
+    ) -> Box<dyn Iterator<Item = (usize, MonBattleAppearanceReference)> + 'a> {
         match self.sides.get(side) {
-            Some(side) => Box::new(side.active.iter().cloned().filter_map(|val| val)),
+            Some(side) => Box::new(
+                side.active
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, val)| val.clone().map(|val| (i, val))),
+            ),
             None => Box::new(std::iter::empty()),
         }
     }
@@ -1588,14 +1593,33 @@ fn alter_battle_state_for_entry(
         "debug" => todo!(),
         "didnotlearnmove" => todo!(),
         "escaped" | "forfeited" => {
-            let player = entry.value_or_else("player")?;
-
-            // TODO: All Mons belonging to the player leave.
+            let player: String = entry.value_or_else("player")?;
+            let side_index = state.field.side_for_player(&player)?;
 
             ui_log.push(ui::UiLogEntry::PlayerMessage {
                 title: entry.title().to_owned(),
-                player,
+                player: player.clone(),
             });
+
+            // All Mons belonging to the player leave immediately.
+            let active_mons = state
+                .field
+                .active_mons_on_side(side_index)
+                .collect::<Vec<_>>();
+            let side = state.field.side_mut_or_else(side_index)?;
+            for (i, mon) in active_mons {
+                if mon.player == player {
+                    // SAFETY: active_mons_on_side returns valid indices for side.active.
+                    *side.active.get_mut(i).unwrap() = None;
+                    side.mon_mut_by_reference_or_else(&mon)?.switch_out();
+                    ui_log.push(ui::UiLogEntry::Leave {
+                        mon: ui::Mon::Active(ui::FieldPosition {
+                            side: side_index,
+                            position: i,
+                        }),
+                    })
+                }
+            }
         }
         "exp" => todo!(),
         "fxlang_debug" => (),
