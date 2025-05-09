@@ -1269,6 +1269,28 @@ where
     })
 }
 
+fn record_activated_ability_for_each_mon(
+    state: &mut BattleState,
+    mon: &MonName,
+    ability: String,
+) -> Result<()> {
+    apply_for_each_mon_reference(state, mon, |state, reference, ambiguity| {
+        // If we have a volatile ability, then any ability we see is also volatile.
+        //
+        // Otherwise, an ability activation reveals the Mon's true ability.
+        let mon = state.field.mon_mut_by_reference_or_else(&reference)?;
+        if let Some(volatile_ability) = &mut mon.volatile_data.ability {
+            *volatile_ability = ability.clone();
+        } else {
+            let mon_battle_appearance = state
+                .field
+                .mon_battle_appearance_with_recovery_mut_by_reference_or_else(&reference)?;
+            mon_battle_appearance.record_ability(ability.clone().into(), ambiguity);
+        }
+        Ok(())
+    })
+}
+
 fn record_effect_from_mon(
     state: &mut BattleState,
     effect: &ui::Effect,
@@ -1276,9 +1298,7 @@ fn record_effect_from_mon(
 ) -> Result<()> {
     match effect.effect_type.as_ref().map(|s| s.as_str()) {
         Some("ability") => {
-            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
-                mon.record_ability(effect.name.clone().into(), ambiguity);
-            })?;
+            record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
         }
         Some("item") => {
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
