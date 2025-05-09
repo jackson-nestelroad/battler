@@ -657,21 +657,16 @@ impl Side {
             })
             .collect::<Vec<_>>();
 
-        // If we matched some Mon BattleAppearance directly, just use the first one.
+        // If we matched some Mon battle appearance directly, just use the first one.
         if let Some(mon_reference) = inactive_mon_references_by_battle_appearance
             .into_iter()
             .next()
         {
-            // If the Mon happens to be fainted, then it fainted as an illusion.
-            let mon = self.mon_mut_by_reference_or_else(&mon_reference)?;
-            if mon.fainted {
-                self.faint_an_inactive_illusion_user(player_id)?;
-            }
             return Ok(mon_reference);
         }
 
         // If we matched some Mon by appearance, and we do not have room for any more unique Mons,
-        // push the new BattleAppearance to the matched Mon.
+        // push the new appearance to the matched Mon.
         if let Some(mon_index) = mons_by_appearance.first().cloned()
             && player_has_seen_all_mons
         {
@@ -737,6 +732,13 @@ impl Side {
                 Some(battle_appearance)
             },
         )?;
+
+        // If the Mon happens to be fainted, then it fainted as an illusion.
+        let mon = self.mon_mut_by_reference_or_else(&reference)?;
+        if mon.fainted {
+            self.faint_an_inactive_illusion_user(player_id)?;
+        }
+
         let mon = self.mon_mut_by_reference_or_else(&reference)?;
         mon.switch_in();
 
@@ -3821,5 +3823,710 @@ mod state_test {
                 }
             ])
         );
+    }
+
+    #[test]
+    fn keeps_track_of_multiple_battle_appearances_due_to_single_illusion_user_with_same_level() {
+        // First, we just see all Mons.
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:3",
+            "teamsize|player:player-2|size:3",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+            "residual",
+            "turn|turn:2",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "residual",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                        },
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+            ])
+        );
+
+        // Second, reveal illusion user as a new Mon.
+        let log = Log::try_from(&[
+            "damage|mon:Charmander,player-2,1|health:75/100",
+            "replace|player:player-2|position:1|name:Zoroark|health:75/100|species:Zoroark|level:5|gender:M",
+            "end|mon:Zoroark,player-2,1|ability:Illusion",
+            "turn|turn:4",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zoroark".to_owned(),
+                        species: "Zoroark".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (75, 100).into(),
+                                status: String::default().into(),
+                                ability: "Illusion".to_owned().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance::default(),
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (75, 100).into(),
+                                status: String::default().into(),
+                                ability: "Illusion".to_owned().into(),
+                                ..Default::default()
+                            },
+                        },
+                    ]),
+                    ..Default::default()
+                },
+            ])
+        );
+
+        // Third, heal the illusion user so that it is unified back to the real Mon. Then alternate
+        // between the two, which should be trackable.
+        let log = Log::try_from(&[
+            "heal|mon:Charmander,player-2,1|health:100/100",
+            "turn|turn:5",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "move|mon:Charmander,player-2,1|name:Growl",
+            "turn|turn:6",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "move|mon:Charmander,player-2,1|name:Bite",
+            "turn|turn:7",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "move|mon:Charmander,player-2,1|name:Scratch",
+            "turn|turn:8",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "move|mon:Charmander,player-2,1|name:Dark Pulse",
+            "turn|turn:9",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            moves: DiscoveryRequiredSet::from_known([
+                                "Growl".to_owned(),
+                                "Scratch".to_owned(),
+                            ]),
+                            ..Default::default()
+                        }),
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                moves: DiscoveryRequiredSet::from_known([
+                                    "Bite".to_owned(),
+                                    "Dark Pulse".to_owned(),
+                                ]),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
+                                ..Default::default()
+                            },
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                ..Default::default()
+                            },
+                        }
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zoroark".to_owned(),
+                        species: "Zoroark".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ability: "Illusion".to_owned().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+            ])
+        );
+
+        // Fourth, reveal the illusion. Some of the data stays on the original Mon, since it is
+        // technically not known that it was an illusion.
+        let log = Log::try_from(&[
+            "replace|player:player-2|position:1|name:Zoroark|health:100/100|species:Zoroark|level:5|gender:M",
+            "turn|turn:10",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            moves: DiscoveryRequiredSet::from_known([
+                                "Growl".to_owned(),
+                                "Scratch".to_owned(),
+                            ]),
+                            ..Default::default()
+                        }),
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
+                            ..Default::default()
+                        }),
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zoroark".to_owned(),
+                        species: "Zoroark".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ability: "Illusion".to_owned().into(),
+                                moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ability: "Illusion".to_owned().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                ..Default::default()
+                            },
+                        },
+                    ]),
+                    ..Default::default()
+                },
+            ])
+        );
+    }
+
+    #[test]
+    fn illusion_user_faints_before_being_revealed() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:3",
+            "teamsize|player:player-2|size:3",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+            "turn|turn:2",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:3",
+            "faint|mon:Charmander,player-2,1",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:4",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        }),
+                    ]),
+                    fainted: true,
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance::default(),
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                        },
+                    ]),
+                    ..Default::default()
+                },
+            ])
+        );
+    }
+
+    #[test]
+    fn corrects_fainted_illusion_user_with_multiple_illusion_users() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:4",
+            "teamsize|player:player-2|size:4",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "replace|player:player-2|position:1|name:Zorua|health:100/100|species:Zorua|level:5|gender:M",
+            "end|mon:Zorua,player-2,1|ability:Illusion",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "replace|player:player-2|position:1|name:Zoroark|health:100/100|species:Zoroark|level:5|gender:M",
+            "end|mon:Zoroark,player-2,1|ability:Illusion",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "damage|mon:Charmander,player-2,1|health:0",
+            "faint|mon:Charmander,player-2,1",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        // At first, Zorua is guessed to have fainted when Charmander reappears.
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (0, 1).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        }),
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance::default(),
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                        },
+                    ]),
+                    fainted: false,
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zorua".to_owned(),
+                        species: "Zorua".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ability: "Illusion".to_owned().into(),
+                            ..Default::default()
+                        }),
+                    ]),
+                    fainted: true,
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zoroark".to_owned(),
+                        species: "Zoroark".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ability: "Illusion".to_owned().into(),
+                            ..Default::default()
+                        }),
+                    ]),
+                    ..Default::default()
+                },
+            ])
+        );
+
+        // Wait! Zorua is here! So Zoroark must have fainted.
+        let log = Log::try_from(&[
+            "damage|mon:Charmander,player-2,1|health:50/100",
+            "replace|player:player-2|position:1|name:Zorua|health:50/100|species:Zorua|level:5|gender:M",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons,
+            Vec::from_iter([
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Charmander".to_owned(),
+                        species: "Charmander".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (0, 1).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        }),
+                    ]),
+                    fainted: false,
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Bulbasaur".to_owned(),
+                        species: "Bulbasaur".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ..Default::default()
+                        })
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zorua".to_owned(),
+                        species: "Zorua".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Active {
+                            primary_battle_appearance: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (50, 100).into(),
+                                status: String::default().into(),
+                                ability: "Illusion".to_owned().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                ability: "Illusion".to_owned().into(),
+                                ..Default::default()
+                            },
+                            battle_appearance_from_last_switch_in: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (50, 100).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
+                        },
+                    ]),
+                    ..Default::default()
+                },
+                Mon {
+                    physical_appearance: MonPhysicalAppearance {
+                        name: "Zoroark".to_owned(),
+                        species: "Zoroark".to_owned(),
+                        gender: "M".to_owned(),
+                        shiny: false,
+                    },
+                    battle_appearances: VecDeque::from_iter([
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 5.into(),
+                            health: (100, 100).into(),
+                            status: String::default().into(),
+                            ability: "Illusion".to_owned().into(),
+                            ..Default::default()
+                        }),
+                    ]),
+                    fainted: true,
+                    ..Default::default()
+                },
+            ])
+        );
+
+        // Note that if Zoroark appeared at this point, that means Charmander really did faint...
+        // but then we can't create an illusion of it. So this scenario is impossible in a normal
+        // battle.
+        //
+        // If a Mon could illusion a fainted Mon, we would have a problem, since our implementation
+        // DIRECTLY relies on the idea that if a Mon appears when it fainted and all Mons
+        // have been seen, then the Mon is an illusion.
+        //
+        // If you could illusion a fainted Mon, we would need to track when a Mon apparently
+        // fainted. If all illusion users are seen after that point, then the real Mon can be marked
+        // fainted. But this gets weird because that Mon can still *appear* in battle under the
+        // illusion. To clients, it will directly look like a fainted Mon is in battle.
+        //
+        // This is why I think this will NEVER happen. It would be too confusing...
     }
 }
