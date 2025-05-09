@@ -204,6 +204,23 @@ where
         }
     }
 
+    /// Removes a known value.
+    ///
+    /// If the value was in the possible values set, it is also removed.
+    pub fn remove_known(&mut self, value: &T) {
+        self.possible_values.remove(value);
+        self.known.remove(value);
+    }
+
+    /// Downgrades a known value to a possible value, only if the value was in fact known.
+    ///
+    /// No change occurs if the value passed in is not in the known values set prior to this call.
+    pub fn downgrade_to_possible_value(&mut self, value: T) {
+        if self.known.remove(&value) {
+            self.possible_values.insert(value);
+        }
+    }
+
     /// Moves all known values into the possible values set.
     pub fn make_ambiguous(mut self) -> Self {
         self.possible_values.extend(self.known);

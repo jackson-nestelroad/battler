@@ -71,6 +71,8 @@ pub struct EffectData {
 /// A battle log entry specifically for the battle UI.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UiLogEntry {
+    /// A player attempted to escape but failed.
+    CannotEscape { player: String },
     /// A Mon was caught by a player.
     Caught { effect: EffectData },
     /// A Mon received damage.
@@ -115,17 +117,13 @@ pub enum UiLogEntry {
         target: Option<MoveTarget>,
         animate: bool,
     },
-    /// A Mon learned a move.
+    /// A Mon potentially learned a move.
     MoveUpdate {
         mon: Mon,
         move_name: String,
         learned: bool,
-        forgot: String,
+        forgot: Option<String>,
     },
-    /// A Mon did not learn a move.
-    MoveUpdateRejected { mon: Mon, move_name: String },
-    /// A message was generated for an individual player.
-    PlayerMessage { title: String, player: String },
     /// A Mon revived.
     Revive { effect: EffectData },
     /// A Mon's health update directly.
@@ -145,7 +143,7 @@ pub enum UiLogEntry {
     /// The battle resulted in a tie.
     Tie,
     /// A Mon's appearance updated.
-    UpdateAppearance { effect: EffectData },
+    UpdateAppearance { species: String, effect: EffectData },
     /// A player used an item.
     UseItem {
         player: String,

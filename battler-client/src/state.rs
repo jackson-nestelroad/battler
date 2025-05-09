@@ -58,6 +58,7 @@ pub struct MonVolatileData {
     pub conditions: BTreeMap<String, MonConditionData>,
     pub types: Vec<String>,
     pub stat_boosts: BTreeMap<String, i64>,
+    pub forme_change: Option<String>,
 }
 
 impl MonVolatileData {
@@ -82,6 +83,10 @@ impl MonVolatileData {
 
     fn record_stat_boost(&mut self, stat: String, diff: i64) {
         *self.stat_boosts.entry(stat).or_default() += diff;
+    }
+
+    fn record_forme_change(&mut self, forme: String) {
+        self.forme_change = Some(forme);
     }
 }
 
@@ -195,6 +200,14 @@ impl MonBattleAppearance {
             self.moves.record_possible(name);
         } else {
             self.moves.record_known(name);
+        }
+    }
+
+    fn forget_move(&mut self, name: String, ambiguity: Ambiguity) {
+        if ambiguity == Ambiguity::Ambiguous {
+            self.moves.downgrade_to_possible_value(name);
+        } else {
+            self.moves.remove_known(&name);
         }
     }
 
@@ -376,6 +389,12 @@ impl MonBattleAppearanceWithRecovery {
     fn record_move(&mut self, name: String, ambiguity: Ambiguity) {
         self.apply_for_each_battle_appearance(|appearance| {
             appearance.record_move(name.clone(), ambiguity);
+        });
+    }
+
+    fn forget_move(&mut self, name: String, ambiguity: Ambiguity) {
+        self.apply_for_each_battle_appearance(|appearance| {
+            appearance.forget_move(name.clone(), ambiguity);
         });
     }
 
@@ -1368,6 +1387,13 @@ fn modify_state_from_effect(
                 );
             }
         }
+        "formechange" => {
+            let mon = entry.value_or_else("mon")?;
+            let species: String = entry.value_or_else("species")?;
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.volatile_data.record_forme_change(species.clone());
+            })?;
+        }
         "item" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(effect) = &effect.effect {
@@ -1438,6 +1464,16 @@ fn modify_state_from_effect(
                     );
                 })?;
             }
+        }
+        "specieschange" => {
+            let (physical_appearance, _) = mon_appearance_from_log_entry(entry)?;
+            let mon = mon_name_from_log_entry(entry)?;
+            apply_for_each_mon(state, &mon, |mon, ambiguity| {
+                mon.physical_appearance.species = match ambiguity {
+                    Ambiguity::Ambiguous => String::default(),
+                    Ambiguity::Precise => physical_appearance.species.clone(),
+                }
+            })?
         }
         "status" => {
             let mon = entry.value_or_else("mon")?;
@@ -1528,6 +1564,7 @@ fn alter_battle_state_for_entry(
         | "sideend"
         | "singlemove"
         | "singleturn"
+        | "specieschange"
         | "status"
         | "start"
         | "supereffective"
@@ -1554,8 +1591,9 @@ fn alter_battle_state_for_entry(
                 "faint" => {
                     ui_log.push(ui::UiLogEntry::Faint { effect });
                 }
-                "formechange" => {
-                    ui_log.push(ui::UiLogEntry::UpdateAppearance { effect });
+                "formechange" | "specieschange" => {
+                    let species = entry.value_or_else("species")?;
+                    ui_log.push(ui::UiLogEntry::UpdateAppearance { species, effect });
                 }
                 "heal" => {
                     let health = health_from_log_entry(entry)?;
@@ -1598,10 +1636,7 @@ fn alter_battle_state_for_entry(
         }
         "cannotescape" => {
             let player = entry.value_or_else("player")?;
-            ui_log.push(ui::UiLogEntry::PlayerMessage {
-                title: entry.title().to_owned(),
-                player,
-            });
+            ui_log.push(ui::UiLogEntry::CannotEscape { player });
         }
         "debug" | "fxlang_debug" => ui_log.push(ui::UiLogEntry::Debug {
             title: entry.title().to_owned(),
@@ -1613,9 +1648,11 @@ fn alter_battle_state_for_entry(
         "didnotlearnmove" => {
             let mon = entry.value_or_else("mon")?;
             let move_name = entry.value_or_else("name")?;
-            ui_log.push(ui::UiLogEntry::MoveUpdateRejected {
+            ui_log.push(ui::UiLogEntry::MoveUpdate {
                 mon: mon_name_to_mon_for_ui_log(state, &mon)?,
                 move_name,
+                learned: false,
+                forgot: None,
             });
         }
         "escaped" | "forfeited" => {
@@ -1668,15 +1705,31 @@ fn alter_battle_state_for_entry(
         }
         "learnedmove" => {
             let mon = entry.value_or_else("mon")?;
-            let move_name = entry.value_or_else("name")?;
-            ui_log.push(ui::UiLogEntry::MoveUpdateRejected {
+            let move_name: String = entry.value_or_else("name")?;
+            let forgot = entry.value::<String>("forgot");
+
+            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                mon.record_move(move_name.clone(), ambiguity);
+
+                if let Some(forgot) = &forgot {
+                    mon.forget_move(forgot.clone(), ambiguity);
+                }
+            })?;
+
+            ui_log.push(ui::UiLogEntry::MoveUpdate {
                 mon: mon_name_to_mon_for_ui_log(state, &mon)?,
                 move_name,
+                learned: true,
+                forgot,
             });
         }
         "levelup" => {
             let mon = entry.value_or_else("mon")?;
-            let level = entry.value_or_else("level")?;
+            let level: u64 = entry.value_or_else("level")?;
+
+            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                mon.record_level(level.into(), ambiguity);
+            })?;
 
             let mut stats = HashMap::default();
 
@@ -1796,16 +1849,6 @@ fn alter_battle_state_for_entry(
             let side = state.field.side_mut_or_else(id).unwrap();
             side.id = id;
             side.name = name;
-        }
-        "specieschange" => {
-            let (physical_appearance, _) = mon_appearance_from_log_entry(entry)?;
-            let mon = mon_name_from_log_entry(entry)?;
-            apply_for_each_mon(state, &mon, |mon, ambiguity| {
-                mon.physical_appearance.species = match ambiguity {
-                    Ambiguity::Ambiguous => String::default(),
-                    Ambiguity::Precise => physical_appearance.species.clone(),
-                }
-            })?;
         }
         "switch" | "drag" | "appear" | "replace" => {
             let (physical_appearance, battle_appearance) = mon_appearance_from_log_entry(entry)?;
