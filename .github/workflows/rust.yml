@@ -10,7 +10,6 @@ env:
   CARGO_TERM_COLOR: always
   DATA_DIR: ${{ github.workspace }}/battle-data/data
   TEST_CASE_DIR: ${{ github.workspace }}/battler/test_cases
-  INTEGRATION_TEST_EXPECTED_IO_DIR: ${{ github.workspace }}/battler/tests/expected
 
 jobs:
   test:
@@ -25,7 +24,11 @@ jobs:
       - name: Run battler tests
         run: cargo test -p battler
       - name: Run battler-wamp tests
-        run: cargo test --workspace --exclude battler
+        run: cargo test -p "battler-wamp*" -p "serde*"
+      - name: Run battler-service tests
+        run: cargo test -p "battler-service*"
+      - name: Run battler-client tests
+        run: cargo test -p "battler-client*"
 
   formatting:
     name: Check formatting

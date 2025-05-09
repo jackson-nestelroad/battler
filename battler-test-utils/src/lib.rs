@@ -1,10 +1,8 @@
-mod battle_io_verifier;
 mod data_store;
 mod log_util;
 mod rng;
 mod test_battle_builder;
 
-pub use battle_io_verifier::BattleIoVerifier;
 pub use data_store::TestDataStore;
 pub use log_util::{
     assert_logs_since_start_eq,
