@@ -669,7 +669,7 @@ impl Mon {
 
 // Basic getters.
 impl Mon {
-    fn health(&self, actual_health: bool) -> String {
+    fn health(&self, actual_health: bool, public_base: u32) -> String {
         if actual_health {
             return self.actual_health();
         }
@@ -678,11 +678,14 @@ impl Mon {
         }
         let ratio = Fraction::new(self.hp as u32, self.max_hp as u32);
         // Always round up to avoid returning 0 when the Mon is not fainted.
-        let mut percentage = (ratio * 100).ceil();
-        if percentage == 100 && ratio < Fraction::new(1, 1) {
-            percentage = 99;
+        let mut percentage = (ratio * public_base).ceil();
+
+        // Round down if the Mon is damaged.
+        if percentage == public_base && ratio < Fraction::new(1, 1) {
+            percentage = public_base - 1;
         }
-        format!("{percentage}/100")
+
+        format!("{percentage}/{public_base}")
     }
 
     fn actual_health(&self) -> String {
@@ -764,9 +767,10 @@ impl Mon {
 
     /// The public health of the Mon.
     pub fn public_health(context: &MonContext) -> String {
-        context
-            .mon()
-            .health(context.battle().engine_options.reveal_actual_health)
+        context.mon().health(
+            context.battle().engine_options.reveal_actual_health,
+            context.battle().engine_options.public_health_base,
+        )
     }
 
     /// The secret health of the Mon.

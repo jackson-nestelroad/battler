@@ -78,6 +78,12 @@ pub struct CoreBattleEngineOptions {
     /// Mon.
     pub reveal_actual_health: bool,
 
+    /// A custom denominator for public health logs.
+    ///
+    /// By default, public health is revealed as a percentage out of 100. A different base can be
+    /// used for higher or lower precision.
+    pub public_health_base: u32,
+
     /// Function for creating the battle's random number generator.
     ///
     /// Primarily useful for tests where we wish to have fine-grained control over battle RNG.
@@ -149,6 +155,7 @@ impl Default for CoreBattleEngineOptions {
             validate_teams: true,
             auto_continue: true,
             reveal_actual_health: false,
+            public_health_base: 100,
             rng_factory: default_rng_factory(),
             allow_pass_for_unfainted_mon: false,
             randomize_base_damage: CoreBattleEngineRandomizeBaseDamage::Randomize,
