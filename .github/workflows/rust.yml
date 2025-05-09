@@ -12,8 +12,8 @@ env:
   TEST_CASE_DIR: ${{ github.workspace }}/battler/test_cases
 
 jobs:
-  test:
-    name: Run tests
+  test-battler:
+    name: Run battler tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +23,42 @@ jobs:
           toolchain: nightly
       - name: Run battler tests
         run: cargo test -p battler
-      - name: Run battler-wamp tests
-        run: cargo test -p "battler-wamp*" -p "serde*"
+
+  test-battler-service:
+    name: Run battler-service tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
       - name: Run battler-service tests
         run: cargo test -p "battler-service*"
+
+  test-battler-client:
+    name: Run battler-client tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
       - name: Run battler-client tests
         run: cargo test -p "battler-client*"
+
+  test-battler-wamp:
+    name: Run battler-wamp tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
+      - name: Run battler-wamp tests
+        run: cargo test -p "battler-wamp*" -p "serde*"
 
   formatting:
     name: Check formatting
