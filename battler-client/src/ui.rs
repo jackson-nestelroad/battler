@@ -79,11 +79,14 @@ pub enum UiLogEntry {
         effect: EffectData,
     },
     /// A debug log that should be shown to clients.
-    Debug { values: HashMap<String, String> },
+    Debug {
+        title: String,
+        values: HashMap<String, String>,
+    },
     /// A generic effect activated.
     Effect { title: String, effect: EffectData },
     /// A Mon received experience.
-    Experience {},
+    Experience { mon: Mon, exp: u64 },
     /// A Mon fainted.
     Faint { effect: EffectData },
     /// A Mon healed damage.
@@ -91,14 +94,20 @@ pub enum UiLogEntry {
         health: (u64, u64),
         effect: EffectData,
     },
-    /// A Mon left the field, due to the player leaving.
-    Leave { mon: Mon },
+    /// A player left the battle.
+    Leave {
+        title: String,
+        player: String,
+        positions: HashSet<FieldPosition>,
+    },
     /// A Mon leveled up.
     LevelUp {
         mon: Mon,
         level: u64,
         stats: HashMap<String, u64>,
     },
+    /// A message is displayed.
+    Message { content: String },
     /// A Mon used a move.
     Move {
         name: String,
@@ -113,8 +122,17 @@ pub enum UiLogEntry {
         learned: bool,
         forgot: String,
     },
+    /// A Mon did not learn a move.
+    MoveUpdateRejected { mon: Mon, move_name: String },
     /// A message was generated for an individual player.
     PlayerMessage { title: String, player: String },
+    /// A Mon revived.
+    Revive { effect: EffectData },
+    /// A Mon's health update directly.
+    SetHealth {
+        health: (u64, u64),
+        effect: EffectData,
+    },
     /// A Mon's stat received a boost (or drop).
     StatBoost { mon: Mon, stat: String, by: i64 },
     /// A Mon switched in.
@@ -124,6 +142,16 @@ pub enum UiLogEntry {
         mon: usize,
         into_position: FieldPosition,
     },
+    /// The battle resulted in a tie.
+    Tie,
     /// A Mon's appearance updated.
     UpdateAppearance { effect: EffectData },
+    /// A player used an item.
+    UseItem {
+        player: String,
+        item: String,
+        target: Option<Mon>,
+    },
+    /// A side won the battle.
+    Win { side: usize },
 }

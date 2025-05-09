@@ -6,7 +6,10 @@ use std::{
     usize,
 };
 
-use ahash::HashSet;
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use anyhow::{
     Context,
     Error,
@@ -477,6 +480,7 @@ pub struct Player {
     pub position: usize,
     pub team_size: usize,
     pub mons: Vec<Mon>,
+    pub left_battle: bool,
 }
 
 impl Player {
@@ -1517,6 +1521,8 @@ fn alter_battle_state_for_entry(
         | "prepare"
         | "resisted"
         | "restorepp"
+        | "revive"
+        | "sethp"
         | "setpp"
         | "sidestart"
         | "sideend"
@@ -1555,6 +1561,13 @@ fn alter_battle_state_for_entry(
                     let health = health_from_log_entry(entry)?;
                     ui_log.push(ui::UiLogEntry::Heal { health, effect });
                 }
+                "revive" => {
+                    ui_log.push(ui::UiLogEntry::Revive { effect });
+                }
+                "sethp" => {
+                    let health = health_from_log_entry(entry)?;
+                    ui_log.push(ui::UiLogEntry::SetHealth { health, effect });
+                }
                 _ => {
                     ui_log.push(ui::UiLogEntry::Effect {
                         title: entry.title().to_owned(),
@@ -1590,39 +1603,61 @@ fn alter_battle_state_for_entry(
                 player,
             });
         }
-        "debug" => todo!(),
-        "didnotlearnmove" => todo!(),
+        "debug" | "fxlang_debug" => ui_log.push(ui::UiLogEntry::Debug {
+            title: entry.title().to_owned(),
+            values: entry
+                .values()
+                .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                .collect(),
+        }),
+        "didnotlearnmove" => {
+            let mon = entry.value_or_else("mon")?;
+            let move_name = entry.value_or_else("name")?;
+            ui_log.push(ui::UiLogEntry::MoveUpdateRejected {
+                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
+                move_name,
+            });
+        }
         "escaped" | "forfeited" => {
             let player: String = entry.value_or_else("player")?;
             let side_index = state.field.side_for_player(&player)?;
 
-            ui_log.push(ui::UiLogEntry::PlayerMessage {
-                title: entry.title().to_owned(),
-                player: player.clone(),
-            });
+            state.field.player_mut_or_else(&player)?.left_battle = true;
 
             // All Mons belonging to the player leave immediately.
             let active_mons = state
                 .field
                 .active_mons_on_side(side_index)
+                .filter(|(_, reference)| reference.player == player)
                 .collect::<Vec<_>>();
+
             let side = state.field.side_mut_or_else(side_index)?;
-            for (i, mon) in active_mons {
-                if mon.player == player {
-                    // SAFETY: active_mons_on_side returns valid indices for side.active.
-                    *side.active.get_mut(i).unwrap() = None;
-                    side.mon_mut_by_reference_or_else(&mon)?.switch_out();
-                    ui_log.push(ui::UiLogEntry::Leave {
-                        mon: ui::Mon::Active(ui::FieldPosition {
-                            side: side_index,
-                            position: i,
-                        }),
-                    })
-                }
+            for (i, mon) in &active_mons {
+                // SAFETY: active_mons_on_side returns valid indices for side.active.
+                *side.active.get_mut(*i).unwrap() = None;
+                side.mon_mut_by_reference_or_else(mon)?.switch_out();
             }
+
+            ui_log.push(ui::UiLogEntry::Leave {
+                title: entry.title().to_owned(),
+                player: player.clone(),
+                positions: active_mons
+                    .into_iter()
+                    .map(|(i, _)| ui::FieldPosition {
+                        side: side_index,
+                        position: i,
+                    })
+                    .collect(),
+            });
         }
-        "exp" => todo!(),
-        "fxlang_debug" => (),
+        "exp" => {
+            let mon = entry.value_or_else("mon")?;
+            let exp = entry.value_or_else("exp")?;
+            ui_log.push(ui::UiLogEntry::Experience {
+                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
+                exp,
+            })
+        }
         "info" => {
             if let Some(battle_type) = entry.value::<String>("battletype") {
                 state.battle_type = battle_type.to_lowercase();
@@ -1631,8 +1666,38 @@ fn alter_battle_state_for_entry(
                 state.field.rules.push(rule.to_owned());
             }
         }
-        "learnedmove" => todo!(),
-        "levelup" => todo!(),
+        "learnedmove" => {
+            let mon = entry.value_or_else("mon")?;
+            let move_name = entry.value_or_else("name")?;
+            ui_log.push(ui::UiLogEntry::MoveUpdateRejected {
+                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
+                move_name,
+            });
+        }
+        "levelup" => {
+            let mon = entry.value_or_else("mon")?;
+            let level = entry.value_or_else("level")?;
+
+            let mut stats = HashMap::default();
+
+            let mut add_stat_to_map_if_present = |name: &str| {
+                if let Some(stat) = entry.value(name) {
+                    stats.insert(name.to_owned(), stat);
+                }
+            };
+            add_stat_to_map_if_present("hp");
+            add_stat_to_map_if_present("atk");
+            add_stat_to_map_if_present("def");
+            add_stat_to_map_if_present("spa");
+            add_stat_to_map_if_present("spd");
+            add_stat_to_map_if_present("spe");
+
+            ui_log.push(ui::UiLogEntry::LevelUp {
+                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
+                level,
+                stats,
+            });
+        }
         "maxsidelength" => {
             state.field.max_side_length = entry.value_or_else("length")?;
         }
@@ -1721,8 +1786,6 @@ fn alter_battle_state_for_entry(
             );
         }
         "residual" => (),
-        "revive" => todo!(),
-        "sethp" => todo!(),
         "side" => {
             let id: usize = entry.value_or_else("id")?;
             let name = entry.value_or_else("name")?;
@@ -1853,13 +1916,34 @@ fn alter_battle_state_for_entry(
             // appear.
             player.mons.clear();
         }
-        "tie" => todo!(),
+        "tie" => {
+            ui_log.push(ui::UiLogEntry::Tie);
+        }
         "time" => (),
         "transform" => todo!(),
         "turn" => (),
-        "turnlimit" => todo!(),
-        "useitem" => todo!(),
-        "win" => todo!(),
+        "turnlimit" => {
+            ui_log.push(ui::UiLogEntry::Message {
+                content: "The battle reached the turn limit. The battle will end in a tie."
+                    .to_owned(),
+            });
+        }
+        "useitem" => {
+            let player = entry.value_or_else("player")?;
+            let item = entry.value_or_else("item")?;
+            let target = entry.value("mon");
+            ui_log.push(ui::UiLogEntry::UseItem {
+                player,
+                item,
+                target: target
+                    .map(|target| mon_name_to_mon_for_ui_log(state, &target))
+                    .transpose()?,
+            });
+        }
+        "win" => {
+            let side = entry.value_or_else("side")?;
+            ui_log.push(ui::UiLogEntry::Win { side });
+        }
         title @ _ => return Err(Error::msg(format!("unsupported log: {title}"))),
     }
     Ok(())
@@ -1934,6 +2018,7 @@ mod state_test {
                                     position: 0,
                                     team_size: 3,
                                     mons: Vec::default(),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::default(),
@@ -1950,6 +2035,7 @@ mod state_test {
                                     position: 0,
                                     team_size: 3,
                                     mons: Vec::default(),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::default(),
@@ -2031,6 +2117,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2079,6 +2166,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2194,6 +2282,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2242,6 +2331,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2413,6 +2503,7 @@ mod state_test {
                                             volatile_data: MonVolatileData::default(),
                                         }
                                     ]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2461,6 +2552,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2665,6 +2757,7 @@ mod state_test {
                                             volatile_data: MonVolatileData::default(),
                                         }
                                     ]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2713,6 +2806,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -2992,6 +3086,7 @@ mod state_test {
                                         fainted: false,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
@@ -3031,6 +3126,7 @@ mod state_test {
                                         fainted: true,
                                         volatile_data: MonVolatileData::default(),
                                     }]),
+                                    ..Default::default()
                                 }
                             )]),
                             active: Vec::from_iter([Some(MonBattleAppearanceReference {
