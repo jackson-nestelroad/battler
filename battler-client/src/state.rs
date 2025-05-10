@@ -1370,7 +1370,7 @@ fn modify_state_from_effect(
                 mon.record_status(String::default().into(), ambiguity);
             })?;
         }
-        "damage" | "heal" => {
+        "damage" | "heal" | "sethp" => {
             let health = health_from_log_entry(&entry)?;
             let mon = entry.value_or_else("mon")?;
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
@@ -1404,7 +1404,7 @@ fn modify_state_from_effect(
                     effect.name.clone(),
                     ConditionData {
                         since_turn: state.turn,
-                        ..Default::default()
+                        data: effect_data.additional.clone(),
                     },
                 );
             }
@@ -1460,7 +1460,7 @@ fn modify_state_from_effect(
                     effect.name.clone(),
                     ConditionData {
                         since_turn: state.turn,
-                        ..Default::default()
+                        data: effect_data.additional.clone(),
                     },
                 );
             }
@@ -1521,21 +1521,18 @@ fn modify_state_from_effect(
             let mon = entry.value_or_else("mon")?;
             let species = entry.value_or_else("species")?;
             let into = entry.value_or_else("into")?;
-            let target = mons_by_mon_name_require_one(state, &into)
+            let target_reference = mons_by_mon_name_require_one(state, &into)
                 .context("transform attempted to transform into an ambiguous target")?;
+
+            let target = state.field.mon_by_reference_or_else(&target_reference)?;
+
+            let target_volatile = &target.volatile_data;
+            let mut target_appearance = target.physical_appearance.clone();
+            target_appearance.species = species;
 
             let target_battle_appearance = state
                 .field
-                .mon_battle_appearance_with_recovery_by_reference_or_else(&target)?;
-
-            let target_volatile = &state.field.mon_by_reference_or_else(&target)?.volatile_data;
-
-            let mut target_appearance = state
-                .field
-                .mon_by_reference_or_else(&target)?
-                .physical_appearance
-                .clone();
-            target_appearance.species = species;
+                .mon_battle_appearance_with_recovery_by_reference_or_else(&target_reference)?;
 
             // Copy over volatile data that we know is transformed.
             let ability = target_volatile
@@ -1552,10 +1549,8 @@ fn modify_state_from_effect(
 
             apply_for_each_mon(state, &mon, |mon, _| {
                 mon.volatile_data
-                    .record_transformation(target_appearance.clone(), target.clone());
-            })?;
+                    .record_transformation(target_appearance.clone(), target_reference.clone());
 
-            apply_for_each_mon(state, &mon, |mon, _| {
                 if let Some(ability) = &ability {
                     mon.volatile_data.record_ability(ability.clone());
                 }
@@ -1647,9 +1642,14 @@ fn alter_battle_state_for_entry(
                 "catch" => {
                     ui_log.push(ui::UiLogEntry::Caught { effect });
                 }
-                "damage" => {
+                "damage" | "heal" | "sethp" => {
                     let health = health_from_log_entry(entry)?;
-                    ui_log.push(ui::UiLogEntry::Damage { health, effect });
+                    ui_log.push(match entry.title() {
+                        "damage" => ui::UiLogEntry::Damage { health, effect },
+                        "heal" => ui::UiLogEntry::Heal { health, effect },
+                        "sethp" => ui::UiLogEntry::SetHealth { health, effect },
+                        _ => unreachable!(),
+                    });
                 }
                 "faint" => {
                     ui_log.push(ui::UiLogEntry::Faint { effect });
@@ -1662,16 +1662,8 @@ fn alter_battle_state_for_entry(
                         effect,
                     });
                 }
-                "heal" => {
-                    let health = health_from_log_entry(entry)?;
-                    ui_log.push(ui::UiLogEntry::Heal { health, effect });
-                }
                 "revive" => {
                     ui_log.push(ui::UiLogEntry::Revive { effect });
-                }
-                "sethp" => {
-                    let health = health_from_log_entry(entry)?;
-                    ui_log.push(ui::UiLogEntry::SetHealth { health, effect });
                 }
                 _ => {
                     ui_log.push(ui::UiLogEntry::Effect {
