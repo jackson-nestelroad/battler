@@ -116,6 +116,7 @@ pub enum UiLogEntry {
         mon: Mon,
         target: Option<MoveTarget>,
         animate: bool,
+        animate_only: bool,
     },
     /// A Mon potentially learned a move.
     MoveUpdate {

@@ -1759,7 +1759,7 @@ fn alter_battle_state_for_entry(
         }),
         "didnotlearnmove" => {
             let mon = entry.value_or_else("mon")?;
-            let move_name = entry.value_or_else("name")?;
+            let move_name = entry.value_or_else("move")?;
             ui_log.push(ui::UiLogEntry::MoveUpdate {
                 mon: mon_name_to_mon_for_ui_log(state, &mon)?,
                 move_name,
@@ -1815,7 +1815,7 @@ fn alter_battle_state_for_entry(
         }
         "learnedmove" => {
             let mon = entry.value_or_else("mon")?;
-            let move_name: String = entry.value_or_else("name")?;
+            let move_name: String = entry.value_or_else("move")?;
             let forgot = entry.value::<String>("forgot");
 
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
@@ -1880,6 +1880,7 @@ fn alter_battle_state_for_entry(
             let spread: Option<MonNameList> = entry.value("spread");
             let from: Option<EffectName> = entry.value("from");
             let animate = entry.value_ref("noanim").is_none();
+            let animate_only = entry.title() == "animatemove";
 
             if used_directly && from.is_none() && name != "Struggle" {
                 apply_for_each_mon_reference(state, &mon, |state, mon_reference, ambiguity| {
@@ -1961,6 +1962,7 @@ fn alter_battle_state_for_entry(
                     None
                 },
                 animate,
+                animate_only,
             })
         }
         "notice" => {
@@ -2114,8 +2116,8 @@ fn alter_battle_state_for_entry(
         }
         "useitem" => {
             let player = entry.value_or_else("player")?;
-            let item = entry.value_or_else("item")?;
-            let target = entry.value("mon");
+            let item = entry.value_or_else("name")?;
+            let target = entry.value("target");
             ui_log.push(ui::UiLogEntry::UseItem {
                 player,
                 item,
@@ -2572,6 +2574,7 @@ mod state_test {
                                 }
                             ))),
                             animate: true,
+                            animate_only: false,
                         },
                         ui::UiLogEntry::Damage {
                             health: (75, 100),
@@ -2795,6 +2798,7 @@ mod state_test {
                                 }
                             ))),
                             animate: true,
+                            animate_only: false,
                         },
                         ui::UiLogEntry::Damage {
                             health: (75, 100),
@@ -3051,6 +3055,7 @@ mod state_test {
                                 }
                             ))),
                             animate: true,
+                            animate_only: false,
                         },
                         ui::UiLogEntry::Damage {
                             health: (75, 100),
@@ -3099,6 +3104,7 @@ mod state_test {
                                 }
                             ))),
                             animate: true,
+                            animate_only: false,
                         },
                         ui::UiLogEntry::Effect {
                             title: "supereffective".to_owned(),
@@ -3369,6 +3375,7 @@ mod state_test {
                                 }
                             ))),
                             animate: true,
+                            animate_only: false,
                         },
                         ui::UiLogEntry::Effect {
                             title: "supereffective".to_owned(),
@@ -5951,5 +5958,233 @@ mod state_test {
         );
 
         pretty_assertions::assert_eq!(state.field.sides[0].active, Vec::from_iter([None]));
+    }
+
+    #[test]
+    fn records_learned_move() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Pound",
+            "turn|turn:2",
+            "didnotlearnmove|mon:Squirtle,player-1,1|move:Tackle",
+            "learnedmove|mon:Squirtle,player-1,1|move:Water Gun|forgot:Pound",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .moves
+                .known(),
+            &BTreeSet::from_iter([("Water Gun".to_owned())])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[2],
+            Vec::from_iter([
+                ui::UiLogEntry::MoveUpdate {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    move_name: "Tackle".to_owned(),
+                    learned: false,
+                    forgot: None,
+                },
+                ui::UiLogEntry::MoveUpdate {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    move_name: "Water Gun".to_owned(),
+                    learned: true,
+                    forgot: Some("Pound".to_owned()),
+                }
+            ]),
+        );
+    }
+
+    #[test]
+    fn records_multihit_move() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Fury Attack",
+            "animatemove|mon:Squirtle,player-1,1|name:Fury Attack",
+            "animatemove|mon:Squirtle,player-1,1|name:Fury Attack",
+            "animatemove|mon:Squirtle,player-1,1|name:Fury Attack",
+            "hitcount|hits:4",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([
+                ui::UiLogEntry::Move {
+                    name: "Fury Attack".to_owned(),
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    target: None,
+                    animate: true,
+                    animate_only: false,
+                },
+                ui::UiLogEntry::Move {
+                    name: "Fury Attack".to_owned(),
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    target: None,
+                    animate: true,
+                    animate_only: true,
+                },
+                ui::UiLogEntry::Move {
+                    name: "Fury Attack".to_owned(),
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    target: None,
+                    animate: true,
+                    animate_only: true,
+                },
+                ui::UiLogEntry::Move {
+                    name: "Fury Attack".to_owned(),
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    target: None,
+                    animate: true,
+                    animate_only: true,
+                },
+                ui::UiLogEntry::Effect {
+                    title: "hitcount".to_owned(),
+                    effect: ui::EffectData {
+                        additional: HashMap::from_iter([("hits".to_owned(), "4".to_owned())]),
+                        ..Default::default()
+                    }
+                }
+            ]),
+        );
+    }
+
+    #[test]
+    fn records_tie() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "tie",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(state.ui_log[1], Vec::from_iter([ui::UiLogEntry::Tie]),);
+    }
+
+    #[test]
+    fn records_win() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "win|side:1",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([ui::UiLogEntry::Win { side: 1 }]),
+        );
+    }
+
+    #[test]
+    fn records_use_item() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "useitem|player:player-1|name:Potion|target:Squirtle,player-1,1",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([ui::UiLogEntry::UseItem {
+                player: "player-1".to_owned(),
+                item: "Potion".to_owned(),
+                target: Some(ui::Mon::Active(ui::FieldPosition {
+                    side: 0,
+                    position: 0,
+                })),
+            }]),
+        );
     }
 }
