@@ -74,7 +74,7 @@ fn kings_rock_adds_change_to_flinch() {
             "split|side:1",
             "damage|mon:Grimer,player-2,1|health:112/140",
             "damage|mon:Grimer,player-2,1|health:80/100",
-            "cant|mon:Grimer,player-2,1|reason:Flinch",
+            "cant|mon:Grimer,player-2,1|from:Flinch",
             "residual",
             "turn|turn:2"
         ]"#,

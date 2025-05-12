@@ -95,7 +95,7 @@ fn focus_punch_fails_if_hit() {
             "split|side:0",
             "damage|mon:Vigoroth,player-1,1|health:113/140",
             "damage|mon:Vigoroth,player-1,1|health:81/100",
-            "cant|mon:Vigoroth,player-1,1|reason:move:Focus Punch",
+            "cant|mon:Vigoroth,player-1,1|from:move:Focus Punch",
             "residual",
             "turn|turn:2"
         ]"#,

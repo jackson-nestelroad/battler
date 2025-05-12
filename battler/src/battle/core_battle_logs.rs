@@ -215,9 +215,8 @@ pub fn cant(
     source: Option<MonHandle>,
 ) -> Result<()> {
     let activation = EffectActivationContext {
-        effect_flag_name: Some("reason".to_owned()),
-        effect: Some(effect),
         target: Some(context.mon_handle()),
+        source_effect: Some(effect),
         source,
         ..Default::default()
     };

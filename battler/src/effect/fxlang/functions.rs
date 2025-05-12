@@ -412,6 +412,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("use_effect_as_source_effect")
     }
 
+    fn set_use_effect_as_source_effect(&mut self, val: bool) {
+        self.set_flag("use_effect_as_source_effect", val)
+    }
+
     fn use_effect_state_source(&mut self) -> bool {
         self.has_flag("use_effect_state_source")
     }
@@ -434,6 +438,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn use_source_effect(&mut self) -> bool {
         self.has_flag("use_source_effect")
+    }
+
+    fn set_use_source_effect(&mut self, val: bool) {
+        self.set_flag("use_source_effect", val)
     }
 
     fn use_target_as_source(&mut self) -> bool {
@@ -529,7 +537,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         if self.no_source_effect() {
             Ok(None)
         } else if self.use_effect_as_source_effect() {
-            Ok(Some(self.effect_handle()?))
+            Ok(Some(self.evaluation_context().effect_handle().clone()))
         } else {
             Ok(self.evaluation_context().source_effect_handle().cloned())
         }
@@ -714,7 +722,10 @@ fn log_activate(context: FunctionContext) -> Result<()> {
     )
 }
 
-fn log_block(context: FunctionContext) -> Result<()> {
+fn log_block(mut context: FunctionContext) -> Result<()> {
+    context.set_use_source_effect(true);
+    context.set_with_source_effect(true);
+    context.set_use_effect_as_source_effect(true);
     log_effect_activation_base(context, "block", LogEffectActivationBaseContext::default())
 }
 

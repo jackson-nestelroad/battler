@@ -126,7 +126,7 @@ fn recharge_moves_require_recharge_turn() {
             "residual",
             "turn|turn:2",
             ["time"],
-            "cant|mon:Venusaur,player-1,1|reason:Must Recharge",
+            "cant|mon:Venusaur,player-1,1|from:Must Recharge",
             "residual",
             "turn|turn:3",
             ["time"],

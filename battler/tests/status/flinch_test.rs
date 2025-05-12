@@ -73,7 +73,7 @@ fn flinch_prevents_movement() {
             "split|side:1",
             "damage|mon:Rapidash,player-2,1|health:85/125",
             "damage|mon:Rapidash,player-2,1|health:68/100",
-            "cant|mon:Rapidash,player-2,1|reason:Flinch",
+            "cant|mon:Rapidash,player-2,1|from:Flinch",
             "residual",
             "turn|turn:2"
         ]"#,

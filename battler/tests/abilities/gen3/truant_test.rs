@@ -90,7 +90,7 @@ fn truant_causes_user_to_slack_off() {
             "residual",
             "turn|turn:3",
             ["time"],
-            "cant|mon:Slaking,player-1,1|reason:ability:Truant",
+            "cant|mon:Slaking,player-1,1|from:ability:Truant",
             "move|mon:Slaking,player-2,1|name:Tackle|target:Slaking,player-1,1",
             "split|side:0",
             "damage|mon:Slaking,player-1,1|health:171/210",
@@ -102,7 +102,7 @@ fn truant_causes_user_to_slack_off() {
             "split|side:1",
             "damage|mon:Slaking,player-2,1|health:132/210",
             "damage|mon:Slaking,player-2,1|health:63/100",
-            "cant|mon:Slaking,player-2,1|reason:ability:Truant",
+            "cant|mon:Slaking,player-2,1|from:ability:Truant",
             "residual",
             "turn|turn:5"
         ]"#,

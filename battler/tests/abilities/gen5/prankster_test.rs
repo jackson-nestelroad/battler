@@ -104,7 +104,7 @@ fn prankster_boosts_priority_of_status_moves() {
         r#"[
             "move|mon:Whimsicott,player-1,1|name:Stun Spore|target:Ninjask,player-2,1",
             "status|mon:Ninjask,player-2,1|status:Paralysis",
-            "cant|mon:Ninjask,player-2,1|reason:status:Paralysis",
+            "cant|mon:Ninjask,player-2,1|from:status:Paralysis",
             "residual",
             "turn|turn:2"
         ]"#,

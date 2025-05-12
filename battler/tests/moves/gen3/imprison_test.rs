@@ -69,7 +69,7 @@ fn imprison_disables_moves_known_by_user() {
         r#"[
             "move|mon:Baltoy,player-1,1|name:Imprison|target:Baltoy,player-1,1",
             "start|mon:Baltoy,player-1,1|move:Imprison",
-            "cant|mon:Baltoy,player-2,1|reason:move:Imprison",
+            "cant|mon:Baltoy,player-2,1|from:move:Imprison",
             "residual",
             "turn|turn:2",
             ["time"],

@@ -72,7 +72,7 @@ fn fake_out_only_works_on_first_turn() {
             "split|side:1",
             "damage|mon:Skitty,player-2,1|health:83/110",
             "damage|mon:Skitty,player-2,1|health:76/100",
-            "cant|mon:Skitty,player-2,1|reason:Flinch",
+            "cant|mon:Skitty,player-2,1|from:Flinch",
             "residual",
             "turn|turn:2",
             ["time"],

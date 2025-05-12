@@ -124,6 +124,8 @@ pub enum UiLogEntry {
         learned: bool,
         forgot: Option<String>,
     },
+    /// A notice is displayed.
+    Notice { content: String },
     /// A Mon revived.
     Revive { effect: EffectData },
     /// A Mon's health update directly.

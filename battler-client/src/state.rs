@@ -285,9 +285,8 @@ impl MonBattleAppearanceWithRecovery {
     }
 
     fn matches_switch_in(&self, appearance: &MonBattleAppearanceFromSwitchIn) -> bool {
+        // Only match the level. Health and status may change without us knowing.
         self.primary().level.can_be(&appearance.level)
-            && self.primary().health.can_be(&appearance.health)
-            && self.primary().status.can_be(&appearance.status)
     }
 
     fn switch_in(&mut self) {
@@ -419,7 +418,7 @@ pub struct Mon {
 }
 
 impl Mon {
-    const MAX_BATTLE_APPEARANCES_LENGTH: usize = 3;
+    const MAX_BATTLE_APPEARANCES_LENGTH: usize = 25;
 
     fn new<I>(physical_appearance: MonPhysicalAppearance, battle_appearances: I) -> Self
     where
@@ -450,7 +449,6 @@ impl Mon {
 
     fn faint(&mut self) {
         self.fainted = true;
-        self.switch_out();
     }
 
     fn revive(&mut self) {
@@ -459,6 +457,8 @@ impl Mon {
 
     fn push_battle_appearance(&mut self) -> usize {
         // If we exceed maximum number of battle appearances, recycle it as the base.
+        //
+        // Currently, the maximum is set really high so this does not really happen.
         let appearance = if self.battle_appearances.len() >= Self::MAX_BATTLE_APPEARANCES_LENGTH {
             // SAFETY: self.battle_appearances is not empty.
             self.battle_appearances.pop_front().unwrap().take_primary()
@@ -647,7 +647,8 @@ impl Side {
             .enumerate()
             .filter(|(mon_index, mon)| {
                 mon.physical_appearance.matches(&physical_appearance)
-                    && (player_has_seen_all_mons || !self.mon_index_is_active(*mon_index))
+                    && (player_has_seen_all_mons
+                        || (!mon.fainted && !self.mon_index_is_active(*mon_index)))
             })
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
@@ -763,6 +764,30 @@ impl Side {
         mon_battle_appearance.record_all(battle_appearance.into());
 
         Ok(reference)
+    }
+
+    fn switch_out(
+        &mut self,
+        mon: &MonBattleAppearanceReference,
+        remove_from_active_position: bool,
+    ) -> Result<()> {
+        for (i, active) in self
+            .active
+            .iter()
+            .enumerate()
+            .filter_map(|(i, reference)| reference.clone().map(|reference| (i, reference)))
+            .filter(|(_, reference)| reference == mon)
+            .collect::<Vec<_>>()
+        {
+            self.mon_mut_by_reference_or_else(&active)?.switch_out();
+
+            if remove_from_active_position {
+                // SAFETY: i was generated from enumeration of self.active.
+                let active = self.active.get_mut(i).unwrap();
+                *active = None;
+            }
+        }
+        Ok(())
     }
 
     fn faint_an_inactive_illusion_user(&mut self, player_id: &str) -> Result<()> {
@@ -1146,12 +1171,8 @@ fn effect_from_log_entry(entry: &LogEntry, effect_value_name: Option<&str>) -> R
     }
 }
 
-fn effect_data_from_log_entry(
-    state: &mut BattleState,
-    entry: &LogEntry,
-    effect_value_name: Option<&str>,
-) -> Result<ui::EffectData> {
-    let effect = effect_from_log_entry(entry, effect_value_name).ok();
+fn effect_data_from_log_entry(state: &mut BattleState, entry: &LogEntry) -> Result<ui::EffectData> {
+    let effect = effect_from_log_entry(entry, None).ok();
     let side = entry.value("side");
     let slot = entry.value("slot");
     let player = entry.value("player");
@@ -1166,11 +1187,17 @@ fn effect_data_from_log_entry(
     let source_effect = effect_from_log_entry(entry, Some("from")).ok();
 
     // Additional data that may be useful to the user interface for specific effects.
+    let effect_type = effect
+        .as_ref()
+        .map(|effect| effect.effect_type.clone())
+        .flatten();
     let additional = entry
         .values()
         .filter(|(key, _)| match *key {
             "from" | "mon" | "of" | "player" | "side" | "slot" => false,
-            _ => true,
+            key => effect_type
+                .as_ref()
+                .is_none_or(|effect_type| key != effect_type),
         })
         .map(|(k, v)| (k.to_owned(), v.to_owned()))
         .collect();
@@ -1302,6 +1329,14 @@ fn record_effect_from_mon(
         }
         Some("item") => {
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                // If we know that the Mon does not have an item, then this effect is presumably
+                // after the item ended.
+                if let Some(item) = mon.primary().item.known()
+                    && item.is_empty()
+                {
+                    return;
+                }
+
                 mon.record_item(effect.name.clone().into(), ambiguity);
             })?;
         }
@@ -1315,24 +1350,29 @@ fn modify_state_from_effect(
     entry: &LogEntry,
     effect_data: &ui::EffectData,
 ) -> Result<()> {
-    match (&effect_data.source_effect, entry.value::<MonName>("of")) {
-        (Some(source_effect), Some(source)) => {
-            record_effect_from_mon(state, source_effect, &source)?
+    if let Some(source_effect) = &effect_data.source_effect {
+        if let Some(source) = entry.value::<MonName>("of") {
+            record_effect_from_mon(state, source_effect, &source)?;
+        } else if let Some(target) = entry.value::<MonName>("mon") {
+            record_effect_from_mon(state, source_effect, &target)?;
         }
-        _ => (),
     }
 
     match entry.title() {
         "ability" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(effect) = &effect_data.effect {
-                apply_for_each_mon(state, &mon, |mon, _| {
-                    mon.volatile_data.record_ability(effect.name.clone());
-                })?;
+                record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
             }
         }
         "abilityend" => {
             let mon = entry.value_or_else("mon")?;
+
+            // We get to see the ability as it ends.
+            if let Some(effect) = &effect_data.effect {
+                record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
+            }
+
             apply_for_each_mon(state, &mon, |mon, _| {
                 mon.volatile_data.record_ability(String::default());
             })?;
@@ -1341,6 +1381,17 @@ fn modify_state_from_effect(
             (Some(effect), Some(mon)) => record_effect_from_mon(state, effect, &mon)?,
             _ => (),
         },
+        "catch" | "faint" => {
+            let mon = entry.value_or_else("mon")?;
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.faint();
+            })?;
+
+            let side = state.field.side_for_player(&mon.player)?;
+            apply_for_each_mon_reference(state, &mon, |state, mon, _| {
+                state.field.side_mut_or_else(side)?.switch_out(&mon, true)
+            })?;
+        }
         "clearnegativeboosts" => {
             for mon in state.field.active_mons().collect::<Vec<_>>() {
                 let mon = state.field.mon_mut_by_reference_or_else(&mon)?;
@@ -1386,12 +1437,6 @@ fn modify_state_from_effect(
 
                 record_effect_from_mon(state, &effect, &mon)?;
             }
-        }
-        "faint" => {
-            let mon = entry.value_or_else("mon")?;
-            apply_for_each_mon(state, &mon, |mon, _| {
-                mon.faint();
-            })?;
         }
         "fieldend" => {
             if let Some(effect) = &effect_data.effect {
@@ -1629,12 +1674,7 @@ fn alter_battle_state_for_entry(
         | "typechange"
         | "uncatchable"
         | "weather" => {
-            let effect_value_name = match entry.title() {
-                "cant" => Some("reason"),
-                "fail" => Some("what"),
-                _ => None,
-            };
-            let effect = effect_data_from_log_entry(state, entry, effect_value_name)?;
+            let effect = effect_data_from_log_entry(state, entry)?;
             modify_state_from_effect(state, entry, &effect)?;
 
             // Generate UI log for the effect. Some effects may have special logs.
@@ -1728,10 +1768,8 @@ fn alter_battle_state_for_entry(
                 .collect::<Vec<_>>();
 
             let side = state.field.side_mut_or_else(side_index)?;
-            for (i, mon) in &active_mons {
-                // SAFETY: active_mons_on_side returns valid indices for side.active.
-                *side.active.get_mut(*i).unwrap() = None;
-                side.mon_mut_by_reference_or_else(mon)?.switch_out();
+            for (_, mon) in &active_mons {
+                side.switch_out(&mon, true)?;
             }
 
             ui_log.push(ui::UiLogEntry::Leave {
@@ -1902,6 +1940,10 @@ fn alter_battle_state_for_entry(
                 animate,
             })
         }
+        "notice" => {
+            let content = entry.value_or_else("content")?;
+            ui_log.push(ui::UiLogEntry::Notice { content });
+        }
         "player" => {
             let id: String = entry.value_or_else("id")?;
             let name = entry.value_or_else("name")?;
@@ -1961,27 +2003,24 @@ fn alter_battle_state_for_entry(
                         )?
                         .recover(),
                     );
-
-                    // Mark that the previous Mon is inactive immediately.
-                    //
-                    // Ordinarily, we want the previous Mon to still be considered active when
-                    // switching in the new Mon, so that it is clear that the new and previous Mons
-                    // are distinct. However, in the case of illusion replacement, the Mon that the
-                    // illusion took the appearance of was *never* active, so we want that Mon to be
-                    // a candidate for merging.
-                    //
-                    // There is technically an edge case here: if an illusion user creates an
-                    // illusion of a Mon that looks exactly identical (by physical appearance) to
-                    // it, then when the illusion breaks, the active Mon will not really change.
-                    // However, this case is acceptable because there is ambiguity *anyway*. To
-                    // avoid this edge case, we would need to track switching for non-overlap with a
-                    // separate field somewhere.
-                    //
-                    // SAFETY: Resized above.
-                    *side.active.get_mut(position).unwrap() = None;
                 }
 
-                side.mon_mut_by_reference_or_else(previous)?.switch_out();
+                // Mark that the previous Mon is inactive if we are replacing an illusion.
+                //
+                // Ordinarily, we want the previous Mon to still be considered active when switching
+                // in the new Mon, so that it is clear that the new and previous Mons are distinct.
+                // However, in the case of illusion replacement, the Mon that the illusion took the
+                // appearance of was *never* active, so we want that Mon to be a candidate for
+                // merging.
+                //
+                // There is technically an edge case here: if an illusion user creates an illusion
+                // of a Mon that looks exactly identical (by physical appearance) to it, then when
+                // the illusion breaks, the active Mon will not really change. However, this case is
+                // acceptable because there is ambiguity *anyway*. To avoid this edge case, we would
+                // need to track switching for non-overlap with a separate field somewhere.
+                //
+                // SAFETY: Resized above.
+                side.switch_out(&previous, replace)?;
 
                 // If the replaced Mon ends up empty, we can remove that battle appearance.
                 if side
@@ -2081,10 +2120,7 @@ mod state_test {
     use ahash::HashMap;
 
     use crate::{
-        discovery::{
-            DiscoveryRequired,
-            DiscoveryRequiredSet,
-        },
+        discovery::DiscoveryRequiredSet,
         log::Log,
         state::{
             BattlePhase,
@@ -2109,7 +2145,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -2164,7 +2200,7 @@ mod state_test {
                             ..Default::default()
                         }
                     ]),
-                    max_side_length: 2,
+                    max_side_length: 1,
                     ..Default::default()
                 },
                 ui_log: Vec::from_iter([Vec::default()]),
@@ -2178,7 +2214,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -2299,7 +2335,7 @@ mod state_test {
                             ..Default::default()
                         }
                     ]),
-                    max_side_length: 2,
+                    max_side_length: 1,
                     ..Default::default()
                 },
                 ui_log: Vec::from_iter([Vec::from_iter([
@@ -2332,7 +2368,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -2464,7 +2500,7 @@ mod state_test {
                             ..Default::default()
                         }
                     ]),
-                    max_side_length: 2,
+                    max_side_length: 1,
                     ..Default::default()
                 },
                 ui_log: Vec::from_iter([
@@ -2529,7 +2565,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -2685,7 +2721,7 @@ mod state_test {
                             ..Default::default()
                         }
                     ]),
-                    max_side_length: 2,
+                    max_side_length: 1,
                     ..Default::default()
                 },
                 ui_log: Vec::from_iter([
@@ -2759,7 +2795,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -2939,7 +2975,7 @@ mod state_test {
                             ..Default::default()
                         }
                     ]),
-                    max_side_length: 2,
+                    max_side_length: 1,
                     ..Default::default()
                 },
                 ui_log: Vec::from_iter([
@@ -3062,7 +3098,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -3134,7 +3170,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -3251,15 +3287,11 @@ mod state_test {
                                     ..Default::default()
                                 }
                             )]),
-                            active: Vec::from_iter([Some(MonBattleAppearanceReference {
-                                player: "player-2".to_owned(),
-                                mon_index: 0,
-                                battle_appearance_index: 0,
-                            })]),
+                            active: Vec::from_iter([None]),
                             ..Default::default()
                         }
                     ]),
-                    max_side_length: 2,
+                    max_side_length: 1,
                     ..Default::default()
                 },
                 ui_log: Vec::from_iter([
@@ -3344,7 +3376,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -3728,8 +3760,8 @@ mod state_test {
             ])
         );
 
-        // Fifth, show that as we add more battle appearances to a single Mon, we eventually limit
-        // and merge them.
+        // Fifth, show that as we add more battle appearances to a single Mon, things stay
+        // consistent. This is because we do not match on health, so battle appearances get reused.
         let log = Log::try_from(&[
             "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
             "turn|turn:18",
@@ -3775,16 +3807,10 @@ mod state_test {
                     },
                     battle_appearances: VecDeque::from_iter([
                         MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
-                            level: 6.into(),
-                            health: (50, 100).into(),
+                            level: 5.into(),
+                            health: (100, 100).into(),
                             status: String::default().into(),
-                            moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
-                            ..Default::default()
-                        }),
-                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
-                            level: 6.into(),
-                            health: (25, 100).into(),
-                            status: String::default().into(),
+                            moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                             ..Default::default()
                         }),
                         MonBattleAppearanceWithRecovery::Active {
@@ -3792,21 +3818,17 @@ mod state_test {
                                 level: 6.into(),
                                 health: (12, 100).into(),
                                 status: String::default().into(),
-                                moves: DiscoveryRequiredSet::new(
-                                    ["Bite".to_owned()],
-                                    ["Absorb".to_owned()],
-                                ),
+                                moves: DiscoveryRequiredSet::from_known([
+                                    "Bite".to_owned(),
+                                    "Crunch".to_owned(),
+                                ],),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
-                                level: DiscoveryRequired::PossibleValues([5].into()),
-                                health: DiscoveryRequired::PossibleValues([(100, 100)].into()),
-                                status: DiscoveryRequired::PossibleValues(
-                                    [String::default()].into()
-                                ),
-                                moves: DiscoveryRequiredSet::from_possible_values([
-                                    "Absorb".to_owned()
-                                ]),
+                                level: 6.into(),
+                                health: (25, 100).into(),
+                                status: String::default().into(),
+                                moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -3845,8 +3867,7 @@ mod state_test {
             ])
         );
 
-        // Sixth, show that the battle appearance with possible values gets matched if we expose the
-        // illusion and bring back the real Bulbasaur.
+        // Sixth, bring back the real Bulbasaur.
         let log = Log::try_from(&[
             "replace|player:player-2|position:1|name:Zoroark|health:12/100|species:Zoroark|level:6|gender:F",
             "end|mon:Zoroark,player-2,1|ability:Illusion",
@@ -3886,38 +3907,19 @@ mod state_test {
                         shiny: false,
                     },
                     battle_appearances: VecDeque::from_iter([
-                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
-                            level: 6.into(),
-                            health: (50, 100).into(),
-                            status: String::default().into(),
-                            moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
-                            ..Default::default()
-                        }),
-                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
-                            level: 6.into(),
-                            health: (25, 100).into(),
-                            status: String::default().into(),
-                            ..Default::default()
-                        }),
                         MonBattleAppearanceWithRecovery::Active {
                             primary_battle_appearance: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
-                                moves: DiscoveryRequiredSet::from_possible_values([
-                                    "Absorb".to_owned()
-                                ]),
+                                moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
-                                level: DiscoveryRequired::PossibleValues([5].into()),
-                                health: DiscoveryRequired::PossibleValues([(100, 100)].into()),
-                                status: DiscoveryRequired::PossibleValues(
-                                    [String::default()].into()
-                                ),
-                                moves: DiscoveryRequiredSet::from_possible_values([
-                                    "Absorb".to_owned()
-                                ]),
+                                level: 5.into(),
+                                health: (100, 100).into(),
+                                status: String::default().into(),
+                                moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -3926,7 +3928,14 @@ mod state_test {
                                 status: String::default().into(),
                                 ..Default::default()
                             },
-                        }
+                        },
+                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
+                            level: 6.into(),
+                            health: (25, 100).into(),
+                            status: String::default().into(),
+                            moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
+                            ..Default::default()
+                        }),
                     ]),
                     ..Default::default()
                 },
@@ -3996,29 +4005,19 @@ mod state_test {
                         shiny: false,
                     },
                     battle_appearances: VecDeque::from_iter([
-                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
-                            level: 6.into(),
-                            health: (25, 100).into(),
-                            status: String::default().into(),
-                            ..Default::default()
-                        }),
                         MonBattleAppearanceWithRecovery::Active {
                             primary_battle_appearance: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
-                                moves: DiscoveryRequiredSet::from_possible_values([
-                                    "Absorb".to_owned()
-                                ]),
+                                moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
-                                moves: DiscoveryRequiredSet::from_possible_values([
-                                    "Absorb".to_owned()
-                                ]),
+                                moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -4032,9 +4031,7 @@ mod state_test {
                             level: 6.into(),
                             health: (12, 100).into(),
                             status: String::default().into(),
-                            moves: DiscoveryRequiredSet::from_possible_values(
-                                ["Crunch".to_owned()]
-                            ),
+                            moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
                             ..Default::default()
                         }),
                     ]),
@@ -4074,7 +4071,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -4437,7 +4434,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:3",
@@ -4532,7 +4529,7 @@ mod state_test {
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
-            "maxsidelength|length:2",
+            "maxsidelength|length:1",
             "player|id:player-1|name:Player 1|side:0|position:0",
             "player|id:player-2|name:Player 2|side:1|position:0",
             "teamsize|player:player-1|size:4",
@@ -4571,12 +4568,6 @@ mod state_test {
                         shiny: false,
                     },
                     battle_appearances: VecDeque::from_iter([
-                        MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
-                            level: 5.into(),
-                            health: (0, 1).into(),
-                            status: String::default().into(),
-                            ..Default::default()
-                        }),
                         MonBattleAppearanceWithRecovery::Active {
                             primary_battle_appearance: MonBattleAppearance {
                                 level: 5.into(),
@@ -4584,7 +4575,12 @@ mod state_test {
                                 status: String::default().into(),
                                 ..Default::default()
                             },
-                            battle_appearance_up_to_last_switch_out: MonBattleAppearance::default(),
+                            battle_appearance_up_to_last_switch_out: MonBattleAppearance {
+                                level: 5.into(),
+                                health: (0, 1).into(),
+                                status: String::default().into(),
+                                ..Default::default()
+                            },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
@@ -4770,5 +4766,321 @@ mod state_test {
         // illusion. To clients, it will directly look like a fainted Mon is in battle.
         //
         // This is why I think this will NEVER happen. It would be too confusing...
+    }
+
+    #[test]
+    fn records_ability_from_source_effect() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-2,1|name:Explosion|noanim",
+            "cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .ability
+                .known(),
+            Some(ability) => {
+                assert_eq!(ability, "Damp");
+            }
+        );
+    }
+
+    #[test]
+    fn records_item_from_source_effect() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Attract|target:Charmander,player-2,1",
+            "start|mon:Charmander,player-2,1|move:Attract",
+            "start|mon:Squirtle,player-1,1|move:Attract|from:item:Destiny Knot|of:Charmander,player-2,1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[1].players["player-2"].mons[0].battle_appearances[0]
+                .primary()
+                .item
+                .known(),
+            Some(item) => {
+                assert_eq!(item, "Destiny Knot");
+            }
+        );
+    }
+
+    #[test]
+    fn records_ability() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "ability|mon:Squirtle,player-1,1|ability:Pressure",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .ability
+                .known(),
+            Some(ability) => {
+                assert_eq!(ability, "Pressure");
+            }
+        );
+    }
+
+    #[test]
+    fn records_volatile_ability() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Skill Swap|target:Charmander,player-2,1",
+            "activate|mon:Charmander,player-2,1|move:Skill Swap|of:Squirtle,player-1,1",
+            "abilityend|mon:Squirtle,player-1,1|ability:Torrent|from:move:Skill Swap|of:Charmander,player-2,1",
+            "ability|mon:Squirtle,player-1,1|ability:Blaze|from:move:Skill Swap|of:Charmander,player-2,1",
+            "abilityend|mon:Charmander,player-2,1|ability:Blaze|from:move:Skill Swap|of:Squirtle,player-1,1",
+            "ability|mon:Charmander,player-2,1|ability:Torrent|from:move:Skill Swap|of:Squirtle,player-1,1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        // Base abilities get recorded.
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .ability
+                .known(),
+            Some(ability) => {
+                assert_eq!(ability, "Torrent");
+            }
+        );
+        assert_matches::assert_matches!(
+            state.field.sides[1].players["player-2"].mons[0].battle_appearances[0]
+                .primary()
+                .ability
+                .known(),
+            Some(ability) => {
+                assert_eq!(ability, "Blaze");
+            }
+        );
+
+        // Volatile abilities are switched.
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].volatile_data.ability.as_ref(),
+            Some(ability) => {
+                assert_eq!(ability, "Blaze");
+            }
+        );
+        assert_matches::assert_matches!(
+            state.field.sides[1].players["player-2"].mons[0].volatile_data.ability.as_ref(),
+            Some(ability) => {
+                assert_eq!(ability, "Torrent");
+            }
+        );
+    }
+
+    #[test]
+    fn records_ability_from_activation() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "activate|mon:Squirtle,player-1,1|ability:Intimidate",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .ability
+                .known(),
+            Some(ability) => {
+                assert_eq!(ability, "Intimidate");
+            }
+        );
+    }
+
+    #[test]
+    fn records_item_from_activation() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "activate|mon:Squirtle,player-1,1|item:Quick Claw",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .item
+                .known(),
+            Some(item) => {
+                assert_eq!(item, "Quick Claw");
+            }
+        );
+    }
+
+    #[test]
+    fn does_not_record_item_after_item_end_log() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "itemend|mon:Squirtle,player-1,1|item:Occa Berry|eat",
+            "activate|mon:Squirtle,player-1,1|item:Occa Berry|weaken",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .item
+                .known(),
+            Some(item) => {
+                assert_eq!(item, "");
+            }
+        );
+    }
+
+    #[test]
+    fn records_and_switches_out_caught_mon() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "catch|player:player-1|mon:Charmander,player-2,1|item:Ultra Ball|shakes:4",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(state.field.sides[1].active[0], None);
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([ui::UiLogEntry::Caught {
+                effect: ui::EffectData {
+                    effect: Some(ui::Effect {
+                        effect_type: Some("item".to_owned()),
+                        name: "Ultra Ball".to_owned(),
+                    }),
+                    player: Some("player-1".to_owned()),
+                    target: Some(ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0
+                    })),
+                    additional: HashMap::from_iter([("shakes".to_owned(), "4".to_owned()),]),
+                    ..Default::default()
+                }
+            }])
+        );
     }
 }
