@@ -231,6 +231,21 @@ impl Log {
         Ok(())
     }
 
+    /// Extends the log.
+    pub fn extend<I, S>(&mut self, iter: I) -> Result<()>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        self.entries.extend(
+            iter.into_iter()
+                .map(|content| content.as_ref().parse())
+                .collect::<Result<Vec<_>>>()?,
+        );
+        self.update();
+        Ok(())
+    }
+
     /// Checks if all entries are filled.
     ///
     /// If false, the log requires reconstructing for middle values.
@@ -244,15 +259,20 @@ impl Log {
     }
 
     /// Returns log entries for a given turn.
-    pub fn entries_for_turn(&self, turn: usize) -> &[LogEntry] {
+    pub fn entries_for_turn(&self, turn: usize, min_index: Option<usize>) -> &[LogEntry] {
         match self.turns.get(turn).cloned() {
             Some(i) => {
+                let begin = match min_index {
+                    Some(min) => min.max(i),
+                    None => i,
+                };
                 let end = self
                     .turns
                     .get(turn + 1)
                     .cloned()
                     .unwrap_or_else(|| self.entries.len());
-                &self.entries[i..end]
+                let end = end.max(begin);
+                &self.entries[begin..end]
             }
             None => &[],
         }
@@ -317,15 +337,15 @@ mod log_test {
 
         assert!(log.filled());
 
-        assert_matches::assert_matches!(log.entries_for_turn(0).first(), Some(entry) => {
+        assert_matches::assert_matches!(log.entries_for_turn(0, None).first(), Some(entry) => {
             assert_eq!(entry.title(), "info");
         });
-        assert_matches::assert_matches!(log.entries_for_turn(0).last(), Some(entry) => {
+        assert_matches::assert_matches!(log.entries_for_turn(0, None).last(), Some(entry) => {
             assert_eq!(entry.title(), "switch");
         });
 
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(1),
+            log.entries_for_turn(1, None),
             [
                 "turn|turn:1",
                 "move|mon:Squirtle,player-1,1|name:Pound|target:Charmander,player-2,1",
@@ -339,7 +359,7 @@ mod log_test {
         );
 
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(2),
+            log.entries_for_turn(2, None),
             [
                 "turn|turn:2",
                 "move|mon:Charmander,player-2,1|name:Scratch|target:Squirtle,player-1,1",
@@ -353,7 +373,7 @@ mod log_test {
         );
 
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(3),
+            log.entries_for_turn(3, None),
             ["turn|turn:3"]
                 .into_iter()
                 .map(|s| s.parse::<LogEntry>())
@@ -361,7 +381,7 @@ mod log_test {
                 .unwrap()
         );
 
-        pretty_assertions::assert_eq!(log.entries_for_turn(4), []);
+        pretty_assertions::assert_eq!(log.entries_for_turn(4, None), []);
     }
 
     #[test]
@@ -370,7 +390,7 @@ mod log_test {
 
         assert!(log.filled());
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(1),
+            log.entries_for_turn(1, None),
             ["turn|turn:1"]
                 .into_iter()
                 .map(|s| s.parse::<LogEntry>())
@@ -387,7 +407,7 @@ mod log_test {
         );
         assert!(log.filled());
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(1),
+            log.entries_for_turn(1, None),
             [
                 "turn|turn:1",
                 "move|mon:Squirtle,player-1,1|name:Pound|target:Charmander,player-2,1",
@@ -405,7 +425,7 @@ mod log_test {
 
         assert!(log.filled());
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(1),
+            log.entries_for_turn(1, None),
             ["turn|turn:1"]
                 .into_iter()
                 .map(|s| s.parse::<LogEntry>())
@@ -419,7 +439,7 @@ mod log_test {
         );
         assert!(!log.filled());
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(1),
+            log.entries_for_turn(1, None),
             [
                 "turn|turn:1",
                 "",
@@ -441,7 +461,7 @@ mod log_test {
         );
         assert!(log.filled());
         pretty_assertions::assert_eq!(
-            log.entries_for_turn(1),
+            log.entries_for_turn(1, None),
             [
                 "turn|turn:1",
                 "move|mon:Squirtle,player-1,1|name:Pound|target:Charmander,player-2,1",

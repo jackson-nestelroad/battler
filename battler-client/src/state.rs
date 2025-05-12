@@ -1040,6 +1040,7 @@ pub enum BattlePhase {
 pub struct BattleState {
     pub phase: BattlePhase,
     pub turn: usize,
+    pub last_log_index: usize,
     pub battle_type: String,
     pub field: Field,
     pub ui_log: Vec<Vec<ui::UiLogEntry>>,
@@ -1054,18 +1055,24 @@ pub fn alter_battle_state(state: BattleState, log: &Log) -> Result<BattleState> 
 fn alter_battle_state_internal(state: &mut BattleState, log: &Log) -> Result<()> {
     let last_turn_in_state = state.turn.saturating_sub(1);
     let current_turn = log.current_turn();
-    for turn in last_turn_in_state..current_turn {
-        alter_battle_state_for_turn(state, log, turn)?;
+    for turn in last_turn_in_state..=current_turn {
+        alter_battle_state_for_turn(state, log, turn, state.last_log_index)?;
     }
     state.turn = current_turn;
+    state.last_log_index = log.len().saturating_sub(1);
     Ok(())
 }
 
-fn alter_battle_state_for_turn(state: &mut BattleState, log: &Log, turn: usize) -> Result<()> {
+fn alter_battle_state_for_turn(
+    state: &mut BattleState,
+    log: &Log,
+    turn: usize,
+    min_index: usize,
+) -> Result<()> {
     state.turn = turn.try_into().context("failed to convert turn number")?;
 
     let mut ui_log = Vec::default();
-    for entry in log.entries_for_turn(turn) {
+    for entry in log.entries_for_turn(turn, Some(min_index)) {
         alter_battle_state_for_entry(state, &mut ui_log, entry)?;
     }
 
@@ -1392,10 +1399,15 @@ fn modify_state_from_effect(
                 state.field.side_mut_or_else(side)?.switch_out(&mon, true)
             })?;
         }
-        "clearnegativeboosts" => {
+        "clearallboosts" => {
             for mon in state.field.active_mons().collect::<Vec<_>>() {
                 let mon = state.field.mon_mut_by_reference_or_else(&mon)?;
-
+                mon.volatile_data.stat_boosts.clear();
+            }
+        }
+        "clearnegativeboosts" => {
+            let mon = entry.value_or_else("mon")?;
+            apply_for_each_mon(state, &mon, |mon, _| {
                 for stat in mon
                     .volatile_data
                     .stat_boosts
@@ -1410,7 +1422,7 @@ fn modify_state_from_effect(
                         entry.remove_entry();
                     }
                 }
-            }
+            })?;
         }
         "clearweather" => {
             state.field.weather = None;
@@ -1636,6 +1648,7 @@ fn alter_battle_state_for_entry(
         | "cant"
         | "catch"
         | "catchfailed"
+        | "clearallboosts"
         | "clearnegativeboosts"
         | "clearweather"
         | "curestatus"
@@ -1885,11 +1898,21 @@ fn alter_battle_state_for_entry(
                         return Ok(());
                     }
 
-                    let volatile = mon.volatile_data.transformed.is_some();
-
-                    if volatile {
+                    if let Some((_, transformation_battle_appearance)) =
+                        mon.volatile_data.transformed.clone()
+                    {
                         let mon = state.field.mon_mut_by_reference_or_else(&mon_reference)?;
                         mon.volatile_data.record_move(name.clone());
+
+                        // Record the move on the transformation source.
+                        if let Ok(mon) = state
+                            .field
+                            .mon_battle_appearance_with_recovery_mut_by_reference_or_else(
+                                &transformation_battle_appearance,
+                            )
+                        {
+                            mon.record_move(name.clone(), ambiguity);
+                        }
                     } else {
                         let mon = state
                             .field
@@ -2114,10 +2137,14 @@ fn alter_battle_state_for_entry(
 mod state_test {
     use std::collections::{
         BTreeMap,
+        BTreeSet,
         VecDeque,
     };
 
-    use ahash::HashMap;
+    use ahash::{
+        HashMap,
+        HashSet,
+    };
 
     use crate::{
         discovery::DiscoveryRequiredSet,
@@ -2125,6 +2152,7 @@ mod state_test {
         state::{
             BattlePhase,
             BattleState,
+            ConditionData,
             Field,
             Mon,
             MonBattleAppearance,
@@ -2162,6 +2190,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 1,
+                last_log_index: 9,
                 battle_type: "singles".to_owned(),
                 field: Field {
                     sides: Vec::from_iter([
@@ -2203,7 +2232,7 @@ mod state_test {
                     max_side_length: 1,
                     ..Default::default()
                 },
-                ui_log: Vec::from_iter([Vec::default()]),
+                ui_log: Vec::from_iter([Vec::default(), Vec::default()]),
             }
         );
     }
@@ -2233,6 +2262,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 1,
+                last_log_index: 11,
                 battle_type: "singles".to_owned(),
                 field: Field {
                     sides: Vec::from_iter([
@@ -2338,26 +2368,29 @@ mod state_test {
                     max_side_length: 1,
                     ..Default::default()
                 },
-                ui_log: Vec::from_iter([Vec::from_iter([
-                    ui::UiLogEntry::Switch {
-                        title: "switch".to_owned(),
-                        player: "player-1".to_owned(),
-                        mon: 0,
-                        into_position: ui::FieldPosition {
-                            side: 0,
-                            position: 0,
+                ui_log: Vec::from_iter([
+                    Vec::from_iter([
+                        ui::UiLogEntry::Switch {
+                            title: "switch".to_owned(),
+                            player: "player-1".to_owned(),
+                            mon: 0,
+                            into_position: ui::FieldPosition {
+                                side: 0,
+                                position: 0,
+                            }
+                        },
+                        ui::UiLogEntry::Switch {
+                            title: "switch".to_owned(),
+                            player: "player-2".to_owned(),
+                            mon: 0,
+                            into_position: ui::FieldPosition {
+                                side: 1,
+                                position: 0,
+                            }
                         }
-                    },
-                    ui::UiLogEntry::Switch {
-                        title: "switch".to_owned(),
-                        player: "player-2".to_owned(),
-                        mon: 0,
-                        into_position: ui::FieldPosition {
-                            side: 1,
-                            position: 0,
-                        }
-                    }
-                ])]),
+                    ]),
+                    Vec::default(),
+                ]),
             }
         );
     }
@@ -2392,6 +2425,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 2,
+                last_log_index: 16,
                 battle_type: "singles".to_owned(),
                 field: Field {
                     sides: Vec::from_iter([
@@ -2553,7 +2587,8 @@ mod state_test {
                                 ..Default::default()
                             }
                         }
-                    ])
+                    ]),
+                    Vec::default(),
                 ]),
             }
         );
@@ -2593,6 +2628,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 3,
+                last_log_index: 20,
                 battle_type: "singles".to_owned(),
                 field: Field {
                     sides: Vec::from_iter([
@@ -2783,7 +2819,8 @@ mod state_test {
                             side: 0,
                             position: 0,
                         }
-                    }])
+                    }]),
+                    Vec::default(),
                 ]),
             }
         );
@@ -2833,6 +2870,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 5,
+                last_log_index: 30,
                 battle_type: "singles".to_owned(),
                 field: Field {
                     sides: Vec::from_iter([
@@ -3087,13 +3125,14 @@ mod state_test {
                             }
                         }
                     ]),
+                    Vec::default(),
                 ]),
             }
         );
     }
 
     #[test]
-    fn updates_ongoing_state_after_complete_turn() {
+    fn updates_ongoing_state() {
         let mut log = Log::try_from(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
@@ -3132,28 +3171,15 @@ mod state_test {
         let state = BattleState::default();
         let state = alter_battle_state(state, &log).unwrap();
 
-        log.add(log.len(), "time|time:0").unwrap();
-        log.add(
-            log.len(),
+        log.extend([
+            "time|time:0",
             "move|mon:Charmander,player-2,1|name:Scratch|target:Squirtle,player-1,1",
-        )
+            "damage|mon:Charmander,player-2,1|health:80/100",
+            "residual",
+        ])
         .unwrap();
-        log.add(log.len(), "damage|mon:Charmander,player-2,1|health:80/100")
-            .unwrap();
-        log.add(log.len(), "residual").unwrap();
 
-        // Turn has not finished, so state is not really updated.
-        let state = alter_battle_state(state, &log).unwrap();
-        assert!(
-            !state.field.sides[1].players.get("player-2").unwrap().mons[0].battle_appearances[0]
-                .primary()
-                .moves
-                .known()
-                .contains("Scratch")
-        );
-
-        // Finish the turn, so the state can be updated.
-        log.add(log.len(), "turn|turn:6").unwrap();
+        // Turn has not finished, but state is still updated.
         let state = alter_battle_state(state, &log).unwrap();
         assert!(
             state.field.sides[1].players.get("player-2").unwrap().mons[0].battle_appearances[0]
@@ -3162,6 +3188,19 @@ mod state_test {
                 .known()
                 .contains("Scratch")
         );
+        assert_eq!(state.turn, 5);
+
+        // Finish the turn.
+        log.extend(["turn|turn:6"]).unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+        assert!(
+            state.field.sides[1].players.get("player-2").unwrap().mons[0].battle_appearances[0]
+                .primary()
+                .moves
+                .known()
+                .contains("Scratch")
+        );
+        assert_eq!(state.turn, 6);
     }
 
     #[test]
@@ -3196,6 +3235,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 2,
+                last_log_index: 18,
                 battle_type: "singles".to_owned(),
                 field: Field {
                     sides: Vec::from_iter([
@@ -3363,7 +3403,8 @@ mod state_test {
                                 ..Default::default()
                             }
                         }
-                    ])
+                    ]),
+                    Vec::default(),
                 ]),
             }
         );
@@ -3372,7 +3413,7 @@ mod state_test {
     #[test]
     fn keeps_track_of_multiple_battle_appearances_due_to_single_illusion_user_with_unique_level() {
         // First, we just see all Mons.
-        let log = Log::try_from(&[
+        let mut log = Log::try_from(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -3466,7 +3507,7 @@ mod state_test {
         //
         // Since we hit the team size, the level 6 Charmander is merged with the level 5 one, but
         // its battle appearance is quickly removed because it is empty.
-        let log = Log::try_from(&[
+        log.extend([
             "damage|mon:Charmander,player-2,1|health:75/100",
             "replace|player:player-2|position:1|name:Zoroark|health:75/100|species:Zoroark|level:6|gender:F",
             "end|mon:Zoroark,player-2,1|ability:Illusion",
@@ -3545,7 +3586,7 @@ mod state_test {
         );
 
         // Third, we test different information being revealed by the illusion at different times.
-        let log = Log::try_from(&[
+        log.extend([
             "move|mon:Zoroark,player-2,1|name:Bite",
             "turn|turn:5",
             "switch|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
@@ -3650,7 +3691,7 @@ mod state_test {
         );
 
         // Fourth, show that an unrevealed illusion causes a lingering battle appearance.
-        let log = Log::try_from(&[
+        log.extend([
             "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
             "turn|turn:12",
             "switch|player:player-2|position:1|name:Bulbasaur|health:50/100|species:Bulbasaur|level:6|gender:M",
@@ -3762,7 +3803,7 @@ mod state_test {
 
         // Fifth, show that as we add more battle appearances to a single Mon, things stay
         // consistent. This is because we do not match on health, so battle appearances get reused.
-        let log = Log::try_from(&[
+        log.extend([
             "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
             "turn|turn:18",
             "switch|player:player-2|position:1|name:Bulbasaur|health:25/100|species:Bulbasaur|level:6|gender:M",
@@ -3868,7 +3909,7 @@ mod state_test {
         );
 
         // Sixth, bring back the real Bulbasaur.
-        let log = Log::try_from(&[
+        log.extend([
             "replace|player:player-2|position:1|name:Zoroark|health:12/100|species:Zoroark|level:6|gender:F",
             "end|mon:Zoroark,player-2,1|ability:Illusion",
             "turn|turn:23",
@@ -3966,7 +4007,7 @@ mod state_test {
 
         // Seventh, faint the illusion without showing it. Then, bring the real Mon back in, and
         // show that the fainted status is moved to the illusion user.
-        let log = Log::try_from(&[
+        log.extend([
             "switch|player:player-2|position:1|name:Bulbasaur|health:12/100|species:Bulbasaur|level:6|gender:M",
             "turn|turn:25",
             "faint|mon:Bulbasaur,player-2,1",
@@ -4067,7 +4108,7 @@ mod state_test {
     #[test]
     fn keeps_track_of_multiple_battle_appearances_due_to_single_illusion_user_with_same_level() {
         // First, we just see all Mons.
-        let log = Log::try_from(&[
+        let mut log = Log::try_from(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4146,7 +4187,7 @@ mod state_test {
         );
 
         // Second, reveal illusion user as a new Mon.
-        let log = Log::try_from(&[
+        log.extend([
             "damage|mon:Charmander,player-2,1|health:75/100",
             "replace|player:player-2|position:1|name:Zoroark|health:75/100|species:Zoroark|level:5|gender:M",
             "end|mon:Zoroark,player-2,1|ability:Illusion",
@@ -4225,7 +4266,7 @@ mod state_test {
 
         // Third, heal the illusion user so that it is unified back to the real Mon. Then alternate
         // between the two, which should be trackable.
-        let log = Log::try_from(&[
+        log.extend([
             "heal|mon:Charmander,player-2,1|health:100/100",
             "turn|turn:5",
             "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
@@ -4334,7 +4375,7 @@ mod state_test {
 
         // Fourth, reveal the illusion. Some of the data stays on the original Mon, since it is
         // technically not known that it was an illusion.
-        let log = Log::try_from(&[
+        log.extend([
             "replace|player:player-2|position:1|name:Zoroark|health:100/100|species:Zoroark|level:5|gender:M",
             "turn|turn:10",
         ])
@@ -4525,7 +4566,7 @@ mod state_test {
 
     #[test]
     fn corrects_fainted_illusion_user_with_multiple_illusion_users() {
-        let log = Log::try_from(&[
+        let mut log = Log::try_from(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4650,7 +4691,7 @@ mod state_test {
         );
 
         // Wait! Zorua is here! So Zoroark must have fainted.
-        let log = Log::try_from(&[
+        log.extend([
             "damage|mon:Charmander,player-2,1|health:50/100",
             "replace|player:player-2|position:1|name:Zorua|health:50/100|species:Zorua|level:5|gender:M",
             "turn|turn:3",
@@ -5082,5 +5123,833 @@ mod state_test {
                 }
             }])
         );
+    }
+
+    #[test]
+    fn records_stat_boosts() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "boost|mon:Squirtle,player-1,1|stat:atk|by:1",
+            "unboost|mon:Squirtle,player-1,1|stat:def|by:1",
+            "unboost|mon:Charmander,player-2,1|stat:spa|by:2",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([("atk".to_owned(), 1), ("def".to_owned(), -1)])
+        );
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([("spa".to_owned(), -2)])
+        );
+
+        log.extend(["clearnegativeboosts|mon:Squirtle,player-1,1", "turn|turn:3"])
+            .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([("atk".to_owned(), 1)])
+        );
+
+        log.extend(["clearallboosts", "turn|turn:4"]).unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::default()
+        );
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::default()
+        );
+    }
+
+    #[test]
+    fn records_weather() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "weather|weather:Rain",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(&state.field.weather, Some(weather) => {
+            assert_eq!(weather, "Rain");
+        });
+
+        log.extend(["clearweather", "turn|turn:3"]).unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(state.field.weather, None);
+    }
+
+    #[test]
+    fn records_status() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "status|mon:Squirtle,player-1,1|status:Sleep",
+            "status|mon:Charmander,player-2,1|status:Paralysis",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .status
+                .known(),
+            Some(status) => {
+                assert_eq!(status, "Sleep");
+            }
+        );
+        assert_matches::assert_matches!(
+            state.field.sides[1].players["player-2"].mons[0].battle_appearances[0]
+                .primary()
+                .status
+                .known(),
+            Some(status) => {
+                assert_eq!(status, "Paralysis");
+            }
+        );
+
+        log.extend([
+            "curestatus|mon:Squirtle,player-1,1|status:Sleep",
+            "curestatus|mon:Charmander,player-2,1|status:Paralysis",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .status
+                .known(),
+            Some(status) => {
+                assert_eq!(status, "");
+            }
+        );
+        assert_matches::assert_matches!(
+            state.field.sides[1].players["player-2"].mons[0].battle_appearances[0]
+                .primary()
+                .status
+                .known(),
+            Some(status) => {
+                assert_eq!(status, "");
+            }
+        );
+    }
+
+    #[test]
+    fn records_health_changes() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "damage|mon:Squirtle,player-1,1|health:50/100",
+            "heal|mon:Squirtle,player-1,1|health:75/100",
+            "sethp|mon:Squirtle,player-1,1|health:80/100",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .health
+                .known(),
+            Some(health) => {
+                assert_eq!(health, &(80, 100));
+            }
+        );
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([
+                ui::UiLogEntry::Damage {
+                    health: (50, 100),
+                    effect: ui::EffectData {
+                        target: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 0,
+                            position: 0,
+                        })),
+                        additional: HashMap::from_iter([(
+                            "health".to_owned(),
+                            "50/100".to_owned()
+                        )]),
+                        ..Default::default()
+                    },
+                },
+                ui::UiLogEntry::Heal {
+                    health: (75, 100),
+                    effect: ui::EffectData {
+                        target: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 0,
+                            position: 0,
+                        })),
+                        additional: HashMap::from_iter([(
+                            "health".to_owned(),
+                            "75/100".to_owned()
+                        )]),
+                        ..Default::default()
+                    },
+                },
+                ui::UiLogEntry::SetHealth {
+                    health: (80, 100),
+                    effect: ui::EffectData {
+                        target: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 0,
+                            position: 0,
+                        })),
+                        additional: HashMap::from_iter([(
+                            "health".to_owned(),
+                            "80/100".to_owned()
+                        )]),
+                        ..Default::default()
+                    },
+                },
+            ])
+        );
+    }
+
+    #[test]
+    fn records_volatile_condition() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "start|mon:Squirtle,player-1,1|condition:Confusion",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::from_iter([(
+                "Confusion".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::default(),
+                },
+            )]),
+        );
+
+        log.extend([
+            "end|mon:Squirtle,player-1,1|condition:Confusion",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::default(),
+        );
+    }
+
+    #[test]
+    fn records_field_condition() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "fieldstart|move:Grassy Terrain",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.conditions,
+            BTreeMap::from_iter([(
+                "Grassy Terrain".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::default(),
+                },
+            )])
+        );
+
+        log.extend(["fieldend|move:Grassy Terrain", "turn|turn:3"])
+            .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(state.field.conditions, BTreeMap::default());
+    }
+
+    #[test]
+    fn records_forme_change() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "formechange|mon:Squirtle,player-1,1|species:Squirtle-Squad",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            &state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .forme_change,
+            Some(forme) => {
+                assert_eq!(forme, "Squirtle-Squad");
+            }
+        );
+    }
+
+    #[test]
+    fn records_item_changes() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Thief|target:Charmander,player-2,1",
+            "itemend|mon:Charmander,player-2,1|item:Safety Goggles|silent|from:move:Thief|of:Squirtle,player-1,1",
+            "item|mon:Squirtle,player-1,1|item:Safety Goggles|from:move:Thief|of:Charmander,player-2,1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .item
+                .known(),
+            Some(item) => {
+                assert_eq!(item, "Safety Goggles");
+            }
+        );
+        assert_matches::assert_matches!(
+            state.field.sides[1].players["player-2"].mons[0].battle_appearances[0]
+                .primary()
+                .item
+                .known(),
+            Some(item) => {
+                assert_eq!(item, "");
+            }
+        );
+    }
+
+    #[test]
+    fn records_move_volatile_with_prepare() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Razor Wind|noanim",
+            "prepare|mon:Squirtle,player-1,1|move:Razor Wind",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .moves
+                .known(),
+            &BTreeSet::from_iter(["Razor Wind".to_owned()])
+        );
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::from_iter([(
+                "Razor Wind".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::default(),
+                },
+            )])
+        );
+
+        log.extend([
+            "move|mon:Squirtle,player-1,1|name:Razor Wind",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::default()
+        );
+    }
+
+    #[test]
+    fn records_move_volatile_until_next_move() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Destiny Bond",
+            "singlemove|mon:Squirtle,player-1,1|move:Destiny Bond",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::from_iter([(
+                "Destiny Bond".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::from_iter([("singlemove".to_owned(), "".to_owned())]),
+                },
+            )])
+        );
+
+        log.extend(["residual", "turn|turn:2"]).unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::from_iter([(
+                "Destiny Bond".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::from_iter([("singlemove".to_owned(), "".to_owned())]),
+                },
+            )])
+        );
+
+        log.extend(["move|mon:Squirtle,player-1,1|name:Pound", "turn|turn:3"])
+            .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::default()
+        );
+    }
+
+    #[test]
+    fn does_not_record_externally_used_move() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Metronome|target:Charmander,player-2,1",
+            "move|mon:Squirtle,player-1,1|name:Ice Beam|target:Charmander,player-2,1|from:move:Metronome",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .moves
+                .known(),
+            &BTreeSet::from_iter(["Metronome".to_owned()])
+        );
+    }
+
+    #[test]
+    fn records_side_condition() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "sidestart|side:0|move:Light Screen",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].conditions,
+            BTreeMap::from_iter([(
+                "Light Screen".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::default(),
+                },
+            )])
+        );
+
+        log.extend(["sideend|side:0|move:Light Screen", "turn|turn:3"])
+            .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(state.field.sides[0].conditions, BTreeMap::default());
+    }
+
+    #[test]
+    fn records_transformation() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "ability|mon:Charmander,player-2,1|ability:Blaze",
+            "move|mon:Squirtle,player-1,1|name:Transform|target:Charmander,player-2,1",
+            "transform|mon:Squirtle,player-1,1|into:Charmander,player-2,1|species:Charmander",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            &state.field.sides[0].players["player-1"].mons[0].volatile_data.transformed,
+            Some(transformation) => {
+                pretty_assertions::assert_eq!(transformation.0, MonPhysicalAppearance {
+                    species: "Charmander".to_owned(),
+                    name: "Charmander".to_owned(),
+                    gender: "M".to_owned(),
+                    shiny: false,
+                });
+                pretty_assertions::assert_eq!(transformation.1, MonBattleAppearanceReference {
+                    player: "player-2".to_owned(),
+                    mon_index: 0,
+                    battle_appearance_index: 0,
+                });
+            }
+        );
+        assert_matches::assert_matches!(
+            &state.field.sides[0].players["player-1"].mons[0].volatile_data.ability,
+            Some(ability) => {
+                assert_eq!(ability, "Blaze");
+            }
+        );
+
+        log.extend([
+            "move|mon:Squirtle,player-1,1|name:Scratch|target:Charmander,player-2,1",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0].battle_appearances[0]
+                .primary()
+                .moves
+                .known(),
+            &BTreeSet::from_iter(["Transform".to_owned()])
+        );
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .moves,
+            BTreeSet::from_iter(["Scratch".to_owned()])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons[0].battle_appearances[0]
+                .primary()
+                .moves
+                .known(),
+            &BTreeSet::from_iter(["Scratch".to_owned()])
+        );
+    }
+
+    #[test]
+    fn records_type_change() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "typechange|mon:Squirtle,player-1,1|types:Fire/Flying",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .types,
+            Vec::from_iter(["Fire".to_owned(), "Flying".to_owned()])
+        );
+    }
+
+    #[test]
+    fn records_escape() {
+        let mut log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "cannotescape|player:player-1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([ui::UiLogEntry::CannotEscape {
+                player: "player-1".to_owned()
+            }])
+        );
+
+        log.extend(["escaped|player:player-1"]).unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[2],
+            Vec::from_iter([ui::UiLogEntry::Leave {
+                title: "escaped".to_owned(),
+                player: "player-1".to_owned(),
+                positions: HashSet::from_iter([ui::FieldPosition {
+                    side: 0,
+                    position: 0
+                }]),
+            }])
+        );
+
+        pretty_assertions::assert_eq!(state.field.sides[0].active, Vec::from_iter([None]));
+    }
+
+    #[test]
+    fn records_forfeit() {
+        let log = Log::try_from(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "forfeited|player:player-1",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([ui::UiLogEntry::Leave {
+                title: "forfeited".to_owned(),
+                player: "player-1".to_owned(),
+                positions: HashSet::from_iter([ui::FieldPosition {
+                    side: 0,
+                    position: 0
+                }]),
+            }])
+        );
+
+        pretty_assertions::assert_eq!(state.field.sides[0].active, Vec::from_iter([None]));
     }
 }
