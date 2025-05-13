@@ -91,7 +91,6 @@ pub use dex::{
     MoveDex,
     ResourceDex,
     SerializedAliases,
-    SerializedDataTable,
     SingleValueDex,
     SpeciesDex,
 };

@@ -4,20 +4,20 @@ use anyhow::Result;
 use zone_alloc::{
     BorrowError,
     ElementRef,
+    KeyedRegistry,
 };
 
 use crate::{
     common::Id,
-    dex::{
-        DataStore,
-        DataTable,
-    },
+    dex::DataStore,
     error::{
         general_error,
         ConvertError,
         NotFoundError,
     },
 };
+
+type DataTable<T> = KeyedRegistry<Id, T>;
 
 /// Trait for implementing custom logic for looking up and creating a resource instance by ID.
 ///

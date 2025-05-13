@@ -233,7 +233,7 @@ impl EffectState {
 /// An object that connects an [`EffectState`] instance to the [`Context`] of a battle.
 ///
 /// Used for dynamically reading an [`EffectState`] instance during fxlang program evaluation.
-pub trait EffectStateConnector: Debug {
+pub trait EffectStateConnector: Debug + Send {
     /// Checks if the underlying effect state exists.
     fn exists(&self, context: &mut Context) -> Result<bool>;
 

@@ -10,14 +10,14 @@ use crate::BattlerClient;
 
 /// Wrapper around a [`BattlerServiceClient`] for a single player to manage battles they are
 /// participating in.
-pub struct BattleClientManager<'a> {
+pub struct BattleClientManager {
     player: String,
-    service: Arc<Box<dyn BattlerServiceClient + 'a>>,
+    service: Arc<Box<dyn BattlerServiceClient + Send + Sync>>,
 }
 
-impl<'a> BattleClientManager<'a> {
+impl BattleClientManager {
     /// Creates a new manager.
-    pub fn new(player: String, service: Arc<Box<dyn BattlerServiceClient + 'a>>) -> Self {
+    pub fn new(player: String, service: Arc<Box<dyn BattlerServiceClient + Send + Sync>>) -> Self {
         Self { player, service }
     }
 
@@ -27,7 +27,7 @@ impl<'a> BattleClientManager<'a> {
         Ok(battle.uuid)
     }
 
-    pub async fn join(&self, battle: Uuid) -> Result<BattlerClient<'a>> {
+    pub async fn join(&self, battle: Uuid) -> Result<BattlerClient> {
         let client = BattlerClient::new(battle, self.player.clone(), self.service.clone());
         todo!()
     }

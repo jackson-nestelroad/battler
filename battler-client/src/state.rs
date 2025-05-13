@@ -1046,19 +1046,34 @@ pub struct BattleState {
     pub ui_log: Vec<Vec<ui::UiLogEntry>>,
 }
 
+/// Alters the battle state according to the battle log.
 pub fn alter_battle_state(state: BattleState, log: &Log) -> Result<BattleState> {
     let mut state = state;
-    alter_battle_state_internal(&mut state, log)?;
+    alter_battle_state_internal(&mut state, log, log.current_turn())?;
     Ok(state)
 }
 
-fn alter_battle_state_internal(state: &mut BattleState, log: &Log) -> Result<()> {
+/// Alters the battle state according to the battle log, up to the given turn.
+pub fn alter_battle_state_up_to_turn(
+    state: BattleState,
+    log: &Log,
+    turn: usize,
+) -> Result<BattleState> {
+    let mut state = state;
+    alter_battle_state_internal(&mut state, log, turn)?;
+    Ok(state)
+}
+
+fn alter_battle_state_internal(
+    state: &mut BattleState,
+    log: &Log,
+    up_to_turn: usize,
+) -> Result<()> {
     let last_turn_in_state = state.turn.saturating_sub(1);
-    let current_turn = log.current_turn();
-    for turn in last_turn_in_state..=current_turn {
+    for turn in last_turn_in_state..=up_to_turn {
         alter_battle_state_for_turn(state, log, turn, state.last_log_index)?;
     }
-    state.turn = current_turn;
+    state.turn = up_to_turn;
     state.last_log_index = log.len().saturating_sub(1);
     Ok(())
 }
@@ -2171,7 +2186,7 @@ mod state_test {
 
     #[test]
     fn constructs_sides_and_players_before_battle_start() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -2241,7 +2256,7 @@ mod state_test {
 
     #[test]
     fn adds_mon_for_initial_switch_in() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -2399,7 +2414,7 @@ mod state_test {
 
     #[test]
     fn records_simple_move_and_damage() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -2599,7 +2614,7 @@ mod state_test {
 
     #[test]
     fn records_new_mon_revealed_from_switch() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -2832,7 +2847,7 @@ mod state_test {
 
     #[test]
     fn uses_old_mon_reappeared_from_switch() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -3139,7 +3154,7 @@ mod state_test {
 
     #[test]
     fn updates_ongoing_state() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -3211,7 +3226,7 @@ mod state_test {
 
     #[test]
     fn records_fainted_mon() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -3420,7 +3435,7 @@ mod state_test {
     #[test]
     fn keeps_track_of_multiple_battle_appearances_due_to_single_illusion_user_with_unique_level() {
         // First, we just see all Mons.
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4115,7 +4130,7 @@ mod state_test {
     #[test]
     fn keeps_track_of_multiple_battle_appearances_due_to_single_illusion_user_with_same_level() {
         // First, we just see all Mons.
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4478,7 +4493,7 @@ mod state_test {
 
     #[test]
     fn illusion_user_faints_before_being_revealed() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4573,7 +4588,7 @@ mod state_test {
 
     #[test]
     fn corrects_fainted_illusion_user_with_multiple_illusion_users() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4818,7 +4833,7 @@ mod state_test {
 
     #[test]
     fn records_ability_from_source_effect() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4853,7 +4868,7 @@ mod state_test {
 
     #[test]
     fn records_item_from_source_effect() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4889,7 +4904,7 @@ mod state_test {
 
     #[test]
     fn records_ability() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4923,7 +4938,7 @@ mod state_test {
 
     #[test]
     fn records_volatile_ability() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -4986,7 +5001,7 @@ mod state_test {
 
     #[test]
     fn records_ability_from_activation() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5020,7 +5035,7 @@ mod state_test {
 
     #[test]
     fn records_item_from_activation() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5054,7 +5069,7 @@ mod state_test {
 
     #[test]
     fn does_not_record_item_after_item_end_log() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5089,7 +5104,7 @@ mod state_test {
 
     #[test]
     fn records_and_switches_out_caught_mon() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5134,7 +5149,7 @@ mod state_test {
 
     #[test]
     fn records_stat_boosts() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5202,7 +5217,7 @@ mod state_test {
 
     #[test]
     fn records_weather() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5236,7 +5251,7 @@ mod state_test {
 
     #[test]
     fn records_status() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5308,7 +5323,7 @@ mod state_test {
 
     #[test]
     fn records_health_changes() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5392,7 +5407,7 @@ mod state_test {
 
     #[test]
     fn records_volatile_condition() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5444,7 +5459,7 @@ mod state_test {
 
     #[test]
     fn records_field_condition() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5486,7 +5501,7 @@ mod state_test {
 
     #[test]
     fn records_forme_change() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5519,7 +5534,7 @@ mod state_test {
 
     #[test]
     fn records_item_changes() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5564,7 +5579,7 @@ mod state_test {
 
     #[test]
     fn records_move_volatile_with_prepare() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5624,7 +5639,7 @@ mod state_test {
 
     #[test]
     fn records_move_volatile_until_next_move() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5691,7 +5706,7 @@ mod state_test {
 
     #[test]
     fn does_not_record_externally_used_move() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5724,7 +5739,7 @@ mod state_test {
 
     #[test]
     fn records_side_condition() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5766,7 +5781,7 @@ mod state_test {
 
     #[test]
     fn records_transformation() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5845,7 +5860,7 @@ mod state_test {
 
     #[test]
     fn records_type_change() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5876,7 +5891,7 @@ mod state_test {
 
     #[test]
     fn records_escape() {
-        let mut log = Log::try_from(&[
+        let mut log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5925,7 +5940,7 @@ mod state_test {
 
     #[test]
     fn records_forfeit() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -5962,7 +5977,7 @@ mod state_test {
 
     #[test]
     fn records_learned_move() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -6021,7 +6036,7 @@ mod state_test {
 
     #[test]
     fn records_multihit_move() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -6102,7 +6117,7 @@ mod state_test {
 
     #[test]
     fn records_tie() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -6127,7 +6142,7 @@ mod state_test {
 
     #[test]
     fn records_win() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -6155,7 +6170,7 @@ mod state_test {
 
     #[test]
     fn records_use_item() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",

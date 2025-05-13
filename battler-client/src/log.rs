@@ -182,6 +182,24 @@ pub struct Log {
 }
 
 impl Log {
+    /// Creates a new log over an iterator of entries.
+    pub fn new<I, T>(iter: I) -> Result<Self>
+    where
+        I: IntoIterator<Item = T>,
+        T: AsRef<str>,
+    {
+        let entries = iter
+            .into_iter()
+            .map(|entry| entry.as_ref().parse())
+            .collect::<Result<Vec<_>>>()?;
+        let mut log = Self {
+            entries,
+            ..Default::default()
+        };
+        log.update();
+        Ok(log)
+    }
+
     /// The number of entries in the log.
     pub fn len(&self) -> usize {
         self.entries.len()
@@ -286,22 +304,6 @@ impl Log {
     }
 }
 
-impl<const N: usize> TryFrom<&[&str; N]> for Log {
-    type Error = Error;
-    fn try_from(value: &[&str; N]) -> std::result::Result<Self, Self::Error> {
-        let entries = value
-            .into_iter()
-            .map(|entry| entry.parse())
-            .collect::<Result<Vec<_>>>()?;
-        let mut log = Self {
-            entries,
-            ..Default::default()
-        };
-        log.update();
-        Ok(log)
-    }
-}
-
 #[cfg(test)]
 mod log_test {
     use crate::log::{
@@ -311,7 +313,7 @@ mod log_test {
 
     #[test]
     fn constructs_from_full_log() {
-        let log = Log::try_from(&[
+        let log = Log::new(&[
             "info|battletype:Singles",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
@@ -386,7 +388,7 @@ mod log_test {
 
     #[test]
     fn adds_new_sequential_log() {
-        let mut log = Log::try_from(&["turn|turn:1"]).unwrap();
+        let mut log = Log::new(&["turn|turn:1"]).unwrap();
 
         assert!(log.filled());
         pretty_assertions::assert_eq!(
@@ -421,7 +423,7 @@ mod log_test {
 
     #[test]
     fn adds_new_non_sequential_log() {
-        let mut log = Log::try_from(&["turn|turn:1"]).unwrap();
+        let mut log = Log::new(&["turn|turn:1"]).unwrap();
 
         assert!(log.filled());
         pretty_assertions::assert_eq!(

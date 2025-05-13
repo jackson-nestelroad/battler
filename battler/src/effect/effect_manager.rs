@@ -1,6 +1,6 @@
 use std::{
     mem,
-    rc::Rc,
+    sync::Arc,
 };
 
 use anyhow::Result;
@@ -28,7 +28,7 @@ use crate::{
 };
 /// Module for managing fxlang effect programs and their evaluation.
 pub struct EffectManager {
-    callbacks: LruCache<String, Rc<ParsedCallbacks>>,
+    callbacks: LruCache<String, Arc<ParsedCallbacks>>,
     stack: usize,
 }
 
@@ -103,7 +103,7 @@ impl EffectManager {
         &mut self,
         effect_handle: &EffectHandle,
         effect: &Effect,
-    ) -> Result<Rc<ParsedCallbacks>> {
+    ) -> Result<Arc<ParsedCallbacks>> {
         let id = if effect.unlinked() {
             effect_handle.unlinked_internal_fxlang_id().wrap_expectation_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
         } else {
@@ -122,7 +122,7 @@ impl EffectManager {
         }
         self.callbacks.push(
             id.clone(),
-            Rc::new(ParsedCallbacks::from(
+            Arc::new(ParsedCallbacks::from(
                 effect.fxlang_effect().map(|effect| &effect.callbacks),
             )?),
         );

@@ -4,7 +4,7 @@ use rand::Rng;
 
 /// A pseudo-random number generator, created with the intention of using a random number generator
 /// that can be deterministically "replayed" for battle simulations.
-pub trait PseudoRandomNumberGenerator {
+pub trait PseudoRandomNumberGenerator: Send {
     /// Returns the initial seed the generator was created with.
     ///
     /// The initial seed can be used to replay the random number generation sequence.

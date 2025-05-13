@@ -24,7 +24,7 @@ use crate::{
 };
 
 /// Client wrapper for [`battler_service::BattlerService`].
-#[async_trait(?Send)]
+#[async_trait]
 pub trait BattlerServiceClient {
     /// The status of an existing battle.
     async fn battle(&self, battle: Uuid) -> Result<Battle>;

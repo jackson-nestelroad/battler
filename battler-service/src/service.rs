@@ -414,7 +414,6 @@ impl<'d> BattlerService<'d> {
 }
 
 // SAFETY: Each battle is protected by a Mutex to prevent parallel access.
-unsafe impl<'d> Send for BattlerService<'d> {}
 unsafe impl<'d> Sync for BattlerService<'d> {}
 
 #[cfg(test)]

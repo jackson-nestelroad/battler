@@ -43,7 +43,7 @@ impl<'d> DirectBattlerServiceClient<'d> {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl<'d> BattlerServiceClient for DirectBattlerServiceClient<'d> {
     async fn battle(&self, battle: Uuid) -> Result<Battle> {
         self.service.battle(battle).await

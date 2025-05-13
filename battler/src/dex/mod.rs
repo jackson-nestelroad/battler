@@ -28,9 +28,7 @@ pub use condition_dex::ConditionDex;
 pub use data::fake_data_store::FakeDataStore;
 pub use data::{
     DataStore,
-    DataTable,
     LocalDataStore,
-    SerializedDataTable,
 };
 pub use dex::Dex;
 pub use item_dex::ItemDex;

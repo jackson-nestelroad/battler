@@ -56,7 +56,7 @@ fn export_battle_preview(battle: battler_service_schema::BattlePreview) -> Resul
     serde_json::from_str(&battle.battle_json).context(Error::msg("invalid battle preview"))
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl<S> BattlerServiceClient for SimpleWampBattlerServiceClient<S>
 where
     S: Send + 'static,

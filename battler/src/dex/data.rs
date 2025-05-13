@@ -1,14 +1,12 @@
 use std::{
     env,
     fs::File,
-    ops::Deref,
     path::Path,
 };
 
 use ahash::HashMapExt;
 use anyhow::Result;
 use serde::de::DeserializeOwned;
-use zone_alloc::KeyedRegistry;
 
 use crate::{
     abilities::AbilityData,
@@ -24,7 +22,6 @@ use crate::{
     },
     error::{
         general_error,
-        ConvertError,
         WrapOptionError,
         WrapResultError,
     },
@@ -36,19 +33,13 @@ use crate::{
     moves::MoveData,
 };
 
-/// A user-defined table of resource data of a particular type.
-pub type SerializedDataTable<T> = FastHashMap<String, T>;
-
-/// Table for all resource data of a particular type.
-pub type DataTable<T> = KeyedRegistry<Id, T>;
-
 /// Collection of tables for all resource data.
 ///
 /// This trait can be implemented for different data sources, such as an external database or disk.
 ///
 /// This collection is used for "raw lookup" of resources by ID. Individual dexes may implement
 /// specialized lookup rules over this table, such as resolving aliases or special names.
-pub trait DataStore {
+pub trait DataStore: Send + Sync {
     /// Gets all move IDs, applying the given filter on the underlying data.
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>>;
     /// Gets the type chart.
@@ -73,13 +64,13 @@ pub trait DataStore {
 pub struct LocalDataStore {
     root: String,
     type_chart: TypeChart,
-    abilities: DataTable<AbilityData>,
+    abilities: FastHashMap<Id, AbilityData>,
     aliases: Aliases,
-    clauses: DataTable<ClauseData>,
-    conditions: DataTable<ConditionData>,
-    items: DataTable<ItemData>,
-    moves: DataTable<MoveData>,
-    species: DataTable<SpeciesData>,
+    clauses: FastHashMap<Id, ClauseData>,
+    conditions: FastHashMap<Id, ConditionData>,
+    items: FastHashMap<Id, ItemData>,
+    moves: FastHashMap<Id, MoveData>,
+    species: FastHashMap<Id, SpeciesData>,
 }
 
 impl LocalDataStore {
@@ -113,13 +104,13 @@ impl LocalDataStore {
         let mut store = Self {
             root,
             type_chart: TypeChart::new(),
-            abilities: DataTable::new(),
+            abilities: FastHashMap::new(),
             aliases: Aliases::new(),
-            clauses: DataTable::new(),
-            conditions: DataTable::new(),
-            items: DataTable::new(),
-            moves: DataTable::new(),
-            species: DataTable::new(),
+            clauses: FastHashMap::new(),
+            conditions: FastHashMap::new(),
+            items: FastHashMap::new(),
+            moves: FastHashMap::new(),
+            species: FastHashMap::new(),
         };
         store.initialize()?;
         Ok(store)
@@ -151,14 +142,14 @@ impl LocalDataStore {
                 .wrap_error_with_message("failed to read clauses")?,
         )
         .wrap_error_with_message("failed to parse clauses")?;
-        self.clauses.register_extend(clauses);
+        self.clauses.extend(clauses);
 
         let conditions: FastHashMap<Id, ConditionData> = serde_json::from_reader(
             File::open(Path::new(&self.root).join(Self::CONDITIONS_FILE))
                 .wrap_error_with_message("failed to read conditions")?,
         )
         .wrap_error_with_message("failed to parse conditions")?;
-        self.conditions.register_extend(conditions);
+        self.conditions.extend(conditions);
 
         self.abilities = self.read_all_files_in_directory::<AbilityData>(Self::ABILITIES_DIR)?;
         self.items = self.read_all_files_in_directory::<ItemData>(Self::ITEMS_DIR)?;
@@ -168,7 +159,10 @@ impl LocalDataStore {
         Ok(())
     }
 
-    fn read_all_files_in_directory<T: DeserializeOwned>(&self, dir: &str) -> Result<DataTable<T>> {
+    fn read_all_files_in_directory<T: DeserializeOwned>(
+        &self,
+        dir: &str,
+    ) -> Result<FastHashMap<Id, T>> {
         let tables = Path::new(&self.root)
             .join(dir)
             .read_dir()
@@ -177,22 +171,22 @@ impl LocalDataStore {
             .filter(|path| path.is_file())
             .map(|path| {
                 let path_name = path.to_string_lossy().to_string();
-                serde_json::from_reader::<File, SerializedDataTable<T>>(
+                serde_json::from_reader::<File, FastHashMap<String, T>>(
                     File::open(path)
                         .wrap_error_with_format(format_args!("{path_name} could not be opened"))?,
                 )
                 .wrap_error_with_format(format_args!("failed to read {dir} data from {path_name}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        let registry = KeyedRegistry::new();
-        registry.register_extend(
+        let mut map = FastHashMap::new();
+        map.extend(
             tables
                 .into_iter()
                 .map(|table| table.into_iter())
                 .flatten()
                 .map(|(key, value)| (Id::from(key), value)),
         );
-        Ok(registry)
+        Ok(map)
     }
 }
 
@@ -200,11 +194,7 @@ impl DataStore for LocalDataStore {
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         let mut move_ids = Vec::new();
         for (id, move_data) in self.moves.iter() {
-            if filter(
-                move_data
-                    .wrap_error_with_format(format_args!("failed to read move data for {id}"))?
-                    .as_ref(),
-            ) {
+            if filter(move_data) {
                 move_ids.push(id.clone());
             }
         }
@@ -225,49 +215,48 @@ impl DataStore for LocalDataStore {
     fn get_ability(&self, id: &Id) -> Result<AbilityData> {
         self.abilities
             .get(id)
-            .map(|data| data.deref().clone())
-            .map_err(|err| err.convert_error_with_message(format!("ability {id}")))
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("ability {id}"))
     }
 
     fn get_clause(&self, id: &Id) -> Result<ClauseData> {
         self.clauses
             .get(id)
-            .map(|data| data.deref().clone())
-            .map_err(|err| err.convert_error_with_message(format!("clause {id}")))
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("clause {id}"))
     }
 
     fn get_condition(&self, id: &Id) -> Result<ConditionData> {
         self.conditions
             .get(id)
-            .map(|data| data.deref().clone())
-            .map_err(|err| err.convert_error_with_message(format!("condition {id}")))
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("condition {id}"))
     }
 
     fn get_item(&self, id: &Id) -> Result<ItemData> {
         self.items
             .get(id)
-            .map(|data| data.deref().clone())
-            .map_err(|err| err.convert_error_with_message(format!("item {id}")))
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("item {id}"))
     }
 
     fn get_move(&self, id: &Id) -> Result<MoveData> {
         self.moves
             .get(id)
-            .map(|data| data.deref().clone())
-            .map_err(|err| err.convert_error_with_message(format!("move {id}")))
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("move {id}"))
     }
 
     fn get_species(&self, id: &Id) -> Result<SpeciesData> {
         self.species
             .get(id)
-            .map(|data| data.deref().clone())
-            .map_err(|err| err.convert_error_with_message(format!("species {id}")))
+            .cloned()
+            .wrap_not_found_error_with_format(format_args!("species {id}"))
     }
 }
 
 #[cfg(test)]
 pub mod fake_data_store {
-    use std::ops::Deref;
 
     use ahash::HashMapExt;
     use anyhow::Result;
@@ -280,31 +269,27 @@ pub mod fake_data_store {
         dex::{
             Aliases,
             DataStore,
-            DataTable,
         },
-        error::{
-            ConvertError,
-            WrapOptionError,
-            WrapResultError,
-        },
+        error::WrapOptionError,
         items::ItemData,
         mons::{
             SpeciesData,
             TypeChart,
         },
         moves::MoveData,
+        FastHashMap,
     };
 
     /// A fake implementation of [`DataStore`] used for unit testing.
     pub struct FakeDataStore {
         pub type_chart: TypeChart,
         pub aliases: Aliases,
-        pub abilities: DataTable<AbilityData>,
-        pub clauses: DataTable<ClauseData>,
-        pub conditions: DataTable<ConditionData>,
-        pub items: DataTable<ItemData>,
-        pub moves: DataTable<MoveData>,
-        pub species: DataTable<SpeciesData>,
+        pub abilities: FastHashMap<Id, AbilityData>,
+        pub clauses: FastHashMap<Id, ClauseData>,
+        pub conditions: FastHashMap<Id, ConditionData>,
+        pub items: FastHashMap<Id, ItemData>,
+        pub moves: FastHashMap<Id, MoveData>,
+        pub species: FastHashMap<Id, SpeciesData>,
     }
 
     impl FakeDataStore {
@@ -312,12 +297,12 @@ pub mod fake_data_store {
             Self {
                 type_chart: TypeChart::new(),
                 aliases: Aliases::new(),
-                abilities: DataTable::new(),
-                clauses: DataTable::new(),
-                conditions: DataTable::new(),
-                items: DataTable::new(),
-                moves: DataTable::new(),
-                species: DataTable::new(),
+                abilities: FastHashMap::new(),
+                clauses: FastHashMap::new(),
+                conditions: FastHashMap::new(),
+                items: FastHashMap::new(),
+                moves: FastHashMap::new(),
+                species: FastHashMap::new(),
             }
         }
     }
@@ -326,11 +311,7 @@ pub mod fake_data_store {
         fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
             let mut move_ids = Vec::new();
             for (id, move_data) in self.moves.iter() {
-                if filter(
-                    move_data
-                        .wrap_error_with_format(format_args!("failed to read move data for {id}"))?
-                        .as_ref(),
-                ) {
+                if filter(move_data) {
                     move_ids.push(id.clone());
                 }
             }
@@ -345,49 +326,49 @@ pub mod fake_data_store {
             self.aliases
                 .get(id)
                 .cloned()
-                .wrap_not_found_error_with_format(format_args!("alias {id} not found"))
+                .wrap_not_found_error_with_format(format_args!("alias {id}"))
         }
 
         fn get_ability(&self, id: &Id) -> Result<AbilityData> {
             self.abilities
                 .get(id)
-                .map(|data| data.deref().clone())
-                .map_err(|err| err.convert_error())
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("ability {id}"))
         }
 
         fn get_clause(&self, id: &Id) -> Result<ClauseData> {
             self.clauses
                 .get(id)
-                .map(|data| data.deref().clone())
-                .map_err(|err| err.convert_error())
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("clause {id}"))
         }
 
         fn get_condition(&self, id: &Id) -> Result<ConditionData> {
             self.conditions
                 .get(id)
-                .map(|data| data.deref().clone())
-                .map_err(|err| err.convert_error())
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("condition {id}"))
         }
 
         fn get_item(&self, id: &Id) -> Result<ItemData> {
             self.items
                 .get(id)
-                .map(|data| data.deref().clone())
-                .map_err(|err| err.convert_error())
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("item {id}"))
         }
 
         fn get_move(&self, id: &Id) -> Result<MoveData> {
             self.moves
                 .get(id)
-                .map(|data| data.deref().clone())
-                .map_err(|err| err.convert_error())
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("move {id}"))
         }
 
         fn get_species(&self, id: &Id) -> Result<SpeciesData> {
             self.species
                 .get(id)
-                .map(|data| data.deref().clone())
-                .map_err(|err| err.convert_error())
+                .cloned()
+                .wrap_not_found_error_with_format(format_args!("species {id}"))
         }
     }
 }

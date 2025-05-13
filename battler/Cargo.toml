@@ -24,7 +24,7 @@ serde_string_enum = "0.2"
 thiserror = "1.0"
 unicase = "2.6.0"
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
-zone-alloc = { version = "0.4.1", features = ["std", "may-dangle"] }
+zone-alloc = { version = "0.4.4", features = ["std", "may-dangle"] }
 zone-alloc-strong-handle-derive = "0.1"
 
 [dev-dependencies]
