@@ -6,4 +6,4 @@ pub mod state;
 pub mod ui;
 
 pub use client::BattlerClient;
-pub use manager::BattleClientManager;
+pub use manager::BattlerClientManager;

@@ -413,9 +413,6 @@ impl<'d> BattlerService<'d> {
     }
 }
 
-// SAFETY: Each battle is protected by a Mutex to prevent parallel access.
-unsafe impl<'d> Sync for BattlerService<'d> {}
-
 #[cfg(test)]
 mod battler_service_test {
     use battler::{
