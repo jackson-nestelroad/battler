@@ -22,7 +22,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler tests
-        run: cargo test -p battler
+        run: cargo test -p battler -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
@@ -47,6 +47,18 @@ jobs:
           toolchain: nightly
       - name: Run battler-client tests
         run: cargo test -p "battler-client*"
+
+  test-battler-ai:
+    name: Run battler-ai tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
+      - name: Run battler-ai tests
+        run: cargo test -p "battler-ai*"
 
   test-battler-wamp:
     name: Run battler-wamp tests

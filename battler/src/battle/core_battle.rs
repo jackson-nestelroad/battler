@@ -21,6 +21,10 @@ use battler_data::{
     Type,
     TypeEffectiveness,
 };
+use battler_prng::{
+    rand_util,
+    PseudoRandomNumberGenerator,
+};
 use itertools::Itertools;
 use zone_alloc::{
     ElementRef,
@@ -82,10 +86,6 @@ use crate::{
         UncommittedBattleLogEntry,
     },
     moves::Move,
-    rng::{
-        rand_util,
-        PseudoRandomNumberGenerator,
-    },
     teams::TeamValidator,
     TeamData,
     WrapError,

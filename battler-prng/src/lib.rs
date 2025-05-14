@@ -1,3 +1,5 @@
+pub mod rand_util;
+
 use std::any::Any;
 
 use rand::Rng;
@@ -17,6 +19,7 @@ pub trait PseudoRandomNumberGenerator: Send {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
+/// A real implementation of [`PseudoRandomNumberGenerator`].
 pub struct RealPseudoRandomNumberGenerator {
     initial_seed: u64,
     seed: u64,
@@ -67,7 +70,7 @@ impl PseudoRandomNumberGenerator for RealPseudoRandomNumberGenerator {
 
 #[cfg(test)]
 mod prng_test {
-    use crate::rng::{
+    use crate::{
         PseudoRandomNumberGenerator,
         RealPseudoRandomNumberGenerator,
     };

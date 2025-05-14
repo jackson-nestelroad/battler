@@ -25,6 +25,7 @@ zone-alloc = { workspace = true }
 zone-alloc-strong-handle-derive = { workspace = true }
 
 battler-data = { path = "../battler-data" }
+battler-prng = { path = "../battler-prng" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

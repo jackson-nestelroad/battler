@@ -26,6 +26,7 @@ use battler_data::{
     SecondaryEffectData,
     TypeEffectiveness,
 };
+use battler_prng::rand_util;
 
 use crate::{
     battle::{
@@ -70,7 +71,6 @@ use crate::{
     },
     log::UncommittedBattleLogEntry,
     moves::Move,
-    rng::rand_util,
     Type,
 };
 

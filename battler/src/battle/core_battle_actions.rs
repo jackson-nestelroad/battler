@@ -23,6 +23,7 @@ use battler_data::{
     SwitchType,
     Type,
 };
+use battler_prng::rand_util;
 
 use crate::{
     battle::{
@@ -72,7 +73,6 @@ use crate::{
         WrapOptionError,
     },
     moves::SecondaryEffect,
-    rng::rand_util,
 };
 
 /// The state of a move hit against a target.
@@ -1703,6 +1703,7 @@ mod direct_move_step {
         MoveTarget,
         OhkoType,
     };
+    use battler_prng::rand_util;
 
     use super::MoveStepOutcomeOnTarget;
     use crate::{
@@ -1717,7 +1718,6 @@ mod direct_move_step {
             MoveOutcome,
         },
         effect::fxlang,
-        rng::rand_util,
     };
 
     /// The interface for any direct move step.

@@ -1,4 +1,8 @@
 use anyhow::Result;
+use battler_prng::{
+    PseudoRandomNumberGenerator,
+    RealPseudoRandomNumberGenerator,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -13,10 +17,6 @@ use crate::{
     },
     config::FormatData,
     error::general_error,
-    rng::{
-        PseudoRandomNumberGenerator,
-        RealPseudoRandomNumberGenerator,
-    },
 };
 
 /// Battle engine option for how base damage should be randomized in the damage calculation.

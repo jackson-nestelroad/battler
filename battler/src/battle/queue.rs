@@ -4,23 +4,21 @@ use std::{
 };
 
 use anyhow::Result;
+use battler_prng::{
+    rand_util,
+    PseudoRandomNumberGenerator,
+};
 
-use crate::{
-    battle::{
-        compare_priority,
-        speed_sort,
-        Action,
-        BeforeMoveAction,
-        BeforeMoveActionInput,
-        Context,
-        CoreBattle,
-        CoreBattleEngineSpeedSortTieResolution,
-        MonHandle,
-    },
-    rng::{
-        rand_util,
-        PseudoRandomNumberGenerator,
-    },
+use crate::battle::{
+    compare_priority,
+    speed_sort,
+    Action,
+    BeforeMoveAction,
+    BeforeMoveActionInput,
+    Context,
+    CoreBattle,
+    CoreBattleEngineSpeedSortTieResolution,
+    MonHandle,
 };
 
 /// A queue of [`Action`]s to be run in a [`CoreBattle`][`crate::battle::CoreBattle`].
@@ -259,20 +257,18 @@ impl BattleQueue {
 #[cfg(test)]
 mod queue_test {
     use battler_data::Id;
+    use battler_prng::RealPseudoRandomNumberGenerator;
 
-    use crate::{
-        battle::{
-            Action,
-            BattleQueue,
-            CoreBattleEngineSpeedSortTieResolution,
-            ExperienceAction,
-            MonAction,
-            MonHandle,
-            MoveAction,
-            SwitchAction,
-            TeamAction,
-        },
-        rng::RealPseudoRandomNumberGenerator,
+    use crate::battle::{
+        Action,
+        BattleQueue,
+        CoreBattleEngineSpeedSortTieResolution,
+        ExperienceAction,
+        MonAction,
+        MonHandle,
+        MoveAction,
+        SwitchAction,
+        TeamAction,
     };
 
     fn team_action(mon: MonHandle, priority: i32) -> Action {

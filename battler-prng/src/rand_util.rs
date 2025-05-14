@@ -1,6 +1,6 @@
 use std::mem;
 
-use crate::rng::PseudoRandomNumberGenerator;
+use crate::PseudoRandomNumberGenerator;
 
 /// Returns whether a random event occurs.
 pub fn chance(
@@ -61,9 +61,9 @@ pub fn shuffle<T>(prng: &mut dyn PseudoRandomNumberGenerator, items: &mut [T]) {
 
 #[cfg(test)]
 mod rand_util_test {
-    use crate::rng::{
-        rand_util,
+    use crate::{
         RealPseudoRandomNumberGenerator,
+        rand_util,
     };
 
     #[test]

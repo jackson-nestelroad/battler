@@ -5,6 +5,7 @@ members = [
     "battler-ai",
     "battler-client",
     "battler-data",
+    "battler-prng",
     "battler-service",
     "battler-service/battler-service-schema",
     "battler-service-client",

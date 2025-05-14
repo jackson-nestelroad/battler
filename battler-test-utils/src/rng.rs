@@ -7,9 +7,9 @@ use ahash::{
     HashMap,
     HashMapExt,
 };
-use battler::{
+use battler::PublicCoreBattle;
+use battler_prng::{
     PseudoRandomNumberGenerator,
-    PublicCoreBattle,
     RealPseudoRandomNumberGenerator,
 };
 

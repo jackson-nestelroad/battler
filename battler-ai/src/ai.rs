@@ -1,6 +1,8 @@
+use anyhow::Result;
 use battler::{
     DataStoreByName,
     PlayerBattleData,
+    Request,
 };
 use battler_client::state::BattleState;
 
@@ -14,5 +16,5 @@ pub struct AiContext<'d> {
 /// An AI decision maker for a battle managed by battler.
 pub trait BattlerAi {
     /// Makes a choice given the current context of the battle.
-    fn make_choice(&mut self, context: AiContext);
+    fn make_choice(&mut self, context: AiContext, request: Request) -> Result<String>;
 }

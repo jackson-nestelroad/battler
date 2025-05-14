@@ -1,12 +1,11 @@
 use std::cmp::Ordering;
 
-use crate::{
-    battle::CoreBattleEngineSpeedSortTieResolution,
-    rng::{
-        rand_util,
-        PseudoRandomNumberGenerator,
-    },
+use battler_prng::{
+    rand_util,
+    PseudoRandomNumberGenerator,
 };
+
+use crate::battle::CoreBattleEngineSpeedSortTieResolution;
 
 /// An object that can be ordered by speed.
 pub trait SpeedOrderable {
