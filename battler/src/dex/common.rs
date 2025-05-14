@@ -1,20 +1,19 @@
 use std::marker::PhantomData;
 
 use anyhow::Result;
+use battler_data::{
+    DataStore,
+    Id,
+};
 use zone_alloc::{
     BorrowError,
     ElementRef,
     KeyedRegistry,
 };
 
-use crate::{
-    common::Id,
-    dex::DataStore,
-    error::{
-        general_error,
-        ConvertError,
-        NotFoundError,
-    },
+use crate::error::{
+    general_error,
+    ConvertError,
 };
 
 type DataTable<T> = KeyedRegistry<Id, T>;
@@ -142,13 +141,10 @@ where
     fn resolve_alias(&self, mut id: Id) -> Result<Id> {
         loop {
             match self.data.translate_alias(&id) {
-                Ok(alias) => id = alias,
+                Ok(Some(alias)) => id = alias,
+                Ok(None) => return Ok(id),
                 Err(error) => {
-                    if error.is::<NotFoundError>() {
-                        return Ok(id);
-                    } else {
-                        return Err(error);
-                    }
+                    return Err(error);
                 }
             }
         }
@@ -195,11 +191,10 @@ impl<'d, T> SingleValueDex<'d, T> {
 }
 
 #[cfg(test)]
-mod resource_cache_tests {
-    use crate::{
-        common::Id,
-        dex::ResourceCache,
-    };
+mod resource_cache_test {
+    use battler_data::Id;
+
+    use crate::dex::ResourceCache;
 
     #[derive(Debug, Clone, PartialEq)]
     struct Data {
@@ -228,7 +223,7 @@ mod resource_cache_tests {
 }
 
 #[cfg(test)]
-mod dex_tests {
+mod dex_test {
     use std::{
         cell::RefCell,
         ops::Deref,
@@ -236,16 +231,16 @@ mod dex_tests {
 
     use ahash::HashMapExt;
     use anyhow::Result;
+    use battler_data::{
+        DataStore,
+        Id,
+        LocalDataStore,
+    };
     use rand::random;
 
     use crate::{
-        common::{
-            FastHashMap,
-            Id,
-        },
+        common::FastHashMap,
         dex::{
-            DataStore,
-            FakeDataStore,
             ResourceDex,
             ResourceLookup,
             ResourceWrapper,
@@ -300,7 +295,7 @@ mod dex_tests {
 
     #[test]
     fn finds_and_caches_resource() {
-        let data = FakeDataStore::new();
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let dex = TestDex::new(&data);
         let first_resource = dex.get("first").unwrap();
         let second_resource = dex.get_by_id(&Id::from("first")).unwrap();
@@ -315,7 +310,7 @@ mod dex_tests {
 
     #[test]
     fn resolves_alias() {
-        let mut data = FakeDataStore::new();
+        let mut data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         data.aliases.insert(Id::from("alias3"), Id::from("alias2"));
         data.aliases.insert(Id::from("alias2"), Id::from("alias1"));
         data.aliases.insert(Id::from("alias1"), Id::from("native"));

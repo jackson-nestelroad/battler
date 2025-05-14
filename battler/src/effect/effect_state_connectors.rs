@@ -1,4 +1,5 @@
 use anyhow::Result;
+use battler_data::Id;
 
 use crate::{
     battle::{
@@ -6,7 +7,6 @@ use crate::{
         MonHandle,
         MoveHandle,
     },
-    common::Id,
     effect::{
         fxlang,
         AppliedEffectLocation,

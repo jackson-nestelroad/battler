@@ -20,19 +20,11 @@ pub mod teams;
 
 // Public exports.
 //
-// In theory, everything is public, but everything re-exported at the root level is intended for
-// users.
-pub use abilities::{
-    AbilityData,
-    AbilityFlags,
-};
+// In theory, everything is public, but everything re-exported at the root level is intended
+// for users.
 pub use battle::{
     ActiveMonDetails,
     BattleType,
-    Boost,
-    BoostOrderIterator,
-    BoostTable,
-    BoostTableEntries,
     CoreBattleEngineOptions,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
@@ -61,36 +53,23 @@ pub use battle::{
     TurnRequest,
     WildPlayerOptions,
 };
+pub use battler_data::*;
 pub use common::{
     FastHashMap,
     FastHashSet,
-    Fraction,
-    FractionInteger,
-    Id,
-};
-pub use conditions::{
-    ConditionData,
-    ConditionType,
 };
 pub use config::{
-    ClauseData,
-    ClauseValueType,
     FormatData,
     FormatOptions,
-    Rule,
-    SerializedRuleSet,
 };
 pub use dex::{
     AbilityDex,
     ClauseDex,
     ConditionDex,
-    DataStore,
     Dex,
     ItemDex,
-    LocalDataStore,
     MoveDex,
     ResourceDex,
-    SerializedAliases,
     SingleValueDex,
     SpeciesDex,
 };
@@ -118,49 +97,6 @@ pub use error::{
     WrapError,
     WrapOptionError,
     WrapResultError,
-};
-pub use items::{
-    ItemData,
-    ItemFlags,
-    ItemInput,
-    ItemTarget,
-};
-pub use mons::{
-    Color,
-    EventData,
-    EvolutionData,
-    EvolutionMethod,
-    Gender,
-    LearnSet,
-    LevelingRate,
-    MoveSource,
-    Nature,
-    PartialStatTable,
-    ShinyChance,
-    SpeciesData,
-    SpeciesFlags,
-    Stat,
-    StatMap,
-    StatTable,
-    StatTableEntries,
-    Type,
-    TypeChart,
-    TypeEffectiveness,
-    TypeTable,
-};
-pub use moves::{
-    Accuracy,
-    HitEffect,
-    MonOverride,
-    MoveCategory,
-    MoveData,
-    MoveFlags,
-    MoveTarget,
-    MultihitType,
-    OhkoType,
-    SecondaryEffect,
-    SelfDestructType,
-    SwitchType,
 };
 pub use rng::{
     PseudoRandomNumberGenerator,

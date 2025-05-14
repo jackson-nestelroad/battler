@@ -2,6 +2,12 @@ use std::iter;
 
 use ahash::HashSetExt;
 use anyhow::Result;
+use battler_data::{
+    BoostTable,
+    Id,
+    SecondaryEffectData,
+    Type,
+};
 
 use crate::{
     battle::{
@@ -9,7 +15,6 @@ use crate::{
         mon_states,
         ActiveMoveContext,
         ApplyingEffectContext,
-        BoostTable,
         Context,
         CoreBattle,
         EffectContext,
@@ -28,7 +33,6 @@ use crate::{
     },
     common::{
         FastHashSet,
-        Id,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
     },
@@ -44,8 +48,6 @@ use crate::{
         EffectManager,
     },
     error::WrapOptionError,
-    mons::Type,
-    moves::SecondaryEffect,
 };
 
 enum UpcomingEvaluationContext<
@@ -709,7 +711,7 @@ fn find_callbacks_on_mon(
         let types = Mon::types(&mut context)?;
         for typ in types {
             callbacks.push(CallbackHandle::new(
-                EffectHandle::Condition(typ.id()),
+                EffectHandle::Condition(Id::from(format!("{typ}type"))),
                 event,
                 AppliedEffectLocation::MonType(mon),
             ));
@@ -2602,8 +2604,8 @@ pub fn run_event_for_applying_effect_expecting_mon_quick_return(
 pub fn run_event_for_applying_effect_expecting_secondary_effects(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
-    secondary_effects: Vec<SecondaryEffect>,
-) -> Vec<SecondaryEffect> {
+    secondary_effects: Vec<SecondaryEffectData>,
+) -> Vec<SecondaryEffectData> {
     match run_event_for_applying_effect_internal(
         context,
         event,

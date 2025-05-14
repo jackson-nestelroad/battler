@@ -135,16 +135,14 @@ impl ProgramParser {
 }
 
 #[cfg(test)]
-mod program_parser_tests {
+mod program_parser_test {
+    use battler_data::Fraction;
     use pretty_assertions::assert_eq;
 
-    use crate::{
-        common::Fraction,
-        effect::fxlang::{
-            tree,
-            ParsedProgram,
-            ParsedProgramBlock,
-        },
+    use crate::effect::fxlang::{
+        tree,
+        ParsedProgram,
+        ParsedProgramBlock,
     };
 
     #[test]

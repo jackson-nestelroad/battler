@@ -60,7 +60,7 @@ pub fn shuffle<T>(prng: &mut dyn PseudoRandomNumberGenerator, items: &mut [T]) {
 }
 
 #[cfg(test)]
-mod rand_util_tests {
+mod rand_util_test {
     use crate::rng::{
         rand_util,
         RealPseudoRandomNumberGenerator,

@@ -3,7 +3,7 @@ use std::{
     fmt::Display,
 };
 
-use crate::common::Fraction;
+use battler_data::Fraction;
 
 /// Bool -> "true" | "false"
 #[derive(Debug, PartialEq, Eq)]

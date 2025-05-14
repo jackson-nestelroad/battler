@@ -5,6 +5,13 @@ use ahash::{
     HashSetExt,
 };
 use anyhow::Result;
+use battler_data::{
+    Gender,
+    Id,
+    Identifiable,
+    MoveSource,
+    ShinyChance,
+};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -15,8 +22,6 @@ use crate::{
     common::{
         FastHashMap,
         FastHashSet,
-        Id,
-        Identifiable,
     },
     config::{
         Format,
@@ -25,12 +30,7 @@ use crate::{
     dex::Dex,
     error::NotFoundError,
     items::Item,
-    mons::{
-        Gender,
-        MoveSource,
-        ShinyChance,
-        Species,
-    },
+    mons::Species,
     moves::Move,
     teams::{
         BagData,
@@ -869,7 +869,8 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 }
 
 #[cfg(test)]
-mod team_validator_tests {
+mod team_validator_test {
+    use battler_data::LocalDataStore;
     use serde::Deserialize;
 
     use crate::{
@@ -878,10 +879,7 @@ mod team_validator_tests {
             Format,
             FormatData,
         },
-        dex::{
-            Dex,
-            LocalDataStore,
-        },
+        dex::Dex,
         teams::{
             TeamData,
             TeamValidator,

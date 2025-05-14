@@ -1,19 +1,19 @@
 use anyhow::Result;
+use battler_data::{
+    DataStore,
+    Id,
+    MoveData,
+    TypeChart,
+};
 
-use crate::{
-    common::Id,
-    dex::{
-        AbilityDex,
-        ClauseDex,
-        ConditionDex,
-        DataStore,
-        ItemDex,
-        MoveDex,
-        SingleValueDex,
-        SpeciesDex,
-    },
-    mons::TypeChart,
-    moves::MoveData,
+use crate::dex::{
+    AbilityDex,
+    ClauseDex,
+    ConditionDex,
+    ItemDex,
+    MoveDex,
+    SingleValueDex,
+    SpeciesDex,
 };
 
 /// Collection of all resources indexed by ID.

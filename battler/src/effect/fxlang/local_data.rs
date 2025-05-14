@@ -1,15 +1,13 @@
+use battler_data::{
+    Id,
+    MoveData,
+};
 use serde::{
     Deserialize,
     Serialize,
 };
 
-use crate::{
-    common::{
-        FastHashMap,
-        Id,
-    },
-    moves::MoveData,
-};
+use crate::common::FastHashMap;
 
 /// Local data to an fxlang effect or condition.
 ///

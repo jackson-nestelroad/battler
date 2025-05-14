@@ -1,10 +1,9 @@
-use crate::{
-    battle::{
-        MonHandle,
-        MoveHandle,
-        SpeedOrderable,
-    },
-    common::Id,
+use battler_data::Id;
+
+use crate::battle::{
+    MonHandle,
+    MoveHandle,
+    SpeedOrderable,
 };
 
 /// A Mon action.

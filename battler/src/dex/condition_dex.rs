@@ -1,17 +1,18 @@
 use anyhow::Result;
+use battler_data::{
+    ConditionData,
+    DataStore,
+    Id,
+};
 
 use crate::{
-    common::Id,
-    conditions::{
-        Condition,
-        ConditionData,
-    },
+    conditions::Condition,
     dex::{
-        DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
+    WrapOptionError,
 };
 
 /// Lookup type for [`ConditionDex`].
@@ -26,7 +27,9 @@ impl<'d> ResourceLookup<'d, ConditionData> for ConditionLookup<'d> {
     }
 
     fn lookup(&self, id: &Id) -> Result<ConditionData> {
-        self.data.get_condition(id)
+        self.data
+            .get_condition(id)?
+            .wrap_not_found_error_with_format(format_args!("condition {id}"))
     }
 }
 

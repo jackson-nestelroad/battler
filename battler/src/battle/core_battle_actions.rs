@@ -2,6 +2,24 @@ use std::collections::hash_map::Entry;
 
 use ahash::HashMapExt;
 use anyhow::Result;
+use battler_data::{
+    BoostTable,
+    BoostTableEntries,
+    ConditionType,
+    Fraction,
+    Id,
+    Identifiable,
+    ItemFlag,
+    MoveCategory,
+    MoveFlag,
+    MoveSource,
+    MoveTarget,
+    MultihitType,
+    SelfDestructType,
+    Stat,
+    SwitchType,
+    Type,
+};
 use lazy_static::lazy_static;
 
 use crate::{
@@ -15,8 +33,6 @@ use crate::{
         ActiveTargetContext,
         ApplyingEffectContext,
         BattleQueue,
-        BoostTable,
-        BoostTableEntries,
         CalculateStatContext,
         Context,
         CoreBattle,
@@ -42,12 +58,8 @@ use crate::{
     },
     common::{
         FastHashMap,
-        Fraction,
-        Id,
-        Identifiable,
         UnsafelyDetachBorrow,
     },
-    conditions::ConditionType,
     effect::{
         fxlang,
         AppliedEffectHandle,
@@ -60,20 +72,7 @@ use crate::{
         integer_overflow_error,
         WrapOptionError,
     },
-    items::ItemFlags,
-    mons::{
-        MoveSource,
-        Stat,
-        Type,
-    },
-    moves::{
-        MoveCategory,
-        MoveFlags,
-        MoveTarget,
-        MultihitType,
-        SelfDestructType,
-        SwitchType,
-    },
+    moves::SecondaryEffect,
     rng::rand_util,
 };
 
@@ -437,11 +436,7 @@ fn do_move_internal(
     // first (default). The effect of such a move should hook into this event to ensure PP is not
     // continually deducted every turn.
     if this_move_is_the_last_selected && locked_move_before.is_none()
-        || context
-            .active_move()
-            .data
-            .flags
-            .contains(&MoveFlags::Charge)
+        || context.active_move().data.flags.contains(&MoveFlag::Charge)
     {
         let deduction = core_battle_effects::run_event_for_mon_expecting_u8(
             context.as_mon_context_mut(),
@@ -1702,6 +1697,13 @@ mod direct_move_step {
     use std::ops::Mul;
 
     use anyhow::Result;
+    use battler_data::{
+        Accuracy,
+        Fraction,
+        MoveCategory,
+        MoveTarget,
+        OhkoType,
+    };
 
     use super::MoveStepOutcomeOnTarget;
     use crate::{
@@ -1715,14 +1717,7 @@ mod direct_move_step {
             Mon,
             MoveOutcome,
         },
-        common::Fraction,
         effect::fxlang,
-        moves::{
-            Accuracy,
-            MoveCategory,
-            MoveTarget,
-            OhkoType,
-        },
         rng::rand_util,
     };
 
@@ -2563,6 +2558,11 @@ fn apply_secondary_effects(
                 fxlang::BattleEvent::ModifySecondaryEffects,
                 secondary_effects,
             );
+
+        let secondary_effects = secondary_effects
+            .into_iter()
+            .map(|secondary_effect| SecondaryEffect::new(secondary_effect))
+            .collect();
 
         context
             .active_move_mut()
@@ -4374,7 +4374,7 @@ pub fn player_use_item_internal(
     let item = context.battle().dex.items.get_by_id(item)?;
     let item_id = item.id().clone();
     let item_target = item.data.target;
-    let item_is_ball = item.data.flags.contains(&ItemFlags::Ball);
+    let item_is_ball = item.data.flags.contains(&ItemFlag::Ball);
 
     match item_target {
         Some(item_target) => {
@@ -4483,7 +4483,7 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> 
 /// Tries to catch the target Mon in the given ball.
 pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Result<bool> {
     let item = context.battle().dex.items.get_by_id(item)?;
-    if !item.data.flags.contains(&ItemFlags::Ball) {
+    if !item.data.flags.contains(&ItemFlag::Ball) {
         return Ok(false);
     }
 

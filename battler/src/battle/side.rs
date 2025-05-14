@@ -1,5 +1,6 @@
 use ahash::HashMapExt;
 use anyhow::Result;
+use battler_data::Id;
 use num::Integer;
 use serde::{
     Deserialize,
@@ -15,10 +16,7 @@ use crate::{
         PlayerData,
         SideContext,
     },
-    common::{
-        FastHashMap,
-        Id,
-    },
+    common::FastHashMap,
     dex::Dex,
     effect::fxlang,
 };

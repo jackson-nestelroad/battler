@@ -1,17 +1,18 @@
 use anyhow::Result;
+use battler_data::{
+    AbilityData,
+    DataStore,
+    Id,
+};
 
 use crate::{
-    abilities::{
-        Ability,
-        AbilityData,
-    },
-    common::Id,
+    abilities::Ability,
     dex::{
-        DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
+    WrapOptionError,
 };
 /// Lookup type for [`AbilityDex`].
 #[derive(Clone)]
@@ -25,7 +26,9 @@ impl<'d> ResourceLookup<'d, AbilityData> for AbilityLookup<'d> {
     }
 
     fn lookup(&self, id: &Id) -> Result<AbilityData> {
-        self.data.get_ability(id)
+        self.data
+            .get_ability(id)?
+            .wrap_not_found_error_with_format(format_args!("ability {id}"))
     }
 }
 

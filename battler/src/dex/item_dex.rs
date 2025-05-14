@@ -1,17 +1,18 @@
 use anyhow::Result;
+use battler_data::{
+    DataStore,
+    Id,
+    ItemData,
+};
 
-pub use crate::common::Id;
 use crate::{
     dex::{
-        DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
-    items::{
-        Item,
-        ItemData,
-    },
+    items::Item,
+    WrapOptionError,
 };
 
 /// Lookup type for [`ItemDex`].
@@ -26,7 +27,9 @@ impl<'d> ResourceLookup<'d, ItemData> for ItemLookup<'d> {
     }
 
     fn lookup(&self, id: &Id) -> Result<ItemData> {
-        self.data.get_item(id)
+        self.data
+            .get_item(id)?
+            .wrap_not_found_error_with_format(format_args!("item {id}"))
     }
 }
 

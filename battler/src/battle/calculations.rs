@@ -1,16 +1,13 @@
 use std::ops::Div;
 
-use lazy_static::lazy_static;
-
-use crate::{
-    common::Fraction,
-    mons::{
-        Nature,
-        Stat,
-        StatTable,
-        Type,
-    },
+use battler_data::{
+    Fraction,
+    Nature,
+    Stat,
+    StatTable,
+    Type,
 };
+use lazy_static::lazy_static;
 
 /// Calculates a Mon's actual stats.
 pub fn calculate_mon_stats(
@@ -111,7 +108,12 @@ pub fn modify_32(value: u32, modifier: Fraction<u32>) -> u32 {
 }
 
 #[cfg(test)]
-mod calclulations_tests {
+mod calclulations_test {
+    use battler_data::{
+        Nature,
+        StatTable,
+        Type,
+    };
     use serde::Deserialize;
 
     use crate::{
@@ -121,11 +123,6 @@ mod calclulations_tests {
             calculate_mon_stats,
         },
         common::read_test_cases,
-        mons::{
-            Nature,
-            StatTable,
-            Type,
-        },
     };
 
     #[test]

@@ -12,18 +12,28 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_data::{
+    AbilityFlag,
+    Boost,
+    BoostOrderIterator,
+    BoostTable,
+    HitEffect,
+    Id,
+    Identifiable,
+    ItemFlag,
+    MoveFlag,
+    MoveTarget,
+    SecondaryEffectData,
+    TypeEffectiveness,
+};
 
 use crate::{
-    abilities::AbilityFlags,
     battle::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
         mon_states,
         ApplyingEffectContext,
-        Boost,
-        BoostOrderIterator,
-        BoostTable,
         CoreBattle,
         EffectContext,
         FieldEffectContext,
@@ -39,8 +49,6 @@ use crate::{
     common::{
         FastHashMap,
         FastHashSet,
-        Id,
-        Identifiable,
     },
     effect::{
         fxlang::{
@@ -64,16 +72,8 @@ use crate::{
         WrapOptionError,
         WrapResultError,
     },
-    items::ItemFlags,
     log::UncommittedBattleLogEntry,
-    mons::TypeEffectiveness,
-    moves::{
-        HitEffect,
-        Move,
-        MoveFlags,
-        MoveTarget,
-        SecondaryEffect,
-    },
+    moves::Move,
     rng::rand_util,
     Type,
 };
@@ -1257,7 +1257,7 @@ fn move_has_flag(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing move flag")?
         .string()
         .wrap_error_with_message("invalid move flag")?;
-    let move_flag = MoveFlags::from_str(&move_flag).map_err(general_error)?;
+    let move_flag = MoveFlag::from_str(&move_flag).map_err(general_error)?;
     Ok(Value::Boolean(
         context
             .evaluation_context_mut()
@@ -1284,7 +1284,7 @@ fn item_has_flag(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing item flag")?
         .string()
         .wrap_error_with_message("invalid item flag")?;
-    let item_flag = ItemFlags::from_str(&item_flag).map_err(general_error)?;
+    let item_flag = ItemFlag::from_str(&item_flag).map_err(general_error)?;
     Ok(Value::Boolean(
         context
             .evaluation_context_mut()
@@ -1311,7 +1311,7 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing ability flag")?
         .string()
         .wrap_error_with_message("invalid ability flag")?;
-    let ability_flag = AbilityFlags::from_str(&ability_flag).map_err(general_error)?;
+    let ability_flag = AbilityFlag::from_str(&ability_flag).map_err(general_error)?;
     Ok(Value::Boolean(
         context
             .evaluation_context_mut()
@@ -1337,7 +1337,7 @@ fn remove_move_flag(mut context: FunctionContext) -> Result<()> {
         .wrap_expectation("missing move flag")?
         .string()
         .wrap_error_with_message("invalid move flag")?;
-    let move_flag = MoveFlags::from_str(&move_flag).map_err(general_error)?;
+    let move_flag = MoveFlag::from_str(&move_flag).map_err(general_error)?;
     context
         .evaluation_context_mut()
         .active_move_mut(active_move)?
@@ -2522,10 +2522,10 @@ fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
             .split_once(':')
         {
             Some(("with_flag", flag)) => {
-                with_flags.insert(MoveFlags::from_str(flag).map_err(general_error)?)
+                with_flags.insert(MoveFlag::from_str(flag).map_err(general_error)?)
             }
             Some(("without_flag", flag)) => {
-                without_flags.insert(MoveFlags::from_str(flag).map_err(general_error)?)
+                without_flags.insert(MoveFlag::from_str(flag).map_err(general_error)?)
             }
             _ => return Err(general_error("invalid filter")),
         };
@@ -2647,7 +2647,7 @@ fn hit_effect() -> Result<Value> {
 }
 
 fn secondary_hit_effect() -> Result<Value> {
-    Ok(Value::SecondaryHitEffect(SecondaryEffect::default()))
+    Ok(Value::SecondaryHitEffect(SecondaryEffectData::default()))
 }
 
 fn all_types(context: FunctionContext) -> Result<Value> {

@@ -1,4 +1,5 @@
 use ahash::HashMapExt;
+use battler_data::Id;
 use serde::{
     Deserialize,
     Serialize,
@@ -13,10 +14,7 @@ use crate::{
         core_battle_effects,
         Context,
     },
-    common::{
-        FastHashMap,
-        Id,
-    },
+    common::FastHashMap,
     effect::fxlang,
 };
 

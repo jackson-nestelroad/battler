@@ -1,6 +1,7 @@
 use std::u8;
 
 use anyhow::Result;
+use battler_data::SerializedRuleSet;
 use serde::{
     Deserialize,
     Serialize,
@@ -8,10 +9,7 @@ use serde::{
 
 use crate::{
     battle::BattleType,
-    config::{
-        RuleSet,
-        SerializedRuleSet,
-    },
+    config::RuleSet,
     dex::Dex,
 };
 

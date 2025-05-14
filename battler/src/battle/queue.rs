@@ -257,7 +257,9 @@ impl BattleQueue {
 }
 
 #[cfg(test)]
-mod queue_tests {
+mod queue_test {
+    use battler_data::Id;
+
     use crate::{
         battle::{
             Action,
@@ -270,7 +272,6 @@ mod queue_tests {
             SwitchAction,
             TeamAction,
         },
-        common::Id,
         rng::RealPseudoRandomNumberGenerator,
     };
 

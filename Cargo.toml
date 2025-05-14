@@ -1,11 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
+    "battler",
     "battler-client",
+    "battler-data",
     "battler-service",
     "battler-service/battler-service-schema",
     "battler-service-client",
-    "battler",
     "battler-test-utils",
     "battler-wamp",
     "battler-wamp/battler-wamp-values",

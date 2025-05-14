@@ -1,17 +1,18 @@
 use anyhow::Result;
+use battler_data::{
+    DataStore,
+    Id,
+    SpeciesData,
+};
 
 use crate::{
-    common::Id,
     dex::{
-        DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
-    mons::{
-        Species,
-        SpeciesData,
-    },
+    mons::Species,
+    WrapOptionError,
 };
 
 /// Lookup type for [`SpeciesDex`].
@@ -26,11 +27,16 @@ impl<'d> ResourceLookup<'d, SpeciesData> for SpeciesLookup<'d> {
     }
 
     fn lookup(&self, id: &Id) -> Result<SpeciesData> {
-        self.data.get_species(id)
+        self.data
+            .get_species(id)?
+            .wrap_not_found_error_with_format(format_args!("species {id}"))
     }
 
     fn lookup_alias(&self, alias: &Id, real_id: &Id) -> Result<SpeciesData> {
-        let data = self.data.get_species(real_id)?;
+        let data = self
+            .data
+            .get_species(real_id)?
+            .wrap_not_found_error_with_format(format_args!("species {real_id}"))?;
 
         // Cosmetic formes do not have their own SpeciesData, so we must generate it ourselves.
         if let Some(cosmetic_forme) = data

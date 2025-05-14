@@ -1,5 +1,6 @@
 use ahash::HashMapExt;
 use anyhow::Result;
+use battler_data::Id;
 use uuid::Uuid;
 
 use crate::{
@@ -7,10 +8,7 @@ use crate::{
         Context,
         EffectContext,
     },
-    common::{
-        FastHashMap,
-        Id,
-    },
+    common::FastHashMap,
     effect::{
         AppliedEffectHandle,
         AppliedEffectLocation,

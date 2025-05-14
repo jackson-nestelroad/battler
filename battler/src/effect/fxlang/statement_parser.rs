@@ -2,9 +2,9 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_data::Fraction;
 
 use crate::{
-    common::Fraction,
     effect::fxlang::tree,
     error::{
         general_error,
@@ -1255,16 +1255,14 @@ impl<'s> StatementParser<'s> {
 }
 
 #[cfg(test)]
-mod statement_parser_tests {
+mod statement_parser_test {
+    use battler_data::Fraction;
     use pretty_assertions::assert_eq;
 
     use super::StatementParser;
-    use crate::{
-        common::Fraction,
-        effect::fxlang::tree::{
-            self,
-            BinaryExprRhs,
-        },
+    use crate::effect::fxlang::tree::{
+        self,
+        BinaryExprRhs,
     };
 
     #[test]

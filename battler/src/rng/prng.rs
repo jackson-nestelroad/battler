@@ -66,7 +66,7 @@ impl PseudoRandomNumberGenerator for RealPseudoRandomNumberGenerator {
 }
 
 #[cfg(test)]
-mod prng_tests {
+mod prng_test {
     use crate::rng::{
         PseudoRandomNumberGenerator,
         RealPseudoRandomNumberGenerator,

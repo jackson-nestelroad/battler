@@ -4,6 +4,10 @@ use std::ops::{
 };
 
 use anyhow::Result;
+use battler_data::{
+    Id,
+    Identifiable,
+};
 use zone_alloc::{
     ElementRef,
     ElementRefMut,
@@ -14,10 +18,6 @@ use crate::{
     battle::{
         Context,
         MoveHandle,
-    },
-    common::{
-        Id,
-        Identifiable,
     },
     conditions::Condition,
     config::Clause,
@@ -400,14 +400,14 @@ impl<'borrow> Effect<'borrow> {
             Self::ActiveMove(active_move, hit_effect_type) => {
                 active_move.fxlang_effect(*hit_effect_type)
             }
-            Self::MoveCondition(mov) => Some(&mov.data.condition.effect),
-            Self::InactiveMove(mov) => Some(&mov.data.effect),
-            Self::Ability(ability) => Some(&ability.data.effect),
-            Self::AbilityCondition(ability) => Some(&ability.data.condition.effect),
-            Self::Condition(condition) => Some(&condition.data.condition.effect),
-            Self::Item(item) => Some(&item.data.effect),
-            Self::ItemCondition(item) => Some(&item.data.condition.effect),
-            Self::Clause(clause) => Some(&clause.data.effect),
+            Self::MoveCondition(mov) => Some(&mov.condition.effect),
+            Self::InactiveMove(mov) => Some(&mov.effect),
+            Self::Ability(ability) => Some(&ability.effect),
+            Self::AbilityCondition(ability) => Some(&ability.condition.effect),
+            Self::Condition(condition) => Some(&condition.condition.effect),
+            Self::Item(item) => Some(&item.effect),
+            Self::ItemCondition(item) => Some(&item.condition.effect),
+            Self::Clause(clause) => Some(&clause.effect),
             Self::Species(_) => None,
             Self::NonExistent(_) => None,
         }
@@ -416,10 +416,10 @@ impl<'borrow> Effect<'borrow> {
     /// The associated [`fxlang::Condition`].
     pub fn fxlang_condition<'effect>(&'effect self) -> Option<&'effect fxlang::Condition> {
         match self {
-            Self::Condition(condition) => Some(&condition.data.condition),
-            Self::MoveCondition(mov) => Some(&mov.data.condition),
-            Self::AbilityCondition(ability) => Some(&ability.data.condition),
-            Self::ItemCondition(item) => Some(&item.data.condition),
+            Self::Condition(condition) => Some(&condition.condition),
+            Self::MoveCondition(mov) => Some(&mov.condition),
+            Self::AbilityCondition(ability) => Some(&ability.condition),
+            Self::ItemCondition(item) => Some(&item.condition),
             _ => None,
         }
     }

@@ -15,7 +15,7 @@ where
 }
 
 #[cfg(test)]
-mod split_once_optional_tests {
+mod split_once_optional_test {
     use crate::common::split_once_optional;
 
     #[test]

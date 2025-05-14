@@ -15,6 +15,12 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_data::{
+    Id,
+    Identifiable,
+    ItemFlag,
+    ItemInput,
+};
 use itertools::{
     EitherOrBoth,
     Itertools,
@@ -60,8 +66,6 @@ use crate::{
         Captures,
         FastHashMap,
         FastHashSet,
-        Id,
-        Identifiable,
     },
     dex::Dex,
     effect::{
@@ -72,10 +76,6 @@ use crate::{
         general_error,
         WrapOptionError,
         WrapResultError,
-    },
-    items::{
-        ItemFlags,
-        ItemInput,
     },
     teams::TeamData,
 };
@@ -1382,7 +1382,7 @@ impl Player {
             .target
             .wrap_expectation_with_format(format_args!("{item_name} cannot be used"))?;
         let item_input = item.data.input;
-        let item_is_ball = item.data.flags.contains(&ItemFlags::Ball);
+        let item_is_ball = item.data.flags.contains(&ItemFlag::Ball);
 
         if !Self::use_item_from_bag(context.as_player_context_mut(), &item_id, true) {
             return Err(general_error(format!("bag contains no {item_name}")));
@@ -1548,7 +1548,7 @@ impl Player {
 }
 
 #[cfg(test)]
-mod move_choice_tests {
+mod move_choice_test {
     use crate::battle::player::MoveChoice;
 
     #[test]
@@ -1609,7 +1609,7 @@ mod move_choice_tests {
 }
 
 #[cfg(test)]
-mod player_type_tests {
+mod player_type_test {
     use crate::battle::{
         PlayerType,
         WildPlayerOptions,

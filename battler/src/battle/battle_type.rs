@@ -56,7 +56,7 @@ impl BattleType {
 }
 
 #[cfg(test)]
-mod battle_type_tests {
+mod battle_type_test {
     use crate::{
         battle::BattleType,
         common::{

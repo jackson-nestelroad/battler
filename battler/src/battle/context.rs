@@ -1,6 +1,10 @@
 use std::mem;
 
 use anyhow::Result;
+use battler_data::{
+    HitEffect,
+    MonOverride,
+};
 
 use crate::{
     battle::{
@@ -25,8 +29,6 @@ use crate::{
         WrapOptionError,
     },
     moves::{
-        HitEffect,
-        MonOverride,
         Move,
         MoveHitEffectType,
     },

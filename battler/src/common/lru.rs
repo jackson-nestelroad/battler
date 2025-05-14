@@ -446,7 +446,7 @@ unsafe impl<'a, K: Send, V: Send> Send for IterMut<'a, K, V> {}
 unsafe impl<'a, K: Sync, V: Sync> Sync for IterMut<'a, K, V> {}
 
 #[cfg(test)]
-mod lru_cache_tests {
+mod lru_cache_test {
     use crate::common::LruCache;
 
     #[test]

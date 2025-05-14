@@ -1,17 +1,18 @@
 use anyhow::Result;
+use battler_data::{
+    DataStore,
+    Id,
+    MoveData,
+};
 
-pub use crate::common::Id;
 use crate::{
     dex::{
-        DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
-    moves::{
-        Move,
-        MoveData,
-    },
+    moves::Move,
+    WrapOptionError,
 };
 
 /// Lookup type for [`MoveDex`].
@@ -26,7 +27,9 @@ impl<'d> ResourceLookup<'d, MoveData> for MoveLookup<'d> {
     }
 
     fn lookup(&self, id: &Id) -> Result<MoveData> {
-        self.data.get_move(id)
+        self.data
+            .get_move(id)?
+            .wrap_not_found_error_with_format(format_args!("move {id}"))
     }
 }
 

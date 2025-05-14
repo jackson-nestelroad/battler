@@ -1,7 +1,5 @@
 mod captures;
-mod fraction;
 mod hash;
-mod id;
 mod lru;
 mod maybe_owned;
 mod reference;
@@ -9,17 +7,9 @@ mod strings;
 mod test_util;
 
 pub use captures::Captures;
-pub use fraction::{
-    Fraction,
-    FractionInteger,
-};
 pub use hash::{
     FastHashMap,
     FastHashSet,
-};
-pub use id::{
-    Id,
-    Identifiable,
 };
 pub use lru::{
     Iter,

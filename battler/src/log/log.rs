@@ -300,7 +300,7 @@ impl BattleLog {
 }
 
 #[cfg(test)]
-mod battle_log_tests {
+mod battle_log_test {
     use std::{
         fmt,
         fmt::Display,

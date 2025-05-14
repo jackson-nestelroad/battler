@@ -1,10 +1,15 @@
 use anyhow::Result;
+use battler_data::{
+    Boost,
+    Id,
+    Stat,
+    Type,
+};
 use itertools::Itertools;
 
 use crate::{
     battle::{
         ApplyingEffectContext,
-        Boost,
         Context,
         CoreBattle,
         Mon,
@@ -14,17 +19,12 @@ use crate::{
         SideEffectContext,
     },
     battle_log_entry,
-    common::Id,
     effect::{
         fxlang,
         Effect,
         EffectHandle,
     },
     log::UncommittedBattleLogEntry,
-    mons::{
-        Stat,
-        Type,
-    },
 };
 
 /// Information for logging an activated effect.

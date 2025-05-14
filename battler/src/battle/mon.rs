@@ -14,6 +14,21 @@ use ahash::{
     HashSetExt,
 };
 use anyhow::Result;
+use battler_data::{
+    Boost,
+    BoostTable,
+    Fraction,
+    Gender,
+    Id,
+    Identifiable,
+    MoveTarget,
+    Nature,
+    PartialStatTable,
+    Stat,
+    StatTable,
+    SwitchType,
+    Type,
+};
 use lazy_static::lazy_static;
 use serde::{
     Deserialize,
@@ -34,8 +49,6 @@ use crate::{
         core_battle_logs,
         modify_32,
         mon_states,
-        Boost,
-        BoostTable,
         CoreBattle,
         MonContext,
         MonHandle,
@@ -49,9 +62,6 @@ use crate::{
     common::{
         FastHashMap,
         FastHashSet,
-        Fraction,
-        Id,
-        Identifiable,
     },
     dex::Dex,
     effect::{
@@ -69,20 +79,8 @@ use crate::{
         BattleLoggable,
         UncommittedBattleLogEntry,
     },
-    mons::{
-        Gender,
-        Nature,
-        PartialStatTable,
-        Species,
-        Stat,
-        StatTable,
-        Type,
-    },
-    moves::{
-        Move,
-        MoveTarget,
-        SwitchType,
-    },
+    mons::Species,
+    moves::Move,
     teams::MonData,
 };
 
@@ -1090,7 +1088,14 @@ impl Mon {
             }
         }
         if !unmodified {
-            if let Some(modify_event) = stat.modify_event() {
+            if let Some(modify_event) = match stat {
+                Stat::HP => None,
+                Stat::Atk => Some(fxlang::BattleEvent::ModifyAtk),
+                Stat::Def => Some(fxlang::BattleEvent::ModifyDef),
+                Stat::SpAtk => Some(fxlang::BattleEvent::ModifySpA),
+                Stat::SpDef => Some(fxlang::BattleEvent::ModifySpD),
+                Stat::Spe => Some(fxlang::BattleEvent::ModifySpe),
+            } {
                 let mon_handle = context.mon_handle();
                 value = match calculate_stat_context {
                     Some(calculate_stat_context) => {
@@ -2217,7 +2222,7 @@ impl Mon {
 }
 
 #[cfg(test)]
-mod mon_tests {
+mod mon_test {
     use crate::battle::Mon;
 
     #[test]

@@ -1,47 +1,31 @@
-use serde::{
-    Deserialize,
-    Serialize,
+use battler_data::{
+    AbilityData,
+    Id,
+    Identifiable,
 };
 
-use crate::{
-    abilities::AbilityFlags,
-    common::{
-        FastHashSet,
-        Id,
-        Identifiable,
-    },
-    effect::fxlang,
-};
-
-/// Data about a particular ability.
-///
-/// Every Mon has one ability, which affects the battle in a wide variety of ways.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AbilityData {
-    /// Name of the ability.
-    pub name: String,
-    /// Ability flags.
-    pub flags: FastHashSet<AbilityFlags>,
-
-    /// Dynamic battle effects.
-    #[serde(default)]
-    pub effect: fxlang::Effect,
-    /// Dynamic battle effects of the condition created by this ability.
-    #[serde(default)]
-    pub condition: fxlang::Condition,
-}
+use crate::effect::fxlang;
 
 /// An individual ability on a Mon that affects the battle in a wide variety of ways.
 #[derive(Clone)]
 pub struct Ability {
     id: Id,
     pub data: AbilityData,
+    pub effect: fxlang::Effect,
+    pub condition: fxlang::Condition,
 }
 
 impl Ability {
     /// Creates a new [`Ability`] instance from [`AbilityData`].
     pub fn new(id: Id, data: AbilityData) -> Self {
-        Self { id, data }
+        let effect = data.effect.clone().try_into().unwrap_or_default();
+        let condition = data.condition.clone().try_into().unwrap_or_default();
+        Self {
+            id,
+            data,
+            effect,
+            condition,
+        }
     }
 }
 

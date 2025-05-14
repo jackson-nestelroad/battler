@@ -1,3 +1,8 @@
+use battler_data::{
+    Id,
+    MoveFlag,
+};
+
 use crate::{
     battle::{
         core_battle_effects,
@@ -5,9 +10,7 @@ use crate::{
         Field,
         MonContext,
     },
-    common::Id,
     effect::fxlang,
-    moves::MoveFlags,
 };
 
 /// The health at which the [`Mon`][`crate::battle::Mon`] eats berries.
@@ -169,7 +172,7 @@ pub fn move_makes_contact(context: &mut ActiveMoveContext) -> bool {
         .active_move()
         .data
         .flags
-        .contains(&MoveFlags::Contact)
+        .contains(&MoveFlag::Contact)
     {
         return false;
     }

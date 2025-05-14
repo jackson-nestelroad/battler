@@ -55,34 +55,34 @@ impl DataStore for TestDataStore {
         self.local.get_type_chart()
     }
 
-    fn translate_alias(&self, id: &Id) -> Result<Id> {
+    fn translate_alias(&self, id: &Id) -> Result<Option<Id>> {
         self.local.translate_alias(id)
     }
 
-    fn get_ability(&self, id: &Id) -> Result<AbilityData> {
+    fn get_ability(&self, id: &Id) -> Result<Option<AbilityData>> {
         self.local.get_ability(id)
     }
 
-    fn get_clause(&self, id: &Id) -> Result<ClauseData> {
+    fn get_clause(&self, id: &Id) -> Result<Option<ClauseData>> {
         self.local.get_clause(id)
     }
 
-    fn get_condition(&self, id: &Id) -> Result<ConditionData> {
+    fn get_condition(&self, id: &Id) -> Result<Option<ConditionData>> {
         self.local.get_condition(id)
     }
 
-    fn get_item(&self, id: &Id) -> Result<ItemData> {
+    fn get_item(&self, id: &Id) -> Result<Option<ItemData>> {
         self.local.get_item(id)
     }
 
-    fn get_move(&self, id: &Id) -> Result<MoveData> {
+    fn get_move(&self, id: &Id) -> Result<Option<MoveData>> {
         match self.fake_moves.get(id) {
-            Some(fake_move) => Ok(fake_move.clone()),
+            Some(fake_move) => Ok(Some(fake_move.clone())),
             None => self.local.get_move(id),
         }
     }
 
-    fn get_species(&self, id: &Id) -> Result<SpeciesData> {
+    fn get_species(&self, id: &Id) -> Result<Option<SpeciesData>> {
         self.local.get_species(id)
     }
 }

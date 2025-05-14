@@ -11,12 +11,27 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_data::{
+    Accuracy,
+    Boost,
+    BoostTable,
+    Fraction,
+    Gender,
+    HitEffect,
+    Id,
+    Identifiable,
+    MoveCategory,
+    MoveTarget,
+    MultihitType,
+    Nature,
+    SecondaryEffectData,
+    StatTable,
+    Type,
+};
 use zone_alloc::ElementRef;
 
 use crate::{
     battle::{
-        Boost,
-        BoostTable,
         FieldEnvironment,
         MonHandle,
         MoveEventResult,
@@ -24,12 +39,7 @@ use crate::{
         MoveOutcomeOnTarget,
         MoveSlot,
     },
-    common::{
-        FastHashMap,
-        Fraction,
-        Id,
-        Identifiable,
-    },
+    common::FastHashMap,
     effect::{
         fxlang::{
             DynamicEffectStateConnector,
@@ -42,21 +52,7 @@ use crate::{
         integer_overflow_error,
         WrapOptionError,
     },
-    mons::{
-        Gender,
-        Nature,
-        StatTable,
-        Type,
-    },
-    moves::{
-        Accuracy,
-        HitEffect,
-        MoveCategory,
-        MoveHitEffectType,
-        MoveTarget,
-        MultihitType,
-        SecondaryEffect,
-    },
+    moves::MoveHitEffectType,
 };
 
 /// The type of an fxlang value.
@@ -131,7 +127,7 @@ pub enum Value {
     Field,
     Format,
     HitEffect(HitEffect),
-    SecondaryHitEffect(SecondaryEffect),
+    SecondaryHitEffect(SecondaryEffectData),
     Gender(Gender),
     StatTable(StatTable),
     FieldEnvironment(FieldEnvironment),
@@ -548,8 +544,8 @@ impl Value {
         }
     }
 
-    /// Consumes the value into a [`SecondaryEffect`].
-    pub fn secondary_hit_effect(self) -> Result<SecondaryEffect> {
+    /// Consumes the value into a [`SecondaryEffectData`].
+    pub fn secondary_hit_effect(self) -> Result<SecondaryEffectData> {
         match self {
             Self::SecondaryHitEffect(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(
@@ -567,8 +563,8 @@ impl Value {
         }
     }
 
-    /// Consumes the value into a [`Vec<SecondaryEffect>`].
-    pub fn secondary_hit_effects_list(self) -> Result<Vec<SecondaryEffect>> {
+    /// Consumes the value into a [`Vec<SecondaryEffectData>`].
+    pub fn secondary_hit_effects_list(self) -> Result<Vec<SecondaryEffectData>> {
         self.list()?
             .into_iter()
             .map(|val| val.secondary_hit_effect())
@@ -611,7 +607,7 @@ pub enum MaybeReferenceValue<'eval> {
     Field,
     Format,
     HitEffect(HitEffect),
-    SecondaryHitEffect(SecondaryEffect),
+    SecondaryHitEffect(SecondaryEffectData),
     Gender(Gender),
     StatTable(StatTable),
     FieldEnvironment(FieldEnvironment),
@@ -823,7 +819,7 @@ pub enum ValueRef<'eval> {
     Field,
     Format,
     HitEffect(&'eval HitEffect),
-    SecondaryHitEffect(&'eval SecondaryEffect),
+    SecondaryHitEffect(&'eval SecondaryEffectData),
     Gender(Gender),
     StatTable(&'eval StatTable),
     FieldEnvironment(FieldEnvironment),
@@ -1125,8 +1121,8 @@ pub enum ValueRefMut<'eval> {
     Field,
     Format,
     HitEffect(&'eval mut HitEffect),
-    SecondaryHitEffect(&'eval mut SecondaryEffect),
-    SecondaryHitEffectList(&'eval mut Vec<SecondaryEffect>),
+    SecondaryHitEffect(&'eval mut SecondaryEffectData),
+    SecondaryHitEffectList(&'eval mut Vec<SecondaryEffectData>),
     OptionalHitEffect(&'eval mut Option<HitEffect>),
     Gender(&'eval mut Gender),
     OptionalMultihitType(&'eval mut Option<MultihitType>),
@@ -1261,7 +1257,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     Field,
     Format,
     HitEffect(&'eval HitEffect),
-    SecondaryHitEffect(&'eval SecondaryEffect),
+    SecondaryHitEffect(&'eval SecondaryEffectData),
     Gender(Gender),
     StatTable(&'eval StatTable),
     FieldEnvironment(FieldEnvironment),

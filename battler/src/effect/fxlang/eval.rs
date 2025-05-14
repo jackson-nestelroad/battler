@@ -8,6 +8,15 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_data::{
+    Accuracy,
+    Fraction,
+    Id,
+    Identifiable,
+    MoveTarget,
+    MultihitType,
+    Type,
+};
 use zone_alloc::{
     BorrowError,
     ElementRef,
@@ -36,9 +45,6 @@ use crate::{
         SideEffectContext,
     },
     common::{
-        Fraction,
-        Id,
-        Identifiable,
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
     },
@@ -70,13 +76,9 @@ use crate::{
         WrapOptionError,
         WrapResultError,
     },
-    mons::Type,
     moves::{
-        Accuracy,
         Move,
         MoveHitEffectType,
-        MoveTarget,
-        MultihitType,
     },
 };
 

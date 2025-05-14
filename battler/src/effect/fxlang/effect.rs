@@ -1,3 +1,4 @@
+use anyhow::Error;
 use serde::{
     Deserialize,
     Serialize,
@@ -13,6 +14,7 @@ use crate::{
         LocalData,
         ValueType,
     },
+    WrapResultError,
 };
 
 /// Flags used to indicate the input and output of a [`Callback`].
@@ -1917,6 +1919,13 @@ pub struct Effect {
     pub local_data: LocalData,
 }
 
+impl TryFrom<serde_json::Value> for Effect {
+    type Error = Error;
+    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
+        serde_json::from_value(value).wrap_error_with_message("invalid fxlang effect")
+    }
+}
+
 /// A condition enabled by an effect.
 ///
 /// While an effect has its own set of callbacks, an effect can also apply a condition to some
@@ -1939,4 +1948,11 @@ pub struct Condition {
     /// The effect of the condition.
     #[serde(flatten)]
     pub effect: Effect,
+}
+
+impl TryFrom<serde_json::Value> for Condition {
+    type Error = Error;
+    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
+        serde_json::from_value(value).wrap_error_with_message("invalid fxlang condition")
+    }
 }

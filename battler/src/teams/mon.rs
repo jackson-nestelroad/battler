@@ -1,13 +1,12 @@
-use serde::{
-    Deserialize,
-    Serialize,
-};
-
-use crate::mons::{
+use battler_data::{
     Gender,
     Nature,
     StatTable,
     Type,
+};
+use serde::{
+    Deserialize,
+    Serialize,
 };
 
 fn default_ball() -> String {

@@ -11,6 +11,16 @@ use std::{
 
 use ahash::HashMapExt;
 use anyhow::Result;
+use battler_data::{
+    DataStore,
+    Id,
+    Identifiable,
+    ItemTarget,
+    MoveTarget,
+    SwitchType,
+    Type,
+    TypeEffectiveness,
+};
 use itertools::Itertools;
 use zone_alloc::{
     ElementRef,
@@ -52,15 +62,10 @@ use crate::{
     battle_log_entry,
     common::{
         FastHashMap,
-        Id,
-        Identifiable,
         UnsafelyDetachBorrowMut,
     },
     config::Format,
-    dex::{
-        DataStore,
-        Dex,
-    },
+    dex::Dex,
     effect::{
         fxlang,
         Effect,
@@ -74,21 +79,12 @@ use crate::{
         WrapOptionError,
         WrapResultError,
     },
-    items::ItemTarget,
     log::{
         BattleLog,
         BattleLogEntryMut,
         UncommittedBattleLogEntry,
     },
-    mons::{
-        Type,
-        TypeEffectiveness,
-    },
-    moves::{
-        Move,
-        MoveTarget,
-        SwitchType,
-    },
+    moves::Move,
     rng::{
         rand_util,
         PseudoRandomNumberGenerator,

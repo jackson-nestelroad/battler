@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use ahash::HashMapExt;
 use anyhow::Result;
+use battler_data::Fraction;
 use uuid::Uuid;
 
 use crate::{
@@ -10,10 +11,7 @@ use crate::{
         Mon,
         MonHandle,
     },
-    common::{
-        FastHashMap,
-        Fraction,
-    },
+    common::FastHashMap,
     effect::{
         fxlang::Value,
         AppliedEffectLocation,

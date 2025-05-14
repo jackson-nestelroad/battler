@@ -1,17 +1,18 @@
 use anyhow::Result;
+use battler_data::{
+    ClauseData,
+    DataStore,
+    Id,
+};
 
 use crate::{
-    common::Id,
-    config::{
-        Clause,
-        ClauseData,
-    },
+    config::Clause,
     dex::{
-        DataStore,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
+    WrapOptionError,
 };
 
 /// Lookup type for [`ClauseDex`].
@@ -26,7 +27,9 @@ impl<'d> ResourceLookup<'d, ClauseData> for ClauseLookup<'d> {
     }
 
     fn lookup(&self, id: &Id) -> Result<ClauseData> {
-        self.data.get_clause(id)
+        self.data
+            .get_clause(id)?
+            .wrap_not_found_error_with_format(format_args!("clause {id}"))
     }
 }
 

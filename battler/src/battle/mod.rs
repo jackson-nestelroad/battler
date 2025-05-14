@@ -1,7 +1,6 @@
 mod action;
 mod battle_options;
 mod battle_type;
-mod boosts;
 mod calculations;
 mod context;
 mod context_cache;
@@ -50,13 +49,6 @@ pub use battle_options::{
     CoreBattleOptions,
 };
 pub use battle_type::BattleType;
-pub use boosts::{
-    Boost,
-    BoostOrderIterator,
-    BoostTable,
-    BoostTableEntries,
-    ContainsOptionalBoosts,
-};
 pub use calculations::{
     apply_nature_to_stats,
     calculate_hidden_power_type,
