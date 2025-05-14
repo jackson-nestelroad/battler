@@ -9,16 +9,17 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-client"
 
 [dependencies]
-ahash = "0.8.11"
-anyhow = "1.0"
+ahash = { workspace = true }
+anyhow = { workspace = true }
+futures-util = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
 battler = { path = "../battler" }
 battler-service = { path = "../battler-service" }
 battler-service-client = { path = "../battler-service-client" }
-futures-util = "0.3"
-serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1.41.0", features = ["full"] }
-uuid = "1.16.0"
 
 [dev-dependencies]
-assert_matches = "1.5.0"
-pretty_assertions = "1.4.0"
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }

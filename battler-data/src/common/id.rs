@@ -1,14 +1,14 @@
 use std::{
     borrow::Cow,
-    fmt,
     fmt::{
+        self,
         Debug,
         Display,
     },
     hash::Hash,
+    sync::LazyLock,
 };
 
-use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{
     Deserialize,
@@ -183,9 +183,8 @@ pub trait Identifiable {
 ///
 /// IDs must have lowercase alphanumeric characters. Non-alphanumeric characters are removed.
 fn normalize_id(id: &str) -> Id {
-    lazy_static! {
-        static ref PATTERN: Regex = Regex::new(r"[^a-z0-9]").unwrap();
-    }
+    static PATTERN: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[^a-z0-9]").unwrap());
+
     match PATTERN.replace_all(&id.to_ascii_lowercase(), "") {
         // There is an optimization to be done here. If this is a &'static str, we can save it
         // without owning it. However, this code is shared for all &str, so we cannot make the

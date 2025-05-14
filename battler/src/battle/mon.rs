@@ -6,6 +6,7 @@ use std::{
     iter,
     mem,
     ops::Mul,
+    sync::LazyLock,
     u8,
 };
 
@@ -29,7 +30,6 @@ use battler_data::{
     SwitchType,
     Type,
 };
-use lazy_static::lazy_static;
 use serde::{
     Deserialize,
     Serialize,
@@ -1064,17 +1064,17 @@ impl Mon {
                 Some(boost) => boost,
                 None => boosts.get(stat.try_into()?),
             };
-            lazy_static! {
-                static ref BOOST_TABLE: [Fraction<u16>; 7] = [
+            static BOOST_TABLE: LazyLock<[Fraction<u16>; 7]> = LazyLock::new(|| {
+                [
                     Fraction::new(1, 1),
                     Fraction::new(3, 2),
                     Fraction::new(2, 1),
                     Fraction::new(5, 2),
                     Fraction::new(3, 1),
                     Fraction::new(7, 2),
-                    Fraction::new(4, 1)
-                ];
-            }
+                    Fraction::new(4, 1),
+                ]
+            });
             let boost = boost.max(-6).min(6);
             let boost_fraction = &BOOST_TABLE[boost.abs() as usize];
             if boost >= 0 {

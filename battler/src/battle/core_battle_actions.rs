@@ -1,4 +1,7 @@
-use std::collections::hash_map::Entry;
+use std::{
+    collections::hash_map::Entry,
+    sync::LazyLock,
+};
 
 use ahash::HashMap;
 use anyhow::Result;
@@ -20,7 +23,6 @@ use battler_data::{
     SwitchType,
     Type,
 };
-use lazy_static::lazy_static;
 
 use crate::{
     battle::{
@@ -892,15 +894,15 @@ fn prepare_direct_move_against_targets(
     context: &mut ActiveMoveContext,
     targets: &mut [MoveStepOutcomeOnTarget],
 ) -> Result<()> {
-    lazy_static! {
-        static ref STEPS: Vec<direct_move_step::DirectMoveStep> = vec![
+    static STEPS: LazyLock<Vec<direct_move_step::DirectMoveStep>> = LazyLock::new(|| {
+        vec![
             direct_move_step::check_targets_invulnerability,
             direct_move_step::check_try_hit_event,
             direct_move_step::check_type_immunity,
             direct_move_step::check_general_immunity,
             direct_move_step::handle_accuracy,
-        ];
-    }
+        ]
+    });
 
     for step in &*STEPS {
         step(context, targets)?;

@@ -36,8 +36,8 @@ impl RealPseudoRandomNumberGenerator {
     }
 
     fn generate_seed() -> u64 {
-        let mut rng = rand::thread_rng();
-        rng.gen()
+        let mut rng = rand::rng();
+        rng.random()
     }
 
     /// Linear Congruential Generator (LCRNG).

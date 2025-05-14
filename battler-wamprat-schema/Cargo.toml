@@ -9,16 +9,17 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat-schema"
 
 [dependencies]
-anyhow = "1.0"
-battler-wamp = "0.3"
-battler-wamprat = "0.6"
-battler-wamprat-message = "0.1"
-battler-wamprat-schema-proc-macro = "0.4"
+anyhow = { workspace = true }
+battler-wamp = { workspace = true }
+battler-wamprat = { workspace = true }
+battler-wamprat-message = { workspace = true }
+
+battler-wamprat-schema-proc-macro = "0.4.0"
 
 [dev-dependencies]
-assert_matches = "1.5.0"
-battler-wamp-values = "0.2"
-battler-wamprat-error = "0.1"
-battler-wamprat-uri = "0.4"
-thiserror = "1.0.65"
-tokio = { version = "1.41.0", features = ["full"] }
+assert_matches = { workspace = true }
+battler-wamp-values = { workspace = true }
+battler-wamprat-error = { workspace = true }
+battler-wamprat-uri = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

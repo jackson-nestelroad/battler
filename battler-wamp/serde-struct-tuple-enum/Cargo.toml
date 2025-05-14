@@ -9,9 +9,10 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp/serde-struct-tuple-enum"
 
 [dependencies]
-serde = "1.0"
+serde = { workspace = true }
+
 serde-struct-tuple-enum-proc-macro = "0.1.0"
 
 [dev-dependencies]
-serde-struct-tuple = "0.1"
-serde_json = "1.0"
+serde-struct-tuple = { workspace = true }
+serde_json = { workspace = true }

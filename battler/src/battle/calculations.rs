@@ -1,4 +1,7 @@
-use std::ops::Div;
+use std::{
+    ops::Div,
+    sync::LazyLock,
+};
 
 use battler_data::{
     Fraction,
@@ -7,7 +10,6 @@ use battler_data::{
     StatTable,
     Type,
 };
-use lazy_static::lazy_static;
 
 /// Calculates a Mon's actual stats.
 pub fn calculate_mon_stats(
@@ -55,16 +57,17 @@ pub fn apply_nature_to_stats(mut stats: StatTable, nature: Nature) -> StatTable 
 
 /// Calculates the Hidden Power type based on IVs.
 pub fn calculate_hidden_power_type(ivs: &StatTable) -> Type {
-    lazy_static! {
-        static ref HIDDEN_POWER_STAT_ORDER: [Stat; 6] = [
+    static HIDDEN_POWER_STAT_ORDER: LazyLock<[Stat; 6]> = LazyLock::new(|| {
+        [
             Stat::HP,
             Stat::Atk,
             Stat::Def,
             Stat::Spe,
             Stat::SpAtk,
             Stat::SpDef,
-        ];
-    }
+        ]
+    });
+
     let mut hp_type = 0;
     let mut i = 1;
     for stat in *HIDDEN_POWER_STAT_ORDER {

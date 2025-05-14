@@ -9,7 +9,8 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp/battler-wamp-values"
 
 [dependencies]
-ahash = "0.8.11"
-battler-wamp-values-proc-macro = "0.2"
-serde = { version = "1.0", features = ["derive"] }
-thiserror = "1.0.65"
+ahash = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+battler-wamp-values-proc-macro = "0.2.0"

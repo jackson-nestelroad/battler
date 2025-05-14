@@ -1,4 +1,7 @@
-use std::mem;
+use std::{
+    mem,
+    sync::LazyLock,
+};
 
 use ahash::{
     HashMap,
@@ -13,7 +16,6 @@ use battler_data::{
     ShinyChance,
 };
 use itertools::Itertools;
-use lazy_static::lazy_static;
 use regex::Regex;
 use zone_alloc::ElementRef;
 
@@ -207,10 +209,11 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 mon.name,
             ));
         }
-        lazy_static! {
-            static ref NAME_PATTERN: Regex = Regex::new(r"^[^|]+$").unwrap();
-            static ref DISAMBIGUATION_PATTERN: Regex = Regex::new(r"#{3}\d+$").unwrap();
-        }
+
+        static NAME_PATTERN: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[^|]+$").unwrap());
+        static DISAMBIGUATION_PATTERN: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"#{3}\d+$").unwrap());
+
         if !NAME_PATTERN.is_match(&mon.name) {
             problems.push(format!(
                 "Nickname \"{}\" contains illegal characters.",

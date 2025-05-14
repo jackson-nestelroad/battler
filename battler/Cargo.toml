@@ -9,28 +9,25 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler"
 
 [dependencies]
-ahash = "0.8.11"
-anyhow = "1.0"
-async-trait = "0.1.73"
+ahash = { workspace = true }
+anyhow = { workspace = true }
+itertools = { workspace = true }
+num = { workspace = true }
+rand = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_string_enum = { workspace = true }
+thiserror = { workspace = true }
+unicase = { workspace = true }
+uuid = { workspace = true }
+zone-alloc = { workspace = true }
+zone-alloc-strong-handle-derive = { workspace = true }
+
 battler-data = { path = "../battler-data" }
-itertools = "0.11.0"
-lazy_static = "1.4.0"
-log = "0.4.20"
-num = "0.4.1"
-rand = "0.8.5"
-regex = "1.9.3"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_string_enum = "0.2"
-thiserror = "1.0"
-unicase = "2.6.0"
-uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
-zone-alloc = { version = "0.4.4", features = ["std", "may-dangle"] }
-zone-alloc-strong-handle-derive = "0.1"
 
 [dev-dependencies]
-assert_matches = "1.5.0"
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
 battler-test-utils = { path = "../battler-test-utils" }
-env_logger = "0.9.0"
-pretty_assertions = "1.4.0"
-tokio = { version = "1.32.0", features = ["rt", "macros"] }

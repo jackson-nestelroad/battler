@@ -9,10 +9,11 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-uri"
 
 [dependencies]
-battler-wamp = "0.3"
+battler-wamp = { workspace = true }
+thiserror = { workspace = true }
+
 battler-wamprat-uri-proc-macro = "0.4.0"
-thiserror = "1.0.65"
 
 [dev-dependencies]
-assert_matches = "1.5.0"
-regex = "1.9.3"
+assert_matches = { workspace = true }
+regex = { workspace = true }

@@ -6,11 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ahash = "0.8.3"
-anyhow = "1.0"
+ahash = { workspace = true }
+anyhow = { workspace = true }
+itertools = { workspace = true }
+pretty_assertions = { workspace = true }
+pretty_assertions_sorted = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
 battler = { path = "../battler" }
-itertools = "0.11.0"
-pretty_assertions = "1.4.0"
-pretty_assertions_sorted = "1.2.3"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"

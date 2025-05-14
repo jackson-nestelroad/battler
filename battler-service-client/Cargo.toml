@@ -9,15 +9,16 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-service-client"
 
 [dependencies]
-anyhow = "1.0"
-async-trait = "0.1"
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+battler-wamp-values = { workspace = true }
+battler-wamprat = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
 battler = { path = "../battler" }
 battler-service = { path = "../battler-service" }
 battler-service-schema = { path = "../battler-service/battler-service-schema" }
-battler-wamp-values = "0.2"
-battler-wamprat = "0.6"
-serde_json = "1.0"
-tokio = { version = "1.41.0", features = ["full"] }
-uuid = "1.16.0"
 
 [dev-dependencies]

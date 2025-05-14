@@ -9,38 +9,36 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp"
 
 [dependencies]
-ahash = "0.8.11"
-anyhow = "1.0"
-argon2 = "0.5.3"
-async-trait = "0.1.83"
-base64 = "0.22.1"
-battler-wamp-values = "0.2.2"
-futures-channel = "0.3"
-futures-util = "0.3"
-hmac = "0.12.1"
-log = "0.4"
-password-hash = "0.5.0"
-pbkdf2 = { version = "0.12.2", features = ["simple"] }
-quote = "1.0"
-rand = "0.9.0"
-regex = "1.11"
-rustls = "0.23.16"
-rmp-serde = "1.3.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_string_enum = "0.2"
-serde-struct-tuple = "0.1.3"
-serde-struct-tuple-enum = "0.1.0"
-sha2 = "0.10.8"
-stringprep = "0.1.5"
-syn = "2.0.85"
-thiserror = "1.0.65"
-tokio = { version = "1.41.0", features = ["full"] }
-tokio-tungstenite = { version = "0.24.0", features = ["rustls-tls-native-roots"] }
-uuid = { version = "1.11.0", features = ["v4", "fast-rng", "macro-diagnostics" ] }
+ahash = { workspace = true }
+anyhow = { workspace = true }
+argon2 = { workspace = true }
+async-trait = { workspace = true }
+base64 = { workspace = true }
+battler-wamp-values = { workspace = true }
+futures-channel = { workspace = true }
+futures-util = { workspace = true }
+hmac = { workspace = true }
+log = { workspace = true }
+password-hash = { workspace = true }
+pbkdf2 = { workspace = true }
+rand = { workspace = true }
+regex = { workspace = true }
+rustls = { workspace = true }
+rmp-serde = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_string_enum = { workspace = true }
+serde-struct-tuple = { workspace = true }
+serde-struct-tuple-enum = { workspace = true }
+sha2 = { workspace = true }
+stringprep = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tokio-tungstenite = { workspace = true }
+uuid = { workspace = true }
 
 [dev-dependencies]
-assert_matches = "1.5.0"
-async-scoped = { version = "0.9.0", features = ["use-tokio"] }
-pretty_assertions = "1.4.0"
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
 test-utils = { path = "test-utils" }

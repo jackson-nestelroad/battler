@@ -12,12 +12,13 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 proc-macro = true
 
 [dependencies]
-battler-wamp = "0.3"
-proc-macro2 = "1.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full"] }
+battler-wamp = { workspace = true }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
 
 [dev-dependencies]
-assert_matches = "1.5.0"
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
 battler-wamprat-error = { path = ".." }
-pretty_assertions = "1.4.0"
