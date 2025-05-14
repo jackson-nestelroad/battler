@@ -415,13 +415,13 @@ impl<'d> BattlerService<'d> {
 
 #[cfg(test)]
 mod battler_service_test {
+    use ahash::HashSet;
     use battler::{
         BagData,
         BattleType,
         CoreBattleEngineOptions,
         CoreBattleEngineSpeedSortTieResolution,
         CoreBattleOptions,
-        FastHashSet,
         FieldData,
         FormatData,
         FormatOptions,
@@ -519,7 +519,7 @@ mod battler_service_test {
             seed: Some(0),
             format: FormatData {
                 battle_type: BattleType::Singles,
-                rules: FastHashSet::from_iter([Rule::value_name("Item Clause")]),
+                rules: HashSet::from_iter([Rule::value_name("Item Clause")]),
                 options: FormatOptions::default(),
             },
             field: FieldData::default(),

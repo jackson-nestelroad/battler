@@ -1,6 +1,6 @@
 use std::iter;
 
-use ahash::HashSetExt;
+use ahash::HashSet;
 use anyhow::Result;
 use battler_data::{
     BoostTable,
@@ -32,7 +32,6 @@ use crate::{
         SpeedOrderable,
     },
     common::{
-        FastHashSet,
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
     },
@@ -1506,7 +1505,7 @@ fn run_residual_callbacks_with_errors(
     callbacks: Vec<CallbackHandle>,
 ) -> Result<()> {
     // Ensure we only decrease the duration of each event once.
-    let mut duration_decreased = FastHashSet::new();
+    let mut duration_decreased = HashSet::default();
 
     for callback_handle in callbacks {
         if context.battle().ending() {

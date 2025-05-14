@@ -9,7 +9,7 @@ use std::{
     },
 };
 
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 use battler_data::{
     DataStore,
@@ -60,10 +60,7 @@ use crate::{
         TurnRequest,
     },
     battle_log_entry,
-    common::{
-        FastHashMap,
-        UnsafelyDetachBorrowMut,
-    },
+    common::UnsafelyDetachBorrowMut,
     config::Format,
     dex::Dex,
     effect::{
@@ -239,8 +236,8 @@ pub struct CoreBattle<'d> {
     pub linked_effects_manager: LinkedEffectsManager,
 
     registry: BattleRegistry,
-    player_ids: FastHashMap<String, usize>,
-    effect_handle_cache: FastHashMap<Id, EffectHandle>,
+    player_ids: HashMap<String, usize>,
+    effect_handle_cache: HashMap<Id, EffectHandle>,
 
     turn: u64,
     request: Option<RequestType>,
@@ -254,7 +251,7 @@ pub struct CoreBattle<'d> {
     last_move_log: Option<usize>,
     last_exited: Option<MonHandle>,
 
-    input_log: FastHashMap<usize, FastHashMap<u64, String>>,
+    input_log: HashMap<usize, HashMap<u64, String>>,
 
     _pin: PhantomPinned,
 }
@@ -289,7 +286,7 @@ impl<'d> CoreBattle<'d> {
             .iter()
             .enumerate()
             .map(move |(player_index, player)| (player.id.to_owned(), player_index))
-            .collect::<FastHashMap<_, _>>();
+            .collect::<HashMap<_, _>>();
 
         for id in player_ids.keys() {
             if id.is_empty()
@@ -300,11 +297,11 @@ impl<'d> CoreBattle<'d> {
             }
         }
 
-        let input_log = FastHashMap::from_iter(
+        let input_log = HashMap::from_iter(
             players
                 .iter()
                 .enumerate()
-                .map(|(index, _)| (index, FastHashMap::new())),
+                .map(|(index, _)| (index, HashMap::default())),
         );
 
         let effect_manager = EffectManager::new();
@@ -326,7 +323,7 @@ impl<'d> CoreBattle<'d> {
             linked_effects_manager,
             registry,
             player_ids,
-            effect_handle_cache: FastHashMap::new(),
+            effect_handle_cache: HashMap::default(),
             turn: 0,
             request: None,
             mid_turn: false,
@@ -1152,7 +1149,7 @@ impl<'d> CoreBattle<'d> {
     fn disambiguate_identical_mon_names(context: &mut Context) -> Result<()> {
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
-            let mut seen = FastHashMap::new();
+            let mut seen = HashMap::default();
             for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
                 let mut context = context.mon_context(mon)?;
                 match seen.entry(context.mon().name.clone()) {

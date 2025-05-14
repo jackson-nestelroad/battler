@@ -1,8 +1,8 @@
+use ahash::HashMap;
 use anyhow::Result;
 use battler::{
     BattleType,
     DataStore,
-    FastHashMap,
     LocalDataStore,
     PublicCoreBattle,
     TeamData,
@@ -161,7 +161,7 @@ fn team_preview_orders_all_player_teams() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "team 0 1 2"), Ok(()));
     assert!(!battle
         .active_requests()
-        .collect::<FastHashMap<_, _>>()
+        .collect::<HashMap<_, _>>()
         .contains_key("player-1"));
     assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
     assert!(!battle.has_new_log_entries());

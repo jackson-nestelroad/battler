@@ -5,8 +5,8 @@ use std::{
 };
 
 use ahash::{
-    HashMapExt,
-    HashSetExt,
+    HashMap,
+    HashSet,
 };
 use anyhow::{
     Error,
@@ -46,10 +46,6 @@ use crate::{
         SideEffectContext,
     },
     battle_log_entry,
-    common::{
-        FastHashMap,
-        FastHashSet,
-    },
     effect::{
         fxlang::{
             BattleEvent,
@@ -254,7 +250,7 @@ struct FunctionContext<'eval, 'effect, 'context, 'battle, 'data> {
     context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
     args: VecDeque<Value>,
     effect_state: Option<DynamicEffectStateConnector>,
-    flags: FastHashMap<String, bool>,
+    flags: HashMap<String, bool>,
 }
 
 impl<'eval, 'effect, 'context, 'battle, 'data>
@@ -269,7 +265,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             context,
             args,
             effect_state,
-            flags: FastHashMap::new(),
+            flags: HashMap::default(),
         }
     }
 
@@ -2513,8 +2509,8 @@ fn get_species(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
-    let mut with_flags = FastHashSet::new();
-    let mut without_flags = FastHashSet::new();
+    let mut with_flags = HashSet::default();
+    let mut without_flags = HashSet::default();
     while let Some(arg) = context.pop_front() {
         match arg
             .string()
@@ -3378,7 +3374,7 @@ fn clause_type_value(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 fn new_object(_: FunctionContext) -> Value {
-    Value::Object(FastHashMap::new())
+    Value::Object(HashMap::default())
 }
 
 fn object_keys(mut context: FunctionContext) -> Result<Value> {

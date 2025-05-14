@@ -54,10 +54,6 @@ pub use battle::{
     WildPlayerOptions,
 };
 pub use battler_data::*;
-pub use common::{
-    FastHashMap,
-    FastHashSet,
-};
 pub use config::{
     FormatData,
     FormatOptions,

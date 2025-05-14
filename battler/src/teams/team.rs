@@ -1,18 +1,16 @@
+use ahash::HashMap;
 use serde::{
     Deserialize,
     Serialize,
 };
 
-use crate::{
-    common::FastHashMap,
-    teams::MonData,
-};
+use crate::teams::MonData;
 
 /// Data for a single player's bag in a battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BagData {
     /// Item counts available for use.
-    pub items: FastHashMap<String, u16>,
+    pub items: HashMap<String, u16>,
 }
 
 /// A single team for a battle.

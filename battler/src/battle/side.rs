@@ -1,4 +1,4 @@
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 use battler_data::Id;
 use num::Integer;
@@ -16,7 +16,6 @@ use crate::{
         PlayerData,
         SideContext,
     },
-    common::FastHashMap,
     dex::Dex,
     effect::fxlang,
 };
@@ -44,8 +43,8 @@ pub struct Side {
     pub name: String,
     pub index: usize,
 
-    pub conditions: FastHashMap<Id, fxlang::EffectState>,
-    pub slot_conditions: FastHashMap<usize, FastHashMap<Id, fxlang::EffectState>>,
+    pub conditions: HashMap<Id, fxlang::EffectState>,
+    pub slot_conditions: HashMap<usize, HashMap<Id, fxlang::EffectState>>,
 }
 
 // Construction and initialization logic.
@@ -68,8 +67,8 @@ impl Side {
             Self {
                 name: data.name,
                 index,
-                conditions: FastHashMap::new(),
-                slot_conditions: FastHashMap::new(),
+                conditions: HashMap::default(),
+                slot_conditions: HashMap::default(),
             },
             players,
         ))

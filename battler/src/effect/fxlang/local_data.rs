@@ -1,3 +1,4 @@
+use ahash::HashMap;
 use battler_data::{
     Id,
     MoveData,
@@ -7,8 +8,6 @@ use serde::{
     Serialize,
 };
 
-use crate::common::FastHashMap;
-
 /// Local data to an fxlang effect or condition.
 ///
 /// Data here can be referenced by callbacks in the owning effect or condition.
@@ -16,5 +15,5 @@ use crate::common::FastHashMap;
 pub struct LocalData {
     /// Custom moves that can be used by the effect.
     #[serde(default)]
-    pub moves: FastHashMap<Id, MoveData>,
+    pub moves: HashMap<Id, MoveData>,
 }

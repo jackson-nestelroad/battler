@@ -1,4 +1,4 @@
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 use battler_data::Id;
 use uuid::Uuid;
@@ -8,7 +8,6 @@ use crate::{
         Context,
         EffectContext,
     },
-    common::FastHashMap,
     effect::{
         AppliedEffectHandle,
         AppliedEffectLocation,
@@ -21,14 +20,14 @@ use crate::{
 ///
 /// A linked effect ends when another effect ends. Linking always goes both ways.
 pub struct LinkedEffectsManager {
-    effects: FastHashMap<Uuid, AppliedEffectHandle>,
+    effects: HashMap<Uuid, AppliedEffectHandle>,
 }
 
 impl LinkedEffectsManager {
     /// Creates a new linked effects manager.
     pub fn new() -> Self {
         Self {
-            effects: FastHashMap::new(),
+            effects: HashMap::default(),
         }
     }
 

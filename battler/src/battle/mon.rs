@@ -10,8 +10,8 @@ use std::{
 };
 
 use ahash::{
-    HashMapExt,
-    HashSetExt,
+    HashMap,
+    HashSet,
 };
 use anyhow::Result;
 use battler_data::{
@@ -59,10 +59,6 @@ use crate::{
         SpeedOrderable,
     },
     battle_log_entry,
-    common::{
-        FastHashMap,
-        FastHashSet,
-    },
     dex::Dex,
     effect::{
         fxlang,
@@ -443,12 +439,12 @@ pub struct Mon {
     pub stats_raised_this_turn: bool,
     pub stats_lowered_this_turn: bool,
     pub item_used_this_turn: bool,
-    pub foes_fought_while_active: FastHashSet<MonHandle>,
+    pub foes_fought_while_active: HashSet<MonHandle>,
     pub received_attacks: Vec<ReceivedAttackEntry>,
 
     pub status: Option<Id>,
     pub status_state: fxlang::EffectState,
-    pub volatiles: FastHashMap<Id, fxlang::EffectState>,
+    pub volatiles: HashMap<Id, fxlang::EffectState>,
 
     pub learnable_moves: Vec<Id>,
 }
@@ -592,12 +588,12 @@ impl Mon {
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
             item_used_this_turn: false,
-            foes_fought_while_active: FastHashSet::new(),
+            foes_fought_while_active: HashSet::default(),
             received_attacks: Vec::new(),
 
             status,
             status_state: fxlang::EffectState::new(),
-            volatiles: FastHashMap::new(),
+            volatiles: HashMap::default(),
 
             learnable_moves: Vec::new(),
         })

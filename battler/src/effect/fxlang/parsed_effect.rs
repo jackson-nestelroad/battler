@@ -1,8 +1,7 @@
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 
 use crate::{
-    common::FastHashMap,
     effect::fxlang::{
         BattleEvent,
         Callbacks,
@@ -13,7 +12,7 @@ use crate::{
 
 /// Parsed version of [`Callbacks`][`crate::effect::fxlang::Callbacks`].
 pub struct ParsedCallbacks {
-    callbacks: FastHashMap<BattleEvent, ParsedProgram>,
+    callbacks: HashMap<BattleEvent, ParsedProgram>,
 }
 
 impl ParsedCallbacks {
@@ -31,7 +30,7 @@ impl ParsedCallbacks {
     /// Parses a set of input [`Callbacks`] to [`ParsedCallbacks`].
     pub fn from(callbacks: Option<&Callbacks>) -> Result<Self> {
         let mut parsed = Self {
-            callbacks: FastHashMap::new(),
+            callbacks: HashMap::default(),
         };
         if let Some(callbacks) = callbacks {
             parsed.parse_and_save(BattleEvent::AccuracyExempt, callbacks)?;

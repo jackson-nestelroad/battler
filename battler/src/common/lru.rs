@@ -13,9 +13,10 @@ use std::{
     },
 };
 
-use ahash::HashMapExt;
-
-use crate::common::FastHashMap;
+use ahash::{
+    HashMap,
+    HashMapExt,
+};
 
 /// A reference to a key.
 #[derive(Eq)]
@@ -95,7 +96,7 @@ impl<K, V> LruEntry<K, V> {
 /// to the head of list. Once the cache reaches capacity, entries at the back of the list will be
 /// evicted first to make room for newer entries.
 pub struct LruCache<K, V> {
-    map: FastHashMap<KeyRef<K>, NonNull<LruEntry<K, V>>>,
+    map: HashMap<KeyRef<K>, NonNull<LruEntry<K, V>>>,
     capacity: usize,
     head: *mut LruEntry<K, V>,
     tail: *mut LruEntry<K, V>,
@@ -122,7 +123,7 @@ where
     /// Creates a new LRU cache with the given capacity.
     pub fn new(capacity: usize) -> Self {
         let cache = Self {
-            map: FastHashMap::with_capacity(capacity),
+            map: HashMap::with_capacity(capacity),
             capacity,
             head: Box::into_raw(Box::new(LruEntry::new_empty())),
             tail: Box::into_raw(Box::new(LruEntry::new_empty())),

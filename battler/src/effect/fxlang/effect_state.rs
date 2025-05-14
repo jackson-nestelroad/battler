@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 use battler_data::Fraction;
 use uuid::Uuid;
@@ -11,7 +11,6 @@ use crate::{
         Mon,
         MonHandle,
     },
-    common::FastHashMap,
     effect::{
         fxlang::Value,
         AppliedEffectLocation,
@@ -29,7 +28,7 @@ use crate::{
 #[derive(Clone)]
 pub struct EffectState {
     initialized: bool,
-    values: FastHashMap<String, Value>,
+    values: HashMap<String, Value>,
     linked_id: Option<Uuid>,
     linked_to: Vec<Uuid>,
 }
@@ -91,7 +90,7 @@ impl EffectState {
     pub fn new() -> Self {
         Self {
             initialized: false,
-            values: FastHashMap::new(),
+            values: HashMap::default(),
             linked_id: None,
             linked_to: Vec::new(),
         }

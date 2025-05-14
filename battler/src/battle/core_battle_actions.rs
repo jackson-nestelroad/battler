@@ -1,6 +1,6 @@
 use std::collections::hash_map::Entry;
 
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 use battler_data::{
     BoostTable,
@@ -56,10 +56,7 @@ use crate::{
         SideEffectContext,
         SwitchEventsAction,
     },
-    common::{
-        FastHashMap,
-        UnsafelyDetachBorrow,
-    },
+    common::UnsafelyDetachBorrow,
     effect::{
         fxlang,
         AppliedEffectHandle,
@@ -254,7 +251,7 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
 
     let mut source_context = context.as_battle_context_mut().mon_context(source)?;
     let boosts = source_context.mon().boosts.clone();
-    let mut volatiles = FastHashMap::new();
+    let mut volatiles = HashMap::default();
     for (volatile, state) in source_context.mon().volatiles.clone() {
         if CoreBattle::get_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
             .fxlang_condition()
@@ -997,7 +994,7 @@ fn move_hit_loop(
         .iter()
         .map(|target| MoveStepOutcomeOnTarget::new(*target))
         .collect::<Vec<_>>();
-    let mut target_hit_results = FastHashMap::new();
+    let mut target_hit_results = HashMap::default();
 
     for hit in 0..hits {
         // No more targets.
@@ -4353,7 +4350,7 @@ pub struct PlayerUseItemInput {
 
 impl PlayerUseItemInput {
     pub fn input_for_fxlang_callback(&self) -> fxlang::Value {
-        let mut input = FastHashMap::new();
+        let mut input = HashMap::default();
         if let Some(move_slot) = &self.move_slot {
             input.insert(
                 "move".to_owned(),

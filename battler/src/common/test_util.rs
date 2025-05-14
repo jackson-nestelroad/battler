@@ -10,16 +10,14 @@ use std::{
     path::Path,
 };
 
+use ahash::HashMap;
 use anyhow::Result;
 use serde::{
     de::DeserializeOwned,
     Serialize,
 };
 
-use crate::{
-    common::FastHashMap,
-    error::WrapResultError,
-};
+use crate::error::WrapResultError;
 
 #[track_caller]
 pub fn test_deserialization<'a, T>(s: &str, expected: T)
@@ -70,7 +68,7 @@ pub fn read_test_json<T: DeserializeOwned>(file: &str) -> Result<T> {
     .wrap_error_with_format(format_args!("failed to read object from {file}"))
 }
 
-pub fn read_test_cases<T: DeserializeOwned>(file: &str) -> Result<FastHashMap<String, T>> {
+pub fn read_test_cases<T: DeserializeOwned>(file: &str) -> Result<HashMap<String, T>> {
     serde_json::from_reader(
         File::open(Path::new(&test_case_dir()?).join(file))
             .wrap_error_with_format(format_args!("failed to read test cases from {file}"))?,

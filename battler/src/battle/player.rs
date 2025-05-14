@@ -8,8 +8,8 @@ use std::{
 };
 
 use ahash::{
-    HashMapExt,
-    HashSetExt,
+    HashMap,
+    HashSet,
 };
 use anyhow::{
     Error,
@@ -64,8 +64,6 @@ use crate::{
     common::{
         split_once_optional,
         Captures,
-        FastHashMap,
-        FastHashSet,
     },
     dex::Dex,
     effect::{
@@ -252,7 +250,7 @@ pub struct ChoiceState {
     /// player only has one Mon remaining.
     pub forced_passes_left: usize,
     /// Mons chosen to switch in.
-    pub switch_ins: FastHashSet<usize>,
+    pub switch_ins: HashSet<usize>,
     /// Did the Player choose to Mega Evolve?
     pub mega: bool,
 }
@@ -266,7 +264,7 @@ impl ChoiceState {
             actions: Vec::new(),
             forced_switches_left: 0,
             forced_passes_left: 0,
-            switch_ins: FastHashSet::new(),
+            switch_ins: HashSet::default(),
             mega: false,
         }
     }
@@ -415,7 +413,7 @@ pub struct Player {
     pub escape_attempts: u16,
     pub escaped: bool,
 
-    pub bag: FastHashMap<Id, u16>,
+    pub bag: HashMap<Id, u16>,
     pub caught: Vec<MonHandle>,
 }
 
@@ -447,7 +445,7 @@ impl Player {
             request: None,
             escape_attempts: 0,
             escaped: false,
-            bag: FastHashMap::new(),
+            bag: HashMap::default(),
             caught: Vec::new(),
         };
         player.update_team(data.team, dex, registry)?;

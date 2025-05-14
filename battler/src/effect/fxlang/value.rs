@@ -7,6 +7,7 @@ use std::{
     str::FromStr,
 };
 
+use ahash::HashMap;
 use anyhow::{
     Error,
     Result,
@@ -39,7 +40,6 @@ use crate::{
         MoveOutcomeOnTarget,
         MoveSlot,
     },
-    common::FastHashMap,
     effect::{
         fxlang::{
             DynamicEffectStateConnector,
@@ -134,7 +134,7 @@ pub enum Value {
     Nature(Nature),
     EffectState(DynamicEffectStateConnector),
     List(Vec<Value>),
-    Object(FastHashMap<String, Value>),
+    Object(HashMap<String, Value>),
 }
 
 impl Value {
@@ -571,8 +571,8 @@ impl Value {
             .collect()
     }
 
-    /// Consumes the value into a [`FastHashMap<String, Value>`].
-    pub fn object(self) -> Result<FastHashMap<String, Value>> {
+    /// Consumes the value into a [`HashMap<String, Value>`].
+    pub fn object(self) -> Result<HashMap<String, Value>> {
         match self {
             Self::Object(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Object)),
@@ -614,7 +614,7 @@ pub enum MaybeReferenceValue<'eval> {
     Nature(Nature),
     EffectState(DynamicEffectStateConnector),
     List(Vec<MaybeReferenceValue<'eval>>),
-    Object(FastHashMap<String, MaybeReferenceValue<'eval>>),
+    Object(HashMap<String, MaybeReferenceValue<'eval>>),
     Reference(ValueRefToStoredValue<'eval>),
 }
 
@@ -827,7 +827,7 @@ pub enum ValueRef<'eval> {
     EffectState(DynamicEffectStateConnector),
     List(&'eval Vec<Value>),
     TempList(Vec<ValueRefToStoredValue<'eval>>),
-    Object(&'eval FastHashMap<String, Value>),
+    Object(&'eval HashMap<String, Value>),
 }
 
 impl<'eval> ValueRef<'eval> {
@@ -1132,7 +1132,7 @@ pub enum ValueRefMut<'eval> {
     EffectState(&'eval mut DynamicEffectStateConnector),
     TempEffectState(DynamicEffectStateConnector),
     List(&'eval mut Vec<Value>),
-    Object(&'eval mut FastHashMap<String, Value>),
+    Object(&'eval mut HashMap<String, Value>),
 }
 
 impl<'eval> ValueRefMut<'eval> {
@@ -1266,8 +1266,8 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
     TempList(Vec<MaybeReferenceValue<'eval>>),
-    Object(&'eval FastHashMap<String, MaybeReferenceValue<'eval>>),
-    StoredObject(&'eval FastHashMap<String, Value>),
+    Object(&'eval HashMap<String, MaybeReferenceValue<'eval>>),
+    StoredObject(&'eval HashMap<String, Value>),
 }
 
 impl<'eval> MaybeReferenceValueForOperation<'eval> {
@@ -1691,8 +1691,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     }
 
     fn equal_objects<T, U>(
-        lhs: &'eval FastHashMap<String, T>,
-        rhs: &'eval FastHashMap<String, U>,
+        lhs: &'eval HashMap<String, T>,
+        rhs: &'eval HashMap<String, U>,
     ) -> Result<bool>
     where
         &'eval T: Into<Self> + 'eval,

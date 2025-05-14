@@ -5,10 +5,8 @@ use std::{
     mem,
 };
 
-use ahash::HashMapExt;
+use ahash::HashMap;
 use itertools::Itertools;
-
-use crate::common::FastHashMap;
 
 /// Trait for objects that can be added directly to the battle log.
 pub trait BattleLoggable {
@@ -39,7 +37,7 @@ where
 #[derive(Debug, Clone)]
 pub struct UncommittedBattleLogEntry {
     title: String,
-    values: FastHashMap<String, String>,
+    values: HashMap<String, String>,
     insertion_order: Vec<String>,
 }
 
@@ -51,7 +49,7 @@ impl UncommittedBattleLogEntry {
     {
         Self {
             title: title.into(),
-            values: FastHashMap::new(),
+            values: HashMap::default(),
             insertion_order: Vec::new(),
         }
     }

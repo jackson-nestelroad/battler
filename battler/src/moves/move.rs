@@ -1,8 +1,8 @@
 use std::collections::hash_map::Entry;
 
 use ahash::{
-    HashMapExt,
-    HashSetExt,
+    HashMap,
+    HashSet,
 };
 use anyhow::Error;
 use battler_data::{
@@ -18,8 +18,6 @@ use crate::{
     battle::MonHandle,
     effect::fxlang,
     general_error,
-    FastHashMap,
-    FastHashSet,
 };
 
 /// Dynamic data on how a move hit a target.
@@ -30,7 +28,7 @@ pub struct MoveHitData {
     /// Type modifier on the damage calculation.
     pub type_modifier: i8,
     /// Arbitrary flags that can be set by moves.
-    pub flags: FastHashSet<Id>,
+    pub flags: HashSet<Id>,
 }
 
 impl MoveHitData {
@@ -38,7 +36,7 @@ impl MoveHitData {
         Self {
             crit: false,
             type_modifier: 0,
-            flags: FastHashSet::new(),
+            flags: HashSet::default(),
         }
     }
 }
@@ -114,9 +112,9 @@ pub struct Move {
     /// Secondary effects for each target.
     ///
     /// Secondary effects can be modified by effects on the user and the individual target.
-    pub secondary_effects: FastHashMap<(MonHandle, u8), Vec<SecondaryEffect>>,
+    pub secondary_effects: HashMap<(MonHandle, u8), Vec<SecondaryEffect>>,
 
-    hit_data: FastHashMap<(MonHandle, u8), MoveHitData>,
+    hit_data: HashMap<(MonHandle, u8), MoveHitData>,
 }
 
 impl Move {
@@ -138,8 +136,8 @@ impl Move {
             primary_user_effect_applied: false,
             effect_state: fxlang::EffectState::new(),
             unlinked: false,
-            secondary_effects: FastHashMap::new(),
-            hit_data: FastHashMap::new(),
+            secondary_effects: HashMap::default(),
+            hit_data: HashMap::default(),
         }
     }
 
@@ -161,8 +159,8 @@ impl Move {
             primary_user_effect_applied: false,
             effect_state: fxlang::EffectState::new(),
             unlinked: true,
-            secondary_effects: FastHashMap::new(),
-            hit_data: FastHashMap::new(),
+            secondary_effects: HashMap::default(),
+            hit_data: HashMap::default(),
         }
     }
 

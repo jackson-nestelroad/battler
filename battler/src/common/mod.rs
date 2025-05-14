@@ -1,5 +1,4 @@
 mod captures;
-mod hash;
 mod lru;
 mod maybe_owned;
 mod reference;
@@ -7,10 +6,6 @@ mod strings;
 mod test_util;
 
 pub use captures::Captures;
-pub use hash::{
-    FastHashMap,
-    FastHashSet,
-};
 pub use lru::{
     Iter,
     IterMut,

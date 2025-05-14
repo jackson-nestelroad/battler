@@ -1,6 +1,6 @@
 use ahash::{
-    HashMapExt,
-    HashSetExt,
+    HashMap,
+    HashSet,
 };
 use anyhow::Result;
 use battler_data::{
@@ -13,10 +13,6 @@ use zone_alloc::ElementRef;
 
 use crate::{
     battle::BattleType,
-    common::{
-        FastHashMap,
-        FastHashSet,
-    },
     config::Clause,
     dex::Dex,
     error::{
@@ -208,9 +204,9 @@ impl ResourceCheck {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RuleSet {
     original: SerializedRuleSet,
-    bans: FastHashSet<Id>,
-    unbans: FastHashSet<Id>,
-    rules: FastHashMap<Id, String>,
+    bans: HashSet<Id>,
+    unbans: HashSet<Id>,
+    rules: HashMap<Id, String>,
     pub numeric_rules: NumericRules,
 }
 
@@ -219,9 +215,9 @@ impl RuleSet {
     pub fn new(rules: SerializedRuleSet, battle_type: &BattleType, dex: &Dex) -> Result<Self> {
         let mut ruleset = Self {
             original: rules.clone(),
-            bans: FastHashSet::new(),
-            unbans: FastHashSet::new(),
-            rules: FastHashMap::new(),
+            bans: HashSet::default(),
+            unbans: HashSet::default(),
+            rules: HashMap::default(),
             numeric_rules: NumericRules::default(),
         };
         ruleset.store_flattened_ruleset(rules, dex);
@@ -241,14 +237,14 @@ impl RuleSet {
                 _ => None,
             })
             .cloned()
-            .collect::<FastHashSet<_>>();
+            .collect::<HashSet<_>>();
 
         // Next, observe all rules and flatten out the ruleset.
         //
         // If a rule is found to be repealed, it is skipped over.
         let mut unstored_rules = rules;
         while !unstored_rules.is_empty() {
-            let mut next_layer = SerializedRuleSet::new();
+            let mut next_layer = SerializedRuleSet::default();
             for rule in unstored_rules {
                 match rule {
                     Rule::Ban(id) => {
@@ -371,6 +367,10 @@ impl RuleSet {
 
 #[cfg(test)]
 mod rule_set_test {
+    use ahash::{
+        HashMap,
+        HashSet,
+    };
     use anyhow::Result;
     use battler_data::{
         Id,
@@ -381,10 +381,6 @@ mod rule_set_test {
 
     use crate::{
         battle::BattleType,
-        common::{
-            FastHashMap,
-            FastHashSet,
-        },
         config::{
             ResourceCheck,
             RuleSet,
@@ -411,17 +407,14 @@ mod rule_set_test {
             &BattleType::Singles,
         )
         .unwrap();
-        assert_eq!(
-            ruleset.bans,
-            FastHashSet::from_iter([Id::from("legendary")]),
-        );
+        assert_eq!(ruleset.bans, HashSet::from_iter([Id::from("legendary")]),);
         assert_eq!(
             ruleset.unbans,
-            FastHashSet::from_iter([Id::from("giratinaorigin")]),
+            HashSet::from_iter([Id::from("giratinaorigin")]),
         );
         assert_eq!(
             ruleset.rules,
-            FastHashMap::from_iter([
+            HashMap::from_iter([
                 (Id::from("maxlevel"), "50".to_owned()),
                 (Id::from("ou"), "".to_owned())
             ]),

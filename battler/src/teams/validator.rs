@@ -1,8 +1,8 @@
 use std::mem;
 
 use ahash::{
-    HashMapExt,
-    HashSetExt,
+    HashMap,
+    HashSet,
 };
 use anyhow::Result;
 use battler_data::{
@@ -19,10 +19,6 @@ use zone_alloc::ElementRef;
 
 use crate::{
     abilities::Ability,
-    common::{
-        FastHashMap,
-        FastHashSet,
-    },
     config::{
         Format,
         ResourceCheck,
@@ -54,18 +50,18 @@ struct MonValidationState<'s> {
     /// Was this Mon obtained from a giveaway event?
     from_event: bool,
     /// Possible events the Mon may have been obtained from.
-    possible_events: FastHashMap<String, PossibleEvent<'s>>,
+    possible_events: HashMap<String, PossibleEvent<'s>>,
 }
 
 impl<'s> MonValidationState<'s> {
     fn new() -> Self {
         Self {
             from_event: false,
-            possible_events: FastHashMap::new(),
+            possible_events: HashMap::default(),
         }
     }
 
-    fn add_possible_events(&mut self, events: FastHashMap<String, PossibleEvent<'s>>) {
+    fn add_possible_events(&mut self, events: HashMap<String, PossibleEvent<'s>>) {
         // If this Mon is not yet known to be from an event, then the first set of events is the
         // initial set. Otherwise, take the intersection to receive the new set of possible events
         // this Mon could have been from.
@@ -73,7 +69,7 @@ impl<'s> MonValidationState<'s> {
             self.from_event = true;
             self.possible_events = events;
         } else {
-            let mut current_events = FastHashMap::new();
+            let mut current_events = HashMap::default();
             mem::swap(&mut self.possible_events, &mut current_events);
             for (id, event) in current_events.into_iter() {
                 if events.contains_key(&id) {
@@ -570,9 +566,9 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     where
         'b: 'state,
     {
-        let mut seen = FastHashSet::<Id>::new();
+        let mut seen = HashSet::default();
         let mut current_species: Result<ElementRef<'_, Species>> = Ok(species.clone());
-        let mut possible_events = FastHashMap::new();
+        let mut possible_events = HashMap::default();
 
         loop {
             let species = match &current_species {
@@ -677,7 +673,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                         },
                     )
                 })
-                .collect::<FastHashMap<_, _>>();
+                .collect::<HashMap<_, _>>();
             if possible_events.is_empty() {
                 possible_events = events_with_this_move;
             } else {

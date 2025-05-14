@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use ahash::{
-    HashMapExt,
+    HashMap,
     HashSetExt,
 };
 use anyhow::Result;
@@ -12,7 +12,6 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     CoreBattleOptions,
     DataStore,
-    FastHashMap,
     FieldData,
     FieldEnvironment,
     FormatData,
@@ -34,7 +33,7 @@ use crate::ControlledRandomNumberGenerator;
 pub struct TestBattleBuilder {
     options: CoreBattleOptions,
     engine_options: CoreBattleEngineOptions,
-    teams: FastHashMap<String, TeamData>,
+    teams: HashMap<String, TeamData>,
     controlled_rng: bool,
     infinite_bags: bool,
 }
@@ -61,7 +60,7 @@ impl TestBattleBuilder {
                 },
             },
             engine_options: CoreBattleEngineOptions::default(),
-            teams: FastHashMap::new(),
+            teams: HashMap::default(),
             controlled_rng: false,
             infinite_bags: false,
         }

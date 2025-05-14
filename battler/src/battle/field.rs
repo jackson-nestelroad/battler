@@ -1,4 +1,4 @@
-use ahash::HashMapExt;
+use ahash::HashMap;
 use battler_data::Id;
 use serde::{
     Deserialize,
@@ -14,7 +14,6 @@ use crate::{
         core_battle_effects,
         Context,
     },
-    common::FastHashMap,
     effect::fxlang,
 };
 
@@ -73,7 +72,7 @@ pub struct Field {
     pub weather_state: fxlang::EffectState,
     pub terrain: Option<Id>,
     pub terrain_state: fxlang::EffectState,
-    pub pseudo_weathers: FastHashMap<Id, fxlang::EffectState>,
+    pub pseudo_weathers: HashMap<Id, fxlang::EffectState>,
 }
 
 impl Field {
@@ -87,7 +86,7 @@ impl Field {
             weather_state: fxlang::EffectState::new(),
             terrain: None,
             terrain_state: fxlang::EffectState::new(),
-            pseudo_weathers: FastHashMap::new(),
+            pseudo_weathers: HashMap::default(),
         }
     }
 

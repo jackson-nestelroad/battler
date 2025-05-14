@@ -229,7 +229,7 @@ mod dex_test {
         ops::Deref,
     };
 
-    use ahash::HashMapExt;
+    use ahash::HashMap;
     use anyhow::Result;
     use battler_data::{
         DataStore,
@@ -238,13 +238,10 @@ mod dex_test {
     };
     use rand::random;
 
-    use crate::{
-        common::FastHashMap,
-        dex::{
-            ResourceDex,
-            ResourceLookup,
-            ResourceWrapper,
-        },
+    use crate::dex::{
+        ResourceDex,
+        ResourceLookup,
+        ResourceWrapper,
     };
 
     #[derive(Debug, Clone, PartialEq)]
@@ -260,13 +257,13 @@ mod dex_test {
     }
 
     struct TestDataLookup {
-        lookup_calls: RefCell<FastHashMap<Id, u64>>,
+        lookup_calls: RefCell<HashMap<Id, u64>>,
     }
 
     impl<'d> ResourceLookup<'d, TestData> for TestDataLookup {
         fn new(_: &'d dyn DataStore) -> Self {
             Self {
-                lookup_calls: RefCell::new(FastHashMap::new()),
+                lookup_calls: RefCell::new(HashMap::default()),
             }
         }
 
@@ -304,7 +301,7 @@ mod dex_test {
         // Only a single lookup occurred.
         assert_eq!(
             *dex.lookup.lookup_calls.borrow(),
-            FastHashMap::from_iter([(Id::from("first"), 1)])
+            HashMap::from_iter([(Id::from("first"), 1)])
         );
     }
 
@@ -325,7 +322,7 @@ mod dex_test {
         // Only a single lookup occurred for the resolved alias.
         assert_eq!(
             *dex.lookup.lookup_calls.borrow(),
-            FastHashMap::from_iter([(Id::from("native"), 1)])
+            HashMap::from_iter([(Id::from("native"), 1)])
         );
     }
 }

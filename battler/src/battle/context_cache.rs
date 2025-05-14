@@ -3,7 +3,7 @@ use std::{
     mem,
 };
 
-use ahash::HashMapExt;
+use ahash::HashMap;
 use anyhow::Result;
 use zone_alloc::ElementRefMut;
 
@@ -14,7 +14,6 @@ use crate::{
         MonHandle,
         MoveHandle,
     },
-    common::FastHashMap,
     error::WrapOptionError,
     moves::Move,
 };
@@ -29,16 +28,16 @@ use crate::{
 /// Borrowing resources at the root of the chain allows multiple contexts to borrow the same
 /// resource at different parts in the chain.
 pub struct ContextCache<'borrow> {
-    mons: UnsafeCell<FastHashMap<MonHandle, ElementRefMut<'borrow, Mon>>>,
-    active_moves: UnsafeCell<FastHashMap<MoveHandle, ElementRefMut<'borrow, Move>>>,
+    mons: UnsafeCell<HashMap<MonHandle, ElementRefMut<'borrow, Mon>>>,
+    active_moves: UnsafeCell<HashMap<MoveHandle, ElementRefMut<'borrow, Move>>>,
 }
 
 impl<'borrow> ContextCache<'borrow> {
     /// Creates a new context cache.
     pub fn new() -> Self {
         Self {
-            mons: UnsafeCell::new(FastHashMap::new()),
-            active_moves: UnsafeCell::new(FastHashMap::new()),
+            mons: UnsafeCell::new(HashMap::default()),
+            active_moves: UnsafeCell::new(HashMap::default()),
         }
     }
 
