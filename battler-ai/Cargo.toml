@@ -1,21 +1,19 @@
 [package]
-name = "battler-client"
+name = "battler-ai"
 version = "0.1.0"
 edition = "2024"
-description = "Client battles managed via battler."
+description = "AI implementation for battles managed via battler."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["pokemon", "battle"]
 license = "MIT"
-repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-client"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai"
 
 [dependencies]
 ahash = "0.8.11"
 anyhow = "1.0"
 battler = { path = "../battler" }
-battler-service = { path = "../battler-service" }
-battler-service-client = { path = "../battler-service-client" }
+battler-client = { path = "../battler-client" }
 futures-util = "0.3"
-serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.41.0", features = ["full"] }
 uuid = "1.16.0"
 
