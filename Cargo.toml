@@ -55,7 +55,7 @@ serde_string_enum = "0.2"
 # Async.
 futures-channel = "0.3"
 futures-util = "0.3"
-tokio = { version = "1.45.0", features = ["full"] }
+tokio = { version = "1.45", features = ["full"] }
 
 # Logging.
 log = "0.4"
@@ -74,7 +74,7 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 rustls = "0.23"
 sha2 = "0.10"
 stringprep = "0.1"
-tokio-tungstenite = { version = "0.24.0", features = ["rustls-tls-native-roots"] }
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-native-roots"] }
 
 # Macros.
 proc-macro2 = "1.0"
