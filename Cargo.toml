@@ -60,7 +60,7 @@ tokio = { version = "1.45.0", features = ["full"] }
 # Logging.
 log = "0.4"
 
-# Testing
+# Testing,
 assert_matches = "1.5"
 pretty_assertions = "1.4"
 pretty_assertions_sorted = "1.2"
