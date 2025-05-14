@@ -1,10 +1,14 @@
-use battler::DataStoreByName;
+use battler::{
+    DataStoreByName,
+    PlayerBattleData,
+};
 use battler_client::state::BattleState;
 
 /// The context of a battle AI making a choice in a battle.
 pub struct AiContext<'d> {
     pub data: &'d dyn DataStoreByName,
     pub state: BattleState,
+    pub player_data: PlayerBattleData,
 }
 
 /// An AI decision maker for a battle managed by battler.

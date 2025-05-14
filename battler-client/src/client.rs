@@ -211,6 +211,11 @@ impl BattlerClient {
             .await
     }
 
+    /// Reads the player's current battle data.
+    pub async fn player_data(&self) -> Result<battler::PlayerBattleData> {
+        self.service.player_data(self.battle, &self.player).await
+    }
+
     /// Receiver for requests for the player.
     pub async fn request_rx(&self) -> watch::Receiver<Option<battler::Request>> {
         self.request_rx.clone()
