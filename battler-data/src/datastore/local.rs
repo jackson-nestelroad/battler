@@ -2,6 +2,7 @@ use std::{
     env,
     fs::File,
     path::Path,
+    sync::RwLock,
 };
 
 use ahash::HashMap;
@@ -18,6 +19,7 @@ use crate::{
     ClauseData,
     ConditionData,
     DataStore,
+    DataStoreByName,
     Id,
     ItemData,
     MoveData,
@@ -37,6 +39,13 @@ pub struct LocalDataStore {
     pub items: HashMap<Id, ItemData>,
     pub moves: HashMap<Id, MoveData>,
     pub species: HashMap<Id, SpeciesData>,
+
+    abilities_by_name: RwLock<HashMap<String, Id>>,
+    clauses_by_name: RwLock<HashMap<String, Id>>,
+    conditions_by_name: RwLock<HashMap<String, Id>>,
+    items_by_name: RwLock<HashMap<String, Id>>,
+    moves_by_name: RwLock<HashMap<String, Id>>,
+    species_by_name: RwLock<HashMap<String, Id>>,
 }
 
 impl LocalDataStore {
@@ -77,6 +86,12 @@ impl LocalDataStore {
             items: HashMap::default(),
             moves: HashMap::default(),
             species: HashMap::default(),
+            abilities_by_name: RwLock::new(HashMap::default()),
+            clauses_by_name: RwLock::new(HashMap::default()),
+            conditions_by_name: RwLock::new(HashMap::default()),
+            items_by_name: RwLock::new(HashMap::default()),
+            moves_by_name: RwLock::new(HashMap::default()),
+            species_by_name: RwLock::new(HashMap::default()),
         };
         store.initialize()?;
         Ok(store)
@@ -196,5 +211,151 @@ impl DataStore for LocalDataStore {
 
     fn get_species(&self, id: &Id) -> Result<Option<SpeciesData>> {
         Ok(self.species.get(id).cloned())
+    }
+}
+
+impl DataStoreByName for LocalDataStore {
+    fn get_ability_by_name(&self, name: &str) -> Result<Option<AbilityData>> {
+        if let Ok(cache) = self.abilities_by_name.read()
+            && let Some(id) = cache.get(name)
+        {
+            return self.get_ability(id);
+        }
+
+        let (id, ability) = match self
+            .abilities
+            .iter()
+            .find(|(_, ability)| ability.name == name)
+        {
+            Some((id, ability)) => (id.clone(), ability.clone()),
+            None => return Ok(None),
+        };
+        self.abilities_by_name
+            .write()
+            .unwrap_or_else(|mut err| {
+                **err.get_mut() = HashMap::default();
+                self.abilities_by_name.clear_poison();
+                err.into_inner()
+            })
+            .insert(name.to_owned(), id);
+        Ok(Some(ability))
+    }
+
+    fn get_clause_by_name(&self, name: &str) -> Result<Option<ClauseData>> {
+        if let Ok(cache) = self.clauses_by_name.read()
+            && let Some(id) = cache.get(name)
+        {
+            return self.get_clause(id);
+        }
+
+        let (id, clause) = match self.clauses.iter().find(|(_, clause)| clause.name == name) {
+            Some((id, clause)) => (id.clone(), clause.clone()),
+            None => return Ok(None),
+        };
+        self.clauses_by_name
+            .write()
+            .unwrap_or_else(|mut err| {
+                **err.get_mut() = HashMap::default();
+                self.clauses_by_name.clear_poison();
+                err.into_inner()
+            })
+            .insert(name.to_owned(), id);
+        Ok(Some(clause))
+    }
+
+    fn get_condition_by_name(&self, name: &str) -> Result<Option<ConditionData>> {
+        if let Ok(cache) = self.conditions_by_name.read()
+            && let Some(id) = cache.get(name)
+        {
+            return self.get_condition(id);
+        }
+
+        let (id, condition) = match self
+            .conditions
+            .iter()
+            .find(|(_, condition)| condition.name == name)
+        {
+            Some((id, condition)) => (id.clone(), condition.clone()),
+            None => return Ok(None),
+        };
+        self.conditions_by_name
+            .write()
+            .unwrap_or_else(|mut err| {
+                **err.get_mut() = HashMap::default();
+                self.conditions_by_name.clear_poison();
+                err.into_inner()
+            })
+            .insert(name.to_owned(), id);
+        Ok(Some(condition))
+    }
+
+    fn get_item_by_name(&self, name: &str) -> Result<Option<ItemData>> {
+        if let Ok(cache) = self.items_by_name.read()
+            && let Some(id) = cache.get(name)
+        {
+            return self.get_item(id);
+        }
+
+        let (id, item) = match self.items.iter().find(|(_, item)| item.name == name) {
+            Some((id, item)) => (id.clone(), item.clone()),
+            None => return Ok(None),
+        };
+        self.items_by_name
+            .write()
+            .unwrap_or_else(|mut err| {
+                **err.get_mut() = HashMap::default();
+                self.items_by_name.clear_poison();
+                err.into_inner()
+            })
+            .insert(name.to_owned(), id);
+        Ok(Some(item))
+    }
+
+    fn get_move_by_name(&self, name: &str) -> Result<Option<MoveData>> {
+        if let Ok(cache) = self.moves_by_name.read()
+            && let Some(id) = cache.get(name)
+        {
+            return self.get_move(id);
+        }
+
+        let (id, mov) = match self.moves.iter().find(|(_, mov)| mov.name == name) {
+            Some((id, mov)) => (id.clone(), mov.clone()),
+            None => return Ok(None),
+        };
+        self.moves_by_name
+            .write()
+            .unwrap_or_else(|mut err| {
+                **err.get_mut() = HashMap::default();
+                self.moves_by_name.clear_poison();
+                err.into_inner()
+            })
+            .insert(name.to_owned(), id);
+        Ok(Some(mov))
+    }
+
+    fn get_species_by_name(&self, name: &str) -> Result<Option<SpeciesData>> {
+        if let Ok(cache) = self.species_by_name.read()
+            && let Some(id) = cache.get(name)
+        {
+            return self.get_species(id);
+        }
+
+        let (id, species) = match self
+            .species
+            .iter()
+            .find(|(_, species)| species.name == name)
+        {
+            Some((id, species)) => (id.clone(), species.clone()),
+            None => return Ok(None),
+        };
+        self.species_by_name
+            .write()
+            .unwrap_or_else(|mut err| {
+                **err.get_mut() = HashMap::default();
+                self.species_by_name.clear_poison();
+                err.into_inner()
+            })
+            .insert(name.to_owned(), id);
+        Ok(Some(species))
     }
 }

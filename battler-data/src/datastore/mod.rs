@@ -1,5 +1,5 @@
 mod aliases;
-mod datastore;
+mod data_store;
 mod local;
 
 pub use aliases::{
@@ -7,5 +7,8 @@ pub use aliases::{
     SerializedAliases,
     deserialize_aliases,
 };
-pub use datastore::DataStore;
+pub use data_store::{
+    DataStore,
+    DataStoreByName,
+};
 pub use local::LocalDataStore;
