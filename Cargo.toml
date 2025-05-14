@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "battler",
+    "battler-ai",
     "battler-client",
     "battler-data",
     "battler-service",
