@@ -42,16 +42,22 @@ use crate::{
     stats,
 };
 
+/// Input for the damage calculator.
 pub struct DamageCalculatorInput<'d> {
+    /// Data source.
     pub data: &'d dyn DataStoreByName,
+    /// Field state.
     pub field: Field,
+    /// Attacker state.
     pub attacker: Mon,
+    /// Defender state.
     pub defender: Mon,
+    /// Move being used.
     pub mov: Move,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MonType {
+pub(crate) enum MonType {
     Attacker,
     Defender,
 }
@@ -76,23 +82,23 @@ impl Display for MonType {
 }
 
 #[derive(Default)]
-pub struct MonProperties {
+pub(crate) struct MonProperties {
     pub weather_suppressed: bool,
 }
 
 #[derive(Default)]
-pub struct MoveProperties {
+pub(crate) struct MoveProperties {
     pub hit: u64,
 }
 
 #[derive(Default)]
-pub struct Properties {
+pub(crate) struct Properties {
     pub attacker: MonProperties,
     pub defender: MonProperties,
     pub mov: MoveProperties,
 }
 
-pub struct DamageContext<'d> {
+pub(crate) struct DamageContext<'d> {
     pub data: &'d dyn DataStoreByName,
     pub field: Field,
     pub attacker: Mon,
@@ -112,6 +118,7 @@ impl<'d> DamageContext<'d> {
         }
     }
 
+    #[allow(unused)]
     pub fn side_mut(&mut self, mon_type: MonType) -> &mut Side {
         match mon_type {
             MonType::Attacker => &mut self.field.attacker_side,
@@ -140,6 +147,7 @@ impl<'d> DamageContext<'d> {
         }
     }
 
+    #[allow(unused)]
     pub fn species_mut(&mut self, mon_type: MonType) -> &mut SpeciesData {
         match mon_type {
             MonType::Attacker => &mut self.attacker_species_data,
@@ -194,12 +202,20 @@ impl<'d> DamageContext<'d> {
     }
 }
 
+/// Output of a single hit of a move in the damage calculator.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DamageOutput {
+    /// Move base power.
     pub base_power: Option<Output<u64>>,
+    /// Attack stat.
     pub attack: Option<(Stat, Output<Range<u64>>)>,
+    /// Defense stat.
     pub defense: Option<(Stat, Output<Range<u64>>)>,
+    /// Type effectiveness modifier.
     pub type_effectiveness: Option<Output<Fraction<u64>>>,
+    /// Possible damage distribution.
+    ///
+    /// Distribution is used due to the randomization factor.
     pub damage: Output<RangeDistribution<u64>>,
 }
 
@@ -234,7 +250,11 @@ impl Default for DamageOutput {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Output of the damage calculator.
+///
+/// A move is generically able to hit multiple times, which will produce multiple damage
+/// calculations.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct MultiHitDamageOutput {
     pub hits: Vec<DamageOutput>,
 }
@@ -247,6 +267,7 @@ impl From<DamageOutput> for MultiHitDamageOutput {
     }
 }
 
+/// Calculates the possible damage distribution of a move.
 pub fn calculate_damage(input: DamageCalculatorInput) -> Result<MultiHitDamageOutput> {
     let move_data = input
         .data
@@ -322,7 +343,9 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
         return Ok(DamageOutput::zero("immune"));
     }
 
-    // TODO: OHKO moves.
+    // TODO: Consider OHKO moves.
+    //
+    // However, we do not know exactly how much damage an OHKO move will do.
 
     if let Some(fixed) = apply_fixed_damage(context) {
         return Ok(DamageOutput::fixed(fixed, "fixed"));
@@ -444,7 +467,6 @@ fn apply_damage_modifiers(
         "randomize",
     );
 
-    // STAB.
     if !context.move_data.typeless
         && context
             .mon(MonType::Attacker)
@@ -456,28 +478,15 @@ fn apply_damage_modifiers(
     let mut type_effectiveness = Output::from(Fraction::from(1u64));
     for defense_type in &context.mon(MonType::Defender).types {
         match context.type_effectiveness(context.move_data.primary_type, *defense_type) {
-            TypeEffectiveness::None => type_effectiveness.mul(
-                0,
-                format!(
-                    "no effect against {}",
-                    defense_type.to_string().to_lowercase()
-                ),
-            ),
+            // Immunity is handled much earlier, so it should never occur here.
+            TypeEffectiveness::None => (),
             TypeEffectiveness::Normal => (),
-            TypeEffectiveness::Strong => type_effectiveness.mul(
-                2,
-                format!(
-                    "super effective against {}",
-                    defense_type.to_string().to_lowercase()
-                ),
-            ),
-            TypeEffectiveness::Weak => type_effectiveness.div(
-                2,
-                format!(
-                    "not very effective against {}",
-                    defense_type.to_string().to_lowercase()
-                ),
-            ),
+            TypeEffectiveness::Strong => {
+                type_effectiveness.mul(2, format!("super effective against {defense_type}"))
+            }
+            TypeEffectiveness::Weak => {
+                type_effectiveness.div(2, format!("not very effective against {defense_type}"))
+            }
         }
     }
     modify_type_effectiveness(context, &mut type_effectiveness);
@@ -583,11 +592,11 @@ fn calculate_single_stat_internal(
 
     let boost = boost.clamp(-6, 6);
     // SAFETY: boost.abs() is between 0 and 6.
-    let boost = BOOST_TABLE.get(boost.abs() as usize).unwrap().convert();
-    if boost > 1 {
-        value.mul(boost, "boost");
-    } else if boost < 1 {
-        value.mul(boost, "drop");
+    let boost_fraction = BOOST_TABLE.get(boost.abs() as usize).unwrap().convert();
+    if boost > 0 {
+        value.mul(boost_fraction, "boost");
+    } else if boost < 0 {
+        value.div(boost_fraction, "drop");
     }
 
     modify_stat(context, stat, stat_user, &mut value);
@@ -624,6 +633,9 @@ fn side_effects(side: &Side) -> HashSet<String> {
     let mut effects = HashSet::default();
     for condition in &side.conditions {
         effects.insert(format!("condition:{condition}"));
+    }
+    for ability in &side.additional_abilities {
+        effects.insert(format!("ability:{ability}"));
     }
     effects
 }
@@ -741,6 +753,7 @@ fn effect_still_applies(context: &DamageContext, name: &str, on: EffectSource) -
     let (effect_type, name) = effect_type_and_name(name);
     match (effect_type, on) {
         ("ability", EffectSource::Mon(mon_type)) => context.mon(mon_type).has_ability([name]),
+        ("ability", EffectSource::Side(mon_type)) => context.side(mon_type).has_ability([name]),
         ("condition", EffectSource::Field) => context.field.has_condition([name]),
         ("condition", EffectSource::Mon(mon_type)) => context.mon(mon_type).has_condition([name]),
         ("condition", EffectSource::Side(mon_type)) => context.side(mon_type).has_condition([name]),
@@ -782,6 +795,16 @@ fn modify_state_from_side(context: &mut DamageContext, mon_type: MonType) {
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_FROM_SIDE_HOOKS);
     for (name, hook) in hooks {
         if !effect_still_applies(context, name, EffectSource::Side(mon_type)) {
+            continue;
+        }
+        hook(context, mon_type);
+    }
+
+    // Also consider the Mon on this side.
+    let effects = effects_for_source(&context, EffectSource::Mon(mon_type), None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_FROM_SIDE_HOOKS);
+    for (name, hook) in hooks {
+        if !effect_still_applies(context, name, EffectSource::Mon(mon_type)) {
             continue;
         }
         hook(context, mon_type);
@@ -907,7 +930,9 @@ fn modify_state_after_hit(context: &mut DamageContext) {
 
 #[cfg(test)]
 mod damage_test {
+    use ahash::HashSet;
     use battler_data::{
+        BoostTable,
         Fraction,
         LocalDataStore,
         Nature,
@@ -931,6 +956,7 @@ mod damage_test {
             Field,
             Mon,
             Move,
+            Side,
         },
     };
 
@@ -1113,6 +1139,813 @@ mod damage_test {
                     },
                 ]),
             });
+        });
+    }
+
+    #[test]
+    fn multiple_hits() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Serious),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Timid),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Fury Attack".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            pretty_assertions::assert_eq!(
+                output.hits.iter().map(|output| output.damage.value().min_max_range()).collect::<Vec<_>>(),
+                Vec::from_iter([
+                    Some(Range::new(12, 15)),
+                    Some(Range::new(12, 15)),
+                    Some(Range::new(12, 15)),
+                ])
+            );
+        });
+    }
+
+    #[test]
+    fn spread_modifier() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Serious),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Timid),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Surf".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(!damage.description().contains(&"x3/4 - spread".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(149, 176)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Serious),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Timid),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Surf".to_owned(),
+                spread: true,
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x3/4 - spread".to_owned()), "{:?}", damage.description());
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(112, 132)));
+        });
+    }
+
+    #[test]
+    fn critical_hit() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Serious),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                boosts: BoostTable {
+                    spa: -3,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Timid),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                boosts: BoostTable {
+                    spd: 6,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Air Slash".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            pretty_assertions::assert_eq!(attack, &Output::new(Range::new(94, 94), [
+                "\u{00F7}5/2 - drop",
+                "[mapped] - floor",
+            ]));
+            let defense = &output.hits[0].defense.as_ref().unwrap().1;
+            pretty_assertions::assert_eq!(defense, &Output::new(Range::new(824, 824), [
+                "x4 - boost",
+                "[mapped] - floor",
+            ]));
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(7, 9)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Serious),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                boosts: BoostTable {
+                    spa: -3,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Timid),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                boosts: BoostTable {
+                    spd: 6,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Air Slash".to_owned(),
+                crit: true,
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            pretty_assertions::assert_eq!(attack, &Output::new(Range::new(236, 236), [
+                "[mapped] - floor",
+            ]));
+            let defense = &output.hits[0].defense.as_ref().unwrap().1;
+            pretty_assertions::assert_eq!(defense, &Output::new(Range::new(206, 206), [
+                "[mapped] - floor",
+            ]));
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x3/2 - crit".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(94, 111)));
+        });
+    }
+
+    #[test]
+    fn stab() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Pikachu".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Tackle".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(51, 60)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Pikachu".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Aqua Jet".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x3/2 - stab".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(76, 90)));
+        });
+    }
+
+    #[test]
+    fn immune() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Pidgeot".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Gengar".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Tackle".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            pretty_assertions::assert_eq!(output, MultiHitDamageOutput {
+                hits: Vec::from_iter([
+                    DamageOutput {
+                        damage: Output::new(RangeDistribution::from_iter([
+                            Range::new(0, 0),
+                        ]), [
+                            "=[[0,0]] - immune",
+                        ]),
+                        ..Default::default()
+                    }
+                ]),
+            });
+        });
+    }
+
+    #[test]
+    fn type_effectiveness() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Pikachu".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Pidgeot".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Thunderbolt".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::from(2u64), [
+                "x2 - super effective against Flying",
+            ]));
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x2 - type effectiveness".to_owned()));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Pikachu".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Gyarados".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Thunderbolt".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::from(4u64), [
+                "x2 - super effective against Water",
+                "x2 - super effective against Flying",
+            ]));
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x4 - type effectiveness".to_owned()));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Ludicolo".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Gyarados".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Surf".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::new(1u64, 2u64), [
+                "\u{00F7}2 - not very effective against Water",
+            ]));
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x1/2 - type effectiveness".to_owned()));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Ludicolo".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Ludicolo".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Surf".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::new(1u64, 4u64), [
+                "\u{00F7}2 - not very effective against Water",
+                "\u{00F7}2 - not very effective against Grass",
+            ]));
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x1/4 - type effectiveness".to_owned()));
+        });
+    }
+
+    #[test]
+    fn levitate_immunity() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Gengar".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ability: Some("Levitate".to_owned()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Earthquake".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
+        });
+    }
+
+    #[test]
+    fn grounded_due_to_ingrain_overrides_levitate() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Gengar".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ability: Some("Levitate".to_owned()),
+                conditions: HashSet::from_iter(["Ingrain".to_owned()]),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Earthquake".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(185, 218)));
+        });
+    }
+
+    #[test]
+    fn grounded_due_to_ingrain_negates_immunity() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Golem".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Pidgeot".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                conditions: HashSet::from_iter(["Ingrain".to_owned()]),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Earthquake".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(160, 189)));
+        });
+    }
+
+    #[test]
+    fn burn() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                status: Some("Burn".to_owned()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Skull Bash".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(98, 116)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                status: Some("Burn".to_owned()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Skull Bash".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(49, 58)));
+        });
+    }
+
+    #[test]
+    fn rain() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                weather: Some("Rain".to_owned()),
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Water Gun".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(133, 157)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                weather: Some("Rain".to_owned()),
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Flamethrower".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"\u{00F7}2 - Rain".to_owned()), "{damage:?}");
+        });
+    }
+
+    #[test]
+    fn utility_umbrella_suppresses_rain() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                weather: Some("Rain".to_owned()),
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                item: Some("Utility Umbrella".to_owned()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Water Gun".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(!damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
+        });
+    }
+
+    #[test]
+    fn embargo_suppresses_item() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                weather: Some("Rain".to_owned()),
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                item: Some("Utility Umbrella".to_owned()),
+                conditions: HashSet::from_iter(["Embargo".to_owned()]),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Water Gun".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(133, 157)));
+        });
+    }
+
+    #[test]
+    fn air_lock_suppresses_rain() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                weather: Some("Rain".to_owned()),
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ability: Some("Air Lock".to_owned()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Water Gun".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(!damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
+        });
+    }
+
+    #[test]
+    fn air_lock_from_another_mon_suppresses_rain() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                weather: Some("Rain".to_owned()),
+                attacker_side: Side {
+                    additional_abilities: HashSet::from_iter(["Air Lock".to_owned()]),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Water Gun".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(!damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
         });
     }
 }

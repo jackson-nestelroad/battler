@@ -54,6 +54,7 @@ impl Field {
 #[derive(Debug, Default, Clone)]
 pub struct Side {
     pub conditions: HashSet<String>,
+    pub additional_abilities: HashSet<String>,
 }
 
 impl Side {
@@ -64,6 +65,15 @@ impl Side {
     {
         iter.into_iter()
             .any(|val| self.conditions.contains(val.as_ref()))
+    }
+
+    pub fn has_ability<I, S>(&self, iter: I) -> bool
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        iter.into_iter()
+            .any(|val| self.additional_abilities.contains(val.as_ref()))
     }
 }
 

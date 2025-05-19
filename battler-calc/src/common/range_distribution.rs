@@ -45,6 +45,11 @@ where
         self.0.iter().map(|range| range.b()).max()
     }
 
+    /// Creates a range with the minimum and maximum value of all ranges.
+    pub fn min_max_range(&self) -> Option<Range<I>> {
+        Some(Range::new(self.min()?, self.max()?))
+    }
+
     /// Creates an iterator over the distribution.
     pub fn iter(&self) -> impl Iterator<Item = &Range<I>> {
         self.0.iter()

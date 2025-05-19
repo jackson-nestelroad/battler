@@ -2,6 +2,6 @@
 
 pub mod common;
 pub mod damage;
-pub mod hooks;
+pub(crate) mod hooks;
 pub mod state;
 pub mod stats;
