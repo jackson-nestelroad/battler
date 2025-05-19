@@ -1237,7 +1237,7 @@ mod damage_test {
             },
         }), Ok(output) => {
             let damage = &output.hits[0].damage;
-            assert!(damage.description().contains(&"x3/4 - spread".to_owned()), "{:?}", damage.description());
+            assert!(damage.description().contains(&"x3/4 - spread".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(112, 132)));
         });
     }
