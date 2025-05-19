@@ -70,7 +70,7 @@ fn default_crit_ratio() -> Option<u8> {
 /// moveset. Each turn, a Mon uses one move to affect the battle. Moves can damage opposing Mons,
 /// affect ally Mons or the user itself, boost or drop stats, apply conditions to Mons or the
 /// battlefield itself, and more.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct MoveData {
     /// Name of the move.
     pub name: String,

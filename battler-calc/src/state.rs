@@ -1,6 +1,7 @@
 use ahash::HashSet;
 use battler_data::{
     BoostTable,
+    Fraction,
     Gender,
     Nature,
     StatTable,
@@ -9,8 +10,10 @@ use battler_data::{
 
 #[derive(Debug, Default, Clone)]
 pub struct Field {
+    pub battle_type: String,
     pub weather: Option<String>,
     pub terrain: Option<String>,
+    pub environment: Option<String>,
     pub conditions: HashSet<String>,
     pub attacker_side: Side,
     pub defender_side: Side,
@@ -38,6 +41,18 @@ impl Field {
         }
     }
 
+    pub fn has_environment<I, S>(&self, iter: I) -> bool
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        if let Some(environment) = &self.environment {
+            iter.into_iter().any(|val| val.as_ref() == environment)
+        } else {
+            false
+        }
+    }
+
     pub fn has_weather<I, S>(&self, iter: I) -> bool
     where
         I: IntoIterator<Item = S>,
@@ -54,7 +69,6 @@ impl Field {
 #[derive(Debug, Default, Clone)]
 pub struct Side {
     pub conditions: HashSet<String>,
-    pub additional_abilities: HashSet<String>,
 }
 
 impl Side {
@@ -66,15 +80,6 @@ impl Side {
         iter.into_iter()
             .any(|val| self.conditions.contains(val.as_ref()))
     }
-
-    pub fn has_ability<I, S>(&self, iter: I) -> bool
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<str>,
-    {
-        iter.into_iter()
-            .any(|val| self.additional_abilities.contains(val.as_ref()))
-    }
 }
 
 #[derive(Debug, Default, Clone)]
@@ -82,7 +87,7 @@ pub struct Mon {
     pub name: String,
     pub side: usize,
     pub level: u64,
-    pub hp: Option<u64>,
+    pub health: Option<Fraction<u64>>,
     pub ability: Option<String>,
     pub item: Option<String>,
     pub gender: Option<Gender>,
@@ -93,6 +98,7 @@ pub struct Mon {
     pub status: Option<String>,
     pub types: Vec<Type>,
     pub conditions: HashSet<String>,
+    pub hidden_power_type: Option<Type>,
 }
 
 impl Mon {

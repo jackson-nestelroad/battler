@@ -56,6 +56,35 @@ pub struct DamageCalculatorInput<'d> {
     pub mov: Move,
 }
 
+impl<'d> TryInto<DamageContext<'d>> for DamageCalculatorInput<'d> {
+    type Error = Error;
+    fn try_into(self) -> Result<DamageContext<'d>> {
+        let move_data = self
+            .data
+            .get_move_by_name(&self.mov.name)?
+            .ok_or_else(|| Error::msg(format!("move {} does not exist", self.mov.name)))?;
+        let attacker_species_data = self
+            .data
+            .get_species_by_name(&self.attacker.name)?
+            .ok_or_else(|| Error::msg(format!("mon {} does not exist", self.attacker.name)))?;
+        let defender_species_data = self
+            .data
+            .get_species_by_name(&self.defender.name)?
+            .ok_or_else(|| Error::msg(format!("mon {} does not exist", self.defender.name)))?;
+        Ok(DamageContext {
+            data: self.data,
+            field: self.field,
+            attacker: self.attacker,
+            defender: self.defender,
+            mov: self.mov,
+            move_data,
+            attacker_species_data,
+            defender_species_data,
+            properties: Properties::default(),
+        })
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum MonType {
     Attacker,
@@ -89,6 +118,7 @@ pub(crate) struct MonProperties {
 #[derive(Default)]
 pub(crate) struct MoveProperties {
     pub hit: u64,
+    pub type_effectiveness: Fraction<u64>,
 }
 
 #[derive(Default)]
@@ -200,6 +230,10 @@ impl<'d> DamageContext<'d> {
             })
         })
     }
+
+    pub fn calculate_stat(&self, mon_type: MonType, stat: Stat) -> Output<Range<u64>> {
+        calculate_single_stat(self, mon_type, mon_type, stat, None).unwrap_or_default()
+    }
 }
 
 /// Output of a single hit of a move in the damage calculator.
@@ -224,15 +258,15 @@ impl DamageOutput {
     where
         S: Display,
     {
-        Self::fixed(0, reason)
+        Self::fixed(Range::from(0), reason)
     }
 
-    fn fixed<S>(damage: u64, reason: S) -> Self
+    fn fixed<S>(damage: Range<u64>, reason: S) -> Self
     where
         S: Display,
     {
         Self {
-            damage: Output::start(RangeDistribution::from(Range::from(damage)), reason),
+            damage: Output::start(RangeDistribution::from(damage), reason),
             ..Default::default()
         }
     }
@@ -303,11 +337,13 @@ fn calculate_damage_internal(mut context: DamageContext) -> Result<MultiHitDamag
     //
     // The idea is to modify the state up front, then all of the damage calculation hooks can assume
     // the battle state is in the correct form.
-    modify_state_from_field(&mut context);
-    modify_state_from_side(&mut context, MonType::Attacker);
-    modify_state_from_side(&mut context, MonType::Defender);
+
+    // Modify the Mons first, since abilities.
     modify_state_from_mon(&mut context, MonType::Attacker);
     modify_state_from_mon(&mut context, MonType::Defender);
+    modify_state_from_side(&mut context, MonType::Attacker);
+    modify_state_from_side(&mut context, MonType::Defender);
+    modify_state_from_field(&mut context);
 
     modify_move(&mut context);
 
@@ -343,9 +379,12 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
         return Ok(DamageOutput::zero("immune"));
     }
 
-    // TODO: Consider OHKO moves.
-    //
-    // However, we do not know exactly how much damage an OHKO move will do.
+    if context.move_data.ohko_type.is_some() {
+        return Ok(DamageOutput::fixed(
+            *context.calculate_stat(MonType::Defender, Stat::HP).value(),
+            "ohko",
+        ));
+    }
 
     if let Some(fixed) = apply_fixed_damage(context) {
         return Ok(DamageOutput::fixed(fixed, "fixed"));
@@ -491,6 +530,7 @@ fn apply_damage_modifiers(
     }
     modify_type_effectiveness(context, &mut type_effectiveness);
 
+    context.properties.mov.type_effectiveness = *type_effectiveness.value();
     damage.mul(*type_effectiveness.value(), "type effectiveness");
 
     modify_damage(context, &mut damage);
@@ -505,6 +545,68 @@ fn apply_damage_modifiers(
         "floor",
     );
     Ok((type_effectiveness, damage))
+}
+
+/// Calculates stats that would be used during damage calculation, based on the given battle state.
+pub fn calculate_stats(input: DamageCalculatorInput) -> Result<stats::Stats<Output<Range<u64>>>> {
+    let context = input.try_into()?;
+    let base_stats = calculate_base_stats(&context, MonType::Attacker)?;
+    let hp = calculate_single_stat_internal(
+        &context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::HP,
+        &base_stats,
+        None,
+    );
+    let atk = calculate_single_stat_internal(
+        &context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::Atk,
+        &base_stats,
+        None,
+    );
+    let def = calculate_single_stat_internal(
+        &context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::Def,
+        &base_stats,
+        None,
+    );
+    let spa = calculate_single_stat_internal(
+        &context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::SpAtk,
+        &base_stats,
+        None,
+    );
+    let spd = calculate_single_stat_internal(
+        &context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::SpDef,
+        &base_stats,
+        None,
+    );
+    let spe = calculate_single_stat_internal(
+        &context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::Spe,
+        &base_stats,
+        None,
+    );
+    Ok(stats::Stats {
+        hp,
+        atk,
+        def,
+        spa,
+        spd,
+        spe,
+    })
 }
 
 fn calculate_base_stats(
@@ -549,14 +651,14 @@ fn calculate_single_stat(
     stat: Stat,
     boost: Option<i8>,
 ) -> Result<Output<Range<u64>>> {
-    calculate_single_stat_internal(
+    Ok(calculate_single_stat_internal(
         context,
         mon_type,
         stat_user,
         stat,
         &calculate_base_stats(context, mon_type)?,
         boost,
-    )
+    ))
 }
 
 fn calculate_single_stat_internal(
@@ -566,16 +668,17 @@ fn calculate_single_stat_internal(
     stat: Stat,
     base_stats: &stats::Stats<Range<u64>>,
     boost: Option<i8>,
-) -> Result<Output<Range<u64>>> {
+) -> Output<Range<u64>> {
     if stat == Stat::HP {
-        return Ok(Output::from(Range::from(base_stats.hp)));
+        return Output::from(Range::from(base_stats.hp));
     }
 
     let mut value = Output::from(base_stats.get(stat).map(|val| Fraction::<u64>::from(val)));
 
     let boost = match boost {
         Some(boost) => boost,
-        None => context.mon(mon_type).boosts.get(stat.try_into()?),
+        // SAFETY: All stats except HP can convert to Boost. HP triggers an early return.
+        None => context.mon(mon_type).boosts.get(stat.try_into().unwrap()),
     };
 
     static BOOST_TABLE: LazyLock<[Fraction<u16>; 7]> = LazyLock::new(|| {
@@ -601,7 +704,7 @@ fn calculate_single_stat_internal(
 
     modify_stat(context, stat, stat_user, &mut value);
 
-    Ok(value.map(|val| val.map(|val| val.floor()), "floor"))
+    value.map(|val| val.map(|val| val.floor()), "floor")
 }
 
 fn apply_defaults_to_mon(context: &mut DamageContext, mon_type: MonType) {
@@ -633,9 +736,6 @@ fn side_effects(side: &Side) -> HashSet<String> {
     let mut effects = HashSet::default();
     for condition in &side.conditions {
         effects.insert(format!("condition:{condition}"));
-    }
-    for ability in &side.additional_abilities {
-        effects.insert(format!("ability:{ability}"));
     }
     effects
 }
@@ -699,7 +799,18 @@ fn effects_for_source(
             modify_effects_for_focus(effects, mon_type, focus)
         }
         EffectSource::Mon(mon_type) => {
-            let effects = mon_effects(context.mon(mon_type));
+            let mut effects = mon_effects(context.mon(mon_type));
+
+            // Weather and terrain can apply on Mons individually.
+            if let Some(weather) = &context.field.weather
+                && !context.mon_properties(mon_type).weather_suppressed
+            {
+                effects.insert(format!("weather:{weather}"));
+            }
+            if let Some(terrain) = &context.field.terrain {
+                effects.insert(format!("terrain:{terrain}"));
+            }
+
             modify_effects_for_focus(effects, mon_type, focus)
         }
     }
@@ -753,7 +864,6 @@ fn effect_still_applies(context: &DamageContext, name: &str, on: EffectSource) -
     let (effect_type, name) = effect_type_and_name(name);
     match (effect_type, on) {
         ("ability", EffectSource::Mon(mon_type)) => context.mon(mon_type).has_ability([name]),
-        ("ability", EffectSource::Side(mon_type)) => context.side(mon_type).has_ability([name]),
         ("condition", EffectSource::Field) => context.field.has_condition([name]),
         ("condition", EffectSource::Mon(mon_type)) => context.mon(mon_type).has_condition([name]),
         ("condition", EffectSource::Side(mon_type)) => context.side(mon_type).has_condition([name]),
@@ -826,7 +936,7 @@ fn modify_move(context: &mut DamageContext) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_MOVE_HOOKS);
     for (_, hook) in hooks {
-        hook(&mut context.mov);
+        hook(context);
     }
 }
 
@@ -845,7 +955,7 @@ fn check_mon_state(
     None
 }
 
-fn apply_fixed_damage(context: &DamageContext) -> Option<u64> {
+fn apply_fixed_damage(context: &DamageContext) -> Option<Range<u64>> {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::APPLY_FIXED_DAMAGE_HOOKS);
     for (_, hook) in hooks {
@@ -892,7 +1002,7 @@ fn modify_stat(
         },
     );
     for (_, hook) in hooks {
-        hook(context, value);
+        hook(context, mon_type, value);
     }
 }
 
@@ -956,7 +1066,6 @@ mod damage_test {
             Field,
             Mon,
             Move,
-            Side,
         },
     };
 
@@ -1888,46 +1997,6 @@ mod damage_test {
                 ivs: Some(max_ivs()),
                 evs: Some(empty_evs()),
                 ability: Some("Air Lock".to_owned()),
-                ..Default::default()
-            },
-            defender: Mon {
-                name: "Charizard".to_owned(),
-                level: 100,
-                nature: Some(Nature::Hardy),
-                ivs: Some(max_ivs()),
-                evs: Some(empty_evs()),
-                ..Default::default()
-            },
-            mov: Move {
-                name: "Water Gun".to_owned(),
-                ..Default::default()
-            },
-        }), Ok(output) => {
-            let damage = &output.hits[0].damage;
-            assert!(!damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
-            assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
-        });
-    }
-
-    #[test]
-    fn air_lock_from_another_mon_suppresses_rain() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
-            data: &data,
-            field: Field {
-                weather: Some("Rain".to_owned()),
-                attacker_side: Side {
-                    additional_abilities: HashSet::from_iter(["Air Lock".to_owned()]),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            attacker: Mon {
-                name: "Blastoise".to_owned(),
-                level: 100,
-                nature: Some(Nature::Hardy),
-                ivs: Some(max_ivs()),
-                evs: Some(empty_evs()),
                 ..Default::default()
             },
             defender: Mon {

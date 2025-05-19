@@ -29,6 +29,12 @@ impl Accuracy {
     }
 }
 
+impl Default for Accuracy {
+    fn default() -> Self {
+        Self::Chance(100)
+    }
+}
+
 impl From<u8> for Accuracy {
     fn from(value: u8) -> Self {
         Self::Chance(value)

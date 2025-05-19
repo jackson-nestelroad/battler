@@ -5,10 +5,11 @@ use serde_string_enum::{
 
 /// The category of a move.
 #[derive(
-    Debug, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug, Default, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum MoveCategory {
     #[string = "Physical"]
+    #[default]
     Physical,
     #[string = "Special"]
     Special,

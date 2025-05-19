@@ -17,6 +17,7 @@ use serde_string_enum::{
 /// The type of a species, which determines its weaknesses and resistances.
 #[derive(
     Debug,
+    Default,
     Clone,
     Copy,
     PartialEq,
@@ -29,6 +30,7 @@ use serde_string_enum::{
 )]
 pub enum Type {
     #[string = "Normal"]
+    #[default]
     Normal,
     #[string = "Fighting"]
     Fighting,

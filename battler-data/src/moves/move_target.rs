@@ -13,7 +13,14 @@ use serde_string_enum::{
 /// - "Team" - All unfainted Mons on a team.
 /// - "User" - The user of a move.
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 pub enum MoveTarget {
     /// An adjacent ally.
@@ -24,6 +31,7 @@ pub enum MoveTarget {
     AdjacentAllyOrUser,
     /// An adjacent foe.
     #[string = "AdjacentFoe"]
+    #[default]
     AdjacentFoe,
     /// The field or all Mons at once.
     #[string = "All"]
