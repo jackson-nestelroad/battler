@@ -29,6 +29,11 @@ use battler_data::{
     StatTable,
     Type,
 };
+use num::traits::{
+    WrappingAdd,
+    WrappingMul,
+    WrappingSub,
+};
 use zone_alloc::ElementRef;
 
 use crate::{

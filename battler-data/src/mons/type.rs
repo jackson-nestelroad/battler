@@ -69,13 +69,14 @@ pub enum Type {
 }
 
 /// Type effectiveness of one type against another.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub enum TypeEffectiveness {
     /// No effect.
     None,
     /// Not very effective.
     Weak,
     /// Normal effectiveness.
+    #[default]
     Normal,
     /// Super effective.
     Strong,

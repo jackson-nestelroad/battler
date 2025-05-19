@@ -42,7 +42,7 @@ pub trait DataStore: Send + Sync {
 }
 
 /// An extension of [`DataStore`] for looking up resources by name.
-pub trait DataStoreByName: Send + Sync {
+pub trait DataStoreByName: DataStore {
     /// Gets an ability by name.
     fn get_ability_by_name(&self, name: &str) -> Result<Option<AbilityData>>;
     /// Gets a clause by name.

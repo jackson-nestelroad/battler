@@ -22,6 +22,9 @@ use num::{
     integer::Roots,
     pow::Pow,
     traits::{
+        SaturatingAdd,
+        SaturatingMul,
+        SaturatingSub,
         WrappingAdd,
         WrappingMul,
         WrappingSub,
@@ -45,7 +48,7 @@ impl<I> FractionInteger for I where I: Integer + FromPrimitive + Copy {}
 ///
 /// A fraction is serializable as:
 /// - A fraction string (`"1/2"`).
-/// - An integer (`20`), which represents an integer (demoninator == 1).
+/// - An integer (`20`), which represents an integer (denominator == 1).
 /// - A floating point number (`1.5`), which is converted to a fraction out of 4096.
 /// - A percentage string (`"60%"`).
 /// - A two-length array (`[2,5]`).
@@ -75,7 +78,7 @@ where
 
     /// Creates a new fraction from an [`f64`].
     ///
-    /// Flatoing point precision is preserved by creating a fraction with a denominator of 4096.
+    /// Floating point precision is preserved by creating a fraction with a denominator of 4096.
     pub fn from_f64(value: f64) -> Self {
         let num = I::from_f64(value * 4096f64).unwrap();
         Self::new(num, I::from_u16(4096).unwrap()).simplify()
@@ -169,48 +172,6 @@ where
 
 impl<I> Fraction<I>
 where
-    I: FractionInteger + WrappingAdd,
-{
-    /// Wrapping addition.
-    pub fn wrapping_add(&self, rhs: &Self) -> Self {
-        let (lhs, rhs) = Self::normalize(&self, &rhs);
-        Self::new(
-            lhs.numerator().wrapping_add(&rhs.numerator()),
-            lhs.denominator(),
-        )
-    }
-}
-
-impl<I> Fraction<I>
-where
-    I: FractionInteger + WrappingSub,
-{
-    /// Wrapping subtraction.
-    pub fn wrapping_sub(&self, rhs: &Self) -> Self {
-        let (lhs, rhs) = Self::normalize(&self, &rhs);
-        Self::new(
-            lhs.numerator().wrapping_sub(&rhs.numerator()),
-            lhs.denominator(),
-        )
-    }
-}
-
-impl<I> Fraction<I>
-where
-    I: FractionInteger + WrappingMul,
-{
-    /// Wrapping multiplication.
-    pub fn wrapping_mul(&self, rhs: &Self) -> Self {
-        Self::new(
-            self.numerator().wrapping_mul(&rhs.numerator()),
-            self.denominator().wrapping_mul(&rhs.denominator()),
-        )
-        .simplify()
-    }
-}
-
-impl<I> Fraction<I>
-where
     I: FractionInteger + Roots,
 {
     pub fn sqrt(&self) -> Self {
@@ -220,12 +181,7 @@ where
     pub fn nth_root(&self, n: u32) -> Self {
         Self::new(self.numerator().nth_root(n), self.denominator().nth_root(n)).simplify()
     }
-}
 
-impl<I> Fraction<I>
-where
-    I: FractionInteger + Roots,
-{
     pub fn pow<J>(self, rhs: Fraction<J>) -> Result<Self, <J as TryInto<u32>>::Error>
     where
         I: Pow<J, Output = I> + TryInto<J>,
@@ -240,6 +196,15 @@ where
             .pow(rhs.numerator())
             .nth_root(rhs.denominator().try_into()?);
         Ok(Self::new(num, den))
+    }
+}
+
+impl<I> Default for Fraction<I>
+where
+    I: FractionInteger,
+{
+    fn default() -> Self {
+        Self::from(I::zero())
     }
 }
 
@@ -347,7 +312,7 @@ impl<I> Add<I> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
+    type Output = Self;
     fn add(self, rhs: I) -> Self::Output {
         Self::Output::new(
             self.numerator().add(rhs.mul(self.denominator())),
@@ -357,12 +322,12 @@ where
     }
 }
 
-impl<I> Add<Fraction<I>> for Fraction<I>
+impl<I> Add for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
-    fn add(self, rhs: Fraction<I>) -> Self::Output {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
         let (lhs, rhs) = Self::normalize(&self, &rhs);
         Self::Output::new(lhs.numerator().add(rhs.numerator()), lhs.denominator())
     }
@@ -372,7 +337,7 @@ impl<I> Sub<I> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
+    type Output = Self;
     fn sub(self, rhs: I) -> Self::Output {
         Self::Output::new(
             self.numerator().sub(rhs.mul(self.denominator())),
@@ -386,8 +351,8 @@ impl<I> Sub<Fraction<I>> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
-    fn sub(self, rhs: Fraction<I>) -> Self::Output {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
         let (lhs, rhs) = Self::normalize(&self, &rhs);
         Self::Output::new(lhs.numerator().sub(rhs.numerator()), lhs.denominator())
     }
@@ -397,7 +362,7 @@ impl<I> Mul<I> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
+    type Output = Self;
     fn mul(self, rhs: I) -> Self::Output {
         Self::Output::new(self.numerator().mul(rhs), self.denominator()).simplify()
     }
@@ -407,8 +372,8 @@ impl<I> Mul<Fraction<I>> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
-    fn mul(self, rhs: Fraction<I>) -> Self::Output {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
         Self::Output::new(
             self.numerator().mul(rhs.numerator()),
             self.denominator().mul(rhs.denominator()),
@@ -421,7 +386,7 @@ impl<I> Div<I> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
+    type Output = Self;
     fn div(self, rhs: I) -> Self::Output {
         self.mul(Fraction::new(I::one(), rhs))
     }
@@ -431,9 +396,87 @@ impl<I> Div<Fraction<I>> for Fraction<I>
 where
     I: FractionInteger,
 {
-    type Output = Fraction<I>;
-    fn div(self, rhs: Fraction<I>) -> Self::Output {
+    type Output = Self;
+    fn div(self, rhs: Self) -> Self::Output {
         self.mul(rhs.inverse())
+    }
+}
+
+impl<I> WrappingAdd for Fraction<I>
+where
+    I: FractionInteger + WrappingAdd,
+{
+    fn wrapping_add(&self, v: &Self) -> Self {
+        let (lhs, rhs) = Self::normalize(&self, &v);
+        Self::new(
+            lhs.numerator().wrapping_add(&rhs.numerator()),
+            lhs.denominator(),
+        )
+    }
+}
+
+impl<I> WrappingSub for Fraction<I>
+where
+    I: FractionInteger + WrappingSub,
+{
+    fn wrapping_sub(&self, v: &Self) -> Self {
+        let (lhs, rhs) = Self::normalize(&self, &v);
+        Self::new(
+            lhs.numerator().wrapping_sub(&rhs.numerator()),
+            lhs.denominator(),
+        )
+    }
+}
+
+impl<I> WrappingMul for Fraction<I>
+where
+    I: FractionInteger + WrappingMul,
+{
+    fn wrapping_mul(&self, v: &Self) -> Self {
+        Self::new(
+            self.numerator().wrapping_mul(&v.numerator()),
+            self.denominator().wrapping_mul(&v.denominator()),
+        )
+        .simplify()
+    }
+}
+
+impl<I> SaturatingAdd for Fraction<I>
+where
+    I: FractionInteger + SaturatingAdd,
+{
+    fn saturating_add(&self, v: &Self) -> Self {
+        let (lhs, rhs) = Self::normalize(&self, &v);
+        Self::new(
+            lhs.numerator().saturating_add(&rhs.numerator()),
+            lhs.denominator(),
+        )
+    }
+}
+
+impl<I> SaturatingSub for Fraction<I>
+where
+    I: FractionInteger + SaturatingSub,
+{
+    fn saturating_sub(&self, v: &Self) -> Self {
+        let (lhs, rhs) = Self::normalize(&self, &v);
+        Self::new(
+            lhs.numerator().saturating_sub(&rhs.numerator()),
+            lhs.denominator(),
+        )
+    }
+}
+
+impl<I> SaturatingMul for Fraction<I>
+where
+    I: FractionInteger + SaturatingMul,
+{
+    fn saturating_mul(&self, v: &Self) -> Self {
+        Self::new(
+            self.numerator().saturating_mul(&v.numerator()),
+            self.denominator().saturating_mul(&v.denominator()),
+        )
+        .simplify()
     }
 }
 

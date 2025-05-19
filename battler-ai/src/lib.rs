@@ -1,4 +1,4 @@
 mod ai;
-mod trainer;
+pub mod trainer;
 
 pub use ai::*;

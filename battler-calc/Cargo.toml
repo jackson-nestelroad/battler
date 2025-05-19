@@ -1,8 +1,8 @@
 [package]
-name = "battler-ai"
+name = "battler-calc"
 version = "0.1.0"
 edition = "2024"
-description = "AI implementation for battles managed via battler."
+description = "Damage and stat calculations for battler."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["pokemon", "battle"]
 license = "MIT"
@@ -12,13 +12,13 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai
 ahash = { workspace = true }
 anyhow = { workspace = true }
 futures-util = { workspace = true }
+indexmap = { workspace = true }
 num = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
 
-battler = { path = "../battler" }
 battler-client = { path = "../battler-client" }
-battler-prng = { path = "../battler-prng" }
+battler-data = { path = "../battler-data" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

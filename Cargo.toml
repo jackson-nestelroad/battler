@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "battler",
     "battler-ai",
+    "battler-calc",
     "battler-client",
     "battler-data",
     "battler-prng",
@@ -34,6 +35,7 @@ members = [
 # General utility.
 ahash = "0.8"
 async-trait = "0.1"
+indexmap = "2.9"
 itertools = "0.14"
 num = "0.4"
 rand = "0.9"
