@@ -1948,4 +1948,69 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
         });
     }
+
+    #[test]
+    fn huge_power() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Tackle".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            assert_eq!(attack.value(), &Range::new(202, 202));
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(31, 37)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ability: Some("Huge Power".to_owned()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Tackle".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            assert!(attack.description().contains(&"x2 - Huge Power".to_owned()), "{attack:?}");
+            assert_eq!(attack.value(), &Range::new(404, 404));
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(61, 72)));
+        });
+    }
 }

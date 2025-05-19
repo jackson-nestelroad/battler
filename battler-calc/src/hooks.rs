@@ -137,7 +137,16 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
     });
 
 pub(crate) static MODIFY_ATK_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
-    LazyLock::new(|| IndexMap::from_iter([]));
+    LazyLock::new(|| {
+        IndexMap::from_iter([(
+            "ability:Huge Power",
+            Box::new(
+                (|_: &DamageContext, value: &mut Output<Range<Fraction<u64>>>| {
+                    value.mul(2u64, "Huge Power");
+                }) as _,
+            ),
+        )])
+    });
 
 pub(crate) static MODIFY_DEF_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
     LazyLock::new(|| IndexMap::from_iter([]));
