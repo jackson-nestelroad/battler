@@ -247,6 +247,10 @@ pub struct DamageOutput {
     pub defense: Option<(Stat, Output<Range<u64>>)>,
     /// Type effectiveness modifier.
     pub type_effectiveness: Option<Output<Fraction<u64>>>,
+    /// The total HP of the defender.
+    ///
+    /// Can be used to convert damage to a percentage.
+    pub hp: Option<Range<u64>>,
     /// Possible damage distribution.
     ///
     /// Distribution is used due to the randomization factor.
@@ -279,6 +283,7 @@ impl Default for DamageOutput {
             attack: None,
             defense: None,
             type_effectiveness: None,
+            hp: None,
             damage: Output::from(RangeDistribution::from(Range::from(0u64))),
         }
     }
@@ -476,11 +481,20 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
 
     let (type_effectiveness, damage) = apply_damage_modifiers(context, base_damage_range)?;
 
+    let hp = calculate_single_stat(
+        context,
+        MonType::Defender,
+        MonType::Defender,
+        Stat::HP,
+        None,
+    )?;
+
     Ok(DamageOutput {
         base_power: Some(base_power),
         attack: Some((attack_stat, attack)),
         defense: Some((defense_stat, defense)),
         type_effectiveness: Some(type_effectiveness),
+        hp: Some(*hp.value()),
         damage,
     })
 }
@@ -1160,6 +1174,7 @@ mod damage_test {
                         attack: Some((Stat::Atk, Output::new(Range::new(152, 289), ["[mapped] - floor"]))),
                         defense: Some((Stat::Def, Output::new(Range::new(144, 280), ["[mapped] - floor"]))),
                         type_effectiveness: Some(Output::new::<_, _, &str>(Fraction::from(1u64), [])),
+                        hp: Some(Range::new(266, 360)),
                         damage: Output::new(RangeDistribution::from_iter([
                             Range::new(20, 69),
                             Range::new(19, 68),
@@ -1232,6 +1247,7 @@ mod damage_test {
                         attack: Some((Stat::Atk, Output::new(Range::new(200, 200), ["[mapped] - floor"]))),
                         defense: Some((Stat::Def, Output::new(Range::new(192, 192), ["[mapped] - floor"]))),
                         type_effectiveness: Some(Output::new::<_, _, &str>(Fraction::from(1u64), [])),
+                        hp: Some(Range::new(297, 297)),
                         damage: Output::new(RangeDistribution::from_iter([
                             Range::new(37, 37),
                             Range::new(36, 36),
@@ -2129,6 +2145,73 @@ mod damage_test {
             let damage = &output.hits[0].damage;
             assert!(damage.description().contains(&"=[[299,299]] - ohko".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(299, 299)));
+        });
+    }
+
+    #[test]
+    fn nature_power() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Ludicolo".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Nature Power".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let base_power = output.hits[0].base_power.as_ref().unwrap();
+            assert_eq!(*base_power.value(), 80);
+            let damage = &output.hits[0].damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(61, 72)));
+        });
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field {
+                environment: Some("Water".to_owned()),
+                ..Default::default()
+            },
+            attacker: Mon {
+                name: "Ludicolo".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Nature Power".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let base_power = output.hits[0].base_power.as_ref().unwrap();
+            assert_eq!(*base_power.value(), 110);
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"x2 - type effectiveness".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(249, 294)));
         });
     }
 }
