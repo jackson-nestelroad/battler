@@ -353,10 +353,12 @@ fn calculate_damage_internal(mut context: DamageContext) -> Result<MultiHitDamag
     modify_move(&mut context);
 
     // Move may have changed.
-    context.move_data = context
-        .data
-        .get_move_by_name(&context.mov.name)?
-        .ok_or_else(|| Error::msg(format!("move {} does not exist", context.mov.name)))?;
+    if context.move_data.name != context.mov.name {
+        context.move_data = context
+            .data
+            .get_move_by_name(&context.mov.name)?
+            .ok_or_else(|| Error::msg(format!("move {} does not exist", context.mov.name)))?;
+    }
 
     let hits = match context.move_data.multihit {
         Some(MultihitType::Static(hits)) => hits.into(),
@@ -408,7 +410,7 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
 
     let base_power = base_power.map(|val| val.floor(), "floor");
 
-    if base_power.value() == &0 {
+    if *base_power.value() == 0 {
         let mut output = DamageOutput::zero("no base power");
         output.base_power = Some(base_power);
         return Ok(output);
