@@ -106,13 +106,19 @@ pub fn calculate_stats(
     let species = data
         .get_species_by_name(species)?
         .ok_or_else(|| Error::msg("species not found"))?;
-    Ok(calculate_stats_by_base_stats(
+    let mut stats = calculate_stats_by_base_stats(
         &species.base_stats,
         level,
         nature,
         ivs.unwrap_or(&default_iv_ranges()),
         evs.unwrap_or(&default_ev_ranges()),
-    ))
+    );
+
+    if let Some(max_hp) = species.max_hp {
+        stats.hp = Range::from(max_hp as u64);
+    }
+
+    Ok(stats)
 }
 
 fn calculate_stats_by_base_stats(
