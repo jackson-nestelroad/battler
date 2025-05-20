@@ -3,6 +3,7 @@ use std::sync::LazyLock;
 use battler_data::{
     Fraction,
     MoveCategory,
+    MoveFlag,
     Stat,
     Type,
     TypeEffectiveness,
@@ -33,6 +34,8 @@ pub(crate) type ModifyStateFromSide = fn(&mut DamageContext, MonType);
 pub(crate) type ModifyStateFromMon = fn(&mut DamageContext, MonType);
 /// Modifies the move being used.
 pub(crate) type ModifyMove = fn(&mut DamageContext);
+/// Fails the move before it hits.
+pub(crate) type FailMoveBeforeHit = fn(&mut DamageContext) -> bool;
 /// Applies fixed damage.
 pub(crate) type ApplyFixedDamage = fn(&DamageContext) -> Option<Range<u64>>;
 /// Modifies the move data.
@@ -198,11 +201,98 @@ pub(crate) static MODIFY_MOVE_HOOKS: LazyLock<IndexMap<&str, ModifyMove>> = Lazy
     )])
 });
 
+pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBeforeHit>> =
+    LazyLock::new(|| {
+        IndexMap::from_iter([
+            (
+                "terrain:Psychic Terrain:defender",
+                (|context: &mut DamageContext| context.move_data.priority > 0) as _,
+            ),
+            (
+                "move:Brick Break",
+                (|context: &mut DamageContext| {
+                    context.field.defender_side.conditions.remove("Reflect");
+                    context
+                        .field
+                        .defender_side
+                        .conditions
+                        .remove("Light Screen");
+                    context.field.defender_side.conditions.remove("Aurora Veil");
+                    false
+                }) as _,
+            ),
+            (
+                "ability:Sturdy:defender",
+                (|context: &mut DamageContext| context.move_data.ohko_type.is_some()) as _,
+            ),
+            (
+                "ability:Volt Absorb:defender",
+                (|context: &mut DamageContext| context.move_data.primary_type == Type::Electric)
+                    as _,
+            ),
+            (
+                "ability:Water Absorb:defender",
+                (|context: &mut DamageContext| context.move_data.primary_type == Type::Water) as _,
+            ),
+            (
+                "ability:Flash Fire:defender",
+                (|context: &mut DamageContext| {
+                    if context.move_data.primary_type == Type::Fire {
+                        context.defender.conditions.insert("Flash Fire".to_owned());
+                        return true;
+                    }
+                    false
+                }) as _,
+            ),
+            (
+                "ability:Wonder Guard:defender",
+                (|context: &mut DamageContext| {
+                    if context.move_data.typeless {
+                        return false;
+                    }
+                    !context.defender.types.iter().any(|typ| {
+                        context.type_effectiveness(context.move_data.primary_type, *typ)
+                            == TypeEffectiveness::Strong
+                    })
+                }) as _,
+            ),
+            (
+                "ability:Lightning Rod:defender",
+                (|context: &mut DamageContext| {
+                    if context.move_data.primary_type == Type::Electric {
+                        context.defender.boosts.spa += 1;
+                        return true;
+                    }
+                    false
+                }) as _,
+            ),
+            (
+                "ability:Sap Sipper:defender",
+                (|context: &mut DamageContext| {
+                    if context.move_data.primary_type == Type::Grass {
+                        context.defender.boosts.atk += 1;
+                        return true;
+                    }
+                    false
+                }) as _,
+            ),
+            (
+                "ability:Soundproof:defender",
+                (|context: &mut DamageContext| context.move_data.flags.contains(&MoveFlag::Sound))
+                    as _,
+            ),
+        ])
+    });
+
 pub(crate) static APPLY_FIXED_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ApplyFixedDamage>> =
     LazyLock::new(|| {
         IndexMap::from_iter([
             (
                 "move:Seismic Toss",
+                (|context: &DamageContext| Some(context.attacker.level.into())) as _,
+            ),
+            (
+                "move:Night Shade",
                 (|context: &DamageContext| Some(context.attacker.level.into())) as _,
             ),
             (

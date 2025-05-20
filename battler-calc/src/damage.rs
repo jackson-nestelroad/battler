@@ -379,6 +379,10 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
         return Ok(DamageOutput::zero("immune"));
     }
 
+    if let Some(fail_from) = fail_move_before_hit(context) {
+        return Ok(DamageOutput::zero(fail_from));
+    }
+
     if context.move_data.ohko_type.is_some() {
         return Ok(DamageOutput::fixed(
             *context.calculate_stat(MonType::Defender, Stat::HP).value(),
@@ -938,6 +942,18 @@ fn modify_move(context: &mut DamageContext) {
     for (_, hook) in hooks {
         hook(context);
     }
+}
+
+fn fail_move_before_hit(context: &mut DamageContext) -> Option<String> {
+    let effects = all_effects(context, None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::FAIL_MOVE_BEFORE_HIT_HOOKS);
+    for (name, hook) in hooks {
+        if hook(context) {
+            let (_, name) = effect_type_and_name(name);
+            return Some(name.to_owned());
+        }
+    }
+    None
 }
 
 fn check_mon_state(
@@ -2080,6 +2096,39 @@ mod damage_test {
             assert_eq!(attack.value(), &Range::new(404, 404));
             let damage = &output.hits[0].damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(61, 72)));
+        });
+    }
+
+    #[test]
+    fn ohko() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Golem".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Blastoise".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Fissure".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage;
+            assert!(damage.description().contains(&"=[[299,299]] - ohko".to_owned()), "{damage:?}");
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(299, 299)));
         });
     }
 }

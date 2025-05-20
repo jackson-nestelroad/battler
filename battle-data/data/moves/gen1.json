@@ -1429,7 +1429,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "effect": { "callbacks": { "on_damage": ["return $source.level"] } }
+    "effect": { "callbacks": { "on_move_damage": ["return $source.level"] } }
   },
   "mimic": {
     "name": "Mimic",
