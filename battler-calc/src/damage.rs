@@ -17,6 +17,7 @@ use battler_data::{
     MonOverride,
     MoveCategory,
     MoveData,
+    MoveFlag,
     MultihitType,
     SpeciesData,
     Stat,
@@ -24,7 +25,10 @@ use battler_data::{
     TypeEffectiveness,
 };
 use indexmap::IndexMap;
-use num::integer::Average;
+use num::{
+    integer::Average,
+    traits::SaturatingSub,
+};
 
 use crate::{
     common::{
@@ -231,6 +235,15 @@ impl<'d> DamageContext<'d> {
         })
     }
 
+    pub fn mon_is_contact_proof(&self, mon_type: MonType) -> bool {
+        check_mon_state(self, mon_type, &hooks::MON_IS_CONTACT_PROOF_HOOKS).unwrap_or(false)
+    }
+
+    pub fn move_makes_contact(&self) -> bool {
+        self.move_data.flags.contains(&MoveFlag::Contact)
+            && !self.mon_is_contact_proof(MonType::Defender)
+    }
+
     pub fn calculate_stat(&self, mon_type: MonType, stat: Stat) -> Output<Range<u64>> {
         calculate_single_stat(self, mon_type, mon_type, stat, None).unwrap_or_default()
     }
@@ -241,6 +254,12 @@ impl<'d> DamageContext<'d> {
             .value()
             .map(|health| Fraction::from(health));
         hp * self.mon(mon_type).health.unwrap_or(Fraction::from(1u64))
+    }
+
+    pub fn chip_off_hp(&mut self, mon_type: MonType, damage: Fraction<u64>) {
+        let health = self.mon(mon_type).health.unwrap_or(Fraction::from(1u64));
+        let health = health.saturating_sub(&damage);
+        self.mon_mut(mon_type).health = Some(health);
     }
 }
 
@@ -1065,7 +1084,10 @@ fn modify_type_effectiveness(context: &DamageContext, effectiveness: &mut Output
     }
 }
 
-fn modify_damage(context: &DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>) {
+fn modify_damage(
+    context: &mut DamageContext,
+    damage: &mut Output<RangeDistribution<Fraction<u64>>>,
+) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_DAMAGE_HOOKS);
     for (_, hook) in hooks {
