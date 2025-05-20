@@ -46,7 +46,19 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-client tests
-        run: cargo test -p "battler-client*" -p battler-calc
+        run: cargo test -p "battler-client*"
+
+  test-battler-calc:
+    name: Run battler-calc tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
+      - name: Run battler-calc tests
+        run: cargo test -p battler-calc
 
   test-battler-ai:
     name: Run battler-ai tests
