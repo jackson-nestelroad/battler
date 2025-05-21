@@ -1111,6 +1111,26 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
         ])
     });
 
+pub(crate) static MODIFY_RECOIL_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
+    LazyLock::new(|| {
+        IndexMap::from_iter([(
+            "ability:Rock Head:attacker",
+            (|_: &mut DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
+                damage.mul(0u64, "Rock Head");
+            }) as _,
+        )])
+    });
+
+pub(crate) static MODIFY_DRAIN_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
+    LazyLock::new(|| {
+        IndexMap::from_iter([(
+            "condition:Liquid Ooze:defender",
+            (|_: &mut DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
+                damage.mul(0u64, "Liquid Ooze");
+            }) as _,
+        )])
+    });
+
 pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifyStateAfterHit>> =
     LazyLock::new(|| {
         IndexMap::from_iter([

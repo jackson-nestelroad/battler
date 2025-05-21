@@ -81,7 +81,7 @@ where
         self.description.push(format!("-{rhs} - {reason}"));
     }
 
-    /// Multiples the value.
+    /// Multiplies the value.
     pub fn mul<V, S>(&mut self, rhs: V, reason: S)
     where
         V: Clone + Display,

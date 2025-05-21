@@ -278,10 +278,14 @@ pub struct DamageOutput {
     ///
     /// Can be used to convert damage to a percentage.
     pub hp: Range<u64>,
-    /// Possible damage distribution.
+    /// Damage distribution.
     ///
     /// Distribution is used due to the randomization factor.
     pub damage: Output<RangeDistribution<u64>>,
+    /// Recoil damage distribution.
+    pub recoil: Output<RangeDistribution<u64>>,
+    /// Heal distribution.
+    pub heal: Output<RangeDistribution<u64>>,
 }
 
 impl DamageOutput {
@@ -312,6 +316,8 @@ impl Default for DamageOutput {
             type_effectiveness: None,
             hp: Range::from(1u64),
             damage: Output::from(RangeDistribution::from(Range::from(0u64))),
+            recoil: Output::from(RangeDistribution::from(Range::from(0u64))),
+            heal: Output::from(RangeDistribution::from(Range::from(0u64))),
         }
     }
 }
@@ -520,14 +526,114 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
 
     let (type_effectiveness, damage) = apply_damage_modifiers(context, base_damage_range)?;
 
-    Ok(DamageOutput {
+    let mut output = DamageOutput {
         base_power: Some(base_power),
         attack: Some((attack_stat, attack)),
         defense: Some((defense_stat, defense)),
         type_effectiveness: Some(type_effectiveness),
         damage,
         ..Default::default()
-    })
+    };
+
+    let recoil = calculate_recoil(context, output.damage.value().clone())?;
+    if let Some(recoil) = recoil {
+        output.recoil = recoil;
+    }
+
+    let drain = calculate_drain(context, output.damage.value().clone())?;
+    if let Some(drain) = drain {
+        output.heal = drain;
+    }
+
+    Ok(output)
+}
+
+fn calculate_recoil(
+    context: &mut DamageContext,
+    damage: RangeDistribution<u64>,
+) -> Result<Option<Output<RangeDistribution<u64>>>> {
+    let recoil_percent = match context.move_data.recoil_percent {
+        Some(recoil_percent) => recoil_percent,
+        None => return Ok(None),
+    };
+    let attacker_max_hp = *calculate_single_stat(
+        context,
+        MonType::Attacker,
+        MonType::Attacker,
+        Stat::HP,
+        None,
+    )?
+    .value();
+    let recoil = if context.move_data.recoil_from_user_hp {
+        RangeDistribution::from(attacker_max_hp)
+    } else {
+        damage
+    };
+    let recoil = Output::from(recoil);
+    let mut recoil = recoil.map(
+        |damage| {
+            RangeDistribution::from_iter(
+                damage
+                    .iter()
+                    .map(|range| range.map(|val| Fraction::<u64>::from(val))),
+            )
+        },
+        "fraction",
+    );
+    recoil.mul(recoil_percent.convert(), "recoil");
+
+    modify_recoil_damage(context, &mut recoil);
+
+    if context.move_data.struggle_recoil {
+        let struggle_recoil = attacker_max_hp.map(|val| Fraction::new(val, 4));
+        recoil.mul(struggle_recoil, "Struggle");
+    }
+
+    let recoil = recoil.map(
+        |val| {
+            RangeDistribution::from_iter(
+                val.into_iter()
+                    .map(|range| range.map(|val| val.round().max(1))),
+            )
+        },
+        "round",
+    );
+
+    Ok(Some(recoil))
+}
+
+fn calculate_drain(
+    context: &mut DamageContext,
+    damage: RangeDistribution<u64>,
+) -> Result<Option<Output<RangeDistribution<u64>>>> {
+    let drain_percent = match context.move_data.drain_percent {
+        Some(drain_percent) => drain_percent,
+        None => return Ok(None),
+    };
+
+    let drain = Output::from(damage);
+    let mut drain = drain.map(
+        |damage| {
+            RangeDistribution::from_iter(
+                damage
+                    .iter()
+                    .map(|range| range.map(|val| Fraction::<u64>::from(val))),
+            )
+        },
+        "fraction",
+    );
+    drain.mul(drain_percent.convert(), "drain");
+
+    modify_drain(context, &mut drain);
+
+    let drain = drain.map(
+        |val| {
+            RangeDistribution::from_iter(val.into_iter().map(|range| range.map(|val| val.round())))
+        },
+        "round",
+    );
+
+    Ok(Some(drain))
 }
 
 fn apply_damage_modifiers(
@@ -1095,6 +1201,28 @@ fn modify_damage(
     }
 }
 
+fn modify_recoil_damage(
+    context: &mut DamageContext,
+    damage: &mut Output<RangeDistribution<Fraction<u64>>>,
+) {
+    let effects = all_effects(context, None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_RECOIL_DAMAGE_HOOKS);
+    for (_, hook) in hooks {
+        hook(context, damage);
+    }
+}
+
+fn modify_drain(
+    context: &mut DamageContext,
+    damage: &mut Output<RangeDistribution<Fraction<u64>>>,
+) {
+    let effects = all_effects(context, None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_DRAIN_HOOKS);
+    for (_, hook) in hooks {
+        hook(context, damage);
+    }
+}
+
 fn modify_state_after_hit(context: &mut DamageContext) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_AFTER_HIT_HOOKS);
@@ -1240,6 +1368,8 @@ mod damage_test {
                             "x1 - type effectiveness",
                             "[mapped] - floor",
                         ]),
+                        recoil: Output::from(RangeDistribution::from(Range::from(0))),
+                        heal: Output::from(RangeDistribution::from(Range::from(0))),
                     },
                 ]),
             });
@@ -1313,6 +1443,8 @@ mod damage_test {
                             "x1 - type effectiveness",
                             "[mapped] - floor",
                         ]),
+                        recoil: Output::from(RangeDistribution::from(Range::from(0))),
+                        heal: Output::from(RangeDistribution::from(Range::from(0))),
                     },
                 ]),
             });
