@@ -235,7 +235,7 @@ fn forfeit_order_determined_by_time() {
         r#"[
             "switchout|mon:Bulbasaur,player-1,1",
             "forfeited|player:player-1",
-            "switchout|mon:Bulbasaur,player-2,1",
+            "switchout|mon:Bulbasaur,player-3,1",
             "forfeited|player:player-3",
             "switchout|mon:Bulbasaur,player-4,2",
             "forfeited|player:player-4",
