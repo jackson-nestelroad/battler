@@ -105,6 +105,7 @@ fn teleport_switches_user_out() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ralts,player-1,1|name:Teleport|target:Ralts,player-1,1",
+            "switchout|mon:Ralts,player-1,1",
             ["time"],
             "split|side:0",
             ["switch", "player-1", "Ralts"],

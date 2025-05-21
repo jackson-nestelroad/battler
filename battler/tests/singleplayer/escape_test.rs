@@ -185,6 +185,7 @@ fn player_escapes_with_higher_speed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Jolteon,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,
@@ -233,6 +234,7 @@ fn wild_player_can_escape() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Primeape,wild,1",
             "escaped|player:wild",
             "win|side:0"
         ]"#,
@@ -283,6 +285,7 @@ fn player_escapes_with_lower_speed() {
             "residual",
             "turn|turn:5",
             ["time"],
+            "switchout|mon:Pikachu,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,
@@ -312,6 +315,7 @@ fn player_escapes_with_smoke_ball() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "activate|mon:Pikachu,protagonist,1|item:Smoke Ball",
+            "switchout|mon:Pikachu,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,
@@ -344,6 +348,7 @@ fn player_escapes_with_poke_doll() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "useitem|player:protagonist|name:Poké Doll|target:Pikachu,protagonist,1",
+            "switchout|mon:Pikachu,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,
@@ -372,6 +377,7 @@ fn run_away_escapes_immediately() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Pikachu,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,
@@ -425,6 +431,7 @@ fn wild_players_escape_individually() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Pikachu,wild-0,1",
             "escaped|player:wild-0",
             "move|mon:Jolteon,protagonist,2|name:Tackle|target:Pikachu,wild-1,2",
             "split|side:1",
@@ -446,6 +453,7 @@ fn wild_players_escape_individually() {
             "residual",
             "turn|turn:3",
             ["time"],
+            "switchout|mon:Pikachu,wild-2,3",
             "escaped|player:wild-2",
             "win|side:0"
         ]"#,
@@ -473,6 +481,7 @@ fn teleport_escapes_wild_battle() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Ralts,protagonist,1|name:Teleport|target:Ralts,protagonist,1",
+            "switchout|mon:Ralts,protagonist,1",
             "escaped|player:protagonist",
             "win|side:1"
         ]"#,
