@@ -1433,6 +1433,7 @@ impl Mon {
     /// Clears all volatile effects.
     pub fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<()> {
         if clear_switch_flags {
+            context.mon_mut().being_called_back = false;
             context.mon_mut().needs_switch = None;
             context.mon_mut().force_switch = None;
         }
@@ -1710,8 +1711,6 @@ impl Mon {
     /// Switches the Mon out of its active position.
     pub fn switch_out(context: &mut MonContext) -> Result<()> {
         context.mon_mut().active = false;
-        context.mon_mut().being_called_back = false;
-        context.mon_mut().needs_switch = None;
         context.mon_mut().old_active_position = context.mon().active_position;
         if let Some(old_active_position) = context.mon().old_active_position {
             context
@@ -1982,6 +1981,7 @@ impl Mon {
         }
 
         Self::switch_out(context)?;
+        Self::clear_volatile(context, true)?;
         Ok(())
     }
 

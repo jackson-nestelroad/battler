@@ -2101,6 +2101,13 @@ fn alter_battle_state_for_entry(
                 },
             });
         }
+        "switchout" => {
+            // The switch out log is purely visual.
+            let mon = entry.value_or_else("mon")?;
+            ui_log.push(ui::UiLogEntry::SwitchOut {
+                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
+            });
+        }
         "teampreviewstart" => {
             state.phase = BattlePhase::PreTeamPreview;
         }

@@ -100,6 +100,7 @@ fn baton_pass_switches_user_out_and_passes_volatiles() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Espeon,player-2,1|name:Baton Pass|target:Espeon,player-2,1",
+            "switchout|mon:Espeon,player-2,1",
             ["time"],
             "split|side:1",
             "switch|player:player-2|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",
@@ -141,6 +142,7 @@ fn baton_pass_switches_user_out_and_passes_volatiles() {
             "turn|turn:6",
             ["time"],
             "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
+            "switchout|mon:Espeon,player-1,1",
             ["time"],
             "split|side:0",
             "switch|player:player-1|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",
@@ -185,6 +187,7 @@ fn baton_pass_does_not_activate_pursuit() {
             "turn|turn:2",
             ["time"],
             "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
+            "switchout|mon:Espeon,player-1,1",
             ["time"],
             "split|side:0",
             "switch|player:player-1|position:1|name:Umbreon|health:155/155|species:Umbreon|level:50|gender:M",

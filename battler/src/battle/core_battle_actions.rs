@@ -98,50 +98,74 @@ where
         .collect()
 }
 
-fn switch_out(context: &mut MonContext, run_switch_out_events: bool) -> Result<bool> {
-    if context.mon().hp > 0 {
-        if run_switch_out_events {
-            if !context.mon().skip_before_switch_out {
+fn switch_out_internal(
+    context: &mut MonContext,
+    being_replaced_immediately: bool,
+    run_switch_out_events: bool,
+    preserve_volatiles: bool,
+) -> Result<bool> {
+    if context.mon().active {
+        if context.mon().hp > 0 {
+            context.mon_mut().being_called_back = true;
+
+            if run_switch_out_events {
+                if !context.mon().skip_before_switch_out {
+                    core_battle_effects::run_event_for_mon(
+                        context,
+                        fxlang::BattleEvent::BeforeSwitchOut,
+                        fxlang::VariableInput::default(),
+                    );
+                }
+                context.mon_mut().skip_before_switch_out = true;
+
+                // The Mon could faint here, which cancels the switch (Pursuit).
+                if context.mon().hp == 0 {
+                    return Ok(false);
+                }
+
                 core_battle_effects::run_event_for_mon(
                     context,
-                    fxlang::BattleEvent::BeforeSwitchOut,
+                    fxlang::BattleEvent::SwitchOut,
                     fxlang::VariableInput::default(),
                 );
             }
-            context.mon_mut().skip_before_switch_out = false;
 
-            // The Mon could faint here, which cancels the switch (Pursuit).
-            if context.mon().hp == 0 {
-                return Ok(false);
+            if !being_replaced_immediately {
+                core_battle_logs::switch_out(context)?;
             }
+
+            core_battle_effects::run_mon_ability_event(
+                &mut context.applying_effect_context(
+                    EffectHandle::Condition(Id::from_known("switchout")),
+                    None,
+                    None,
+                )?,
+                fxlang::BattleEvent::End,
+            );
 
             core_battle_effects::run_event_for_mon(
                 context,
-                fxlang::BattleEvent::SwitchOut,
+                fxlang::BattleEvent::Exit,
                 fxlang::VariableInput::default(),
             );
         }
 
-        core_battle_effects::run_mon_ability_event(
-            &mut context.applying_effect_context(
-                EffectHandle::Condition(Id::from_known("switchout")),
-                None,
-                None,
-            )?,
-            fxlang::BattleEvent::End,
-        );
+        Mon::switch_out(context)?;
+    }
 
-        core_battle_effects::run_event_for_mon(
-            context,
-            fxlang::BattleEvent::Exit,
-            fxlang::VariableInput::default(),
-        );
-
+    if !preserve_volatiles {
         Mon::clear_volatile(context, true)?;
     }
 
-    Mon::switch_out(context)?;
     Ok(true)
+}
+
+/// Switches a Mon out of the given position.
+pub fn switch_out(context: &mut MonContext) -> Result<bool> {
+    if context.mon().needs_switch.is_none() {
+        context.mon_mut().needs_switch = Some(SwitchType::Normal);
+    }
+    switch_out_internal(context, false, true, true)
 }
 
 /// Switches a Mon into the given position.
@@ -163,14 +187,12 @@ pub fn switch_in(
     }
 
     let mon_handle = context.mon_handle();
-    if let Some(previous_mon) = context.player().active_mon_handle(position) {
+    if let Some(previous_mon) = context.player().active_or_exited_mon_handle(position) {
         let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
         if context.mon().hp > 0 {
             if let Some(previous_mon_switch_type) = context.mon().needs_switch {
                 switch_type = Some(previous_mon_switch_type);
             }
-
-            context.mon_mut().being_called_back = true;
 
             if let Some(SwitchType::CopyVolatile) = switch_type {
                 copy_volatile(
@@ -184,7 +206,7 @@ pub fn switch_in(
                 )?;
             }
 
-            if !switch_out(&mut context, true)? {
+            if !switch_out_internal(&mut context, true, true, false)? {
                 return Ok(false);
             }
         }
@@ -3395,8 +3417,10 @@ fn leave_battle(context: &mut PlayerContext) -> Result<()> {
         .cloned()
         .collect::<Vec<_>>()
     {
-        switch_out(
+        switch_out_internal(
             &mut context.as_battle_context_mut().mon_context(mon)?,
+            false,
+            false,
             false,
         )?;
     }

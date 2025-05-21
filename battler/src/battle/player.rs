@@ -565,6 +565,11 @@ impl Player {
             .filter_map(|mon_handle| mon_handle.as_ref())
     }
 
+    /// The active or exited [`MonHandle`] for the player's position.
+    pub fn active_or_exited_mon_handle(&self, position: usize) -> Option<MonHandle> {
+        self.active_or_exited.get(position).cloned().flatten()
+    }
+
     /// Creates an iterator over all active or exited Mons owned by the player.
     ///
     /// Exited Mons will continue to be associated with the active position until switched out.

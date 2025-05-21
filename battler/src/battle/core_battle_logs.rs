@@ -182,6 +182,12 @@ pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<()> {
     full_mon_details(context, title)
 }
 
+pub fn switch_out(context: &mut MonContext) -> Result<()> {
+    let event = battle_log_entry!("switchout", ("mon", Mon::position_details(context)?));
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 pub fn species_change(context: &mut MonContext) -> Result<()> {
     full_mon_details(context, "specieschange")
 }

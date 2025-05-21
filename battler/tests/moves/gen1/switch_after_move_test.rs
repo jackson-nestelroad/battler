@@ -188,6 +188,7 @@ fn move_can_switch_user() {
             "split|side:1",
             "damage|mon:Bulbasaur,player-2,1|health:77/105",
             "damage|mon:Bulbasaur,player-2,1|health:74/100",
+            "switchout|mon:Bulbasaur,player-1,1",
             ["time"],
             "split|side:0",
             ["switch", "player-1", "Squirtle"],

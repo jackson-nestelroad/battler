@@ -1438,9 +1438,6 @@ impl<'d> CoreBattle<'d> {
                     }
                 } else {
                     // Switch out will occur mid turn.
-                    //
-                    // Run BeforeSwitchOut event now. This will make sure actions like Pursuit
-                    // trigger on the same turn, rather than the next turn.
                     for mon in context
                         .player()
                         .active_or_exited_mon_handles()
@@ -1449,15 +1446,7 @@ impl<'d> CoreBattle<'d> {
                     {
                         let mut context = context.mon_context(mon)?;
                         if context.mon().needs_switch.is_some() {
-                            if !context.mon().skip_before_switch_out {
-                                core_battle_effects::run_event_for_mon(
-                                    &mut context,
-                                    fxlang::BattleEvent::BeforeSwitchOut,
-                                    fxlang::VariableInput::default(),
-                                );
-                            }
-
-                            context.mon_mut().skip_before_switch_out = true;
+                            core_battle_actions::switch_out(&mut context)?;
 
                             // Mon may have fainted here.
                             Self::faint_messages(context.as_battle_context_mut())?;

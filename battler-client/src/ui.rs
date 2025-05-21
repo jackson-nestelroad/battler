@@ -143,6 +143,8 @@ pub enum UiLogEntry {
         mon: usize,
         into_position: FieldPosition,
     },
+    /// A Mon switched out.
+    SwitchOut { mon: Mon },
     /// The battle resulted in a tie.
     Tie,
     /// A Mon transformed into another Mon.
