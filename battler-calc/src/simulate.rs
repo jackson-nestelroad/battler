@@ -12,8 +12,10 @@ use anyhow::{
     Result,
 };
 use battler_data::{
+    BoostTable,
     DataStoreByName,
     Fraction,
+    Id,
     MonOverride,
     MoveCategory,
     MoveData,
@@ -46,8 +48,8 @@ use crate::{
     stats,
 };
 
-/// Input for the damage calculator.
-pub struct DamageCalculatorInput<'d> {
+/// Input for the move simulator
+pub struct MoveSimulatorInput<'d> {
     /// Data source.
     pub data: &'d dyn DataStoreByName,
     /// Field state.
@@ -60,9 +62,9 @@ pub struct DamageCalculatorInput<'d> {
     pub mov: Move,
 }
 
-impl<'d> TryInto<DamageContext<'d>> for DamageCalculatorInput<'d> {
+impl<'d> TryInto<MoveContext<'d>> for MoveSimulatorInput<'d> {
     type Error = Error;
-    fn try_into(self) -> Result<DamageContext<'d>> {
+    fn try_into(self) -> Result<MoveContext<'d>> {
         let move_data = self
             .data
             .get_move_by_name(&self.mov.name)?
@@ -75,7 +77,7 @@ impl<'d> TryInto<DamageContext<'d>> for DamageCalculatorInput<'d> {
             .data
             .get_species_by_name(&self.defender.name)?
             .ok_or_else(|| Error::msg(format!("mon {} does not exist", self.defender.name)))?;
-        Ok(DamageContext {
+        Ok(MoveContext {
             data: self.data,
             field: self.field,
             attacker: self.attacker,
@@ -132,7 +134,7 @@ pub(crate) struct Properties {
     pub mov: MoveProperties,
 }
 
-pub(crate) struct DamageContext<'d> {
+pub(crate) struct MoveContext<'d> {
     pub data: &'d dyn DataStoreByName,
     pub field: Field,
     pub attacker: Mon,
@@ -144,7 +146,7 @@ pub(crate) struct DamageContext<'d> {
     pub properties: Properties,
 }
 
-impl<'d> DamageContext<'d> {
+impl<'d> MoveContext<'d> {
     pub fn side(&self, mon_type: MonType) -> &Side {
         match mon_type {
             MonType::Attacker => &self.field.attacker_side,
@@ -263,9 +265,50 @@ impl<'d> DamageContext<'d> {
     }
 }
 
-/// Output of a single hit of a move in the damage calculator.
+/// The status effect applied by the hit of a move.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct StatusEffect {
+    pub boosts: Option<BoostTable>,
+    pub heal: Option<Output<Range<u64>>>,
+    pub status: Option<String>,
+    pub volatile: Option<String>,
+    pub side_condition: Option<String>,
+    pub slot_condition: Option<String>,
+    pub weather: Option<String>,
+    pub pseudo_weather: Option<String>,
+    pub terrain: Option<String>,
+    pub switch: bool,
+}
+
+impl StatusEffect {
+    pub fn clear_status_if<I, S>(&mut self, iter: I)
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        if let Some(status) = &self.status
+            && iter.into_iter().any(|val| val.as_ref() == status)
+        {
+            self.status = None;
+        }
+    }
+
+    pub fn clear_volatile_if<I, S>(&mut self, iter: I)
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        if let Some(volatile) = &self.volatile
+            && iter.into_iter().any(|val| val.as_ref() == volatile)
+        {
+            self.volatile = None;
+        }
+    }
+}
+
+/// Damage of a single hit of a move.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DamageOutput {
+pub struct Damage {
     /// Move base power.
     pub base_power: Option<Output<u64>>,
     /// Attack stat.
@@ -288,7 +331,7 @@ pub struct DamageOutput {
     pub heal: Output<RangeDistribution<u64>>,
 }
 
-impl DamageOutput {
+impl Damage {
     fn zero<S>(reason: S) -> Self
     where
         S: Display,
@@ -307,7 +350,7 @@ impl DamageOutput {
     }
 }
 
-impl Default for DamageOutput {
+impl Default for Damage {
     fn default() -> Self {
         Self {
             base_power: None,
@@ -322,25 +365,33 @@ impl Default for DamageOutput {
     }
 }
 
-/// Output of the damage calculator.
-///
-/// A move is generically able to hit multiple times, which will produce multiple damage
-/// calculations.
+/// The result of a single hit of a move.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct MultiHitDamageOutput {
-    pub hits: Vec<DamageOutput>,
+pub struct Hit {
+    /// Damage dealt.
+    pub damage: Damage,
+    /// Status effects applied to the target.
+    pub status_effect_on_target: StatusEffect,
+    /// Status effects applied to the user.
+    pub status_effect_on_user: StatusEffect,
 }
 
-impl From<DamageOutput> for MultiHitDamageOutput {
-    fn from(value: DamageOutput) -> Self {
+/// The result of multiple hits of a move.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct MultiHit {
+    pub hits: Vec<Hit>,
+}
+
+impl From<Hit> for MultiHit {
+    fn from(value: Hit) -> Self {
         Self {
             hits: Vec::from_iter([value]),
         }
     }
 }
 
-/// Calculates the possible damage distribution of a move.
-pub fn calculate_damage(input: DamageCalculatorInput) -> Result<MultiHitDamageOutput> {
+/// Simulates the output of a move on a single target.
+pub fn simulate_move(input: MoveSimulatorInput) -> Result<MultiHit> {
     let move_data = input
         .data
         .get_move_by_name(&input.mov.name)?
@@ -353,7 +404,7 @@ pub fn calculate_damage(input: DamageCalculatorInput) -> Result<MultiHitDamageOu
         .data
         .get_species_by_name(&input.defender.name)?
         .ok_or_else(|| Error::msg(format!("mon {} does not exist", input.defender.name)))?;
-    let context = DamageContext {
+    let context = MoveContext {
         data: input.data,
         field: input.field,
         attacker: input.attacker,
@@ -364,10 +415,10 @@ pub fn calculate_damage(input: DamageCalculatorInput) -> Result<MultiHitDamageOu
         defender_species_data,
         properties: Properties::default(),
     };
-    calculate_damage_internal(context)
+    simulate_move_internal(context)
 }
 
-fn calculate_damage_internal(mut context: DamageContext) -> Result<MultiHitDamageOutput> {
+fn simulate_move_internal(mut context: MoveContext) -> Result<MultiHit> {
     apply_defaults_to_mon(&mut context, MonType::Attacker);
     apply_defaults_to_mon(&mut context, MonType::Defender);
 
@@ -416,32 +467,117 @@ fn calculate_damage_internal(mut context: DamageContext) -> Result<MultiHitDamag
             context.properties.mov.hit = hit + 1;
             let mut damage = calculate_damage_for_hit(&mut context)?;
             damage.hp = hp;
+
+            let status_effect_on_target =
+                calculate_status_effect_for_hit(&mut context, MonType::Defender)?;
+            let status_effect_on_user =
+                calculate_status_effect_for_hit(&mut context, MonType::Attacker)?;
             modify_state_after_hit(&mut context);
-            Ok(damage)
+            Ok(Hit {
+                damage,
+                status_effect_on_target,
+                status_effect_on_user,
+            })
         })
         .collect::<Result<_>>()?;
-    Ok(MultiHitDamageOutput { hits })
+    Ok(MultiHit { hits })
 }
 
-fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput> {
+fn effect_name_by_id(context: &MoveContext, id: &str) -> Result<String> {
+    let id = Id::from(id);
+    if let Some(condition) = context.data.get_condition(&id)? {
+        Ok(condition.name.clone())
+    } else if let Some(mov) = context.data.get_move(&id)? {
+        Ok(mov.name.clone())
+    } else if let Some(ability) = context.data.get_ability(&id)? {
+        Ok(ability.name.clone())
+    } else if let Some(item) = context.data.get_item(&id)? {
+        Ok(item.name.clone())
+    } else {
+        Err(Error::msg("not found"))
+    }
+}
+
+fn calculate_status_effect_for_hit(
+    context: &mut MoveContext,
+    mon_type: MonType,
+) -> Result<StatusEffect> {
+    let hit_effect = match mon_type {
+        MonType::Attacker => {
+            // If user effect does not always apply, ignore it.
+            //
+            // This is the general philosophy for all effects that are left up to chance. Secondary
+            // effects are considered an unexpected bonus (or penalty) if they occur.
+            if context.move_data.user_effect_chance.is_some() {
+                return Ok(StatusEffect::default());
+            }
+            &context.move_data.user_effect
+        }
+        MonType::Defender => &context.move_data.hit_effect,
+    };
+    let hit_effect = match hit_effect {
+        Some(hit_effect) => hit_effect.clone(),
+        None => return Ok(StatusEffect::default()),
+    };
+
+    let mut status_effect = StatusEffect::default();
+
+    // Stat changes on the user only apply on the first hit.
+    if mon_type == MonType::Attacker && context.properties.mov.hit == 1 {
+        status_effect.boosts = hit_effect.boosts;
+    }
+
+    status_effect.status = hit_effect
+        .status
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.volatile = hit_effect
+        .volatile_status
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.side_condition = hit_effect
+        .side_condition
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.slot_condition = hit_effect
+        .slot_condition
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.weather = hit_effect
+        .weather
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.pseudo_weather = hit_effect
+        .pseudo_weather
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.terrain = hit_effect
+        .terrain
+        .and_then(|id| effect_name_by_id(context, &id).ok());
+    status_effect.switch = hit_effect.force_switch;
+
+    if let Some(heal_percent) = hit_effect.heal_percent {
+        status_effect.heal = Some(calculate_heal(context, mon_type, heal_percent.convert())?);
+    }
+
+    modify_status_effect(context, mon_type, &mut status_effect);
+
+    Ok(status_effect)
+}
+
+fn calculate_damage_for_hit(context: &mut MoveContext) -> Result<Damage> {
     if !context.mon_negates_immunity(MonType::Defender) && context.mon_is_immune(MonType::Defender)
     {
-        return Ok(DamageOutput::zero("immune"));
+        return Ok(Damage::zero("immune"));
     }
 
     if let Some(fail_from) = fail_move_before_hit(context) {
-        return Ok(DamageOutput::zero(fail_from));
+        return Ok(Damage::zero(fail_from));
     }
 
     if context.move_data.ohko_type.is_some() {
-        return Ok(DamageOutput::fixed(
+        return Ok(Damage::fixed(
             *context.calculate_stat(MonType::Defender, Stat::HP).value(),
             "ohko",
         ));
     }
 
     if let Some(fixed) = apply_fixed_damage(context) {
-        return Ok(DamageOutput::fixed(fixed, "fixed"));
+        return Ok(Damage::fixed(fixed, "fixed"));
     }
 
     // Modify the MoveData, which can primarily set the starting base power.
@@ -454,7 +590,7 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
     let base_power = base_power.map(|val| val.floor(), "floor");
 
     if *base_power.value() == 0 {
-        let mut output = DamageOutput::zero("no base power");
+        let mut output = Damage::zero("no base power");
         output.base_power = Some(base_power);
         return Ok(output);
     }
@@ -526,7 +662,7 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
 
     let (type_effectiveness, damage) = apply_damage_modifiers(context, base_damage_range)?;
 
-    let mut output = DamageOutput {
+    let mut output = Damage {
         base_power: Some(base_power),
         attack: Some((attack_stat, attack)),
         defense: Some((defense_stat, defense)),
@@ -549,7 +685,7 @@ fn calculate_damage_for_hit(context: &mut DamageContext) -> Result<DamageOutput>
 }
 
 fn calculate_recoil(
-    context: &mut DamageContext,
+    context: &mut MoveContext,
     damage: RangeDistribution<u64>,
 ) -> Result<Option<Output<RangeDistribution<u64>>>> {
     let recoil_percent = match context.move_data.recoil_percent {
@@ -603,7 +739,7 @@ fn calculate_recoil(
 }
 
 fn calculate_drain(
-    context: &mut DamageContext,
+    context: &mut MoveContext,
     damage: RangeDistribution<u64>,
 ) -> Result<Option<Output<RangeDistribution<u64>>>> {
     let drain_percent = match context.move_data.drain_percent {
@@ -613,9 +749,9 @@ fn calculate_drain(
 
     let drain = Output::from(damage);
     let mut drain = drain.map(
-        |damage| {
+        |drain| {
             RangeDistribution::from_iter(
-                damage
+                drain
                     .iter()
                     .map(|range| range.map(|val| Fraction::<u64>::from(val))),
             )
@@ -627,8 +763,10 @@ fn calculate_drain(
     modify_drain(context, &mut drain);
 
     let drain = drain.map(
-        |val| {
-            RangeDistribution::from_iter(val.into_iter().map(|range| range.map(|val| val.round())))
+        |drain| {
+            RangeDistribution::from_iter(
+                drain.into_iter().map(|range| range.map(|val| val.round())),
+            )
         },
         "round",
     );
@@ -636,8 +774,26 @@ fn calculate_drain(
     Ok(Some(drain))
 }
 
+fn calculate_heal(
+    context: &mut MoveContext,
+    mon_type: MonType,
+    heal_percent: Fraction<u64>,
+) -> Result<Output<Range<u64>>> {
+    let max_hp = *calculate_single_stat(context, mon_type, mon_type, Stat::HP, None)?.value();
+
+    let heal = Output::from(max_hp);
+    let mut heal = heal.map(|heal| heal.map(|val| Fraction::from(val)), "fraction");
+    heal.mul(heal_percent.convert(), "heal");
+
+    modify_heal(context, &mut heal);
+
+    let heal = heal.map(|heal| heal.map(|val| val.round()), "round");
+
+    Ok(heal)
+}
+
 fn apply_damage_modifiers(
-    context: &mut DamageContext,
+    context: &mut MoveContext,
     base_damage_range: Output<Range<u64>>,
 ) -> Result<(Output<Fraction<u64>>, Output<RangeDistribution<u64>>)> {
     let mut damage =
@@ -704,7 +860,7 @@ fn apply_damage_modifiers(
 }
 
 /// Calculates stats that would be used during damage calculation, based on the given battle state.
-pub fn calculate_stats(input: DamageCalculatorInput) -> Result<stats::Stats<Output<Range<u64>>>> {
+pub fn calculate_stats(input: MoveSimulatorInput) -> Result<stats::Stats<Output<Range<u64>>>> {
     let context = input.try_into()?;
     let base_stats = calculate_base_stats(&context, MonType::Attacker)?;
     let hp = calculate_single_stat_internal(
@@ -766,7 +922,7 @@ pub fn calculate_stats(input: DamageCalculatorInput) -> Result<stats::Stats<Outp
 }
 
 fn calculate_base_stats(
-    context: &DamageContext,
+    context: &MoveContext,
     mon_type: MonType,
 ) -> Result<stats::Stats<Range<u64>>> {
     let mon = context.mon(mon_type);
@@ -801,7 +957,7 @@ fn calculate_base_stats(
 }
 
 fn calculate_single_stat(
-    context: &DamageContext,
+    context: &MoveContext,
     mon_type: MonType,
     stat_user: MonType,
     stat: Stat,
@@ -818,7 +974,7 @@ fn calculate_single_stat(
 }
 
 fn calculate_single_stat_internal(
-    context: &DamageContext,
+    context: &MoveContext,
     mon_type: MonType,
     stat_user: MonType,
     stat: Stat,
@@ -863,7 +1019,7 @@ fn calculate_single_stat_internal(
     value.map(|val| val.map(|val| val.floor()), "floor")
 }
 
-fn apply_defaults_to_mon(context: &mut DamageContext, mon_type: MonType) {
+fn apply_defaults_to_mon(context: &mut MoveContext, mon_type: MonType) {
     if context.mon(mon_type).types.is_empty() {
         let species = context.species(mon_type);
         let mut types = Vec::from_iter([species.primary_type]);
@@ -944,7 +1100,7 @@ fn modify_effects_for_focus(
 }
 
 fn effects_for_source(
-    context: &DamageContext,
+    context: &MoveContext,
     source: EffectSource,
     focus: Option<MonType>,
 ) -> HashSet<String> {
@@ -972,7 +1128,7 @@ fn effects_for_source(
     }
 }
 
-fn all_effects(context: &DamageContext, focus: Option<MonType>) -> HashSet<String> {
+fn all_effects(context: &MoveContext, focus: Option<MonType>) -> HashSet<String> {
     let mut effects = HashSet::default();
     effects.extend(effects_for_source(&context, EffectSource::Field, focus));
     effects.extend(effects_for_source(
@@ -1016,7 +1172,7 @@ enum EffectSource {
     Side(MonType),
 }
 
-fn effect_still_applies(context: &DamageContext, name: &str, on: EffectSource) -> bool {
+fn effect_still_applies(context: &MoveContext, name: &str, on: EffectSource) -> bool {
     let (effect_type, name) = effect_type_and_name(name);
     match (effect_type, on) {
         ("ability", EffectSource::Mon(mon_type)) => context.mon(mon_type).has_ability([name]),
@@ -1045,7 +1201,7 @@ where
         .collect()
 }
 
-fn modify_state_from_field(context: &mut DamageContext) {
+fn modify_state_from_field(context: &mut MoveContext) {
     let effects = effects_for_source(&context, EffectSource::Field, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_FROM_FIELD_HOOKS);
     for (name, hook) in hooks {
@@ -1056,7 +1212,7 @@ fn modify_state_from_field(context: &mut DamageContext) {
     }
 }
 
-fn modify_state_from_side(context: &mut DamageContext, mon_type: MonType) {
+fn modify_state_from_side(context: &mut MoveContext, mon_type: MonType) {
     let effects = effects_for_source(&context, EffectSource::Side(mon_type), None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_FROM_SIDE_HOOKS);
     for (name, hook) in hooks {
@@ -1077,7 +1233,7 @@ fn modify_state_from_side(context: &mut DamageContext, mon_type: MonType) {
     }
 }
 
-fn modify_state_from_mon(context: &mut DamageContext, mon_type: MonType) {
+fn modify_state_from_mon(context: &mut MoveContext, mon_type: MonType) {
     let effects = effects_for_source(&context, EffectSource::Mon(mon_type), None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_FROM_MON_HOOKS);
     for (name, hook) in hooks {
@@ -1088,7 +1244,7 @@ fn modify_state_from_mon(context: &mut DamageContext, mon_type: MonType) {
     }
 }
 
-fn modify_move(context: &mut DamageContext) {
+fn modify_move(context: &mut MoveContext) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_MOVE_HOOKS);
     for (_, hook) in hooks {
@@ -1096,7 +1252,7 @@ fn modify_move(context: &mut DamageContext) {
     }
 }
 
-fn fail_move_before_hit(context: &mut DamageContext) -> Option<String> {
+fn fail_move_before_hit(context: &mut MoveContext) -> Option<String> {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::FAIL_MOVE_BEFORE_HIT_HOOKS);
     for (name, hook) in hooks {
@@ -1109,7 +1265,7 @@ fn fail_move_before_hit(context: &mut DamageContext) -> Option<String> {
 }
 
 fn check_mon_state(
-    context: &DamageContext,
+    context: &MoveContext,
     mon_type: MonType,
     hooks: &IndexMap<&str, hooks::CheckMonState>,
 ) -> Option<bool> {
@@ -1123,7 +1279,7 @@ fn check_mon_state(
     None
 }
 
-fn apply_fixed_damage(context: &DamageContext) -> Option<Range<u64>> {
+fn apply_fixed_damage(context: &MoveContext) -> Option<Range<u64>> {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::APPLY_FIXED_DAMAGE_HOOKS);
     for (_, hook) in hooks {
@@ -1134,7 +1290,7 @@ fn apply_fixed_damage(context: &DamageContext) -> Option<Range<u64>> {
     None
 }
 
-fn modify_move_data(context: &mut DamageContext) {
+fn modify_move_data(context: &mut MoveContext) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_MOVE_DATA_HOOKS);
     for (_, hook) in hooks {
@@ -1142,7 +1298,7 @@ fn modify_move_data(context: &mut DamageContext) {
     }
 }
 
-fn modify_base_power(context: &mut DamageContext, base_power: &mut Output<Fraction<u64>>) {
+fn modify_base_power(context: &mut MoveContext, base_power: &mut Output<Fraction<u64>>) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_BASE_POWER_HOOKS);
     for (_, hook) in hooks {
@@ -1151,7 +1307,7 @@ fn modify_base_power(context: &mut DamageContext, base_power: &mut Output<Fracti
 }
 
 fn modify_stat(
-    context: &DamageContext,
+    context: &MoveContext,
     stat: Stat,
     mon_type: MonType,
     value: &mut Output<Range<Fraction<u64>>>,
@@ -1174,7 +1330,7 @@ fn modify_stat(
     }
 }
 
-fn modify_damage_from_weather(context: &DamageContext, damage: &mut Output<Range<Fraction<u64>>>) {
+fn modify_damage_from_weather(context: &MoveContext, damage: &mut Output<Range<Fraction<u64>>>) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_DAMAGE_FROM_WEATHER_HOOKS);
     for (_, hook) in hooks {
@@ -1182,7 +1338,7 @@ fn modify_damage_from_weather(context: &DamageContext, damage: &mut Output<Range
     }
 }
 
-fn modify_type_effectiveness(context: &DamageContext, effectiveness: &mut Output<Fraction<u64>>) {
+fn modify_type_effectiveness(context: &MoveContext, effectiveness: &mut Output<Fraction<u64>>) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_TYPE_EFFECTIVENESS_HOOKS);
     for (_, hook) in hooks {
@@ -1190,10 +1346,7 @@ fn modify_type_effectiveness(context: &DamageContext, effectiveness: &mut Output
     }
 }
 
-fn modify_damage(
-    context: &mut DamageContext,
-    damage: &mut Output<RangeDistribution<Fraction<u64>>>,
-) {
+fn modify_damage(context: &mut MoveContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_DAMAGE_HOOKS);
     for (_, hook) in hooks {
@@ -1202,7 +1355,7 @@ fn modify_damage(
 }
 
 fn modify_recoil_damage(
-    context: &mut DamageContext,
+    context: &mut MoveContext,
     damage: &mut Output<RangeDistribution<Fraction<u64>>>,
 ) {
     let effects = all_effects(context, None);
@@ -1212,10 +1365,7 @@ fn modify_recoil_damage(
     }
 }
 
-fn modify_drain(
-    context: &mut DamageContext,
-    damage: &mut Output<RangeDistribution<Fraction<u64>>>,
-) {
+fn modify_drain(context: &mut MoveContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_DRAIN_HOOKS);
     for (_, hook) in hooks {
@@ -1223,7 +1373,27 @@ fn modify_drain(
     }
 }
 
-fn modify_state_after_hit(context: &mut DamageContext) {
+fn modify_heal(context: &mut MoveContext, damage: &mut Output<Range<Fraction<u64>>>) {
+    let effects = all_effects(context, None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_HEAL_HOOKS);
+    for (_, hook) in hooks {
+        hook(context, damage);
+    }
+}
+
+fn modify_status_effect(
+    context: &mut MoveContext,
+    mon_type: MonType,
+    status_effect: &mut StatusEffect,
+) {
+    let effects = all_effects(context, None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATUS_EFFECT_HOOKS);
+    for (_, hook) in hooks {
+        hook(context, mon_type, status_effect);
+    }
+}
+
+fn modify_state_after_hit(context: &mut MoveContext) {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_AFTER_HIT_HOOKS);
     for (_, hook) in hooks {
@@ -1249,11 +1419,13 @@ mod damage_test {
             Range,
             RangeDistribution,
         },
-        damage::{
-            DamageCalculatorInput,
-            DamageOutput,
-            MultiHitDamageOutput,
-            calculate_damage,
+        simulate::{
+            Damage,
+            Hit,
+            MoveSimulatorInput,
+            MultiHit,
+            StatusEffect,
+            simulate_move,
         },
         state::{
             Field,
@@ -1280,7 +1452,7 @@ mod damage_test {
     #[test]
     fn fixed_damage() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1298,11 +1470,14 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            pretty_assertions::assert_eq!(output, MultiHitDamageOutput {
+            pretty_assertions::assert_eq!(output, MultiHit {
                 hits: Vec::from_iter([
-                    DamageOutput {
-                        hp: Range::new(18, 23),
-                        damage: Output::new(RangeDistribution::from_iter([Range::new(5, 5)]), ["=[[5,5]] - fixed"]),
+                    Hit {
+                        damage: Damage {
+                            hp: Range::new(18, 23),
+                            damage: Output::new(RangeDistribution::from_iter([Range::new(5, 5)]), ["=[[5,5]] - fixed"]),
+                            ..Default::default()
+                        },
                         ..Default::default()
                     },
                 ]),
@@ -1313,7 +1488,7 @@ mod damage_test {
     #[test]
     fn basic_tackle_with_high_stat_variance() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1331,45 +1506,48 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            pretty_assertions::assert_eq!(output, MultiHitDamageOutput {
+            pretty_assertions::assert_eq!(output, MultiHit {
                 hits: Vec::from_iter([
-                    DamageOutput {
-                        base_power: Some(Output::new(40u64, ["[mapped] - floor"])),
-                        attack: Some((Stat::Atk, Output::new(Range::new(152, 289), ["[mapped] - floor"]))),
-                        defense: Some((Stat::Def, Output::new(Range::new(144, 280), ["[mapped] - floor"]))),
-                        type_effectiveness: Some(Output::new::<_, _, &str>(Fraction::from(1u64), [])),
-                        hp: Range::new(266, 360),
-                        damage: Output::new(RangeDistribution::from_iter([
-                            Range::new(20, 69),
-                            Range::new(19, 68),
-                            Range::new(19, 67),
-                            Range::new(19, 66),
-                            Range::new(19, 66),
-                            Range::new(19, 65),
-                            Range::new(18, 64),
-                            Range::new(18, 64),
-                            Range::new(18, 63),
-                            Range::new(18, 62),
-                            Range::new(18, 62),
-                            Range::new(17, 61),
-                            Range::new(17, 60),
-                            Range::new(17, 60),
-                            Range::new(17, 59),
-                            Range::new(17, 58),
-                        ]), [
-                            "=[152,289] - attack",
-                            "x42 - attacker level",
-                            "x40 - base power",
-                            "\u{00F7}[144,280] - defense",
-                            "\u{00F7}50 - constant",
-                            "+2 - constant",
-                            "[mapped] - fraction",
-                            "[mapped] - randomize",
-                            "x1 - type effectiveness",
-                            "[mapped] - floor",
-                        ]),
-                        recoil: Output::from(RangeDistribution::from(Range::from(0))),
-                        heal: Output::from(RangeDistribution::from(Range::from(0))),
+                    Hit {
+                        damage: Damage {
+                            base_power: Some(Output::new(40u64, ["[mapped] - floor"])),
+                            attack: Some((Stat::Atk, Output::new(Range::new(152, 289), ["[mapped] - floor"]))),
+                            defense: Some((Stat::Def, Output::new(Range::new(144, 280), ["[mapped] - floor"]))),
+                            type_effectiveness: Some(Output::new::<_, _, &str>(Fraction::from(1u64), [])),
+                            hp: Range::new(266, 360),
+                            damage: Output::new(RangeDistribution::from_iter([
+                                Range::new(20, 69),
+                                Range::new(19, 68),
+                                Range::new(19, 67),
+                                Range::new(19, 66),
+                                Range::new(19, 66),
+                                Range::new(19, 65),
+                                Range::new(18, 64),
+                                Range::new(18, 64),
+                                Range::new(18, 63),
+                                Range::new(18, 62),
+                                Range::new(18, 62),
+                                Range::new(17, 61),
+                                Range::new(17, 60),
+                                Range::new(17, 60),
+                                Range::new(17, 59),
+                                Range::new(17, 58),
+                            ]), [
+                                "=[152,289] - attack",
+                                "x42 - attacker level",
+                                "x40 - base power",
+                                "\u{00F7}[144,280] - defense",
+                                "\u{00F7}50 - constant",
+                                "+2 - constant",
+                                "[mapped] - fraction",
+                                "[mapped] - randomize",
+                                "x1 - type effectiveness",
+                                "[mapped] - floor",
+                            ]),
+                            recoil: Output::from(RangeDistribution::from(Range::from(0))),
+                            heal: Output::from(RangeDistribution::from(Range::from(0))),
+                        },
+                        ..Default::default()
                     },
                 ]),
             });
@@ -1379,7 +1557,7 @@ mod damage_test {
     #[test]
     fn basic_tackle_with_no_stat_variance() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1403,48 +1581,52 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            assert_matches::assert_matches!(output.hits[0].damage.value().min(), Some(31));
-            assert_matches::assert_matches!(output.hits[0].damage.value().max(), Some(37));
+            assert_matches::assert_matches!(output.hits[0].damage.damage.value().min(), Some(31));
+            assert_matches::assert_matches!(output.hits[0].damage.damage.value().max(), Some(37));
 
-            pretty_assertions::assert_eq!(output, MultiHitDamageOutput {
+            pretty_assertions::assert_eq!(output, MultiHit {
                 hits: Vec::from_iter([
-                    DamageOutput {
-                        base_power: Some(Output::new(40u64, ["[mapped] - floor"])),
-                        attack: Some((Stat::Atk, Output::new(Range::new(200, 200), ["[mapped] - floor"]))),
-                        defense: Some((Stat::Def, Output::new(Range::new(192, 192), ["[mapped] - floor"]))),
-                        type_effectiveness: Some(Output::new::<_, _, &str>(Fraction::from(1u64), [])),
-                        hp: Range::new(297, 297),
-                        damage: Output::new(RangeDistribution::from_iter([
-                            Range::new(37, 37),
-                            Range::new(36, 36),
-                            Range::new(36, 36),
-                            Range::new(35, 35),
-                            Range::new(35, 35),
-                            Range::new(35, 35),
-                            Range::new(34, 34),
-                            Range::new(34, 34),
-                            Range::new(34, 34),
-                            Range::new(33, 33),
-                            Range::new(33, 33),
-                            Range::new(32, 32),
-                            Range::new(32, 32),
-                            Range::new(32, 32),
-                            Range::new(31, 31),
-                            Range::new(31, 31),
-                        ]), [
-                            "=[200,200] - attack",
-                            "x42 - attacker level",
-                            "x40 - base power",
-                            "\u{00F7}[192,192] - defense",
-                            "\u{00F7}50 - constant",
-                            "+2 - constant",
-                            "[mapped] - fraction",
-                            "[mapped] - randomize",
-                            "x1 - type effectiveness",
-                            "[mapped] - floor",
-                        ]),
-                        recoil: Output::from(RangeDistribution::from(Range::from(0))),
-                        heal: Output::from(RangeDistribution::from(Range::from(0))),
+                    Hit {
+                        damage:
+                        Damage {
+                            base_power: Some(Output::new(40u64, ["[mapped] - floor"])),
+                            attack: Some((Stat::Atk, Output::new(Range::new(200, 200), ["[mapped] - floor"]))),
+                            defense: Some((Stat::Def, Output::new(Range::new(192, 192), ["[mapped] - floor"]))),
+                            type_effectiveness: Some(Output::new::<_, _, &str>(Fraction::from(1u64), [])),
+                            hp: Range::new(297, 297),
+                            damage: Output::new(RangeDistribution::from_iter([
+                                Range::new(37, 37),
+                                Range::new(36, 36),
+                                Range::new(36, 36),
+                                Range::new(35, 35),
+                                Range::new(35, 35),
+                                Range::new(35, 35),
+                                Range::new(34, 34),
+                                Range::new(34, 34),
+                                Range::new(34, 34),
+                                Range::new(33, 33),
+                                Range::new(33, 33),
+                                Range::new(32, 32),
+                                Range::new(32, 32),
+                                Range::new(32, 32),
+                                Range::new(31, 31),
+                                Range::new(31, 31),
+                            ]), [
+                                "=[200,200] - attack",
+                                "x42 - attacker level",
+                                "x40 - base power",
+                                "\u{00F7}[192,192] - defense",
+                                "\u{00F7}50 - constant",
+                                "+2 - constant",
+                                "[mapped] - fraction",
+                                "[mapped] - randomize",
+                                "x1 - type effectiveness",
+                                "[mapped] - floor",
+                            ]),
+                            recoil: Output::from(RangeDistribution::from(Range::from(0))),
+                            heal: Output::from(RangeDistribution::from(Range::from(0))),
+                        },
+                        ..Default::default()
                     },
                 ]),
             });
@@ -1454,7 +1636,7 @@ mod damage_test {
     #[test]
     fn multiple_hits() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1479,7 +1661,7 @@ mod damage_test {
             },
         }), Ok(output) => {
             pretty_assertions::assert_eq!(
-                output.hits.iter().map(|output| output.damage.value().min_max_range()).collect::<Vec<_>>(),
+                output.hits.iter().map(|output| output.damage.damage.value().min_max_range()).collect::<Vec<_>>(),
                 Vec::from_iter([
                     Some(Range::new(12, 15)),
                     Some(Range::new(12, 15)),
@@ -1492,7 +1674,7 @@ mod damage_test {
     #[test]
     fn spread_modifier() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1516,11 +1698,11 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(!damage.description().contains(&"x3/4 - spread".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(149, 176)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1545,7 +1727,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x3/4 - spread".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(112, 132)));
         });
@@ -1554,7 +1736,7 @@ mod damage_test {
     #[test]
     fn critical_hit() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1586,20 +1768,20 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             pretty_assertions::assert_eq!(attack, &Output::new(Range::new(94, 94), [
                 "x2/5 - drop",
                 "[mapped] - floor",
             ]));
-            let defense = &output.hits[0].defense.as_ref().unwrap().1;
+            let defense = &output.hits[0].damage.defense.as_ref().unwrap().1;
             pretty_assertions::assert_eq!(defense, &Output::new(Range::new(824, 824), [
                 "x4 - boost",
                 "[mapped] - floor",
             ]));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(7, 9)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1632,15 +1814,15 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             pretty_assertions::assert_eq!(attack, &Output::new(Range::new(236, 236), [
                 "[mapped] - floor",
             ]));
-            let defense = &output.hits[0].defense.as_ref().unwrap().1;
+            let defense = &output.hits[0].damage.defense.as_ref().unwrap().1;
             pretty_assertions::assert_eq!(defense, &Output::new(Range::new(206, 206), [
                 "[mapped] - floor",
             ]));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x3/2 - crit".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(94, 111)));
         });
@@ -1649,7 +1831,7 @@ mod damage_test {
     #[test]
     fn stab() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1673,10 +1855,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(51, 60)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1700,7 +1882,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x3/2 - stab".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(76, 90)));
         });
@@ -1709,7 +1891,7 @@ mod damage_test {
     #[test]
     fn immune() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1733,17 +1915,20 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            pretty_assertions::assert_eq!(output, MultiHitDamageOutput {
+            pretty_assertions::assert_eq!(output, MultiHit {
                 hits: Vec::from_iter([
-                    DamageOutput {
-                        hp: Range::new(261, 261),
-                        damage: Output::new(RangeDistribution::from_iter([
-                            Range::new(0, 0),
-                        ]), [
-                            "=[[0,0]] - immune",
-                        ]),
+                    Hit {
+                        damage: Damage {
+                            hp: Range::new(261, 261),
+                            damage: Output::new(RangeDistribution::from_iter([
+                                Range::new(0, 0),
+                            ]), [
+                                "=[[0,0]] - immune",
+                            ]),
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    }
+                    },
                 ]),
             });
         });
@@ -1752,7 +1937,7 @@ mod damage_test {
     #[test]
     fn type_effectiveness() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1776,14 +1961,14 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            let type_effectiveness = output.hits[0].damage.type_effectiveness.as_ref().unwrap();
             pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::from(2u64), [
                 "x2 - super effective against Flying",
             ]));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x2 - type effectiveness".to_owned()));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1807,15 +1992,15 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            let type_effectiveness = output.hits[0].damage.type_effectiveness.as_ref().unwrap();
             pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::from(4u64), [
                 "x2 - super effective against Water",
                 "x2 - super effective against Flying",
             ]));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x4 - type effectiveness".to_owned()));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1839,14 +2024,14 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            let type_effectiveness = output.hits[0].damage.type_effectiveness.as_ref().unwrap();
             pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::new(1u64, 2u64), [
                 "x1/2 - not very effective against Water",
             ]));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x1/2 - type effectiveness".to_owned()));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1870,12 +2055,12 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let type_effectiveness = output.hits[0].type_effectiveness.as_ref().unwrap();
+            let type_effectiveness = output.hits[0].damage.type_effectiveness.as_ref().unwrap();
             pretty_assertions::assert_eq!(type_effectiveness, &Output::new(Fraction::new(1u64, 4u64), [
                 "x1/2 - not very effective against Water",
                 "x1/2 - not very effective against Grass",
             ]));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x1/4 - type effectiveness".to_owned()));
         });
     }
@@ -1883,7 +2068,7 @@ mod damage_test {
     #[test]
     fn levitate_immunity() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1908,7 +2093,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
     }
@@ -1916,7 +2101,7 @@ mod damage_test {
     #[test]
     fn grounded_due_to_ingrain_overrides_levitate() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1942,7 +2127,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(185, 218)));
         });
     }
@@ -1950,7 +2135,7 @@ mod damage_test {
     #[test]
     fn grounded_due_to_ingrain_negates_immunity() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -1975,7 +2160,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(160, 189)));
         });
     }
@@ -1983,7 +2168,7 @@ mod damage_test {
     #[test]
     fn burn() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2008,10 +2193,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(98, 116)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2036,7 +2221,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(49, 58)));
         });
     }
@@ -2044,7 +2229,7 @@ mod damage_test {
     #[test]
     fn rain() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 weather: Some("Rain".to_owned()),
@@ -2071,11 +2256,11 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(133, 157)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 weather: Some("Rain".to_owned()),
@@ -2102,7 +2287,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x1/2 - Rain".to_owned()), "{damage:?}");
         });
     }
@@ -2110,7 +2295,7 @@ mod damage_test {
     #[test]
     fn utility_umbrella_suppresses_rain() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 weather: Some("Rain".to_owned()),
@@ -2138,7 +2323,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(!damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
         });
@@ -2147,7 +2332,7 @@ mod damage_test {
     #[test]
     fn embargo_suppresses_item() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 weather: Some("Rain".to_owned()),
@@ -2176,7 +2361,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(133, 157)));
         });
@@ -2185,7 +2370,7 @@ mod damage_test {
     #[test]
     fn air_lock_suppresses_rain() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 weather: Some("Rain".to_owned()),
@@ -2213,7 +2398,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(!damage.description().contains(&"x3/2 - Rain".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(89, 105)));
         });
@@ -2222,7 +2407,7 @@ mod damage_test {
     #[test]
     fn huge_power() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2246,12 +2431,12 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             assert_eq!(attack.value(), &Range::new(202, 202));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(31, 37)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2276,10 +2461,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             assert!(attack.description().contains(&"x2 - Huge Power".to_owned()), "{attack:?}");
             assert_eq!(attack.value(), &Range::new(404, 404));
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(61, 72)));
         });
     }
@@ -2287,7 +2472,7 @@ mod damage_test {
     #[test]
     fn ohko() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2311,7 +2496,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"=[[299,299]] - ohko".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(299, 299)));
         });
@@ -2320,7 +2505,7 @@ mod damage_test {
     #[test]
     fn nature_power() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2344,12 +2529,12 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let base_power = output.hits[0].base_power.as_ref().unwrap();
+            let base_power = output.hits[0].damage.base_power.as_ref().unwrap();
             assert_eq!(*base_power.value(), 80);
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(61, 72)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 environment: Some("Water".to_owned()),
@@ -2376,9 +2561,9 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let base_power = output.hits[0].base_power.as_ref().unwrap();
+            let base_power = output.hits[0].damage.base_power.as_ref().unwrap();
             assert_eq!(*base_power.value(), 110);
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x2 - type effectiveness".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(249, 294)));
         });
@@ -2387,7 +2572,7 @@ mod damage_test {
     #[test]
     fn psychic_terrain() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 terrain: Some("Psychic Terrain".to_owned()),
@@ -2414,7 +2599,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"=[[0,0]] - Psychic Terrain".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
@@ -2423,7 +2608,7 @@ mod damage_test {
     #[test]
     fn volt_absorb() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2448,10 +2633,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(161, 190)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2476,7 +2661,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"=[[0,0]] - Volt Absorb".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
@@ -2485,7 +2670,7 @@ mod damage_test {
     #[test]
     fn wonder_guard() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2510,7 +2695,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"=[[0,0]] - Wonder Guard".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
@@ -2519,7 +2704,7 @@ mod damage_test {
     #[test]
     fn soundproof() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2544,7 +2729,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"=[[0,0]] - Soundproof".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
@@ -2553,7 +2738,7 @@ mod damage_test {
     #[test]
     fn endeavor() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2577,10 +2762,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2605,16 +2790,16 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(148, 148)));
-            assert_eq!(output.hits[0].hp, Range::new(297, 297));
+            assert_eq!(output.hits[0].damage.hp, Range::new(297, 297));
         });
     }
 
     #[test]
     fn weather_ball() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2638,10 +2823,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert_eq!(damage.value().min_max_range(), Some(Range::new(47, 55)));
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field {
                 weather: Some("Sandstorm".to_owned()),
@@ -2668,7 +2853,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x4 - type effectiveness".to_owned()), "{damage:?}");
             assert!(damage.description().contains(&"x100 - base power".to_owned()), "{damage:?}");
             assert_eq!(damage.value().min_max_range(), Some(Range::new(248, 292)));
@@ -2678,7 +2863,7 @@ mod damage_test {
     #[test]
     fn triple_kick() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2703,7 +2888,7 @@ mod damage_test {
             },
         }), Ok(output) => {
             pretty_assertions::assert_eq!(
-                output.hits.iter().map(|output| output.damage.value().min_max_range()).collect::<Vec<_>>(),
+                output.hits.iter().map(|output| output.damage.damage.value().min_max_range()).collect::<Vec<_>>(),
                 Vec::from_iter([
                     Some(Range::new(8, 10)),
                     Some(Range::new(17, 20)),
@@ -2716,7 +2901,7 @@ mod damage_test {
     #[test]
     fn gem() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2741,7 +2926,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let base_power = output.hits[0].base_power.as_ref().unwrap();
+            let base_power = output.hits[0].damage.base_power.as_ref().unwrap();
             assert!(base_power.description().contains(&"x13/10 - Flying Gem".to_owned()), "{base_power:?}");
         });
     }
@@ -2749,7 +2934,7 @@ mod damage_test {
     #[test]
     fn type_powering_item() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2774,7 +2959,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let base_power = output.hits[0].base_power.as_ref().unwrap();
+            let base_power = output.hits[0].damage.base_power.as_ref().unwrap();
             assert!(base_power.description().contains(&"x6/5 - Dragon Fang".to_owned()), "{base_power:?}");
         });
     }
@@ -2782,7 +2967,7 @@ mod damage_test {
     #[test]
     fn type_powering_ability() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2807,10 +2992,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             assert!(!attack.description().contains(&"x3/2 - Blaze".to_owned()), "{attack:?}");
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2836,7 +3021,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             assert!(attack.description().contains(&"x3/2 - Blaze".to_owned()), "{attack:?}");
         });
     }
@@ -2844,7 +3029,7 @@ mod damage_test {
     #[test]
     fn thick_fat() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2869,7 +3054,7 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let attack = &output.hits[0].attack.as_ref().unwrap().1;
+            let attack = &output.hits[0].damage.attack.as_ref().unwrap().1;
             assert!(attack.description().contains(&"x1/2 - Thick Fat".to_owned()), "{attack:?}");
         });
     }
@@ -2877,7 +3062,7 @@ mod damage_test {
     #[test]
     fn damage_reducing_berry() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2902,10 +3087,10 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x1/2 - Occa Berry".to_owned()), "{damage:?}");
         });
-        assert_matches::assert_matches!(calculate_damage(DamageCalculatorInput {
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
             data: &data,
             field: Field::default(),
             attacker: Mon {
@@ -2931,9 +3116,80 @@ mod damage_test {
                 ..Default::default()
             },
         }), Ok(output) => {
-            let damage = &output.hits[0].damage;
+            let damage = &output.hits[0].damage.damage;
             assert!(damage.description().contains(&"x1/2 - Occa Berry".to_owned()), "{damage:?}");
             assert!(damage.description().contains(&"x1/2 - Ripen".to_owned()), "{damage:?}");
+        });
+    }
+
+    #[test]
+    fn toxic() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Toxic".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let damage = &output.hits[0].damage.damage;
+            assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
+            let status_effect = &output.hits[0].status_effect_on_target;
+            pretty_assertions::assert_eq!(status_effect, &StatusEffect {
+                status: Some("Bad Poison".to_owned()),
+                ..Default::default()
+            });
+            let user_status_effect = &output.hits[0].status_effect_on_user;
+            pretty_assertions::assert_eq!(user_status_effect, &StatusEffect::default());
+        });
+    }
+
+    #[test]
+    fn toxic_immunity() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
+            data: &data,
+            field: Field::default(),
+            attacker: Mon {
+                name: "Charizard".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            defender: Mon {
+                name: "Venusaur".to_owned(),
+                level: 100,
+                nature: Some(Nature::Hardy),
+                ivs: Some(max_ivs()),
+                evs: Some(empty_evs()),
+                ..Default::default()
+            },
+            mov: Move {
+                name: "Toxic".to_owned(),
+                ..Default::default()
+            },
+        }), Ok(output) => {
+            let status_effect = &output.hits[0].status_effect_on_target;
+            pretty_assertions::assert_eq!(status_effect, &StatusEffect::default());
         });
     }
 }

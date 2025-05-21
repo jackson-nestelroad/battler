@@ -15,9 +15,10 @@ use crate::{
         Range,
         RangeDistribution,
     },
-    damage::{
-        DamageContext,
+    simulate::{
         MonType,
+        MoveContext,
+        StatusEffect,
     },
 };
 
@@ -26,38 +27,41 @@ use crate::{
 // If a function type takes in a
 
 /// Modifies the battle state from an effect on the field.
-pub(crate) type ModifyStateFromField = fn(&mut DamageContext);
+pub(crate) type ModifyStateFromField = fn(&mut MoveContext);
 /// Modifies the battle state from an effect on a side.
-pub(crate) type ModifyStateFromSide = fn(&mut DamageContext, MonType);
+pub(crate) type ModifyStateFromSide = fn(&mut MoveContext, MonType);
 /// Modifies the battle state from an effect on a Mon.
-pub(crate) type ModifyStateFromMon = fn(&mut DamageContext, MonType);
+pub(crate) type ModifyStateFromMon = fn(&mut MoveContext, MonType);
 /// Modifies the move being used.
-pub(crate) type ModifyMove = fn(&mut DamageContext);
+pub(crate) type ModifyMove = fn(&mut MoveContext);
 /// Fails the move before it hits.
-pub(crate) type FailMoveBeforeHit = fn(&mut DamageContext) -> bool;
+pub(crate) type FailMoveBeforeHit = fn(&mut MoveContext) -> bool;
 /// Applies fixed damage.
-pub(crate) type ApplyFixedDamage = fn(&DamageContext) -> Option<Range<u64>>;
+pub(crate) type ApplyFixedDamage = fn(&MoveContext) -> Option<Range<u64>>;
 /// Modifies the move data.
-pub(crate) type ModifyMoveData = fn(&mut DamageContext);
+pub(crate) type ModifyMoveData = fn(&mut MoveContext);
 /// Modifies the move base power.
-pub(crate) type ModifyBasePower = fn(&DamageContext, &mut Output<Fraction<u64>>);
+pub(crate) type ModifyBasePower = fn(&MoveContext, &mut Output<Fraction<u64>>);
 /// Modifies a stat calculation.
-pub(crate) type ModifyStat = fn(&DamageContext, MonType, &mut Output<Range<Fraction<u64>>>);
+pub(crate) type ModifyStat = fn(&MoveContext, MonType, &mut Output<Range<Fraction<u64>>>);
 /// Modifies damage from weather (before critical hit and randomization).
-pub(crate) type ModifyDamageFromWeather = fn(&DamageContext, &mut Output<Range<Fraction<u64>>>);
+pub(crate) type ModifyDamageFromWeather = fn(&MoveContext, &mut Output<Range<Fraction<u64>>>);
 /// Modifies type effectiveness.
-pub(crate) type ModifyTypeEffectiveness = fn(&DamageContext, &mut Output<Fraction<u64>>);
+pub(crate) type ModifyTypeEffectiveness = fn(&MoveContext, &mut Output<Fraction<u64>>);
 /// Modifies damage.
-pub(crate) type ModifyDamage =
-    fn(&mut DamageContext, &mut Output<RangeDistribution<Fraction<u64>>>);
+pub(crate) type ModifyDamage = fn(&mut MoveContext, &mut Output<RangeDistribution<Fraction<u64>>>);
+/// Modifies a heal amount.
+pub(crate) type ModifyHeal = fn(&mut MoveContext, &mut Output<Range<Fraction<u64>>>);
+/// Modifies the status effect.
+pub(crate) type ModifyStatusEffect = fn(&mut MoveContext, MonType, &mut StatusEffect);
 /// Modifies the battle state after a hit.
-pub(crate) type ModifyStateAfterHit = fn(&mut DamageContext);
+pub(crate) type ModifyStateAfterHit = fn(&mut MoveContext);
 /// Checks some Mon state.
-pub(crate) type CheckMonState = fn(&DamageContext, MonType) -> Option<bool>;
+pub(crate) type CheckMonState = fn(&MoveContext, MonType) -> Option<bool>;
 
 macro_rules! type_powering_ability {
     ( $name:literal, $typ:expr ) => {
-        (|context: &DamageContext, mon_type: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+        (|context: &MoveContext, mon_type: MonType, value: &mut Output<Range<Fraction<u64>>>| {
             if context.move_data.primary_type == $typ
                 && context
                     .mon(mon_type)
@@ -72,7 +76,7 @@ macro_rules! type_powering_ability {
 
 macro_rules! gem {
     ( $name:literal, $typ:expr ) => {
-        (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+        (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
             if context.move_data.primary_type == $typ {
                 base_power.mul(Fraction::new(13, 10), $name);
             }
@@ -82,7 +86,7 @@ macro_rules! gem {
 
 macro_rules! type_powering_item {
     ( $name:literal, $typ:expr ) => {
-        (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+        (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
             if context.move_data.primary_type == $typ {
                 base_power.mul(Fraction::new(6, 5), $name);
             }
@@ -92,7 +96,7 @@ macro_rules! type_powering_item {
 
 macro_rules! damage_reducing_berry {
     ( $name:literal, $typ:expr ) => {
-        (|context: &mut DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
+        (|context: &mut MoveContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
             if context.move_data.primary_type == $typ
                 && context.properties.mov.type_effectiveness > 1
             {
@@ -105,7 +109,7 @@ macro_rules! damage_reducing_berry {
         }) as _
     };
     ( $name:literal ) => {
-        (|context: &mut DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
+        (|context: &mut MoveContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
             if context.properties.mov.type_effectiveness > 1 {
                 damage.mul(Fraction::new(1u64, 2u64), $name);
                 if context.defender.has_ability(["Ripen"]) {
@@ -122,19 +126,19 @@ pub(crate) static MODIFY_STATE_FROM_MON_HOOKS: LazyLock<IndexMap<&str, ModifySta
         IndexMap::from_iter([
             (
                 "condition:Gastro Acid",
-                (|context: &mut DamageContext, mon_type: MonType| {
+                (|context: &mut MoveContext, mon_type: MonType| {
                     context.mon_mut(mon_type).ability = None;
                 }) as _,
             ),
             (
                 "condition:Embargo",
-                (|context: &mut DamageContext, mon_type: MonType| {
+                (|context: &mut MoveContext, mon_type: MonType| {
                     context.mon_mut(mon_type).item = None;
                 }) as _,
             ),
             (
                 "item:Utility Umbrella",
-                (|context: &mut DamageContext, mon_type: MonType| {
+                (|context: &mut MoveContext, mon_type: MonType| {
                     if context.field.has_weather([
                         "Rain",
                         "Heavy Rain",
@@ -153,13 +157,13 @@ pub(crate) static MODIFY_STATE_FROM_SIDE_HOOKS: LazyLock<IndexMap<&str, ModifySt
         IndexMap::from_iter([
             (
                 "ability:Air Lock",
-                (|context: &mut DamageContext, _: MonType| {
+                (|context: &mut MoveContext, _: MonType| {
                     context.field.weather = None;
                 }) as _,
             ),
             (
                 "ability:Cloud Nine",
-                (|context: &mut DamageContext, _: MonType| {
+                (|context: &mut MoveContext, _: MonType| {
                     context.field.weather = None;
                 }) as _,
             ),
@@ -172,7 +176,7 @@ pub(crate) static MODIFY_STATE_FROM_FIELD_HOOKS: LazyLock<IndexMap<&str, ModifyS
 pub(crate) static MODIFY_MOVE_HOOKS: LazyLock<IndexMap<&str, ModifyMove>> = LazyLock::new(|| {
     IndexMap::from_iter([(
         "move:Nature Power",
-        (|context: &mut DamageContext| {
+        (|context: &mut MoveContext| {
             let move_name = if context.field.has_terrain(["Electric Terrain"]) {
                 "Thunderbolt"
             } else if context.field.has_terrain(["Grassy Terrain"]) {
@@ -208,11 +212,11 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
         IndexMap::from_iter([
             (
                 "terrain:Psychic Terrain:defender",
-                (|context: &mut DamageContext| context.move_data.priority > 0) as _,
+                (|context: &mut MoveContext| context.move_data.priority > 0) as _,
             ),
             (
                 "move:Brick Break",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     context.field.defender_side.conditions.remove("Reflect");
                     context
                         .field
@@ -225,20 +229,19 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Sturdy:defender",
-                (|context: &mut DamageContext| context.move_data.ohko_type.is_some()) as _,
+                (|context: &mut MoveContext| context.move_data.ohko_type.is_some()) as _,
             ),
             (
                 "ability:Volt Absorb:defender",
-                (|context: &mut DamageContext| context.move_data.primary_type == Type::Electric)
-                    as _,
+                (|context: &mut MoveContext| context.move_data.primary_type == Type::Electric) as _,
             ),
             (
                 "ability:Water Absorb:defender",
-                (|context: &mut DamageContext| context.move_data.primary_type == Type::Water) as _,
+                (|context: &mut MoveContext| context.move_data.primary_type == Type::Water) as _,
             ),
             (
                 "ability:Flash Fire:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.primary_type == Type::Fire {
                         context.defender.conditions.insert("Flash Fire".to_owned());
                         return true;
@@ -248,7 +251,7 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Wonder Guard:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.typeless {
                         return false;
                     }
@@ -260,7 +263,7 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Lightning Rod:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.primary_type == Type::Electric {
                         context.defender.boosts.spa += 1;
                         return true;
@@ -270,7 +273,7 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Sap Sipper:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.primary_type == Type::Grass {
                         context.defender.boosts.atk += 1;
                         return true;
@@ -280,7 +283,7 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Soundproof:defender",
-                (|context: &mut DamageContext| context.move_data.flags.contains(&MoveFlag::Sound))
+                (|context: &mut MoveContext| context.move_data.flags.contains(&MoveFlag::Sound))
                     as _,
             ),
         ])
@@ -291,15 +294,15 @@ pub(crate) static APPLY_FIXED_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ApplyFixedDa
         IndexMap::from_iter([
             (
                 "move:Seismic Toss",
-                (|context: &DamageContext| Some(context.attacker.level.into())) as _,
+                (|context: &MoveContext| Some(context.attacker.level.into())) as _,
             ),
             (
                 "move:Night Shade",
-                (|context: &DamageContext| Some(context.attacker.level.into())) as _,
+                (|context: &MoveContext| Some(context.attacker.level.into())) as _,
             ),
             (
                 "move:Psywave",
-                (|context: &DamageContext| {
+                (|context: &MoveContext| {
                     Some(Range::new(
                         50 * context.attacker.level / 100,
                         150 * context.attacker.level / 100,
@@ -308,7 +311,7 @@ pub(crate) static APPLY_FIXED_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ApplyFixedDa
             ),
             (
                 "move:Super Fang",
-                (|context: &DamageContext| {
+                (|context: &MoveContext| {
                     let health = context.current_hp(MonType::Defender);
                     let damage = health / 2;
                     let damage = damage.map(|damage| damage.floor().max(1));
@@ -317,7 +320,7 @@ pub(crate) static APPLY_FIXED_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ApplyFixedDa
             ),
             (
                 "move:Endeavor",
-                (|context: &DamageContext| {
+                (|context: &MoveContext| {
                     let attacker_health = context.current_hp(MonType::Attacker);
                     let defender_health = context.current_hp(MonType::Defender);
                     let damage = defender_health - attacker_health;
@@ -333,7 +336,7 @@ pub(crate) static MODIFY_MOVE_DATA_HOOKS: LazyLock<IndexMap<&str, ModifyMoveData
         IndexMap::from_iter([
             (
                 "move:Hidden Power",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if let Some(typ) = context.attacker.hidden_power_type {
                         context.move_data.primary_type = typ;
                     }
@@ -341,7 +344,7 @@ pub(crate) static MODIFY_MOVE_DATA_HOOKS: LazyLock<IndexMap<&str, ModifyMoveData
             ),
             (
                 "move:Weather Ball",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.properties.attacker.weather_suppressed {
                         return;
                     }
@@ -368,7 +371,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
         IndexMap::from_iter([
             (
                 "move:Low Kick",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     let weight = context.defender_species_data.weight;
                     if weight >= 2000 {
                         base_power.set(120u64, "weight >= 200 kg");
@@ -387,7 +390,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Solar Beam",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.field.has_weather([
                         "Rain",
                         "Heavy Rain",
@@ -401,7 +404,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Triple Kick",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.properties.mov.hit > 1 {
                         base_power.mul(context.properties.mov.hit, "additional hit");
                     }
@@ -409,7 +412,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Flail",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     let health = context.defender.health.unwrap_or(Fraction::from(1u64));
                     if health >= Fraction::new(688, 1000) {
                         base_power.set(20u64, "hp >= 68.8%");
@@ -428,7 +431,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Reversal",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     let health = context.defender.health.unwrap_or(Fraction::from(1u64));
                     if health >= Fraction::new(688, 1000) {
                         base_power.set(20u64, "hp >= 68.8%");
@@ -447,19 +450,19 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Return",
-                (|_: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|_: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     base_power.set(102u64, "max happiness");
                 }) as _,
             ),
             (
                 "move:Frustration",
-                (|_: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|_: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     base_power.set(102u64, "min happiness");
                 }) as _,
             ),
             (
                 "move:Pursuit",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.defender.has_condition(["Switching"]) {
                         base_power.mul(2u64, "switching out");
                     }
@@ -467,7 +470,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Facade",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context
                         .defender
                         .has_status(["Poison", "Bad Poison", "Paralysis", "Burn"])
@@ -478,7 +481,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Smelling Salts",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.defender.has_status(["Paralysis"]) {
                         base_power.mul(2u64, "paralysis boost");
                     }
@@ -486,7 +489,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Knock Off",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.defender.item.is_some() {
                         base_power.mul(Fraction::new(3, 2), "item boost");
                     }
@@ -494,7 +497,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Eruption",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     base_power.mul(
                         context.attacker.health.unwrap_or(Fraction::from(1u64)),
                         "user health",
@@ -503,7 +506,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Water Spout",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     base_power.mul(
                         context.attacker.health.unwrap_or(Fraction::from(1u64)),
                         "user health",
@@ -512,7 +515,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "move:Weather Ball",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type != Type::Normal {
                         base_power.mul(2u64, "weather boost");
                     }
@@ -520,7 +523,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "condition:Mud Sport",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type == Type::Electric {
                         base_power.mul(Fraction::new(1u64, 3u64), "Mud Sport");
                     }
@@ -528,7 +531,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "condition:Water Sport",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type == Type::Fire {
                         base_power.mul(Fraction::new(1u64, 3u64), "Water Sport");
                     }
@@ -536,7 +539,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "terrain:Misty Terrain:defender",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type == Type::Dragon {
                         base_power.mul(Fraction::new(1u64, 2u64), "Misty Terrain");
                     }
@@ -544,7 +547,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "terrain:Grassy Terrain:defender",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context
                         .mov
                         .is_named(["Earthquake", "Bulldoze", "Magnitude"])
@@ -557,7 +560,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "terrain:Electric Terrain:defender",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type == Type::Electric {
                         base_power.mul(Fraction::new(13, 10), "Electric Terrain");
                     }
@@ -565,7 +568,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "terrain:Psychic Terrain:defender",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type == Type::Psychic {
                         base_power.mul(Fraction::new(13, 10), "Psychic Terrain");
                     }
@@ -573,7 +576,7 @@ pub(crate) static MODIFY_BASE_POWER_HOOKS: LazyLock<IndexMap<&str, ModifyBasePow
             ),
             (
                 "condition:Charge:attacker",
-                (|context: &DamageContext, base_power: &mut Output<Fraction<u64>>| {
+                (|context: &MoveContext, base_power: &mut Output<Fraction<u64>>| {
                     if context.move_data.primary_type == Type::Electric {
                         base_power.mul(2u64, "Charge");
                     }
@@ -686,7 +689,7 @@ pub(crate) static MODIFY_ATK_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
         IndexMap::from_iter([
             (
                 "condition:Flash Fire",
-                (|context: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|context: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     if context.move_data.primary_type == Type::Fire {
                         value.mul(2u64, "Flash Fire");
                     }
@@ -694,25 +697,25 @@ pub(crate) static MODIFY_ATK_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "ability:Huge Power",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(2u64, "Huge Power");
                 }) as _,
             ),
             (
                 "ability:Pure Power",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(2u64, "Huge Power");
                 }) as _,
             ),
             (
                 "ability:Hustle",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(Fraction::new(3, 2), "Hustle");
                 }) as _,
             ),
             (
                 "ability:Guts",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if context.mon(mon_type).status.is_some() {
@@ -722,7 +725,7 @@ pub(crate) static MODIFY_ATK_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "ability:Marvel Scale",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if context.mon(mon_type).status.is_some() {
@@ -742,7 +745,7 @@ pub(crate) static MODIFY_ATK_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ("ability:Swarm", type_powering_ability!("Swarm", Type::Bug)),
             (
                 "ability:Thick Fat:opposite",
-                (|context: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|context: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     if context.move_data.primary_type == Type::Ice
                         || context.move_data.primary_type == Type::Fire
                     {
@@ -752,13 +755,13 @@ pub(crate) static MODIFY_ATK_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "item:Choice Band",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(Fraction::new(3, 2), "Choice Band");
                 }) as _,
             ),
             (
                 "item:Light Ball",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if context.species(mon_type).base_species == "Pikachu" {
@@ -773,7 +776,7 @@ pub(crate) static MODIFY_DEF_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
     LazyLock::new(|| {
         IndexMap::from_iter([(
             "weather:Snow",
-            (|context: &DamageContext,
+            (|context: &MoveContext,
               mon_type: MonType,
               value: &mut Output<Range<Fraction<u64>>>| {
                 if context.mon(mon_type).has_type([Type::Ice]) {
@@ -788,7 +791,7 @@ pub(crate) static MODIFY_SPA_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
         IndexMap::from_iter([
             (
                 "condition:Flash Fire",
-                (|context: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|context: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     if context.move_data.primary_type == Type::Fire {
                         value.mul(2u64, "Flash Fire");
                     }
@@ -806,7 +809,7 @@ pub(crate) static MODIFY_SPA_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ("ability:Swarm", type_powering_ability!("Swarm", Type::Bug)),
             (
                 "ability:Thick Fat:opposite",
-                (|context: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|context: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     if context.move_data.primary_type == Type::Ice
                         || context.move_data.primary_type == Type::Fire
                     {
@@ -816,13 +819,13 @@ pub(crate) static MODIFY_SPA_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "item:Choice Specs",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(Fraction::new(3, 2), "Choice Specs");
                 }) as _,
             ),
             (
                 "item:Light Ball",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if context.species(mon_type).base_species == "Pikachu" {
@@ -837,7 +840,7 @@ pub(crate) static MODIFY_SPD_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
     LazyLock::new(|| {
         IndexMap::from_iter([(
             "weather:Sandstorm",
-            (|context: &DamageContext,
+            (|context: &MoveContext,
               mon_type: MonType,
               value: &mut Output<Range<Fraction<u64>>>| {
                 if context.mon(mon_type).has_type([Type::Rock]) {
@@ -852,7 +855,7 @@ pub(crate) static MODIFY_SPE_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
         IndexMap::from_iter([
             (
                 "status:Paralysis",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if !context.mon(mon_type).has_ability(["Quick Feet"]) {
@@ -862,7 +865,7 @@ pub(crate) static MODIFY_SPE_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "ability:Swift Swim",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if context.mon_properties(mon_type).weather_suppressed {
@@ -875,7 +878,7 @@ pub(crate) static MODIFY_SPE_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "ability:Chlorophyll",
-                (|context: &DamageContext,
+                (|context: &MoveContext,
                   mon_type: MonType,
                   value: &mut Output<Range<Fraction<u64>>>| {
                     if context.mon_properties(mon_type).weather_suppressed {
@@ -891,13 +894,13 @@ pub(crate) static MODIFY_SPE_STAT_HOOKS: LazyLock<IndexMap<&str, ModifyStat>> =
             ),
             (
                 "item:Macho Brace",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(Fraction::new(1u64, 2u64), "Macho Brace");
                 }) as _,
             ),
             (
                 "item:Choice Scarf",
-                (|_: &DamageContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
+                (|_: &MoveContext, _: MonType, value: &mut Output<Range<Fraction<u64>>>| {
                     value.mul(Fraction::new(3, 2), "Choice Scarf");
                 }) as _,
             ),
@@ -909,7 +912,7 @@ pub(crate) static MODIFY_DAMAGE_FROM_WEATHER_HOOKS: LazyLock<
 > = LazyLock::new(|| {
     IndexMap::from_iter([(
         "weather:Rain:defender",
-        (|context: &DamageContext, damage: &mut Output<Range<Fraction<u64>>>| {
+        (|context: &MoveContext, damage: &mut Output<Range<Fraction<u64>>>| {
             if context.move_data.primary_type == Type::Water {
                 damage.mul(Fraction::new(3, 2), "Rain");
             }
@@ -925,7 +928,7 @@ pub(crate) static MODIFY_TYPE_EFFECTIVENESS_HOOKS: LazyLock<
 > = LazyLock::new(|| {
     IndexMap::from_iter([(
         "weather:Strong Winds:defender",
-        (|context: &DamageContext, effectiveness: &mut Output<Fraction<u64>>| {
+        (|context: &MoveContext, effectiveness: &mut Output<Fraction<u64>>| {
             if context.defender.has_type([Type::Flying])
                 && context.type_effectiveness(context.move_data.primary_type, Type::Flying)
                     == TypeEffectiveness::Strong
@@ -941,7 +944,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
         IndexMap::from_iter([
             (
                 "status:Burn:attacker",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.move_data.category == MoveCategory::Physical
                         && !context.attacker.has_ability(["Guts"])
@@ -953,7 +956,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Fly:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.mov.is_named(["Gust", "Twister"]) {
                         damage.mul(2u64, "Fly");
@@ -962,7 +965,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Bounce:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.mov.is_named(["Gust", "Twister"]) {
                         damage.mul(2u64, "Fly");
@@ -971,7 +974,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Dig:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.mov.is_named(["Earthquake", "Magnitude"]) {
                         damage.mul(2u64, "Dig");
@@ -980,7 +983,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Dive:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.mov.is_named(["Surf", "Whirlpool"]) {
                         damage.mul(2u64, "Dive");
@@ -989,7 +992,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Minimize:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.mov.is_named([
                         "Stomp",
@@ -1006,7 +1009,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Light Screen:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.move_data.category != MoveCategory::Special || context.mov.crit {
                         return;
@@ -1020,7 +1023,7 @@ pub(crate) static MODIFY_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
             ),
             (
                 "condition:Reflect:defender",
-                (|context: &mut DamageContext,
+                (|context: &mut MoveContext,
                   damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                     if context.move_data.category != MoveCategory::Physical || context.mov.crit {
                         return;
@@ -1115,7 +1118,7 @@ pub(crate) static MODIFY_RECOIL_DAMAGE_HOOKS: LazyLock<IndexMap<&str, ModifyDama
     LazyLock::new(|| {
         IndexMap::from_iter([(
             "ability:Rock Head:attacker",
-            (|_: &mut DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
+            (|_: &mut MoveContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                 damage.mul(0u64, "Rock Head");
             }) as _,
         )])
@@ -1125,10 +1128,94 @@ pub(crate) static MODIFY_DRAIN_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
     LazyLock::new(|| {
         IndexMap::from_iter([(
             "condition:Liquid Ooze:defender",
-            (|_: &mut DamageContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
+            (|_: &mut MoveContext, damage: &mut Output<RangeDistribution<Fraction<u64>>>| {
                 damage.mul(0u64, "Liquid Ooze");
             }) as _,
         )])
+    });
+
+pub(crate) static MODIFY_HEAL_HOOKS: LazyLock<IndexMap<&str, ModifyHeal>> = LazyLock::new(|| {
+    IndexMap::from_iter([(
+        "condition:Heal Block:attacker",
+        (|_: &mut MoveContext, damage: &mut Output<Range<Fraction<u64>>>| {
+            damage.mul(0u64, "Heal Block");
+        }) as _,
+    )])
+});
+
+pub(crate) static MODIFY_STATUS_EFFECT_HOOKS: LazyLock<IndexMap<&str, ModifyStatusEffect>> =
+    LazyLock::new(|| {
+        IndexMap::from_iter([
+            (
+                "weather:Harsh Sunlight",
+                (|_: &mut MoveContext, _: MonType, status_effect: &mut StatusEffect| {
+                    status_effect.clear_status_if(["Freeze"]);
+                }) as _,
+            ),
+            (
+                "weather:Extremely Harsh Sunlight",
+                (|_: &mut MoveContext, _: MonType, status_effect: &mut StatusEffect| {
+                    status_effect.clear_status_if(["Freeze"]);
+                }) as _,
+            ),
+            (
+                "ability:Oblivious",
+                (|_: &mut MoveContext, _: MonType, status_effect: &mut StatusEffect| {
+                    status_effect.clear_volatile_if(["Attract"]);
+                }) as _,
+            ),
+            (
+                "ability:Own Tempo",
+                (|_: &mut MoveContext, _: MonType, status_effect: &mut StatusEffect| {
+                    status_effect.clear_volatile_if(["Confusion"]);
+                }) as _,
+            ),
+            (
+                "ability:Magma Armor",
+                (|_: &mut MoveContext, _: MonType, status_effect: &mut StatusEffect| {
+                    status_effect.clear_status_if(["Freeze"]);
+                }) as _,
+            ),
+            (
+                "item:Safety Goggles",
+                (|context: &mut MoveContext, _: MonType, status_effect: &mut StatusEffect| {
+                    if context.move_data.flags.contains(&MoveFlag::Powder) {
+                        status_effect.status = None;
+                        status_effect.volatile = None;
+                    }
+                }) as _,
+            ),
+            (
+                "mon",
+                (|context: &mut MoveContext,
+                  mon_type: MonType,
+                  status_effect: &mut StatusEffect| {
+                    if context.move_data.flags.contains(&MoveFlag::Powder)
+                        && context.mon(mon_type).has_type([Type::Grass])
+                    {
+                        status_effect.status = None;
+                        status_effect.volatile = None;
+                    }
+
+                    if context.mon(mon_type).has_type([Type::Poison, Type::Steel]) {
+                        status_effect.clear_status_if(["Poison", "Bad Poison"]);
+                    }
+                    if context.mon(mon_type).has_type([Type::Electric]) {
+                        status_effect.clear_status_if(["Paralysis"]);
+                    }
+                    if context.mon(mon_type).has_type([Type::Fire]) {
+                        status_effect.clear_status_if(["Burn"]);
+                    }
+                    if context.mon(mon_type).has_type([Type::Ice]) {
+                        status_effect.clear_status_if(["Freeze"]);
+                    }
+
+                    if context.mon(mon_type).has_type([Type::Ghost]) {
+                        status_effect.clear_volatile_if(["Trapped"]);
+                    }
+                }) as _,
+            ),
+        ])
     });
 
 pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifyStateAfterHit>> =
@@ -1136,7 +1223,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
         IndexMap::from_iter([
             (
                 "move:Thief",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     let item = context.defender.item.take();
                     if context.attacker.item.is_none() {
                         context.attacker.item = item;
@@ -1145,7 +1232,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "move:Covet",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     let item = context.defender.item.take();
                     if context.attacker.item.is_none() {
                         context.attacker.item = item;
@@ -1154,13 +1241,13 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "move:Knock Off",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     context.defender.item = None;
                 }) as _,
             ),
             (
                 "move:Smelling Salts",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.defender.has_status(["Paralysis"]) {
                         context.defender.status = None;
                     }
@@ -1168,7 +1255,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "condition:Rage:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.category == MoveCategory::Status {
                         context.defender.boosts.atk += 1;
                     }
@@ -1176,7 +1263,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "status:Freeze:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.primary_type == Type::Fire {
                         context.defender.status = None;
                     }
@@ -1184,7 +1271,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "ability:Rough Skin:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_makes_contact() {
                         context.chip_off_hp(MonType::Attacker, Fraction::new(1, 8));
                     }
@@ -1192,7 +1279,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "item:Jaboca Berry:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.category == MoveCategory::Physical {
                         context.chip_off_hp(MonType::Attacker, Fraction::new(1, 8));
                         context.defender.item = None;
@@ -1201,7 +1288,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "item:Rowap Berry:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.category == MoveCategory::Special {
                         context.chip_off_hp(MonType::Attacker, Fraction::new(1, 8));
                         context.defender.item = None;
@@ -1210,7 +1297,7 @@ pub(crate) static MODIFY_STATE_AFTER_HIT_HOOKS: LazyLock<IndexMap<&str, ModifySt
             ),
             (
                 "item:Cell Battery:defender",
-                (|context: &mut DamageContext| {
+                (|context: &mut MoveContext| {
                     if context.move_data.primary_type == Type::Electric {
                         context.defender.boosts.atk += 1;
                     }
@@ -1224,19 +1311,19 @@ pub(crate) static MON_IS_GROUNDED_HOOKS: LazyLock<IndexMap<&str, CheckMonState>>
         IndexMap::from_iter([
             (
                 "condition:Ingrain",
-                (|_: &DamageContext, _: MonType| {
+                (|_: &MoveContext, _: MonType| {
                     return Some(true);
                 }) as _,
             ),
             (
                 "ability:Levitate",
-                (|_: &DamageContext, _: MonType| {
+                (|_: &MoveContext, _: MonType| {
                     return Some(false);
                 }) as _,
             ),
             (
                 "mon",
-                (|context: &DamageContext, mon_type: MonType| {
+                (|context: &MoveContext, mon_type: MonType| {
                     if context.mon(mon_type).has_type([Type::Flying]) {
                         return Some(false);
                     }
@@ -1251,7 +1338,7 @@ pub(crate) static MON_NEGATES_IMMUNITY_HOOKS: LazyLock<IndexMap<&str, CheckMonSt
         IndexMap::from_iter([
             (
                 "condition:Miracle Eye",
-                (|context: &DamageContext, mon_type: MonType| {
+                (|context: &MoveContext, mon_type: MonType| {
                     if !context.mon(mon_type).has_type([Type::Dark]) {
                         return None;
                     }
@@ -1263,7 +1350,7 @@ pub(crate) static MON_NEGATES_IMMUNITY_HOOKS: LazyLock<IndexMap<&str, CheckMonSt
             ),
             (
                 "condition:Foresight",
-                (|context: &DamageContext, mon_type: MonType| {
+                (|context: &MoveContext, mon_type: MonType| {
                     if !context.mon(mon_type).has_type([Type::Ghost]) {
                         return None;
                     }
@@ -1276,7 +1363,7 @@ pub(crate) static MON_NEGATES_IMMUNITY_HOOKS: LazyLock<IndexMap<&str, CheckMonSt
             ),
             (
                 "mon",
-                (|context: &DamageContext, mon_type: MonType| {
+                (|context: &MoveContext, mon_type: MonType| {
                     if context.move_data.primary_type == Type::Ground
                         && context.mon_is_grounded(mon_type)
                     {
@@ -1292,7 +1379,7 @@ pub(crate) static MON_IS_IMMUNE_HOOKS: LazyLock<IndexMap<&str, CheckMonState>> =
     LazyLock::new(|| {
         IndexMap::from_iter([(
             "mon",
-            (|context: &DamageContext, mon_type: MonType| {
+            (|context: &MoveContext, mon_type: MonType| {
                 if context.move_data.primary_type == Type::Ground
                     && !context.mon_is_grounded(mon_type)
                 {
@@ -1307,6 +1394,6 @@ pub(crate) static MON_IS_CONTACT_PROOF_HOOKS: LazyLock<IndexMap<&str, CheckMonSt
     LazyLock::new(|| {
         IndexMap::from_iter([(
             "item:Protective Pads",
-            (|_: &DamageContext, _: MonType| Some(true)) as _,
+            (|_: &MoveContext, _: MonType| Some(true)) as _,
         )])
     });
