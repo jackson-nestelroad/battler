@@ -110,6 +110,7 @@ fn forfeit_ends_singles_battle() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Bulbasaur,player-1,1",
             "forfeited|player:player-1",
             "win|side:1"
         ]"#,
@@ -142,6 +143,8 @@ fn forfeit_ends_doubles_battle() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Bulbasaur,player-1,1",
+            "switchout|mon:Charmander,player-1,2",
             "forfeited|player:player-1",
             "win|side:1"
         ]"#,
@@ -179,6 +182,7 @@ fn forfeit_ends_multi_battle() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Bulbasaur,player-1,1",
             "forfeited|player:player-1",
             "move|mon:Bulbasaur,player-2,2|name:Tackle|target:Bulbasaur,player-4,2",
             "split|side:1",
@@ -195,6 +199,7 @@ fn forfeit_ends_multi_battle() {
             "residual",
             "turn|turn:2",
             ["time"],
+            "switchout|mon:Bulbasaur,player-2,2",
             "forfeited|player:player-2",
             "win|side:1"
         ]"#,
@@ -228,8 +233,11 @@ fn forfeit_order_determined_by_time() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "switchout|mon:Bulbasaur,player-1,1",
             "forfeited|player:player-1",
+            "switchout|mon:Bulbasaur,player-2,1",
             "forfeited|player:player-3",
+            "switchout|mon:Bulbasaur,player-4,2",
             "forfeited|player:player-4",
             "win|side:0"
         ]"#,
