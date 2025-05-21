@@ -11,10 +11,8 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai
 [dependencies]
 ahash = { workspace = true }
 anyhow = { workspace = true }
-futures-util = { workspace = true }
 indexmap = { workspace = true }
 num = { workspace = true }
-tokio = { workspace = true }
 uuid = { workspace = true }
 
 battler-data = { path = "../battler-data" }

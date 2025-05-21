@@ -85,7 +85,6 @@ impl Side {
 #[derive(Debug, Default, Clone)]
 pub struct Mon {
     pub name: String,
-    pub side: usize,
     pub level: u64,
     pub health: Option<Fraction<u64>>,
     pub ability: Option<String>,

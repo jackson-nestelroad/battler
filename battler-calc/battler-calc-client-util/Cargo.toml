@@ -1,0 +1,18 @@
+[package]
+name = "battler-calc-client-util"
+version = "0.1.0"
+edition = "2024"
+description = "battler-calc utilities for battler-client."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai"
+
+[dependencies]
+anyhow = { workspace = true }
+
+battler = { path = "../../battler" }
+battler-calc = { path = ".." }
+battler-client = { path = "../../battler-client" }
+
+[dev-dependencies]

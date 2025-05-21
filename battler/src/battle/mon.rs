@@ -283,10 +283,12 @@ pub struct MonBattleData {
     pub player_active_position: Option<usize>,
     pub side_position: Option<usize>,
     pub stats: PartialStatTable,
+    pub boosts: BoostTable,
     pub moves: Vec<MonMoveSlotData>,
     pub ability: String,
     pub item: Option<String>,
     pub status: Option<String>,
+    pub hidden_power_type: Type,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -1269,6 +1271,7 @@ impl Mon {
             player_active_position: context.mon().active_position,
             side_position,
             stats: context.mon().stats.without_hp(),
+            boosts: context.mon().boosts.clone(),
             moves: context
                 .mon()
                 .move_slots
@@ -1283,6 +1286,7 @@ impl Mon {
                 .status
                 .as_ref()
                 .map(|status| status.to_string()),
+            hidden_power_type: context.mon().hidden_power_type,
         })
     }
 

@@ -58,7 +58,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-calc tests
-        run: cargo test -p battler-calc
+        run: cargo test -p "battler-calc*"
 
   test-battler-ai:
     name: Run battler-ai tests
