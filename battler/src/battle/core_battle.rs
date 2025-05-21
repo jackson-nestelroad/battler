@@ -787,6 +787,10 @@ impl<'d> CoreBattle<'d> {
             battle_log_entry!("info", ("battletype", &context.battle().format.battle_type));
         context.battle_mut().log(battle_type_event);
 
+        let environment_event =
+            battle_log_entry!("info", ("environment", context.battle().field.environment));
+        context.battle_mut().log(environment_event);
+
         // Extract and sort all rule logs.
         //
         // We sort to keep the battle log stable.

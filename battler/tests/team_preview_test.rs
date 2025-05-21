@@ -113,6 +113,7 @@ fn team_preview_orders_all_player_teams() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "info|battletype:Multi",
+            "info|environment:Normal",
             "info|rule:Endless Battle Clause: Forcing endless battles is banned",
             "info|rule:Sleep Clause: Limit one foe put to sleep",
             "side|id:0|name:Side 1",

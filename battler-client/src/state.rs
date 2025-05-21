@@ -476,7 +476,7 @@ impl Mon {
 }
 
 /// A reference to a [`MonBattleAppearance`].
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct MonBattleAppearanceReference {
     pub player: String,
     pub mon_index: usize,
@@ -906,6 +906,7 @@ impl Side {
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Field {
     pub sides: Vec<Side>,
+    pub environment: Option<String>,
     pub weather: Option<String>,
     pub conditions: BTreeMap<String, ConditionData>,
     pub rules: Vec<String>,
@@ -1827,6 +1828,9 @@ fn alter_battle_state_for_entry(
             if let Some(rule) = entry.value::<String>("rule") {
                 state.field.rules.push(rule.to_owned());
             }
+            if let Some(environment) = entry.value::<String>("environment") {
+                state.field.environment = Some(environment);
+            }
         }
         "learnedmove" => {
             let mon = entry.value_or_else("mon")?;
@@ -2195,6 +2199,7 @@ mod state_test {
     fn constructs_sides_and_players_before_battle_start() {
         let log = Log::new(&[
             "info|battletype:Singles",
+            "info|environment:Normal",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
             "maxsidelength|length:1",
@@ -2214,9 +2219,10 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 1,
-                last_log_index: 9,
+                last_log_index: 10,
                 battle_type: "singles".to_owned(),
                 field: Field {
+                    environment: Some("Normal".to_owned()),
                     sides: Vec::from_iter([
                         Side {
                             name: "Side 1".to_owned(),

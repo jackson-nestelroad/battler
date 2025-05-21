@@ -17,7 +17,6 @@ num = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
 
-battler-client = { path = "../battler-client" }
 battler-data = { path = "../battler-data" }
 
 [dev-dependencies]

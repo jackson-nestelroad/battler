@@ -315,6 +315,7 @@ mod log_test {
     fn constructs_from_full_log() {
         let log = Log::new(&[
             "info|battletype:Singles",
+            "info|environment:Normal",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
             "maxsidelength|length:2",
