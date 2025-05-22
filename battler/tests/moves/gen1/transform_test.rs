@@ -146,6 +146,9 @@ fn transform_transforms_into_target() {
             r#"{
                 "name": "Player 1",
                 "id": "player-1",
+                "player_type": {
+                    "type": "trainer"
+                },
                 "side": 0,
                 "position": 0,
                 "mons": [

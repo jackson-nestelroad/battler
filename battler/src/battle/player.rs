@@ -374,6 +374,7 @@ impl ItemChoice {
 pub struct PlayerBattleData {
     pub name: String,
     pub id: String,
+    pub player_type: PlayerType,
     pub side: usize,
     pub position: usize,
     pub mons: Vec<MonBattleData>,
@@ -645,6 +646,7 @@ impl Player {
         Ok(PlayerBattleData {
             name: context.player().name.clone(),
             id: context.player().id.clone(),
+            player_type: context.player().player_type,
             side: context.player().side,
             position: context.player().position,
             mons: mon_handles
