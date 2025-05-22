@@ -79,7 +79,7 @@ fn revive_revives_fainted_mon_to_half_health() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item revive,-2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Revive cannot be used on Pichu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Revive cannot be used on Pichu")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item revive,-1"),
@@ -147,7 +147,7 @@ fn max_revive_revives_fainted_mon_to_full_health() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item maxrevive,-2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Max Revive cannot be used on Pichu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Max Revive cannot be used on Pichu")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item maxrevive,-1"),

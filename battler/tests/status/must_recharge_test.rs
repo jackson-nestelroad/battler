@@ -89,7 +89,8 @@ fn recharge_moves_require_recharge_turn() {
                     "disabled": false
                 }
             ],
-            "trapped": true
+            "trapped": true,
+            "locked_into_move": true
         }"#,
     )
     .unwrap();
@@ -108,7 +109,7 @@ fn recharge_moves_require_recharge_turn() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Venusaur does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Venusaur does not have a move in slot 1")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

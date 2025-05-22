@@ -116,15 +116,15 @@ fn must_switch_after_faint() {
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;move 0,1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot move out of turn")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: you cannot move out of turn")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to an active mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch to an active mon")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a fainted mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch to a fainted mon")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
 
@@ -246,19 +246,19 @@ fn must_switch_one_after_two_faint() {
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 0,2;move 0,1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: you cannot move out of turn")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: you cannot move out of turn")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a fainted mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch to a fainted mon")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;switch 2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a fainted mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 1: cannot switch: you cannot switch to a fainted mon")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0;switch 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: the mon in slot 0 can only switch in once")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 1: cannot switch: the mon in slot 0 can only switch in once")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 0"),

@@ -211,7 +211,7 @@ fn mon_cannot_escape_with_locked_move() {
     assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "escape"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot escape: Jolteon must use a move")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot escape: Jolteon must use a move")
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 }

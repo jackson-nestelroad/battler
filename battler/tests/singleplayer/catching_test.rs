@@ -320,7 +320,8 @@ fn level_5_magikarp_caught_in_poke_ball() {
                     ],
                     "ability": "Swift Swim",
                     "item": null,
-                    "status": null
+                    "status": null,
+                    "hidden_power_type": "Fighting"
                 }
             ]"#
         )
@@ -350,12 +351,12 @@ fn catching_mon_continues_battle() {
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("wild", "switch 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: you cannot switch to a caught mon")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch to a caught mon")
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("wild", "item revive,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Revive cannot be used on Magikarp")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Revive cannot be used on Magikarp")
     );
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -398,19 +399,19 @@ fn ball_can_only_be_used_on_isolated_foe() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Great Ball requires one target")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Great Ball requires one target")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Great Ball")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for Great Ball")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Great Ball")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for Great Ball")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item greatball,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Great Ball")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for Great Ball")
     );
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("wild-0", "move 0"), Ok(()));
@@ -527,7 +528,8 @@ fn level_100_metagross_caught_in_master_ball() {
                     "moves": [],
                     "ability": "Clear Body",
                     "item": null,
-                    "status": null
+                    "status": null,
+                    "hidden_power_type": "Fighting"
                 }
             ]"#
         )
@@ -787,7 +789,7 @@ fn cannot_throw_ball_at_semi_invulnerable_mon() {
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item pokeball"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Poké Ball cannot be used on Magikarp")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Poké Ball cannot be used on Magikarp")
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "move 0"), Ok(()));
 }

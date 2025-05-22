@@ -63,7 +63,7 @@ fn dire_hit_adds_focus_energy_volatile() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item direhit"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Dire Hit cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Dire Hit cannot be used on Pikachu")
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

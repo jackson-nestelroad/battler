@@ -72,7 +72,7 @@ fn cheri_berry_heals_paralysis() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item Cheri Berry,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Cheri Berry cannot be used on Bulbasaur")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Cheri Berry cannot be used on Bulbasaur")
     );
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
@@ -148,7 +148,7 @@ fn cheri_berry_can_be_eaten_automatically() {
     assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item Cheri Berry,-2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Cheri Berry cannot be used on Charmander")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Cheri Berry cannot be used on Charmander")
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

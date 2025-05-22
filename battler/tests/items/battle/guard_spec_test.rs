@@ -68,7 +68,7 @@ fn guard_spec_adds_mist_side_condition() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item guardspec"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Guard Spec. cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Guard Spec. cannot be used on Pikachu")
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

@@ -108,7 +108,7 @@ fn trapped_mon_cannot_switch_out_while_source_is_active() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Pikachu is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Pikachu is trapped")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

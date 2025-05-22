@@ -123,7 +123,8 @@ fn razor_wind_uses_two_turns() {
                     "disabled": false
                 }
             ],
-            "trapped": true
+            "trapped": true,
+            "locked_into_move": true
         }"#,
     )
     .unwrap();
@@ -142,11 +143,11 @@ fn razor_wind_uses_two_turns() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Pidgeot does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Pidgeot does not have a move in slot 1")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Pidgeot is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Pidgeot is trapped")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -218,7 +219,8 @@ fn fly_grants_invulnerability() {
                     "disabled": false
                 }
             ],
-            "trapped": true
+            "trapped": true,
+            "locked_into_move": true
         }"#,
     )
     .unwrap();
@@ -237,11 +239,11 @@ fn fly_grants_invulnerability() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Pidgeot does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Pidgeot does not have a move in slot 1")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Pidgeot is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Pidgeot is trapped")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -333,7 +335,8 @@ fn fly_locks_target() {
                     "disabled": false
                 }
             ],
-            "trapped": false
+            "trapped": false,
+            "locked_into_move": true
         }"#,
     )
     .unwrap();

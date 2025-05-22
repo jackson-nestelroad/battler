@@ -193,7 +193,8 @@ fn transform_transforms_into_target() {
                             ],
                             "ability": "No Ability",
                             "item": null,
-                            "status": null
+                            "status": null,
+                            "hidden_power_type": "Fighting"
                         },
                         "species": "Charizard",
                         "hp": 108,
@@ -258,8 +259,7 @@ fn transform_transforms_into_target() {
                         ],
                         "ability": "Blaze",
                         "item": null,
-                        "status": null,
-                        "hidden_power_type": "Fighting"
+                        "status": null
                     }
                 ]
             }"#

@@ -66,11 +66,11 @@ fn taunt_disables_status_moves() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Treecko's Taunt is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Treecko's Taunt is disabled")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Treecko's Trick is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Treecko's Trick is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

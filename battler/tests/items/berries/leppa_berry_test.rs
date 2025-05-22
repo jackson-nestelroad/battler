@@ -121,15 +121,15 @@ fn leppa_berry_fails_on_move_with_full_pp() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item leppaberry,-1,sketch"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Leppa Berry cannot be used on Smeargle")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Leppa Berry cannot be used on Smeargle")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item leppaberry,-1,draco meteor"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Leppa Berry cannot be used on Smeargle")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Leppa Berry cannot be used on Smeargle")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item leppaberry,-1,Water Gun"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Smeargle does not have the given move")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Smeargle does not have the given move")
     );
 }
 

@@ -240,7 +240,7 @@ fn move_runs_out_of_pp() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("test-player", "move 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Venusaur's Test Move 1 is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Venusaur's Test Move 1 is disabled")
     );
     assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));
 }

@@ -101,7 +101,7 @@ fn x_attack_cannot_be_used_if_attack_is_maxed() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: X Attack cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: X Attack cannot be used on Pikachu")
     );
 }
 
@@ -113,15 +113,15 @@ fn x_attack_cannot_target_another_mon() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for X Attack")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for X Attack")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for X Attack")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for X Attack")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for X Attack")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for X Attack")
     );
 }
 
@@ -163,6 +163,6 @@ fn x_attack_cannot_be_used_with_locked_move() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "item xattack,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Pikachu must use a move")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Pikachu must use a move")
     );
 }

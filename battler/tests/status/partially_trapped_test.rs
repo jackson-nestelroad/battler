@@ -75,7 +75,7 @@ fn bind_partially_traps_target() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Gyarados is trapped")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Gyarados is trapped")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

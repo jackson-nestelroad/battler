@@ -268,6 +268,7 @@ pub struct MonSummaryData {
     pub ability: String,
     pub item: Option<String>,
     pub status: Option<String>,
+    pub hidden_power_type: Type,
 }
 
 /// Data about a single [`Mon`]'s battle state.
@@ -288,7 +289,6 @@ pub struct MonBattleData {
     pub ability: String,
     pub item: Option<String>,
     pub status: Option<String>,
-    pub hidden_power_type: Type,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -300,6 +300,8 @@ pub struct MonMoveRequest {
     pub trapped: bool,
     #[serde(default)]
     pub can_mega_evo: bool,
+    #[serde(default)]
+    pub locked_into_move: bool,
 }
 
 /// Request for a single [`Mon`] to learn a move.
@@ -1286,7 +1288,6 @@ impl Mon {
                 .status
                 .as_ref()
                 .map(|status| status.to_string()),
-            hidden_power_type: context.mon().hidden_power_type,
         })
     }
 
@@ -1352,6 +1353,7 @@ impl Mon {
                 .status
                 .as_ref()
                 .map(|status| status.to_string()),
+            hidden_power_type: context.mon().hidden_power_type,
         })
     }
 
@@ -1376,6 +1378,7 @@ impl Mon {
             moves,
             trapped: false,
             can_mega_evo: false,
+            locked_into_move: false,
         };
 
         let can_switch = Player::can_switch(context.as_player_context_mut());
@@ -1385,6 +1388,8 @@ impl Mon {
 
         if locked_move.is_none() {
             request.can_mega_evo = context.mon().can_mega_evo;
+        } else {
+            request.locked_into_move = true;
         }
 
         Ok(request)

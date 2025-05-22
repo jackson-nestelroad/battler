@@ -79,7 +79,7 @@ fn sky_drop_lifts_target_into_air_and_damages_on_next_turn() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1,1;pass"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Hawlucha does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Hawlucha does not have a move in slot 1")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));

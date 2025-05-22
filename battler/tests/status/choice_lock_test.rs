@@ -69,7 +69,7 @@ fn choice_band_boosts_attack_and_locks_choice() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Swampert's Hyper Voice is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Swampert's Hyper Voice is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -117,7 +117,7 @@ fn choice_scarf_boosts_speed_and_locks_choice() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-       Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Swampert's Hyper Voice is disabled")
+       Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Swampert's Hyper Voice is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -165,7 +165,7 @@ fn choice_specs_boosts_special_attack_and_locks_choice() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Swampert's Tackle is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Swampert's Tackle is disabled")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

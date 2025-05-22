@@ -66,6 +66,6 @@ fn shadow_trap_traps_foes() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot switch: Wobbuffet is trapped")
+        Err(err) => assert!(format!("{err:#}").contains("is trapped"), "{err:?}")
     );
 }

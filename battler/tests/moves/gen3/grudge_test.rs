@@ -78,7 +78,7 @@ fn grudge_sets_last_move_pp_to_zero_on_faint() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Misdreavus's Dark Pulse is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Misdreavus's Dark Pulse is disabled")
     );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

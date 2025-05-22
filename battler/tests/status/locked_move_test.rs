@@ -82,7 +82,8 @@ fn thrash_locks_move_and_confuses_user() {
                     "max_pp": 0,
                     "disabled": false
                 }
-            ]
+            ],
+            "locked_into_move": true
         }"#,
     )
     .unwrap();
@@ -101,7 +102,7 @@ fn thrash_locks_move_and_confuses_user() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Blissey does not have a move in slot 1")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Blissey does not have a move in slot 1")
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

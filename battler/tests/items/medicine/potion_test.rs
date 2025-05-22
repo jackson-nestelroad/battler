@@ -126,7 +126,7 @@ fn using_item_removes_from_bag() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: bag contains no Potion")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: bag contains no Potion")
     );
 }
 
@@ -181,7 +181,7 @@ fn potion_fails_at_max_hp() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Potion cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Potion cannot be used on Pikachu")
     );
 }
 
@@ -204,7 +204,7 @@ fn potion_fails_on_fainted_mon() {
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "switch 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Potion cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Potion cannot be used on Pikachu")
     );
 }
 
@@ -216,7 +216,7 @@ fn potion_fails_on_foe() {
 
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: invalid target for Potion")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: invalid target for Potion")
     );
 }
 
@@ -232,6 +232,6 @@ fn embargo_prevents_potion_usage_from_bag() {
     assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item potion,-1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot use item: Potion cannot be used on Pikachu")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Potion cannot be used on Pikachu")
     );
 }

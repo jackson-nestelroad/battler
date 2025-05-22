@@ -94,7 +94,7 @@ fn disable_disables_last_used_move() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Aerodactyl's Tackle is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Aerodactyl's Tackle is disabled")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

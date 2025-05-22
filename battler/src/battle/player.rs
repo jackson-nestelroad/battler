@@ -11,10 +11,7 @@ use ahash::{
     HashMap,
     HashSet,
 };
-use anyhow::{
-    Error,
-    Result,
-};
+use anyhow::Result;
 use battler_data::{
     Id,
     Identifiable,
@@ -76,6 +73,7 @@ use crate::{
         WrapResultError,
     },
     teams::TeamData,
+    WrapError,
 };
 
 /// Options for a wild [`Player`].
@@ -743,10 +741,6 @@ impl Player {
         mem::replace(&mut self.choice, ChoiceState::new())
     }
 
-    fn emit_choice_error(_: &mut PlayerContext, error: Error) -> Result<()> {
-        Err(error)
-    }
-
     fn picked_team_size(context: &PlayerContext) -> usize {
         cmp::min(
             context.player().mons.len(),
@@ -842,22 +836,16 @@ impl Player {
             } else {
                 "no action requested"
             };
-            return Self::emit_choice_error(
-                context,
-                general_error(format!("you cannot do anything: {reason}")),
-            );
+            return Err(general_error(format!("you cannot do anything: {reason}")));
         }
 
         if !player.choice.undo_allowed {
-            return Self::emit_choice_error(
-                context,
-                general_error("player choice cannot be undone"),
-            );
+            return Err(general_error("player choice cannot be undone"));
         }
 
         Self::clear_choice(context);
 
-        for choice in input.split(";").map(|str| str.trim()) {
+        for (i, choice) in input.split(";").map(|str| str.trim()).enumerate() {
             let (choice, data) = split_once_optional(choice, " ");
             let result = match choice {
                 "team" => Self::choose_team(context, data)
@@ -879,15 +867,12 @@ impl Player {
                 _ => Err(general_error(format!("unrecognized choice: {choice}"))),
             };
             if let Err(error) = result {
-                return Self::emit_choice_error(context, error);
+                return Err(error.wrap_error_with_message(format!("invalid choice {i}")));
             }
         }
 
         if !Self::choice_done(context)? {
-            return Self::emit_choice_error(
-                context,
-                general_error("incomplete choice: missing actions for mons"),
-            );
+            return Err(general_error("incomplete choice: missing actions for mons"));
         }
 
         context.player_mut().choice.fulfilled = true;

@@ -68,13 +68,13 @@ fn fake_out_only_works_on_first_turn() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Nuzleaf's Tackle is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Nuzleaf's Tackle is disabled")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "move 2"),
-        Err(err) => assert_eq!(format!("{err:#}"), "cannot move: Nuzleaf's Slash is disabled")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Nuzleaf's Slash is disabled")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
