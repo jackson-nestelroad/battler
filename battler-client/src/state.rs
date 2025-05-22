@@ -142,6 +142,8 @@ pub struct MonBattleAppearance {
     pub item: DiscoveryRequired<String>,
 
     pub moves: DiscoveryRequiredSet<String>,
+
+    pub move_history: VecDeque<String>,
 }
 
 impl MonBattleAppearance {
@@ -212,6 +214,14 @@ impl MonBattleAppearance {
         }
     }
 
+    fn record_used_move(&mut self, name: String) {
+        static MOVE_HISTORY_LIMIT: usize = 10;
+        self.move_history.push_back(name);
+        if self.move_history.len() > MOVE_HISTORY_LIMIT {
+            self.move_history.pop_front();
+        }
+    }
+
     fn forget_move(&mut self, name: String, ambiguity: Ambiguity) {
         if ambiguity == Ambiguity::Ambiguous {
             self.moves.downgrade_to_possible_value(name);
@@ -232,6 +242,10 @@ impl MonBattleAppearance {
         }
         for mov in other.moves.possible_values().iter().cloned() {
             self.record_move(mov, Ambiguity::Ambiguous);
+        }
+
+        for mov in other.move_history {
+            self.record_used_move(mov);
         }
     }
 }
@@ -380,6 +394,12 @@ impl MonBattleAppearanceWithRecovery {
     fn record_move(&mut self, name: String, ambiguity: Ambiguity) {
         self.apply_for_each_battle_appearance(|appearance| {
             appearance.record_move(name.clone(), ambiguity);
+        });
+    }
+
+    fn record_used_move(&mut self, name: String) {
+        self.apply_for_each_battle_appearance(|appearance| {
+            appearance.record_used_move(name.clone());
         });
     }
 
@@ -1942,6 +1962,14 @@ fn alter_battle_state_for_entry(
                         mon.record_move(name.clone(), ambiguity);
                     }
 
+                    // If we get here, record the move in history.
+                    state
+                        .field
+                        .mon_battle_appearance_with_recovery_mut_by_reference_or_else(
+                            &mon_reference,
+                        )?
+                        .record_used_move(name.clone());
+
                     Ok(())
                 })?;
             }
@@ -2485,6 +2513,9 @@ mod state_test {
                                                     moves: DiscoveryRequiredSet::from_known([
                                                         "Pound".to_owned()
                                                     ]),
+                                                    move_history: VecDeque::from_iter([
+                                                        "Pound".to_owned()
+                                                    ]),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -2495,6 +2526,9 @@ mod state_test {
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
                                                         moves: DiscoveryRequiredSet::from_known([
+                                                            "Pound".to_owned()
+                                                        ]),
+                                                        move_history: VecDeque::from_iter([
                                                             "Pound".to_owned()
                                                         ]),
                                                         ..Default::default()
@@ -2688,6 +2722,9 @@ mod state_test {
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
                                                         moves: DiscoveryRequiredSet::from_known([
+                                                            "Pound".to_owned()
+                                                        ]),
+                                                        move_history: VecDeque::from_iter([
                                                             "Pound".to_owned()
                                                         ]),
                                                         ..Default::default()
@@ -2937,6 +2974,10 @@ mod state_test {
                                                                     "Water Gun".to_owned()
                                                                 ]
                                                             ),
+                                                            move_history: VecDeque::from_iter([
+                                                                "Pound".to_owned(),
+                                                                "Water Gun".to_owned(),
+                                                            ]),
                                                             ..Default::default()
                                                         },
                                                     battle_appearance_up_to_last_switch_out:
@@ -2947,6 +2988,9 @@ mod state_test {
                                                             moves: DiscoveryRequiredSet::from_known(
                                                                 ["Pound".to_owned(),]
                                                             ),
+                                                            move_history: VecDeque::from_iter([
+                                                                "Pound".to_owned(),
+                                                            ]),
                                                             ..Default::default()
                                                         },
                                                     battle_appearance_from_last_switch_in:
@@ -2957,6 +3001,9 @@ mod state_test {
                                                             moves: DiscoveryRequiredSet::from_known(
                                                                 ["Water Gun".to_owned()]
                                                             ),
+                                                            move_history: VecDeque::from_iter([
+                                                                "Water Gun".to_owned(),
+                                                            ]),
                                                             ..Default::default()
                                                         },
                                                 },
@@ -3299,6 +3346,9 @@ mod state_test {
                                                     moves: DiscoveryRequiredSet::from_known([
                                                         "Water Gun".to_owned()
                                                     ]),
+                                                    move_history: VecDeque::from_iter([
+                                                        "Water Gun".to_owned()
+                                                    ]),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -3309,6 +3359,9 @@ mod state_test {
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
                                                         moves: DiscoveryRequiredSet::from_known([
+                                                            "Water Gun".to_owned()
+                                                        ]),
+                                                        move_history: VecDeque::from_iter([
                                                             "Water Gun".to_owned()
                                                         ]),
                                                         ..Default::default()
@@ -3659,6 +3712,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
+                            move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -3677,6 +3731,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                            move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -3700,6 +3755,10 @@ mod state_test {
                                     "Bite".to_owned(),
                                     "Dark Pulse".to_owned()
                                 ]),
+                                move_history: VecDeque::from_iter([
+                                    "Bite".to_owned(),
+                                    "Dark Pulse".to_owned(),
+                                ]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -3708,6 +3767,7 @@ mod state_test {
                                 status: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
+                                move_history: VecDeque::from_iter(["Bite".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -3716,6 +3776,7 @@ mod state_test {
                                 status: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
                                 ..Default::default()
                             },
                         }
@@ -3761,6 +3822,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
+                            move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -3779,6 +3841,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                            move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                             ..Default::default()
                         }),
                         MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
@@ -3786,6 +3849,7 @@ mod state_test {
                             health: (50, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
+                            move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -3809,6 +3873,10 @@ mod state_test {
                                     "Bite".to_owned(),
                                     "Dark Pulse".to_owned()
                                 ]),
+                                move_history: VecDeque::from_iter([
+                                    "Bite".to_owned(),
+                                    "Dark Pulse".to_owned(),
+                                ]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -3819,6 +3887,10 @@ mod state_test {
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
                                     "Dark Pulse".to_owned()
+                                ]),
+                                move_history: VecDeque::from_iter([
+                                    "Bite".to_owned(),
+                                    "Dark Pulse".to_owned(),
                                 ]),
                                 ..Default::default()
                             },
@@ -3869,6 +3941,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
+                            move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -3887,6 +3960,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                            move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                             ..Default::default()
                         }),
                         MonBattleAppearanceWithRecovery::Active {
@@ -3897,7 +3971,11 @@ mod state_test {
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
                                     "Crunch".to_owned(),
-                                ],),
+                                ]),
+                                move_history: VecDeque::from_iter([
+                                    "Crunch".to_owned(),
+                                    "Bite".to_owned(),
+                                ]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -3905,6 +3983,7 @@ mod state_test {
                                 health: (25, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
+                                move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -3912,6 +3991,7 @@ mod state_test {
                                 health: (12, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
+                                move_history: VecDeque::from_iter(["Bite".to_owned()]),
                                 ..Default::default()
                             },
                         }
@@ -3934,6 +4014,10 @@ mod state_test {
                             moves: DiscoveryRequiredSet::from_known([
                                 "Bite".to_owned(),
                                 "Dark Pulse".to_owned()
+                            ]),
+                            move_history: VecDeque::from_iter([
+                                "Bite".to_owned(),
+                                "Dark Pulse".to_owned(),
                             ]),
                             ..Default::default()
                         }),
@@ -3970,6 +4054,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
+                            move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -3989,6 +4074,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                                move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -3996,6 +4082,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                                move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -4010,6 +4097,7 @@ mod state_test {
                             health: (25, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
+                            move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                             ..Default::default()
                         }),
                     ]),
@@ -4031,6 +4119,11 @@ mod state_test {
                             moves: DiscoveryRequiredSet::from_known([
                                 "Bite".to_owned(),
                                 "Dark Pulse".to_owned()
+                            ]),
+                            move_history: VecDeque::from_iter([
+                                "Bite".to_owned(),
+                                "Dark Pulse".to_owned(),
+                                "Bite".to_owned(),
                             ]),
                             ..Default::default()
                         }),
@@ -4068,6 +4161,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
+                            move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
                         })
                     ]),
@@ -4087,6 +4181,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                                move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -4094,6 +4189,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
+                                move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -4108,6 +4204,7 @@ mod state_test {
                             health: (12, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
+                            move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                             ..Default::default()
                         }),
                     ]),
@@ -4129,6 +4226,11 @@ mod state_test {
                             moves: DiscoveryRequiredSet::from_known([
                                 "Bite".to_owned(),
                                 "Dark Pulse".to_owned()
+                            ]),
+                            move_history: VecDeque::from_iter([
+                                "Bite".to_owned(),
+                                "Dark Pulse".to_owned(),
+                                "Bite".to_owned(),
                             ]),
                             ..Default::default()
                         }),
@@ -4339,6 +4441,10 @@ mod state_test {
                                 "Growl".to_owned(),
                                 "Scratch".to_owned(),
                             ]),
+                            move_history: VecDeque::from_iter([
+                                "Growl".to_owned(),
+                                "Scratch".to_owned(),
+                            ]),
                             ..Default::default()
                         }),
                         MonBattleAppearanceWithRecovery::Active {
@@ -4350,6 +4456,10 @@ mod state_test {
                                     "Bite".to_owned(),
                                     "Dark Pulse".to_owned(),
                                 ]),
+                                move_history: VecDeque::from_iter([
+                                    "Bite".to_owned(),
+                                    "Dark Pulse".to_owned(),
+                                ]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -4357,6 +4467,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
+                                move_history: VecDeque::from_iter(["Bite".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
@@ -4364,6 +4475,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
                                 ..Default::default()
                             },
                         }
@@ -4436,6 +4548,10 @@ mod state_test {
                                 "Growl".to_owned(),
                                 "Scratch".to_owned(),
                             ]),
+                            move_history: VecDeque::from_iter([
+                                "Growl".to_owned(),
+                                "Scratch".to_owned(),
+                            ]),
                             ..Default::default()
                         }),
                         MonBattleAppearanceWithRecovery::Inactive(MonBattleAppearance {
@@ -4443,6 +4559,7 @@ mod state_test {
                             health: (100, 100).into(),
                             status: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
+                            move_history: VecDeque::from_iter(["Bite".to_owned()]),
                             ..Default::default()
                         }),
                     ]),
@@ -4480,6 +4597,7 @@ mod state_test {
                                 status: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
@@ -4494,6 +4612,7 @@ mod state_test {
                                 health: (100, 100).into(),
                                 status: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
+                                move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
                                 ..Default::default()
                             },
                         },
