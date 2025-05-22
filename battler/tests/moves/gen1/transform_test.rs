@@ -213,6 +213,15 @@ fn transform_transforms_into_target() {
                             "spd": 90,
                             "spe": 105
                         },
+                        "boosts": {
+                            "atk": 0,
+                            "def": 0,
+                            "spa": 0,
+                            "spd": 0,
+                            "spe": 0,
+                            "acc": 0,
+                            "eva": 0
+                        },
                         "moves": [
                             {
                                 "name": "Tackle",
@@ -249,7 +258,8 @@ fn transform_transforms_into_target() {
                         ],
                         "ability": "Blaze",
                         "item": null,
-                        "status": null
+                        "status": null,
+                        "hidden_power_type": "Fighting"
                     }
                 ]
             }"#
