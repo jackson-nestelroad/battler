@@ -674,7 +674,9 @@ impl Session {
     pub async fn handle_message(&self, message: Message) -> Result<()> {
         debug!("Peer {} received message: {message:?}", self.name);
         if let Err(err) = self.handle_message_on_state_machine(message).await {
-            self.send_message(abort_message_for_error(&err)).await?;
+            if !self.state.read().await.is_same_state(&SessionState::Closed) {
+                self.send_message(abort_message_for_error(&err)).await?;
+            }
             return Err(err);
         }
         Ok(())
