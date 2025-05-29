@@ -208,6 +208,7 @@ fn transform_transforms_into_target() {
                             "Flying"
                         ],
                         "active": true,
+                        "player_team_position": 0,
                         "player_active_position": 0,
                         "side_position": 0,
                         "stats": {

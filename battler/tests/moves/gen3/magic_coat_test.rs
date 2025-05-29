@@ -97,7 +97,7 @@ fn magic_coat_reflects_status_moves_for_the_turn() {
             "move|mon:Seviper,player-2,2|name:Spikes|noanim",
             "activate|mon:Grumpig,player-1,1|move:Magic Coat",
             "move|mon:Grumpig,player-1,1|name:Spikes|from:move:Magic Coat",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:1",
             "split|side:1",
             "damage|mon:Seviper,player-2,2|from:status:Burn|health:117/133",
             "damage|mon:Seviper,player-2,2|from:status:Burn|health:88/100",
@@ -130,7 +130,7 @@ fn magic_coat_cannot_reflect_reflected_move() {
             "move|mon:Seviper,player-2,2|name:Spikes|noanim",
             "activate|mon:Grumpig,player-1,1|move:Magic Coat",
             "move|mon:Grumpig,player-1,1|name:Spikes|from:move:Magic Coat",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:1",
             "residual",
             "turn|turn:2"
         ]"#,

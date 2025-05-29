@@ -120,6 +120,7 @@ fn razor_wind_uses_two_turns() {
                     "id": "razorwind",
                     "pp": 0,
                     "max_pp": 0,
+                    "target": "Scripted",
                     "disabled": false
                 }
             ],
@@ -216,6 +217,7 @@ fn fly_grants_invulnerability() {
                     "id": "fly",
                     "pp": 0,
                     "max_pp": 0,
+                    "target": "Scripted",
                     "disabled": false
                 }
             ],
@@ -332,6 +334,7 @@ fn fly_locks_target() {
                     "id": "fly",
                     "pp": 0,
                     "max_pp": 0,
+                    "target": "Scripted",
                     "disabled": false
                 }
             ],

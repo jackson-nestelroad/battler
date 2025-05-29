@@ -286,24 +286,6 @@ impl Trainer {
         ))
     }
 
-    fn team_position_for_active_position(
-        player_data: &PlayerBattleData,
-        active_position: usize,
-    ) -> Result<usize> {
-        player_data
-            .mons
-            .iter()
-            .position(|mon| {
-                mon.player_active_position
-                    .is_some_and(|pos| pos == active_position)
-            })
-            .ok_or_else(|| {
-                Error::msg(format!(
-                    "player data has no mon in active position {active_position}"
-                ))
-            })
-    }
-
     async fn turn_for_mon(
         &self,
         context: &AiContext<'_>,
@@ -326,11 +308,7 @@ impl Trainer {
             }));
         }
 
-        let mon_context = self.trainer_mon_context(
-            context,
-            allies,
-            Self::team_position_for_active_position(&context.player_data, active_position)?,
-        )?;
+        let mon_context = self.trainer_mon_context(context, allies, request.team_position)?;
 
         if self.has_flag(TrainerFlag::ConsiderSwitching)
             && !request.trapped
@@ -393,11 +371,7 @@ impl Trainer {
         request: MonMoveRequest,
         state: &ChoiceState,
     ) -> Result<Vec<(usize, Option<Mon<'a, 'a>>, i64)>> {
-        let mon_context = self.trainer_mon_context(
-            context,
-            allies,
-            Self::team_position_for_active_position(&context.player_data, active_position)?,
-        )?;
+        let mon_context = self.trainer_mon_context(context, allies, request.team_position)?;
 
         self.move_scores_internal(context, &mon_context, &request)
             .await

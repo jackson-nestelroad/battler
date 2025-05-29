@@ -80,6 +80,7 @@ fn thrash_locks_move_and_confuses_user() {
                     "id": "thrash",
                     "pp": 0,
                     "max_pp": 0,
+                    "target": "Scripted",
                     "disabled": false
                 }
             ],

@@ -269,7 +269,7 @@ fn level_5_magikarp_caught_in_poke_ball() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
-    assert_eq!(
+    pretty_assertions::assert_eq!(
         battle.player_data("protagonist").unwrap().caught,
         serde_json::from_str::<Vec<MonSummaryData>>(
             r#"[
@@ -320,7 +320,7 @@ fn level_5_magikarp_caught_in_poke_ball() {
                     ],
                     "ability": "Swift Swim",
                     "item": null,
-                    "status": null,
+                    "status": "fnt",
                     "hidden_power_type": "Fighting"
                 }
             ]"#
@@ -486,7 +486,7 @@ fn level_100_metagross_caught_in_master_ball() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
-    assert_eq!(
+    pretty_assertions::assert_eq!(
         battle.player_data("protagonist").unwrap().caught,
         serde_json::from_str::<Vec<MonSummaryData>>(
             r#"[
@@ -528,7 +528,7 @@ fn level_100_metagross_caught_in_master_ball() {
                     "moves": [],
                     "ability": "Clear Body",
                     "item": null,
-                    "status": null,
+                    "status": "fnt",
                     "hidden_power_type": "Fighting"
                 }
             ]"#
