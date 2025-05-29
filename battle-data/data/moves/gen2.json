@@ -525,12 +525,15 @@
     },
     "condition": {
       "callbacks": {
-        "on_side_start": ["log_side_start", "$effect_state.layers = 1"],
+        "on_side_start": [
+          "$effect_state.layers = 1",
+          "log_side_start: str('count:{}', $effect_state.layers)"
+        ],
         "on_side_restart": [
           "if $effect_state.layers >= 3:",
           ["return false"],
-          "log_side_start",
           "$effect_state.layers = $effect_state.layers + 1",
+          "log_side_start: str('count:{}', $effect_state.layers)",
           "return true"
         ],
         "on_entry_hazard": [

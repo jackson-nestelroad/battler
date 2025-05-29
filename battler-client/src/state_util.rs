@@ -307,6 +307,19 @@ pub fn mon_conditions<'s>(
         .map(|s| s.as_str()))
 }
 
+/// The active position of a Mon.
+pub fn mon_active_position<'s>(
+    state: &'s BattleState,
+    mon: &MonBattleAppearanceReference,
+) -> Result<Option<usize>> {
+    let side = side_for_mon(state, mon)?;
+    let side = side_or_else(state, side)?;
+    Ok(side
+        .active
+        .iter()
+        .position(|active| active.as_ref().is_some_and(|active| active == mon)))
+}
+
 #[cfg(test)]
 mod state_util_test {
     use std::collections::{
@@ -340,6 +353,7 @@ mod state_util_test {
             field_terrain,
             field_weather,
             mon_ability,
+            mon_active_position,
             mon_all_possible_non_volatile_moves,
             mon_boosts,
             mon_conditions,
@@ -1120,6 +1134,52 @@ mod state_util_test {
                    Vec::from_iter(["Focus Energy"]),
                 );
             }
+        );
+    }
+
+    #[test]
+    fn returns_mon_active_position() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([("player-1".to_owned(), Player::default())]),
+                    active: Vec::from_iter([
+                        None,
+                        Some(MonBattleAppearanceReference {
+                            player: "player-1".to_owned(),
+                            mon_index: 0,
+                            battle_appearance_index: 0,
+                        }),
+                    ]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_matches::assert_matches!(
+            mon_active_position(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 0,
+                    battle_appearance_index: 0,
+                }
+            ),
+            Ok(Some(1))
+        );
+
+        assert_matches::assert_matches!(
+            mon_active_position(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 1,
+                    battle_appearance_index: 0,
+                }
+            ),
+            Ok(None)
         );
     }
 }

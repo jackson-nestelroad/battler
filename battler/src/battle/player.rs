@@ -370,7 +370,7 @@ impl ItemChoice {
 /// Battle data for a single player.
 ///
 /// Contains all information for a player in a battle.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PlayerBattleData {
     pub name: String,
     pub id: String,
@@ -1142,9 +1142,9 @@ impl Player {
             .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
         // Clone these to avoid borrow errors.
         //
-        // We could find away around this if we're clever, but this keeps things simple for now.
+        // We could find a way around this if we're clever, but this keeps things simple for now.
         let move_name = mov.data.name.clone();
-        let move_target = move_slot.target.unwrap_or(mov.data.target);
+        let move_target = move_slot.target;
 
         if moves.is_empty() {
             // No moves, the Mon must use Struggle.
@@ -1191,7 +1191,7 @@ impl Player {
             _ => (),
         }
 
-        // Mega evoution.
+        // Mega evolution.
         if choice.mega && !context.mon().can_mega_evo {
             return Err(general_error(format!(
                 "{} cannot mega evolve",

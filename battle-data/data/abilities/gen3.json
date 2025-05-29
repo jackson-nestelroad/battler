@@ -152,7 +152,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target != $source and $move.type == electric:",
+          "if $target != $source and $move.type == water:",
           [
             "if func_call(heal: $target expr($target.base_max_hp / 4)) > 0:",
             ["log_immune: $target from_effect"],

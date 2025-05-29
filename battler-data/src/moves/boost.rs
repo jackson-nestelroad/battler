@@ -1,4 +1,7 @@
-use std::marker::PhantomData;
+use std::{
+    marker::PhantomData,
+    ops::Add,
+};
 
 use anyhow::{
     Error,
@@ -74,7 +77,7 @@ pub trait ContainsOptionalBoosts<T> {
 }
 
 /// A full boost table.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct BoostTable {
     #[serde(default)]
     pub atk: i8,
@@ -152,6 +155,21 @@ impl FromIterator<(Boost, i8)> for BoostTable {
             *table.get_mut(boost) = value;
         }
         table
+    }
+}
+
+impl Add for &BoostTable {
+    type Output = BoostTable;
+    fn add(self, rhs: Self) -> Self::Output {
+        BoostTable {
+            atk: self.atk + rhs.atk,
+            def: self.def + rhs.def,
+            spa: self.spa + rhs.spa,
+            spd: self.spd + rhs.spd,
+            spe: self.spe + rhs.spe,
+            acc: self.acc + rhs.acc,
+            eva: self.eva + rhs.eva,
+        }
     }
 }
 

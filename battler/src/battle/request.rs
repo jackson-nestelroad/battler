@@ -25,13 +25,13 @@ pub enum RequestType {
 }
 
 /// A request for a team to be chosen in Team Preview.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TeamPreviewRequest {
     pub max_team_size: Option<usize>,
 }
 
 /// A request for a player to command their Mons for the next turn.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TurnRequest {
     pub active: Vec<MonMoveRequest>,
     #[serde(default)]
@@ -40,14 +40,14 @@ pub struct TurnRequest {
 }
 
 /// A request for a Mon to be switched in.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SwitchRequest {
     /// Team slots that need to be switched out.
     pub needs_switch: Vec<usize>,
 }
 
 /// A request for a Mon to learn one or more moves.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LearnMoveRequest {
     pub can_learn_move: MonLearnMoveRequest,
 }

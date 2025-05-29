@@ -124,7 +124,7 @@ fn toxic_spikes_poison_opposing_side_on_switch_in() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -133,7 +133,7 @@ fn toxic_spikes_poison_opposing_side_on_switch_in() {
             ["switch", "player-2", "Infernape"],
             "status|mon:Infernape,player-2,2|status:Poison|from:move:Toxic Spikes",
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:2",
             "split|side:1",
             "damage|mon:Infernape,player-2,2|from:status:Poison|health:119/136",
             "damage|mon:Infernape,player-2,2|from:status:Poison|health:88/100",
@@ -177,7 +177,7 @@ fn flying_types_avoid_toxic_spikes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -209,7 +209,7 @@ fn steel_types_are_immune_to_toxic_spikes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -248,12 +248,12 @@ fn poison_type_absorbs_toxic_spikes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:2",
             "residual",
             "turn|turn:3",
             ["time"],
@@ -292,7 +292,7 @@ fn heavy_duty_boots_avoid_toxic_spikes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Roserade,player-1,1|name:Toxic Spikes",
-            "sidestart|side:1|move:Toxic Spikes",
+            "sidestart|side:1|move:Toxic Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],

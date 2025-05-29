@@ -207,7 +207,7 @@ pub struct MonMoveSlotData {
     pub name: String,
     pub pp: u8,
     pub max_pp: u8,
-    pub target: Option<MoveTarget>,
+    pub target: MoveTarget,
     pub disabled: bool,
 }
 
@@ -235,21 +235,21 @@ impl MonMoveSlotData {
             id,
             pp: move_slot.pp,
             max_pp: move_slot.max_pp,
-            target: Some(target),
+            target,
             disabled,
         })
     }
 }
 
 /// Persistent battle state for a single [`Move`] on a [`Mon`].
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MonPersistentMoveData {
     pub name: String,
     pub pp: u8,
 }
 
 /// Data about a single [`Mon`]'s summary, which is its out-of-battle state.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MonSummaryData {
     pub name: String,
     pub species: String,
@@ -272,7 +272,7 @@ pub struct MonSummaryData {
 }
 
 /// Data about a single [`Mon`]'s battle state.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonBattleData {
     pub summary: MonSummaryData,
     pub species: String,
@@ -281,6 +281,7 @@ pub struct MonBattleData {
     pub health: String,
     pub types: Vec<Type>,
     pub active: bool,
+    pub player_team_position: usize,
     pub player_active_position: Option<usize>,
     pub side_position: Option<usize>,
     pub stats: PartialStatTable,
@@ -305,7 +306,7 @@ pub struct MonMoveRequest {
 }
 
 /// Request for a single [`Mon`] to learn a move.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonLearnMoveRequest {
     pub team_position: usize,
     pub id: Id,
@@ -1270,6 +1271,7 @@ impl Mon {
             health: context.mon().actual_health(),
             types: context.mon().types.clone(),
             active: context.mon().active,
+            player_team_position: context.mon().team_position,
             player_active_position: context.mon().active_position,
             side_position,
             stats: context.mon().stats.without_hp(),
@@ -1366,7 +1368,7 @@ impl Mon {
             moves = Vec::from_iter([MonMoveSlotData {
                 name: "Struggle".to_owned(),
                 id: Id::from_known("struggle"),
-                target: Some(MoveTarget::RandomNormal),
+                target: MoveTarget::RandomNormal,
                 pp: 1,
                 max_pp: 1,
                 disabled: false,
@@ -1662,7 +1664,7 @@ impl Mon {
                     id: Id::from_known("recharge"),
                     pp: 0,
                     max_pp: 0,
-                    target: Some(MoveTarget::User),
+                    target: MoveTarget::User,
                     disabled: false,
                 }]));
             }
@@ -1679,13 +1681,13 @@ impl Mon {
                     id: locked_move.id.clone(),
                     pp: 0,
                     max_pp: 0,
-                    target: None,
+                    target: MoveTarget::Scripted,
                     disabled: false,
                 }]));
             }
-            return Err(general_error(
+            return Err(general_error(format!(
                 "Mon's locked move {locked_move} does not exist in its moveset",
-            ));
+            )));
         }
 
         // Else, generate move details for each move.
@@ -1986,6 +1988,7 @@ impl Mon {
             }
             MonExitType::Caught => {
                 // TODO: Consider how we communicate that a Mon was caught.
+                context.mon_mut().status = Some(Id::from_known("fnt"));
             }
         }
 

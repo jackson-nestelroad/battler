@@ -496,7 +496,7 @@ impl Mon {
 }
 
 /// A reference to a [`MonBattleAppearance`].
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
 pub struct MonBattleAppearanceReference {
     pub player: String,
     pub mon_index: usize,
@@ -1844,6 +1844,11 @@ fn alter_battle_state_for_entry(
         "info" => {
             if let Some(battle_type) = entry.value::<String>("battletype") {
                 state.battle_type = battle_type.to_lowercase();
+                state.field.max_side_length = match state.battle_type.as_str() {
+                    "doubles" => 2,
+                    "triples" => 3,
+                    _ => 1,
+                };
             }
             if let Some(rule) = entry.value::<String>("rule") {
                 state.field.rules.push(rule.to_owned());

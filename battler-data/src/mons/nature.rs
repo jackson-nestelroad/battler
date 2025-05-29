@@ -13,6 +13,7 @@ use crate::Stat;
     Copy,
     PartialEq,
     Eq,
+    Hash,
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]

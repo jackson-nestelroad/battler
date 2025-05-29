@@ -110,7 +110,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     id: Id::from("quickattack"),
                     pp: 30,
                     max_pp: 30,
-                    target: Some(MoveTarget::Normal),
+                    target: MoveTarget::Normal,
                     disabled: false,
                 })
             );
@@ -135,7 +135,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     id: Id::from("quickattack"),
                     pp: 29,
                     max_pp: 30,
-                    target: Some(MoveTarget::Normal),
+                    target: MoveTarget::Normal,
                     disabled: false,
                 })
             );
@@ -166,7 +166,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     id: Id::from("mimic"),
                     pp: 8,
                     max_pp: 10,
-                    target: Some(MoveTarget::Normal),
+                    target: MoveTarget::Normal,
                     disabled: false,
                 })
             );
@@ -188,7 +188,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     id: Id::from("flamethrower"),
                     pp: 15,
                     max_pp: 15,
-                    target: Some(MoveTarget::Normal),
+                    target: MoveTarget::Normal,
                     disabled: false,
                 })
             );

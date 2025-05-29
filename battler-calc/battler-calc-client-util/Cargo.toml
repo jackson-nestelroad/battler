@@ -16,3 +16,4 @@ battler-calc = { path = ".." }
 battler-client = { path = "../../battler-client" }
 
 [dev-dependencies]
+assert_matches = { workspace = true }

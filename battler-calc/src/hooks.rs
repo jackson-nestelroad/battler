@@ -51,7 +51,8 @@ pub(crate) type ModifyTypeEffectiveness = fn(&MoveContext, &mut Output<Fraction<
 /// Modifies damage.
 pub(crate) type ModifyDamage = fn(&mut MoveContext, &mut Output<RangeDistribution<Fraction<u64>>>);
 /// Modifies a heal amount.
-pub(crate) type ModifyHeal = fn(&mut MoveContext, &mut Output<Range<Fraction<u64>>>);
+pub(crate) type ModifyDirectDamage =
+    fn(&mut MoveContext, MonType, &mut Output<Range<Fraction<u64>>>);
 /// Modifies the status effect.
 pub(crate) type ModifyStatusEffect = fn(&mut MoveContext, MonType, &mut StatusEffect);
 /// Modifies the battle state after a hit.
@@ -233,11 +234,15 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Volt Absorb:defender",
-                (|context: &mut MoveContext| context.move_data.primary_type == Type::Electric) as _,
+                (|context: &mut MoveContext| {
+                    !context.flags.indirect && context.move_data.primary_type == Type::Electric
+                }) as _,
             ),
             (
                 "ability:Water Absorb:defender",
-                (|context: &mut MoveContext| context.move_data.primary_type == Type::Water) as _,
+                (|context: &mut MoveContext| {
+                    !context.flags.indirect && context.move_data.primary_type == Type::Water
+                }) as _,
             ),
             (
                 "ability:Flash Fire:defender",
@@ -1134,11 +1139,44 @@ pub(crate) static MODIFY_DRAIN_HOOKS: LazyLock<IndexMap<&str, ModifyDamage>> =
         )])
     });
 
-pub(crate) static MODIFY_HEAL_HOOKS: LazyLock<IndexMap<&str, ModifyHeal>> = LazyLock::new(|| {
+pub(crate) static MODIFY_HEAL_HOOKS: LazyLock<IndexMap<&str, ModifyDirectDamage>> =
+    LazyLock::new(|| {
+        IndexMap::from_iter([(
+            "condition:Heal Block",
+            (|_: &mut MoveContext, _: MonType, damage: &mut Output<Range<Fraction<u64>>>| {
+                damage.mul(0u64, "Heal Block");
+            }) as _,
+        )])
+    });
+
+pub(crate) static MODIFY_HEAL_FROM_HIT_HOOKS: LazyLock<IndexMap<&str, ModifyDirectDamage>> =
+    LazyLock::new(|| {
+        IndexMap::from_iter([(
+            "ability:Water Absorb",
+            (|context: &mut MoveContext,
+              mon_type: MonType,
+              damage: &mut Output<Range<Fraction<u64>>>| {
+                if mon_type == MonType::Defender
+                    && !context.flags.attacking_self
+                    && !context.flags.indirect
+                {
+                    damage.add(context.max_hp(mon_type) / 4, "Water Absorb");
+                }
+            }) as _,
+        )])
+    });
+
+pub(crate) static MODIFY_DIRECT_DAMAGE_FROM_HIT_HOOKS: LazyLock<
+    IndexMap<&str, ModifyDirectDamage>,
+> = LazyLock::new(|| {
     IndexMap::from_iter([(
-        "condition:Heal Block:attacker",
-        (|_: &mut MoveContext, damage: &mut Output<Range<Fraction<u64>>>| {
-            damage.mul(0u64, "Heal Block");
+        "move:Belly Drum",
+        (|context: &mut MoveContext,
+          mon_type: MonType,
+          damage: &mut Output<Range<Fraction<u64>>>| {
+            if mon_type == MonType::Defender {
+                damage.add(context.max_hp(mon_type) / 2, "Belly Drum");
+            }
         }) as _,
     )])
 });

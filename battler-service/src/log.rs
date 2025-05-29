@@ -146,8 +146,10 @@ impl SplitLogs {
 
 #[cfg(test)]
 mod log_test {
-    use super::SplitLogs;
-    use crate::log::LogEntry;
+    use crate::log::{
+        LogEntry,
+        SplitLogs,
+    };
 
     #[test]
     fn filters_split_logs() {

@@ -11,6 +11,7 @@ use std::{
 
 use num::{
     Integer,
+    integer::Average,
     traits::{
         SaturatingAdd,
         SaturatingMul,
@@ -68,6 +69,14 @@ where
     /// The end of the range (inclusive).
     pub fn b(&self) -> I {
         self.1
+    }
+
+    /// The average of the range (floored).
+    pub fn avg(&self) -> I
+    where
+        I: Average,
+    {
+        self.0.average_floor(&self.1)
     }
 
     /// Ceiled integer division.

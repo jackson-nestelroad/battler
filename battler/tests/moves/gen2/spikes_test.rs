@@ -121,7 +121,7 @@ fn spikes_damages_opposing_side_on_switch_in() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Skarmory,player-1,1|name:Spikes",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -138,7 +138,7 @@ fn spikes_damages_opposing_side_on_switch_in() {
             "damage|mon:Donphan,player-2,2|from:move:Spikes|health:132/150",
             "damage|mon:Donphan,player-2,2|from:move:Spikes|health:88/100",
             "move|mon:Skarmory,player-1,1|name:Spikes",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:2",
             "residual",
             "turn|turn:3",
             ["time"],
@@ -152,7 +152,7 @@ fn spikes_damages_opposing_side_on_switch_in() {
             "damage|mon:Houndoom,player-2,1|from:move:Spikes|health:113/135",
             "damage|mon:Houndoom,player-2,1|from:move:Spikes|health:84/100",
             "move|mon:Skarmory,player-1,1|name:Spikes",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:3",
             "residual",
             "turn|turn:4",
             ["time"],
@@ -195,7 +195,7 @@ fn flying_types_avoid_spikes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Skarmory,player-1,1|name:Spikes",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],
@@ -227,7 +227,7 @@ fn heavy_duty_boots_avoid_spikes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Skarmory,player-1,1|name:Spikes",
-            "sidestart|side:1|move:Spikes",
+            "sidestart|side:1|move:Spikes|count:1",
             "residual",
             "turn|turn:2",
             ["time"],

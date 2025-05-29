@@ -1,5 +1,5 @@
 /// Flags that control how the [`Trainer`][`crate::trainer::Trainer`] AI scores decisions.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TrainerFlag {
     /// Discourage moves which would immediately benefit the opponent or waste a turn.
     ///
@@ -14,12 +14,6 @@ pub enum TrainerFlag {
 
     /// Prioritize setup moves on the first turn of the battle.
     SetUpFirstTurn,
-
-    /// Prioritize risky moves.
-    Risky,
-
-    /// Prioritize non-standard damage attacking moves.
-    PrioritizeNonStandardDamage,
 
     /// Prioritize setting up when at higher HP thresholds and passing stat boosts to party members.
     BatonPass,

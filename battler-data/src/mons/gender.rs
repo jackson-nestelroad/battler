@@ -11,6 +11,7 @@ use serde_string_enum::{
     Copy,
     PartialEq,
     Eq,
+    Hash,
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]

@@ -19,6 +19,7 @@ use serde_string_enum::{
     Copy,
     PartialEq,
     Eq,
+    Hash,
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
@@ -31,7 +32,6 @@ pub enum MoveTarget {
     AdjacentAllyOrUser,
     /// An adjacent foe.
     #[string = "AdjacentFoe"]
-    #[default]
     AdjacentFoe,
     /// The field or all Mons at once.
     #[string = "All"]
@@ -63,6 +63,7 @@ pub enum MoveTarget {
     ///
     /// Could also be called "Adjacent."
     #[string = "Normal"]
+    #[default]
     Normal,
     /// Any adjacent foe chosen at random.
     #[string = "RandomNormal"]
@@ -174,6 +175,21 @@ impl MoveTarget {
 
     /// Validates the relative target position.
     pub fn valid_target(&self, relative_target: isize, adjacency_reach: u8) -> bool {
+        match self {
+            Self::AdjacentAlly
+            | Self::AdjacentAllyOrUser
+            | Self::AdjacentFoe
+            | Self::Any
+            | Self::Normal
+            | Self::RandomNormal
+            | Self::Scripted
+            | Self::User => self.is_affected(relative_target, adjacency_reach),
+            _ => false,
+        }
+    }
+
+    /// Checks if the Mon at the relative target is affected by the move.
+    pub fn is_affected(&self, relative_target: isize, adjacency_reach: u8) -> bool {
         let is_self = relative_target == 0;
         let is_foe = relative_target > 0;
         let is_adjacent = if relative_target > 0 {
@@ -185,13 +201,17 @@ impl MoveTarget {
         };
 
         match self {
-            Self::RandomNormal | Self::Scripted | Self::Normal => is_adjacent,
             Self::AdjacentAlly => is_adjacent && !is_foe,
-            Self::AdjacentAllyOrUser => is_adjacent && !is_foe || is_self,
-            Self::AdjacentFoe => is_adjacent && is_foe,
+            Self::AdjacentAllyOrUser => (is_adjacent && !is_foe) || is_self,
+            Self::AdjacentFoe | Self::AllAdjacentFoes => is_adjacent && is_foe,
+            Self::All => true,
+            Self::AllAdjacent => is_adjacent,
+            Self::Allies => !is_foe && !is_self,
+            Self::AllySide | Self::AllyTeam => !is_foe,
             Self::Any => !is_self,
+            Self::FoeSide => is_foe,
+            Self::Normal | Self::RandomNormal | Self::Scripted => is_adjacent,
             Self::User => is_self,
-            _ => false,
         }
     }
 }

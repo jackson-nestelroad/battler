@@ -6,5 +6,6 @@ pub use api::*;
 pub use log::{
     Log,
     LogEntry,
+    SplitLogs,
 };
 pub use service::BattlerService;
