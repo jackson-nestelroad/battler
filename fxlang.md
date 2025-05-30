@@ -250,7 +250,7 @@ Return statements terminate the program immediately. Any following statements ar
   "if func_call(move_has_flag: $move thawing):",
   ["return"],
   "if func_call(chance: 1 5):",
-  ["cure_status: $user", "return"],
+  ["cure_status: $user no_effect", "return"],
   "log_cant",
   ["return false"]
 ]
@@ -326,6 +326,7 @@ In the code, this means we can evaluate event callbacks under the following cont
 
 - `EffectContext` - The program runs under the context of an effect (which owns the event callback) and an optional source effect (that triggered the event).
 - `ApplyingEffectContext` - The program runs under the context of an applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target Mon (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
+- `PlayerEffectContext` - The program runs under the context of a player-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target player (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
 - `SideEffectContext` - The program runs under the context of a side-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target side (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
 - `FieldEffectContext` - The program runs under the context of a field-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), and an optional source Mon (that triggered the source effect).
 
@@ -347,6 +348,11 @@ Overall there are a handful of event callback categories:
 
 1. **Applying Effect** - Callback that runs in the context of an applying effect on some Mon.
    - `$target` - The target Mon of the effect.
+   - `$source` (optional) - The source Mon of the effect.
+   - `$effect` - The source effect that is triggering the callback.
+   - `$this` - This effect that the event callback is running on.
+1. **Player-Applying Effect** - Callback that runs in the context of an applying effect on some side.
+   - `$player` - The target player of the effect.
    - `$source` (optional) - The source Mon of the effect.
    - `$effect` - The source effect that is triggering the callback.
    - `$this` - This effect that the event callback is running on.
@@ -400,7 +406,7 @@ You can think of `$effect_state` as a little persistent disk for an effect. It i
 ```json
 {
   "callbacks": {
-    "on_start": ["$effect_state.stage = 0"],
+    "on_start": ["$effect_state.stage = 0", "log_status: $this.name"],
     "on_switch_in": ["$effect_state.stage = 0"],
     "on_residual": {
       "order": 9,
@@ -748,7 +754,7 @@ Mist protects all Mons on the user's side from stat drops from opposing Mons.
     "duration": 5,
     "callbacks": {
       "on_try_boost": [
-        "if $effect.infiltrates and !func_call(is_ally: $target $source):",
+        "if $effect.is_move and $effect.effect_state.infiltrates and !func_call(is_ally: $target $source):",
         ["return"],
         "if !$source or $source == $target:",
         ["return"],
@@ -1090,6 +1096,7 @@ The affection condition is added to Mons when affection is explicitly enabled fo
           ["log_activate: with_target tough", "return $target.hp - 1"]
         ]
       }
+    }
   }
 }
 ```
