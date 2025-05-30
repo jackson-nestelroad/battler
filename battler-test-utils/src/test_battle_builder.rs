@@ -26,6 +26,8 @@ use battler::{
     TeamData,
     WildPlayerOptions,
 };
+use battler_service::BattlerService;
+use uuid::Uuid;
 
 use crate::ControlledRandomNumberGenerator;
 
@@ -66,8 +68,7 @@ impl TestBattleBuilder {
         }
     }
 
-    /// Builds a new [`PublicCoreBattle`] from the battle builder.
-    pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle> {
+    fn modify_options_for_build(&mut self) {
         if self.controlled_rng {
             self.engine_options.rng_factory =
                 |seed: Option<u64>| Box::new(ControlledRandomNumberGenerator::new(seed));
@@ -77,14 +78,25 @@ impl TestBattleBuilder {
         for player in self.players_mut() {
             player.player_options.has_strict_bag = !infinite_bags;
         }
+    }
 
+    /// Builds a new [`PublicCoreBattle`] from the battle builder.
+    pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle> {
+        self.modify_options_for_build();
         let mut battle = PublicCoreBattle::new(self.options, data, self.engine_options)?;
-
         for (player_id, team) in self.teams {
             battle.update_team(&player_id, team)?;
         }
-
         Ok(battle)
+    }
+
+    pub async fn build_on_service(mut self, service: &BattlerService<'_>) -> Result<Uuid> {
+        self.modify_options_for_build();
+        let battle = service.create(self.options, self.engine_options).await?;
+        for (player_id, team) in self.teams {
+            service.update_team(battle.uuid, &player_id, team).await?;
+        }
+        Ok(battle.uuid)
     }
 
     fn players_mut(&mut self) -> impl Iterator<Item = &mut PlayerData> {

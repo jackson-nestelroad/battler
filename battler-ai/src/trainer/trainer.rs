@@ -190,6 +190,18 @@ impl Trainer {
         active_position: usize,
         state: &ChoiceState,
     ) -> Result<Option<(usize, i64)>> {
+        let scores = self
+            .match_up_scores(context, active_position, state)
+            .await?;
+        Ok(scores.into_iter().next())
+    }
+
+    async fn match_up_scores(
+        &self,
+        context: &AiContext<'_>,
+        active_position: usize,
+        state: &ChoiceState,
+    ) -> Result<Vec<(usize, i64)>> {
         let eligible = context
             .player_data
             .mons
@@ -212,12 +224,12 @@ impl Trainer {
         }
 
         if self.has_flag(TrainerFlag::UseMonsInOrder) {
-            return Ok(scores.into_iter().next());
+            scores.sort_by(|a, b| a.0.cmp(&b.0));
+        } else {
+            scores.sort_by(|a, b| b.1.cmp(&a.1));
         }
 
-        scores.sort_by(|a, b| b.1.cmp(&a.1));
-
-        Ok(scores.into_iter().next())
+        Ok(scores)
     }
 
     async fn calculate_match_up_score(&self, context: &TrainerMonContext<'_>) -> Result<i64> {
@@ -518,9 +530,7 @@ mod trainer_test {
     use battler::{
         BattleType,
         CoreBattleEngineSpeedSortTieResolution,
-        DataStore,
         LocalDataStore,
-        PublicCoreBattle,
         Request,
         TeamData,
         TurnRequest,
@@ -535,11 +545,12 @@ mod trainer_test {
         },
     };
     use battler_prng::PseudoRandomNumberGenerator;
-    use battler_service::SplitLogs;
+    use battler_service::BattlerService;
     use battler_test_utils::{
         ControlledRandomNumberGenerator,
         TestBattleBuilder,
     };
+    use uuid::Uuid;
 
     use crate::{
         AiContext,
@@ -598,13 +609,13 @@ mod trainer_test {
         .map_err(Error::new)
     }
 
-    fn make_battle(
-        data: &dyn DataStore,
+    async fn start_battle(
+        service: &BattlerService<'_>,
         seed: u64,
         team_1: TeamData,
         team_2: TeamData,
-    ) -> Result<PublicCoreBattle> {
-        TestBattleBuilder::new()
+    ) -> Result<Uuid> {
+        let battle = TestBattleBuilder::new()
             .with_battle_type(BattleType::Doubles)
             .with_seed(seed)
             .with_team_validation(false)
@@ -613,23 +624,21 @@ mod trainer_test {
             .add_player_to_side_2("player-2", "Player 2")
             .with_team("player-1", team_1)
             .with_team("player-2", team_2)
-            .build(data)
+            .build_on_service(service)
+            .await?;
+        service.start(battle).await?;
+        Ok(battle)
     }
 
-    fn ai_context<'d>(
+    async fn ai_context<'d>(
         data: &'d LocalDataStore,
-        battle: &mut PublicCoreBattle,
+        service: &BattlerService<'_>,
+        battle: Uuid,
         player: &str,
     ) -> Result<AiContext<'d>> {
-        let player_data = battle.player_data(player)?;
-
-        let mut split_logs = SplitLogs::new(2);
-        split_logs.append(battle.full_log());
-        let state = alter_battle_state(
-            BattleState::default(),
-            &Log::new(split_logs.public_log().entries())?,
-        )?;
-
+        let player_data = service.player_data(battle, player).await?;
+        let log = service.full_log(battle, Some(player_data.side)).await?;
+        let state = alter_battle_state(BattleState::default(), &Log::new(log.into_iter())?)?;
         Ok(AiContext {
             data,
             state,
@@ -658,12 +667,28 @@ mod trainer_test {
             .collect())
     }
 
+    async fn match_up_scores<'a>(
+        trainer: &'a Trainer,
+        context: &'a AiContext<'_>,
+        index: usize,
+    ) -> Result<Vec<(usize, i64)>> {
+        trainer
+            .match_up_scores(context, index, &ChoiceState::default())
+            .await
+    }
+
     #[tokio::test(flavor = "multi_thread")]
     async fn scores_moves_evenly_with_no_flags() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle =
-            make_battle(&data, 0, gen1_starters().unwrap(), gen1_starters().unwrap()).unwrap();
-        assert_matches::assert_matches!(battle.start(), Ok(()));
+        let service = BattlerService::new(&data);
+        let battle = start_battle(
+            &service,
+            0,
+            gen1_starters().unwrap(),
+            gen1_starters().unwrap(),
+        )
+        .await
+        .unwrap();
 
         let trainer = Trainer::new(
             TrainerOptions {
@@ -673,10 +698,12 @@ mod trainer_test {
             rng(Some(0)),
         );
 
-        let context = ai_context(&data, &mut battle, "player-2").unwrap();
+        let context = ai_context(&data, &service, battle, "player-2")
+            .await
+            .unwrap();
 
         let turn_request;
-        assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(service.request(battle, "player-2").await, Ok(Some(Request::Turn(request))) => {
             turn_request = request;
         });
 
@@ -730,9 +757,15 @@ mod trainer_test {
     #[tokio::test(flavor = "multi_thread")]
     async fn scores_moves_with_basic_flag_modifiers() {
         let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let mut battle =
-            make_battle(&data, 0, gen1_starters().unwrap(), gen1_starters().unwrap()).unwrap();
-        assert_matches::assert_matches!(battle.start(), Ok(()));
+        let service = BattlerService::new(&data);
+        let battle = start_battle(
+            &service,
+            0,
+            gen1_starters().unwrap(),
+            gen1_starters().unwrap(),
+        )
+        .await
+        .unwrap();
 
         let trainer = Trainer::new(
             TrainerOptions {
@@ -742,10 +775,12 @@ mod trainer_test {
             rng(Some(0)),
         );
 
-        let context = ai_context(&data, &mut battle, "player-2").unwrap();
+        let context = ai_context(&data, &service, battle, "player-2")
+            .await
+            .unwrap();
 
         let turn_request;
-        assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Turn(request))) => {
+        assert_matches::assert_matches!(service.request(battle, "player-2").await, Ok(Some(Request::Turn(request))) => {
             turn_request = request;
         });
 
@@ -792,6 +827,43 @@ mod trainer_test {
                         battle_data: context.player_data.mons.get(1).unwrap(),
                     }), 70),
                 ]));
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn calculates_match_up_scores_for_switch() {
+        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let service = BattlerService::new(&data);
+        let battle = start_battle(
+            &service,
+            0,
+            gen1_starters().unwrap(),
+            gen1_starters().unwrap(),
+        )
+        .await
+        .unwrap();
+
+        let trainer = Trainer::new(
+            TrainerOptions {
+                flags: HashSet::from_iter([TrainerFlag::Basic]),
+                ..Default::default()
+            },
+            rng(Some(0)),
+        );
+
+        let context = ai_context(&data, &service, battle, "player-2")
+            .await
+            .unwrap();
+
+        assert_matches::assert_matches!(
+            match_up_scores(
+                &trainer,
+                &context,
+                0,
+            ).await,
+            Ok(scores) => {
+                pretty_assertions::assert_eq!(scores, Vec::from_iter([(2, 2)]));
             }
         );
     }

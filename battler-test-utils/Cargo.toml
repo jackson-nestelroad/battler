@@ -13,6 +13,8 @@ pretty_assertions = { workspace = true }
 pretty_assertions_sorted = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+uuid = { workspace = true }
 
 battler = { path = "../battler" }
 battler-prng = { path = "../battler-prng" }
+battler-service = { path = "../battler-service" }

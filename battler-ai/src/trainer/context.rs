@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use ahash::{
     HashMap,
     HashSet,
@@ -95,7 +97,7 @@ pub struct TrainerMonContext<'a> {
 
     simulated_moves: Mutex<HashMap<MoveSimulatorCacheKey, HashMap<String, MultiHit>>>,
     simulated_type_effectiveness: Mutex<HashMap<MoveSimulatorCacheKey, Fraction<u64>>>,
-    simulated_speed: Mutex<HashMap<MonBattleAppearanceReference, Range<u64>>>,
+    simulated_speed: Mutex<HashMap<MonCacheKey, Range<u64>>>,
 }
 
 impl<'a> TrainerMonContext<'a> {
@@ -127,7 +129,10 @@ impl<'a> TrainerMonContext<'a> {
 
     #[allow(unused)]
     pub fn ally_sides(&self) -> impl Iterator<Item = usize> {
-        std::iter::once(self.player_data.side).chain(self.allies.iter().map(|ally| ally.side))
+        let sides = std::iter::once(self.player_data.side)
+            .chain(self.allies.iter().map(|ally| ally.side))
+            .collect::<BTreeSet<_>>();
+        sides.into_iter()
     }
 
     #[allow(unused)]
@@ -194,9 +199,23 @@ impl<'a> TrainerMonContext<'a> {
     }
 
     pub fn all_foes(&self) -> Result<impl Iterator<Item = Mon<'a, 'a>> + Clone> {
+        // Should not depend on targeting, since targeting only works for active Mons.
         Ok(self
-            .possible_targets(MoveTarget::FoeSide)?
-            .map(|target| target.mon))
+            .foe_sides()
+            .map(|side| side_or_else(self.state, side))
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flat_map(|side| {
+                side.active.iter().map(|active| {
+                    active
+                        .as_ref()
+                        .map(|reference| self.create_mon_for_reference(reference))
+                        .transpose()
+                })
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .filter_map(|mon| mon))
     }
 
     fn valid_target(&self, move_target: MoveTarget, target: &Mon) -> Result<bool> {
@@ -307,7 +326,7 @@ impl<'a> TrainerMonContext<'a> {
         }
 
         let result =
-            attacker_type_effectiveness(move_simulator_input_for_non_moves(&self.mon, &defender)?)
+            attacker_type_effectiveness(move_simulator_input_for_non_moves(&attacker, &defender)?)
                 .map(|val| *val.value())?;
 
         self.simulated_type_effectiveness
@@ -319,15 +338,13 @@ impl<'a> TrainerMonContext<'a> {
 
     pub async fn speed(&self, mon: &Mon<'_, '_>) -> Result<Range<u64>> {
         // Speed does not take any defenders into account.
-        let key = mon
-            .active_state_reference()?
-            .ok_or_else(|| Error::msg("mon is not active"))?;
+        let key = mon.reference().into();
         if let Some(result) = self.simulated_speed.lock().await.get(&key).cloned() {
             return Ok(result);
         }
 
         let result = calculate_single_stat(
-            move_simulator_input_for_non_moves_no_defender(&self.mon)?,
+            move_simulator_input_for_non_moves_no_defender(&mon)?,
             Stat::Spe,
         )
         .map(|val| *val.value())?;
