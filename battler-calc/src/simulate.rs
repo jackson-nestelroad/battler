@@ -284,6 +284,19 @@ impl<'d> MoveContext<'d> {
         let health = health.saturating_sub(&damage);
         self.mon_mut(mon_type).health = Some(health);
     }
+
+    pub fn apply_damage(&mut self, mon_type: MonType, damage: Range<u64>, heal: bool) {
+        let health = self.mon(mon_type).health.unwrap_or(Fraction::from(1u64));
+        let max_hp = self.max_hp(mon_type);
+        let damage_percent = damage.map(|val| Fraction::from(val)) / max_hp;
+        let health = if heal {
+            damage_percent + health
+        } else {
+            Range::from(health) - damage_percent
+        };
+        let health = health.b().min(Fraction::from(1u64));
+        self.mon_mut(mon_type).health = Some(health);
+    }
 }
 
 /// The status effect applied by the hit of a move.
@@ -291,7 +304,6 @@ impl<'d> MoveContext<'d> {
 pub struct StatusEffect {
     pub boosts: Option<BoostTable>,
     pub heal: Option<Output<Range<u64>>>,
-    pub heal_from_hit: Option<Output<Range<u64>>>,
     pub direct_damage_from_hit: Option<Output<Range<u64>>>,
     pub status: Option<String>,
     pub volatile: Option<String>,
@@ -339,13 +351,6 @@ impl Add for &StatusEffect {
                 (None, None) => None,
             },
             heal: match (&self.heal, &rhs.heal) {
-                (Some(lhs), Some(rhs)) => {
-                    Some(Output::start(*lhs.value() + *rhs.value(), "combined hits"))
-                }
-                (Some(val), None) | (None, Some(val)) => Some(val.clone()),
-                (None, None) => None,
-            },
-            heal_from_hit: match (&self.heal_from_hit, &rhs.heal_from_hit) {
                 (Some(lhs), Some(rhs)) => {
                     Some(Output::start(*lhs.value() + *rhs.value(), "combined hits"))
                 }
@@ -512,12 +517,6 @@ impl Hit {
             .as_ref()
             .map(|val| *val.value())
             .unwrap_or_default()
-            + self
-                .status_effect_on_target
-                .heal_from_hit
-                .as_ref()
-                .map(|val| *val.value())
-                .unwrap_or_default()
     }
 
     pub fn heal_on_user(&self) -> Range<u64> {
@@ -525,12 +524,6 @@ impl Hit {
             + self
                 .status_effect_on_user
                 .heal
-                .as_ref()
-                .map(|val| *val.value())
-                .unwrap_or_default()
-            + self
-                .status_effect_on_user
-                .heal_from_hit
                 .as_ref()
                 .map(|val| *val.value())
                 .unwrap_or_default()
@@ -671,12 +664,8 @@ fn simulate_move_internal(mut context: MoveContext) -> Result<MultiHit> {
         .map(|hit| {
             context.properties.mov.hit = hit + 1;
 
-            if let Some(immune) = calculate_immunity(&mut context)? {
-                return Ok(Hit {
-                    failed: true,
-                    damage: Damage::zero(immune),
-                    ..Default::default()
-                });
+            if let Some(hit) = calculate_immunity(&mut context)? {
+                return Ok(hit);
             }
 
             let damage = if !context.flags.indirect {
@@ -689,13 +678,14 @@ fn simulate_move_internal(mut context: MoveContext) -> Result<MultiHit> {
                 calculate_status_effect_for_hit(&mut context, MonType::Defender)?;
             let status_effect_on_user =
                 calculate_status_effect_for_hit(&mut context, MonType::Attacker)?;
-            modify_state_after_hit(&mut context);
-            Ok(Hit {
+            let hit = Hit {
                 failed: false,
                 damage,
                 status_effect_on_target,
                 status_effect_on_user,
-            })
+            };
+            modify_state_after_hit(&mut context, &hit);
+            Ok(hit)
         })
         .collect::<Result<_>>()?;
     Ok(MultiHit {
@@ -779,11 +769,6 @@ fn calculate_status_effect_for_hit(
         status_effect.heal = Some(calculate_heal(context, mon_type, heal_percent.convert())?);
     }
 
-    let heal_from_hit = calculate_heal_from_hit(context, mon_type)?;
-    if heal_from_hit.value() != &Range::from(0u64) {
-        status_effect.heal_from_hit = Some(heal_from_hit);
-    }
-
     let direct_damage_from_hit = calculate_direct_damage_from_hit(context, mon_type)?;
     if direct_damage_from_hit.value() != &Range::from(0u64) {
         status_effect.direct_damage_from_hit = Some(direct_damage_from_hit);
@@ -794,17 +779,23 @@ fn calculate_status_effect_for_hit(
     Ok(status_effect)
 }
 
-fn calculate_immunity(context: &mut MoveContext) -> Result<Option<String>> {
+fn calculate_immunity(context: &mut MoveContext) -> Result<Option<Hit>> {
     let ignore_immunity = context.move_data.ignore_immunity() || context.move_data.typeless;
     if !ignore_immunity
         && !context.mon_negates_immunity(MonType::Defender)
         && context.mon_is_immune(MonType::Defender)
     {
-        return Ok(Some("immune".to_owned()));
+        return Ok(Some(Hit {
+            failed: true,
+            damage: Damage::zero("immune"),
+            ..Default::default()
+        }));
     }
 
-    if let Some(fail_from) = fail_move_before_hit(context) {
-        return Ok(Some(fail_from));
+    let mut hit = Hit::default();
+    if let Some(fail_from) = fail_move_before_hit(context, &mut hit) {
+        hit.damage = Damage::zero(fail_from);
+        return Ok(Some(hit));
     }
 
     Ok(None)
@@ -1037,18 +1028,6 @@ fn calculate_heal(
     heal.mul(heal_percent.convert(), "heal");
 
     modify_heal(context, mon_type, &mut heal);
-
-    let heal = heal.map(|heal| heal.map(|val| val.round()), "round");
-    Ok(heal)
-}
-
-fn calculate_heal_from_hit(
-    context: &mut MoveContext,
-    mon_type: MonType,
-) -> Result<Output<Range<u64>>> {
-    let mut heal = Output::from(Range::from(Fraction::from(0u64)));
-
-    modify_heal_from_hit(context, mon_type, &mut heal);
 
     let heal = heal.map(|heal| heal.map(|val| val.round()), "round");
     Ok(heal)
@@ -1578,11 +1557,11 @@ fn modify_move(context: &mut MoveContext) {
     }
 }
 
-fn fail_move_before_hit(context: &mut MoveContext) -> Option<String> {
+fn fail_move_before_hit(context: &mut MoveContext, hit: &mut Hit) -> Option<String> {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::FAIL_MOVE_BEFORE_HIT_HOOKS);
     for (name, hook) in hooks {
-        if hook(context) {
+        if hook(context, hit) {
             let (_, name) = effect_type_and_name(name);
             return Some(name.to_owned());
         }
@@ -1711,18 +1690,6 @@ fn modify_heal(
     }
 }
 
-fn modify_heal_from_hit(
-    context: &mut MoveContext,
-    mon_type: MonType,
-    damage: &mut Output<Range<Fraction<u64>>>,
-) {
-    let effects = all_effects(context, Some(mon_type));
-    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_HEAL_FROM_HIT_HOOKS);
-    for (_, hook) in hooks {
-        hook(context, mon_type, damage);
-    }
-}
-
 fn modify_direct_damage_from_hit(
     context: &mut MoveContext,
     mon_type: MonType,
@@ -1747,11 +1714,80 @@ fn modify_status_effect(
     }
 }
 
-fn modify_state_after_hit(context: &mut MoveContext) {
+fn modify_state_after_hit(context: &mut MoveContext, hit: &Hit) {
+    // NOTE: These modifications are completely best effort to make multi-hit damage calculations
+    // more accurate.
+
+    if let Some(damage) = hit.damage.damage.value().min_max_range() {
+        context.apply_damage(MonType::Defender, damage, false);
+    }
+    if let Some(recoil) = hit.damage.recoil.value().min_max_range() {
+        context.apply_damage(MonType::Attacker, recoil, false);
+    }
+    if let Some(heal) = hit.damage.heal.value().min_max_range() {
+        context.apply_damage(MonType::Attacker, heal, true);
+    }
+
+    modify_state_with_status_effect(context, MonType::Defender, &hit.status_effect_on_target);
+    modify_state_with_status_effect(context, MonType::Attacker, &hit.status_effect_on_user);
+
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MODIFY_STATE_AFTER_HIT_HOOKS);
     for (_, hook) in hooks {
         hook(context);
+    }
+}
+
+fn modify_state_with_status_effect(
+    context: &mut MoveContext,
+    mon_type: MonType,
+    status_effect: &StatusEffect,
+) {
+    if let Some(boosts) = &status_effect.boosts {
+        for (boost, diff) in boosts.non_zero_iter() {
+            let val = context.mon(mon_type).boosts.get(boost);
+            let val = val + diff;
+            let val = val.max(-6).min(6);
+            context.mon_mut(mon_type).boosts.set(boost, val);
+        }
+    }
+
+    if let Some(heal) = &status_effect.heal {
+        context.apply_damage(mon_type, *heal.value(), true);
+    }
+
+    if let Some(direct_damage) = &status_effect.direct_damage_from_hit {
+        context.apply_damage(mon_type, *direct_damage.value(), false);
+    }
+
+    if let Some(status) = &status_effect.status {
+        context.mon_mut(mon_type).status = Some(status.clone());
+    }
+
+    if let Some(volatile) = &status_effect.volatile {
+        context
+            .mon_mut(mon_type)
+            .conditions
+            .insert(volatile.clone());
+    }
+
+    if let Some(side_condition) = &status_effect.side_condition {
+        context
+            .side_mut(mon_type)
+            .conditions
+            .insert(side_condition.clone());
+    }
+
+    if let Some(weather) = &status_effect.weather {
+        context.field.weather = Some(weather.clone());
+    }
+
+    if let Some(pseudo_weather) = &status_effect.pseudo_weather {
+        context.field.conditions.insert(pseudo_weather.clone());
+    }
+
+    if let Some(terrain) = &status_effect.terrain {
+        context.field.terrain = Some(terrain.clone());
     }
 }
 

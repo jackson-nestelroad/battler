@@ -16,6 +16,7 @@ use crate::{
         RangeDistribution,
     },
     simulate::{
+        Hit,
         MonType,
         MoveContext,
         StatusEffect,
@@ -35,7 +36,7 @@ pub(crate) type ModifyStateFromMon = fn(&mut MoveContext, MonType);
 /// Modifies the move being used.
 pub(crate) type ModifyMove = fn(&mut MoveContext);
 /// Fails the move before it hits.
-pub(crate) type FailMoveBeforeHit = fn(&mut MoveContext) -> bool;
+pub(crate) type FailMoveBeforeHit = fn(&mut MoveContext, &mut Hit) -> bool;
 /// Applies fixed damage.
 pub(crate) type ApplyFixedDamage = fn(&MoveContext) -> Option<Range<u64>>;
 /// Modifies the move data.
@@ -213,11 +214,11 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
         IndexMap::from_iter([
             (
                 "terrain:Psychic Terrain:defender",
-                (|context: &mut MoveContext| context.move_data.priority > 0) as _,
+                (|context: &mut MoveContext, _: &mut Hit| context.move_data.priority > 0) as _,
             ),
             (
                 "move:Brick Break",
-                (|context: &mut MoveContext| {
+                (|context: &mut MoveContext, _: &mut Hit| {
                     context.field.defender_side.conditions.remove("Reflect");
                     context
                         .field
@@ -230,25 +231,48 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Sturdy:defender",
-                (|context: &mut MoveContext| context.move_data.ohko_type.is_some()) as _,
+                (|context: &mut MoveContext, _: &mut Hit| context.move_data.ohko_type.is_some())
+                    as _,
             ),
             (
                 "ability:Volt Absorb:defender",
-                (|context: &mut MoveContext| {
-                    !context.flags.indirect && context.move_data.primary_type == Type::Electric
+                (|context: &mut MoveContext, hit: &mut Hit| {
+                    let fail =
+                        !context.flags.indirect && context.move_data.primary_type == Type::Electric;
+                    if !context.flags.attacking_self && !context.flags.indirect {
+                        hit.status_effect_on_target
+                            .heal
+                            .get_or_insert_default()
+                            .add(
+                                (context.max_hp(MonType::Defender) / 4).map(|val| val.floor()),
+                                "Volt Absorb",
+                            );
+                    }
+                    fail
                 }) as _,
             ),
             (
                 "ability:Water Absorb:defender",
-                (|context: &mut MoveContext| {
-                    !context.flags.indirect && context.move_data.primary_type == Type::Water
+                (|context: &mut MoveContext, hit: &mut Hit| {
+                    let fail =
+                        !context.flags.indirect && context.move_data.primary_type == Type::Water;
+                    if !context.flags.attacking_self && !context.flags.indirect {
+                        hit.status_effect_on_target
+                            .heal
+                            .get_or_insert_default()
+                            .add(
+                                (context.max_hp(MonType::Defender) / 4).map(|val| val.floor()),
+                                "Water Absorb",
+                            );
+                    }
+                    fail
                 }) as _,
             ),
             (
                 "ability:Flash Fire:defender",
-                (|context: &mut MoveContext| {
+                (|context: &mut MoveContext, hit: &mut Hit| {
                     if context.move_data.primary_type == Type::Fire {
-                        context.defender.conditions.insert("Flash Fire".to_owned());
+                        hit.status_effect_on_target.volatile = Some("Flash Fire".to_owned());
                         return true;
                     }
                     false
@@ -256,7 +280,7 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Wonder Guard:defender",
-                (|context: &mut MoveContext| {
+                (|context: &mut MoveContext, _: &mut Hit| {
                     if context.move_data.typeless {
                         return false;
                     }
@@ -268,9 +292,12 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Lightning Rod:defender",
-                (|context: &mut MoveContext| {
+                (|context: &mut MoveContext, hit: &mut Hit| {
                     if context.move_data.primary_type == Type::Electric {
-                        context.defender.boosts.spa += 1;
+                        hit.status_effect_on_target
+                            .boosts
+                            .get_or_insert_default()
+                            .spa += 1;
                         return true;
                     }
                     false
@@ -278,9 +305,12 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Sap Sipper:defender",
-                (|context: &mut MoveContext| {
+                (|context: &mut MoveContext, hit: &mut Hit| {
                     if context.move_data.primary_type == Type::Grass {
-                        context.defender.boosts.atk += 1;
+                        hit.status_effect_on_target
+                            .boosts
+                            .get_or_insert_default()
+                            .atk += 1;
                         return true;
                     }
                     false
@@ -288,8 +318,9 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             ),
             (
                 "ability:Soundproof:defender",
-                (|context: &mut MoveContext| context.move_data.flags.contains(&MoveFlag::Sound))
-                    as _,
+                (|context: &mut MoveContext, _: &mut Hit| {
+                    context.move_data.flags.contains(&MoveFlag::Sound)
+                }) as _,
             ),
         ])
     });
@@ -1145,23 +1176,6 @@ pub(crate) static MODIFY_HEAL_HOOKS: LazyLock<IndexMap<&str, ModifyDirectDamage>
             "condition:Heal Block",
             (|_: &mut MoveContext, _: MonType, damage: &mut Output<Range<Fraction<u64>>>| {
                 damage.mul(0u64, "Heal Block");
-            }) as _,
-        )])
-    });
-
-pub(crate) static MODIFY_HEAL_FROM_HIT_HOOKS: LazyLock<IndexMap<&str, ModifyDirectDamage>> =
-    LazyLock::new(|| {
-        IndexMap::from_iter([(
-            "ability:Water Absorb",
-            (|context: &mut MoveContext,
-              mon_type: MonType,
-              damage: &mut Output<Range<Fraction<u64>>>| {
-                if mon_type == MonType::Defender
-                    && !context.flags.attacking_self
-                    && !context.flags.indirect
-                {
-                    damage.add(context.max_hp(mon_type) / 4, "Water Absorb");
-                }
             }) as _,
         )])
     });
