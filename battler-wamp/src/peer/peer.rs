@@ -432,6 +432,7 @@ pub struct Peer<S> {
     drop_tx: broadcast::Sender<()>,
 
     peer_state: Arc<Mutex<Option<PeerState>>>,
+    previous_peer_state: Arc<Mutex<Option<PeerState>>>,
 }
 
 impl<S> Peer<S>
@@ -455,6 +456,7 @@ where
             session_finished_tx,
             drop_tx,
             peer_state: Arc::new(Mutex::new(None)),
+            previous_peer_state: Arc::new(Mutex::new(None)),
         })
     }
 
@@ -526,6 +528,7 @@ where
         tokio::spawn(Self::message_handler(
             session,
             self.peer_state.clone(),
+            self.previous_peer_state.clone(),
             self.session_finished_tx.clone(),
             message_rx,
             service_message_rx,
@@ -539,6 +542,7 @@ where
     async fn message_handler(
         mut session: Session,
         peer_state: Arc<Mutex<Option<PeerState>>>,
+        previous_peer_state: Arc<Mutex<Option<PeerState>>>,
         session_finished_tx: broadcast::Sender<()>,
         mut message_rx: mpsc::Receiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
@@ -577,7 +581,7 @@ where
             break;
         }
 
-        peer_state.lock().await.take();
+        *previous_peer_state.lock().await = peer_state.lock().await.take();
     }
 
     async fn session_loop_with_errors(
