@@ -581,6 +581,10 @@ where
             break;
         }
 
+        // Store the peer state somewhere else.
+        //
+        // If we drop it immediately, there can be a race condition between reading errors from
+        // channels in the state and the channels being closed.
         *previous_peer_state.lock().await = peer_state.lock().await.take();
     }
 
