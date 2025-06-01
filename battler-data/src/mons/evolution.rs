@@ -18,7 +18,7 @@ pub enum EvolutionMethod {
     #[string = "L"]
     #[alias = "Level"]
     Level,
-    /// Evoles after being traded.
+    /// Evolves after being traded.
     #[string = "T"]
     #[alias = "Trade"]
     Trade,
@@ -51,7 +51,7 @@ pub struct EvolutionData {
     pub friendship: Option<bool>,
     /// Move that must be present on the Mon's moveset.
     pub knows_move: Option<String>,
-    /// Ttime of day where evolution occurs
+    /// Time of day where evolution occurs
     pub time_of_day: Option<String>,
     /// Item held by the Mon.
     pub holding_item: Option<String>,

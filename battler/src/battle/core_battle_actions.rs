@@ -433,8 +433,8 @@ fn do_move_internal(
     // use of the locked move on the next turn will go through this logic, even though the user does
     // not own the move. This check prevents this.
     //
-    // Without this check, there is a discrepency between how `last_move` is set for external moves:
-    // moves that require multple turns get set as the last move while single-turn moves do not.
+    // Without this check, there is a discrepancy between how `last_move` is set for external moves:
+    // moves that require multiple turns get set as the last move while single-turn moves do not.
     //
     // If you really want the last move used regardless of selection, you should use
     // `last_move_used`, which is set for all external moves on any turn with no preconditions.

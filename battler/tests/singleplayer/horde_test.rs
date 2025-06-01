@@ -77,7 +77,7 @@ fn make_horde_battle(
 ) -> Result<PublicCoreBattle> {
     let mut builder = TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
-        .with_adjacenecy_reach(3)
+        .with_adjacency_reach(3)
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)

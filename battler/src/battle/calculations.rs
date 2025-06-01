@@ -111,7 +111,7 @@ pub fn modify_32(value: u32, modifier: Fraction<u32>) -> u32 {
 }
 
 #[cfg(test)]
-mod calclulations_test {
+mod calculations_test {
     use battler_data::{
         Nature,
         StatTable,

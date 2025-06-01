@@ -71,7 +71,7 @@ pub struct SpeciesData {
     pub can_hatch: bool,
     /// Egg groups the species belongs to, which indicates which species can be bred together.
     pub egg_groups: HashSet<String>,
-    /// The number of egg cycles reqired to hatch an egg of this species.
+    /// The number of egg cycles required to hatch an egg of this species.
     ///
     /// One egg cycle is equal to 255 steps.
     pub hatch_time: u8,
@@ -84,7 +84,7 @@ pub struct SpeciesData {
     /// Leveling rate of this species, which determines how much experience is required for
     /// leveling up.
     pub leveling_rate: LevelingRate,
-    /// EV (effort value) yield when defating this species in battle.
+    /// EV (effort value) yield when defeating this species in battle.
     pub ev_yield: StatTable,
     /// Base friendship.
     ///

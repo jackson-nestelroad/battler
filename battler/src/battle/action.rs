@@ -210,7 +210,7 @@ impl SwitchEventsAction {
     }
 }
 
-/// A forgeit action.
+/// A forfeit action.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ForfeitAction {
     pub player: usize,

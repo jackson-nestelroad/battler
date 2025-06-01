@@ -227,8 +227,8 @@ impl TestBattleBuilder {
         self
     }
 
-    pub fn with_adjacenecy_reach(mut self, adjacenecy_reach: u8) -> Self {
-        self.options.format.options.adjacency_reach = adjacenecy_reach;
+    pub fn with_adjacency_reach(mut self, adjacency_reach: u8) -> Self {
+        self.options.format.options.adjacency_reach = adjacency_reach;
         self
     }
 

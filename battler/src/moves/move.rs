@@ -72,7 +72,7 @@ impl SecondaryEffect {
     }
 }
 
-/// An inidividual move, which can be used by a Mon in battle.
+/// An individual move, which can be used by a Mon in battle.
 ///
 /// Unlike other move effects, [`Move`]s are mutable across multiple Mons and turns. A move used by
 /// one Mon can have different effects than the ame move used by another Mon.

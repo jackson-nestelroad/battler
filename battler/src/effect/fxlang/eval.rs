@@ -590,7 +590,7 @@ impl VariableRegistry {
 
 /// An fxlang variable.
 ///
-/// Acts as a wrapper for an immutale access of a variable that can be consumed at some later time.
+/// Acts as a wrapper for an immutable access of a variable that can be consumed at some later time.
 struct Variable<'eval, 'program> {
     stored: Option<ElementRef<'eval, Value>>,
     member_access: Vec<&'program str>,
@@ -1800,7 +1800,7 @@ impl Evaluator {
                     // SAFETY: We only use this immutable borrow at the beginning of each loop, at
                     // the start of each execution.
                     //
-                    // This list value can only potentially contian a reference to a stored
+                    // This list value can only potentially contain a reference to a stored
                     // variable. If so, we are also storing the object that does runtime borrow
                     // checking, so borrow errors will trigger during evaluation.
                     let list: MaybeReferenceValue = unsafe { mem::transmute(list) };

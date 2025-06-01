@@ -67,11 +67,11 @@ impl LinkedEffectsManager {
             None => return Ok(false),
         };
         from.effect_state_connector()
-            .wrap_expectation("expected applied effectto have effect state after getting link id")?
+            .wrap_expectation("expected applied effect to have effect state after getting link id")?
             .get_mut(context)?
             .add_link(to_uuid);
         to.effect_state_connector()
-            .wrap_expectation("expected applied effectto have effect state after getting link id")?
+            .wrap_expectation("expected applied effect to have effect state after getting link id")?
             .get_mut(context)?
             .add_link(from_uuid);
         Ok(true)

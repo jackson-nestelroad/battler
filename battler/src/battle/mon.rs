@@ -883,7 +883,7 @@ impl Mon {
 
     /// Calculates the relative location of the given target position.
     ///
-    /// Relative location is essentially the Manhatten distance between this Mon and the target Mon.
+    /// Relative location is essentially the Manhattan distance between this Mon and the target Mon.
     /// It is negative if the Mon is on the same side and positive if the Mon is on the opposite
     /// side.
     pub fn relative_location_of_target(

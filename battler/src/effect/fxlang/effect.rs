@@ -669,7 +669,7 @@ pub enum BattleEvent {
     /// Runs in the context of a move target.
     #[string = "ModifySecondaryEffects"]
     ModifySecondaryEffects,
-    /// Runs when caclculating a Mon's SpD stat.
+    /// Runs when calculating a Mon's SpD stat.
     ///
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpD"]
@@ -989,7 +989,7 @@ pub enum BattleEvent {
     /// Runs when a move's primary hit is being applied to a target.
     ///
     /// Used to override the core battle engine logic. Can fail the move or return an amount of
-    /// damage dealt to the target. If zero damage is returned, the core battle engien assumes a
+    /// damage dealt to the target. If zero damage is returned, the core battle engine assumes a
     /// substitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the
     /// target).
     ///

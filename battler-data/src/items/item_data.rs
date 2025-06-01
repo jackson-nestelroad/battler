@@ -19,7 +19,7 @@ pub struct FlingItemData {
     pub volatile_status: Option<String>,
 }
 
-/// Data for special item effects; namely, item data associated with inidividual moves.
+/// Data for special item effects; namely, item data associated with individual moves.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SpecialItemData {
     /// The type this item turns Techno Blast into.
@@ -48,7 +48,7 @@ pub struct ItemData {
     /// The type of this item if it is a plate.
     pub plate_type: Option<Type>,
     /// The species that this item allows Mega Evolution from.
-    pub mega_evoles_from: Option<String>,
+    pub mega_evolves_from: Option<String>,
     /// The species that this item allows Mega Evolution into.
     pub mega_evolves_into: Option<String>,
     /// The forme this item forces a Mon into.

@@ -70,7 +70,7 @@ where
     //     the battle object backing the context.
     //  3. While this should not happen, we protect against improper use by the following:
     //      1. All references returned from the context are bound to the lifetime of the context
-    //         itself. Thus, references obtained from the contxt cannot be stored beyond the
+    //         itself. Thus, references obtained from the context cannot be stored beyond the
     //         lifetime of the context.
     //      2. Obtaining a mutable reference from a context requires a mutable borrow on the
     //         context itself. This assures that only one mutable reference is "checked out" of the
@@ -1161,7 +1161,7 @@ impl<'mon, 'player, 'side, 'context, 'battle, 'data>
         self.is_self
     }
 
-    /// Checks if the [`Move`] orginated from an external source (i.e., the [`Mon`] did not
+    /// Checks if the [`Move`] originated from an external source (i.e., the [`Mon`] did not
     /// explicitly select it).
     pub fn is_external(&self) -> bool {
         self.is_external
@@ -1479,7 +1479,7 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
         self.context.is_self()
     }
 
-    /// Checks if the [`Move`] orginated from an external source (i.e., the [`Mon`] did not
+    /// Checks if the [`Move`] originated from an external source (i.e., the [`Mon`] did not
     /// explicitly select it).
     pub fn is_external(&self) -> bool {
         self.context.is_external()

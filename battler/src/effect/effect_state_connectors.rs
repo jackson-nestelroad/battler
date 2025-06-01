@@ -326,7 +326,7 @@ impl fxlang::EffectStateConnector for WeatherEffectStateConnector {
 }
 
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for a
-/// pseudo-weather on the fielf.
+/// pseudo-weather on the field.
 #[derive(Debug, Clone)]
 pub struct PseudoWeatherEffectStateConnector {
     pseudo_weather: Id,

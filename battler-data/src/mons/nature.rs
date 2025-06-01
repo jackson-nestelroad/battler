@@ -83,7 +83,7 @@ impl Nature {
         }
     }
 
-    /// The stat dopped by the nature.
+    /// The stat dropped by the nature.
     pub fn drops(&self) -> Stat {
         match self {
             Self::Hardy | Self::Bold | Self::Modest | Self::Calm | Self::Timid => Stat::Atk,

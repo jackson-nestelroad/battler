@@ -20,7 +20,7 @@ use serde::{
 ///
 /// Resources of the same type should have a unique ID.
 ///
-/// A futher optimization would be to allocate strings in an arena for memory proximity.
+/// A further optimization would be to allocate strings in an arena for memory proximity.
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Id(Cow<'static, str>);
 

@@ -1071,7 +1071,7 @@ impl<'eval> ValueRefToStoredValue<'eval> {
         self.value.value_type()
     }
 
-    /// Converts the reference to a [`Value`], which is guaranted to contain no references.
+    /// Converts the reference to a [`Value`], which is guaranteed to contain no references.
     pub fn to_owned(&self) -> Value {
         self.value.to_owned()
     }
