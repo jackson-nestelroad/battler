@@ -1463,6 +1463,21 @@ fn modify_state_from_effect(
         "clearweather" => {
             state.field.weather = None;
         }
+        "copyboosts" => {
+            let mon = entry.value_or_else("mon")?;
+            let source = entry.value_or_else("of")?;
+            let source = mons_by_mon_name_require_one(state, &source)?;
+            let boosts = state
+                .field
+                .mon_by_reference_or_else(&source)?
+                .volatile_data
+                .stat_boosts
+                .clone();
+
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.volatile_data.stat_boosts = boosts.clone();
+            })?;
+        }
         "curestatus" => {
             let mon = entry.value_or_else("mon")?;
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
@@ -1687,6 +1702,7 @@ fn alter_battle_state_for_entry(
         | "clearallboosts"
         | "clearnegativeboosts"
         | "clearweather"
+        | "copyboosts"
         | "curestatus"
         | "crit"
         | "damage"
@@ -1704,6 +1720,7 @@ fn alter_battle_state_for_entry(
         | "item"
         | "itemend"
         | "miss"
+        | "mustrecharge"
         | "ohko"
         | "prepare"
         | "resisted"
