@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat"
-version = "0.6.0"
+version = "0.6.1"
 edition = "2024"
 description = "Asynchronous library for strongly-typed WAMP peer messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
