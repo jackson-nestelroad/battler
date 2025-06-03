@@ -3,6 +3,7 @@ use battler_wamp::{
     core::uri::Uri,
     peer::{
         PeerConfig,
+        PeerNotConnectedError,
         WebSocketPeer,
         new_web_socket_peer,
     },
@@ -61,9 +62,9 @@ async fn peer_connects_to_router() {
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
 
-    // The channel is closed.
+    // The peer is not connected.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
-        assert!(err.to_string().contains("channel closed"), "{err}");
+         assert_matches::assert_matches!(err.downcast::<PeerNotConnectedError>(), Ok(_));
     });
 }
 

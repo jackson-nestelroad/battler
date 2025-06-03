@@ -1,5 +1,8 @@
 use std::{
-    sync::Arc,
+    sync::{
+        Arc,
+        Weak,
+    },
     time::Duration,
 };
 
@@ -200,6 +203,7 @@ struct PeerState {
     session: SessionHandle,
 
     message_tx: mpsc::Sender<Message>,
+    session_references: Arc<()>,
 }
 
 /// A subscription to a topic.
@@ -429,10 +433,11 @@ pub struct Peer<S> {
     id_allocator: Box<dyn IdAllocator>,
 
     session_finished_tx: broadcast::Sender<()>,
+    connection_finished_tx: broadcast::Sender<()>,
     drop_tx: broadcast::Sender<()>,
+    end_active_connection_tx: broadcast::Sender<()>,
 
     peer_state: Arc<Mutex<Option<PeerState>>>,
-    previous_peer_state: Arc<Mutex<Option<PeerState>>>,
 }
 
 impl<S> Peer<S>
@@ -447,16 +452,19 @@ where
     ) -> Result<Self> {
         config.validate()?;
         let (session_finished_tx, _) = broadcast::channel(16);
+        let (connection_finished_tx, _) = broadcast::channel(16);
         let (drop_tx, _) = broadcast::channel(1);
+        let (end_active_connection_tx, _) = broadcast::channel(1);
         Ok(Self {
             config,
             connector_factory,
             transport_factory,
             id_allocator: Box::new(SequentialIdAllocator::default()),
             session_finished_tx,
+            connection_finished_tx,
             drop_tx,
+            end_active_connection_tx,
             peer_state: Arc::new(Mutex::new(None)),
-            previous_peer_state: Arc::new(Mutex::new(None)),
         })
     }
 
@@ -465,16 +473,21 @@ where
         self.session_finished_tx.subscribe()
     }
 
+    fn connection_finished_rx(&self) -> broadcast::Receiver<()> {
+        self.connection_finished_tx.subscribe()
+    }
+
     /// The current session ID, as given by the router.
     ///
     /// Since a peer is reused across multiple router sessions, this ID is subject to change at any
     /// point.
     pub async fn current_session_id(&self) -> Option<Id> {
-        self.get_from_peer_state_async(async |peer_state: &PeerState| {
+        self.get_from_peer_state(async |peer_state: &PeerState| {
             peer_state.session.current_session_id().await
         })
         .await
         .ok()
+        .map(|(_, val)| val)
         .flatten()
     }
 
@@ -506,12 +519,16 @@ where
 
     /// Directly connects to a router with the given message stream.
     pub async fn direct_connect(&self, stream: Box<dyn MessageStream>) -> Result<()> {
+        // End any active connection.
+        self.end_active_connection_tx.send(()).ok();
+
         // Start the service and message handler.
         let service = Service::new(self.config.name.clone(), stream);
         let (message_tx, message_rx) = mpsc::channel(16);
         let service_message_rx = service.message_rx();
         let end_rx = service.end_rx();
         let drop_rx = self.drop_tx.subscribe();
+        let end_active_connection_rx = self.end_active_connection_tx.subscribe();
 
         let service_handle = service.start();
 
@@ -519,43 +536,98 @@ where
         let session_handle = session.session_handle();
 
         let mut peer_state = self.peer_state.lock().await;
+        let session_references = Arc::new(());
         *peer_state = Some(PeerState {
             service: service_handle,
             session: session_handle,
             message_tx,
+            session_references: session_references.clone(),
         });
 
-        tokio::spawn(Self::message_handler(
+        tokio::spawn(Self::message_handler_awaiting_zero_references(
             session,
             self.peer_state.clone(),
-            self.previous_peer_state.clone(),
+            Arc::downgrade(&session_references),
             self.session_finished_tx.clone(),
+            self.connection_finished_tx.clone(),
             message_rx,
             service_message_rx,
             end_rx,
             drop_rx,
+            end_active_connection_rx,
         ));
 
         Ok(())
     }
 
-    async fn message_handler(
+    async fn message_handler_awaiting_zero_references(
         mut session: Session,
         peer_state: Arc<Mutex<Option<PeerState>>>,
-        previous_peer_state: Arc<Mutex<Option<PeerState>>>,
+        session_references: Weak<()>,
         session_finished_tx: broadcast::Sender<()>,
+        connection_finished_tx: broadcast::Sender<()>,
+        message_rx: mpsc::Receiver<Message>,
+        service_message_rx: broadcast::Receiver<Message>,
+        end_rx: broadcast::Receiver<()>,
+        drop_rx: broadcast::Receiver<()>,
+        end_active_connection_rx: broadcast::Receiver<()>,
+    ) {
+        // Pass all channels to this internal function, so that when the handler exits, the channels
+        // close.
+        Self::message_handler(
+            &mut session,
+            peer_state,
+            session_finished_tx,
+            connection_finished_tx,
+            message_rx,
+            service_message_rx,
+            end_rx,
+            drop_rx,
+            end_active_connection_rx,
+        )
+        .await;
+
+        let references = Weak::strong_count(&session_references);
+        log::debug!(
+            "Session {} has {} reference(s) after message handler loop exited",
+            session.name(),
+            references
+        );
+
+        // Wait for there to be no known references to the session (connection) before we exit this
+        // function and drop the session object.
+        if references > 0 {
+            loop {
+                tokio::select! {
+                    _ = tokio::time::sleep(Duration::from_secs(1)) => {
+                        if Weak::strong_count(&session_references) == 0 {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    async fn message_handler(
+        session: &mut Session,
+        peer_state: Arc<Mutex<Option<PeerState>>>,
+        session_finished_tx: broadcast::Sender<()>,
+        connection_finished_tx: broadcast::Sender<()>,
         mut message_rx: mpsc::Receiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
         drop_rx: broadcast::Receiver<()>,
+        mut end_active_connection_rx: broadcast::Receiver<()>,
     ) {
         loop {
             let result = Self::session_loop_with_errors(
-                &mut session,
+                session,
                 &mut message_rx,
                 service_message_rx.resubscribe(),
                 end_rx.resubscribe(),
                 drop_rx.resubscribe(),
+                &mut end_active_connection_rx,
             )
             .await;
 
@@ -581,11 +653,10 @@ where
             break;
         }
 
-        // Store the peer state somewhere else.
-        //
-        // If we drop it immediately, there can be a race condition between reading errors from
-        // channels in the state and the channels being closed.
-        *previous_peer_state.lock().await = peer_state.lock().await.take();
+        // No longer allow references to this session (which is reused across the entire connection)
+        // to be taken.
+        peer_state.lock().await.take();
+        connection_finished_tx.send(()).ok();
     }
 
     async fn session_loop_with_errors(
@@ -594,6 +665,7 @@ where
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         mut drop_rx: broadcast::Receiver<()>,
+        end_active_connection_rx: &mut broadcast::Receiver<()>,
     ) -> Result<bool> {
         let mut finish_on_close = false;
         loop {
@@ -621,6 +693,8 @@ where
                         return Err(err.context(format!("failed to handle {message_name} message")));
                     }
                 }
+                // Connection was overwritten with a new one.
+                _ = end_active_connection_rx.recv() => return Err(Error::msg("peer started another connection")),
                 // Service ended, which is unexpected.
                 //
                 // The service is intended to wrap the session's entire lifecycle.
@@ -640,22 +714,12 @@ where
         Ok(false)
     }
 
-    async fn get_from_peer_state<F, T>(&self, f: F) -> Result<T, Error>
-    where
-        F: Fn(&PeerState) -> T,
-    {
-        match self.peer_state.lock().await.as_ref() {
-            Some(peer_state) => Ok(f(peer_state)),
-            None => Err(PeerNotConnectedError.into()),
-        }
-    }
-
-    async fn get_from_peer_state_async<F, T>(&self, f: F) -> Result<T, Error>
+    async fn get_from_peer_state<F, T>(&self, f: F) -> Result<(Arc<()>, T), Error>
     where
         F: AsyncFn(&PeerState) -> T,
     {
         match self.peer_state.lock().await.as_ref() {
-            Some(peer_state) => Ok(f(peer_state).await),
+            Some(peer_state) => Ok((peer_state.session_references.clone(), f(peer_state).await)),
             None => Err(PeerNotConnectedError.into()),
         }
     }
@@ -691,8 +755,8 @@ where
         realm: &str,
         auth_methods: &[SupportedAuthMethod],
     ) -> Result<()> {
-        let (message_tx, mut established_session_rx, mut auth_challenge_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, mut established_session_rx, mut auth_challenge_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.established_session_rx(),
@@ -743,6 +807,8 @@ where
 
         message_tx.send(Message::Hello(message)).await?;
 
+        let mut connection_finished_rx = self.connection_finished_rx();
+
         let mut selected_auth_method = None;
         loop {
             tokio::select! {
@@ -767,6 +833,13 @@ where
                             return Err(err.context("failed to handle authentication challenge"));
                         },
                     }
+                }
+                _ = connection_finished_rx.recv() => {
+                    // The reason we disconnected may have been communicated.
+                    if let Ok(Err(err)) = established_session_rx.try_recv() {
+                        return Err(err.into());
+                    }
+                    return Err(PeerNotConnectedError.into());
                 }
             }
         }
@@ -814,8 +887,8 @@ where
 
     /// Leaves the realm, closing the WAMP session.
     pub async fn leave_realm(&self) -> Result<()> {
-        let (message_tx, mut closed_session_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, mut closed_session_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.closed_session_rx(),
@@ -826,8 +899,20 @@ where
         message_tx
             .send(goodbye_with_close_reason(CloseReason::Normal))
             .await?;
-        closed_session_rx.recv().await?;
-        Ok(())
+
+        let mut connection_finished_rx = self.connection_finished_rx();
+        tokio::select! {
+            result = closed_session_rx.recv() => {
+                result.map_err(Error::new)
+            }
+            _ = connection_finished_rx.recv() => {
+                // We may have closed successfully.
+                if let Ok(result) = closed_session_rx.try_recv() {
+                    return Ok(result);
+                }
+                Err(PeerNotConnectedError.into())
+            }
+        }
     }
 
     /// Disconnects from the router.
@@ -853,8 +938,8 @@ where
         topic: WildcardUri,
         options: SubscriptionOptions,
     ) -> Result<Subscription> {
-        let (message_tx, id_allocator, mut subscribed_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, id_allocator, mut subscribed_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
@@ -931,8 +1016,8 @@ where
     ///
     /// The subscription ID is received after subscribing to the topic.
     pub async fn unsubscribe(&self, id: Id) -> Result<()> {
-        let (message_tx, id_allocator, mut unsubscribed_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, id_allocator, mut unsubscribed_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
@@ -975,8 +1060,8 @@ where
 
     /// Publishes an event to a topic.
     pub async fn publish(&self, topic: Uri, event: PublishedEvent) -> Result<()> {
-        let (message_tx, id_allocator, mut published_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, id_allocator, mut published_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
@@ -1036,8 +1121,8 @@ where
         procedure: WildcardUri,
         options: ProcedureOptions,
     ) -> Result<Procedure> {
-        let (message_tx, id_allocator, mut registered_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, id_allocator, mut registered_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
@@ -1113,8 +1198,8 @@ where
     ///
     /// The registration ID is received after registering the procedure.
     pub async fn unregister(&self, id: Id) -> Result<()> {
-        let (message_tx, id_allocator, mut unregistered_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, id_allocator, mut unregistered_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
@@ -1212,8 +1297,8 @@ where
         rpc_call: RpcCall,
         receive_progress: bool,
     ) -> Result<PendingRpc> {
-        let (message_tx, id_allocator, session_rpc_result_rx) = self
-            .get_from_peer_state(|peer_state| {
+        let (_reference, (message_tx, id_allocator, session_rpc_result_rx)) = self
+            .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),

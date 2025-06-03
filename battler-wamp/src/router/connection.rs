@@ -66,7 +66,7 @@ impl Connection {
     }
 
     async fn run_service<S>(&self, context: &RouterContext<S>, service: Service) {
-        let message_rx = service.message_rx();
+        let mut message_rx = service.message_rx();
         let end_rx = service.end_rx();
 
         let service_handle = service.start();
@@ -75,7 +75,7 @@ impl Connection {
                 .run_session(
                     context,
                     service_handle.message_tx(),
-                    message_rx.resubscribe(),
+                    &mut message_rx,
                     end_rx.resubscribe(),
                 )
                 .await
@@ -103,7 +103,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         service_message_tx: mpsc::Sender<Message>,
-        service_message_rx: broadcast::Receiver<Message>,
+        service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
@@ -124,7 +124,7 @@ impl Connection {
         context: &RouterContext<S>,
         session: Session,
         message_rx: mpsc::Receiver<Message>,
-        service_message_rx: broadcast::Receiver<Message>,
+        service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session = Arc::new(session);
@@ -286,7 +286,7 @@ impl Connection {
         context: &RouterContext<S>,
         session: Arc<Session>,
         mut message_rx: mpsc::Receiver<Message>,
-        mut service_message_rx: broadcast::Receiver<Message>,
+        service_message_rx: &mut broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         session_loop_done_rx: broadcast::Receiver<()>,
     ) -> Result<bool> {
