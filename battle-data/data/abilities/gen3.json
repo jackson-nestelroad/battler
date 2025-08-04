@@ -239,7 +239,7 @@
           "if $target.hp == 0:",
           ["return"],
           "$type = $move.type",
-          "if $target.active and $move.category != status and !func_call(has_type: $target $type):",
+          "if $target.active and $move.category != status and !func_call(has_effective_type: $target $type):",
           ["set_types: $target $type"]
         ]
       }
@@ -676,7 +676,7 @@
     "effect": {
       "callbacks": {
         "on_foe_trap_mon": [
-          "if func_call(has_type: $mon steel) and func_call(is_adjacent: $mon $effect_state.target):",
+          "if func_call(has_effective_type: $mon steel) and func_call(is_adjacent: $mon $effect_state.target):",
           ["return true"]
         ]
       }

@@ -1,6 +1,7 @@
 use battler_data::{
     Id,
     MoveFlag,
+    Type,
 };
 
 use crate::{
@@ -12,6 +13,27 @@ use crate::{
     },
     effect::fxlang,
 };
+
+/// The effective types for the Mon.
+///
+/// Non-empty. [`Type::None`] is returned when the Mon has no types
+pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
+    let types = core_battle_effects::run_event_for_mon_expecting_types(
+        context,
+        fxlang::BattleEvent::Types,
+        context.mon().types.clone(),
+    );
+    if !types.is_empty() {
+        return types;
+    }
+    return Vec::from_iter([Type::None]);
+}
+
+/// Checks if the Mon has the given type.
+pub fn has_effective_type(context: &mut MonContext, typ: Type) -> bool {
+    let types = effective_types(context);
+    return types.contains(&typ);
+}
 
 /// The health at which the [`Mon`][`crate::battle::Mon`] eats berries.
 pub fn berry_eating_health(context: &mut MonContext) -> u16 {

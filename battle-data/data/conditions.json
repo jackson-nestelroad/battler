@@ -728,7 +728,7 @@
         "on_modify_spd": {
           "priority": 10,
           "program": [
-            "if func_call(has_type: $target rock):",
+            "if func_call(has_effective_type: $target rock):",
             ["return $spd * 3/2"]
           ]
         },
@@ -791,7 +791,7 @@
         "on_modify_def": {
           "priority": 10,
           "program": [
-            "if func_call(has_type: $target ice):",
+            "if func_call(has_effective_type: $target ice):",
             ["return $def * 3/2"]
           ]
         },

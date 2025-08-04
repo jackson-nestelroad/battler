@@ -249,6 +249,7 @@ mod moves {
 
     mod gen4 {
         mod miracle_eye_test;
+        mod roost_test;
         mod toxic_spikes_test;
     }
 

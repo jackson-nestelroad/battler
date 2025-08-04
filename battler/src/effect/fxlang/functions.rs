@@ -143,7 +143,7 @@ pub fn run_function(
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
         "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
-        "has_type" => has_type(context).map(|val| Some(val)),
+        "has_effective_type" => has_effective_type(context).map(|val| Some(val)),
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
         "heal" => heal(context).map(|val| Some(val)),
         "hit_effect" => hit_effect().map(|val| Some(val)),
@@ -1771,7 +1771,7 @@ fn set_boost(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::BoostTable(boosts))
 }
 
-fn has_type(mut context: FunctionContext) -> Result<Value> {
+fn has_effective_type(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1782,11 +1782,10 @@ fn has_type(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
-    Mon::has_type(
+    Ok(Value::Boolean(mon_states::has_effective_type(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         typ,
-    )
-    .map(|val| Value::Boolean(val))
+    )))
 }
 
 fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>> {

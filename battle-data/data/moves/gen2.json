@@ -179,13 +179,13 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "if func_call(has_type: $user ghost):",
+          "if func_call(has_effective_type: $user ghost):",
           ["$move.target = $move.non_ghost_target"],
           "else if func_call(is_ally: $user $selected_target):",
           ["$move.target = randomnormal"]
         ],
         "on_try_hit": [
-          "if func_call(has_type: $source ghost):",
+          "if func_call(has_effective_type: $source ghost):",
           ["$effect_state.apply_self_damage = true", "return"],
           "$effect_state.apply_self_damage = false",
           "if func_call(has_volatile: $target $this.id):",
@@ -252,7 +252,7 @@
           "$last_type = $target.last_move_used.type",
           "foreach $type in func_call(all_types):",
           [
-            "if func_call(has_type: $source $type):",
+            "if func_call(has_effective_type: $source $type):",
             ["continue"],
             "if func_call(type_is_weak_against: $last_type $type) or func_call(type_has_no_effect_against: $last_type $type):",
             ["$types = func_call(append: $types $type)"]
@@ -589,7 +589,7 @@
       "callbacks": {
         "on_start": ["log_start"],
         "on_negate_immunity": [
-          "if func_call(has_type: $mon ghost) and ($type == normal or $type == fighting):",
+          "if func_call(has_effective_type: $mon ghost) and ($type == normal or $type == fighting):",
           ["return false"]
         ],
         "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"]]

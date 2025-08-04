@@ -6,7 +6,18 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "hit_effect": {
+      "heal_percent": "50%",
+      "volatile_status": "roost"
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_types": ["return func_call(remove: $types flying)"]
+      }
+    }
   },
   "gravity": {
     "name": "Gravity",
@@ -33,7 +44,7 @@
       "callbacks": {
         "on_start": ["log_start"],
         "on_negate_immunity": [
-          "if func_call(has_type: $mon dark) and $type == psychic:",
+          "if func_call(has_effective_type: $mon dark) and $type == psychic:",
           ["return false"]
         ],
         "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"]]
@@ -448,7 +459,7 @@
         "on_entry_hazard": [
           "if !$mon.is_grounded:",
           ["return"],
-          "if func_call(has_type: $mon poison):",
+          "if func_call(has_effective_type: $mon poison):",
           [
             "remove_side_condition: $mon.side $this.id use_target_as_source",
             "return"

@@ -55,6 +55,7 @@ macro_rules! modify_match_up_score {
     };
 }
 
+// TODO: Need to better represent allies vs. targets, beneficial vs. harmful effects.
 pub(crate) static BASIC_MODIFY_MOVE_SCORE_HOOKS: LazyLock<Vec<ModifyMoveScore>> =
     LazyLock::new(|| {
         Vec::from_iter([

@@ -707,7 +707,7 @@ fn find_callbacks_on_mon(
     ));
 
     if event.callback_lookup_layer() > fxlang::BattleEvent::Types.callback_lookup_layer() {
-        let types = Mon::types(&mut context)?;
+        let types = mon_states::effective_types(&mut context);
         for typ in types {
             callbacks.push(CallbackHandle::new(
                 EffectHandle::Condition(Id::from(format!("{typ}type"))),

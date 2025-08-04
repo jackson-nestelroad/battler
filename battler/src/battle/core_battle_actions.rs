@@ -30,6 +30,7 @@ use crate::{
         core_battle_effects,
         core_battle_logs,
         modify_32,
+        mon_states,
         AbilitySlot,
         Action,
         ActiveMoveContext,
@@ -1566,7 +1567,7 @@ pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8> {
     let move_type = context.active_move().data.primary_type;
     let target_handle = context.target_mon_handle();
     let mut total = 0;
-    for defense in Mon::types(&mut context.target_mon_context()?)? {
+    for defense in mon_states::effective_types(&mut context.target_mon_context()?) {
         let modifier = context
             .battle()
             .check_type_effectiveness(move_type, defense);
@@ -1626,7 +1627,7 @@ fn modify_damage(
     // STAB.
     let move_type = context.active_move().data.primary_type;
     let stab = !context.active_move().data.typeless
-        && Mon::has_type(context.as_mon_context_mut(), move_type)?;
+        && mon_states::has_effective_type(context.as_mon_context_mut(), move_type);
     if stab {
         let stab_modifier = context
             .active_move()
@@ -1858,7 +1859,7 @@ mod direct_move_step {
             if !mon_states::is_semi_invulnerable(&mut context.target_mon_context()?) {
                 let mut immune = context.mon().level < context.target_mon().level;
                 if let OhkoType::Type(typ) = ohko {
-                    if Mon::has_type(&mut context.target_mon_context()?, typ)? {
+                    if mon_states::has_effective_type(&mut context.target_mon_context()?, typ) {
                         immune = true;
                     }
                 }
@@ -1873,7 +1874,7 @@ mod direct_move_step {
                         let user_has_ohko_type = match ohko {
                             OhkoType::Always => true,
                             OhkoType::Type(typ) => {
-                                Mon::has_type(context.as_mon_context_mut(), typ)?
+                                mon_states::has_effective_type(context.as_mon_context_mut(), typ)
                             }
                         };
                         if user_has_ohko_type {

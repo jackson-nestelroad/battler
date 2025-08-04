@@ -218,7 +218,7 @@ impl MonMoveSlotData {
         let id = mov.id().clone();
         // Some moves may have a special target for non-Ghost types.
         let target = if let Some(non_ghost_target) = mov.data.non_ghost_target {
-            if !Mon::has_type(context, Type::Ghost)? {
+            if !mon_states::has_effective_type(context, Type::Ghost) {
                 non_ghost_target
             } else {
                 move_slot.target
@@ -775,25 +775,6 @@ impl Mon {
     /// The secret health of the Mon.
     pub fn secret_health(context: &MonContext) -> String {
         context.mon().actual_health()
-    }
-
-    /// Looks up the Mon's types, which may be dynamic based on volatile effects.
-    pub fn types(context: &mut MonContext) -> Result<Vec<Type>> {
-        let types = core_battle_effects::run_event_for_mon_expecting_types(
-            context,
-            fxlang::BattleEvent::Types,
-            context.mon().types.clone(),
-        );
-        if !types.is_empty() {
-            return Ok(types);
-        }
-        return Ok(Vec::from_iter([Type::Normal]));
-    }
-
-    /// Checks if the Mon has the given type.
-    pub fn has_type(context: &mut MonContext, typ: Type) -> Result<bool> {
-        let types = Self::types(context)?;
-        return Ok(types.contains(&typ));
     }
 
     /// Looks up the Mon's locked move, if any.
@@ -1888,7 +1869,7 @@ impl Mon {
             return Ok(true);
         }
 
-        let types = Self::types(context)?;
+        let types = mon_states::effective_types(context);
         let immune = context.battle().check_type_immunity(typ, &types);
 
         Ok(immune)
