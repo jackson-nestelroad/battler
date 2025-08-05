@@ -9,9 +9,9 @@ use battler::{
     WrapResultError,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
 };
 
 fn infernape() -> Result<TeamData> {
@@ -55,7 +55,7 @@ fn make_battle(
 }
 
 #[test]
-fn roost_heals_damage_and_removes_flying_type() {
+fn feint_breaks_protect() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, infernape().unwrap(), infernape().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
