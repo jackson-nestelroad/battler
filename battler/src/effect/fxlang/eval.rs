@@ -775,15 +775,6 @@ where
                                 .as_ref()
                                 .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
-                            "non_ghost_target" => {
-                                let active_move = context.active_move(active_move_handle)?;
-                                ValueRef::MoveTarget(
-                                    active_move
-                                        .data
-                                        .non_ghost_target
-                                        .unwrap_or(active_move.data.target),
-                                )
-                            }
                             "ohko" => ValueRef::Boolean(
                                 context
                                     .active_move(active_move_handle)?

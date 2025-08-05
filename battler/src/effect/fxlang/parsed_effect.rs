@@ -124,6 +124,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::MoveBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveDamage, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveFailed, callbacks)?;
+            parsed.parse_and_save(BattleEvent::MoveTargetOverride, callbacks)?;
             parsed.parse_and_save(BattleEvent::NegateImmunity, callbacks)?;
             parsed.parse_and_save(BattleEvent::OverrideMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::PlayerTryUseItem, callbacks)?;

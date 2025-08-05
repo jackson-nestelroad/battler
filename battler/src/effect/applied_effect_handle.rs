@@ -30,6 +30,7 @@ pub enum AppliedEffectLocation {
     None,
     Mon(MonHandle),
     MonAbility(MonHandle),
+    MonInactiveMove(MonHandle),
     MonItem(MonHandle),
     MonPseudoWeather(MonHandle),
     MonSideCondition(usize, MonHandle),
@@ -103,6 +104,7 @@ impl AppliedEffectHandle {
             AppliedEffectLocation::MonAbility(mon) => {
                 Some(MonAbilityEffectStateConnector::new(mon).make_dynamic())
             }
+            AppliedEffectLocation::MonInactiveMove(_) => None,
             AppliedEffectLocation::MonItem(mon) => {
                 Some(MonItemEffectStateConnector::new(mon).make_dynamic())
             }
@@ -144,6 +146,7 @@ impl AppliedEffectHandle {
             AppliedEffectLocation::None
             | AppliedEffectLocation::Mon(_)
             | AppliedEffectLocation::MonAbility(_)
+            | AppliedEffectLocation::MonInactiveMove(_)
             | AppliedEffectLocation::MonItem(_)
             | AppliedEffectLocation::MonType(_) => Ok(false),
             AppliedEffectLocation::MonStatus(mon) => {

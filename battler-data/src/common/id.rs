@@ -31,7 +31,7 @@ impl Id {
     }
 
     #[allow(dead_code)]
-    fn as_id_ref(&self) -> IdRef {
+    fn as_id_ref(&self) -> IdRef<'_> {
         IdRef(self.0.as_ref())
     }
 

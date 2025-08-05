@@ -4,7 +4,9 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     DataStore,
     LocalDataStore,
+    MoveTarget,
     PublicCoreBattle,
+    Request,
     TeamData,
     WrapResultError,
 };
@@ -79,6 +81,17 @@ fn ghost_type_curse_applies_curse_to_target() {
     let mut battle = make_battle(&data, 0, gengar().unwrap(), forretress().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-1"),
+        Ok(Some(Request::Turn(request))) => {
+            assert_matches::assert_matches!(request.active.get(0), Some(request) => {
+                assert_matches::assert_matches!(request.moves.get(0), Some(mov) => {
+                    assert_eq!(mov.target, MoveTarget::Normal);
+                });
+            });
+        }
+    );
+
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -129,6 +142,17 @@ fn non_ghost_type_curse_affects_user() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, gengar().unwrap(), forretress().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-2"),
+        Ok(Some(Request::Turn(request))) => {
+            assert_matches::assert_matches!(request.active.get(0), Some(request) => {
+                assert_matches::assert_matches!(request.moves.get(0), Some(mov) => {
+                    assert_eq!(mov.target, MoveTarget::User);
+                });
+            });
+        }
+    );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));

@@ -216,16 +216,13 @@ impl MonMoveSlotData {
         let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
-        // Some moves may have a special target for non-Ghost types.
-        let target = if let Some(non_ghost_target) = mov.data.non_ghost_target {
-            if !mon_states::has_effective_type(context, Type::Ghost) {
-                non_ghost_target
-            } else {
-                move_slot.target
-            }
-        } else {
-            move_slot.target
-        };
+        // Some moves may have a special target, depending on the user's type (e.g., Curse).
+        let target = core_battle_effects::run_mon_inactive_move_event_expecting_move_target(
+            context,
+            fxlang::BattleEvent::MoveTargetOverride,
+            &move_slot.id,
+        )
+        .unwrap_or(move_slot.target);
         let mut disabled = move_slot.disabled;
         if move_slot.pp == 0 {
             disabled = true;

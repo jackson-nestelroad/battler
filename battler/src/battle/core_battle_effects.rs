@@ -5,6 +5,7 @@ use anyhow::Result;
 use battler_data::{
     BoostTable,
     Id,
+    MoveTarget,
     SecondaryEffectData,
     Type,
 };
@@ -469,6 +470,20 @@ fn run_callback_under_field_effect(
     .flatten()
 }
 
+fn run_callback_under_mon(
+    context: &mut MonContext,
+    input: fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Option<fxlang::Value> {
+    run_callback_with_errors(
+        UpcomingEvaluationContext::Mon(context.into()),
+        input,
+        callback_handle,
+    )
+    .ok()
+    .flatten()
+}
+
 fn run_mon_status_event_internal(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -547,6 +562,24 @@ fn run_mon_item_event_internal(
             EffectHandle::Item(item),
             event,
             AppliedEffectLocation::MonItem(target_handle),
+        ),
+    )
+}
+
+fn run_mon_inactive_move_event_internal(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    mov: &Id,
+) -> Option<fxlang::Value> {
+    let mon_handle = context.mon_handle();
+    run_callback_under_mon(
+        context,
+        input,
+        CallbackHandle::new(
+            EffectHandle::InactiveMove(mov.clone()),
+            event,
+            AppliedEffectLocation::MonInactiveMove(mon_handle),
         ),
     )
 }
@@ -1568,6 +1601,14 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
+            AppliedEffectLocation::MonInactiveMove(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    callback_handle,
+                )?;
+            }
             AppliedEffectLocation::MonItem(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
@@ -2117,6 +2158,19 @@ pub fn run_mon_item_event_expecting_bool(
 ) -> Option<bool> {
     run_mon_item_event_internal(context, event, fxlang::VariableInput::default())?
         .boolean()
+        .ok()
+}
+
+/// Runs an event on the target [`Mon`]'s inactive move.
+///
+/// Expects a [`MoveTarget`].
+pub fn run_mon_inactive_move_event_expecting_move_target(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    mov: &Id,
+) -> Option<MoveTarget> {
+    run_mon_inactive_move_event_internal(context, event, fxlang::VariableInput::default(), mov)?
+        .move_target()
         .ok()
 }
 

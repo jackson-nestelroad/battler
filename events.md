@@ -30,6 +30,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `TrapMon` will set the Mon as trapped.
 1. `PreventUsedItems` will prevent the Mon from using items.
 1. `LockMove` affects move request if applicable.
+1. `MoveTargetOverride` affects move request, per move, if applicable.
 
 ## Player Choice
 

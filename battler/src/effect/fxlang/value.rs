@@ -503,6 +503,7 @@ impl Value {
     pub fn move_target(self) -> Result<MoveTarget> {
         match self {
             Self::MoveTarget(val) => Ok(val),
+            Self::String(val) => MoveTarget::from_str(&val).map_err(general_error),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveTarget)),
         }
     }

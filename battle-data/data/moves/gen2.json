@@ -172,15 +172,18 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute"],
-    "non_ghost_target": "User",
     "hit_effect": {
       "volatile_status": "curse"
     },
     "effect": {
       "callbacks": {
+        "on_move_target_override": [
+          "if !func_call(has_effective_type: $mon ghost):",
+          ["return user"]
+        ],
         "on_use_move": [
           "if func_call(has_effective_type: $user ghost):",
-          ["$move.target = $move.non_ghost_target"],
+          ["$move.target = user"],
           "else if func_call(is_ally: $user $selected_target):",
           ["$move.target = randomnormal"]
         ],

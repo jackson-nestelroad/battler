@@ -33,6 +33,7 @@ pub mod CallbackFlag {
     pub const TakesOptionalEffect: u32 = 1 << 10;
     pub const TakesPlayer: u32 = 1 << 11;
 
+    pub const ReturnsMoveTarget: u32 = 1 << 21;
     pub const ReturnsStrings: u32 = 1 << 22;
     pub const ReturnsSecondaryEffects: u32 = 1 << 23;
     pub const ReturnsTypes: u32 = 1 << 24;
@@ -171,6 +172,8 @@ enum CommonCallbackType {
     MonBoostModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoosts | CallbackFlag::ReturnsVoid,
     MonValidator = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsStrings,
+    MonMoveTarget =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsMoveTarget | CallbackFlag::ReturnsVoid,
 
     PlayerValidator = CallbackFlag::TakesPlayer | CallbackFlag::ReturnsStrings,
 
@@ -702,6 +705,11 @@ pub enum BattleEvent {
     /// Runs on the active move.
     #[string = "MoveFailed"]
     MoveFailed,
+    /// Runs when a move's target type is determined for a Mon selecting a move.
+    ///
+    /// Runs on the move.
+    #[string = "MoveTargetOverride"]
+    MoveTargetOverride,
     /// Runs when determining if a Mon's immunity against a single type should be negated.
     ///
     /// Runs in the context of a Mon.
@@ -1162,6 +1170,7 @@ impl BattleEvent {
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
+            Self::MoveTargetOverride => CommonCallbackType::MonMoveTarget as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
@@ -1317,9 +1326,11 @@ impl BattleEvent {
                 self.has_flag(CallbackFlag::ReturnsNumber)
             }
             Some(ValueType::Boolean) => self.has_flag(CallbackFlag::ReturnsBoolean),
-            Some(ValueType::String) => {
-                self.has_flag(CallbackFlag::ReturnsString | CallbackFlag::ReturnsMoveResult)
-            }
+            Some(ValueType::String) => self.has_flag(
+                CallbackFlag::ReturnsString
+                    | CallbackFlag::ReturnsMoveResult
+                    | CallbackFlag::ReturnsMoveTarget,
+            ),
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
             Some(ValueType::List) => self.has_flag(
@@ -1327,6 +1338,7 @@ impl BattleEvent {
                     | CallbackFlag::ReturnsSecondaryEffects
                     | CallbackFlag::ReturnsStrings,
             ),
+            Some(ValueType::MoveTarget) => self.has_flag(CallbackFlag::ReturnsMoveTarget),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
@@ -1665,6 +1677,7 @@ pub struct Callbacks {
     pub on_move_base_power: Callback,
     pub on_move_damage: Callback,
     pub on_move_failed: Callback,
+    pub on_move_target_override: Callback,
     pub on_negate_immunity: Callback,
     pub on_override_move: Callback,
     pub on_player_try_use_item: Callback,
@@ -1832,6 +1845,7 @@ impl Callbacks {
             BattleEvent::MoveBasePower => &self.on_move_base_power,
             BattleEvent::MoveDamage => &self.on_move_damage,
             BattleEvent::MoveFailed => &self.on_move_failed,
+            BattleEvent::MoveTargetOverride => &self.on_move_target_override,
             BattleEvent::NegateImmunity => &self.on_negate_immunity,
             BattleEvent::OverrideMove => &self.on_override_move,
             BattleEvent::PlayerTryUseItem => &self.on_player_try_use_item,

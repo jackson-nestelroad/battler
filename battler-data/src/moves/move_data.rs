@@ -185,8 +185,6 @@ pub struct MoveData {
     pub multiaccuracy: bool,
     /// The move hits multiple times.
     pub multihit: Option<MultihitType>,
-    /// Target used if the user is not Ghost type (used for Curse).
-    pub non_ghost_target: Option<MoveTarget>,
     /// Does the move track the target, even if they have moved?
     #[serde(default)]
     pub tracks_target: bool,
