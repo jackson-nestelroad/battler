@@ -62,7 +62,7 @@ fn make_battle(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(48205749111)

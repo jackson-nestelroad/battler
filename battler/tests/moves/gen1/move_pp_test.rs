@@ -68,7 +68,7 @@ fn add_test_moves(data: &mut TestDataStore) -> Result<()> {
     Ok(())
 }
 
-fn make_battle(data: &dyn DataStore, pp_boosts: Vec<u8>) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore, pp_boosts: Vec<u8>) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_actual_health(true)

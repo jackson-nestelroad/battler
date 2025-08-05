@@ -555,7 +555,7 @@ impl VariableRegistry {
         }
     }
 
-    fn get(&self, var: &str) -> Result<Option<ElementRef<Value>>> {
+    fn get(&self, var: &str) -> Result<Option<ElementRef<'_, Value>>> {
         match self.vars.get(var) {
             Ok(val) => Ok(Some(val)),
             Err(BorrowError::OutOfBounds) => Ok(None),
@@ -563,7 +563,7 @@ impl VariableRegistry {
         }
     }
 
-    fn get_mut(&self, var: &str) -> Result<Option<ElementRefMut<Value>>> {
+    fn get_mut(&self, var: &str) -> Result<Option<ElementRefMut<'_, Value>>> {
         match self.vars.get_mut(var) {
             Ok(val) => Ok(Some(val)),
             Err(BorrowError::OutOfBounds) => Ok(None),

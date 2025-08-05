@@ -35,7 +35,7 @@ fn singles_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_auto_continue(false)
@@ -66,7 +66,7 @@ fn singles_team_no_moves() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_auto_continue(false)
@@ -254,7 +254,7 @@ fn triples_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     // Adjacency rules really only matter for Triples, so we use a Triples battle to verify our
     // adjacency rules.
     TestBattleBuilder::new()
@@ -409,7 +409,7 @@ fn target_adjacent_ally_or_user() {
     // Acupressure is the only move that does this.
 }
 
-fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_auto_continue(false)

@@ -66,7 +66,7 @@ fn make_trainer_singles_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)

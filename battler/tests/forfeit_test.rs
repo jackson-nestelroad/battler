@@ -52,7 +52,7 @@ fn make_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -74,7 +74,7 @@ fn make_multi_battle(
     team_2: TeamData,
     team_3: TeamData,
     team_4: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)

@@ -80,7 +80,7 @@ fn make_singles_battle(
     data: &dyn DataStore,
     seed: u64,
     team: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -98,7 +98,7 @@ fn make_doubles_battle(
     data: &dyn DataStore,
     seed: u64,
     team: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)

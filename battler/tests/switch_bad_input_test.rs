@@ -74,7 +74,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)

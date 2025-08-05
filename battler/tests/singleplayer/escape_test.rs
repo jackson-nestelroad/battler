@@ -107,7 +107,7 @@ fn make_wild_singles_battle(
     team_1: TeamData,
     team_2: TeamData,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -153,7 +153,7 @@ fn make_trainer_singles_battle(
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)

@@ -58,7 +58,7 @@ fn foe_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_seed(0)
         .with_battle_type(BattleType::Singles)

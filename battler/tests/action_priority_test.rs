@@ -113,7 +113,7 @@ fn test_battle_builder() -> Result<TestBattleBuilder> {
         .with_team("player-2", team()?))
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     test_battle_builder()?.build(data)
 }
 
@@ -238,7 +238,7 @@ fn moves_ordered_by_priority() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
 
-fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle> {
+fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle<'_>> {
     test_battle_builder()?.with_seed(seed).build(data)
 }
 

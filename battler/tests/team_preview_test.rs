@@ -78,7 +78,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_rule("Standard")

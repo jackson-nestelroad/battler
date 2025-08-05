@@ -265,7 +265,7 @@ impl BattleLog {
     }
 
     /// Returns a reference to the log entry at the given index.
-    pub fn get(&self, index: usize) -> Option<BattleLogEntry> {
+    pub fn get(&self, index: usize) -> Option<BattleLogEntry<'_>> {
         self.committed_logs
             .get(index)
             .map(|s| BattleLogEntry::Committed(s.as_ref()))
@@ -281,7 +281,7 @@ impl BattleLog {
     }
 
     /// Returns a mutable reference to the log entry at the given index.
-    pub fn get_mut(&mut self, index: usize) -> Option<BattleLogEntryMut> {
+    pub fn get_mut(&mut self, index: usize) -> Option<BattleLogEntryMut<'_>> {
         self.committed_logs
             .get(index)
             .map(|s| BattleLogEntryMut::Committed(s.as_ref()))

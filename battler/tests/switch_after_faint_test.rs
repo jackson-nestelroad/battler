@@ -64,7 +64,7 @@ fn make_battle_builder() -> TestBattleBuilder {
         .add_player_to_side_2("player-2", "Player 2")
 }
 
-fn make_battle(data: &dyn DataStore, auto_continue: bool) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore, auto_continue: bool) -> Result<PublicCoreBattle<'_>> {
     make_battle_builder()
         .with_auto_continue(auto_continue)
         .with_team("player-1", team()?)

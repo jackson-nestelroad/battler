@@ -38,7 +38,7 @@ fn sandslash() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(204759285930)

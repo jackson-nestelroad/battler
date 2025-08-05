@@ -63,7 +63,7 @@ fn test_move(target: MoveTarget) -> Result<MoveData> {
     Ok(move_data)
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_seed(2)
         .with_battle_type(BattleType::Doubles)

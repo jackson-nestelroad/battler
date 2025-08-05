@@ -35,6 +35,7 @@ use crate::{
 ///
 /// If the reference is owned the [`ElementRefMut`] is stored directly. If the reference is unowned,
 /// it is stored directly with the assumption that it originates from an [`ElementRefMut`].
+#[allow(dead_code)]
 pub enum MaybeElementRef<'a, T> {
     Owned(ElementRefMut<'a, T>),
     Unowned(&'a mut T),

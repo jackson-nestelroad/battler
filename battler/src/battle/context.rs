@@ -1667,7 +1667,7 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect {
+    pub fn effect(&self) -> &Effect<'_> {
         &self.effect
     }
 
@@ -1898,7 +1898,7 @@ impl<'effect, 'context, 'battle, 'data> ApplyingEffectContext<'effect, 'context,
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect {
+    pub fn effect(&self) -> &Effect<'_> {
         self.context.effect()
     }
 
@@ -2091,7 +2091,7 @@ impl<'effect, 'context, 'battle, 'data> PlayerEffectContext<'effect, 'context, '
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect {
+    pub fn effect(&self) -> &Effect<'_> {
         self.context.effect()
     }
 
@@ -2279,7 +2279,7 @@ impl<'effect, 'context, 'battle, 'data> SideEffectContext<'effect, 'context, 'ba
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect {
+    pub fn effect(&self) -> &Effect<'_> {
         self.context.effect()
     }
 
@@ -2457,7 +2457,7 @@ impl<'effect, 'context, 'battle, 'data> FieldEffectContext<'effect, 'context, 'b
     }
 
     /// Returns a reference to the [`Effect`].
-    pub fn effect(&self) -> &Effect {
+    pub fn effect(&self) -> &Effect<'_> {
         self.context.effect()
     }
 

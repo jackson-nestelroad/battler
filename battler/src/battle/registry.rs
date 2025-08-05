@@ -86,14 +86,14 @@ impl BattleRegistry {
     }
 
     /// Returns a reference to the [`Mon`] by [`MonHandle`].
-    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<Mon>> {
+    pub fn mon(&self, mon: MonHandle) -> Result<ElementRef<'_, Mon>> {
         self.mons
             .get(mon)
             .map_err(|err| err.convert_error_with_message(format!("mon {mon}")))
     }
 
     /// Returns a mutable reference to the [`Mon`] by [`MonHandle`].
-    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<Mon>> {
+    pub fn mon_mut(&self, mon: MonHandle) -> Result<ElementRefMut<'_, Mon>> {
         self.mons
             .get_mut(mon)
             .map_err(|err| err.convert_error_with_message(format!("mon {mon}")))
@@ -115,7 +115,7 @@ impl BattleRegistry {
     /// Returns a reference to the [`Move`] by [`MoveHandle`].
     ///
     /// The move must be from this turn or last turn.
-    pub fn active_move(&self, mov: MoveHandle) -> Result<ElementRef<Move>> {
+    pub fn active_move(&self, mov: MoveHandle) -> Result<ElementRef<'_, Move>> {
         match self.this_turn_moves.get(&mov) {
             Ok(active_move) => Ok(active_move),
             _ => match self.last_turn_moves.get(&mov) {
@@ -130,7 +130,7 @@ impl BattleRegistry {
     /// Returns a mutable reference to the [`Move`] by [`MoveHandle`].
     ///
     /// The move must be from this turn or last turn.
-    pub fn active_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<Move>> {
+    pub fn active_move_mut(&self, mov: MoveHandle) -> Result<ElementRefMut<'_, Move>> {
         match self.this_turn_moves.get_mut(&mov) {
             Ok(active_move) => Ok(active_move),
             _ => match self.last_turn_moves.get_mut(&mov) {

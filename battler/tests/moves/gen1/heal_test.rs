@@ -18,7 +18,7 @@ fn make_battle(
     battle_type: BattleType,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(124356453)

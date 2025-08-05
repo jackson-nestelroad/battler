@@ -142,7 +142,7 @@ fn make_battle_with_max_damage(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)
@@ -154,7 +154,7 @@ fn make_battle_with_min_damage(
     data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle> {
+) -> Result<PublicCoreBattle<'_>> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)

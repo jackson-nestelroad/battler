@@ -49,7 +49,7 @@ fn make_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle> {
+fn make_battle(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle<'_>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)

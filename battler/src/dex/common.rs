@@ -68,7 +68,7 @@ impl<T> ResourceCache<T> {
     }
 
     /// Gets the data for a cached ID.
-    pub fn get(&self, id: &Id) -> Result<ElementRef<T>, BorrowError> {
+    pub fn get(&self, id: &Id) -> Result<ElementRef<'_, T>, BorrowError> {
         self.cache.get(id)
     }
 
@@ -117,12 +117,12 @@ where
     }
 
     /// Retrieves a resource by name.
-    pub fn get(&self, name: &str) -> Result<ElementRef<T>> {
+    pub fn get(&self, name: &str) -> Result<ElementRef<'_, T>> {
         self.get_by_id(&Id::from(name))
     }
 
     /// Retrieves a resource by ID.
-    pub fn get_by_id(&self, id: &Id) -> Result<ElementRef<T>> {
+    pub fn get_by_id(&self, id: &Id) -> Result<ElementRef<'_, T>> {
         let id = self.resolve_alias(id.clone())?;
         // The borrow checker struggles if we use pattern matching here, so we have to do two
         // lookups.
