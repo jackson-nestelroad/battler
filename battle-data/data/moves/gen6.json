@@ -81,7 +81,11 @@
       "NoAssist",
       "NoSleepTalk"
     ],
-    "breaks_protect": true
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    }
   },
   "trickortreat": {
     "name": "Trick-or-Treat",
@@ -416,7 +420,11 @@
     "base_power": 80,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome"],
-    "breaks_protect": true
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    }
   },
   "watershuriken": {
     "name": "Water Shuriken",
@@ -745,6 +753,10 @@
     "base_power": 100,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "NoSketch"],
-    "breaks_protect": true
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    }
   }
 }

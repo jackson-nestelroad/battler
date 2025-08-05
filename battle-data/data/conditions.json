@@ -959,7 +959,7 @@
           [
             "foreach $condition in $side_conditions:",
             [
-              "if func_call(remove_side_condition: $target.side $condition:",
+              "if func_call(remove_side_condition: $target.side $condition):",
               ["$activate = true"]
             ]
           ],

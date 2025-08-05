@@ -119,7 +119,11 @@
     "priority": 2,
     "target": "Normal",
     "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome"],
-    "breaks_protect": true
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    }
   },
   "pluck": {
     "name": "Pluck",
@@ -1275,6 +1279,10 @@
       "NoAssist",
       "NoSleepTalk"
     ],
-    "breaks_protect": true
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    }
   }
 }
