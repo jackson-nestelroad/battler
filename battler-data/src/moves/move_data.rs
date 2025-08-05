@@ -111,9 +111,6 @@ pub struct MoveData {
     pub user_switch: Option<SwitchType>,
     /// How the user self destructs.
     pub self_destruct: Option<SelfDestructType>,
-    /// Does the move break protect?
-    #[serde(default)]
-    pub breaks_protect: bool,
     /// The percentage of damage dealt for recoil.
     pub recoil_percent: Option<Fraction<u16>>,
     /// Calculate recoil damage from user HP?
