@@ -278,18 +278,18 @@ fn speed_ties_broken_randomly() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
+            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "residual",
             "turn|turn:2",
             ["time"],
-            "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
             "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
+            "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
             "residual",
             "turn|turn:3",
             ["time"],
-            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
+            "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
             "residual",
             "turn|turn:4"
         ]"#,
