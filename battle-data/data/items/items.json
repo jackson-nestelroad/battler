@@ -1231,10 +1231,6 @@
           "if $move.id == gastroacid:",
           ["log_block: with_target", "return false"]
         ],
-        "on_add_volatile": [
-          "if $volatile.id == neutralizinggas:",
-          ["log_block: with_target", "return false"]
-        ],
         "suppress_mon_ability": {
           "priority": 1,
           "program": ["return false"]
