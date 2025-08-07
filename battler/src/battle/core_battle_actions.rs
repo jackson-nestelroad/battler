@@ -4222,7 +4222,12 @@ pub fn end_item(
         return Ok(());
     }
 
-    if !silent {
+    let always_log = match end_item_type {
+        EndItemType::Eat | EndItemType::Take => true,
+        _ => false,
+    };
+
+    if !silent || always_log {
         let no_source = match end_item_type {
             EndItemType::Eat | EndItemType::Use => true,
             _ => false,
