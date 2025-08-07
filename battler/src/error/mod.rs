@@ -5,14 +5,14 @@ mod error;
 mod validation_error;
 
 pub use battler_error::{
-    borrow_failed_error,
-    general_error,
-    integer_overflow_error,
-    not_found_error,
     BorrowFailedError,
     GeneralError,
     IntegerOverflowError,
     NotFoundError,
+    borrow_failed_error,
+    general_error,
+    integer_overflow_error,
+    not_found_error,
 };
 pub use conversions::ConvertError;
 pub use error::{

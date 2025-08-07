@@ -6,13 +6,13 @@ use battler_data::{
 };
 
 use crate::{
+    WrapOptionError,
     dex::{
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
     moves::Move,
-    WrapOptionError,
 };
 
 /// Lookup type for [`MoveDex`].

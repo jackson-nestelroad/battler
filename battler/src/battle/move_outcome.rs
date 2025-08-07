@@ -37,11 +37,7 @@ impl MoveOutcome {
 
 impl From<bool> for MoveOutcome {
     fn from(value: bool) -> Self {
-        if value {
-            Self::Success
-        } else {
-            Self::Failed
-        }
+        if value { Self::Success } else { Self::Failed }
     }
 }
 
@@ -128,11 +124,7 @@ impl MoveOutcomeOnTarget {
 
 impl From<bool> for MoveOutcomeOnTarget {
     fn from(value: bool) -> Self {
-        if value {
-            Self::Success
-        } else {
-            Self::Failure
-        }
+        if value { Self::Success } else { Self::Failure }
     }
 }
 
@@ -180,10 +172,6 @@ impl MoveEventResult {
 
 impl From<bool> for MoveEventResult {
     fn from(value: bool) -> Self {
-        if value {
-            Self::Advance
-        } else {
-            Self::Fail
-        }
+        if value { Self::Advance } else { Self::Fail }
     }
 }

@@ -13,8 +13,8 @@ use std::{
 use ahash::HashMap;
 use anyhow::Result;
 use serde::{
-    de::DeserializeOwned,
     Serialize,
+    de::DeserializeOwned,
 };
 
 use crate::error::WrapResultError;

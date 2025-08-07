@@ -12,8 +12,8 @@ use zone_alloc::{
 };
 
 use crate::error::{
-    general_error,
     ConvertError,
+    general_error,
 };
 
 type DataTable<T> = KeyedRegistry<Id, T>;

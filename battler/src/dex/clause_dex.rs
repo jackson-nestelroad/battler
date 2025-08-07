@@ -6,13 +6,13 @@ use battler_data::{
 };
 
 use crate::{
+    WrapOptionError,
     config::Clause,
     dex::{
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
-    WrapOptionError,
 };
 
 /// Lookup type for [`ClauseDex`].

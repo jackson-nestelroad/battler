@@ -6,13 +6,13 @@ use battler_data::{
 };
 
 use crate::{
+    WrapOptionError,
     abilities::Ability,
     dex::{
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
-    WrapOptionError,
 };
 /// Lookup type for [`AbilityDex`].
 #[derive(Clone)]

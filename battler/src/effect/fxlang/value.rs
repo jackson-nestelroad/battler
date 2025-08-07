@@ -46,16 +46,16 @@ use crate::{
         MoveSlot,
     },
     effect::{
+        EffectHandle,
         fxlang::{
             DynamicEffectStateConnector,
             EvaluationContext,
         },
-        EffectHandle,
     },
     error::{
+        WrapOptionError,
         general_error,
         integer_overflow_error,
-        WrapOptionError,
     },
     moves::MoveHitEffectType,
 };
@@ -1483,7 +1483,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "exponentiate",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1506,7 +1506,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "multiply",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1530,7 +1530,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "divide",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1562,7 +1562,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "modulo",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1585,7 +1585,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "add",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1613,7 +1613,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "subtract",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1646,7 +1646,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "compare",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         result.wrap_expectation("comparison yielded no result")
@@ -1850,7 +1850,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "check equality of",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(result)
@@ -1933,7 +1933,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "and",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(MaybeReferenceValue::Boolean(result))
@@ -1951,7 +1951,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                     "or",
                     lhs.value_type(),
                     rhs.value_type(),
-                ))
+                ));
             }
         };
         Ok(MaybeReferenceValue::Boolean(result))
@@ -1977,7 +1977,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 return Err(general_error(format!(
                     "{} value is not string formattable",
                     self.value_type(),
-                )))
+                )));
             }
         };
         Ok(string)

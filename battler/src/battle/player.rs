@@ -1,8 +1,8 @@
 use std::{
     cmp,
     collections::{
-        hash_map::Entry,
         VecDeque,
+        hash_map::Entry,
     },
     mem,
 };
@@ -28,10 +28,8 @@ use serde::{
 };
 
 use crate::{
+    WrapError,
     battle::{
-        core_battle_actions,
-        core_battle_effects,
-        mon_states,
         Action,
         BattleRegistry,
         BattleType,
@@ -57,23 +55,25 @@ use crate::{
         SwitchActionInput,
         TeamAction,
         TeamActionInput,
+        core_battle_actions,
+        core_battle_effects,
+        mon_states,
     },
     common::{
-        split_once_optional,
         Captures,
+        split_once_optional,
     },
     dex::Dex,
     effect::{
-        fxlang,
         EffectHandle,
+        fxlang,
     },
     error::{
-        general_error,
         WrapOptionError,
         WrapResultError,
+        general_error,
     },
     teams::TeamData,
-    WrapError,
 };
 
 /// Options for a wild [`Player`].
@@ -314,7 +314,7 @@ impl MoveChoice {
             Some(str) => {
                 return Err(general_error(format!(
                     "invalid option in move choice: {str}"
-                )))
+                )));
             }
             None => (),
         }
@@ -937,10 +937,10 @@ impl Player {
 
         match target_context.mon().exited {
             Some(MonExitType::Fainted) => {
-                return Err(general_error("you cannot switch to a fainted mon"))
+                return Err(general_error("you cannot switch to a fainted mon"));
             }
             Some(MonExitType::Caught) => {
-                return Err(general_error("you cannot switch to a caught mon"))
+                return Err(general_error("you cannot switch to a caught mon"));
             }
             None => (),
         }

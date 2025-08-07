@@ -9,11 +9,11 @@ use battler::{
     WrapResultError,
 };
 use battler_test_utils::{
+    LogMatch,
+    TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
-    LogMatch,
-    TestBattleBuilder,
 };
 
 fn blastoise() -> Result<TeamData> {

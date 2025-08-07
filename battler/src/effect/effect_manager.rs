@@ -9,6 +9,8 @@ use crate::{
     battle::CoreBattle,
     common::LruCache,
     effect::{
+        Effect,
+        EffectHandle,
         fxlang::{
             BattleEvent,
             DynamicEffectStateConnector,
@@ -18,12 +20,10 @@ use crate::{
             ProgramEvalResult,
             VariableInput,
         },
-        Effect,
-        EffectHandle,
     },
     error::{
-        general_error,
         WrapOptionError,
+        general_error,
     },
 };
 /// Module for managing fxlang effect programs and their evaluation.

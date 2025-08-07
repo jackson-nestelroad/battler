@@ -1,10 +1,10 @@
 use anyhow::Result;
 use battler::{
-    error::ValidationError,
     BattleType,
     LocalDataStore,
     TeamData,
     WrapResultError,
+    error::ValidationError,
 };
 use battler_test_utils::TestBattleBuilder;
 use itertools::Itertools;

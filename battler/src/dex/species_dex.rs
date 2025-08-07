@@ -6,13 +6,13 @@ use battler_data::{
 };
 
 use crate::{
+    WrapOptionError,
     dex::{
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
     mons::Species,
-    WrapOptionError,
 };
 
 /// Lookup type for [`SpeciesDex`].

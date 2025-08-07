@@ -447,9 +447,11 @@ mod battle_log_test {
                 b: "2".to_owned(),
             });
         }
-        assert!(log.get(1).is_some_and(|entry| entry
-            .to_string()
-            .eq("move|name:tackle|noanim|damage:12|a:1|b:2")));
+        assert!(log.get(1).is_some_and(|entry| {
+            entry
+                .to_string()
+                .eq("move|name:tackle|noanim|damage:12|a:1|b:2")
+        }));
 
         log.commit();
         assert_eq!(

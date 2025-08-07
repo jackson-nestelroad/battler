@@ -8,10 +8,10 @@ use battler::{
     TeamData,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
-    get_controlled_rng_for_battle,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
+    get_controlled_rng_for_battle,
 };
 
 fn make_singles_battle(

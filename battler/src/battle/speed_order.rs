@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 
 use battler_prng::{
-    rand_util,
     PseudoRandomNumberGenerator,
+    rand_util,
 };
 
 use crate::battle::CoreBattleEngineSpeedSortTieResolution;

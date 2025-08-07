@@ -9,9 +9,9 @@ use battler::{
     WrapResultError,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
 };
 
 fn typhlosion_low_friendship() -> Result<TeamData> {

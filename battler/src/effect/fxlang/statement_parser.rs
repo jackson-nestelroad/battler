@@ -7,9 +7,9 @@ use battler_data::Fraction;
 use crate::{
     effect::fxlang::tree,
     error::{
-        general_error,
         WrapOptionError,
         WrapResultError,
+        general_error,
     },
 };
 
@@ -93,13 +93,13 @@ mod token {
     use anyhow::Result;
 
     use super::{
-        byte,
         NextTokenContext,
         Token,
+        byte,
     };
     use crate::error::{
-        general_error,
         WrapOptionError,
+        general_error,
     };
 
     /// Parser for fxlang tokens, which are used to make up a statement.
@@ -256,7 +256,7 @@ mod token {
                                 return Err(general_error(format!(
                                     "invalid escape character: \\{}",
                                     next as char,
-                                )))
+                                )));
                             }
                         }
                     }
@@ -715,7 +715,7 @@ impl<'s> StatementParser<'s> {
                 return Ok(tree::FunctionCall {
                     function: identifier,
                     args: tree::Values(vec![]),
-                })
+                });
             }
         };
         let values = self.parse_values(false)?;

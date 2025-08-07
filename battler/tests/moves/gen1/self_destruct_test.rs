@@ -9,9 +9,9 @@ use battler::{
     WrapResultError,
 };
 use battler_test_utils::{
-    assert_turn_logs_eq,
     LogMatch,
     TestBattleBuilder,
+    assert_turn_logs_eq,
 };
 
 fn test_team() -> Result<TeamData> {

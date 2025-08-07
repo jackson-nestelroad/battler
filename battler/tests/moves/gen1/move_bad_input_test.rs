@@ -188,16 +188,17 @@ fn struggle_when_no_available_moves() {
     let mut battle = make_singles_battle_with_struggle(&data).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
-    assert!(
-        player_request(&battle, "player-1").is_some_and(|request| match request {
-            Request::Turn(request) => request.active.first().is_some_and(|mon| mon.moves.len()
-                == 1
-                && mon.moves.first().is_some_and(
-                    |move_slot| move_slot.name == "Struggle" && move_slot.id.eq("struggle")
-                )),
+    assert!(player_request(&battle, "player-1").is_some_and(|request| {
+        match request {
+            Request::Turn(request) => request.active.first().is_some_and(|mon| {
+                mon.moves.len() == 1
+                    && mon.moves.first().is_some_and(|move_slot| {
+                        move_slot.name == "Struggle" && move_slot.id.eq("struggle")
+                    })
+            }),
             _ => false,
-        })
-    );
+        }
+    }));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert!(!player_has_active_request(&battle, "player-1"));
 }

@@ -9,10 +9,10 @@ use battler::{
     WrapResultError,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
-    assert_turn_logs_eq,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
+    assert_turn_logs_eq,
 };
 
 fn totodile() -> Result<TeamData> {

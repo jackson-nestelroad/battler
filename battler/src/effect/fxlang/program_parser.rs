@@ -7,8 +7,8 @@ use crate::{
         tree,
     },
     error::{
-        general_error,
         WrapResultError,
+        general_error,
     },
 };
 /// A parsed program block, which should be executed as a unit.
@@ -95,7 +95,7 @@ impl ProgramParser {
         let block = self.parse_program(program)?;
         match block {
             ParsedProgramBlock::Leaf(tree::Statement::Empty) => {
-                return Err(general_error("program cannot be empty"))
+                return Err(general_error("program cannot be empty"));
             }
             _ => (),
         }
@@ -140,9 +140,9 @@ mod program_parser_test {
     use pretty_assertions::assert_eq;
 
     use crate::effect::fxlang::{
-        tree,
         ParsedProgram,
         ParsedProgramBlock,
+        tree,
     };
 
     #[test]

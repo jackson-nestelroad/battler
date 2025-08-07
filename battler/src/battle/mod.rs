@@ -130,7 +130,7 @@ pub use side::{
     SideData,
 };
 pub use speed_order::{
+    SpeedOrderable,
     compare_priority,
     speed_sort,
-    SpeedOrderable,
 };

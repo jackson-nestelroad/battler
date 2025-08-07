@@ -16,9 +16,9 @@ use crate::{
     config::Clause,
     dex::Dex,
     error::{
-        general_error,
         WrapOptionError,
         WrapResultError,
+        general_error,
     },
 };
 
@@ -588,11 +588,13 @@ mod rule_set_test {
     }
 
     fn resolves_numbers_fails_with_error(input: &str, battle_type: BattleType, error: &str) {
-        assert!(format!(
-            "{:#}",
-            construct_ruleset(input, &battle_type).err().unwrap()
-        )
-        .contains(error));
+        assert!(
+            format!(
+                "{:#}",
+                construct_ruleset(input, &battle_type).err().unwrap()
+            )
+            .contains(error)
+        );
     }
 
     #[test]
@@ -694,34 +696,38 @@ mod rule_set_test {
 
     #[test]
     fn enforces_required_rule_value() {
-        assert!(format!(
-            "{:#}",
-            construct_ruleset(
-                r#"[
+        assert!(
+            format!(
+                "{:#}",
+                construct_ruleset(
+                    r#"[
                 "Adjust Level Down"
             ]"#,
-                &BattleType::Singles,
+                    &BattleType::Singles,
+                )
+                .err()
+                .unwrap()
             )
-            .err()
-            .unwrap()
-        )
-        .contains("Adjust Level Down is invalid: missing value"));
+            .contains("Adjust Level Down is invalid: missing value")
+        );
     }
 
     #[test]
     fn enforces_rule_value_type() {
-        assert!(format!(
-            "{:#}",
-            construct_ruleset(
-                r#"[
+        assert!(
+            format!(
+                "{:#}",
+                construct_ruleset(
+                    r#"[
                 "Adjust Level Down = abc"
             ]"#,
-                &BattleType::Singles,
+                    &BattleType::Singles,
+                )
+                .err()
+                .unwrap()
             )
-            .err()
-            .unwrap()
-        )
-        .contains("rule Adjust Level Down is invalid"));
+            .contains("rule Adjust Level Down is invalid")
+        );
     }
 
     #[test]

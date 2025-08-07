@@ -18,8 +18,8 @@ use zone_alloc_strong_handle_derive::StrongHandle;
 use crate::{
     battle::Mon,
     error::{
-        general_error,
         ConvertError,
+        general_error,
     },
     moves::Move,
 };
@@ -152,7 +152,7 @@ impl BattleRegistry {
             result @ _ => {
                 return result
                     .map(|_| ())
-                    .map_err(|err| err.convert_error_with_message(format!("active move {mov}")))
+                    .map_err(|err| err.convert_error_with_message(format!("active move {mov}")));
             }
         }
         Ok(())
@@ -166,7 +166,9 @@ impl BattleRegistry {
         // We detach element references in context chains, so we must check at runtime that no
         // dangling references will exist.
         if !self.last_turn_moves.safe_to_drop() {
-            return Err(general_error("cannot advance battle registry to the next turn: last_turn_moves is not safe to drop"));
+            return Err(general_error(
+                "cannot advance battle registry to the next turn: last_turn_moves is not safe to drop",
+            ));
         }
         mem::swap(&mut self.last_turn_moves, &mut self.this_turn_moves);
         self.this_turn_moves = MoveRegistry::new();

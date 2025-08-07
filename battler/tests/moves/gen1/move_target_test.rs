@@ -11,10 +11,10 @@ use battler::{
     WrapResultError,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
     TestDataStore,
+    assert_logs_since_turn_eq,
 };
 
 fn team() -> Result<TeamData> {

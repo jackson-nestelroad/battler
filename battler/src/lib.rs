@@ -79,10 +79,6 @@ pub use effect::fxlang::{
     ProgramWithPriority,
 };
 pub use error::{
-    borrow_failed_error,
-    general_error,
-    integer_overflow_error,
-    not_found_error,
     BorrowFailedError,
     ConvertError,
     GeneralError,
@@ -92,6 +88,10 @@ pub use error::{
     WrapError,
     WrapOptionError,
     WrapResultError,
+    borrow_failed_error,
+    general_error,
+    integer_overflow_error,
+    not_found_error,
 };
 pub use teams::{
     BagData,

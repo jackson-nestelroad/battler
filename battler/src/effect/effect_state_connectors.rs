@@ -8,8 +8,8 @@ use crate::{
         MoveHandle,
     },
     effect::{
-        fxlang,
         AppliedEffectLocation,
+        fxlang,
     },
 };
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for an

@@ -25,8 +25,8 @@ use crate::{
         EffectHandle,
     },
     error::{
-        general_error,
         WrapOptionError,
+        general_error,
     },
     moves::{
         Move,

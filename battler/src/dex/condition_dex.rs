@@ -6,13 +6,13 @@ use battler_data::{
 };
 
 use crate::{
+    WrapOptionError,
     conditions::Condition,
     dex::{
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
     },
-    WrapOptionError,
 };
 
 /// Lookup type for [`ConditionDex`].
