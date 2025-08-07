@@ -12,8 +12,6 @@ use battler_data::{
 
 use crate::{
     battle::{
-        core_battle_logs,
-        mon_states,
         ActiveMoveContext,
         ApplyingEffectContext,
         Context,
@@ -31,21 +29,23 @@ use crate::{
         SideContext,
         SideEffectContext,
         SpeedOrderable,
+        core_battle_logs,
+        mon_states,
     },
     common::{
         MaybeOwnedMut,
         UnsafelyDetachBorrow,
     },
     effect::{
-        fxlang::{
-            self,
-            EffectStateConnector,
-        },
         ActiveMoveEffectStateConnector,
         AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
         EffectManager,
+        fxlang::{
+            self,
+            EffectStateConnector,
+        },
     },
     error::WrapOptionError,
 };
@@ -92,18 +92,18 @@ enum UpcomingEvaluationContext<
 }
 
 impl<
-        'field_effect,
-        'side_effect,
-        'player_effect,
-        'applying_effect,
-        'effect,
-        'mon,
-        'player,
-        'side,
-        'context,
-        'battle,
-        'data,
-    >
+    'field_effect,
+    'side_effect,
+    'player_effect,
+    'applying_effect,
+    'effect,
+    'mon,
+    'player,
+    'side,
+    'context,
+    'battle,
+    'data,
+>
     UpcomingEvaluationContext<
         'field_effect,
         'side_effect,
@@ -170,7 +170,7 @@ fn run_effect_event_with_errors(
         }
 
         // If we are ending, set the ending flag, so that nested events don't use this callback.
-        if event == fxlang::BattleEvent::End {
+        if event.ends_effect() {
             effect_state_connector
                 .get_mut(context.battle_context_mut())?
                 .set_ending(true);
@@ -767,7 +767,10 @@ fn find_callbacks_on_mon(
         ));
     }
 
-    if let Some(ability) = mon_states::effective_ability(&mut context) {
+    if event.callback_lookup_layer()
+        > fxlang::BattleEvent::SuppressMonAbility.callback_lookup_layer()
+        && let Some(ability) = mon_states::effective_ability(&mut context)
+    {
         callbacks.push(CallbackHandle::new(
             EffectHandle::Ability(ability),
             event,
@@ -776,14 +779,13 @@ fn find_callbacks_on_mon(
     }
 
     if event.callback_lookup_layer() > fxlang::BattleEvent::SuppressMonItem.callback_lookup_layer()
+        && let Some(item) = mon_states::effective_item(&mut context)
     {
-        if let Some(item) = mon_states::effective_item(&mut context) {
-            callbacks.push(CallbackHandle::new(
-                EffectHandle::Item(item),
-                event,
-                AppliedEffectLocation::MonItem(mon),
-            ));
-        }
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Item(item),
+            event,
+            AppliedEffectLocation::MonItem(mon),
+        ));
     }
 
     // TODO: Species.

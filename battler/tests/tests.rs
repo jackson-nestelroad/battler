@@ -54,6 +54,7 @@ mod abilities {
 
     mod gen4 {
         mod aftermath_test;
+        mod mold_breaker_test;
     }
 
     mod gen5 {
@@ -61,6 +62,7 @@ mod abilities {
     }
 
     mod gen8 {
+        mod neutralizing_gas_test;
         mod ripen_test;
     }
 }
@@ -249,6 +251,7 @@ mod moves {
 
     mod gen4 {
         mod feint_test;
+        mod gastro_acid_test;
         mod miracle_eye_test;
         mod roost_test;
         mod toxic_spikes_test;

@@ -22,7 +22,7 @@
   "corrosion": { "name": "Corrosion", "flags": [] },
   "comatose": {
     "name": "Comatose",
-    "flags": ["Permanent"],
+    "flags": ["Unsuppressible", "Permanent"],
     "effect": {
       "callbacks": {
         "is_asleep": ["return true"]

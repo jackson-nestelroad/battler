@@ -24,12 +24,18 @@ pub enum AbilityFlag {
     /// Cannot be copied by Trace.
     #[string = "NoTrace"]
     NoTrace,
+    /// Cannot activate when transformed.
+    #[string = "NoTransform"]
+    NoTransform,
     /// Cannot be overwritten by Worry Seed.
     #[string = "NoWorrySeed"]
     NoWorrySeed,
     /// The ability is permanently applied to the Mon.
     #[string = "Permanent"]
     Permanent,
+    /// The ability cannot be suppressed.
+    #[string = "Unsuppressible"]
+    Unsuppressible,
 }
 
 #[cfg(test)]

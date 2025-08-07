@@ -1,7 +1,7 @@
 [package]
 name = "battler"
 version = "0.6.2"
-edition = "2021"
+edition = "2024"
 description = "Pokémon battle engine for Rust."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["pokemon", "battle"]

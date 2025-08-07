@@ -9,12 +9,12 @@ use serde_string_enum::{
 };
 
 use crate::{
+    WrapResultError,
     battle::SpeedOrderable,
     effect::fxlang::{
         LocalData,
         ValueType,
     },
-    WrapResultError,
 };
 
 /// Flags used to indicate the input and output of a [`Callback`].
@@ -326,6 +326,13 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move user.
     #[string = "BeforeMove"]
     BeforeMove,
+    /// Runs when a Mon switches in, prior to `SwitchIn`.
+    ///
+    /// Not really prior to switching in.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "BeforeSwitchIn"]
+    BeforeSwitchIn,
     /// Runs before a Mon switches out.
     ///
     /// Runs in the context of a Mon.
@@ -907,6 +914,11 @@ pub enum BattleEvent {
     /// Runs on the effect.
     #[string = "SuppressFieldWeather"]
     SuppressFieldWeather,
+    /// Runs when determining if a Mon's ability is suppressed, for some other active effect.
+    ///
+    /// Runs on the effect.
+    #[string = "SuppressMonAbility"]
+    SuppressMonAbility,
     /// Runs when determining if the item on the Mon is suppressed, for some other active effect.
     ///
     /// Runs on the effect.
@@ -1097,6 +1109,7 @@ impl BattleEvent {
             Self::AnyTryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
@@ -1106,7 +1119,7 @@ impl BattleEvent {
             Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
-            Self::CopyVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::CopyVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::CriticalHit => CommonCallbackType::MoveResult as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
@@ -1212,9 +1225,10 @@ impl BattleEvent {
             Self::SubPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::SuppressFieldTerrain => CommonCallbackType::NoContextResult as u32,
             Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
-            Self::SuppressMonItem => CommonCallbackType::NoContextResult as u32,
-            Self::SuppressMonTerrain => CommonCallbackType::NoContextResult as u32,
-            Self::SuppressMonWeather => CommonCallbackType::NoContextResult as u32,
+            Self::SuppressMonAbility => CommonCallbackType::MonResult as u32,
+            Self::SuppressMonItem => CommonCallbackType::MonResult as u32,
+            Self::SuppressMonTerrain => CommonCallbackType::MonResult as u32,
+            Self::SuppressMonWeather => CommonCallbackType::MonResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchOut => CommonCallbackType::MonVoid as u32,
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1393,13 +1407,14 @@ impl BattleEvent {
     pub fn callback_lookup_layer(&self) -> usize {
         match self {
             Self::Types => 0,
-            Self::IsGrounded => 1,
-            Self::IsSemiInvulnerable => 1,
-            Self::SuppressMonItem => 2,
-            Self::SuppressFieldTerrain => 3,
-            Self::SuppressFieldWeather => 3,
-            Self::SuppressMonTerrain => 4,
-            Self::SuppressMonWeather => 4,
+            Self::SuppressMonItem => 1,
+            Self::SuppressMonAbility => 2,
+            Self::IsGrounded => 3,
+            Self::IsSemiInvulnerable => 3,
+            Self::SuppressFieldTerrain => 4,
+            Self::SuppressFieldWeather => 4,
+            Self::SuppressMonTerrain => 5,
+            Self::SuppressMonWeather => 5,
             _ => usize::MAX,
         }
     }
@@ -1420,6 +1435,14 @@ impl BattleEvent {
     pub fn force_default_callback(&self) -> bool {
         match self {
             Self::FieldResidual | Self::SideResidual | Self::Residual => true,
+            _ => false,
+        }
+    }
+
+    /// Whether or not the event is intended to end the associated effect.
+    pub fn ends_effect(&self) -> bool {
+        match self {
+            Self::End | Self::FieldEnd | Self::SideEnd | Self::SlotEnd => true,
             _ => false,
         }
     }
@@ -1614,6 +1637,7 @@ pub struct Callbacks {
     pub on_any_try_move: Callback,
     pub on_base_power: Callback,
     pub on_before_move: Callback,
+    pub on_before_switch_in: Callback,
     pub on_before_switch_out: Callback,
     pub on_before_turn: Callback,
     pub on_berry_eating_health: Callback,
@@ -1746,6 +1770,7 @@ pub struct Callbacks {
     pub on_weather_modify_damage: Callback,
     pub suppress_field_terrain: Callback,
     pub suppress_field_weather: Callback,
+    pub suppress_mon_ability: Callback,
     pub suppress_mon_item: Callback,
     pub suppress_mon_terrain: Callback,
     pub suppress_mon_weather: Callback,
@@ -1772,6 +1797,7 @@ impl Callbacks {
             BattleEvent::AnyTryMove => &self.on_any_try_move,
             BattleEvent::BasePower => &self.on_base_power,
             BattleEvent::BeforeMove => &self.on_before_move,
+            BattleEvent::BeforeSwitchIn => &self.on_before_switch_in,
             BattleEvent::BeforeSwitchOut => &self.on_before_switch_out,
             BattleEvent::BeforeTurn => &self.on_before_turn,
             BattleEvent::BerryEatingHealth => &self.on_berry_eating_health,
@@ -1887,6 +1913,7 @@ impl Callbacks {
             BattleEvent::SubPriority => &self.on_sub_priority,
             BattleEvent::SuppressFieldTerrain => &self.suppress_field_terrain,
             BattleEvent::SuppressFieldWeather => &self.suppress_field_weather,
+            BattleEvent::SuppressMonAbility => &self.suppress_mon_ability,
             BattleEvent::SuppressMonItem => &self.suppress_mon_item,
             BattleEvent::SuppressMonTerrain => &self.suppress_mon_terrain,
             BattleEvent::SuppressMonWeather => &self.suppress_mon_weather,

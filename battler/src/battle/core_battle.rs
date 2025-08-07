@@ -22,8 +22,8 @@ use battler_data::{
     TypeEffectiveness,
 };
 use battler_prng::{
-    rand_util,
     PseudoRandomNumberGenerator,
+    rand_util,
 };
 use itertools::Itertools;
 use zone_alloc::{
@@ -32,11 +32,9 @@ use zone_alloc::{
 };
 
 use crate::{
+    TeamData,
+    WrapError,
     battle::{
-        core_battle_actions,
-        core_battle_effects,
-        core_battle_logs,
-        speed_sort,
         Action,
         BattleQueue,
         BattleRegistry,
@@ -62,23 +60,27 @@ use crate::{
         SwitchRequest,
         TeamPreviewRequest,
         TurnRequest,
+        core_battle_actions,
+        core_battle_effects,
+        core_battle_logs,
+        speed_sort,
     },
     battle_log_entry,
     common::UnsafelyDetachBorrowMut,
     config::Format,
     dex::Dex,
     effect::{
-        fxlang,
         Effect,
         EffectHandle,
         EffectManager,
         LinkedEffectsManager,
+        fxlang,
     },
     error::{
-        general_error,
         ValidationError,
         WrapOptionError,
         WrapResultError,
+        general_error,
     },
     log::{
         BattleLog,
@@ -87,8 +89,6 @@ use crate::{
     },
     moves::Move,
     teams::TeamValidator,
-    TeamData,
-    WrapError,
 };
 
 /// The public interface for a [`CoreBattle`].
@@ -350,7 +350,7 @@ impl<'d> CoreBattle<'d> {
         Context::new(self)
     }
 
-    pub fn side_indices(&self) -> impl Iterator<Item = usize> {
+    pub fn side_indices(&self) -> impl Iterator<Item = usize> + use<> {
         0..self.sides.len()
     }
 
@@ -374,7 +374,7 @@ impl<'d> CoreBattle<'d> {
             .wrap_not_found_error_with_format(format_args!("side {side}"))
     }
 
-    pub fn player_indices(&self) -> impl Iterator<Item = usize> {
+    pub fn player_indices(&self) -> impl Iterator<Item = usize> + use<> {
         0..self.players.len()
     }
 
@@ -1253,6 +1253,10 @@ impl<'d> CoreBattle<'d> {
             Action::Switch(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
                 core_battle_actions::switch_in(&mut context, action.position, None, false)?;
+            }
+            Action::BeforeSwitchEvents(action) => {
+                let mut context = context.mon_context(action.mon_action.mon)?;
+                core_battle_actions::run_before_switch_in_events(&mut context)?;
             }
             Action::SwitchEvents(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;

@@ -26,8 +26,6 @@ use zone_alloc::{
 
 use crate::{
     battle::{
-        mon_states,
-        weather_states,
         ActiveMoveContext,
         ApplyingEffectContext,
         Context,
@@ -43,15 +41,18 @@ use crate::{
         Player,
         PlayerEffectContext,
         SideEffectContext,
+        mon_states,
+        weather_states,
     },
     common::{
         MaybeOwnedMut,
         UnsafelyDetachBorrowMut,
     },
     effect::{
+        ActiveMoveEffectStateConnector,
+        EffectHandle,
+        MonStatusEffectStateConnector,
         fxlang::{
-            run_function,
-            tree,
             BattleEvent,
             CallbackFlag,
             DynamicEffectStateConnector,
@@ -65,16 +66,15 @@ use crate::{
             ValueRefMut,
             ValueRefToStoredValue,
             ValueType,
+            run_function,
+            tree,
         },
-        ActiveMoveEffectStateConnector,
-        EffectHandle,
-        MonStatusEffectStateConnector,
     },
     error::{
-        general_error,
-        integer_overflow_error,
         WrapOptionError,
         WrapResultError,
+        general_error,
+        integer_overflow_error,
     },
     moves::{
         Move,
@@ -890,6 +890,16 @@ where
                             "can_heal" => ValueRef::Boolean(mon_states::can_heal(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "effective_ability" => {
+                                match mon_states::effective_ability(
+                                    &mut context.mon_context(mon_handle)?,
+                                ) {
+                                    Some(ability) => {
+                                        ValueRef::TempEffect(EffectHandle::Ability(ability))
+                                    }
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "effective_item" => {
                                 match mon_states::effective_item(
                                     &mut context.mon_context(mon_handle)?,
@@ -1642,7 +1652,7 @@ impl Evaluator {
             } else if event.has_flag(CallbackFlag::TakesSourceEffect) {
                 "source_effect"
             } else {
-                "???"
+                unreachable!()
             };
             self.vars.set(
                 effect_name,
@@ -1750,7 +1760,7 @@ impl Evaluator {
                     return Err(general_error(format!(
                         "{event:?} cannot return a {}",
                         val.value_type(),
-                    )))
+                    )));
                 }
                 None => return Err(general_error(format!("{event:?} must return a value"))),
             }
@@ -1959,7 +1969,7 @@ impl Evaluator {
                 return Err(general_error(format!(
                     "if statement condition must return a boolean, got {}",
                     condition.value_type(),
-                )))
+                )));
             }
         };
         Ok(condition)
@@ -2415,7 +2425,10 @@ impl Evaluator {
                 *var = val;
             }
             _ => {
-                return Err(general_error(format!("invalid assignment of value of type {value_type} to variable ${} of type {var_type}", var.full_name())));
+                return Err(general_error(format!(
+                    "invalid assignment of value of type {value_type} to variable ${} of type {var_type}",
+                    var.full_name()
+                )));
             }
         }
 

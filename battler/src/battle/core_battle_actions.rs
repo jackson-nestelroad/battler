@@ -27,10 +27,6 @@ use battler_prng::rand_util;
 
 use crate::{
     battle::{
-        core_battle_effects,
-        core_battle_logs,
-        modify_32,
-        mon_states,
         AbilitySlot,
         Action,
         ActiveMoveContext,
@@ -59,19 +55,23 @@ use crate::{
         Side,
         SideEffectContext,
         SwitchEventsAction,
+        core_battle_effects,
+        core_battle_logs,
+        modify_32,
+        mon_states,
     },
     common::UnsafelyDetachBorrow,
     effect::{
-        fxlang,
         AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
+        fxlang,
     },
     error::{
+        WrapOptionError,
         general_error,
         integer_overflow_error,
-        WrapOptionError,
     },
     moves::SecondaryEffect,
 };
@@ -135,14 +135,14 @@ fn switch_out_internal(
                 core_battle_logs::switch_out(context)?;
             }
 
-            core_battle_effects::run_mon_ability_event(
+            end_ability(
                 &mut context.applying_effect_context(
                     EffectHandle::Condition(Id::from_known("switchout")),
                     None,
                     None,
                 )?,
-                fxlang::BattleEvent::End,
-            );
+                true,
+            )?;
 
             core_battle_effects::run_event_for_mon(
                 context,
@@ -233,8 +233,18 @@ pub fn switch_in(
     Ok(true)
 }
 
+/// Runs events that trigger the Mon's switch-in events.
+pub fn run_before_switch_in_events(context: &mut MonContext) -> Result<()> {
+    core_battle_effects::run_event_for_mon(
+        context,
+        fxlang::BattleEvent::BeforeSwitchIn,
+        fxlang::VariableInput::default(),
+    );
+    Ok(())
+}
+
 /// Runs events corresponding to a Mon switching into battle.
-pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool> {
+pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
     core_battle_effects::run_event_for_mon(
         context,
         fxlang::BattleEvent::SwitchIn,
@@ -248,27 +258,27 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<bool> {
     );
 
     if context.mon().hp == 0 {
-        return Ok(false);
+        return Ok(());
     }
 
-    core_battle_effects::run_mon_ability_event(
+    start_ability(
         &mut context.applying_effect_context(
             EffectHandle::Condition(Id::from_known("switchin")),
             None,
             None,
         )?,
-        fxlang::BattleEvent::Start,
-    );
-    core_battle_effects::run_mon_item_event(
+        true,
+    )?;
+    start_item(
         &mut context.applying_effect_context(
             EffectHandle::Condition(Id::from_known("switchin")),
             None,
             None,
         )?,
-        fxlang::BattleEvent::Start,
-    );
+        true,
+    )?;
 
-    Ok(true)
+    Ok(())
 }
 
 fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<()> {
@@ -298,11 +308,15 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
         .cloned()
         .collect::<Vec<_>>();
     for volatile in copied {
-        core_battle_effects::run_mon_volatile_event(
+        if !core_battle_effects::run_mon_volatile_event_expecting_bool(
             context,
             fxlang::BattleEvent::CopyVolatile,
             &volatile,
-        );
+        )
+        .unwrap_or(true)
+        {
+            context.target_mut().volatiles.remove(&volatile);
+        }
     }
 
     Ok(())
@@ -863,11 +877,13 @@ fn try_indirect_move(
 
     let move_target = context.active_move().data.target;
     let try_move_result = match move_target {
-        MoveTarget::All => core_battle_effects::run_event_for_field_effect_expecting_move_event_result(
-            &mut context.field_effect_context()?,
-            fxlang::BattleEvent::TryHitField,
-            fxlang::VariableInput::default(),
-        ),
+        MoveTarget::All => {
+            core_battle_effects::run_event_for_field_effect_expecting_move_event_result(
+                &mut context.field_effect_context()?,
+                fxlang::BattleEvent::TryHitField,
+                fxlang::VariableInput::default(),
+            )
+        }
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
             core_battle_effects::run_event_for_side_effect_expecting_move_event_result(
                 &mut context.side_effect_context(context.side().index)?,
@@ -882,7 +898,11 @@ fn try_indirect_move(
                 fxlang::VariableInput::default(),
             )
         }
-        _ => return Err(general_error(format!("move against target {move_target} applied indirectly, but it should directly hit target mons")))
+        _ => {
+            return Err(general_error(format!(
+                "move against target {move_target} applied indirectly, but it should directly hit target mons"
+            )));
+        }
     };
 
     if !try_move_result.advance() {
@@ -1627,7 +1647,7 @@ fn modify_damage(
     // STAB.
     let move_type = context.active_move().data.primary_type;
     let stab = !context.active_move().data.typeless
-        && mon_states::has_effective_type(context.as_mon_context_mut(), move_type);
+        && mon_states::has_type(context.as_mon_context_mut(), move_type);
     if stab {
         let stab_modifier = context
             .active_move()
@@ -1731,14 +1751,14 @@ mod direct_move_step {
     use super::MoveStepOutcomeOnTarget;
     use crate::{
         battle::{
-            core_battle_actions,
-            core_battle_effects,
-            core_battle_logs,
-            mon_states,
             ActiveMoveContext,
             ActiveTargetContext,
             Mon,
             MoveOutcome,
+            core_battle_actions,
+            core_battle_effects,
+            core_battle_logs,
+            mon_states,
         },
         effect::fxlang,
     };
@@ -1859,7 +1879,7 @@ mod direct_move_step {
             if !mon_states::is_semi_invulnerable(&mut context.target_mon_context()?) {
                 let mut immune = context.mon().level < context.target_mon().level;
                 if let OhkoType::Type(typ) = ohko {
-                    if mon_states::has_effective_type(&mut context.target_mon_context()?, typ) {
+                    if mon_states::has_type(&mut context.target_mon_context()?, typ) {
                         immune = true;
                     }
                 }
@@ -1874,7 +1894,7 @@ mod direct_move_step {
                         let user_has_ohko_type = match ohko {
                             OhkoType::Always => true,
                             OhkoType::Type(typ) => {
-                                mon_states::has_effective_type(context.as_mon_context_mut(), typ)
+                                mon_states::has_type(context.as_mon_context_mut(), typ)
                             }
                         };
                         if user_has_ohko_type {
@@ -3826,6 +3846,56 @@ pub fn remove_pseudo_weather(
     Ok(true)
 }
 
+/// Ends the target Mon's ability, if it is not already ended.
+///
+/// The Mon still has the ability, but it is not considered active.
+pub fn end_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    if context.target().hp == 0 {
+        return Ok(());
+    }
+    end_ability_even_if_exiting(context, silent)
+}
+
+/// Ends the target Mon's ability, if it is not already ended, even if the Mon is exiting.
+///
+/// The Mon still has the ability, but it is not considered active.
+pub fn end_ability_even_if_exiting(
+    context: &mut ApplyingEffectContext,
+    silent: bool,
+) -> Result<()> {
+    if !context.target().ability.active {
+        return Ok(());
+    }
+
+    if !silent {
+        core_battle_logs::ability_end(context)?;
+    }
+
+    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::End);
+
+    context.target_mut().ability.active = false;
+    Ok(())
+}
+
+/// Starts the target Mon's ability, if it is not already started.
+pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    if context.target().hp == 0 || context.target().ability.active {
+        return Ok(());
+    }
+
+    // Ability is suppressed.
+    if mon_states::effective_ability(&mut context.target_context()?).is_none() {
+        return Ok(());
+    }
+
+    if !silent {
+        core_battle_logs::ability(context)?;
+    }
+    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::Start);
+    context.target_mut().ability.active = true;
+    Ok(())
+}
+
 /// Sets the target Mon's ability.
 pub fn set_ability(
     context: &mut ApplyingEffectContext,
@@ -3859,10 +3929,7 @@ pub fn set_ability(
         return Ok(true);
     }
 
-    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::End);
-    if !silent {
-        core_battle_logs::end_ability(context)?;
-    }
+    end_ability(context, silent)?;
 
     let ability_order = context.battle_mut().next_ability_order();
     let ability = context.battle().dex.abilities.get_by_id(ability)?;
@@ -3870,14 +3937,11 @@ pub fn set_ability(
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
         order: ability_order,
+        active: false,
         effect_state: fxlang::EffectState::new(),
     };
 
-    if !silent {
-        core_battle_logs::ability(context)?;
-    }
-
-    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::Start);
+    start_ability(context, silent)?;
 
     Ok(true)
 }
@@ -4133,22 +4197,109 @@ pub fn remove_slot_condition(
     Ok(true)
 }
 
+pub enum EndItemType {
+    End,
+    Take,
+    Use,
+    Eat,
+}
+
+/// Ends the target Mon's item, if it is not already ended.
+///
+/// The Mon still has the item, but it is not considered active.
+pub fn end_item(
+    context: &mut ApplyingEffectContext,
+    end_item_type: EndItemType,
+    silent: bool,
+) -> Result<()> {
+    if context.target().hp == 0
+        || context
+            .target()
+            .item
+            .as_ref()
+            .is_none_or(|item| !item.active)
+    {
+        return Ok(());
+    }
+
+    if !silent {
+        let no_source = match end_item_type {
+            EndItemType::Eat | EndItemType::Use => true,
+            _ => false,
+        };
+        let eat = match end_item_type {
+            EndItemType::Eat => true,
+            _ => false,
+        };
+        core_battle_logs::item_end(context, no_source, silent, eat)?;
+    }
+
+    core_battle_effects::run_mon_item_event(
+        context,
+        match end_item_type {
+            EndItemType::End | EndItemType::Take => fxlang::BattleEvent::End,
+            EndItemType::Use => fxlang::BattleEvent::Use,
+            EndItemType::Eat => fxlang::BattleEvent::Eat,
+        },
+    );
+
+    context
+        .target_mut()
+        .item
+        .as_mut()
+        .wrap_expectation("expected item")?
+        .active = false;
+    Ok(())
+}
+
+/// Starts the target Mon's item, if it is not already started.
+///
+/// The Mon still has the item, but it is not considered active.
+pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    if context.target().hp == 0
+        || context
+            .target()
+            .item
+            .as_ref()
+            .is_none_or(|item| item.active)
+    {
+        return Ok(());
+    }
+
+    // Item is suppressed.
+    if mon_states::effective_item(&mut context.target_context()?).is_none() {
+        return Ok(());
+    }
+
+    if !silent {
+        core_battle_logs::item(context)?;
+    }
+    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
+    context
+        .target_mut()
+        .item
+        .as_mut()
+        .wrap_expectation("expected item")?
+        .active = true;
+    Ok(())
+}
+
 /// Sets the target Mon's item.
 pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
 
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
+    end_item(context, EndItemType::Use, true)?;
 
     let item = context.battle().dex.items.get_by_id(item)?;
-    let item_id = item.id().clone();
 
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
     context.target_mut().item = Some(ItemSlot {
         id: item.id().clone(),
+        active: false,
         effect_state: fxlang::EffectState::initial_effect_state(
             context.as_battle_context_mut(),
             Some(&effect_handle),
@@ -4157,14 +4308,7 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> 
         )?,
     });
 
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
-
-    core_battle_logs::item(
-        &mut context.target_context()?,
-        &item_id,
-        Some(effect_handle),
-        source_handle,
-    )?;
+    start_item(context, false)?;
 
     Ok(true)
 }
@@ -4203,19 +4347,9 @@ pub fn take_item(
         return Ok(Some(item_id));
     }
 
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::End);
-    context.target_mut().item = None;
+    end_item(context, EndItemType::Take, silent)?;
 
-    let source = context.source_handle();
-    let effect = context.effect_handle().clone();
-    core_battle_logs::item_end(
-        &mut context.target_context()?,
-        &item_id,
-        Some(effect),
-        source,
-        silent,
-        false,
-    )?;
+    context.target_mut().item = None;
 
     Ok(Some(item_id))
 }
@@ -4262,16 +4396,8 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(false);
     }
 
-    core_battle_logs::item_end(
-        &mut context.target_context()?,
-        &item_id,
-        None,
-        None,
-        false,
-        true,
-    )?;
+    end_item(context, EndItemType::Eat, false)?;
 
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Eat);
     core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::EatItem,
@@ -4320,16 +4446,7 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(false);
     }
 
-    core_battle_logs::item_end(
-        &mut context.target_context()?,
-        &item_id,
-        None,
-        None,
-        false,
-        false,
-    )?;
-
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Use);
+    end_item(context, EndItemType::Use, false)?;
 
     after_use_item(context, item_id)
 }

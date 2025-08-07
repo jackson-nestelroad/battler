@@ -38,6 +38,14 @@ use zone_alloc::ElementRef;
 
 use crate::{
     battle::{
+        CoreBattle,
+        MonContext,
+        MonHandle,
+        MoveHandle,
+        MoveOutcome,
+        Player,
+        Side,
+        SpeedOrderable,
         calculate_hidden_power_type,
         calculate_mon_stats,
         core_battle::{
@@ -49,27 +57,19 @@ use crate::{
         core_battle_logs,
         modify_32,
         mon_states,
-        CoreBattle,
-        MonContext,
-        MonHandle,
-        MoveHandle,
-        MoveOutcome,
-        Player,
-        Side,
-        SpeedOrderable,
     },
     battle_log_entry,
     dex::Dex,
     effect::{
-        fxlang,
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
+        fxlang,
     },
     error::{
-        general_error,
         WrapOptionError,
         WrapResultError,
+        general_error,
     },
     log::{
         BattleLoggable,
@@ -188,6 +188,7 @@ impl MoveSlot {
 pub struct AbilitySlot {
     pub id: Id,
     pub order: u32,
+    pub active: bool,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -195,6 +196,7 @@ pub struct AbilitySlot {
 #[derive(Clone)]
 pub struct ItemSlot {
     pub id: Id,
+    pub active: bool,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -499,12 +501,14 @@ impl Mon {
         let ability = AbilitySlot {
             id: Id::from(data.ability),
             order: 0,
+            active: false,
             effect_state: fxlang::EffectState::new(),
         };
 
         let item = match data.item {
             Some(item) => Some(ItemSlot {
                 id: Id::from(item),
+                active: false,
                 effect_state: fxlang::EffectState::new(),
             }),
             None => None,
@@ -650,6 +654,7 @@ impl Mon {
             let item = context.battle().dex.items.get_by_id(&item.id)?;
             context.mon_mut().item = Some(ItemSlot {
                 id: item.id().clone(),
+                active: false,
                 effect_state: fxlang::EffectState::initial_effect_state(
                     context.as_battle_context_mut(),
                     Some(&EffectHandle::Condition(Id::from_known("start"))),
@@ -973,7 +978,9 @@ impl Mon {
     }
 
     /// Creates an iterator over all adjacent allies.
-    pub fn adjacent_allies(context: &mut MonContext) -> Result<impl Iterator<Item = MonHandle>> {
+    pub fn adjacent_allies(
+        context: &mut MonContext,
+    ) -> Result<impl Iterator<Item = MonHandle> + use<>> {
         let allies = context
             .battle()
             .active_mon_handles_on_side(context.mon().side)
@@ -1569,6 +1576,7 @@ impl Mon {
         context.mon_mut().base_ability = AbilitySlot {
             id: ability.id().clone(),
             order: 0,
+            active: false,
             effect_state: fxlang::EffectState::initial_effect_state(
                 context.as_battle_context_mut(),
                 Some(&EffectHandle::Condition(Id::from_known("start"))),
@@ -1588,6 +1596,8 @@ impl Mon {
         // SAFETY: Nothing we do below will invalidate any data.
         let species: ElementRef<Species> = unsafe { mem::transmute(species) };
 
+        let previous_species = context.mon().species.clone();
+
         context.mon_mut().species = species.id().clone();
         context.mon_mut().types = Vec::with_capacity(4);
         context.mon_mut().types.push(species.data.primary_type);
@@ -1598,7 +1608,7 @@ impl Mon {
         Self::recalculate_stats(context)?;
         context.mon_mut().weight = species.data.weight;
 
-        Ok(true)
+        Ok(context.mon().species != previous_species)
     }
 
     /// Overwrites the move slot at the given index.
@@ -1952,10 +1962,10 @@ impl Mon {
             MonExitType::Fainted => EffectHandle::Condition(Id::from_known("faint")),
             MonExitType::Caught => EffectHandle::Condition(Id::from_known("catch")),
         };
-        core_battle_effects::run_mon_ability_event(
+        core_battle_actions::end_ability_even_if_exiting(
             &mut context.applying_effect_context(effect, None, None)?,
-            fxlang::BattleEvent::End,
-        );
+            true,
+        )?;
 
         Self::clear_volatile(context, false)?;
 
@@ -2016,6 +2026,11 @@ impl Mon {
     /// Checks if the Mon has an item.
     pub fn has_item(context: &mut MonContext, id: &Id) -> bool {
         mon_states::effective_item(context).is_some_and(|item| item == *id)
+    }
+
+    /// Checks if the Mon has a type.
+    pub fn has_type(context: &mut MonContext, typ: Type) -> bool {
+        mon_states::has_type(context, typ)
     }
 
     /// Checks if the Mon has a volatile effect.

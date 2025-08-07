@@ -1226,7 +1226,19 @@
           "if $effect.id != trace or !$effect_state.logged_for_trace:",
           ["log_block: with_target", "$effect_state.logged_for_trace = true"],
           "return false"
-        ]
+        ],
+        "on_try_hit": [
+          "if $move.id == gastroacid:",
+          ["log_block: with_target", "return false"]
+        ],
+        "on_add_volatile": [
+          "if $volatile.id == neutralizinggas:",
+          ["log_block: with_target", "return false"]
+        ],
+        "suppress_mon_ability": {
+          "priority": 1,
+          "program": ["return false"]
+        }
       }
     }
   },

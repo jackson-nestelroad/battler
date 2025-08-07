@@ -405,10 +405,7 @@
         ],
         "on_try_immunity": [
           "if func_call(has_volatile: $source $this.id):",
-          [
-            "if func_call(has_effective_type: $target flying):",
-            ["return false"]
-          ],
+          ["if func_call(has_type: $target flying):", ["return false"]],
           "else:",
           ["if $target.weight >= 2000:", ["return false"]]
         ],

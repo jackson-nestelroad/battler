@@ -20,10 +20,11 @@ use crate::{
     },
     battle_log_entry,
     effect::{
-        fxlang,
         Effect,
         EffectHandle,
+        fxlang,
     },
+    general_error,
     log::UncommittedBattleLogEntry,
 };
 
@@ -685,7 +686,7 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
-pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<()> {
+pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
     let ability = context
         .battle()
         .dex
@@ -708,25 +709,24 @@ pub fn end_ability(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
-pub fn item(
-    context: &mut MonContext,
-    item: &Id,
-    effect: Option<EffectHandle>,
-    source: Option<MonHandle>,
-) -> Result<()> {
+pub fn item(context: &mut ApplyingEffectContext) -> Result<()> {
+    let item = match &context.target().item {
+        Some(item) => item.id.clone(),
+        None => return Err(general_error("target has no item")),
+    };
     let item = context
         .battle()
         .dex
         .items
-        .get_by_id(item)?
+        .get_by_id(&item)?
         .data
         .name
         .clone();
 
     let activation = EffectActivationContext {
-        target: Some(context.mon_handle()),
-        source_effect: effect,
-        source,
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
         additional: vec![format!("item:{item}")],
         ..Default::default()
     };
@@ -738,21 +738,24 @@ pub fn item(
 }
 
 pub fn item_end(
-    context: &mut MonContext,
-    item: &Id,
-    effect: Option<EffectHandle>,
-    source: Option<MonHandle>,
+    context: &mut ApplyingEffectContext,
+    no_source: bool,
     silent: bool,
     eat: bool,
 ) -> Result<()> {
+    let item = match &context.target().item {
+        Some(item) => item.id.clone(),
+        None => return Err(general_error("target has no item")),
+    };
     let item = context
         .battle()
         .dex
         .items
-        .get_by_id(item)?
+        .get_by_id(&item)?
         .data
         .name
         .clone();
+
     let mut additional = vec![format!("item:{item}")];
     if silent {
         additional.push("silent".to_owned());
@@ -760,10 +763,19 @@ pub fn item_end(
     if eat {
         additional.push("eat".to_owned());
     }
+
     let activation = EffectActivationContext {
-        target: Some(context.mon_handle()),
-        source_effect: effect,
-        source,
+        target: Some(context.target_handle()),
+        source_effect: if no_source {
+            None
+        } else {
+            Some(context.effect_handle().clone())
+        },
+        source: if no_source {
+            None
+        } else {
+            context.source_handle()
+        },
         additional,
         ..Default::default()
     };

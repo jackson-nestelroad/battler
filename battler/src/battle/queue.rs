@@ -5,13 +5,11 @@ use std::{
 
 use anyhow::Result;
 use battler_prng::{
-    rand_util,
     PseudoRandomNumberGenerator,
+    rand_util,
 };
 
 use crate::battle::{
-    compare_priority,
-    speed_sort,
     Action,
     BeforeMoveAction,
     BeforeMoveActionInput,
@@ -19,6 +17,8 @@ use crate::battle::{
     CoreBattle,
     CoreBattleEngineSpeedSortTieResolution,
     MonHandle,
+    compare_priority,
+    speed_sort,
 };
 
 /// A queue of [`Action`]s to be run in a [`CoreBattle`][`crate::battle::CoreBattle`].
@@ -72,6 +72,9 @@ impl BattleQueue {
                     actions.push(Action::MegaEvo(action.mon_action.clone()));
                 }
                 actions
+            }
+            Action::SwitchEvents(action) => {
+                Vec::from_iter([Action::BeforeSwitchEvents(action.clone())])
             }
             _ => Vec::new(),
         }
@@ -352,6 +355,9 @@ mod queue_test {
                 Action::Residual => "residual".to_owned(),
                 Action::Team(action) => format!("team {}", action.mon_action.mon),
                 Action::Switch(action) => format!("switch {}", action.mon_action.mon),
+                Action::BeforeSwitchEvents(action) => {
+                    format!("beforeswitchevents {}", action.mon_action.mon)
+                }
                 Action::SwitchEvents(action) => format!("switchevents {}", action.mon_action.mon),
                 Action::Move(action) => format!("move {}", action.id),
                 Action::BeforeTurnMove(action) => {

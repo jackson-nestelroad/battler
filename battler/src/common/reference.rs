@@ -12,7 +12,7 @@ pub trait UnsafelyDetachBorrow<'a, 'b, T> {
 
 impl<'a, 'b, T> UnsafelyDetachBorrow<'a, 'b, T> for T {
     unsafe fn unsafely_detach_borrow(&'a self) -> &'b T {
-        mem::transmute(self)
+        unsafe { mem::transmute(self) }
     }
 }
 
@@ -28,6 +28,6 @@ pub trait UnsafelyDetachBorrowMut<'a, 'b, T> {
 
 impl<'a, 'b, T> UnsafelyDetachBorrowMut<'a, 'b, T> for T {
     unsafe fn unsafely_detach_borrow_mut(&'a mut self) -> &'b mut T {
-        mem::transmute(self)
+        unsafe { mem::transmute(self) }
     }
 }

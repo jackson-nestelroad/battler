@@ -1007,9 +1007,7 @@
     "hit_effect": { "volatile_status": "leechseed" },
     "effect": {
       "callbacks": {
-        "on_try_immunity": [
-          "return !func_call(has_effective_type: $target grass)"
-        ]
+        "on_try_immunity": ["return !func_call(has_type: $target grass)"]
       }
     },
     "condition": {
@@ -2335,7 +2333,7 @@
           "if !$target_move:",
           ["return false"],
           "$new_type = $target_move.type",
-          "if func_call(has_effective_type: $target $new_type):",
+          "if func_call(has_type: $target $new_type):",
           ["return false"],
           "return func_call(set_types: $target $new_type)"
         ]

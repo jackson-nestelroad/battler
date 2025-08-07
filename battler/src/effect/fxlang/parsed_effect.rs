@@ -51,6 +51,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AnyTryMove, callbacks)?;
             parsed.parse_and_save(BattleEvent::BasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeMove, callbacks)?;
+            parsed.parse_and_save(BattleEvent::BeforeSwitchIn, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeSwitchOut, callbacks)?;
             parsed.parse_and_save(BattleEvent::BeforeTurn, callbacks)?;
             parsed.parse_and_save(BattleEvent::BerryEatingHealth, callbacks)?;
@@ -166,6 +167,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::SubPriority, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressFieldTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressFieldWeather, callbacks)?;
+            parsed.parse_and_save(BattleEvent::SuppressMonAbility, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonItem, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonTerrain, callbacks)?;
             parsed.parse_and_save(BattleEvent::SuppressMonWeather, callbacks)?;

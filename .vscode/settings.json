@@ -1,4 +1,6 @@
 {
+    "workbench.editor.enablePreview": false,
+    "git.openDiffOnClick": false,
     "editor.formatOnSave": true,
     "editor.inlayHints.enabled": "offUnlessPressed",
     "[rust]": {

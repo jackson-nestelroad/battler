@@ -29,11 +29,8 @@ use battler_data::{
 use battler_prng::rand_util;
 
 use crate::{
+    Type,
     battle::{
-        core_battle_actions,
-        core_battle_effects,
-        core_battle_logs,
-        mon_states,
         ApplyingEffectContext,
         CoreBattle,
         EffectContext,
@@ -45,9 +42,18 @@ use crate::{
         Player,
         Side,
         SideEffectContext,
+        core_battle_actions,
+        core_battle_effects,
+        core_battle_logs,
+        mon_states,
     },
     battle_log_entry,
     effect::{
+        AppliedEffectHandle,
+        EffectHandle,
+        MonStatusEffectStateConnector,
+        MonVolatileStatusEffectStateConnector,
+        SideConditionEffectStateConnector,
         fxlang::{
             BattleEvent,
             DynamicEffectStateConnector,
@@ -58,20 +64,14 @@ use crate::{
             ValueType,
             VariableInput,
         },
-        AppliedEffectHandle,
-        EffectHandle,
-        MonStatusEffectStateConnector,
-        MonVolatileStatusEffectStateConnector,
-        SideConditionEffectStateConnector,
     },
     error::{
-        general_error,
         WrapOptionError,
         WrapResultError,
+        general_error,
     },
     log::UncommittedBattleLogEntry,
     moves::Move,
-    Type,
 };
 
 /// Runs an fxlang function.
@@ -86,12 +86,16 @@ pub fn run_function(
     let context = FunctionContext::new(context, args, effect_state);
     match function_name {
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
+        "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
         "adjacent_foes" => adjacent_foes(context).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
+        "all_active_mons_in_speed_order" => {
+            all_active_mons_in_speed_order(context).map(|val| Some(val))
+        }
         "all_active_mons_on_side" => all_active_mons_on_side(context).map(|val| Some(val)),
         "all_mons_in_party" => all_mons_in_party(context).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context).map(|val| Some(val)),
@@ -129,6 +133,8 @@ pub fn run_function(
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
+        "end_ability" => end_ability(context).map(|()| None),
+        "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
@@ -143,7 +149,7 @@ pub fn run_function(
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
         "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
-        "has_effective_type" => has_effective_type(context).map(|val| Some(val)),
+        "has_type" => has_type(context).map(|val| Some(val)),
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
         "heal" => heal(context).map(|val| Some(val)),
         "hit_effect" => hit_effect().map(|val| Some(val)),
@@ -203,6 +209,7 @@ pub fn run_function(
         "received_attack" => received_attack(context).map(|val| Some(val)),
         "remove" => remove(context).map(|val| Some(val)),
         "remove_move_flag" => remove_move_flag(context).map(|()| None),
+        "remove_pseudo_weather" => remove_pseudo_weather(context).map(|val| Some(val)),
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
         "restore_pp" => restore_pp(context).map(|val| Some(val)),
@@ -227,6 +234,8 @@ pub fn run_function(
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
+        "start_ability" => start_ability(context).map(|()| None),
+        "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
@@ -444,6 +453,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("use_target_as_source")
     }
 
+    fn set_use_target_as_source(&mut self, val: bool) {
+        self.set_flag("use_target_as_source", val)
+    }
+
     fn with_source(&mut self) -> bool {
         self.has_flag("with_source")
     }
@@ -498,6 +511,19 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             self.evaluation_context().source_handle()
         } else {
             self.evaluation_context().target_handle()
+        }
+    }
+
+    fn target_handle_positional(&mut self) -> Result<MonHandle> {
+        match self.front().map(|val| val.value_type()) {
+            Some(ValueType::Mon) => self
+                .pop_front()
+                .wrap_expectation("missing mon")?
+                .mon_handle()
+                .wrap_error_with_message("invalid mon"),
+            _ => self
+                .target_handle()
+                .wrap_expectation("effect has no target"),
         }
     }
 
@@ -722,6 +748,7 @@ fn log_block(mut context: FunctionContext) -> Result<()> {
     context.set_use_source_effect(true);
     context.set_with_source_effect(true);
     context.set_use_effect_as_source_effect(true);
+    context.set_use_target_as_source(true);
     log_effect_activation_base(context, "block", LogEffectActivationBaseContext::default())
 }
 
@@ -1450,7 +1477,7 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_event_for_each_active_mon_with_effect(
-        context.evaluation_context_mut().effect_context_mut(),
+        &mut context.effect_context()?,
         event,
     )
 }
@@ -1463,9 +1490,7 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<()> {
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_mon_ability_event(
-        context
-            .evaluation_context_mut()
-            .applying_effect_context_mut()?,
+        &mut context.forward_to_applying_effect_context()?,
         event,
     );
     Ok(())
@@ -1479,9 +1504,7 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<()> {
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
     core_battle_effects::run_mon_item_event(
-        context
-            .evaluation_context_mut()
-            .applying_effect_context_mut()?,
+        &mut context.forward_to_applying_effect_context()?,
         event,
     );
     Ok(())
@@ -1771,7 +1794,7 @@ fn set_boost(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::BoostTable(boosts))
 }
 
-fn has_effective_type(mut context: FunctionContext) -> Result<Value> {
+fn has_type(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -1782,7 +1805,7 @@ fn has_effective_type(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing type")?
         .mon_type()
         .wrap_error_with_message("invalid type")?;
-    Ok(Value::Boolean(mon_states::has_effective_type(
+    Ok(Value::Boolean(Mon::has_type(
         &mut context.evaluation_context_mut().mon_context(mon_handle)?,
         typ,
     )))
@@ -2159,6 +2182,17 @@ fn all_active_mons(context: FunctionContext) -> Result<Value> {
             .all_active_mon_handles()
             .map(|mon_handle| Value::Mon(mon_handle))
             .collect(),
+    ))
+}
+
+fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value> {
+    Ok(Value::List(
+        CoreBattle::all_active_mon_handles_in_speed_order(
+            context.evaluation_context_mut().battle_context_mut(),
+        )?
+        .into_iter()
+        .map(|mon_handle| Value::Mon(mon_handle))
+        .collect(),
     ))
 }
 
@@ -3438,4 +3472,71 @@ fn plural(mut context: FunctionContext) -> Result<Value> {
     } else {
         Ok(Value::String("s".to_owned()))
     }
+}
+
+fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
+    let pseudo_weather = context
+        .pop_front()
+        .wrap_expectation("missing pseudo weather id")?
+        .string()
+        .wrap_error_with_message("invalid pseudo weather")?;
+    let pseudo_weather = Id::from(pseudo_weather);
+
+    core_battle_actions::add_pseudo_weather(
+        &mut context.forward_to_field_effect()?,
+        &pseudo_weather,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn remove_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
+    let pseudo_weather = context
+        .pop_front()
+        .wrap_expectation("missing pseudo weather id")?
+        .string()
+        .wrap_error_with_message("invalid pseudo weather")?;
+    let pseudo_weather = Id::from(pseudo_weather);
+
+    core_battle_actions::remove_pseudo_weather(
+        &mut context.forward_to_field_effect()?,
+        &pseudo_weather,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn start_ability(mut context: FunctionContext) -> Result<()> {
+    let target_handle = context.target_handle_positional()?;
+    let silent = context.silent();
+    core_battle_actions::start_ability(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        silent,
+    )
+}
+
+fn end_ability(mut context: FunctionContext) -> Result<()> {
+    let target_handle = context.target_handle_positional()?;
+    let silent = context.silent();
+    core_battle_actions::end_ability(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        silent,
+    )
+}
+
+fn start_item(mut context: FunctionContext) -> Result<()> {
+    let target_handle = context.target_handle_positional()?;
+    let silent = context.silent();
+    core_battle_actions::start_item(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        silent,
+    )
+}
+
+fn end_item(mut context: FunctionContext) -> Result<()> {
+    let target_handle = context.target_handle_positional()?;
+    let silent = context.silent();
+    core_battle_actions::end_item(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        core_battle_actions::EndItemType::End,
+        silent,
+    )
 }

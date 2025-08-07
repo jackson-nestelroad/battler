@@ -57,7 +57,7 @@ pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
     pretty_assertions::assert_eq!(want, got)
 }
 
-/// Asserts that logs since the given turn in the battle are equal to the given logs.
+/// Asserts that logs since the start of the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_logs_since_start_eq(battle: &PublicCoreBattle, want: &[LogMatch]) {
     let got = battle.full_log().collect::<Vec<&str>>();

@@ -34,7 +34,27 @@
   "technician": { "name": "Technician", "flags": [] },
   "leafguard": { "name": "Leaf Guard", "flags": [] },
   "klutz": { "name": "Klutz", "flags": [] },
-  "moldbreaker": { "name": "Mold Breaker", "flags": [] },
+  "moldbreaker": {
+    "name": "Mold Breaker",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_before_move": ["add_pseudo_weather: $this.id"],
+        "on_after_move": ["remove_pseudo_weather: $this.id"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "suppress_mon_ability": [
+          "$ability = func_call(get_ability: $mon.ability)",
+          "if func_call(ability_has_flag: $ability breakable):",
+          ["return true"]
+        ]
+      }
+    }
+  },
   "superluck": { "name": "Super Luck", "flags": [] },
   "aftermath": {
     "name": "Aftermath",

@@ -6,10 +6,10 @@ use battler_data::{
 
 use crate::{
     battle::{
-        core_battle_effects,
         ActiveMoveContext,
         Field,
         MonContext,
+        core_battle_effects,
     },
     effect::fxlang,
 };
@@ -30,7 +30,7 @@ pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
 }
 
 /// Checks if the Mon has the given type.
-pub fn has_effective_type(context: &mut MonContext, typ: Type) -> bool {
+pub fn has_type(context: &mut MonContext, typ: Type) -> bool {
     let types = effective_types(context);
     return types.contains(&typ);
 }
@@ -164,13 +164,13 @@ pub fn effective_terrain(context: &mut MonContext) -> Option<Id> {
 ///
 /// Abilities can be suppressed by other effects and abilities.
 pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
-    // TODO: SuppressAbility event.
-    //  - First, check if ability is breakable (flag).
-    //  - If so, run the event.
-    //      - Mold Breaker suppresses during move execution of the ability holder.
-    //          - BeforeMove => suppress
-    //          - AfterMove => unsuppress
-    //      - Ability Shield unsuppresses (higher priority than Mold Breaker).
+    if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        context,
+        fxlang::BattleEvent::SuppressMonAbility,
+        false,
+    ) {
+        return None;
+    }
     Some(context.mon().ability.id.clone())
 }
 

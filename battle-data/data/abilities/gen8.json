@@ -67,7 +67,52 @@
   "gorillatactics": { "name": "Gorilla Tactics", "flags": [] },
   "neutralizinggas": {
     "name": "Neutralizing Gas",
-    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
+    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"],
+    "effect": {
+      "callbacks": {
+        "on_before_switch_in": [
+          "log_ability",
+          "# Use a pseudo-weather for suppression two reasons:",
+          "# 1. A pseudo-weather affects all Mons on the field with one condition.",
+          "# 2. Due to the implementation of how we avoid infinite recursion in effect callbacks, abilities cannot suppress other abilities.",
+          "add_pseudo_weather: $this.id"
+        ],
+        "on_end": [
+          "# If no other Mons have this ability on the field, remove the pseudo-weather.",
+          "foreach $other in func_call(all_active_mons):",
+          [
+            "if $other != $target and func_call(has_ability: $other $this.id):",
+            ["return"]
+          ],
+          "log_end",
+          "remove_pseudo_weather: $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "suppress_mon_ability": [
+          "# Do not suppress ourself, so that we can trigger this condition to end.",
+          "if $mon.ability != $this.id:",
+          ["return true"]
+        ],
+        "on_field_start": [
+          "# If a Mon's ability is suppressed, end it.",
+          "# Note that `end_ability` has no effect if the ability was already ended elsewhere, or never started.",
+          "foreach $mon in func_call(all_active_mons_in_speed_order):",
+          [
+            "if $mon.effective_ability.is_undefined:",
+            ["end_ability: $mon silent"]
+          ]
+        ],
+        "on_field_end": [
+          "# Restart abilities.",
+          "# Note that `start_ability` has no effect if an ability is still suppressed.",
+          "foreach $mon in func_call(all_active_mons_in_speed_order):",
+          ["start_ability: $mon silent"]
+        ]
+      }
+    }
   },
   "pastelveil": { "name": "Pastel Veil", "flags": [] },
   "hungerswitch": {
