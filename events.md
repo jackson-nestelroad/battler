@@ -4,6 +4,13 @@
 
 Note that this is not meant to be an exact description of how battles work. Many events have nuance to how and when they are applied. Thus, only a high-level overview is presented here.
 
+## Team Validation
+
+1. For each player:
+   1. `ValidateTeam`.
+   1. For each Mon:
+      1. `ValidateMon`.
+
 ## Start
 
 1. All Mons are switched in, as specified by the battle format.
@@ -20,11 +27,13 @@ Note that this is not meant to be an exact description of how battles work. Many
       1. `Exit`.
    1. Clear volatile effects.
 1. Switch new Mon in:
-   1. `BeforeSwitchIn`
-   1. `SwitchIn`.
-   1. `EntryHazard`.
-   1. Ability `Start`.
-   1. Item `Start`.
+   1. For each Mon in speed order:
+      1. `BeforeSwitchIn`.
+   1. For each Mon in speed order:
+      1. `SwitchIn`.
+      1. `EntryHazard`.
+      1. Ability `Start`.
+      1. Item `Start`.
 
 ## Before Turn Start
 
@@ -78,7 +87,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Mon Caught
 
 1. Give out experience.
-1. Caught Mon `Exit`.
+1. Caught Mon pExit`.
 1. Ability `End`.
 1. Clear volatile effects.
 1. Switch out.
@@ -107,6 +116,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. Use active move:
 
    1. `BeforeMove`.
+      1. _(extension)_ `Flinch`.
    1. `MoveAborted` if `BeforeMove` failed.
    1. Use active move:
 
@@ -123,7 +133,9 @@ Note that this is not meant to be an exact description of how battles work. Many
       1. Direct move (one or more Mons):
 
          1. `TryUseMove`.
+            1. _(extension)_ `ChargeMove`.
          1. `PrepareHit`.
+            1. _(extension)_ `StallMove`.
          1. Move hit loop:
 
             1. Calculate number of hits.
@@ -141,6 +153,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                1. Move hit against all targets:
                   1. `TryHitField`, `TryHitSide`, or `TryHit` for each target Mon.
                   1. `TryPrimaryHit`.
+                     1. _(extension)_ `AfterSubstituteDamage`.
                   1. Calculate damage for each target:
                      1. `MoveDamage`.
                      1. `MoveBasePower`.
@@ -197,13 +210,14 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. Weather `Duration`.
                         1. Weather `FieldStart`.
                         1. `WeatherChange`.
-                     1. Set terrain
+                     1. Set terrain:
                         1. `ClearTerrain`.
                         1. `SetTerrain`.
                         1. Terrain `Duration`.
                         1. Terrain `FieldStart`.
                         1. `TerrainChange`.
-                     1. Add pseudo-weather
+                     1. Add pseudo-weather:
+                        1. Pseudo-weather `FieldRestart`.
                         1. `AddPseudoWeather`.
                         1. Terrain `Duration`.
                         1. Terrain `FieldStart`.
@@ -237,6 +251,41 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `SetLastMove`.
 1. `DeductPp`.
 
+## Remove Volatile
+
+1. Volatile `End`.
+
+## Set Ability
+
+1. `SetAbility`.
+1. Ability `End`.
+1. Ability `Start`.
+
+## Set Item
+
+1. Item `End`.
+1. Item `Start`.
+
+## Use Item
+
+1. `TryUseItem`.
+1. Item `Use`.
+
+## Eat Item
+
+1. `TryEatItem`.
+1. Item `Eat`.
+1. `EatItem`.
+
+## Take Item
+
+1. `TakeItem`.
+1. Item `End`.
+
+## Restore PP
+
+1. `RestorePp`.
+
 ## Giving Experience
 
 1. Gain EVs.
@@ -264,9 +313,39 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Residual
 
 1. Update speed for each active Mon.
-1. `Residual` event for each active effect on the field, in speed order.
-1. Before running the `Residual` event, the duration of the effect is subtracted by one. If duration reaches 0, the `End` event is run instead, and the effect is removed.
+1. `Residual` event (or `FieldResidual`, `SideResidual`, `SlotResidual`, according to the location of the effect) for each active effect on the field, in speed order.
+   1. _(extension)_ `Weather`.
+1. Before running the `Residual` event, the duration of the effect is subtracted by one. If duration reaches 0, the `End` event (or `FieldEnd`, `SideEnd`, `SlotEnd`, according to the location of the effect) is run instead, and the effect is removed.
 
 ## End
 
 1. `EndBattle` for each active Mon.
+
+## State Events
+
+### Mons
+
+- `IsAsleep`.
+- `IsAwayFromField`.
+- `IsBehindSubstitute`.
+- `IsContactProof`.
+- `IsGrounded`.
+- `IsImmuneToEntryHazards`.
+- `IsSemiInvulnerable`.
+- `IsSoundproof`.
+- `Types`.
+
+### Weather
+
+- `IsRaining`.
+- `IsSnowing`.
+- `IsSunny`.
+
+### Effect
+
+- `SuppressFieldTerrain`.
+- `SuppressFieldWeather`.
+- `SuppressMonAbility`.
+- `SuppressMonItem`.
+- `SuppressMonTerrain`.
+- `SuppressMonWeather`.

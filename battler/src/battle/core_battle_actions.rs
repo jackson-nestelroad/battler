@@ -3746,7 +3746,14 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         .pseudo_weathers
         .contains_key(&pseudo_weather)
     {
-        return Ok(false);
+        return Ok(
+            core_battle_effects::run_pseudo_weather_event_expecting_bool(
+                context,
+                fxlang::BattleEvent::FieldRestart,
+                &pseudo_weather,
+            )
+            .unwrap_or(false),
+        );
     }
 
     if !core_battle_effects::run_event_for_field_effect(
@@ -4281,7 +4288,7 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> 
         return Ok(false);
     }
 
-    end_item(context, EndItemType::Use, true)?;
+    end_item(context, EndItemType::End, true)?;
 
     let item = context.battle().dex.items.get_by_id(item)?;
 
