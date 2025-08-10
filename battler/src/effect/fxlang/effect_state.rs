@@ -41,6 +41,7 @@ impl EffectState {
     const SOURCE_SIDE: &'static str = "source_side";
     const SOURCE_POSITION: &'static str = "source_position";
     const ENDING: &'static str = "ending";
+    const STARTED: &'static str = "started";
 
     /// Creates an initial effect state for a new effect.
     pub fn initial_effect_state(
@@ -191,7 +192,36 @@ impl EffectState {
         Ok(())
     }
 
+    /// Whether or not the effect is started.
+    ///
+    /// An effect is started if any corresponding "Start" event has run. Unlike [`Self::ending`],
+    /// this is purely used for tracking that event has been started and does not need to be
+    /// "restarted," in the case of suppression effects.
+    ///
+    /// In other words, un-started effects will still apply their event callbacks if they exist on
+    /// the battle field. If an effect should *not* apply before a `Start` event finishes, you
+    /// *must* check `$effect_state.started` as a condition in the corresponding event callback. The
+    /// reason for this difference is that not all effects "start," so it's not feasible to know
+    /// what effects should apply even if they don't have a notion of "being started."
+    pub fn started(&self) -> bool {
+        self.get(Self::STARTED)
+            .cloned()
+            .map(|val| val.boolean().ok())
+            .flatten()
+            .unwrap_or(false)
+    }
+
+    /// Sets whether or not the effect is started.
+    pub fn set_started(&mut self, started: bool) {
+        self.values
+            .insert(Self::STARTED.to_owned(), Value::Boolean(started));
+    }
+
     /// Whether or not the effect is ending and should be ignored.
+    ///
+    /// If an effect is ending, its corresponding `End` event is running and it is assumed that the
+    /// effect is about to be deleted (or at least suppressed) from the battle field. While an
+    /// effect is ending, event callbacks will *not* trigger.
     pub fn ending(&self) -> bool {
         self.get(Self::ENDING)
             .cloned()

@@ -188,7 +188,6 @@ impl MoveSlot {
 pub struct AbilitySlot {
     pub id: Id,
     pub order: u32,
-    pub active: bool,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -196,7 +195,6 @@ pub struct AbilitySlot {
 #[derive(Clone)]
 pub struct ItemSlot {
     pub id: Id,
-    pub active: bool,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -501,14 +499,12 @@ impl Mon {
         let ability = AbilitySlot {
             id: Id::from(data.ability),
             order: 0,
-            active: false,
             effect_state: fxlang::EffectState::new(),
         };
 
         let item = match data.item {
             Some(item) => Some(ItemSlot {
                 id: Id::from(item),
-                active: false,
                 effect_state: fxlang::EffectState::new(),
             }),
             None => None,
@@ -654,7 +650,6 @@ impl Mon {
             let item = context.battle().dex.items.get_by_id(&item.id)?;
             context.mon_mut().item = Some(ItemSlot {
                 id: item.id().clone(),
-                active: false,
                 effect_state: fxlang::EffectState::initial_effect_state(
                     context.as_battle_context_mut(),
                     Some(&EffectHandle::Condition(Id::from_known("start"))),
@@ -1576,7 +1571,6 @@ impl Mon {
         context.mon_mut().base_ability = AbilitySlot {
             id: ability.id().clone(),
             order: 0,
-            active: false,
             effect_state: fxlang::EffectState::initial_effect_state(
                 context.as_battle_context_mut(),
                 Some(&EffectHandle::Condition(Id::from_known("start"))),

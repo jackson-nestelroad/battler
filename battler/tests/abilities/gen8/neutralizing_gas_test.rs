@@ -163,6 +163,34 @@ fn psyduck_castform() -> Result<TeamData> {
     .wrap_error()
 }
 
+fn ninetales_weezing() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Ninetales",
+                    "species": "Ninetales",
+                    "ability": "Flash Fire",
+                    "moves": [
+                        "Flamethrower"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Weezing",
+                    "species": "Weezing",
+                    "ability": "Neutralizing Gas",
+                    "moves": [],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
 fn make_battle(
     data: &dyn DataStore,
     battle_type: BattleType,
@@ -252,6 +280,83 @@ fn neutralizing_gas_ignores_unsuppressible_ability() {
             "damage|mon:Weezing,player-1,1|health:72/100",
             "residual",
             "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn neutralizing_gas_ends_ability_on_appearance() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(
+        &data,
+        BattleType::Singles,
+        0,
+        ninetales_weezing().unwrap(),
+        ninetales_weezing().unwrap(),
+    )
+    .unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Ninetales,player-2,1",
+            "start|mon:Ninetales,player-2,1|ability:Flash Fire",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "split|side:0",
+            "switch|player:player-1|position:1|name:Weezing|health:125/125|species:Weezing|level:50|gender:U",
+            "switch|player:player-1|position:1|name:Weezing|health:100/100|species:Weezing|level:50|gender:U",
+            "ability|mon:Weezing,player-1,1|ability:Neutralizing Gas",
+            "end|mon:Ninetales,player-2,1|ability:Flash Fire|silent",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn neutralizing_gas_does_not_end_ability_on_appearance_with_ability_shield() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team = ninetales_weezing().unwrap();
+    team.members[0].item = Some("Ability Shield".to_owned());
+    let mut battle = make_battle(
+        &data,
+        BattleType::Singles,
+        0,
+        ninetales_weezing().unwrap(),
+        team,
+    )
+    .unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Ninetales,player-2,1",
+            "start|mon:Ninetales,player-2,1|ability:Flash Fire",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "split|side:0",
+            "switch|player:player-1|position:1|name:Weezing|health:125/125|species:Weezing|level:50|gender:U",
+            "switch|player:player-1|position:1|name:Weezing|health:100/100|species:Weezing|level:50|gender:U",
+            "ability|mon:Weezing,player-1,1|ability:Neutralizing Gas",
+            "residual",
+            "turn|turn:3"
         ]"#,
     )
     .unwrap();

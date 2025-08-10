@@ -92,8 +92,8 @@
     "condition": {
       "callbacks": {
         "suppress_mon_ability": [
-          "# Do not suppress ourself, so that we can trigger this condition to end.",
-          "if $mon.ability != $this.id:",
+          "# Do not suppress our own ability, so that we can trigger this condition to end.",
+          "if $effect_state.started and $mon.ability != $this.id:",
           ["return true"]
         ],
         "on_field_start": [
@@ -101,7 +101,7 @@
           "# Note that `end_ability` has no effect if the ability was already ended elsewhere, or never started.",
           "foreach $mon in func_call(all_active_mons_in_speed_order):",
           [
-            "if $mon.effective_ability.is_undefined:",
+            "if func_call(mon_ability_suppressed_by_this_effect: $mon):",
             ["end_ability: $mon silent"]
           ]
         ],

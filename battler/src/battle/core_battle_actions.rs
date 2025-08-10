@@ -3863,7 +3863,7 @@ pub fn end_ability_even_if_exiting(
     context: &mut ApplyingEffectContext,
     silent: bool,
 ) -> Result<()> {
-    if !context.target().ability.active {
+    if !context.target().ability.effect_state.started() {
         return Ok(());
     }
 
@@ -3873,13 +3873,12 @@ pub fn end_ability_even_if_exiting(
 
     core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::End);
 
-    context.target_mut().ability.active = false;
     Ok(())
 }
 
 /// Starts the target Mon's ability, if it is not already started.
 pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
-    if context.target().hp == 0 || context.target().ability.active {
+    if context.target().hp == 0 || context.target().ability.effect_state.started() {
         return Ok(());
     }
 
@@ -3892,7 +3891,6 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
         core_battle_logs::ability(context)?;
     }
     core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::Start);
-    context.target_mut().ability.active = true;
     Ok(())
 }
 
@@ -3937,7 +3935,6 @@ pub fn set_ability(
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
         order: ability_order,
-        active: false,
         effect_state: fxlang::EffectState::new(),
     };
 
@@ -4217,7 +4214,7 @@ pub fn end_item(
             .target()
             .item
             .as_ref()
-            .is_none_or(|item| !item.active)
+            .is_none_or(|item| !item.effect_state.started())
     {
         return Ok(());
     }
@@ -4248,12 +4245,6 @@ pub fn end_item(
         },
     );
 
-    context
-        .target_mut()
-        .item
-        .as_mut()
-        .wrap_expectation("expected item")?
-        .active = false;
     Ok(())
 }
 
@@ -4266,7 +4257,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
             .target()
             .item
             .as_ref()
-            .is_none_or(|item| item.active)
+            .is_none_or(|item| item.effect_state.started())
     {
         return Ok(());
     }
@@ -4280,12 +4271,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
     core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
-    context
-        .target_mut()
-        .item
-        .as_mut()
-        .wrap_expectation("expected item")?
-        .active = true;
+
     Ok(())
 }
 
@@ -4304,7 +4290,6 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> 
     let source_handle = context.source_handle();
     context.target_mut().item = Some(ItemSlot {
         id: item.id().clone(),
-        active: false,
         effect_state: fxlang::EffectState::initial_effect_state(
             context.as_battle_context_mut(),
             Some(&effect_handle),

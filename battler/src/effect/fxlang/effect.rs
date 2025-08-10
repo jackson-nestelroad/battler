@@ -1434,7 +1434,16 @@ impl BattleEvent {
     /// are updated without running the actual callback.
     pub fn force_default_callback(&self) -> bool {
         match self {
+            Self::FieldStart | Self::SideStart | Self::SlotStart | Self::Start => true,
             Self::FieldResidual | Self::SideResidual | Self::Residual => true,
+            _ => false,
+        }
+    }
+
+    /// Whether or not the event is intended to start the associated effect.
+    pub fn starts_effect(&self) -> bool {
+        match self {
+            Self::FieldStart | Self::Start | Self::SideStart | Self::SlotStart => true,
             _ => false,
         }
     }
@@ -1442,7 +1451,7 @@ impl BattleEvent {
     /// Whether or not the event is intended to end the associated effect.
     pub fn ends_effect(&self) -> bool {
         match self {
-            Self::End | Self::FieldEnd | Self::SideEnd | Self::SlotEnd => true,
+            Self::FieldEnd | Self::End | Self::SideEnd | Self::SlotEnd => true,
             _ => false,
         }
     }

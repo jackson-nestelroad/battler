@@ -210,13 +210,29 @@ fn run_effect_event_with_errors(
             context.field_effect_context(effect_handle.clone(), None, None)?,
         ),
     };
-    EffectManager::evaluate(
+    let result = EffectManager::evaluate(
         &mut context,
         effect_handle,
         event,
         input,
-        effect_state_connector,
-    )
+        effect_state_connector.clone(),
+    );
+
+    if let Some(effect_state_connector) = &effect_state_connector {
+        if event.starts_effect() {
+            effect_state_connector
+                .get_mut(context.battle_context_mut())?
+                .set_started(true);
+        }
+
+        if event.ends_effect() {
+            effect_state_connector
+                .get_mut(context.battle_context_mut())?
+                .set_started(false);
+        }
+    }
+
+    result
 }
 
 fn run_active_move_event_with_errors(
@@ -535,7 +551,7 @@ fn run_mon_ability_event_internal(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
-    let ability = context.target().ability.id.clone();
+    let ability = mon_states::effective_ability(&mut context.target_context().ok()?)?;
     let target_handle = context.target_handle();
     run_callback_under_applying_effect(
         context,
@@ -553,7 +569,7 @@ fn run_mon_item_event_internal(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
-    let item = context.target().item.as_ref().map(|item| item.id.clone())?;
+    let item = mon_states::effective_item(&mut context.target_context().ok()?)?;
     let target_handle = context.target_handle();
     run_callback_under_applying_effect(
         context,
@@ -769,23 +785,37 @@ fn find_callbacks_on_mon(
 
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonAbility.callback_lookup_layer()
-        && let Some(ability) = mon_states::effective_ability(&mut context)
     {
-        callbacks.push(CallbackHandle::new(
-            EffectHandle::Ability(ability),
-            event,
-            AppliedEffectLocation::MonAbility(mon),
-        ));
+        let ability = context.mon().ability.id.clone();
+        let effective_ability = mon_states::effective_ability(&mut context);
+        let suppressed = effective_ability.is_none();
+        if event.force_default_callback() || !suppressed {
+            let ability = effective_ability.unwrap_or(ability);
+            let mut callback_handle = CallbackHandle::new(
+                EffectHandle::Ability(ability),
+                event,
+                AppliedEffectLocation::MonAbility(mon),
+            );
+            callback_handle.suppressed = suppressed;
+            callbacks.push(callback_handle);
+        }
     }
 
     if event.callback_lookup_layer() > fxlang::BattleEvent::SuppressMonItem.callback_lookup_layer()
-        && let Some(item) = mon_states::effective_item(&mut context)
+        && let Some(item) = context.mon().item.as_ref().map(|item| item.id.clone())
     {
-        callbacks.push(CallbackHandle::new(
-            EffectHandle::Item(item),
-            event,
-            AppliedEffectLocation::MonItem(mon),
-        ));
+        let effective_item = mon_states::effective_item(&mut context);
+        let suppressed = effective_item.is_none();
+        if event.force_default_callback() || !suppressed {
+            let item = effective_item.unwrap_or(item);
+            let mut callback_handle = CallbackHandle::new(
+                EffectHandle::Item(item),
+                event,
+                AppliedEffectLocation::MonItem(mon),
+            );
+            callback_handle.suppressed = suppressed;
+            callbacks.push(callback_handle);
+        }
     }
 
     // TODO: Species.

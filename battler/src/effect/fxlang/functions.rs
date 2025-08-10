@@ -182,6 +182,9 @@ pub fn run_function(
         "log_status" => log_status(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
         "max" => max(context).map(|val| Some(val)),
+        "mon_ability_suppressed_by_this_effect" => {
+            mon_ability_suppressed_by_this_effect(context).map(|val| Some(val))
+        }
         "mon_at_target_location" => mon_at_target_location(context),
         "mon_in_position" => mon_in_position(context),
         "move_at_move_slot_index" => move_at_move_slot_index(context),
@@ -3539,4 +3542,35 @@ fn end_item(mut context: FunctionContext) -> Result<()> {
         core_battle_actions::EndItemType::End,
         silent,
     )
+}
+
+fn mon_ability_suppressed_by_this_effect(mut context: FunctionContext) -> Result<Value> {
+    let target_handle = context.target_handle_positional()?;
+    let effect_state = context
+        .effect_state()
+        .wrap_expectation("this effect has no effect state")?;
+
+    let mut context = context.context.mon_context(target_handle)?;
+
+    let started = effect_state
+        .get_mut(context.as_battle_context_mut())?
+        .started();
+
+    effect_state
+        .get_mut(context.as_battle_context_mut())?
+        .set_started(false);
+    let ability_without_this_effect = mon_states::effective_ability(&mut context);
+
+    effect_state
+        .get_mut(context.as_battle_context_mut())?
+        .set_started(true);
+    let ability_with_this_effect = mon_states::effective_ability(&mut context);
+
+    effect_state
+        .get_mut(context.as_battle_context_mut())?
+        .set_started(started);
+
+    Ok(Value::Boolean(
+        ability_without_this_effect.is_some() && ability_with_this_effect.is_none(),
+    ))
 }
