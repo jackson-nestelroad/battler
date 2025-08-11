@@ -148,6 +148,7 @@ pub fn run_function(
         "has_ability" => has_ability(context).map(|val| Some(val)),
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
+        "has_pseudo_weather" => has_pseudo_weather(context).map(|val| Some(val)),
         "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
         "has_type" => has_type(context).map(|val| Some(val)),
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
@@ -436,6 +437,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("use_effect_state_source_effect")
     }
 
+    fn use_effect_state_target(&mut self) -> bool {
+        self.has_flag("use_effect_state_target")
+    }
+
     fn use_effect_state_target_as_source(&mut self) -> bool {
         self.has_flag("use_effect_state_target_as_source")
     }
@@ -510,6 +515,11 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
                 .get_mut(self.evaluation_context_mut().battle_context_mut())
                 .ok()?
                 .source()
+        } else if self.use_effect_state_target() {
+            self.effect_state()?
+                .get_mut(self.evaluation_context_mut().battle_context_mut())
+                .ok()?
+                .target()
         } else if self.use_source() {
             self.evaluation_context().source_handle()
         } else {
@@ -3505,6 +3515,24 @@ fn remove_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
         &pseudo_weather,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn has_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
+    let pseudo_weather = context
+        .pop_front()
+        .wrap_expectation("missing pseudo weather id")?
+        .string()
+        .map(|ability| Id::from(ability))
+        .wrap_error_with_message("invalid pseudo weather id")?;
+    Ok(Value::Boolean(
+        context
+            .context
+            .battle_context()
+            .battle()
+            .field
+            .pseudo_weathers
+            .contains_key(&pseudo_weather),
+    ))
 }
 
 fn start_ability(mut context: FunctionContext) -> Result<()> {

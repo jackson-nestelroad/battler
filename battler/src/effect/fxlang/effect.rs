@@ -220,6 +220,8 @@ enum CommonCallbackType {
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
+    FieldEffectVoid =
+        CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
 }
 
 /// A battle event that can trigger a [`Callback`].
@@ -251,6 +253,14 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AddVolatile"]
     AddVolatile,
+    /// Runs after a new pseudo-weather is added to the field.
+    ///
+    /// Only runs if the pseudo-weather has been added successfully. This event will not undo the
+    /// pseudo-weather.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "AfterAddPseudoWeather"]
+    AfterAddPseudoWeather,
     /// Runs after a Mon receives a new volatile effect.
     ///
     /// Only runs if the volatile has been added successfully. This event will not undo the
@@ -1094,6 +1104,7 @@ impl BattleEvent {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -1266,7 +1277,9 @@ impl BattleEvent {
     /// The name of the input variable by index.
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         match self {
-            Self::AddPseudoWeather => &[("pseudo_weather", ValueType::Effect, true)],
+            Self::AddPseudoWeather | Self::AfterAddPseudoWeather => {
+                &[("pseudo_weather", ValueType::Effect, true)]
+            }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
@@ -1631,6 +1644,7 @@ pub struct Callbacks {
     pub on_accuracy_exempt: Callback,
     pub on_add_pseudo_weather: Callback,
     pub on_add_volatile: Callback,
+    pub on_after_add_pseudo_weather: Callback,
     pub on_after_add_volatile: Callback,
     pub on_after_hit: Callback,
     pub on_after_move: Callback,
@@ -1791,6 +1805,7 @@ impl Callbacks {
             BattleEvent::AccuracyExempt => &self.on_accuracy_exempt,
             BattleEvent::AddPseudoWeather => &self.on_add_pseudo_weather,
             BattleEvent::AddVolatile => &self.on_add_volatile,
+            BattleEvent::AfterAddPseudoWeather => &self.on_after_add_pseudo_weather,
             BattleEvent::AfterAddVolatile => &self.on_after_add_volatile,
             BattleEvent::AfterHit => &self.on_after_hit,
             BattleEvent::AfterMove => &self.on_after_move,

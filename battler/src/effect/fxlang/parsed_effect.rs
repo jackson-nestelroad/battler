@@ -36,6 +36,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::AccuracyExempt, callbacks)?;
             parsed.parse_and_save(BattleEvent::AddPseudoWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::AddVolatile, callbacks)?;
+            parsed.parse_and_save(BattleEvent::AfterAddPseudoWeather, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterAddVolatile, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterHit, callbacks)?;
             parsed.parse_and_save(BattleEvent::AfterMove, callbacks)?;

@@ -221,7 +221,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. `AddPseudoWeather`.
                         1. Terrain `Duration`.
                         1. Terrain `FieldStart`.
-                        1. `PseudoWeatherChange`.
+                        1. `AfterAddPseudoWeather`.
                      1. Apply force switch if possible.
                      1. `HitField`, `HitSide`, or `Hit`.
                      1. Mon self-destructs conditionally.

@@ -143,7 +143,7 @@
           "log_prepare_move",
           "if !func_call(run_event: ChargeMove):",
           ["return"],
-          "add_volatile: $user twoturnmove",
+          "add_volatile: $user twoturnmove link",
           "return stop"
         ]
       }
@@ -234,7 +234,7 @@
           "log_prepare_move",
           "if !func_call(run_event: ChargeMove):",
           ["return"],
-          "add_volatile: $user twoturnmove",
+          "add_volatile: $user twoturnmove link",
           "return stop"
         ]
       }
@@ -251,6 +251,19 @@
         "on_source_modify_damage": [
           "if [gust, twister] has $move.id:",
           ["return $damage * 2"]
+        ],
+        "on_after_add_pseudo_weather": [
+          "if $pseudo_weather.id == gravity:",
+          [
+            "# During Sky Drop, both the target and user have the Fly volatile.",
+            "# Only the user should have the volatile removed, which cascade removes all other effects.",
+            "if !func_call(has_volatile: $effect_state.target twoturnmove):",
+            ["return"],
+            "log_activate: with_target use_effect_state_target use_source_effect",
+            "$mon = $effect_state.target",
+            "remove_volatile: $mon $this.id",
+            "cancel_move: $mon"
+          ]
         ]
       }
     }
@@ -1080,7 +1093,7 @@
           ],
           "if !func_call(run_event: ChargeMove):",
           ["return"],
-          "add_volatile: $user twoturnmove",
+          "add_volatile: $user twoturnmove link",
           "return stop"
         ],
         "on_move_base_power": [
@@ -1275,7 +1288,7 @@
           "log_prepare_move",
           "if !func_call(run_event: ChargeMove):",
           ["return"],
-          "add_volatile: $user twoturnmove",
+          "add_volatile: $user twoturnmove link",
           "return stop"
         ]
       }
@@ -1930,7 +1943,7 @@
           "boost: $user 'def:1'",
           "if !func_call(run_event: ChargeMove):",
           ["return"],
-          "add_volatile: $user twoturnmove",
+          "add_volatile: $user twoturnmove link",
           "return stop"
         ]
       }
@@ -2103,7 +2116,7 @@
           "log_prepare_move",
           "if !func_call(run_event: ChargeMove):",
           ["return"],
-          "add_volatile: $user twoturnmove",
+          "add_volatile: $user twoturnmove link",
           "return stop"
         ]
       }

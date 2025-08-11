@@ -3822,7 +3822,11 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         return Ok(false);
     }
 
-    // TODO: PseudoWeatherChange event.
+    core_battle_effects::run_event_for_field_effect(
+        context,
+        fxlang::BattleEvent::AfterAddPseudoWeather,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
+    );
 
     Ok(true)
 }

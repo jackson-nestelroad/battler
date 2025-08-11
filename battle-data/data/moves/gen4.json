@@ -26,6 +26,41 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "All",
+    "hit_effect": {
+      "pseudo_weather": "gravity"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_duration": [
+          "if $source.is_defined and func_call(has_ability: $source persistent):",
+          ["return 7"],
+          "return 5"
+        ],
+        "on_field_start": ["log_field_start"],
+        "on_modify_accuracy": ["return $acc * 5/3"],
+        "on_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if func_call(move_has_flag: $move_slot.id gravity):",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ],
+        "is_grounded": {
+          "priority": 1,
+          "program": ["return true"]
+        },
+        "on_before_move": [
+          "if func_call(move_has_flag: $move.id gravity):",
+          ["log_cant", "return false"]
+        ],
+        "on_modify_move": [
+          "if func_call(move_has_flag: $move.id gravity):",
+          ["log_cant", "return false"]
+        ],
+        "on_field_end": ["log_field_end"]
+      }
+    },
     "flags": []
   },
   "miracleeye": {
@@ -536,7 +571,30 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Gravity", "Snatch"]
+    "flags": ["Gravity", "Snatch"],
+    "hit_effect": {
+      "volatile_status": "magnetrise"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_move": [
+          "if func_call(has_volatile: $target smackdown) or func_call(has_volatile: $target ingrain):",
+          ["return false"]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_start": ["log_start"],
+        "is_grounded": ["return false"],
+        "on_end": ["log_end"],
+        "on_after_add_pseudo_weather": [
+          "if $pseudo_weather.id == gravity:",
+          ["remove_volatile: $effect_state.target $this.id"]
+        ]
+      }
+    }
   },
   "flareblitz": {
     "name": "Flare Blitz",
