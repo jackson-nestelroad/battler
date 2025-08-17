@@ -64,33 +64,44 @@ use crate::{
 /// The type of an fxlang value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ValueType {
+    // Primitive types.
     Undefined,
     Boolean,
     Fraction,
     UFraction,
     String,
-    Mon,
-    Effect,
-    ActiveMove,
-    MoveCategory,
-    MoveTarget,
-    Type,
-    Boost,
-    BoostTable,
-    Side,
-    MoveSlot,
-    Player,
-    Accuracy,
+
+    // Battle reference types.
     Field,
     Format,
+    Side,
+    Player,
+    Mon,
+
+    // Effects.
+    Effect,
+    ActiveMove,
     HitEffect,
     SecondaryHitEffect,
+
+    // Battle value types.
+    Accuracy,
+    Boost,
+    BoostTable,
+    FieldEnvironment,
     Gender,
+    MoveCategory,
+    MoveSlot,
+    MoveTarget,
+    Nature,
     Stat,
     StatTable,
-    FieldEnvironment,
-    Nature,
+    Type,
+
+    // Effect state.
     EffectState,
+
+    // Object types.
     List,
     Object,
 }
@@ -112,6 +123,8 @@ impl Display for ValueType {
 }
 
 /// An fxlang value.
+///
+/// Owned and storable.
 #[derive(Debug, Clone)]
 pub enum Value {
     Undefined,
@@ -119,28 +132,33 @@ pub enum Value {
     Fraction(Fraction<i64>),
     UFraction(Fraction<u64>),
     String(String),
-    Mon(MonHandle),
-    Effect(EffectHandle),
-    ActiveMove(MoveHandle),
-    MoveCategory(MoveCategory),
-    MoveTarget(MoveTarget),
-    Type(Type),
-    Boost(Boost),
-    BoostTable(BoostTable),
-    Side(usize),
-    MoveSlot(MoveSlot),
-    Player(usize),
-    Accuracy(Accuracy),
+
     Field,
     Format,
+    Side(usize),
+    Player(usize),
+    Mon(MonHandle),
+
+    Effect(EffectHandle),
+    ActiveMove(MoveHandle),
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
+
+    Accuracy(Accuracy),
+    Boost(Boost),
+    BoostTable(BoostTable),
+    FieldEnvironment(FieldEnvironment),
     Gender(Gender),
+    MoveCategory(MoveCategory),
+    MoveSlot(MoveSlot),
+    MoveTarget(MoveTarget),
+    Nature(Nature),
     Stat(Stat),
     StatTable(StatTable),
-    FieldEnvironment(FieldEnvironment),
-    Nature(Nature),
+    Type(Type),
+
     EffectState(DynamicEffectStateConnector),
+
     List(Vec<Value>),
     Object(HashMap<String, Value>),
 }
@@ -154,28 +172,33 @@ impl Value {
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::String(_) => ValueType::String,
-            Self::Mon(_) => ValueType::Mon,
-            Self::Effect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
-            Self::MoveCategory(_) => ValueType::MoveCategory,
-            Self::MoveTarget(_) => ValueType::MoveTarget,
-            Self::Boost(_) => ValueType::Boost,
-            Self::BoostTable(_) => ValueType::BoostTable,
-            Self::Type(_) => ValueType::Type,
-            Self::Side(_) => ValueType::Side,
-            Self::MoveSlot(_) => ValueType::MoveSlot,
-            Self::Player(_) => ValueType::Player,
-            Self::Accuracy(_) => ValueType::Accuracy,
+
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
+            Self::Side(_) => ValueType::Side,
+            Self::Player(_) => ValueType::Player,
+            Self::Mon(_) => ValueType::Mon,
+
+            Self::Effect(_) => ValueType::Effect,
+            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
+
+            Self::Accuracy(_) => ValueType::Accuracy,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Gender(_) => ValueType::Gender,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
+            Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::Nature(_) => ValueType::Nature,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
-            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
-            Self::Nature(_) => ValueType::Nature,
+            Self::Type(_) => ValueType::Type,
+
             Self::EffectState(_) => ValueType::EffectState,
+
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -611,30 +634,36 @@ pub enum MaybeReferenceValue<'eval> {
     Fraction(Fraction<i64>),
     UFraction(Fraction<u64>),
     String(String),
-    Mon(MonHandle),
-    Effect(EffectHandle),
-    ActiveMove(MoveHandle),
-    MoveCategory(MoveCategory),
-    MoveTarget(MoveTarget),
-    Type(Type),
-    Boost(Boost),
-    BoostTable(BoostTable),
-    Side(usize),
-    MoveSlot(MoveSlot),
-    Player(usize),
-    Accuracy(Accuracy),
+
     Field,
     Format,
+    Side(usize),
+    Player(usize),
+    Mon(MonHandle),
+
+    Effect(EffectHandle),
+    ActiveMove(MoveHandle),
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
+
+    Accuracy(Accuracy),
+    Boost(Boost),
+    BoostTable(BoostTable),
+    FieldEnvironment(FieldEnvironment),
     Gender(Gender),
+    MoveCategory(MoveCategory),
+    MoveSlot(MoveSlot),
+    MoveTarget(MoveTarget),
+    Nature(Nature),
     Stat(Stat),
     StatTable(StatTable),
-    FieldEnvironment(FieldEnvironment),
-    Nature(Nature),
+    Type(Type),
+
     EffectState(DynamicEffectStateConnector),
+
     List(Vec<MaybeReferenceValue<'eval>>),
     Object(HashMap<String, MaybeReferenceValue<'eval>>),
+
     Reference(ValueRefToStoredValue<'eval>),
 }
 
@@ -647,30 +676,36 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Fraction(_) => ValueType::Fraction,
             Self::UFraction(_) => ValueType::UFraction,
             Self::String(_) => ValueType::String,
-            Self::Mon(_) => ValueType::Mon,
-            Self::Effect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
-            Self::MoveCategory(_) => ValueType::MoveCategory,
-            Self::MoveTarget(_) => ValueType::MoveTarget,
-            Self::Boost(_) => ValueType::Boost,
-            Self::BoostTable(_) => ValueType::BoostTable,
-            Self::Type(_) => ValueType::Type,
-            Self::Side(_) => ValueType::Side,
-            Self::MoveSlot(_) => ValueType::MoveSlot,
-            Self::Player(_) => ValueType::Player,
-            Self::Accuracy(_) => ValueType::Accuracy,
+
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
+            Self::Side(_) => ValueType::Side,
+            Self::Player(_) => ValueType::Player,
+            Self::Mon(_) => ValueType::Mon,
+
+            Self::Effect(_) => ValueType::Effect,
+            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
+
+            Self::Accuracy(_) => ValueType::Accuracy,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Gender(_) => ValueType::Gender,
-            Self::EffectState(_) => ValueType::EffectState,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
+            Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::Nature(_) => ValueType::Nature,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
-            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
-            Self::Nature(_) => ValueType::Nature,
+            Self::Type(_) => ValueType::Type,
+
+            Self::EffectState(_) => ValueType::EffectState,
+
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
+
             Self::Reference(val) => val.value_type(),
         }
     }
@@ -683,34 +718,40 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Fraction(val) => Value::Fraction(*val),
             Self::UFraction(val) => Value::UFraction(*val),
             Self::String(val) => Value::String(val.clone()),
-            Self::Mon(val) => Value::Mon(*val),
-            Self::Effect(val) => Value::Effect(val.clone()),
-            Self::ActiveMove(val) => Value::ActiveMove(*val),
-            Self::MoveCategory(val) => Value::MoveCategory(*val),
-            Self::MoveTarget(val) => Value::MoveTarget(*val),
-            Self::Type(val) => Value::Type(*val),
-            Self::Boost(val) => Value::Boost(*val),
-            Self::BoostTable(val) => Value::BoostTable(val.clone()),
-            Self::Side(val) => Value::Side(*val),
-            Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
-            Self::Player(val) => Value::Player(*val),
-            Self::Accuracy(val) => Value::Accuracy(*val),
+
             Self::Field => Value::Field,
             Self::Format => Value::Format,
+            Self::Side(val) => Value::Side(*val),
+            Self::Player(val) => Value::Player(*val),
+            Self::Mon(val) => Value::Mon(*val),
+
+            Self::Effect(val) => Value::Effect(val.clone()),
+            Self::ActiveMove(val) => Value::ActiveMove(*val),
             Self::HitEffect(val) => Value::HitEffect(val.clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect(val.clone()),
+
+            Self::Accuracy(val) => Value::Accuracy(*val),
+            Self::Boost(val) => Value::Boost(*val),
+            Self::BoostTable(val) => Value::BoostTable(val.clone()),
+            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::Gender(val) => Value::Gender(*val),
+            Self::MoveCategory(val) => Value::MoveCategory(*val),
+            Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
+            Self::Nature(val) => Value::Nature(*val),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable(val.clone()),
-            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
-            Self::Nature(val) => Value::Nature(*val),
+            Self::Type(val) => Value::Type(*val),
+
             Self::EffectState(val) => Value::EffectState(val.clone()),
+
             Self::List(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object(
                 val.into_iter()
                     .map(|(key, val)| (key.clone(), val.to_owned()))
                     .collect(),
             ),
+
             Self::Reference(val) => val.to_owned(),
         }
     }
@@ -774,28 +815,33 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::Fraction(val) => Self::Fraction(val),
             Value::UFraction(val) => Self::UFraction(val),
             Value::String(val) => Self::String(val),
-            Value::Mon(val) => Self::Mon(val),
-            Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(val),
-            Value::MoveCategory(val) => Self::MoveCategory(val),
-            Value::MoveTarget(val) => Self::MoveTarget(val),
-            Value::Type(val) => Self::Type(val),
-            Value::Boost(val) => Self::Boost(val),
-            Value::BoostTable(val) => Self::BoostTable(val),
-            Value::Side(val) => Self::Side(val),
-            Value::MoveSlot(val) => Self::MoveSlot(val),
-            Value::Player(val) => Self::Player(val),
-            Value::Accuracy(val) => Self::Accuracy(val),
+
             Value::Field => Self::Field,
             Value::Format => Self::Field,
+            Value::Side(val) => Self::Side(val),
+            Value::Player(val) => Self::Player(val),
+            Value::Mon(val) => Self::Mon(val),
+
+            Value::Effect(val) => Self::Effect(val),
+            Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            Value::Accuracy(val) => Self::Accuracy(val),
+            Value::Boost(val) => Self::Boost(val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::Gender(val) => Self::Gender(val),
+            Value::MoveCategory(val) => Self::MoveCategory(val),
+            Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::MoveTarget(val) => Self::MoveTarget(val),
+            Value::Nature(val) => Self::Nature(val),
             Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
-            Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
-            Value::Nature(val) => Self::Nature(val),
+            Value::Type(val) => Self::Type(val),
+
             Value::EffectState(val) => Self::EffectState(val),
+
             Value::List(val) => Self::List(
                 val.into_iter()
                     .map(|val| MaybeReferenceValue::from(val))
@@ -817,6 +863,9 @@ impl<'eval> From<ValueRefToStoredValue<'eval>> for MaybeReferenceValue<'eval> {
 }
 
 /// A [`Value`], but containing a reference to the underlying value.
+///
+/// Primitive types are copied for simplicity. Some types have "temporary" alternatives that
+/// represent a new value in a place where a reference would be expected.
 #[derive(Clone)]
 pub enum ValueRef<'eval> {
     Undefined,
@@ -826,29 +875,34 @@ pub enum ValueRef<'eval> {
     String(&'eval String),
     Str(&'eval str),
     TempString(String),
+
+    Field,
+    Format,
+    Side(usize),
+    Player(usize),
     Mon(MonHandle),
+
     Effect(&'eval EffectHandle),
     TempEffect(EffectHandle),
     ActiveMove(MoveHandle),
-    MoveCategory(MoveCategory),
-    MoveTarget(MoveTarget),
-    Type(Type),
-    Boost(Boost),
-    BoostTable(&'eval BoostTable),
-    Side(usize),
-    MoveSlot(&'eval MoveSlot),
-    Player(usize),
-    Accuracy(Accuracy),
-    Field,
-    Format,
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
+
+    Accuracy(Accuracy),
+    Boost(Boost),
+    BoostTable(&'eval BoostTable),
+    FieldEnvironment(FieldEnvironment),
     Gender(Gender),
+    MoveCategory(MoveCategory),
+    MoveSlot(&'eval MoveSlot),
+    MoveTarget(MoveTarget),
+    Nature(Nature),
     Stat(Stat),
     StatTable(&'eval StatTable),
-    FieldEnvironment(FieldEnvironment),
-    Nature(Nature),
+    Type(Type),
+
     EffectState(DynamicEffectStateConnector),
+
     List(&'eval Vec<Value>),
     TempList(Vec<ValueRefToStoredValue<'eval>>),
     Object(&'eval HashMap<String, Value>),
@@ -865,29 +919,34 @@ impl<'eval> ValueRef<'eval> {
             Self::String(_) => ValueType::String,
             Self::Str(_) => ValueType::String,
             Self::TempString(_) => ValueType::String,
+
+            Self::Field => ValueType::Field,
+            Self::Format => ValueType::Format,
+            Self::Side(_) => ValueType::Side,
+            Self::Player(_) => ValueType::Player,
             Self::Mon(_) => ValueType::Mon,
+
             Self::Effect(_) => ValueType::Effect,
             Self::TempEffect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
-            Self::MoveCategory(_) => ValueType::MoveCategory,
-            Self::MoveTarget(_) => ValueType::MoveTarget,
-            Self::Type(_) => ValueType::Type,
-            Self::Boost(_) => ValueType::Boost,
-            Self::BoostTable(_) => ValueType::BoostTable,
-            Self::Side(_) => ValueType::Side,
-            Self::MoveSlot(_) => ValueType::MoveSlot,
-            Self::Player(_) => ValueType::Player,
-            Self::Accuracy(_) => ValueType::Accuracy,
-            Self::Field => ValueType::Field,
-            Self::Format => ValueType::Format,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
+
+            Self::Accuracy(_) => ValueType::Accuracy,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Gender(_) => ValueType::Gender,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
+            Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::Nature(_) => ValueType::Nature,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
-            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
-            Self::Nature(_) => ValueType::Nature,
+            Self::Type(_) => ValueType::Type,
+
             Self::EffectState(_) => ValueType::EffectState,
+
             Self::List(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
@@ -904,29 +963,34 @@ impl<'eval> ValueRef<'eval> {
             Self::String(val) => Value::String(val.to_string()),
             Self::Str(val) => Value::String(val.to_string()),
             Self::TempString(val) => Value::String(val.clone()),
+
+            Self::Field => Value::Field,
+            Self::Format => Value::Format,
+            Self::Side(val) => Value::Side(*val),
+            Self::Player(val) => Value::Player(*val),
             Self::Mon(val) => Value::Mon(*val),
+
             Self::Effect(val) => Value::Effect((*val).clone()),
             Self::TempEffect(val) => Value::Effect(val.clone()),
             Self::ActiveMove(val) => Value::ActiveMove(*val),
-            Self::MoveCategory(val) => Value::MoveCategory(*val),
-            Self::MoveTarget(val) => Value::MoveTarget(*val),
-            Self::Type(val) => Value::Type(*val),
-            Self::Boost(val) => Value::Boost(*val),
-            Self::BoostTable(val) => Value::BoostTable((*val).clone()),
-            Self::Side(val) => Value::Side(*val),
-            Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
-            Self::Player(val) => Value::Player(*val),
-            Self::Accuracy(val) => Value::Accuracy(*val),
-            Self::Field => Value::Field,
-            Self::Format => Value::Format,
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect((*val).clone()),
+
+            Self::Accuracy(val) => Value::Accuracy(*val),
+            Self::Boost(val) => Value::Boost(*val),
+            Self::BoostTable(val) => Value::BoostTable((*val).clone()),
+            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::Gender(val) => Value::Gender(*val),
+            Self::MoveCategory(val) => Value::MoveCategory(*val),
+            Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
+            Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::Nature(val) => Value::Nature(*val),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
-            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
-            Self::Nature(val) => Value::Nature(*val),
+            Self::Type(val) => Value::Type(*val),
+
             Self::EffectState(val) => Value::EffectState(val.clone()),
+
             Self::List(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::Object(val) => Value::Object((*val).clone()),
@@ -1045,28 +1109,33 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::Fraction(val) => Self::Fraction(*val),
             Value::UFraction(val) => Self::UFraction(*val),
             Value::String(val) => Self::String(val),
-            Value::Mon(val) => Self::Mon(*val),
-            Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(*val),
-            Value::MoveCategory(val) => Self::MoveCategory(*val),
-            Value::MoveTarget(val) => Self::MoveTarget(*val),
-            Value::Type(val) => Self::Type(*val),
-            Value::Boost(val) => Self::Boost(*val),
-            Value::BoostTable(val) => Self::BoostTable(val),
-            Value::Side(val) => Self::Side(*val),
-            Value::MoveSlot(val) => Self::MoveSlot(val),
-            Value::Player(val) => Self::Player(*val),
-            Value::Accuracy(val) => Self::Accuracy(*val),
+
             Value::Field => Self::Field,
             Value::Format => Self::Format,
+            Value::Side(val) => Self::Side(*val),
+            Value::Player(val) => Self::Player(*val),
+            Value::Mon(val) => Self::Mon(*val),
+
+            Value::Effect(val) => Self::Effect(val),
+            Value::ActiveMove(val) => Self::ActiveMove(*val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            Value::Accuracy(val) => Self::Accuracy(*val),
+            Value::Boost(val) => Self::Boost(*val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::Gender(val) => Self::Gender(*val),
+            Value::MoveCategory(val) => Self::MoveCategory(*val),
+            Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::MoveTarget(val) => Self::MoveTarget(*val),
+            Value::Nature(val) => Self::Nature(*val),
             Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
-            Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
-            Value::Nature(val) => Self::Nature(*val),
+            Value::Type(val) => Self::Type(*val),
+
             Value::EffectState(val) => Self::EffectState(val.clone()),
+
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -1115,6 +1184,8 @@ impl<'eval> ValueRefToStoredValue<'eval> {
 }
 
 /// A [`Value`], but containing a mutable reference to the underlying value.
+///
+/// Any type that should be writable during evaluation must be represented here.
 pub enum ValueRefMut<'eval> {
     Undefined(&'eval mut Value),
     Boolean(&'eval mut bool),
@@ -1132,33 +1203,38 @@ pub enum ValueRefMut<'eval> {
     String(&'eval mut String),
     OptionalString(&'eval mut Option<String>),
     OptionalId(&'eval mut Option<Id>),
+
+    Field,
+    Format,
+    Side(&'eval mut usize),
+    Player(&'eval mut usize),
     Mon(&'eval mut MonHandle),
+
     Effect(&'eval mut EffectHandle),
     ActiveMove(&'eval mut MoveHandle),
-    MoveCategory(&'eval mut MoveCategory),
-    MoveTarget(&'eval mut MoveTarget),
-    Type(&'eval mut Type),
+    HitEffect(&'eval mut HitEffect),
+    OptionalHitEffect(&'eval mut Option<HitEffect>),
+    SecondaryHitEffect(&'eval mut SecondaryEffectData),
+    SecondaryHitEffectList(&'eval mut Vec<SecondaryEffectData>),
+
+    Accuracy(&'eval mut Accuracy),
     Boost(&'eval mut Boost),
     BoostTable(&'eval mut BoostTable),
     OptionalBoostTable(&'eval mut Option<BoostTable>),
-    Side(&'eval mut usize),
-    MoveSlot(&'eval mut MoveSlot),
-    Player(&'eval mut usize),
-    Accuracy(&'eval mut Accuracy),
-    Field,
-    Format,
-    HitEffect(&'eval mut HitEffect),
-    SecondaryHitEffect(&'eval mut SecondaryEffectData),
-    SecondaryHitEffectList(&'eval mut Vec<SecondaryEffectData>),
-    OptionalHitEffect(&'eval mut Option<HitEffect>),
+    FieldEnvironment(&'eval mut FieldEnvironment),
     Gender(&'eval mut Gender),
+    MoveCategory(&'eval mut MoveCategory),
+    MoveSlot(&'eval mut MoveSlot),
+    MoveTarget(&'eval mut MoveTarget),
     OptionalMultihitType(&'eval mut Option<MultihitType>),
+    Nature(&'eval mut Nature),
     Stat(&'eval mut Stat),
     StatTable(&'eval mut StatTable),
-    FieldEnvironment(&'eval mut FieldEnvironment),
-    Nature(&'eval mut Nature),
+    Type(&'eval mut Type),
+
     EffectState(&'eval mut DynamicEffectStateConnector),
     TempEffectState(DynamicEffectStateConnector),
+
     List(&'eval mut Vec<Value>),
     Object(&'eval mut HashMap<String, Value>),
 }
@@ -1183,33 +1259,38 @@ impl<'eval> ValueRefMut<'eval> {
             Self::String(_) => ValueType::String,
             Self::OptionalString(_) => ValueType::String,
             Self::OptionalId(_) => ValueType::String,
-            Self::Mon(_) => ValueType::Mon,
-            Self::Effect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
-            Self::MoveCategory(_) => ValueType::MoveCategory,
-            Self::MoveTarget(_) => ValueType::MoveTarget,
-            Self::Type(_) => ValueType::Type,
-            Self::Boost(_) => ValueType::Boost,
-            Self::BoostTable(_) => ValueType::BoostTable,
-            Self::OptionalBoostTable(_) => ValueType::BoostTable,
-            Self::Side(_) => ValueType::Side,
-            Self::MoveSlot(_) => ValueType::MoveSlot,
-            Self::Player(_) => ValueType::Player,
-            Self::Accuracy(_) => ValueType::Accuracy,
+
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
+            Self::Side(_) => ValueType::Side,
+            Self::Player(_) => ValueType::Player,
+            Self::Mon(_) => ValueType::Mon,
+
+            Self::Effect(_) => ValueType::Effect,
+            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::OptionalHitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
             Self::SecondaryHitEffectList(_) => ValueType::List,
+
+            Self::Accuracy(_) => ValueType::Accuracy,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::OptionalBoostTable(_) => ValueType::BoostTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Gender(_) => ValueType::Gender,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
+            Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::MoveTarget(_) => ValueType::MoveTarget,
             Self::OptionalMultihitType(_) => ValueType::UFraction,
+            Self::Nature(_) => ValueType::Nature,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
-            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
-            Self::Nature(_) => ValueType::Nature,
+            Self::Type(_) => ValueType::Type,
+
             Self::EffectState(_) => ValueType::EffectState,
             Self::TempEffectState(_) => ValueType::EffectState,
+
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
@@ -1224,28 +1305,33 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Fraction(val) => Self::Fraction(val),
             Value::UFraction(val) => Self::UFraction(val),
             Value::String(val) => Self::String(val),
-            Value::Mon(val) => Self::Mon(val),
-            Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(val),
-            Value::MoveCategory(val) => Self::MoveCategory(val),
-            Value::MoveTarget(val) => Self::MoveTarget(val),
-            Value::Type(val) => Self::Type(val),
-            Value::Boost(val) => Self::Boost(val),
-            Value::BoostTable(val) => Self::BoostTable(val),
-            Value::Side(val) => Self::Side(val),
-            Value::MoveSlot(val) => Self::MoveSlot(val),
-            Value::Player(val) => Self::Player(val),
-            Value::Accuracy(val) => Self::Accuracy(val),
+
             Value::Field => Self::Field,
             Value::Format => Self::Format,
+            Value::Side(val) => Self::Side(val),
+            Value::Player(val) => Self::Player(val),
+            Value::Mon(val) => Self::Mon(val),
+
+            Value::Effect(val) => Self::Effect(val),
+            Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            Value::Accuracy(val) => Self::Accuracy(val),
+            Value::Boost(val) => Self::Boost(val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::Gender(val) => Self::Gender(val),
+            Value::MoveCategory(val) => Self::MoveCategory(val),
+            Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::MoveTarget(val) => Self::MoveTarget(val),
+            Value::Nature(val) => Self::Nature(val),
             Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
-            Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
-            Value::Nature(val) => Self::Nature(val),
+            Value::Type(val) => Self::Type(val),
+
             Value::EffectState(val) => Self::EffectState(val),
+
             Value::List(val) => Self::List(val),
             Value::Object(val) => Self::Object(val),
         }
@@ -1254,12 +1340,12 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
 
 /// The value type used for operations.
 ///
-/// Practically a union of [`MaybeReferenceValue`] and [`ValueRef`]. This type is needed because
-/// there is a distinction between owned values and reference values. For example, a program may
-/// compare a list stored as a variable (consisting of [`Value`] objects) and a list generated at
-/// runtime that is not stored as a variable (consisting of [`MaybeReferenceValue`] objects). This
-/// type allows these two lists to be operated on directly, without needing to allocate memory for
-/// an extra list for either one.
+/// Conceptually, this type is a union of [`MaybeReferenceValue`] and [`ValueRef`]. This type is
+/// needed because there is a distinction between owned values and reference values. For example, a
+/// program may compare a list stored as a variable (consisting of [`Value`] objects) and a list
+/// generated at runtime that is not stored as a variable (consisting of [`MaybeReferenceValue`]
+/// objects). This type allows these two lists to be operated on directly, without needing to
+/// allocate memory for an extra list for either one.
 ///
 /// Primitive types are always passed by value. More complex types, like lists and objects, are
 /// passed by reference.
@@ -1271,29 +1357,34 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     String(&'eval String),
     Str(&'eval str),
     TempString(String),
+
+    Field,
+    Format,
+    Side(usize),
+    Player(usize),
     Mon(MonHandle),
+
     Effect(&'eval EffectHandle),
     TempEffect(EffectHandle),
     ActiveMove(MoveHandle),
-    MoveCategory(MoveCategory),
-    MoveTarget(MoveTarget),
-    Type(Type),
-    Boost(Boost),
-    BoostTable(&'eval BoostTable),
-    Side(usize),
-    MoveSlot(&'eval MoveSlot),
-    Player(usize),
-    Accuracy(Accuracy),
-    Field,
-    Format,
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
+
+    Accuracy(Accuracy),
+    Boost(Boost),
+    BoostTable(&'eval BoostTable),
+    FieldEnvironment(FieldEnvironment),
     Gender(Gender),
+    MoveCategory(MoveCategory),
+    MoveSlot(&'eval MoveSlot),
+    MoveTarget(MoveTarget),
+    Nature(Nature),
     Stat(Stat),
     StatTable(&'eval StatTable),
-    FieldEnvironment(FieldEnvironment),
-    Nature(Nature),
+    Type(Type),
+
     EffectState(DynamicEffectStateConnector),
+
     List(&'eval Vec<MaybeReferenceValue<'eval>>),
     StoredList(&'eval Vec<Value>),
     TempList(Vec<MaybeReferenceValue<'eval>>),
@@ -1312,29 +1403,34 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::String(_) => ValueType::String,
             Self::Str(_) => ValueType::String,
             Self::TempString(_) => ValueType::String,
+
+            Self::Field => ValueType::Field,
+            Self::Format => ValueType::Format,
+            Self::Side(_) => ValueType::Side,
+            Self::Player(_) => ValueType::Player,
             Self::Mon(_) => ValueType::Mon,
+
             Self::Effect(_) => ValueType::Effect,
             Self::TempEffect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
-            Self::MoveCategory(_) => ValueType::MoveCategory,
-            Self::MoveTarget(_) => ValueType::MoveTarget,
-            Self::Type(_) => ValueType::Type,
-            Self::Boost(_) => ValueType::Boost,
-            Self::BoostTable(_) => ValueType::BoostTable,
-            Self::Side(_) => ValueType::Side,
-            Self::MoveSlot(_) => ValueType::MoveSlot,
-            Self::Player(_) => ValueType::Player,
-            Self::Accuracy(_) => ValueType::Accuracy,
-            Self::Field => ValueType::Field,
-            Self::Format => ValueType::Format,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
+
+            Self::Accuracy(_) => ValueType::Accuracy,
+            Self::Boost(_) => ValueType::Boost,
+            Self::BoostTable(_) => ValueType::BoostTable,
+            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Gender(_) => ValueType::Gender,
+            Self::MoveCategory(_) => ValueType::MoveCategory,
+            Self::MoveSlot(_) => ValueType::MoveSlot,
+            Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::Nature(_) => ValueType::Nature,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
-            Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
-            Self::Nature(_) => ValueType::Nature,
+            Self::Type(_) => ValueType::Type,
+
             Self::EffectState(_) => ValueType::EffectState,
+
             Self::List(_) => ValueType::List,
             Self::StoredList(_) => ValueType::List,
             Self::TempList(_) => ValueType::List,
@@ -1353,29 +1449,34 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::String(val) => Value::String((*val).clone()),
             Self::Str(val) => Value::String(val.to_string()),
             Self::TempString(val) => Value::String(val.clone()),
+
+            Self::Field => Value::Field,
+            Self::Format => Value::Format,
+            Self::Side(val) => Value::Side(*val),
+            Self::Player(val) => Value::Player(*val),
             Self::Mon(val) => Value::Mon(*val),
+
             Self::Effect(val) => Value::Effect((*val).clone()),
             Self::TempEffect(val) => Value::Effect(val.clone()),
             Self::ActiveMove(val) => Value::ActiveMove(*val),
-            Self::MoveCategory(val) => Value::MoveCategory(*val),
-            Self::MoveTarget(val) => Value::MoveTarget(*val),
-            Self::Type(val) => Value::Type(*val),
-            Self::Boost(val) => Value::Boost(*val),
-            Self::BoostTable(val) => Value::BoostTable((*val).clone()),
-            Self::Side(val) => Value::Side(*val),
-            Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
-            Self::Player(val) => Value::Player(*val),
-            Self::Accuracy(val) => Value::Accuracy(*val),
-            Self::Field => Value::Field,
-            Self::Format => Value::Format,
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect((*val).clone()),
+
+            Self::Accuracy(val) => Value::Accuracy(*val),
+            Self::Boost(val) => Value::Boost(*val),
+            Self::BoostTable(val) => Value::BoostTable((*val).clone()),
+            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::Gender(val) => Value::Gender(*val),
+            Self::MoveCategory(val) => Value::MoveCategory(*val),
+            Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
+            Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::Nature(val) => Value::Nature(*val),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
-            Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
-            Self::Nature(val) => Value::Nature(*val),
+            Self::Type(val) => Value::Type(*val),
+
             Self::EffectState(val) => Value::EffectState(val.clone()),
+
             Self::List(val) => Value::List(val.iter().map(|val| val.to_owned()).collect()),
             Self::StoredList(val) => Value::List((*val).clone()),
             Self::TempList(val) => Value::List(val.into_iter().map(|val| val.to_owned()).collect()),
@@ -1397,34 +1498,39 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::String(_) => 64,
             Self::Str(_) => 65,
             Self::TempString(_) => 66,
-            Self::Mon(_) => 100,
-            Self::Effect(_) => 101,
-            Self::TempEffect(_) => 102,
-            Self::ActiveMove(_) => 103,
-            Self::MoveCategory(_) => 104,
-            Self::MoveTarget(_) => 105,
-            Self::Type(_) => 106,
-            Self::Boost(_) => 107,
-            Self::BoostTable(_) => 108,
-            Self::Side(_) => 109,
-            Self::MoveSlot(_) => 110,
-            Self::Player(_) => 111,
-            Self::Accuracy(_) => 112,
-            Self::Field => 113,
-            Self::Format => 114,
-            Self::HitEffect(_) => 115,
-            Self::SecondaryHitEffect(_) => 116,
-            Self::Gender(_) => 117,
-            Self::Stat(_) => 118,
-            Self::StatTable(_) => 119,
-            Self::FieldEnvironment(_) => 120,
-            Self::Nature(_) => 121,
-            Self::EffectState(_) => 175,
-            Self::List(_) => 200,
-            Self::StoredList(_) => 201,
-            Self::TempList(_) => 202,
-            Self::Object(_) => 250,
-            Self::StoredObject(_) => 251,
+
+            Self::Field => 100,
+            Self::Format => 101,
+            Self::Player(_) => 102,
+            Self::Side(_) => 103,
+            Self::Mon(_) => 104,
+
+            Self::Effect(_) => 116,
+            Self::TempEffect(_) => 117,
+            Self::ActiveMove(_) => 118,
+            Self::HitEffect(_) => 119,
+            Self::SecondaryHitEffect(_) => 120,
+
+            Self::Accuracy(_) => 150,
+            Self::Boost(_) => 151,
+            Self::BoostTable(_) => 152,
+            Self::FieldEnvironment(_) => 153,
+            Self::Gender(_) => 154,
+            Self::MoveCategory(_) => 155,
+            Self::MoveSlot(_) => 156,
+            Self::MoveTarget(_) => 157,
+            Self::Nature(_) => 158,
+            Self::Stat(_) => 159,
+            Self::StatTable(_) => 160,
+            Self::Type(_) => 161,
+
+            Self::EffectState(_) => 200,
+
+            Self::List(_) => 225,
+            Self::StoredList(_) => 226,
+            Self::TempList(_) => 227,
+            Self::Object(_) => 228,
+            Self::StoredObject(_) => 229,
         }
     }
 
@@ -1765,37 +1871,47 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 .try_id()
                 .map(|id| id.as_ref() == lhs.as_str())
                 .unwrap_or(false),
+            (Self::String(lhs), Self::Accuracy(rhs)) => {
+                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::String(lhs), Self::Boost(rhs)) => {
+                Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::String(lhs), Self::FieldEnvironment(rhs)) => {
+                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::String(lhs), Self::Gender(rhs)) => {
+                Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::String(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::String(lhs), Self::MoveTarget(rhs)) => {
                 MoveTarget::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
-            (Self::String(lhs), Self::Type(rhs)) => {
-                Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::String(lhs), Self::Boost(rhs)) => {
-                Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::String(lhs), Self::Accuracy(rhs)) => {
-                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::String(lhs), Self::Gender(rhs)) => {
-                Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            (Self::String(lhs), Self::Nature(rhs)) => {
+                Nature::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::String(lhs), Self::Stat(rhs)) => {
                 Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
-            (Self::String(lhs), Self::FieldEnvironment(rhs)) => {
-                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::String(lhs), Self::Nature(rhs)) => {
-                Nature::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            (Self::String(lhs), Self::Type(rhs)) => {
+                Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
             (Self::Str(lhs), Self::Effect(rhs)) => {
                 rhs.try_id().map(|id| id.as_ref() == *lhs).unwrap_or(false)
+            }
+            (Self::Str(lhs), Self::Accuracy(rhs)) => {
+                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::Str(lhs), Self::Boost(rhs)) => Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::FieldEnvironment(rhs)) => {
+                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::Str(lhs), Self::Gender(rhs)) => {
+                Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Str(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
@@ -1803,75 +1919,65 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Str(lhs), Self::MoveTarget(rhs)) => {
                 MoveTarget::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
-            (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
-            (Self::Str(lhs), Self::Boost(rhs)) => Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
-            (Self::Str(lhs), Self::Accuracy(rhs)) => {
-                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::Str(lhs), Self::Gender(rhs)) => {
-                Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::Str(lhs), Self::Stat(rhs)) => Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
-            (Self::Str(lhs), Self::FieldEnvironment(rhs)) => {
-                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
             (Self::Str(lhs), Self::Nature(rhs)) => {
                 Nature::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::Str(lhs), Self::Stat(rhs)) => Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
             (Self::TempString(lhs), Self::Effect(rhs)) => rhs
                 .try_id()
                 .map(|id| id.as_ref() == lhs.as_str())
                 .unwrap_or(false),
+            (Self::TempString(lhs), Self::Accuracy(rhs)) => {
+                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::Boost(rhs)) => {
+                Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::FieldEnvironment(rhs)) => {
+                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::Gender(rhs)) => {
+                Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::TempString(lhs), Self::MoveCategory(rhs)) => {
                 MoveCategory::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::TempString(lhs), Self::MoveTarget(rhs)) => {
                 MoveTarget::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
-            (Self::TempString(lhs), Self::Type(rhs)) => {
-                Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::TempString(lhs), Self::Boost(rhs)) => {
-                Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::TempString(lhs), Self::Accuracy(rhs)) => {
-                Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
-            (Self::TempString(lhs), Self::Gender(rhs)) => {
-                Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            (Self::TempString(lhs), Self::Nature(rhs)) => {
+                Nature::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::TempString(lhs), Self::Stat(rhs)) => {
                 Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
-            (Self::TempString(lhs), Self::FieldEnvironment(rhs)) => {
-                FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            (Self::TempString(lhs), Self::Type(rhs)) => {
+                Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
-            (Self::TempString(lhs), Self::Nature(rhs)) => {
-                Nature::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
-            }
+            (Self::Field, Self::Field) => true,
+            (Self::Format, Self::Format) => true,
+            (Self::Side(lhs), Self::Side(rhs)) => lhs.eq(rhs),
+            (Self::Player(lhs), Self::Player(rhs)) => lhs.eq(rhs),
             (Self::Mon(lhs), Self::Mon(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::TempEffect(rhs)) => lhs.eq(&rhs),
             (Self::TempEffect(lhs), Self::TempEffect(rhs)) => lhs.eq(rhs),
             (Self::ActiveMove(lhs), Self::ActiveMove(rhs)) => lhs.eq(rhs),
-            (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
-            (Self::MoveTarget(lhs), Self::MoveTarget(rhs)) => lhs.eq(rhs),
-            (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
+            (Self::HitEffect(lhs), Self::HitEffect(rhs)) => lhs.eq(rhs),
+            (Self::Accuracy(lhs), Self::Accuracy(rhs)) => lhs.eq(rhs),
             (Self::Boost(lhs), Self::Boost(rhs)) => lhs.eq(rhs),
             (Self::BoostTable(lhs), Self::BoostTable(rhs)) => lhs.eq(rhs),
-            (Self::Side(lhs), Self::Side(rhs)) => lhs.eq(rhs),
-            (Self::MoveSlot(lhs), Self::MoveSlot(rhs)) => lhs.eq(rhs),
-            (Self::Player(lhs), Self::Player(rhs)) => lhs.eq(rhs),
-            (Self::Accuracy(lhs), Self::Accuracy(rhs)) => lhs.eq(rhs),
-            (Self::Field, Self::Field) => true,
-            (Self::Format, Self::Format) => true,
-            (Self::HitEffect(lhs), Self::HitEffect(rhs)) => lhs.eq(rhs),
+            (Self::FieldEnvironment(lhs), Self::FieldEnvironment(rhs)) => lhs.eq(rhs),
             (Self::Gender(lhs), Self::Gender(rhs)) => lhs.eq(rhs),
+            (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
+            (Self::MoveSlot(lhs), Self::MoveSlot(rhs)) => lhs.eq(rhs),
+            (Self::MoveTarget(lhs), Self::MoveTarget(rhs)) => lhs.eq(rhs),
+            (Self::Nature(lhs), Self::Nature(rhs)) => lhs.eq(rhs),
             (Self::Stat(lhs), Self::Stat(rhs)) => lhs.eq(rhs),
             (Self::StatTable(lhs), Self::StatTable(rhs)) => lhs.eq(rhs),
-            (Self::FieldEnvironment(lhs), Self::FieldEnvironment(rhs)) => lhs.eq(rhs),
-            (Self::Nature(lhs), Self::Nature(rhs)) => lhs.eq(rhs),
+            (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -2028,28 +2134,33 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::Fraction(val) => Self::Fraction(*val),
             Value::UFraction(val) => Self::UFraction(*val),
             Value::String(val) => Self::String(val),
-            Value::Mon(val) => Self::Mon(*val),
-            Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(*val),
-            Value::MoveCategory(val) => Self::MoveCategory(*val),
-            Value::MoveTarget(val) => Self::MoveTarget(*val),
-            Value::Type(val) => Self::Type(*val),
-            Value::Boost(val) => Self::Boost(*val),
-            Value::BoostTable(val) => Self::BoostTable(val),
-            Value::Side(val) => Self::Side(*val),
-            Value::MoveSlot(val) => Self::MoveSlot(val),
-            Value::Player(val) => Self::Player(*val),
-            Value::Accuracy(val) => Self::Accuracy(*val),
+
             Value::Field => Self::Field,
             Value::Format => Self::Format,
+            Value::Player(val) => Self::Player(*val),
+            Value::Side(val) => Self::Side(*val),
+            Value::Mon(val) => Self::Mon(*val),
+
+            Value::Effect(val) => Self::Effect(val),
+            Value::ActiveMove(val) => Self::ActiveMove(*val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            Value::Accuracy(val) => Self::Accuracy(*val),
+            Value::Boost(val) => Self::Boost(*val),
+            Value::BoostTable(val) => Self::BoostTable(val),
+            Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::Gender(val) => Self::Gender(*val),
+            Value::MoveCategory(val) => Self::MoveCategory(*val),
+            Value::MoveSlot(val) => Self::MoveSlot(val),
+            Value::MoveTarget(val) => Self::MoveTarget(*val),
+            Value::Nature(val) => Self::Nature(*val),
             Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
-            Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
-            Value::Nature(val) => Self::Nature(*val),
+            Value::Type(val) => Self::Type(*val),
+
             Value::EffectState(val) => Self::EffectState(val.clone()),
+
             Value::List(val) => Self::StoredList(val),
             Value::Object(val) => Self::StoredObject(val),
         }
@@ -2064,30 +2175,36 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::Fraction(val) => Self::Fraction(*val),
             MaybeReferenceValue::UFraction(val) => Self::UFraction(*val),
             MaybeReferenceValue::String(val) => Self::String(val),
-            MaybeReferenceValue::Mon(val) => Self::Mon(*val),
-            MaybeReferenceValue::Effect(val) => Self::Effect(val),
-            MaybeReferenceValue::ActiveMove(val) => Self::ActiveMove(*val),
-            MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
-            MaybeReferenceValue::MoveTarget(val) => Self::MoveTarget(*val),
-            MaybeReferenceValue::Type(val) => Self::Type(*val),
-            MaybeReferenceValue::Boost(val) => Self::Boost(*val),
-            MaybeReferenceValue::BoostTable(val) => Self::BoostTable(val),
-            MaybeReferenceValue::Side(val) => Self::Side(*val),
-            MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
-            MaybeReferenceValue::Player(val) => Self::Player(*val),
-            MaybeReferenceValue::Accuracy(val) => Self::Accuracy(*val),
+
             MaybeReferenceValue::Field => Self::Field,
             MaybeReferenceValue::Format => Self::Format,
+            MaybeReferenceValue::Side(val) => Self::Side(*val),
+            MaybeReferenceValue::Player(val) => Self::Player(*val),
+            MaybeReferenceValue::Mon(val) => Self::Mon(*val),
+
+            MaybeReferenceValue::Effect(val) => Self::Effect(val),
+            MaybeReferenceValue::ActiveMove(val) => Self::ActiveMove(*val),
             MaybeReferenceValue::HitEffect(val) => Self::HitEffect(val),
             MaybeReferenceValue::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            MaybeReferenceValue::Accuracy(val) => Self::Accuracy(*val),
+            MaybeReferenceValue::Boost(val) => Self::Boost(*val),
+            MaybeReferenceValue::BoostTable(val) => Self::BoostTable(val),
+            MaybeReferenceValue::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             MaybeReferenceValue::Gender(val) => Self::Gender(*val),
+            MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
+            MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
+            MaybeReferenceValue::MoveTarget(val) => Self::MoveTarget(*val),
+            MaybeReferenceValue::Nature(val) => Self::Nature(*val),
             MaybeReferenceValue::Stat(val) => Self::Stat(*val),
             MaybeReferenceValue::StatTable(val) => Self::StatTable(val),
-            MaybeReferenceValue::FieldEnvironment(val) => Self::FieldEnvironment(*val),
-            MaybeReferenceValue::Nature(val) => Self::Nature(*val),
+            MaybeReferenceValue::Type(val) => Self::Type(*val),
+
             MaybeReferenceValue::EffectState(val) => Self::EffectState(val.clone()),
+
             MaybeReferenceValue::List(val) => Self::List(val),
             MaybeReferenceValue::Object(val) => Self::Object(val),
+
             MaybeReferenceValue::Reference(val) => Self::from(val),
         }
     }
@@ -2103,29 +2220,34 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::String(val) => Self::String(val),
             ValueRef::Str(val) => Self::Str(val),
             ValueRef::TempString(val) => Self::TempString(val),
+
+            ValueRef::Field => Self::Field,
+            ValueRef::Format => Self::Format,
+            ValueRef::Side(val) => Self::Side(val),
+            ValueRef::Player(val) => Self::Player(val),
             ValueRef::Mon(val) => Self::Mon(val),
+
             ValueRef::Effect(val) => Self::Effect(val),
             ValueRef::TempEffect(val) => Self::TempEffect(val),
             ValueRef::ActiveMove(val) => Self::ActiveMove(val),
-            ValueRef::MoveCategory(val) => Self::MoveCategory(val),
-            ValueRef::MoveTarget(val) => Self::MoveTarget(val),
-            ValueRef::Type(val) => Self::Type(val),
-            ValueRef::Boost(val) => Self::Boost(val),
-            ValueRef::BoostTable(val) => Self::BoostTable(val),
-            ValueRef::Side(val) => Self::Side(val),
-            ValueRef::MoveSlot(val) => Self::MoveSlot(val),
-            ValueRef::Player(val) => Self::Player(val),
-            ValueRef::Accuracy(val) => Self::Accuracy(val),
-            ValueRef::Field => Self::Field,
-            ValueRef::Format => Self::Format,
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            ValueRef::Accuracy(val) => Self::Accuracy(val),
+            ValueRef::Boost(val) => Self::Boost(val),
+            ValueRef::BoostTable(val) => Self::BoostTable(val),
+            ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(val),
             ValueRef::Gender(val) => Self::Gender(val),
+            ValueRef::MoveCategory(val) => Self::MoveCategory(val),
+            ValueRef::MoveSlot(val) => Self::MoveSlot(val),
+            ValueRef::MoveTarget(val) => Self::MoveTarget(val),
+            ValueRef::Nature(val) => Self::Nature(val),
             ValueRef::Stat(val) => Self::Stat(val),
             ValueRef::StatTable(val) => Self::StatTable(val),
-            ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(val),
-            ValueRef::Nature(val) => Self::Nature(val),
+            ValueRef::Type(val) => Self::Type(val),
+
             ValueRef::EffectState(val) => Self::EffectState(val),
+
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 val.into_iter()
@@ -2147,29 +2269,34 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::String(val) => Self::String(val),
             ValueRef::Str(val) => Self::Str(val),
             ValueRef::TempString(val) => Self::TempString(val.clone()),
+
+            ValueRef::Field => Self::Field,
+            ValueRef::Format => Self::Format,
+            ValueRef::Side(val) => Self::Side(*val),
+            ValueRef::Player(val) => Self::Player(*val),
             ValueRef::Mon(val) => Self::Mon(*val),
+
             ValueRef::Effect(val) => Self::Effect(val),
             ValueRef::TempEffect(val) => Self::Effect(val),
             ValueRef::ActiveMove(val) => Self::ActiveMove(*val),
-            ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
-            ValueRef::MoveTarget(val) => Self::MoveTarget(*val),
-            ValueRef::Type(val) => Self::Type(*val),
-            ValueRef::Boost(val) => Self::Boost(*val),
-            ValueRef::BoostTable(val) => Self::BoostTable(val),
-            ValueRef::Side(val) => Self::Side(*val),
-            ValueRef::MoveSlot(val) => Self::MoveSlot(val),
-            ValueRef::Player(val) => Self::Player(*val),
-            ValueRef::Accuracy(val) => Self::Accuracy(*val),
-            ValueRef::Field => Self::Field,
-            ValueRef::Format => Self::Format,
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
+
+            ValueRef::Accuracy(val) => Self::Accuracy(*val),
+            ValueRef::Boost(val) => Self::Boost(*val),
+            ValueRef::BoostTable(val) => Self::BoostTable(val),
+            ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             ValueRef::Gender(val) => Self::Gender(*val),
+            ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
+            ValueRef::MoveSlot(val) => Self::MoveSlot(val),
+            ValueRef::MoveTarget(val) => Self::MoveTarget(*val),
+            ValueRef::Nature(val) => Self::Nature(*val),
             ValueRef::Stat(val) => Self::Stat(*val),
             ValueRef::StatTable(val) => Self::StatTable(val),
-            ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
-            ValueRef::Nature(val) => Self::Nature(*val),
+            ValueRef::Type(val) => Self::Type(*val),
+
             ValueRef::EffectState(val) => Self::EffectState(val.clone()),
+
             ValueRef::List(val) => Self::StoredList(val),
             ValueRef::TempList(val) => Self::TempList(
                 (0..val.len())
