@@ -94,7 +94,16 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $target.is_asleep:",
+          ["return $move.base_power * 2"]
+        ],
+        "on_hit": ["if $target.status == slp:", ["cure_status: $target"]]
+      }
+    }
   },
   "hammerarm": {
     "name": "Hammer Arm",
@@ -104,7 +113,12 @@
     "accuracy": 90,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Punch"]
+    "flags": ["Contact", "Mirror", "Protect", "Punch"],
+    "user_effect": {
+      "boosts": {
+        "spe": -1
+      }
+    }
   },
   "gyroball": {
     "name": "Gyro Ball",
@@ -113,7 +127,21 @@
     "pp": 5,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Bullet", "Contact", "Mirror", "Protect"]
+    "flags": ["Bullet", "Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$user_speed = func_call(get_stat: $source spe)",
+          "if $user_speed == 0:",
+          ["$power = 1"],
+          "else:",
+          [
+            "$power = (25 * func_call(get_stat: $target spe) / $user_speed) + 1"
+          ],
+          "return func_call(min: $power 150)"
+        ]
+      }
+    }
   },
   "healingwish": {
     "name": "Healing Wish",

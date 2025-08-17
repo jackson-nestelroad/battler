@@ -26,6 +26,7 @@ use battler_data::{
     MultihitType,
     Nature,
     SecondaryEffectData,
+    Stat,
     StatTable,
     Type,
 };
@@ -85,6 +86,7 @@ pub enum ValueType {
     HitEffect,
     SecondaryHitEffect,
     Gender,
+    Stat,
     StatTable,
     FieldEnvironment,
     Nature,
@@ -134,6 +136,7 @@ pub enum Value {
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
     Gender(Gender),
+    Stat(Stat),
     StatTable(StatTable),
     FieldEnvironment(FieldEnvironment),
     Nature(Nature),
@@ -168,6 +171,7 @@ impl Value {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
             Self::Gender(_) => ValueType::Gender,
+            Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Nature(_) => ValueType::Nature,
@@ -466,6 +470,15 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`Stat`].
+    pub fn stat(self) -> Result<Stat> {
+        match self {
+            Self::Stat(val) => Ok(val),
+            Self::String(val) => Stat::from_str(&val).map_err(general_error),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Stat)),
+        }
+    }
+
     /// Consumes the value into a [`Type`].
     pub fn mon_type(self) -> Result<Type> {
         match self {
@@ -615,6 +628,7 @@ pub enum MaybeReferenceValue<'eval> {
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
     Gender(Gender),
+    Stat(Stat),
     StatTable(StatTable),
     FieldEnvironment(FieldEnvironment),
     Nature(Nature),
@@ -651,6 +665,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
             Self::Gender(_) => ValueType::Gender,
             Self::EffectState(_) => ValueType::EffectState,
+            Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Nature(_) => ValueType::Nature,
@@ -685,6 +700,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::HitEffect(val) => Value::HitEffect(val.clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect(val.clone()),
             Self::Gender(val) => Value::Gender(*val),
+            Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable(val.clone()),
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::Nature(val) => Value::Nature(*val),
@@ -775,6 +791,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             Value::Gender(val) => Self::Gender(val),
+            Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::Nature(val) => Self::Nature(val),
@@ -827,6 +844,7 @@ pub enum ValueRef<'eval> {
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
     Gender(Gender),
+    Stat(Stat),
     StatTable(&'eval StatTable),
     FieldEnvironment(FieldEnvironment),
     Nature(Nature),
@@ -865,6 +883,7 @@ impl<'eval> ValueRef<'eval> {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
             Self::Gender(_) => ValueType::Gender,
+            Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Nature(_) => ValueType::Nature,
@@ -903,6 +922,7 @@ impl<'eval> ValueRef<'eval> {
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
+            Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::Nature(val) => Value::Nature(*val),
@@ -1042,6 +1062,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             Value::Gender(val) => Self::Gender(*val),
+            Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::Nature(val) => Self::Nature(*val),
@@ -1132,6 +1153,7 @@ pub enum ValueRefMut<'eval> {
     OptionalHitEffect(&'eval mut Option<HitEffect>),
     Gender(&'eval mut Gender),
     OptionalMultihitType(&'eval mut Option<MultihitType>),
+    Stat(&'eval mut Stat),
     StatTable(&'eval mut StatTable),
     FieldEnvironment(&'eval mut FieldEnvironment),
     Nature(&'eval mut Nature),
@@ -1182,6 +1204,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::SecondaryHitEffectList(_) => ValueType::List,
             Self::Gender(_) => ValueType::Gender,
             Self::OptionalMultihitType(_) => ValueType::UFraction,
+            Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Nature(_) => ValueType::Nature,
@@ -1218,6 +1241,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             Value::Gender(val) => Self::Gender(val),
+            Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::Nature(val) => Self::Nature(val),
@@ -1265,6 +1289,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
     Gender(Gender),
+    Stat(Stat),
     StatTable(&'eval StatTable),
     FieldEnvironment(FieldEnvironment),
     Nature(Nature),
@@ -1305,6 +1330,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
             Self::Gender(_) => ValueType::Gender,
+            Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::Nature(_) => ValueType::Nature,
@@ -1345,6 +1371,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
+            Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::Nature(val) => Value::Nature(*val),
@@ -1388,9 +1415,10 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::HitEffect(_) => 115,
             Self::SecondaryHitEffect(_) => 116,
             Self::Gender(_) => 117,
-            Self::StatTable(_) => 118,
-            Self::FieldEnvironment(_) => 119,
-            Self::Nature(_) => 120,
+            Self::Stat(_) => 118,
+            Self::StatTable(_) => 119,
+            Self::FieldEnvironment(_) => 120,
+            Self::Nature(_) => 121,
             Self::EffectState(_) => 175,
             Self::List(_) => 200,
             Self::StoredList(_) => 201,
@@ -1755,6 +1783,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Gender(rhs)) => {
                 Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::Stat(rhs)) => {
+                Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::String(lhs), Self::FieldEnvironment(rhs)) => {
                 FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -1780,6 +1811,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Str(lhs), Self::Gender(rhs)) => {
                 Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::Str(lhs), Self::Stat(rhs)) => Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
             (Self::Str(lhs), Self::FieldEnvironment(rhs)) => {
                 FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -1809,6 +1841,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempString(lhs), Self::Gender(rhs)) => {
                 Gender::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::TempString(lhs), Self::Stat(rhs)) => {
+                Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::TempString(lhs), Self::FieldEnvironment(rhs)) => {
                 FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -1833,6 +1868,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Format, Self::Format) => true,
             (Self::HitEffect(lhs), Self::HitEffect(rhs)) => lhs.eq(rhs),
             (Self::Gender(lhs), Self::Gender(rhs)) => lhs.eq(rhs),
+            (Self::Stat(lhs), Self::Stat(rhs)) => lhs.eq(rhs),
             (Self::StatTable(lhs), Self::StatTable(rhs)) => lhs.eq(rhs),
             (Self::FieldEnvironment(lhs), Self::FieldEnvironment(rhs)) => lhs.eq(rhs),
             (Self::Nature(lhs), Self::Nature(rhs)) => lhs.eq(rhs),
@@ -2009,6 +2045,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             Value::Gender(val) => Self::Gender(*val),
+            Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::Nature(val) => Self::Nature(*val),
@@ -2044,6 +2081,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::HitEffect(val) => Self::HitEffect(val),
             MaybeReferenceValue::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             MaybeReferenceValue::Gender(val) => Self::Gender(*val),
+            MaybeReferenceValue::Stat(val) => Self::Stat(*val),
             MaybeReferenceValue::StatTable(val) => Self::StatTable(val),
             MaybeReferenceValue::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             MaybeReferenceValue::Nature(val) => Self::Nature(*val),
@@ -2083,6 +2121,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             ValueRef::Gender(val) => Self::Gender(val),
+            ValueRef::Stat(val) => Self::Stat(val),
             ValueRef::StatTable(val) => Self::StatTable(val),
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(val),
             ValueRef::Nature(val) => Self::Nature(val),
@@ -2126,6 +2165,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
             ValueRef::Gender(val) => Self::Gender(*val),
+            ValueRef::Stat(val) => Self::Stat(*val),
             ValueRef::StatTable(val) => Self::StatTable(val),
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             ValueRef::Nature(val) => Self::Nature(*val),

@@ -253,6 +253,7 @@ mod moves {
         mod feint_test;
         mod gastro_acid_test;
         mod gravity_test;
+        mod gyro_ball_test;
         mod magnet_rise_test;
         mod miracle_eye_test;
         mod roost_test;

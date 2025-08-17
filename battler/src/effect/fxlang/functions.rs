@@ -145,6 +145,7 @@ pub fn run_function(
         "get_item" => get_item(context).map(|val| Some(val)),
         "get_move" => get_move(context).map(|val| Some(val)),
         "get_species" => get_species(context).map(|val| Some(val)),
+        "get_stat" => get_stat(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
@@ -183,6 +184,7 @@ pub fn run_function(
         "log_status" => log_status(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
         "max" => max(context).map(|val| Some(val)),
+        "min" => min(context).map(|val| Some(val)),
         "mon_ability_suppressed_by_this_effect" => {
             mon_ability_suppressed_by_this_effect(context).map(|val| Some(val))
         }
@@ -1603,6 +1605,22 @@ fn max(mut context: FunctionContext) -> Result<Value> {
     while let Some(second) = context.pop_front() {
         if MaybeReferenceValueForOperation::from(&second)
             .greater_than(MaybeReferenceValueForOperation::from(&first))?
+            .boolean()
+            .unwrap_or(false)
+        {
+            first = second;
+        }
+    }
+    Ok(first)
+}
+
+fn min(mut context: FunctionContext) -> Result<Value> {
+    let mut first = context
+        .pop_front()
+        .wrap_expectation("min requires at least one argument")?;
+    while let Some(second) = context.pop_front() {
+        if MaybeReferenceValueForOperation::from(&second)
+            .less_than(MaybeReferenceValueForOperation::from(&first))?
             .boolean()
             .unwrap_or(false)
         {
@@ -3601,4 +3619,27 @@ fn mon_ability_suppressed_by_this_effect(mut context: FunctionContext) -> Result
     Ok(Value::Boolean(
         ability_without_this_effect.is_some() && ability_with_this_effect.is_none(),
     ))
+}
+
+fn get_stat(mut context: FunctionContext) -> Result<Value> {
+    let target_handle = context
+        .pop_front()
+        .wrap_expectation("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    let stat = context
+        .pop_front()
+        .wrap_expectation("missing stat")?
+        .stat()
+        .wrap_error_with_message("invalid stat")?;
+
+    Mon::get_stat(
+        &mut context
+            .evaluation_context_mut()
+            .mon_context(target_handle)?,
+        stat,
+        false,
+        false,
+    )
+    .map(|val| Value::UFraction(val.into()))
 }
