@@ -217,6 +217,7 @@ pub fn run_function(
         "remove_move_flag" => remove_move_flag(context).map(|()| None),
         "remove_pseudo_weather" => remove_pseudo_weather(context).map(|val| Some(val)),
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
+        "remove_slot_condition" => remove_slot_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
         "restore_pp" => restore_pp(context).map(|val| Some(val)),
         "revive" => revive(context).map(|val| Some(val)),
@@ -3039,6 +3040,28 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
 
     let mut context = context.forward_to_side_effect(side_index)?;
     let value = core_battle_actions::add_slot_condition(&mut context, slot, &condition);
+    value.map(|val| Value::Boolean(val))
+}
+fn remove_slot_condition(mut context: FunctionContext) -> Result<Value> {
+    let side_index = context
+        .pop_front()
+        .wrap_expectation("missing side")?
+        .side_index()
+        .wrap_error_with_message("invalid side")?;
+    let slot = context
+        .pop_front()
+        .wrap_expectation("missing slot")?
+        .integer_usize()
+        .wrap_error_with_message("invalid slot")?;
+    let condition = context
+        .pop_front()
+        .wrap_expectation("missing condition id")?
+        .string()
+        .wrap_error_with_message("invalid condition id")?;
+    let condition = Id::from(condition);
+
+    let mut context = context.forward_to_side_effect(side_index)?;
+    let value = core_battle_actions::remove_slot_condition(&mut context, slot, &condition);
     value.map(|val| Value::Boolean(val))
 }
 

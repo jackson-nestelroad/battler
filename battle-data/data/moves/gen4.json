@@ -151,7 +151,29 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "self_destruct": true
+    "self_destruct": "ifhit",
+    "hit_effect": {
+      "slot_condition": "healingwish"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if !func_call(can_switch: $target.player):",
+          ["return false"]
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_switch_in": [
+          "if $mon.fainted or $mon.hp >= $mon.max_hp or !$mon.status:",
+          ["return"],
+          "heal: $mon $mon.max_hp",
+          "cure_status: $mon",
+          "remove_slot_condition: $mon.side $mon.position $this.id"
+        ]
+      }
+    }
   },
   "brine": {
     "name": "Brine",
