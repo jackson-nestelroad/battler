@@ -1082,13 +1082,6 @@ where
                             "weight" => ValueRef::UFraction(
                                 Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
                             ),
-                            "will_move_this_turn" => ValueRef::Boolean(
-                                context
-                                    .battle_context()
-                                    .battle()
-                                    .queue
-                                    .will_move_this_turn(mon_handle),
-                            ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Player(player) = value {

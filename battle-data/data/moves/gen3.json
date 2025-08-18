@@ -489,7 +489,10 @@
     "condition": {
       "duration": 3,
       "callbacks": {
-        "on_duration": ["if !$target.will_move_this_turn:", ["return 4"]],
+        "on_duration": [
+          "if !func_call(will_move_this_turn: $target):",
+          ["return 4"]
+        ],
         "on_start": ["log_start"],
         "on_end": ["log_end"],
         "on_disable_move": [
@@ -525,7 +528,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "return $target.newly_switched or $target.will_move_this_turn"
+          "return $target.newly_switched or func_call(will_move_this_turn: $target)"
         ]
       }
     },

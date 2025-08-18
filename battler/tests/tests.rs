@@ -259,6 +259,7 @@ mod moves {
         mod gyro_ball_test;
         mod healing_wish_test;
         mod magnet_rise_test;
+        mod me_first_test;
         mod metal_burst_test;
         mod miracle_eye_test;
         mod natural_gift_test;

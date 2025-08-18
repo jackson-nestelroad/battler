@@ -1365,7 +1365,7 @@
           ["return false"],
           "$effect_state.move = $last_move.id",
           "log_start",
-          "if $target.will_move_this_turn:",
+          "if func_call(will_move_this_turn: $target):",
           ["$effect_state.duration = $effect_state.duration + 1"]
         ],
         "on_override_move": [

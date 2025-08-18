@@ -373,7 +373,7 @@
     "effect": {
       "callbacks": {
         "on_move_base_power": [
-          "if !$target.newly_switched and !$target.will_move_this_turn:",
+          "if !$target.newly_switched and !func_call(will_move_this_turn: $target):",
           ["return $move.base_power * 2"]
         ]
       }
@@ -683,7 +683,28 @@
       "NoMetronome",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "$action = func_call(pending_move_action_this_turn: $target)",
+          "if !$action:",
+          ["return false"],
+          "$move = func_call(new_active_move: $action.id)",
+          "if $move.category == status or func_call(move_has_flag: $move failmefirst):",
+          ["return false"],
+          "add_volatile: $source $this.id",
+          "use_move: $source $move $target",
+          "return stop"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_source_base_power": ["return $base_power * 3/2"]
+      }
+    }
   },
   "copycat": {
     "name": "Copycat",

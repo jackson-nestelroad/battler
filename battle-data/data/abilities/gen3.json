@@ -853,7 +853,7 @@
         "on_start": [
           "remove_volatile: $target $this.id",
           "# The target moved this turn, so Truant applies.",
-          "if $target.active_turns > 0 and ($target.moved_this_turn or !$target.will_move_this_turn):",
+          "if $target.active_turns > 0 and ($target.moved_this_turn or !func_call(will_move_this_turn: $target)):",
           ["add_volatile: $target $this.id"]
         ],
         "on_before_move": {

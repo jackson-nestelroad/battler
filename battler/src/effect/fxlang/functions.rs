@@ -202,6 +202,7 @@ pub fn run_function(
         "move_slot" => move_slot(context).map(|val| Some(val)),
         "move_slot_at_index" => move_slot_at_index(context),
         "move_slot_index" => move_slot_index(context),
+        "new_active_move" => new_active_move(context).map(|val| Some(val)),
         "new_active_move_from_local_data" => {
             new_active_move_from_local_data(context).map(|val| Some(val))
         }
@@ -210,6 +211,7 @@ pub fn run_function(
         "object_increment" => object_increment(context).map(|val| Some(val)),
         "object_value" => object_value(context),
         "overwrite_move_slot" => overwrite_move_slot(context).map(|()| None),
+        "pending_move_action_this_turn" => pending_move_action_this_turn(context),
         "plural" => plural(context).map(|val| Some(val)),
         "prepare_direct_move" => prepare_direct_move(context).map(|val| Some(val)),
         "random" => random(context).map(|val| Some(val)),
@@ -261,6 +263,7 @@ pub fn run_function(
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
         "volatile_effect_state" => volatile_effect_state(context),
+        "will_move_this_turn" => will_move_this_turn(context).map(|val| Some(val)),
         _ => Err(general_error(format!(
             "undefined function: {function_name}"
         ))),
@@ -2381,6 +2384,20 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::ActiveMove(active_move_handle))
 }
 
+fn new_active_move(mut context: FunctionContext) -> Result<Value> {
+    let move_id = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .string()
+        .wrap_error_with_message("invalid move")?;
+    let move_id = Id::from(move_id);
+    let active_move_handle = CoreBattle::register_active_move_by_id(
+        context.evaluation_context_mut().battle_context_mut(),
+        &move_id,
+    )?;
+    Ok(Value::ActiveMove(active_move_handle))
+}
+
 fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value> {
     let effect_handle = context
         .pop_front()
@@ -2863,6 +2880,30 @@ fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value> {
             .queue
             .any_move_this_turn(),
     ))
+}
+
+fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<Value>> {
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    Ok(context
+        .evaluation_context()
+        .battle_context()
+        .battle()
+        .queue
+        .pending_move_this_turn(mon_handle)
+        .map(|move_action| {
+            Value::Object(HashMap::from_iter([(
+                "id".to_owned(),
+                Value::String(move_action.id.to_string()),
+            )]))
+        }))
+}
+
+fn will_move_this_turn(context: FunctionContext) -> Result<Value> {
+    pending_move_action_this_turn(context).map(|val| Value::Boolean(val.is_some()))
 }
 
 fn remove_side_condition(mut context: FunctionContext) -> Result<Value> {

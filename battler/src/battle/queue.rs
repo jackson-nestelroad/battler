@@ -17,6 +17,7 @@ use crate::battle::{
     CoreBattle,
     CoreBattleEngineSpeedSortTieResolution,
     MonHandle,
+    MoveAction,
     compare_priority,
     speed_sort,
 };
@@ -156,12 +157,17 @@ impl BattleQueue {
         })
     }
 
-    /// Checks if the given Mon will move this turn.
-    pub fn will_move_this_turn(&self, mon: MonHandle) -> bool {
-        self.actions.iter().any(|action| match action {
-            Action::Move(move_action) => move_action.mon_action.mon == mon,
-            _ => false,
-        })
+    /// Returns the pending move the Mon will make this turn.
+    pub fn pending_move_this_turn(&self, mon: MonHandle) -> Option<MoveAction> {
+        self.actions
+            .iter()
+            .find_map(|action| match action {
+                Action::Move(move_action) => {
+                    (move_action.mon_action.mon == mon).then_some(move_action)
+                }
+                _ => None,
+            })
+            .cloned()
     }
 
     /// Cancels the move action to be made by the Mon.

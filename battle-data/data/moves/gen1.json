@@ -637,7 +637,7 @@
       "callbacks": {
         "on_start": [
           "# The target hasn't taken its turn yet, so this turn counts as a disabled turn.",
-          "if $target.will_move_this_turn:",
+          "if func_call(will_move_this_turn: $target):",
           ["$effect_state.duration = $effect_state.duration - 1"],
           "if !$target.last_move:",
           ["return false"],
