@@ -615,7 +615,16 @@
   "lifeorb": {
     "name": "Life Orb",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_damage": ["return $damage * 13/10"],
+        "on_after_move": [
+          "if $target.is_defined and $user != $target and $move.category != status and !$user.force_switch:",
+          ["damage: $user expr($user.base_max_hp / 10) use_target_as_source"]
+        ]
+      }
+    }
   },
   "powerherb": {
     "name": "Power Herb",

@@ -369,7 +369,15 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if !$target.newly_switched and !$target.will_move_this_turn:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "assurance": {
     "name": "Assurance",
@@ -379,7 +387,15 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $target.damaged_this_turn:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "embargo": {
     "name": "Embargo",

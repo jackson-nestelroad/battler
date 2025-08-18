@@ -251,6 +251,7 @@ mod moves {
 
     mod gen4 {
         mod acupressure_test;
+        mod assurance_test;
         mod feint_test;
         mod gastro_acid_test;
         mod gravity_test;
@@ -260,6 +261,7 @@ mod moves {
         mod metal_burst_test;
         mod miracle_eye_test;
         mod natural_gift_test;
+        mod payback_test;
         mod pluck_test;
         mod roost_test;
         mod toxic_spikes_test;

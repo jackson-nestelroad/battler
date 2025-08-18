@@ -943,6 +943,9 @@ where
                             "foe_side" => {
                                 ValueRef::Side(context.mon_context(mon_handle)?.foe_side().index)
                             }
+                            "force_switch" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.force_switch.is_some())
+                            }
                             "friendship" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.friendship.into())
                             }
@@ -951,6 +954,9 @@ where
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
+                            "damaged_this_turn" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.damaged_this_turn)
+                            }
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),

@@ -437,7 +437,7 @@ pub struct Mon {
 
     pub move_this_turn_outcome: Option<MoveOutcome>,
     pub last_move_target_location: Option<isize>,
-    pub hurt_this_turn: u16,
+    pub damaged_this_turn: bool,
     pub stats_raised_this_turn: bool,
     pub stats_lowered_this_turn: bool,
     pub item_used_this_turn: bool,
@@ -586,7 +586,7 @@ impl Mon {
 
             move_this_turn_outcome: None,
             last_move_target_location: None,
-            hurt_this_turn: 0,
+            damaged_this_turn: false,
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
             item_used_this_turn: false,
@@ -2038,7 +2038,7 @@ impl Mon {
 
         context.mon_mut().old_active_position = None;
         context.mon_mut().move_this_turn_outcome = None;
-        context.mon_mut().hurt_this_turn = 0;
+        context.mon_mut().damaged_this_turn = false;
         context.mon_mut().stats_raised_this_turn = false;
         context.mon_mut().stats_lowered_this_turn = false;
         context.mon_mut().item_used_this_turn = false;

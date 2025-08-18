@@ -589,7 +589,7 @@ pub fn use_active_move(
         fxlang::VariableInput::default(),
     );
     core_battle_effects::run_event_for_applying_effect(
-        &mut context.user_applying_effect_context(None)?,
+        &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::AfterMove,
         fxlang::VariableInput::default(),
     );
@@ -2057,7 +2057,7 @@ fn apply_spread_damage(
             source_handle,
             Some(&effect_handle),
         )?;
-        context.target_mut().hurt_this_turn = context.target().hp;
+        context.target_mut().damaged_this_turn = true;
 
         core_battle_logs::damage(
             &mut context.target_context()?,
