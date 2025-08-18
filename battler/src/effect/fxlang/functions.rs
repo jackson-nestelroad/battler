@@ -228,6 +228,7 @@ pub fn run_function(
         "run_event_for_mon" => run_event_for_mon(context).map(|val| Some(val)),
         "run_event_on_mon_ability" => run_event_on_mon_ability(context).map(|()| None),
         "run_event_on_mon_item" => run_event_on_mon_item(context).map(|()| None),
+        "run_event_on_mon_volatile" => run_event_on_mon_volatile(context).map(|()| None),
         "run_event_on_move" => run_event_on_move(context).map(|()| None),
         "sample" => sample(context),
         "save_move_hit_data_flag_against_target" => {
@@ -1526,6 +1527,27 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<()> {
     core_battle_effects::run_mon_item_event(
         &mut context.forward_to_applying_effect_context()?,
         event,
+    );
+    Ok(())
+}
+
+fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<()> {
+    let status = context
+        .pop_front()
+        .wrap_expectation("missing volatile")?
+        .string()
+        .wrap_error_with_message("invalid volatile")?;
+    let status = Id::from(status);
+    let event = context
+        .pop_front()
+        .wrap_expectation("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
+    core_battle_effects::run_mon_volatile_event(
+        &mut context.forward_to_applying_effect_context()?,
+        event,
+        &status,
     );
     Ok(())
 }

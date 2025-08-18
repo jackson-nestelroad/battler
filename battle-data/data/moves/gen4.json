@@ -566,7 +566,14 @@
     "pp": 5,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "return func_call(max: 1 expr(120 * $target.hp / $target.max_hp))"
+        ]
+      }
+    }
   },
   "powertrick": {
     "name": "Power Trick",
@@ -575,7 +582,32 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "volatile_status": "powertrick"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if !$effect_state.logged:",
+          ["log_start", "$effect_state.logged = true"],
+          "$atk = $target.stats.def",
+          "$def = $target.stats.atk",
+          "$target.stats.atk = $atk",
+          "$target.stats.def = $def"
+        ],
+        "on_copy_volatile": [
+          "$effect_state.logged = true",
+          "run_event_on_mon_volatile: $this.id Start"
+        ],
+        "on_end": [
+          "log_end",
+          "$effect_state.logged = true",
+          "run_event_on_mon_volatile: $this.id Start"
+        ],
+        "on_restart": ["remove_volatile: $target $this.id", "return true"]
+      }
+    }
   },
   "gastroacid": {
     "name": "Gastro Acid",

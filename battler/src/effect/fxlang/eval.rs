@@ -1057,6 +1057,7 @@ where
                             )),
                             "side" => ValueRef::Side(context.mon(mon_handle)?.side),
                             "species" => ValueRef::Str(&context.mon(mon_handle)?.species.as_ref()),
+                            "stats" => ValueRef::StatTable(&context.mon(mon_handle)?.stats),
                             "status" => match context.mon(mon_handle)?.status.as_ref() {
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
@@ -1367,6 +1368,9 @@ where
                         "skip_before_switch_out" => ValueRefMut::Boolean(
                             &mut context.mon_mut(**mon_handle)?.skip_before_switch_out,
                         ),
+                        "stats" => {
+                            ValueRefMut::StatTable(&mut context.mon_mut(**mon_handle)?.stats)
+                        }
                         "status_state" => ValueRefMut::TempEffectState(
                             MonStatusEffectStateConnector::new(**mon_handle).make_dynamic(),
                         ),
@@ -1471,6 +1475,16 @@ where
                         "spa" => ValueRefMut::I8(&mut boosts.spa),
                         "spd" => ValueRefMut::I8(&mut boosts.spd),
                         "spe" => ValueRefMut::I8(&mut boosts.spe),
+                        _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
+                    }
+                }
+                ValueRefMut::StatTable(stats) => {
+                    value = match *member {
+                        "atk" => ValueRefMut::U16(&mut stats.atk),
+                        "def" => ValueRefMut::U16(&mut stats.def),
+                        "spa" => ValueRefMut::U16(&mut stats.spa),
+                        "spd" => ValueRefMut::U16(&mut stats.spd),
+                        "spe" => ValueRefMut::U16(&mut stats.spe),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
