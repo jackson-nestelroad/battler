@@ -19,8 +19,8 @@ fn rampardos() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Drifblim",
-                    "species": "Drifblim",
+                    "name": "Rampardos",
+                    "species": "Rampardos",
                     "ability": "No Ability",
                     "item": "Life Orb",
                     "moves": [
@@ -65,23 +65,21 @@ fn assurance_doubles_power_after_target_takes_damage() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Drifblim,player-1,1|name:Assurance|target:Drifblim,player-2,1",
-            "supereffective|mon:Drifblim,player-2,1",
+            "move|mon:Rampardos,player-1,1|name:Assurance|target:Rampardos,player-2,1",
             "split|side:1",
-            "damage|mon:Drifblim,player-2,1|health:93/210",
-            "damage|mon:Drifblim,player-2,1|health:45/100",
+            "damage|mon:Rampardos,player-2,1|health:69/157",
+            "damage|mon:Rampardos,player-2,1|health:44/100",
             "split|side:0",
-            "damage|mon:Drifblim,player-1,1|from:item:Life Orb|health:189/210",
-            "damage|mon:Drifblim,player-1,1|from:item:Life Orb|health:90/100",
-            "move|mon:Drifblim,player-2,1|name:Assurance|target:Drifblim,player-1,1",
-            "supereffective|mon:Drifblim,player-1,1",
+            "damage|mon:Rampardos,player-1,1|from:item:Life Orb|health:142/157",
+            "damage|mon:Rampardos,player-1,1|from:item:Life Orb|health:91/100",
+            "move|mon:Rampardos,player-2,1|name:Assurance|target:Rampardos,player-1,1",
             "split|side:0",
-            "damage|mon:Drifblim,player-1,1|health:0",
-            "damage|mon:Drifblim,player-1,1|health:0",
-            "faint|mon:Drifblim,player-1,1",
+            "damage|mon:Rampardos,player-1,1|health:0",
+            "damage|mon:Rampardos,player-1,1|health:0",
+            "faint|mon:Rampardos,player-1,1",
             "split|side:1",
-            "damage|mon:Drifblim,player-2,1|from:item:Life Orb|health:72/210",
-            "damage|mon:Drifblim,player-2,1|from:item:Life Orb|health:35/100",
+            "damage|mon:Rampardos,player-2,1|from:item:Life Orb|health:54/157",
+            "damage|mon:Rampardos,player-2,1|from:item:Life Orb|health:35/100",
             "win|side:1" 
         ]"#,
     )
