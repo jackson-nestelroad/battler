@@ -498,7 +498,31 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "no_pp_boosts": true
+    "no_pp_boosts": true,
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$caller = $move.id",
+          "if $effect_state.source_effect.is_defined:",
+          ["$caller = $effect_state.source_effect.id"],
+          "$index = func_call(move_slot_index: $source $caller)",
+          "if $index.is_undefined:",
+          ["return false"],
+          "$move_slot = func_call(move_slot_at_index: $source $index)",
+          "if !$move_slot:",
+          ["return 40"],
+          "if $move_slot.pp <= 1:",
+          ["return 200"],
+          "if $move_slot.pp == 2:",
+          ["return 80"],
+          "if $move_slot.pp == 3:",
+          ["return 60"],
+          "if $move_slot.pp == 4:",
+          ["return 50"],
+          "return 40"
+        ]
+      }
+    }
   },
   "healblock": {
     "name": "Heal Block",

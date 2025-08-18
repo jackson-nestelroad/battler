@@ -267,6 +267,7 @@ mod moves {
         mod psycho_shift_test;
         mod roost_test;
         mod toxic_spikes_test;
+        mod trump_card_test;
     }
 
     mod gen5 {
