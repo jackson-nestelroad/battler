@@ -4213,20 +4213,26 @@ pub fn remove_slot_condition(
     Ok(true)
 }
 
-pub enum EndItemType {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EndItemType {
     End,
     Take,
     Use,
     Eat,
+    Discard,
 }
 
-/// Ends the target Mon's item, if it is not already ended.
-///
-/// The Mon still has the item, but it is not considered active.
-pub fn end_item(
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EndItemLog {
+    Log,
+    LogSilent,
+    TrueSilent,
+}
+
+fn end_item_internal(
     context: &mut ApplyingEffectContext,
     end_item_type: EndItemType,
-    silent: bool,
+    end_item_log: EndItemLog,
 ) -> Result<()> {
     if context.target().hp == 0
         || context
@@ -4238,12 +4244,7 @@ pub fn end_item(
         return Ok(());
     }
 
-    let always_log = match end_item_type {
-        EndItemType::Eat | EndItemType::Take => true,
-        _ => false,
-    };
-
-    if !silent || always_log {
+    if end_item_log != EndItemLog::TrueSilent {
         let no_source = match end_item_type {
             EndItemType::Eat | EndItemType::Use => true,
             _ => false,
@@ -4252,19 +4253,40 @@ pub fn end_item(
             EndItemType::Eat => true,
             _ => false,
         };
-        core_battle_logs::item_end(context, no_source, silent, eat)?;
+        core_battle_logs::item_end(
+            context,
+            no_source,
+            end_item_log == EndItemLog::LogSilent,
+            eat,
+        )?;
     }
 
-    core_battle_effects::run_mon_item_event(
-        context,
-        match end_item_type {
-            EndItemType::End | EndItemType::Take => fxlang::BattleEvent::End,
-            EndItemType::Use => fxlang::BattleEvent::Use,
-            EndItemType::Eat => fxlang::BattleEvent::Eat,
-        },
-    );
+    let event = match end_item_type {
+        EndItemType::End | EndItemType::Take => Some(fxlang::BattleEvent::End),
+        EndItemType::Use => Some(fxlang::BattleEvent::Use),
+        EndItemType::Eat => Some(fxlang::BattleEvent::Eat),
+        EndItemType::Discard => None,
+    };
+    if let Some(event) = event {
+        core_battle_effects::run_mon_item_event(context, event);
+    }
 
     Ok(())
+}
+
+/// Ends the target Mon's item, if it is not already ended.
+///
+/// The Mon still has the item, but it is not considered active.
+pub fn end_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    end_item_internal(
+        context,
+        EndItemType::End,
+        if silent {
+            EndItemLog::TrueSilent
+        } else {
+            EndItemLog::Log
+        },
+    )
 }
 
 /// Starts the target Mon's item, if it is not already started.
@@ -4300,7 +4322,7 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> 
         return Ok(false);
     }
 
-    end_item(context, EndItemType::End, true)?;
+    end_item_internal(context, EndItemType::End, EndItemLog::TrueSilent)?;
 
     let item = context.battle().dex.items.get_by_id(item)?;
 
@@ -4356,7 +4378,15 @@ pub fn take_item(
         return Ok(Some(item_id));
     }
 
-    end_item(context, EndItemType::Take, silent)?;
+    end_item_internal(
+        context,
+        EndItemType::Take,
+        if silent {
+            EndItemLog::LogSilent
+        } else {
+            EndItemLog::Log
+        },
+    )?;
 
     context.target_mut().item = None;
 
@@ -4405,7 +4435,7 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(false);
     }
 
-    end_item(context, EndItemType::Eat, false)?;
+    end_item_internal(context, EndItemType::Eat, EndItemLog::Log)?;
 
     core_battle_effects::run_event_for_applying_effect(
         context,
@@ -4428,11 +4458,19 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
         fxlang::VariableInput::default(),
     );
 
+    let item_handle = context.battle_mut().get_effect_handle_by_id(item)?.clone();
+
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::EatItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    );
+
     Ok(true)
 }
 
 /// Makes the target Mon use its held item.
-pub fn use_item(context: &mut ApplyingEffectContext, indirect: bool) -> Result<bool> {
+pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
@@ -4442,24 +4480,79 @@ pub fn use_item(context: &mut ApplyingEffectContext, indirect: bool) -> Result<b
         None => return Ok(false),
     };
 
-    if !indirect {
-        let item_handle = context
-            .battle_mut()
-            .get_effect_handle_by_id(&item_id)?
-            .clone();
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item_id)?
+        .clone();
 
-        if !core_battle_effects::run_event_for_applying_effect(
-            context,
-            fxlang::BattleEvent::TryUseItem,
-            fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
-        ) {
-            return Ok(false);
-        }
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::TryUseItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    ) {
+        return Ok(false);
     }
 
-    end_item(context, EndItemType::Use, indirect)?;
+    end_item_internal(context, EndItemType::Use, EndItemLog::Log)?;
 
     after_use_item(context, item_id)
+}
+
+/// Makes the target Mon use the given item.
+pub fn use_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> {
+    if context.target().hp == 0 || !context.target().active {
+        return Ok(false);
+    }
+
+    core_battle_effects::run_applying_effect_event(
+        &mut context.forward_applying_effect_context(EffectHandle::Item(item.clone()))?,
+        fxlang::BattleEvent::Use,
+        fxlang::VariableInput::default(),
+    );
+
+    Ok(true)
+}
+
+/// Makes the target Mon discard its held item, without triggering effects.
+pub fn discard_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<bool> {
+    if context.target().hp == 0 || !context.target().active {
+        return Ok(false);
+    }
+
+    let item_id = match &context.target().item {
+        Some(item) => item.id.clone(),
+        None => return Ok(false),
+    };
+
+    end_item_internal(
+        context,
+        EndItemType::Discard,
+        if silent {
+            EndItemLog::TrueSilent
+        } else {
+            EndItemLog::LogSilent
+        },
+    )?;
+
+    after_use_item(context, item_id)
+}
+
+/// Input for [`player_use_item`].
+pub struct PlayerUseItemInput {
+    pub move_slot: Option<Id>,
+}
+
+impl PlayerUseItemInput {
+    pub fn input_for_fxlang_callback(&self) -> fxlang::Value {
+        let mut input = HashMap::default();
+        if let Some(move_slot) = &self.move_slot {
+            input.insert(
+                "move".to_owned(),
+                fxlang::Value::String(move_slot.to_string()),
+            );
+        }
+        fxlang::Value::Object(input)
+    }
 }
 
 /// Uses an item from the player.
@@ -4482,25 +4575,6 @@ pub fn player_use_item(
 
     Ok(true)
 }
-
-/// Input for [`player_use_item`].
-pub struct PlayerUseItemInput {
-    pub move_slot: Option<Id>,
-}
-
-impl PlayerUseItemInput {
-    pub fn input_for_fxlang_callback(&self) -> fxlang::Value {
-        let mut input = HashMap::default();
-        if let Some(move_slot) = &self.move_slot {
-            input.insert(
-                "move".to_owned(),
-                fxlang::Value::String(move_slot.to_string()),
-            );
-        }
-        fxlang::Value::Object(input)
-    }
-}
-
 /// Uses an item from the player.
 pub fn player_use_item_internal(
     context: &mut MonContext,

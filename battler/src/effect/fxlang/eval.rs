@@ -1265,6 +1265,7 @@ where
                                 .map(|hit_effect| ValueRef::HitEffect(hit_effect))
                                 .unwrap_or(ValueRef::Undefined),
                             "power" => ValueRef::UFraction(fling_data.power.into()),
+                            "use_item" => ValueRef::Boolean(fling_data.use_item),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::NaturalGiftData(natural_gift_data) = value {

@@ -233,7 +233,9 @@ Note that this is not meant to be an exact description of how battles work. Many
                   1. Force switch:
                      1. `DragOut`.
                      1. Set switch flag.
-                  1. For each target: `DamagingHit` if received damage, `AfterHit`.
+                  1. For each target that received damage:
+                     1. `DamagingHit`.
+                     1. `AfterHit`.
                1. `Update`.
             1. Process fainted Mons.
                1. Give out experience.

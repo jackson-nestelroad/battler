@@ -129,6 +129,7 @@ pub fn run_function(
         "deduct_pp" => deduct_pp(context).map(|val| Some(val)),
         "direct_damage" => direct_damage(context).map(|()| None),
         "disable_move" => disable_move(context).map(|()| None),
+        "discard_item" => discard_item(context).map(|val| Some(val)),
         "do_move" => do_move(context).map(|()| None),
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "eat_item" => eat_item(context).map(|val| Some(val)),
@@ -254,6 +255,7 @@ pub fn run_function(
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "type_modifier_against_target" => type_modifier_against_target(context),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
+        "use_given_item" => use_given_item(context).map(|val| Some(val)),
         "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
@@ -3184,15 +3186,44 @@ fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn use_item(mut context: FunctionContext) -> Result<Value> {
-    let indirect = context.has_flag("indirect");
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_actions::use_item(
+    core_battle_actions::use_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
+        .map(|val| Value::Boolean(val))
+}
+
+fn use_given_item(mut context: FunctionContext) -> Result<Value> {
+    let mon = context
+        .pop_front()
+        .wrap_expectation("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let item = context
+        .pop_front()
+        .wrap_expectation("missing item")?
+        .string()
+        .wrap_error_with_message("invalid item")?;
+    let item = Id::from(item);
+    core_battle_actions::use_given_item(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
-        indirect,
+        &item,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn discard_item(mut context: FunctionContext) -> Result<Value> {
+    let silent = context.has_flag("silent");
+    let mon = context
+        .pop_front()
+        .wrap_expectation("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    core_battle_actions::discard_item(
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
+        silent,
     )
     .map(|val| Value::Boolean(val))
 }
@@ -3648,7 +3679,6 @@ fn end_item(mut context: FunctionContext) -> Result<()> {
     let silent = context.silent();
     core_battle_actions::end_item(
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
-        core_battle_actions::EndItemType::End,
         silent,
     )
 }

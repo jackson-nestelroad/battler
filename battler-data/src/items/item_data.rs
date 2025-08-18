@@ -16,6 +16,8 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlingData {
     pub power: u32,
+    #[serde(default)]
+    pub use_item: bool,
     pub hit_effect: Option<HitEffect>,
 }
 

@@ -253,6 +253,7 @@ mod moves {
         mod acupressure_test;
         mod assurance_test;
         mod feint_test;
+        mod fling_test;
         mod gastro_acid_test;
         mod gravity_test;
         mod gyro_ball_test;

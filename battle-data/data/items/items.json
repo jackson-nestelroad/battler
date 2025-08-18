@@ -37,7 +37,7 @@
   "whiteherb": {
     "name": "White Herb",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } },
+    "special_data": { "fling": { "power": 10, "use_item": true } },
     "effect": {
       "callbacks": {
         "on_update": [
@@ -90,7 +90,7 @@
   "mentalherb": {
     "name": "Mental Herb",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } },
+    "special_data": { "fling": { "power": 10, "use_item": true } },
     "effect": {
       "callbacks": {
         "on_update": [
@@ -509,7 +509,7 @@
       "callbacks": {
         "on_after_move": [
           "if $move.total_damage > 0:",
-          ["heal: $user expr($move.total_damage / 8)"]
+          ["heal: $user expr($move.total_damage / 8) no_source"]
         ]
       }
     }

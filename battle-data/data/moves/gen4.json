@@ -214,7 +214,7 @@
           "$data = func_call(special_item_data: $item)",
           "if !$data or !$data.natural_gift:",
           ["return false"],
-          "use_item: $user indirect",
+          "discard_item: $user silent",
           "$move.base_power = $data.natural_gift.power"
         ]
       }
@@ -425,7 +425,48 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "NoParentalBond", "Protect"]
+    "flags": ["Mirror", "NoParentalBond", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "# User has an item that is not suppressed.",
+          "$item = $user.effective_item",
+          "if !$item:",
+          ["return false"],
+          "# User can lose its item.",
+          "if !func_call(take_item: $user dry_run):",
+          ["return false"],
+          "# Item can be flung.",
+          "$data = func_call(special_item_data: $item)",
+          "if !$data or !$data.fling:",
+          ["return false"],
+          "# Modify move according to the item being flung.",
+          "$effect_state.item = $item.id",
+          "$effect_state.use_item = $data.fling.use_item",
+          "log_activate: with_target str('item:{}', $item.name)",
+          "$move.base_power = $data.fling.power",
+          "$move.hit_effect = $data.fling.hit_effect",
+          "# Use a volatile to remove the user's item after the move hits.",
+          "# This ensures the item is consumed even if the move fails.",
+          "add_volatile: $user $this.id"
+        ],
+        "on_hit": [
+          "if func_call(item_has_flag: $effect_state.item berry):",
+          ["eat_given_item: $target $effect_state.item"],
+          "else if $effect_state.use_item:",
+          ["use_given_item: $target $effect_state.item"]
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_update": [
+          "# Remove the user's item.",
+          "discard_item: $effect_state.target",
+          "remove_volatile: $effect_state.target $this.id"
+        ]
+      }
+    }
   },
   "psychoshift": {
     "name": "Psycho Shift",
