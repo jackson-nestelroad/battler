@@ -4424,7 +4424,7 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
 }
 
 /// Makes the target Mon use its held item.
-pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
+pub fn use_item(context: &mut ApplyingEffectContext, indirect: bool) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
@@ -4434,20 +4434,22 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         None => return Ok(false),
     };
 
-    let item_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&item_id)?
-        .clone();
+    if !indirect {
+        let item_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&item_id)?
+            .clone();
 
-    if !core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::TryUseItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
-    ) {
-        return Ok(false);
+        if !core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::TryUseItem,
+            fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        ) {
+            return Ok(false);
+        }
     }
 
-    end_item(context, EndItemType::Use, false)?;
+    end_item(context, EndItemType::Use, indirect)?;
 
     after_use_item(context, item_id)
 }

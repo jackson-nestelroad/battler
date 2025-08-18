@@ -5,27 +5,46 @@ use serde::{
 };
 
 use crate::{
+    HitEffect,
     ItemFlag,
     ItemInput,
     ItemTarget,
     Type,
 };
 
-/// Data for what happens when Fling is used with this item.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FlingItemData {
+/// Data for what happens when "Fling" is used with this item.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FlingData {
     pub power: u32,
-    pub status: Option<String>,
-    pub volatile_status: Option<String>,
+    pub hit_effect: Option<HitEffect>,
+}
+
+/// Data for what happens when "Natural Gift" is used with this item.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NaturalGiftData {
+    pub power: u32,
+    pub typ: Type,
+}
+
+/// Data for what happens when "Techno Blast" is used with this item.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TechnoBlastData {
+    pub typ: Type,
+}
+
+/// Data for what happens when "Multi-Attack" is used with this item.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MultiAttackData {
+    pub typ: Type,
 }
 
 /// Data for special item effects; namely, item data associated with individual moves.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct SpecialItemData {
-    /// The type this item turns Techno Blast into.
-    pub techno_blast_type: Option<Type>,
-    /// The type this item turns Multi-Attack into.
-    pub multi_attack_type: Option<Type>,
+    pub fling: Option<FlingData>,
+    pub natural_gift: Option<NaturalGiftData>,
+    pub techno_blast: Option<TechnoBlastData>,
+    pub multi_attack: Option<MultiAttackData>,
 }
 
 /// Data about a particular item.
@@ -40,8 +59,6 @@ pub struct ItemData {
     pub target: Option<ItemTarget>,
     /// Type of input received alongside the item.
     pub input: Option<ItemInput>,
-    /// Data for what happens when Fling is used with this item.
-    pub fling: Option<FlingItemData>,
     /// Data for special item effects associated with individual moves.
     #[serde(default)]
     pub special_data: SpecialItemData,

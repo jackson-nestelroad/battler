@@ -257,6 +257,7 @@ mod moves {
         mod healing_wish_test;
         mod magnet_rise_test;
         mod miracle_eye_test;
+        mod natural_gift_test;
         mod roost_test;
         mod toxic_spikes_test;
     }

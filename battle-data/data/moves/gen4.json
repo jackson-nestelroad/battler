@@ -54,7 +54,7 @@
           "if func_call(move_has_flag: $move.id gravity):",
           ["log_cant", "return false"]
         ],
-        "on_modify_move": [
+        "on_use_move": [
           "if func_call(move_has_flag: $move.id gravity):",
           ["log_cant", "return false"]
         ],
@@ -183,7 +183,15 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if 2 * $target.hp <= $target.max_hp:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "naturalgift": {
     "name": "Natural Gift",
@@ -192,7 +200,30 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "$item = $user.effective_item",
+          "if !$item:",
+          ["return"],
+          "$data = func_call(special_item_data: $item)",
+          "if !$data or !$data.natural_gift:",
+          ["return"],
+          "$move.type = $data.natural_gift.type"
+        ],
+        "on_prepare_hit": [
+          "$item = $user.effective_item",
+          "if !$item:",
+          ["return false"],
+          "$data = func_call(special_item_data: $item)",
+          "if !$data or !$data.natural_gift:",
+          ["return false"],
+          "use_item: $user indirect",
+          "$move.base_power = $data.natural_gift.power"
+        ]
+      }
+    }
   },
   "feint": {
     "name": "Feint",

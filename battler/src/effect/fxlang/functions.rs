@@ -241,6 +241,7 @@ pub fn run_function(
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
+        "special_item_data" => special_item_data(context).map(|val| Some(val)),
         "start_ability" => start_ability(context).map(|()| None),
         "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
@@ -3182,13 +3183,17 @@ fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn use_item(mut context: FunctionContext) -> Result<Value> {
+    let indirect = context.has_flag("indirect");
     let mon = context
         .pop_front()
         .wrap_expectation("missing mon")?
         .mon_handle()
         .wrap_error_with_message("invalid mon")?;
-    core_battle_actions::use_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
-        .map(|val| Value::Boolean(val))
+    core_battle_actions::use_item(
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
+        indirect,
+    )
+    .map(|val| Value::Boolean(val))
 }
 
 fn valid_target(mut context: FunctionContext) -> Result<Value> {
@@ -3665,4 +3670,24 @@ fn get_stat(mut context: FunctionContext) -> Result<Value> {
         false,
     )
     .map(|val| Value::UFraction(val.into()))
+}
+
+fn special_item_data(mut context: FunctionContext) -> Result<Value> {
+    let item_id = context
+        .pop_front()
+        .wrap_expectation("missing item")?
+        .item_id()
+        .wrap_error_with_message("invalid item")?;
+    Ok(Value::SpecialItemData(
+        context
+            .evaluation_context_mut()
+            .battle_context()
+            .battle()
+            .dex
+            .items
+            .get_by_id(&item_id)?
+            .data
+            .special_data
+            .clone(),
+    ))
 }

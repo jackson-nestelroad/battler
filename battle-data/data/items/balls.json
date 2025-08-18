@@ -4,9 +4,7 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"],
     "effect": {
-      "callbacks": {
-        "on_modify_catch_rate": ["return $catch_rate * 255"]
-      }
+      "callbacks": { "on_modify_catch_rate": ["return $catch_rate * 255"] }
     }
   },
   "ultraball": {
@@ -14,9 +12,7 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"],
     "effect": {
-      "callbacks": {
-        "on_modify_catch_rate": ["return $catch_rate * 2"]
-      }
+      "callbacks": { "on_modify_catch_rate": ["return $catch_rate * 2"] }
     }
   },
   "greatball": {
@@ -24,9 +20,7 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"],
     "effect": {
-      "callbacks": {
-        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
-      }
+      "callbacks": { "on_modify_catch_rate": ["return $catch_rate * 3/2"] }
     }
   },
   "pokeball": {

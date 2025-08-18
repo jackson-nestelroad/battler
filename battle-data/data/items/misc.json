@@ -439,8 +439,8 @@
   "reinsofunity": { "name": "Reins of Unity", "flags": [] },
   "legendplate": {
     "name": "Legend Plate",
-    "fling": { "power": 90 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 90 } }
   },
   "rotomphone": { "name": "Rotom Phone", "flags": [] },
   "sandwich": { "name": "Sandwich", "flags": [] },

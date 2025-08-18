@@ -1,18 +1,34 @@
 {
-  "sunstone": { "name": "Sun Stone", "fling": { "power": 30 }, "flags": [] },
-  "moonstone": { "name": "Moon Stone", "fling": { "power": 30 }, "flags": [] },
-  "firestone": { "name": "Fire Stone", "fling": { "power": 30 }, "flags": [] },
+  "sunstone": {
+    "name": "Sun Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
+  "moonstone": {
+    "name": "Moon Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
+  "firestone": {
+    "name": "Fire Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
   "thunderstone": {
     "name": "Thunder Stone",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
   "waterstone": {
     "name": "Water Stone",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
-  "leafstone": { "name": "Leaf Stone", "fling": { "power": 30 }, "flags": [] },
+  "leafstone": {
+    "name": "Leaf Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
   "shoalsalt": { "name": "Shoal Salt", "flags": [] },
   "shoalshell": { "name": "Shoal Shell", "flags": [] },
   "redshard": { "name": "Red Shard", "flags": [] },
@@ -38,81 +54,117 @@
   "gooeymulch": { "name": "Gooey Mulch", "flags": [] },
   "rootfossil": {
     "name": "Root Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "clawfossil": {
     "name": "Claw Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "helixfossil": {
     "name": "Helix Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "domefossil": {
     "name": "Dome Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
-  "oldamber": { "name": "Old Amber", "fling": { "power": 100 }, "flags": [] },
+  "oldamber": {
+    "name": "Old Amber",
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
+  },
   "armorfossil": {
     "name": "Armor Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "skullfossil": {
     "name": "Skull Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
-  "rarebone": { "name": "Rare Bone", "fling": { "power": 100 }, "flags": [] },
+  "rarebone": {
+    "name": "Rare Bone",
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
+  },
   "shinystone": {
     "name": "Shiny Stone",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
-  "duskstone": { "name": "Dusk Stone", "fling": { "power": 80 }, "flags": [] },
-  "dawnstone": { "name": "Dawn Stone", "fling": { "power": 80 }, "flags": [] },
-  "ovalstone": { "name": "Oval Stone", "fling": { "power": 80 }, "flags": [] },
+  "duskstone": {
+    "name": "Dusk Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
+  },
+  "dawnstone": {
+    "name": "Dawn Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
+  },
+  "ovalstone": {
+    "name": "Oval Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
+  },
   "oddkeystone": { "name": "Odd Keystone", "flags": [] },
   "dragonscale": {
     "name": "Dragon Scale",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
-  "upgrade": { "name": "Upgrade", "fling": { "power": 30 }, "flags": [] },
-  "protector": { "name": "Protector", "fling": { "power": 80 }, "flags": [] },
+  "upgrade": {
+    "name": "Upgrade",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
+  "protector": {
+    "name": "Protector",
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
+  },
   "electirizer": {
     "name": "Electirizer",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
-  "magmarizer": { "name": "Magmarizer", "fling": { "power": 80 }, "flags": [] },
+  "magmarizer": {
+    "name": "Magmarizer",
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
+  },
   "dubiousdisc": {
     "name": "Dubious Disc",
-    "fling": { "power": 50 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 50 } }
   },
   "reapercloth": {
     "name": "Reaper Cloth",
-    "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
   },
   "coverfossil": {
     "name": "Cover Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "plumefossil": {
     "name": "Plume Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "passorb": { "name": "Pass Orb", "flags": [] },
   "balmmushroom": { "name": "Balm Mushroom", "flags": [] },
-  "bignugget": { "name": "Big Nugget", "fling": { "power": 130 }, "flags": [] },
+  "bignugget": {
+    "name": "Big Nugget",
+    "flags": [],
+    "special_data": { "fling": { "power": 130 } }
+  },
   "pearlstring": { "name": "Pearl String", "flags": [] },
   "cometshard": { "name": "Comet Shard", "flags": [] },
   "reliccopper": { "name": "Relic Copper", "flags": [] },
@@ -125,27 +177,43 @@
   "abilitycapsule": { "name": "Ability Capsule", "flags": [] },
   "whippeddream": {
     "name": "Whipped Dream",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
-  "sachet": { "name": "Sachet", "fling": { "power": 80 }, "flags": [] },
+  "sachet": {
+    "name": "Sachet",
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
+  },
   "richmulch": { "name": "Rich Mulch", "flags": [] },
   "surprisemulch": { "name": "Surprise Mulch", "flags": [] },
   "boostmulch": { "name": "Boost Mulch", "flags": [] },
   "amazemulch": { "name": "Amaze Mulch", "flags": [] },
-  "jawfossil": { "name": "Jaw Fossil", "fling": { "power": 100 }, "flags": [] },
+  "jawfossil": {
+    "name": "Jaw Fossil",
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
+  },
   "sailfossil": {
     "name": "Sail Fossil",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
-  "bottlecap": { "name": "Bottle Cap", "fling": { "power": 30 }, "flags": [] },
+  "bottlecap": {
+    "name": "Bottle Cap",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
   "goldbottlecap": {
     "name": "Gold Bottle Cap",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
-  "icestone": { "name": "Ice Stone", "fling": { "power": 30 }, "flags": [] },
+  "icestone": {
+    "name": "Ice Stone",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
   "rednectar": { "name": "Red Nectar", "flags": [] },
   "yellownectar": { "name": "Yellow Nectar", "flags": [] },
   "pinknectar": { "name": "Pink Nectar", "flags": [] },
@@ -169,57 +237,69 @@
   "rustedshield": { "name": "Rusted Shield", "flags": [] },
   "fossilizedbird": {
     "name": "Fossilized Bird",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "fossilizedfish": {
     "name": "Fossilized Fish",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "fossilizeddrake": {
     "name": "Fossilized Drake",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "fossilizeddino": {
     "name": "Fossilized Dino",
-    "fling": { "power": 100 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 100 } }
   },
   "strawberrysweet": {
     "name": "Strawberry Sweet",
-    "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
   },
-  "lovesweet": { "name": "Love Sweet", "fling": { "power": 10 }, "flags": [] },
+  "lovesweet": {
+    "name": "Love Sweet",
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
+  },
   "berrysweet": {
     "name": "Berry Sweet",
-    "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
   },
   "cloversweet": {
     "name": "Clover Sweet",
-    "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
   },
   "flowersweet": {
     "name": "Flower Sweet",
-    "fling": { "power": 0 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 0 } }
   },
-  "starsweet": { "name": "Star Sweet", "fling": { "power": 10 }, "flags": [] },
+  "starsweet": {
+    "name": "Star Sweet",
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
+  },
   "ribbonsweet": {
     "name": "Ribbon Sweet",
-    "fling": { "power": 10 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 10 } }
   },
   "sweetapple": {
     "name": "Sweet Apple",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
-  "tartapple": { "name": "Tart Apple", "fling": { "power": 30 }, "flags": [] },
+  "tartapple": {
+    "name": "Tart Apple",
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
+  },
   "expcandyxs": { "name": "Exp. Candy XS", "flags": [] },
   "expcandys": { "name": "Exp. Candy S", "flags": [] },
   "expcandym": { "name": "Exp. Candy M", "flags": [] },
@@ -250,51 +330,51 @@
   "wishingpiece": { "name": "Wishing Piece", "flags": [] },
   "crackedpot": {
     "name": "Cracked Pot",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
   "chippedpot": {
     "name": "Chipped Pot",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
   "wishingchip": { "name": "Wishing Chip", "flags": [] },
   "galaricatwig": { "name": "Galarica Twig", "flags": [] },
   "galaricacuff": {
     "name": "Galarica Cuff",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
   "armoriteore": { "name": "Armorite Ore", "flags": [] },
   "galaricawreath": {
     "name": "Galarica Wreath",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
   "blankplate": {
     "name": "Blank Plate",
-    "fling": { "power": 90 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 90 } }
   },
   "maliciousarmor": {
     "name": "Malicious Armor",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
   "syrupyapple": {
     "name": "Syrupy Apple",
-    "fling": { "power": 30 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 30 } }
   },
   "unremarkableteacup": {
     "name": "Unremarkable Teacup",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
   "masterpieceteacup": {
     "name": "Masterpiece Teacup",
-    "fling": { "power": 80 },
-    "flags": []
+    "flags": [],
+    "special_data": { "fling": { "power": 80 } }
   },
   "healthmochi": { "name": "Health Mochi", "flags": [] },
   "musclemochi": { "name": "Muscle Mochi", "flags": [] },

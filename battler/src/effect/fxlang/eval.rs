@@ -1237,6 +1237,36 @@ where
                             }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
+                    } else if let ValueRef::SpecialItemData(special_item_data) = value {
+                        value = match *member {
+                            "fling" => special_item_data
+                                .fling
+                                .as_ref()
+                                .map(ValueRef::FlingData)
+                                .unwrap_or(ValueRef::Undefined),
+                            "natural_gift" => special_item_data
+                                .natural_gift
+                                .as_ref()
+                                .map(ValueRef::NaturalGiftData)
+                                .unwrap_or(ValueRef::Undefined),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::FlingData(fling_data) = value {
+                        value = match *member {
+                            "hit_effect" => fling_data
+                                .hit_effect
+                                .as_ref()
+                                .map(|hit_effect| ValueRef::HitEffect(hit_effect))
+                                .unwrap_or(ValueRef::Undefined),
+                            "power" => ValueRef::UFraction(fling_data.power.into()),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::NaturalGiftData(natural_gift_data) = value {
+                        value = match *member {
+                            "power" => ValueRef::UFraction(natural_gift_data.power.into()),
+                            "type" => ValueRef::Type(natural_gift_data.typ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
                     } else if let ValueRef::EffectState(connector) = value {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = connector
