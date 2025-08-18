@@ -160,6 +160,7 @@ pub fn run_function(
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
         "item_has_flag" => item_has_flag(context).map(|val| Some(val)),
+        "last_attack" => last_attack(context),
         "log" => log(context).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context).map(|()| None),
@@ -3271,6 +3272,40 @@ fn received_attack(mut context: FunctionContext) -> Result<Value> {
                     && (!this_turn || entry.turn == turn)
             }),
     ))
+}
+
+fn last_attack(mut context: FunctionContext) -> Result<Option<Value>> {
+    let has_damage = context.has_flag("has_damage");
+    let different_side = context.has_flag("different_side");
+    let target = context
+        .pop_front()
+        .wrap_expectation("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    let target = context.evaluation_context().mon(target)?;
+    let side = target.side;
+    target
+        .received_attacks
+        .iter()
+        .filter(|attack| !has_damage || attack.damage > 0)
+        .filter(|attack| !different_side || attack.source_side != side)
+        .last()
+        .map(|attack| {
+            Ok(Value::Object(HashMap::from_iter([
+                ("damage".to_owned(), Value::UFraction(attack.damage.into())),
+                ("side".to_owned(), Value::Side(attack.source_side)),
+                (
+                    "slot".to_owned(),
+                    Value::UFraction(
+                        TryInto::<u64>::try_into(attack.source_position)
+                            .wrap_error_with_message("integer overflow")?
+                            .into(),
+                    ),
+                ),
+                ("source".to_owned(), Value::Mon(attack.source)),
+            ])))
+        })
+        .transpose()
 }
 
 fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<()> {

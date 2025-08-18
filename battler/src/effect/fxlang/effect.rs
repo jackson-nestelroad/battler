@@ -699,6 +699,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpe"]
     ModifySpe,
+    /// Runs before a move is used, to modify the target Mon.
+    ///
+    /// Runs on the active move and in the context of a move user.
+    #[string = "ModifyTarget"]
+    ModifyTarget,
     /// Runs when a move is aborted due to failing the BeforeMove event.
     ///
     /// Runs in the context of a move user.
@@ -1190,6 +1195,7 @@ impl BattleEvent {
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifyTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
@@ -1314,6 +1320,7 @@ impl BattleEvent {
             Self::ModifySpA | Self::SourceModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
+            Self::ModifyTarget => &[("target", ValueType::Mon, false)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
             Self::PlayerTryUseItem => &[("input", ValueType::Object, true)],
@@ -1437,6 +1444,7 @@ impl BattleEvent {
     pub fn run_callback_on_source_effect(&self) -> bool {
         match self {
             Self::Damage => true,
+            Self::ModifyTarget => true,
             _ => false,
         }
     }
@@ -1720,6 +1728,7 @@ pub struct Callbacks {
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
+    pub on_modify_target: Callback,
     pub on_move_aborted: Callback,
     pub on_move_base_power: Callback,
     pub on_move_damage: Callback,
@@ -1891,6 +1900,7 @@ impl Callbacks {
             BattleEvent::ModifySpA => &self.on_modify_spa,
             BattleEvent::ModifySpD => &self.on_modify_spd,
             BattleEvent::ModifySpe => &self.on_modify_spe,
+            BattleEvent::ModifyTarget => &self.on_modify_target,
             BattleEvent::MoveAborted => &self.on_move_aborted,
             BattleEvent::MoveBasePower => &self.on_move_base_power,
             BattleEvent::MoveDamage => &self.on_move_damage,

@@ -122,6 +122,7 @@ impl ParsedCallbacks {
             parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
             parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
+            parsed.parse_and_save(BattleEvent::ModifyTarget, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveBasePower, callbacks)?;
             parsed.parse_and_save(BattleEvent::MoveDamage, callbacks)?;

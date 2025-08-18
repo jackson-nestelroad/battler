@@ -561,6 +561,14 @@ pub fn use_active_move(
         context.mon_mut().last_move_used = Some(context.active_move_handle());
     }
 
+    let target = core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
+        &mut context.user_applying_effect_context(target)?,
+        fxlang::BattleEvent::ModifyTarget,
+        target
+            .map(|target| fxlang::VariableInput::from_iter([fxlang::Value::Mon(target)]))
+            .unwrap_or_default(),
+    );
+
     let outcome = use_active_move_internal(&mut context, target, directly_used)?;
 
     if directly_used {

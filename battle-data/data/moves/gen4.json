@@ -32,11 +32,6 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": [
-          "if $source.is_defined and func_call(has_ability: $source persistent):",
-          ["return 7"],
-          "return 5"
-        ],
         "on_field_start": ["log_field_start"],
         "on_modify_accuracy": ["return $acc * 5/3"],
         "on_disable_move": [
@@ -271,7 +266,18 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Snatch", "Wind"]
+    "flags": ["Snatch", "Wind"],
+    "hit_effect": {
+      "side_condition": "tailwind"
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_modify_spe": ["return $spe * 2"],
+        "on_side_end": ["log_side_end"]
+      }
+    }
   },
   "acupressure": {
     "name": "Acupressure",
@@ -280,7 +286,25 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "AdjacentAllyOrUser",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$potential = []",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if func_call(get_boost: $target.boosts $stat) < 6:",
+            ["$potential = func_call(append: $potential $stat)"]
+          ],
+          "if $potential.is_empty:",
+          ["return false"],
+          "$stat = func_call(sample: $potential)",
+          "$boosts = func_call(boost_table)",
+          "$boosts = func_call(set_boost: $boosts $stat 2)",
+          "boost: $target $boosts"
+        ]
+      }
+    }
   },
   "metalburst": {
     "name": "Metal Burst",
@@ -289,7 +313,26 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Scripted",
-    "flags": ["FailMeFirst", "Mirror", "Protect"]
+    "flags": ["FailMeFirst", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if !func_call(last_attack: $user has_damage different_side):",
+          ["return false"]
+        ],
+        "on_modify_target": [
+          "$attack = func_call(last_attack: $user has_damage different_side)",
+          "if $attack.is_defined:",
+          ["return func_call(mon_in_position: $attack.side $attack.slot)"]
+        ],
+        "on_move_damage": [
+          "$last_attack = func_call(last_attack: $source has_damage different_side)",
+          "if !$last_attack:",
+          ["return 0"],
+          "return $last_attack.damage * 3/2"
+        ]
+      }
+    }
   },
   "uturn": {
     "name": "U-turn",

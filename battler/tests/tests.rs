@@ -250,12 +250,14 @@ mod moves {
     }
 
     mod gen4 {
+        mod acupressure_test;
         mod feint_test;
         mod gastro_acid_test;
         mod gravity_test;
         mod gyro_ball_test;
         mod healing_wish_test;
         mod magnet_rise_test;
+        mod metal_burst_test;
         mod miracle_eye_test;
         mod natural_gift_test;
         mod pluck_test;

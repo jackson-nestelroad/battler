@@ -2665,6 +2665,19 @@ pub fn run_event_for_applying_effect_expecting_move_event_result(
 
 /// Runs an event on the [`CoreBattle`] for an applying effect.
 ///
+/// Expects a [`MonHandle`].
+pub fn run_event_for_applying_effect_expecting_mon(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<MonHandle> {
+    run_event_for_applying_effect_internal(context, event, input, &RunCallbacksOptions::default())?
+        .mon_handle()
+        .ok()
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
 /// Expects a [`MonHandle`]. Returns the value of the first callback that returns a value.
 pub fn run_event_for_applying_effect_expecting_mon_quick_return(
     context: &mut ApplyingEffectContext,

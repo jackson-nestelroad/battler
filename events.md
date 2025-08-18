@@ -118,6 +118,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. `BeforeMove`.
       1. _(extension)_ `Flinch`.
    1. `MoveAborted` if `BeforeMove` failed.
+   1. `ModifyTarget`.
    1. Use active move:
 
       1. `UseMove`.

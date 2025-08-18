@@ -1,0 +1,112 @@
+use anyhow::Result;
+use battler::{
+    BattleType,
+    CoreBattleEngineSpeedSortTieResolution,
+    DataStore,
+    LocalDataStore,
+    PublicCoreBattle,
+    TeamData,
+    WrapResultError,
+};
+use battler_test_utils::{
+    LogMatch,
+    TestBattleBuilder,
+    assert_logs_since_turn_eq,
+};
+
+fn team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Bastiodon",
+                    "species": "Bastiodon",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Metal Burst",
+                        "Iron Head"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Rampardos",
+                    "species": "Rampardos",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Zen Headbutt"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn make_battle(
+    data: &dyn DataStore,
+    seed: u64,
+    team_1: TeamData,
+    team_2: TeamData,
+) -> Result<PublicCoreBattle<'_>> {
+    TestBattleBuilder::new()
+        .with_battle_type(BattleType::Doubles)
+        .with_seed(seed)
+        .with_team_validation(false)
+        .with_pass_allowed(true)
+        .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
+        .add_player_to_side_1("player-1", "Player 1")
+        .add_player_to_side_2("player-2", "Player 2")
+        .with_team("player-1", team_1)
+        .with_team("player-2", team_2)
+        .build(data)
+}
+
+#[test]
+fn metal_burst_attacks_last_attacker() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 1,1;move 0,1"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Bastiodon,player-1,1|name:Metal Burst|noanim",
+            "fail|mon:Bastiodon,player-1,1",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Rampardos,player-2,2|name:Zen Headbutt|target:Bastiodon,player-1,1",
+            "resisted|mon:Bastiodon,player-1,1",
+            "split|side:0",
+            "damage|mon:Bastiodon,player-1,1|health:103/120",
+            "damage|mon:Bastiodon,player-1,1|health:86/100",
+            "move|mon:Bastiodon,player-2,1|name:Iron Head|target:Bastiodon,player-1,1",
+            "split|side:0",
+            "damage|mon:Bastiodon,player-1,1|health:87/120",
+            "damage|mon:Bastiodon,player-1,1|health:73/100",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Bastiodon,player-1,1|name:Metal Burst|target:Bastiodon,player-2,1",
+            "split|side:1",
+            "damage|mon:Bastiodon,player-2,1|health:96/120",
+            "damage|mon:Bastiodon,player-2,1|health:80/100",
+            "residual",
+            "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
