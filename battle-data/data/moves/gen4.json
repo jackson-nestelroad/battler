@@ -652,7 +652,18 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "side_condition": "luckychant"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_critical_hit": ["return false"],
+        "on_side_end": ["log_side_end"]
+      }
+    }
   },
   "mefirst": {
     "name": "Me First",
