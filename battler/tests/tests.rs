@@ -258,6 +258,7 @@ mod moves {
         mod magnet_rise_test;
         mod miracle_eye_test;
         mod natural_gift_test;
+        mod pluck_test;
         mod roost_test;
         mod toxic_spikes_test;
     }

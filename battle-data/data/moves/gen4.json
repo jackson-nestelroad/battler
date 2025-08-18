@@ -249,7 +249,20 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Any",
-    "flags": ["Contact", "Distance", "Mirror", "Protect"]
+    "flags": ["Contact", "Distance", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$item = $target.item",
+          "if !$item or !func_call(item_has_flag: $item berry):",
+          ["return"],
+          "$item = func_call(take_item: $target)",
+          "if !$item:",
+          ["return"],
+          "eat_given_item: $source $item"
+        ]
+      }
+    }
   },
   "tailwind": {
     "name": "Tailwind",
