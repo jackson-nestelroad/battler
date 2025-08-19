@@ -252,6 +252,7 @@ mod moves {
     mod gen4 {
         mod acupressure_test;
         mod assurance_test;
+        mod copycat_test;
         mod feint_test;
         mod fling_test;
         mod gastro_acid_test;

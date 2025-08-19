@@ -249,6 +249,7 @@ pub struct CoreBattle<'d> {
     next_ability_order: u32,
     next_forfeit_order: u32,
     last_move_log: Option<usize>,
+    last_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
 
     input_log: HashMap<usize, HashMap<u64, String>>,
@@ -334,6 +335,7 @@ impl<'d> CoreBattle<'d> {
             next_ability_order: 0,
             next_forfeit_order: 0,
             last_move_log: None,
+            last_move: None,
             last_exited: None,
             input_log,
             _pin: PhantomPinned,
@@ -662,6 +664,14 @@ impl<'d> CoreBattle<'d> {
         {
             event.remove(attribute);
         }
+    }
+
+    pub fn last_move(&self) -> Option<MoveHandle> {
+        self.last_move
+    }
+
+    pub fn set_last_move(&mut self, last_move: Option<MoveHandle>) {
+        self.last_move = last_move;
     }
 
     pub fn started(&self) -> bool {
@@ -1526,6 +1536,13 @@ impl<'d> CoreBattle<'d> {
                     .registry
                     .save_active_move_from_next_turn(last_move_used)?;
             }
+        }
+
+        if let Some(last_move) = context.battle().last_move {
+            context
+                .battle()
+                .registry
+                .save_active_move_from_next_turn(last_move)?;
         }
 
         context.battle_mut().registry.next_turn()?;

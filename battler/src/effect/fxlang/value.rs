@@ -75,6 +75,7 @@ pub enum ValueType {
     String,
 
     // Battle reference types.
+    Battle,
     Field,
     Format,
     Side,
@@ -139,6 +140,7 @@ pub enum Value {
     UFraction(Fraction<u64>),
     String(String),
 
+    Battle,
     Field,
     Format,
     Side(usize),
@@ -182,6 +184,7 @@ impl Value {
             Self::UFraction(_) => ValueType::UFraction,
             Self::String(_) => ValueType::String,
 
+            Self::Battle => ValueType::Battle,
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
             Self::Side(_) => ValueType::Side,
@@ -647,6 +650,7 @@ pub enum MaybeReferenceValue<'eval> {
     UFraction(Fraction<u64>),
     String(String),
 
+    Battle,
     Field,
     Format,
     Side(usize),
@@ -692,6 +696,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::UFraction(_) => ValueType::UFraction,
             Self::String(_) => ValueType::String,
 
+            Self::Battle => ValueType::Battle,
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
             Self::Side(_) => ValueType::Side,
@@ -737,6 +742,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::UFraction(val) => Value::UFraction(*val),
             Self::String(val) => Value::String(val.clone()),
 
+            Self::Battle => Value::Battle,
             Self::Field => Value::Field,
             Self::Format => Value::Format,
             Self::Side(val) => Value::Side(*val),
@@ -837,6 +843,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::UFraction(val) => Self::UFraction(val),
             Value::String(val) => Self::String(val),
 
+            Value::Battle => Self::Battle,
             Value::Field => Self::Field,
             Value::Format => Self::Field,
             Value::Side(val) => Self::Side(val),
@@ -900,6 +907,7 @@ pub enum ValueRef<'eval> {
     Str(&'eval str),
     TempString(String),
 
+    Battle,
     Field,
     Format,
     Side(usize),
@@ -947,6 +955,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Str(_) => ValueType::String,
             Self::TempString(_) => ValueType::String,
 
+            Self::Battle => ValueType::Battle,
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
             Self::Side(_) => ValueType::Side,
@@ -994,6 +1003,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Str(val) => Value::String(val.to_string()),
             Self::TempString(val) => Value::String(val.clone()),
 
+            Self::Battle => Value::Battle,
             Self::Field => Value::Field,
             Self::Format => Value::Format,
             Self::Side(val) => Value::Side(*val),
@@ -1151,6 +1161,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::UFraction(val) => Self::UFraction(*val),
             Value::String(val) => Self::String(val),
 
+            Value::Battle => Self::Battle,
             Value::Field => Self::Field,
             Value::Format => Self::Format,
             Value::Side(val) => Self::Side(*val),
@@ -1248,6 +1259,7 @@ pub enum ValueRefMut<'eval> {
     OptionalString(&'eval mut Option<String>),
     OptionalId(&'eval mut Option<Id>),
 
+    Battle,
     Field,
     Format,
     Side(&'eval mut usize),
@@ -1307,6 +1319,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::OptionalString(_) => ValueType::String,
             Self::OptionalId(_) => ValueType::String,
 
+            Self::Battle => ValueType::Battle,
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
             Self::Side(_) => ValueType::Side,
@@ -1356,6 +1369,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::UFraction(val) => Self::UFraction(val),
             Value::String(val) => Self::String(val),
 
+            Value::Battle => Self::Battle,
             Value::Field => Self::Field,
             Value::Format => Self::Format,
             Value::Side(val) => Self::Side(val),
@@ -1411,6 +1425,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     Str(&'eval str),
     TempString(String),
 
+    Battle,
     Field,
     Format,
     Side(usize),
@@ -1461,6 +1476,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Str(_) => ValueType::String,
             Self::TempString(_) => ValueType::String,
 
+            Self::Battle => ValueType::Battle,
             Self::Field => ValueType::Field,
             Self::Format => ValueType::Format,
             Self::Side(_) => ValueType::Side,
@@ -1511,6 +1527,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Str(val) => Value::String(val.to_string()),
             Self::TempString(val) => Value::String(val.clone()),
 
+            Self::Battle => Value::Battle,
             Self::Field => Value::Field,
             Self::Format => Value::Format,
             Self::Side(val) => Value::Side(*val),
@@ -1564,11 +1581,12 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Str(_) => 65,
             Self::TempString(_) => 66,
 
-            Self::Field => 100,
-            Self::Format => 101,
-            Self::Player(_) => 102,
-            Self::Side(_) => 103,
-            Self::Mon(_) => 104,
+            Self::Battle => 100,
+            Self::Field => 101,
+            Self::Format => 102,
+            Self::Player(_) => 103,
+            Self::Side(_) => 104,
+            Self::Mon(_) => 105,
 
             Self::Effect(_) => 116,
             Self::TempEffect(_) => 117,
@@ -2025,6 +2043,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempString(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::Battle, Self::Battle) => true,
             (Self::Field, Self::Field) => true,
             (Self::Format, Self::Format) => true,
             (Self::Side(lhs), Self::Side(rhs)) => lhs.eq(rhs),
@@ -2207,6 +2226,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::UFraction(val) => Self::UFraction(*val),
             Value::String(val) => Self::String(val),
 
+            Value::Battle => Self::Battle,
             Value::Field => Self::Field,
             Value::Format => Self::Format,
             Value::Player(val) => Self::Player(*val),
@@ -2251,6 +2271,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::UFraction(val) => Self::UFraction(*val),
             MaybeReferenceValue::String(val) => Self::String(val),
 
+            MaybeReferenceValue::Battle => Self::Battle,
             MaybeReferenceValue::Field => Self::Field,
             MaybeReferenceValue::Format => Self::Format,
             MaybeReferenceValue::Side(val) => Self::Side(*val),
@@ -2299,6 +2320,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::Str(val) => Self::Str(val),
             ValueRef::TempString(val) => Self::TempString(val),
 
+            ValueRef::Battle => Self::Battle,
             ValueRef::Field => Self::Field,
             ValueRef::Format => Self::Format,
             ValueRef::Side(val) => Self::Side(val),
@@ -2351,6 +2373,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::Str(val) => Self::Str(val),
             ValueRef::TempString(val) => Self::String(val),
 
+            ValueRef::Battle => Self::Battle,
             ValueRef::Field => Self::Field,
             ValueRef::Format => Self::Format,
             ValueRef::Side(val) => Self::Side(*val),

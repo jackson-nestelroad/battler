@@ -594,6 +594,8 @@ pub fn use_active_move(
         fxlang::VariableInput::default(),
     );
 
+    context.battle_mut().set_last_move(Some(active_move_handle));
+
     Ok(outcome.success())
 }
 

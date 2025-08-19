@@ -721,7 +721,19 @@
       "NoAssist",
       "NoMetronome",
       "NoSleepTalk"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$last_move = $battle.last_move",
+          "if !$last_move:",
+          ["return false"],
+          "if func_call(move_has_flag: $last_move failcopycat):",
+          ["return false"],
+          "use_move: $target $last_move.id"
+        ]
+      }
+    }
   },
   "powerswap": {
     "name": "Power Swap",

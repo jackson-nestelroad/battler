@@ -1111,6 +1111,17 @@ where
                             "pp" => ValueRef::UFraction(move_slot.pp.into()),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
+                    } else if let ValueRef::Battle = value {
+                        let context = unsafe { context.unsafely_detach_borrow_mut() };
+                        value = match *member {
+                            "last_move" => context
+                                .battle_context()
+                                .battle()
+                                .last_move()
+                                .map(|move_handle| ValueRef::ActiveMove(move_handle))
+                                .unwrap_or(ValueRef::Undefined),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
                     } else if let ValueRef::Field = value {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
@@ -1647,6 +1658,7 @@ impl Evaluator {
 
         self.vars
             .set("this", Value::Effect(context.effect_handle().clone()))?;
+        self.vars.set("battle", Value::Battle)?;
         self.vars.set("field", Value::Field)?;
         self.vars.set("format", Value::Format)?;
 
