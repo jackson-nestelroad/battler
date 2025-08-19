@@ -974,7 +974,15 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Thawing"],
-    "recoil_percent": "33/100"
+    "recoil_percent": "33/100",
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "forcepalm": {
     "name": "Force Palm",
@@ -984,7 +992,15 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "33%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "aurasphere": {
     "name": "Aura Sphere",
@@ -1003,7 +1019,12 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "spe": 2
+      }
+    }
   },
   "poisonjab": {
     "name": "Poison Jab",
@@ -1013,7 +1034,15 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ]
   },
   "darkpulse": {
     "name": "Dark Pulse",
@@ -1023,7 +1052,15 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Any",
-    "flags": ["Distance", "Mirror", "Protect", "Pulse"]
+    "flags": ["Distance", "Mirror", "Protect", "Pulse"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "nightslash": {
     "name": "Night Slash",
@@ -1064,7 +1101,15 @@
     "accuracy": 95,
     "base_power": 75,
     "target": "Any",
-    "flags": ["Distance", "Mirror", "Protect", "Slicing"]
+    "flags": ["Distance", "Mirror", "Protect", "Slicing"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "xscissor": {
     "name": "X-Scissor",
@@ -1084,7 +1129,17 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "dragonpulse": {
     "name": "Dragon Pulse",
@@ -1104,7 +1159,15 @@
     "accuracy": 75,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "powergem": {
     "name": "Power Gem",
@@ -1146,7 +1209,17 @@
     "accuracy": 70,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "energyball": {
     "name": "Energy Ball",
@@ -1156,7 +1229,17 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "bravebird": {
     "name": "Brave Bird",
@@ -1177,7 +1260,17 @@
     "accuracy": 100,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "switcheroo": {
     "name": "Switcheroo",
