@@ -756,7 +756,12 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["swap_boosts: $target $source def spd"]
+      }
+    }
   },
   "punishment": {
     "name": "Punishment",
@@ -865,7 +870,12 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["swap_boosts: $target $source"]
+      }
+    }
   },
   "aquaring": {
     "name": "Aqua Ring",

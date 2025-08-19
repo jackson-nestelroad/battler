@@ -868,11 +868,15 @@ pub fn boost(context: &mut MonContext, boost: Boost, delta: i8, original_delta: 
 }
 
 pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Result<()> {
+    let mut additional = Vec::default();
+    if !boosts.is_empty() {
+        additional.push(format!("stats:{}", boosts.iter().join(",")));
+    }
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("stats:{}", boosts.iter().join(","))],
+        additional,
         ..Default::default()
     };
     effect_activation(

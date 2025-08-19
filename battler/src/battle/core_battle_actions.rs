@@ -7,6 +7,7 @@ use ahash::HashMap;
 use anyhow::Result;
 use battler_data::{
     Boost,
+    BoostOrderIterator,
     BoostTable,
     BoostTableEntries,
     ConditionType,
@@ -2527,15 +2528,20 @@ pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Res
     let mut target_boosts = BoostTable::default();
     let mut source_boosts = BoostTable::default();
 
-    for boost in boosts {
-        target_boosts.set(*boost, context.target().boosts.get(*boost));
+    let iter: Box<dyn Iterator<Item = Boost>> = if boosts.is_empty() {
+        Box::new(BoostOrderIterator::new())
+    } else {
+        Box::new(boosts.into_iter().cloned())
+    };
+    for boost in iter {
+        target_boosts.set(boost, context.target().boosts.get(boost));
         source_boosts.set(
-            *boost,
+            boost,
             context
                 .source()
                 .wrap_expectation("expected source")?
                 .boosts
-                .get(*boost),
+                .get(boost),
         );
     }
 
