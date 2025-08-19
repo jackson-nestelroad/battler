@@ -1289,7 +1289,10 @@
     "accuracy": 90,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Recharge"]
+    "flags": ["Contact", "Mirror", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "nastyplot": {
     "name": "Nasty Plot",
@@ -1321,7 +1324,16 @@
     "base_power": 60,
     "priority": -4,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$attacked_by_target = func_call(received_attack: $source $target has_damage this_turn)",
+          "if $attacked_by_target:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "iceshard": {
     "name": "Ice Shard",
@@ -1353,7 +1365,21 @@
     "accuracy": 95,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "par"
+        }
+      },
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "icefang": {
     "name": "Ice Fang",
@@ -1363,7 +1389,21 @@
     "accuracy": 95,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "frz"
+        }
+      },
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "firefang": {
     "name": "Fire Fang",
@@ -1373,7 +1413,21 @@
     "accuracy": 95,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      },
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "shadowsneak": {
     "name": "Shadow Sneak",
@@ -1394,7 +1448,17 @@
     "accuracy": 85,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["AccuracyLowering", "Bullet", "Mirror", "Protect"]
+    "flags": ["AccuracyLowering", "Bullet", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
+    ]
   },
   "psychocut": {
     "name": "Psycho Cut",
@@ -1415,7 +1479,15 @@
     "accuracy": 90,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "mirrorshot": {
     "name": "Mirror Shot",
@@ -1425,7 +1497,17 @@
     "accuracy": 85,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["AccuracyLowering", "Mirror", "Protect"]
+    "flags": ["AccuracyLowering", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
+    ]
   },
   "flashcannon": {
     "name": "Flash Cannon",
@@ -1435,7 +1517,17 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "rockclimb": {
     "name": "Rock Climb",
@@ -1445,7 +1537,15 @@
     "accuracy": 85,
     "base_power": 90,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
+    ]
   },
   "defog": {
     "name": "Defog",
@@ -1474,7 +1574,12 @@
     "accuracy": 90,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "user_effect": {
+      "boosts": {
+        "spa": -2
+      }
+    }
   },
   "discharge": {
     "name": "Discharge",
@@ -1484,7 +1589,15 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "lavaplume": {
     "name": "Lava Plume",
@@ -1494,7 +1607,15 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "leafstorm": {
     "name": "Leaf Storm",
@@ -1504,7 +1625,17 @@
     "accuracy": 90,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "spa": -2
+          }
+        }
+      }
+    ]
   },
   "powerwhip": {
     "name": "Power Whip",
@@ -1524,7 +1655,10 @@
     "accuracy": 90,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect", "Recharge"]
+    "flags": ["Bullet", "Mirror", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "crosspoison": {
     "name": "Cross Poison",
@@ -1535,7 +1669,15 @@
     "base_power": 70,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ]
   },
   "gunkshot": {
     "name": "Gunk Shot",
@@ -1545,7 +1687,15 @@
     "accuracy": 80,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ]
   },
   "ironhead": {
     "name": "Iron Head",
@@ -1555,7 +1705,15 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "magnetbomb": {
     "name": "Magnet Bomb",
@@ -1626,6 +1784,13 @@
       "NoSleepTalk",
       "Protect",
       "Sound"
+    ],
+    "secondary_effects": [
+      {
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
     ]
   },
   "judgment": {
@@ -1656,7 +1821,17 @@
     "accuracy": 90,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "70%",
+        "user": {
+          "boosts": {
+            "spa": 1
+          }
+        }
+      }
+    ]
   },
   "woodhammer": {
     "name": "Wood Hammer",
@@ -1698,7 +1873,13 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "def": 1,
+        "spd": 1
+      }
+    }
   },
   "healorder": {
     "name": "Heal Order",
@@ -1707,7 +1888,10 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "hit_effect": {
+      "heal_percent": "50%"
+    }
   },
   "headsmash": {
     "name": "Head Smash",
@@ -1739,7 +1923,10 @@
     "accuracy": 90,
     "base_power": 150,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Recharge"]
+    "flags": ["Mirror", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "spacialrend": {
     "name": "Spacial Rend",
@@ -1779,7 +1966,10 @@
     "accuracy": 75,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "partiallytrapped"
+    }
   },
   "darkvoid": {
     "name": "Dark Void",
@@ -1798,7 +1988,17 @@
     "accuracy": 85,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "40%",
+        "target": {
+          "boosts": {
+            "spd": -2
+          }
+        }
+      }
+    ]
   },
   "ominouswind": {
     "name": "Ominous Wind",
@@ -1808,7 +2008,21 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "user": {
+          "boosts": {
+            "atk": 1,
+            "def": 1,
+            "spa": 1,
+            "spd": 1,
+            "spe": 1
+          }
+        }
+      }
+    ]
   },
   "shadowforce": {
     "name": "Shadow Force",
