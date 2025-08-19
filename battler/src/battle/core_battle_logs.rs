@@ -867,6 +867,21 @@ pub fn boost(context: &mut MonContext, boost: Boost, delta: i8, original_delta: 
     Ok(())
 }
 
+pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: vec![format!("stats:{}", boosts.iter().join(","))],
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapboosts".to_owned(),
+        activation,
+    )
+}
+
 pub fn debug_event_failure(
     context: &mut Context,
     event: fxlang::BattleEvent,

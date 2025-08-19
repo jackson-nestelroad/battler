@@ -6,6 +6,7 @@ use std::{
 use ahash::HashMap;
 use anyhow::Result;
 use battler_data::{
+    Boost,
     BoostTable,
     BoostTableEntries,
     ConditionType,
@@ -2515,6 +2516,40 @@ pub fn boost(
     } else {
         Ok(false)
     }
+}
+
+/// Swaps boosts between the effect target and source.
+pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Result<()> {
+    if !context.has_source() {
+        return Err(general_error("swapping boosts requires a source mon"));
+    }
+
+    let mut target_boosts = BoostTable::default();
+    let mut source_boosts = BoostTable::default();
+
+    for boost in boosts {
+        target_boosts.set(*boost, context.target().boosts.get(*boost));
+        source_boosts.set(
+            *boost,
+            context
+                .source()
+                .wrap_expectation("expected source")?
+                .boosts
+                .get(*boost),
+        );
+    }
+
+    Mon::set_boosts(&mut context.target_context()?, &source_boosts);
+    Mon::set_boosts(
+        &mut context
+            .source_context()?
+            .wrap_expectation("expected source")?,
+        &target_boosts,
+    );
+
+    core_battle_logs::swap_boosts(context, boosts)?;
+
+    Ok(())
 }
 
 /// Applies an effect on the user of a move.

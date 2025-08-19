@@ -250,6 +250,7 @@ pub fn run_function(
         "start_ability" => start_ability(context).map(|()| None),
         "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
+        "swap_boosts" => swap_boosts(context).map(|()| None),
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
@@ -3818,4 +3819,28 @@ fn special_item_data(mut context: FunctionContext) -> Result<Value> {
             .special_data
             .clone(),
     ))
+}
+
+fn swap_boosts(mut context: FunctionContext) -> Result<()> {
+    let target = context
+        .pop_front()
+        .wrap_expectation("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    let source = context
+        .pop_front()
+        .wrap_expectation("missing source")?
+        .mon_handle()
+        .wrap_error_with_message("invalid source")?;
+    let mut boosts = Vec::default();
+    while let Some(val) = context.pop_front() {
+        boosts.push(val.boost().wrap_error_with_message("invalid boost")?);
+    }
+
+    core_battle_actions::swap_boosts(
+        &mut context
+            .evaluation_context_mut()
+            .forward_effect_to_applying_effect(target, Some(source))?,
+        &boosts,
+    )
 }

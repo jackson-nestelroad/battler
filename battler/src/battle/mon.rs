@@ -2012,6 +2012,13 @@ impl Mon {
         new_value - current_value
     }
 
+    /// Sets the Mon's boosted stats directly.
+    pub fn set_boosts(context: &mut MonContext, boosts: &BoostTable) {
+        for (boost, val) in boosts.non_zero_iter() {
+            context.mon_mut().boosts.set(boost, val);
+        }
+    }
+
     /// Checks if the Mon has an ability.
     pub fn has_ability(context: &mut MonContext, id: &Id) -> bool {
         mon_states::effective_ability(context).is_some_and(|ability| ability == *id)

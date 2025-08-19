@@ -266,6 +266,7 @@ mod moves {
         mod natural_gift_test;
         mod payback_test;
         mod pluck_test;
+        mod power_swap_test;
         mod power_trick_test;
         mod psycho_shift_test;
         mod roost_test;
