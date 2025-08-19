@@ -1055,6 +1055,9 @@ where
                                 "{}",
                                 Mon::position_details(&context.mon_context(mon_handle)?)?
                             )),
+                            "positive_boosts" => ValueRef::UFraction(
+                                Mon::positive_boosts(&context.mon_context(mon_handle)?).into(),
+                            ),
                             "side" => ValueRef::Side(context.mon(mon_handle)?.side),
                             "species" => ValueRef::Str(&context.mon(mon_handle)?.species.as_ref()),
                             "stats" => ValueRef::StatTable(&context.mon(mon_handle)?.stats),
@@ -1109,6 +1112,7 @@ where
                             "max_pp" => ValueRef::UFraction(move_slot.max_pp.into()),
                             "name" => ValueRef::String(&move_slot.name),
                             "pp" => ValueRef::UFraction(move_slot.pp.into()),
+                            "used" => ValueRef::Boolean(move_slot.used),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Battle = value {

@@ -2019,6 +2019,17 @@ impl Mon {
         }
     }
 
+    /// Counts the positive boosts applied to the Mon.
+    pub fn positive_boosts(context: &MonContext) -> u8 {
+        let mut boosts = 0;
+        for (_, val) in context.mon().boosts.non_zero_iter() {
+            if val > 0 {
+                boosts += val as u8;
+            }
+        }
+        boosts
+    }
+
     /// Checks if the Mon has an ability.
     pub fn has_ability(context: &mut MonContext, id: &Id) -> bool {
         mon_states::effective_ability(context).is_some_and(|ability| ability == *id)

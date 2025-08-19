@@ -770,7 +770,14 @@
     "pp": 5,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "return func_call(min: 200 expr(60 + 20 * $target.positive_boosts))"
+        ]
+      }
+    }
   },
   "lastresort": {
     "name": "Last Resort",
@@ -780,7 +787,26 @@
     "accuracy": 100,
     "base_power": 140,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "# User must know Last Resort and at least one other move.",
+          "$has_last_resort = false",
+          "$knows_other_move = false",
+          "foreach $move_slot in $user.move_slots:",
+          [
+            "if $move_slot.id == $this.id:",
+            ["$has_last_resort = true"],
+            "else if !$move_slot.used:",
+            ["return false"],
+            "else:",
+            ["$knows_other_move = true"]
+          ],
+          "return $has_last_resort and $knows_other_move"
+        ]
+      }
+    }
   },
   "worryseed": {
     "name": "Worry Seed",
@@ -813,7 +839,19 @@
     "base_power": 70,
     "priority": 1,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "$action = func_call(pending_move_action_this_turn: $target)",
+          "if !$action:",
+          ["return false"],
+          "$pending_move = func_call(get_move: $action.id)",
+          "if !$pending_move or ($pending_move.category == status and $pending_move.id != mefirst):",
+          ["return false"]
+        ]
+      }
+    }
   },
   "toxicspikes": {
     "name": "Toxic Spikes",
@@ -884,7 +922,16 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "volatile_status": "aquaring"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_start"],
+        "on_residual": ["heal: $target expr($target.base_max_hp / 16)"]
+      }
+    }
   },
   "magnetrise": {
     "name": "Magnet Rise",

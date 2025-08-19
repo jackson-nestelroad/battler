@@ -251,6 +251,7 @@ mod moves {
 
     mod gen4 {
         mod acupressure_test;
+        mod aqua_ring_test;
         mod assurance_test;
         mod copycat_test;
         mod feint_test;
@@ -259,6 +260,7 @@ mod moves {
         mod gravity_test;
         mod gyro_ball_test;
         mod healing_wish_test;
+        mod last_resort_test;
         mod magnet_rise_test;
         mod me_first_test;
         mod metal_burst_test;
@@ -269,7 +271,9 @@ mod moves {
         mod power_swap_test;
         mod power_trick_test;
         mod psycho_shift_test;
+        mod punishment_test;
         mod roost_test;
+        mod sucker_punch_test;
         mod toxic_spikes_test;
         mod trump_card_test;
     }
