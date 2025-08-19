@@ -1635,21 +1635,22 @@ impl ProgramEvalResult {
 pub struct Evaluator {
     statement: usize,
     vars: VariableRegistry,
+    event: BattleEvent,
 }
 
 impl Evaluator {
     /// Creates a new evaluator.
-    pub fn new() -> Self {
+    pub fn new(event: BattleEvent) -> Self {
         Self {
             statement: 0,
             vars: VariableRegistry::new(),
+            event,
         }
     }
 
     fn initialize_vars(
         &self,
         context: &mut EvaluationContext,
-        event: BattleEvent,
         mut input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<()> {
@@ -1666,7 +1667,7 @@ impl Evaluator {
         self.vars.set("field", Value::Field)?;
         self.vars.set("format", Value::Format)?;
 
-        if event.has_flag(CallbackFlag::TakesGeneralMon) {
+        if self.event.has_flag(CallbackFlag::TakesGeneralMon) {
             self.vars.set(
                 "mon",
                 Value::Mon(
@@ -1676,19 +1677,19 @@ impl Evaluator {
                 ),
             )?;
         }
-        if event.has_flag(CallbackFlag::TakesTargetMon) {
+        if self.event.has_flag(CallbackFlag::TakesTargetMon) {
             match context.target_handle() {
                 Some(target_handle) => self.vars.set("target", Value::Mon(target_handle))?,
                 None => (),
             }
         }
-        if event.has_flag(CallbackFlag::TakesSourceMon) {
+        if self.event.has_flag(CallbackFlag::TakesSourceMon) {
             match context.source_handle() {
                 Some(source_handle) => self.vars.set("source", Value::Mon(source_handle))?,
                 None => (),
             }
         }
-        if event.has_flag(CallbackFlag::TakesUserMon) {
+        if self.event.has_flag(CallbackFlag::TakesUserMon) {
             // The user is the target of the effect.
             self.vars.set(
                 "user",
@@ -1699,17 +1700,20 @@ impl Evaluator {
                 ),
             )?;
         }
-        if event.has_flag(CallbackFlag::TakesSourceTargetMon) {
+        if self.event.has_flag(CallbackFlag::TakesSourceTargetMon) {
             // The target is the source of the effect.
             match context.source_handle() {
                 Some(source_handle) => self.vars.set("target", Value::Mon(source_handle))?,
                 None => (),
             }
         }
-        if event.has_flag(CallbackFlag::TakesEffect | CallbackFlag::TakesSourceEffect) {
-            let effect_name = if event.has_flag(CallbackFlag::TakesEffect) {
+        if self
+            .event
+            .has_flag(CallbackFlag::TakesEffect | CallbackFlag::TakesSourceEffect)
+        {
+            let effect_name = if self.event.has_flag(CallbackFlag::TakesEffect) {
                 "effect"
-            } else if event.has_flag(CallbackFlag::TakesSourceEffect) {
+            } else if self.event.has_flag(CallbackFlag::TakesSourceEffect) {
                 "source_effect"
             } else {
                 unreachable!()
@@ -1724,7 +1728,7 @@ impl Evaluator {
                 ),
             )?;
         }
-        if event.has_flag(CallbackFlag::TakesActiveMove) {
+        if self.event.has_flag(CallbackFlag::TakesActiveMove) {
             self.vars.set(
                 "move",
                 Value::ActiveMove(
@@ -1734,13 +1738,13 @@ impl Evaluator {
                 ),
             )?;
         }
-        if event.has_flag(CallbackFlag::TakesOptionalEffect) {
+        if self.event.has_flag(CallbackFlag::TakesOptionalEffect) {
             if let Some(source_effect_handle) = context.source_effect_handle().cloned() {
                 self.vars
                     .set("effect", Value::Effect(source_effect_handle))?;
             }
         }
-        if event.has_flag(CallbackFlag::TakesSide) {
+        if self.event.has_flag(CallbackFlag::TakesSide) {
             self.vars.set(
                 "side",
                 Value::Side(
@@ -1750,7 +1754,7 @@ impl Evaluator {
                 ),
             )?;
         }
-        if event.has_flag(CallbackFlag::TakesPlayer) {
+        if self.event.has_flag(CallbackFlag::TakesPlayer) {
             self.vars.set(
                 "player",
                 Value::Player(
@@ -1763,7 +1767,7 @@ impl Evaluator {
 
         // Reverse the input so we can efficiently pop elements out of it.
         input.values.reverse();
-        for (i, (name, value_type, required)) in event.input_vars().iter().enumerate() {
+        for (i, (name, value_type, required)) in self.event.input_vars().iter().enumerate() {
             match input.values.pop() {
                 None | Some(Value::Undefined) => {
                     if *required {
@@ -1800,12 +1804,11 @@ impl Evaluator {
     pub fn evaluate_program(
         &mut self,
         context: &mut EvaluationContext,
-        event: BattleEvent,
         input: VariableInput,
         program: &ParsedProgram,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
-        self.initialize_vars(context, event, input, effect_state_connector)?;
+        self.initialize_vars(context, input, effect_state_connector)?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
             .evaluate_program_block(context, &program.block, &root_state)
@@ -1814,15 +1817,24 @@ impl Evaluator {
             ProgramStatementEvalResult::ReturnStatement(value) => value,
             _ => None,
         };
-        if !event.output_type_allowed(value.as_ref().map(|val| val.value_type())) {
+        if !self
+            .event
+            .output_type_allowed(value.as_ref().map(|val| val.value_type()))
+        {
             match value {
                 Some(val) => {
                     return Err(general_error(format!(
-                        "{event:?} cannot return a {}",
+                        "{:?} cannot return a {}",
+                        self.event,
                         val.value_type(),
                     )));
                 }
-                None => return Err(general_error(format!("{event:?} must return a value"))),
+                None => {
+                    return Err(general_error(format!(
+                        "{:?} must return a value",
+                        self.event
+                    )));
+                }
             }
         }
         Ok(ProgramEvalResult::new(value))
@@ -2060,7 +2072,7 @@ impl Evaluator {
             .get("effect_state")?
             .map(|val| (*val).clone().effect_state().ok())
             .flatten();
-        run_function(context, function_name, args, effect_state)
+        run_function(context, function_name, args, self.event, effect_state)
             .map(|val| val.map(|val| MaybeReferenceValue::from(val)))
     }
 

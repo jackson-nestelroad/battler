@@ -51,6 +51,7 @@ use crate::{
     effect::{
         AppliedEffectHandle,
         EffectHandle,
+        EffectManager,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
@@ -81,9 +82,10 @@ pub fn run_function(
     context: &mut EvaluationContext,
     function_name: &str,
     args: VecDeque<Value>,
+    event: BattleEvent,
     effect_state: Option<DynamicEffectStateConnector>,
 ) -> Result<Option<Value>> {
-    let context = FunctionContext::new(context, args, effect_state);
+    let context = FunctionContext::new(context, args, event, effect_state);
     match function_name {
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
@@ -259,6 +261,7 @@ pub fn run_function(
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "type_modifier_against_target" => type_modifier_against_target(context),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
+        "use_callback_on_different_effect" => use_callback_on_different_effect(context),
         "use_given_item" => use_given_item(context).map(|val| Some(val)),
         "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
@@ -274,6 +277,7 @@ pub fn run_function(
 struct FunctionContext<'eval, 'effect, 'context, 'battle, 'data> {
     context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
     args: VecDeque<Value>,
+    event: BattleEvent,
     effect_state: Option<DynamicEffectStateConnector>,
     flags: HashMap<String, bool>,
 }
@@ -284,11 +288,13 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     fn new(
         context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
         args: VecDeque<Value>,
+        event: BattleEvent,
         effect_state: Option<DynamicEffectStateConnector>,
     ) -> Self {
         Self {
             context,
             args,
+            event,
             effect_state,
             flags: HashMap::default(),
         }
@@ -302,6 +308,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         &mut self,
     ) -> &mut EvaluationContext<'effect, 'context, 'battle, 'data> {
         self.context
+    }
+
+    fn event(&self) -> BattleEvent {
+        self.event
     }
 
     fn effect_state(&self) -> Option<DynamicEffectStateConnector> {
@@ -1583,6 +1593,29 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<()> {
         VariableInput::default(),
     );
     Ok(())
+}
+
+fn use_callback_on_different_effect(mut context: FunctionContext) -> Result<Option<Value>> {
+    let effect = context
+        .pop_front()
+        .wrap_expectation("missing effect")?
+        .effect_handle()
+        .wrap_error_with_message("invalid effect")?;
+    let mut input = Vec::default();
+    while let Some(val) = context.pop_front() {
+        input.push(val);
+    }
+    let input = VariableInput::from_iter(input);
+    let event = context.event();
+    let effect_state = context.effect_state();
+    EffectManager::evaluate(
+        context.evaluation_context_mut(),
+        &effect,
+        event,
+        input,
+        effect_state,
+    )
+    .map(|result| result.value)
 }
 
 fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {

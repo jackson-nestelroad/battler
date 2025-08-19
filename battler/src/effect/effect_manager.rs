@@ -140,7 +140,7 @@ impl EffectManager {
         input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
-        let mut evaluator = Evaluator::new();
+        let mut evaluator = Evaluator::new(event);
         let callbacks = context
             .battle_context_mut()
             .battle_mut()
@@ -148,7 +148,7 @@ impl EffectManager {
             .get_parsed_effect(&effect_handle, effect)?;
         match callbacks.event(event) {
             Some(program) => {
-                evaluator.evaluate_program(context, event, input, program, effect_state_connector)
+                evaluator.evaluate_program(context, input, program, effect_state_connector)
             }
             None => Ok(ProgramEvalResult::new(None)),
         }
