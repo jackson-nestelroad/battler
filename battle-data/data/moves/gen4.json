@@ -1838,7 +1838,10 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "delegate": "move:lowkick"
+    }
   },
   "chatter": {
     "name": "Chatter",
