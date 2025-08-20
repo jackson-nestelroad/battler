@@ -1265,6 +1265,7 @@ pub enum ValueRefMut<'eval> {
     Side(&'eval mut usize),
     Player(&'eval mut usize),
     Mon(&'eval mut MonHandle),
+    OptionalMon(&'eval mut Option<MonHandle>),
 
     Effect(&'eval mut EffectHandle),
     ActiveMove(&'eval mut MoveHandle),
@@ -1325,6 +1326,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Side(_) => ValueType::Side,
             Self::Player(_) => ValueType::Player,
             Self::Mon(_) => ValueType::Mon,
+            Self::OptionalMon(_) => ValueType::Mon,
 
             Self::Effect(_) => ValueType::Effect,
             Self::ActiveMove(_) => ValueType::ActiveMove,
@@ -1684,19 +1686,19 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
     pub fn pow(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
         let result = match (self, rhs) {
             (Self::Fraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                lhs.pow(rhs.try_convert::<i32>().map_err(integer_overflow_error)?)
                     .map_err(integer_overflow_error)?,
             ),
             (Self::Fraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::Fraction(
-                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                lhs.pow(rhs.try_convert::<i32>().map_err(integer_overflow_error)?)
                     .map_err(integer_overflow_error)?,
             ),
             (Self::UFraction(lhs), Self::Fraction(rhs)) => MaybeReferenceValue::UFraction(
-                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                lhs.pow(rhs.try_convert::<i32>().map_err(integer_overflow_error)?)
                     .map_err(integer_overflow_error)?,
             ),
             (Self::UFraction(lhs), Self::UFraction(rhs)) => MaybeReferenceValue::UFraction(
-                lhs.pow(rhs.try_convert::<u32>().map_err(integer_overflow_error)?)
+                lhs.pow(rhs.try_convert::<i32>().map_err(integer_overflow_error)?)
                     .map_err(integer_overflow_error)?,
             ),
             (lhs @ _, rhs @ _) => {

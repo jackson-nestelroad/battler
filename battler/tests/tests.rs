@@ -274,6 +274,7 @@ mod moves {
         mod psycho_shift_test;
         mod punishment_test;
         mod roost_test;
+        mod stealth_rock_test;
         mod sucker_punch_test;
         mod toxic_spikes_test;
         mod trick_room_test;

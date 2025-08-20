@@ -4844,7 +4844,7 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
 fn calculate_shake_probability(catch_rate: u64) -> Result<u64> {
     let b = Fraction::new(catch_rate, 1044480);
     let b = b
-        .pow(Fraction::new(3u32, 16u32))
+        .pow(Fraction::new(3i32, 16i32))
         .map_err(integer_overflow_error)?;
     let b = b * 65536;
     Ok(b.floor())

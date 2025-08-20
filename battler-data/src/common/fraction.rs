@@ -19,6 +19,8 @@ use num::{
     FromPrimitive,
     Integer,
     PrimInt,
+    Signed,
+    Zero,
     integer::Roots,
     pow::Pow,
     traits::{
@@ -184,18 +186,26 @@ where
 
     pub fn pow<J>(self, rhs: Fraction<J>) -> Result<Self, <J as TryInto<u32>>::Error>
     where
-        I: Pow<J, Output = I> + TryInto<J>,
-        J: FractionInteger + TryInto<u32>,
+        I: Pow<u32, Output = I> + TryInto<J> + Zero,
+        J: FractionInteger + TryInto<u32> + Signed,
     {
+        let negative = rhs < J::zero();
+        let rhs_num = rhs.numerator().abs();
+        let rhs_den = rhs.denominator().abs();
         let num = self
             .numerator()
-            .pow(rhs.numerator())
-            .nth_root(rhs.denominator().try_into()?);
+            .pow(rhs_num.try_into()?)
+            .nth_root(rhs_den.try_into()?);
         let den = self
             .denominator()
-            .pow(rhs.numerator())
-            .nth_root(rhs.denominator().try_into()?);
-        Ok(Self::new(num, den))
+            .pow(rhs_num.try_into()?)
+            .nth_root(rhs_den.try_into()?);
+        let result = if negative {
+            Self::new(den, num)
+        } else {
+            Self::new(num, den)
+        };
+        Ok(result)
     }
 }
 
@@ -822,29 +832,47 @@ mod fraction_test {
     #[test]
     fn fraction_exponentiation() {
         assert_eq!(
-            Fraction::from(12).pow::<u32>(Fraction::from(5u32)),
+            Fraction::from(12).pow::<i32>(Fraction::from(5)),
             Ok(Fraction::new(248832, 1))
         );
         assert_eq!(
-            Fraction::from(-12).pow::<u32>(Fraction::from(5u32)),
+            Fraction::from(-12).pow::<i32>(Fraction::from(5)),
             Ok(Fraction::new(-248832, 1))
         );
         assert_eq!(
-            Fraction::new(25, 2).pow::<u32>(Fraction::from(4u32)),
+            Fraction::new(25, 2).pow::<i32>(Fraction::from(4)),
             Ok(Fraction::new(390625, 16))
         );
         assert_eq!(
-            Fraction::new(1, 2).pow(Fraction::new(4u32, 2u32)),
+            Fraction::new(1, 2).pow(Fraction::new(4, 2)),
             Ok(Fraction::new(1, 4))
         );
         // Due to rounding, we lose precision.
         assert_eq!(
-            Fraction::new(1, 2).pow(Fraction::new(3u32, 2u32)),
+            Fraction::new(1, 2).pow(Fraction::new(3, 2)),
             Ok(Fraction::new(1, 2))
         );
         assert_eq!(
-            Fraction::new(33, 7).pow::<u32>(Fraction::new(4u32, 7u32)),
+            Fraction::new(33, 7).pow(Fraction::new(4, 7)),
             Ok(Fraction::new(7, 3))
+        );
+
+        assert_eq!(
+            Fraction::new(1, 2).pow(Fraction::new(-4, 2)),
+            Ok(Fraction::new(4, 1))
+        );
+        assert_eq!(
+            Fraction::new(1, 2).pow(Fraction::new(4, -2)),
+            Ok(Fraction::new(4, 1))
+        );
+
+        assert_eq!(
+            Fraction::new(1, 2).pow(Fraction::new(-3, 2)),
+            Ok(Fraction::new(2, 1))
+        );
+        assert_eq!(
+            Fraction::new(33, 7).pow(Fraction::new(4, -7)),
+            Ok(Fraction::new(3, 7))
         );
     }
 }

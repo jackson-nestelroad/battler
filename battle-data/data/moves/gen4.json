@@ -1811,7 +1811,25 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "FoeSide",
-    "flags": ["MustPressure", "Reflectable"]
+    "flags": ["MustPressure", "Reflectable"],
+    "hit_effect": {
+      "side_condition": "stealthrock"
+    },
+    "condition": {
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_entry_hazard": [
+          "if $mon.is_immune_to_entry_hazards:",
+          ["return"],
+          "$move = func_call(new_active_move: $this.id)",
+          "$move.used_by = $effect_state.source",
+          "$type_modifier = func_call(type_effectiveness: $move $mon)",
+          "$type_modifier = func_call(clamp_number: $type_modifier -6 6)",
+          "damage: $mon expr($mon.max_hp * (+2 ^ $type_modifier) / 8)"
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
   },
   "grassknot": {
     "name": "Grass Knot",

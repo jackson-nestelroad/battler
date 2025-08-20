@@ -1447,6 +1447,9 @@ where
                                 .data
                                 .primary_type,
                         ),
+                        "used_by" => ValueRefMut::OptionalMon(
+                            &mut context.active_move_mut(**active_move_handle)?.used_by,
+                        ),
                         "user_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
@@ -2407,6 +2410,12 @@ impl Evaluator {
             }
             (ValueRefMut::Mon(var), Value::Mon(val)) => {
                 *var = val;
+            }
+            (ValueRefMut::OptionalMon(var), Value::Undefined) => {
+                *var = None;
+            }
+            (ValueRefMut::OptionalMon(var), Value::Mon(val)) => {
+                *var = Some(val);
             }
             (ValueRefMut::Effect(var), Value::Effect(val)) => {
                 *var = val;
