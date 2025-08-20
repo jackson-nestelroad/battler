@@ -1,7 +1,6 @@
 use std::{
     collections::VecDeque,
     mem,
-    str::FromStr,
 };
 
 use anyhow::{
@@ -9,13 +8,8 @@ use anyhow::{
     Result,
 };
 use battler_data::{
-    Accuracy,
     Fraction,
-    Id,
     Identifiable,
-    MoveTarget,
-    MultihitType,
-    Type,
 };
 use zone_alloc::{
     BorrowError,
@@ -2321,209 +2315,9 @@ impl Evaluator {
         let mut runtime_var = self.create_var_mut(var)?;
         let runtime_var_ref = runtime_var.get_mut(context)?;
 
-        let value_type = owned_value.value_type();
-        let var_type = runtime_var_ref.value_type();
-
-        match (runtime_var_ref, owned_value) {
-            // The variable can be initialized to any value.
-            (ValueRefMut::Undefined(var), val @ _) => *var = val,
-            (ValueRefMut::Boolean(var), Value::Boolean(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalBoolean(var), Value::Boolean(val)) => {
-                *var = Some(val);
-            }
-            (ValueRefMut::I8(var), Value::Fraction(val)) => {
-                *var = val.round().try_into().map_err(integer_overflow_error)?
-            }
-            (ValueRefMut::I8(var), Value::UFraction(val)) => {
-                *var = val.round().try_into().map_err(integer_overflow_error)?;
-            }
-            (ValueRefMut::U16(var), Value::Fraction(val)) => {
-                *var = val.round().try_into().map_err(integer_overflow_error)?;
-            }
-            (ValueRefMut::U16(var), Value::UFraction(val)) => {
-                *var = val.round().try_into().map_err(integer_overflow_error)?;
-            }
-            (ValueRefMut::U32(var), Value::Fraction(val)) => {
-                *var = val.round() as u32;
-            }
-            (ValueRefMut::U32(var), Value::UFraction(val)) => {
-                *var = val.round() as u32;
-            }
-            (ValueRefMut::U64(var), Value::Fraction(val)) => {
-                *var = val.round() as u64;
-            }
-            (ValueRefMut::U64(var), Value::UFraction(val)) => {
-                *var = val.round() as u64;
-            }
-            (ValueRefMut::I64(var), Value::Fraction(val)) => {
-                *var = val.round() as i64;
-            }
-            (ValueRefMut::I64(var), Value::UFraction(val)) => {
-                *var = val.round() as i64;
-            }
-            (ValueRefMut::OptionalISize(var), Value::Fraction(val)) => {
-                *var = Some(val.round().try_into().map_err(integer_overflow_error)?);
-            }
-            (ValueRefMut::OptionalISize(var), Value::UFraction(val)) => {
-                *var = Some(val.floor().try_into().map_err(integer_overflow_error)?);
-            }
-            (ValueRefMut::OptionalU16(var), Value::Fraction(val)) => {
-                *var = Some(val.round().try_into().map_err(integer_overflow_error)?);
-            }
-            (ValueRefMut::OptionalU16(var), Value::UFraction(val)) => {
-                *var = Some(val.round().try_into().map_err(integer_overflow_error)?);
-            }
-            (ValueRefMut::Fraction(var), Value::Fraction(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Fraction(var), Value::UFraction(val)) => {
-                *var = val.try_convert().map_err(integer_overflow_error)?;
-            }
-            (ValueRefMut::UFraction(var), Value::Fraction(val)) => {
-                *var = val.try_convert().map_err(integer_overflow_error)?;
-            }
-            (ValueRefMut::UFraction(var), Value::UFraction(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalFractionU16(var), Value::Fraction(val)) => {
-                *var = Some(val.try_convert().map_err(integer_overflow_error)?);
-            }
-            (ValueRefMut::OptionalFractionU16(var), Value::UFraction(val)) => {
-                *var = Some(val.try_convert().map_err(integer_overflow_error)?);
-            }
-            (ValueRefMut::String(var), Value::String(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalString(var), Value::Undefined) => {
-                *var = None;
-            }
-            (ValueRefMut::OptionalString(var), Value::String(val)) => {
-                *var = Some(val);
-            }
-            (ValueRefMut::OptionalId(var), Value::Undefined) => {
-                *var = None;
-            }
-            (ValueRefMut::OptionalId(var), Value::String(val)) => {
-                *var = Some(Id::from(val));
-            }
-            (ValueRefMut::Mon(var), Value::Mon(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalMon(var), Value::Undefined) => {
-                *var = None;
-            }
-            (ValueRefMut::OptionalMon(var), Value::Mon(val)) => {
-                *var = Some(val);
-            }
-            (ValueRefMut::Effect(var), Value::Effect(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::ActiveMove(var), Value::ActiveMove(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::MoveCategory(var), Value::MoveCategory(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::MoveTarget(var), Value::MoveTarget(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::MoveTarget(var), Value::String(val)) => {
-                *var = MoveTarget::from_str(&val).map_err(general_error)?;
-            }
-            (ValueRefMut::Type(var), Value::Type(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Type(var), Value::String(val)) => {
-                *var = Type::from_str(&val).map_err(general_error)?;
-            }
-            (ValueRefMut::Boost(var), Value::Boost(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::BoostTable(var), Value::BoostTable(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalBoostTable(var), Value::BoostTable(val)) => {
-                *var = Some(val);
-            }
-            (ValueRefMut::Side(var), Value::Side(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::MoveSlot(var), Value::MoveSlot(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Player(var), Value::Player(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Accuracy(var), Value::Fraction(val)) => {
-                *var = Accuracy::from(
-                    TryInto::<u8>::try_into((val * 100).floor()).map_err(general_error)?,
-                );
-            }
-            (ValueRefMut::Accuracy(var), Value::UFraction(val)) => {
-                *var = Accuracy::from(
-                    TryInto::<u8>::try_into((val * 100).floor()).map_err(general_error)?,
-                );
-            }
-            (ValueRefMut::Accuracy(var), Value::String(val)) => {
-                *var = Accuracy::from_str(&val).map_err(general_error)?;
-            }
-            (ValueRefMut::Accuracy(var), Value::Accuracy(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::HitEffect(var), Value::HitEffect(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalHitEffect(var), Value::Undefined) => {
-                *var = None;
-            }
-            (ValueRefMut::OptionalHitEffect(var), Value::HitEffect(val)) => {
-                *var = Some(val);
-            }
-            (ValueRefMut::SecondaryHitEffect(var), Value::SecondaryHitEffect(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::SecondaryHitEffectList(var), Value::List(val)) => {
-                *var = val
-                    .into_iter()
-                    .map(|val| val.secondary_hit_effect())
-                    .collect::<Result<Vec<_>, _>>()?;
-            }
-            (ValueRefMut::Gender(var), Value::Gender(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalMultihitType(var), Value::Fraction(val)) => {
-                *var = Some(MultihitType::Static(
-                    val.floor().try_into().map_err(integer_overflow_error)?,
-                ));
-            }
-            (ValueRefMut::StatTable(var), Value::StatTable(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::OptionalMultihitType(var), Value::UFraction(val)) => {
-                *var = Some(MultihitType::Static(
-                    val.floor().try_into().map_err(integer_overflow_error)?,
-                ));
-            }
-            (ValueRefMut::EffectState(var), Value::EffectState(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::List(var), Value::List(val)) => {
-                *var = val;
-            }
-            (ValueRefMut::Object(var), Value::Object(val)) => {
-                *var = val;
-            }
-            _ => {
-                return Err(general_error(format!(
-                    "invalid assignment of value of type {value_type} to variable ${} of type {var_type}",
-                    var.full_name()
-                )));
-            }
-        }
-
-        Ok(())
+        runtime_var_ref
+            .assign(owned_value)
+            .wrap_error_with_format(format_args!("failed to assign to ${}", var.full_name()))
     }
 
     fn create_var<'eval, 'program>(

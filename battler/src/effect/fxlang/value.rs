@@ -241,46 +241,91 @@ impl Value {
     }
 
     /// Converts the value to the given type.
-    pub fn convert_to(&self, value_type: ValueType) -> Result<Self> {
+    pub fn convert_to(self, value_type: ValueType) -> Result<Self> {
         if self.value_type() == value_type {
             return Ok(self.clone());
         }
 
-        match (self, value_type) {
-            (Self::Fraction(val), ValueType::UFraction) => Ok(Value::UFraction(
-                val.try_convert().map_err(integer_overflow_error)?,
-            )),
-            (Self::Fraction(val), ValueType::Accuracy) => {
-                Ok(Value::Accuracy(Accuracy::from(val.floor() as u8)))
+        match value_type {
+            ValueType::Undefined if self.is_undefined() => Ok(Value::Undefined),
+            ValueType::Boolean => self.boolean().map(Value::Boolean),
+            ValueType::Fraction => self.fraction_i64().map(Value::Fraction),
+            ValueType::UFraction => self.fraction_u64().map(Value::UFraction),
+            ValueType::String => self.string().map(Value::String),
+            ValueType::Battle if self.is_battle() => Ok(Value::Battle),
+            ValueType::Field if self.is_field() => Ok(Value::Field),
+            ValueType::Format if self.is_format() => Ok(Value::Format),
+            ValueType::Side => self.side_index().map(Value::Side),
+            ValueType::Player => self.player_index().map(Value::Player),
+            ValueType::Mon => self.mon_handle().map(Value::Mon),
+            ValueType::Effect => self.effect_handle().map(Value::Effect),
+            ValueType::ActiveMove => self.active_move().map(Value::ActiveMove),
+            ValueType::HitEffect => self.hit_effect().map(Value::HitEffect),
+            ValueType::SecondaryHitEffect => {
+                self.secondary_hit_effect().map(Value::SecondaryHitEffect)
             }
-            (Self::UFraction(val), ValueType::Fraction) => Ok(Value::Fraction(
-                val.try_convert().map_err(integer_overflow_error)?,
-            )),
-            (Self::UFraction(val), ValueType::Accuracy) => {
-                Ok(Value::Accuracy(Accuracy::from(val.floor() as u8)))
-            }
-            (Self::String(val), ValueType::MoveCategory) => Ok(Value::MoveCategory(
-                MoveCategory::from_str(val).map_err(general_error)?,
-            )),
-            (Self::String(val), ValueType::MoveTarget) => Ok(Value::MoveTarget(
-                MoveTarget::from_str(val).map_err(general_error)?,
-            )),
-            (Self::String(val), ValueType::Type) => {
-                Ok(Value::Type(Type::from_str(val).map_err(general_error)?))
-            }
-            (Self::String(val), ValueType::Accuracy) => {
-                Ok(Value::Accuracy(Accuracy::from_str(val)?))
-            }
+            ValueType::Accuracy => self.accuracy().map(Value::Accuracy),
+            ValueType::Boost => self.boost().map(Value::Boost),
+            ValueType::BoostTable => self.boost_table().map(Value::BoostTable),
+            ValueType::FieldEnvironment => self.field_environment().map(Value::FieldEnvironment),
+            ValueType::FlingData => self.fling_data().map(Value::FlingData),
+            ValueType::Gender => self.gender().map(Value::Gender),
+            ValueType::MoveCategory => self.move_category().map(Value::MoveCategory),
+            ValueType::MoveSlot => self.move_slot().map(Value::MoveSlot),
+            ValueType::MoveTarget => self.move_target().map(Value::MoveTarget),
+            ValueType::NaturalGiftData => self.natural_gift_data().map(Value::NaturalGiftData),
+            ValueType::Nature => self.nature().map(Value::Nature),
+            ValueType::SpecialItemData => self.special_item_data().map(Value::SpecialItemData),
+            ValueType::Stat => self.stat().map(Value::Stat),
+            ValueType::StatTable => self.stat_table().map(Value::StatTable),
+            ValueType::Type => self.mon_type().map(Value::Type),
+            ValueType::EffectState => self.effect_state().map(Value::EffectState),
+            ValueType::List => self.list().map(Value::List),
+            ValueType::Object => self.object().map(Value::Object),
             _ => Err(Self::incompatible_type(self.value_type(), value_type)),
         }
     }
 
-    /// Consumes the value into a [`String`].
-    pub fn string(self) -> Result<String> {
+    /// Checks if the value is undefined.
+    pub fn is_undefined(&self) -> bool {
         match self {
-            Self::String(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::String)),
+            Self::Undefined => true,
+            _ => false,
         }
+    }
+
+    /// Consumes the value into a [`bool`].
+    pub fn boolean(self) -> Result<bool> {
+        match self {
+            Self::Undefined => Ok(false),
+            Self::Boolean(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boolean)),
+        }
+    }
+
+    /// Consumes the value into a [`Fraction<u64>`].
+    pub fn fraction_u64(self) -> Result<Fraction<u64>> {
+        match self {
+            Self::Fraction(val) => val.try_convert().map_err(integer_overflow_error),
+            Self::UFraction(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::UFraction)),
+        }
+    }
+
+    /// Consumes the value into a [`Fraction<i64>`].
+    pub fn fraction_i64(self) -> Result<Fraction<i64>> {
+        match self {
+            Self::Fraction(val) => Ok(val),
+            Self::UFraction(val) => val.try_convert().map_err(integer_overflow_error),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::UFraction)),
+        }
+    }
+
+    /// Consumes the value into a [`Fraction<u16>`].
+    pub fn fraction_u16(self) -> Result<Fraction<u16>> {
+        self.fraction_u64()?
+            .try_convert()
+            .map_err(integer_overflow_error)
     }
 
     /// Consumes the value into a [`u64`].
@@ -350,179 +395,40 @@ impl Value {
             .map_err(integer_overflow_error)
     }
 
-    /// Consumes the value into a [`Fraction<u64>`].
-    pub fn fraction_u64(self) -> Result<Fraction<u64>> {
+    /// Consumes the value into a [`String`].
+    pub fn string(self) -> Result<String> {
         match self {
-            Self::Fraction(val) => val.try_convert().map_err(integer_overflow_error),
-            Self::UFraction(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::UFraction)),
+            Self::String(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::String)),
         }
     }
 
-    /// Consumes the value into a [`Fraction<u16>`].
-    pub fn fraction_u16(self) -> Result<Fraction<u16>> {
-        self.fraction_u64()?
-            .try_convert()
-            .map_err(integer_overflow_error)
+    /// Consumes the value into an [`Id`].
+    pub fn id(self) -> Result<Id> {
+        self.string().map(|val| Id::from(val))
     }
 
-    /// Checks if the value is undefined.
-    pub fn is_undefined(&self) -> bool {
+    /// Checks if the value is a battle.
+    pub fn is_battle(&self) -> bool {
         match self {
-            Self::Undefined => true,
+            Self::Battle => true,
             _ => false,
         }
     }
 
-    /// Consumes the value into a [`bool`].
-    pub fn boolean(self) -> Result<bool> {
+    /// Checks if the value is a field.
+    pub fn is_field(&self) -> bool {
         match self {
-            Self::Undefined => Ok(false),
-            Self::Boolean(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boolean)),
+            Self::Field => true,
+            _ => false,
         }
     }
 
-    /// Consumes the value into a [`MonHandle`].
-    pub fn mon_handle(self) -> Result<MonHandle> {
+    /// Checks if the value is a format.
+    pub fn is_format(&self) -> bool {
         match self {
-            Self::Mon(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Mon)),
-        }
-    }
-
-    /// Consumes the value into a [`MoveHandle`].
-    pub fn active_move(self) -> Result<MoveHandle> {
-        match self {
-            Self::ActiveMove(val) => Ok(val),
-            Self::Effect(EffectHandle::ActiveMove(val, _)) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::ActiveMove)),
-        }
-    }
-
-    /// Consumes the value into a [`MoveEventResult`].
-    pub fn move_result(self) -> Result<MoveEventResult> {
-        match self {
-            Self::Boolean(val) => Ok(MoveEventResult::from(val)),
-            Self::String(val) => MoveEventResult::from_str(&val).map_err(general_error),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to a move event result",
-                val.value_type(),
-            ))),
-        }
-    }
-
-    /// Consumes the value into a [`MoveOutcomeOnTarget`].
-    pub fn move_outcome_on_target(self) -> Result<MoveOutcomeOnTarget> {
-        match self {
-            Self::Boolean(val) => Ok(MoveOutcomeOnTarget::from(val)),
-            _ => Ok(MoveOutcomeOnTarget::Damage(self.integer_u16()?)),
-        }
-    }
-
-    /// Consumes the value into a move ID.
-    pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id> {
-        match self {
-            Self::ActiveMove(val) | Self::Effect(EffectHandle::ActiveMove(val, _)) => {
-                Ok(context.active_move(val)?.id().clone())
-            }
-            Self::Effect(EffectHandle::InactiveMove(val)) => Ok(val),
-            Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to a move id",
-                val.value_type(),
-            ))),
-        }
-    }
-
-    /// Consumes the value into an ability ID.
-    pub fn ability_id(self) -> Result<Id> {
-        match self {
-            Self::Effect(EffectHandle::Ability(val)) => Ok(val),
-            Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to an ability id",
-                val.value_type(),
-            ))),
-        }
-    }
-
-    /// Consumes the value into a item ID.
-    pub fn item_id(self) -> Result<Id> {
-        match self {
-            Self::Effect(EffectHandle::Item(val)) => Ok(val),
-            Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to a item id",
-                val.value_type(),
-            ))),
-        }
-    }
-
-    /// Consumes the value into a clause ID.
-    pub fn clause_id(self) -> Result<Id> {
-        match self {
-            Self::Effect(EffectHandle::Clause(val)) => Ok(val),
-            Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to a clause id",
-                val.value_type(),
-            ))),
-        }
-    }
-
-    /// Consumes the value into a species ID.
-    pub fn species_id(self) -> Result<Id> {
-        match self {
-            Self::Effect(EffectHandle::Species(val)) => Ok(val),
-            Self::String(val) => Ok(Id::from(val)),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to a species id",
-                val.value_type(),
-            ))),
-        }
-    }
-
-    /// Consumes the value into an [`EffectHandle`].
-    pub fn effect_handle(self) -> Result<EffectHandle> {
-        match self {
-            Self::Effect(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Effect)),
-        }
-    }
-
-    /// Consumes the value into a [`Boost`].
-    pub fn boost(self) -> Result<Boost> {
-        match self {
-            Self::Boost(val) => Ok(val),
-            Self::String(val) => Boost::from_str(&val).map_err(general_error),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boost)),
-        }
-    }
-
-    /// Consumes the value into a [`BoostTable`].
-    pub fn boost_table(self) -> Result<BoostTable> {
-        match self {
-            Self::BoostTable(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
-        }
-    }
-
-    /// Consumes the value into a [`Stat`].
-    pub fn stat(self) -> Result<Stat> {
-        match self {
-            Self::Stat(val) => Ok(val),
-            Self::String(val) => Stat::from_str(&val).map_err(general_error),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Stat)),
-        }
-    }
-
-    /// Consumes the value into a [`Type`].
-    pub fn mon_type(self) -> Result<Type> {
-        match self {
-            Self::Type(val) => Ok(val),
-            Self::String(val) => Type::from_str(&val).map_err(general_error),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Type)),
+            Self::Format => true,
+            _ => false,
         }
     }
 
@@ -542,6 +448,206 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`MonHandle`].
+    pub fn mon_handle(self) -> Result<MonHandle> {
+        match self {
+            Self::Mon(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Mon)),
+        }
+    }
+
+    /// Consumes the value into an [`EffectHandle`].
+    pub fn effect_handle(self) -> Result<EffectHandle> {
+        match self {
+            Self::Effect(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Effect)),
+        }
+    }
+
+    /// Consumes the value into a move ID.
+    pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id> {
+        match self {
+            Self::String(val) => Ok(Id::from(val)),
+            Self::Effect(EffectHandle::InactiveMove(val)) => Ok(val),
+            Self::ActiveMove(val) | Self::Effect(EffectHandle::ActiveMove(val, _)) => {
+                Ok(context.active_move(val)?.id().clone())
+            }
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a move id",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into an ability ID.
+    pub fn ability_id(self) -> Result<Id> {
+        match self {
+            Self::String(val) => Ok(Id::from(val)),
+            Self::Effect(EffectHandle::Ability(val)) => Ok(val),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to an ability id",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into a item ID.
+    pub fn item_id(self) -> Result<Id> {
+        match self {
+            Self::String(val) => Ok(Id::from(val)),
+            Self::Effect(EffectHandle::Item(val)) => Ok(val),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a item id",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into a clause ID.
+    pub fn clause_id(self) -> Result<Id> {
+        match self {
+            Self::String(val) => Ok(Id::from(val)),
+            Self::Effect(EffectHandle::Clause(val)) => Ok(val),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a clause id",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into a species ID.
+    pub fn species_id(self) -> Result<Id> {
+        match self {
+            Self::String(val) => Ok(Id::from(val)),
+            Self::Effect(EffectHandle::Species(val)) => Ok(val),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a species id",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into a [`MoveHandle`].
+    pub fn active_move(self) -> Result<MoveHandle> {
+        match self {
+            Self::Effect(EffectHandle::ActiveMove(val, _)) => Ok(val),
+            Self::ActiveMove(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::ActiveMove)),
+        }
+    }
+
+    /// Consumes the value into a [`HitEffect`].
+    pub fn hit_effect(self) -> Result<HitEffect> {
+        match self {
+            Self::HitEffect(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::HitEffect)),
+        }
+    }
+
+    /// Consumes the value into a [`SecondaryEffectData`].
+    pub fn secondary_hit_effect(self) -> Result<SecondaryEffectData> {
+        match self {
+            Self::SecondaryHitEffect(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::SecondaryHitEffect,
+            )),
+        }
+    }
+
+    /// Consumes the value into an [`Accuracy`].
+    pub fn accuracy(self) -> Result<Accuracy> {
+        match self {
+            Self::Fraction(val) => Ok(Accuracy::from(
+                TryInto::<u8>::try_into((val * 100).floor()).map_err(general_error)?,
+            )),
+            Self::UFraction(val) => Ok(Accuracy::from(
+                TryInto::<u8>::try_into((val * 100).floor()).map_err(general_error)?,
+            )),
+            Self::String(val) => Accuracy::from_str(&val).map_err(general_error),
+            Self::Accuracy(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Accuracy)),
+        }
+    }
+
+    /// Consumes the value into a [`Boost`].
+    pub fn boost(self) -> Result<Boost> {
+        match self {
+            Self::String(val) => Boost::from_str(&val).map_err(general_error),
+            Self::Boost(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boost)),
+        }
+    }
+
+    /// Consumes the value into a [`BoostTable`].
+    pub fn boost_table(self) -> Result<BoostTable> {
+        match self {
+            Self::BoostTable(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::BoostTable)),
+        }
+    }
+
+    /// Consumes the value into a [`FieldEnvironment`].
+    pub fn field_environment(self) -> Result<FieldEnvironment> {
+        match self {
+            Self::String(val) => FieldEnvironment::from_str(&val).map_err(general_error),
+            Self::FieldEnvironment(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::FieldEnvironment,
+            )),
+        }
+    }
+
+    /// Consumes the value into a [`FlingData`].
+    pub fn fling_data(self) -> Result<FlingData> {
+        match self {
+            Self::FlingData(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::FlingData)),
+        }
+    }
+
+    /// Consumes the value into a [`Gender`].
+    pub fn gender(self) -> Result<Gender> {
+        match self {
+            Self::String(val) => Gender::from_str(&val).map_err(general_error),
+            Self::Gender(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Gender)),
+        }
+    }
+
+    /// Consumes the value into a [`MoveCategory`].
+    pub fn move_category(self) -> Result<MoveCategory> {
+        match self {
+            Self::String(val) => MoveCategory::from_str(&val).map_err(general_error),
+            Self::MoveCategory(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::MoveCategory,
+            )),
+        }
+    }
+
+    /// Consumes the value into a [`MoveOutcomeOnTarget`].
+    pub fn move_outcome_on_target(self) -> Result<MoveOutcomeOnTarget> {
+        match self {
+            Self::Boolean(val) => Ok(MoveOutcomeOnTarget::from(val)),
+            _ => Ok(MoveOutcomeOnTarget::Damage(self.integer_u16()?)),
+        }
+    }
+
+    /// Consumes the value into a [`MoveEventResult`].
+    pub fn move_result(self) -> Result<MoveEventResult> {
+        match self {
+            Self::Boolean(val) => Ok(MoveEventResult::from(val)),
+            Self::String(val) => MoveEventResult::from_str(&val).map_err(general_error),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a move event result",
+                val.value_type(),
+            ))),
+        }
+    }
+
     /// Consumes the value into a [`MoveSlot`].
     pub fn move_slot(self) -> Result<MoveSlot> {
         match self {
@@ -553,9 +659,90 @@ impl Value {
     /// Consumes the value into a [`MoveTarget`].
     pub fn move_target(self) -> Result<MoveTarget> {
         match self {
-            Self::MoveTarget(val) => Ok(val),
             Self::String(val) => MoveTarget::from_str(&val).map_err(general_error),
+            Self::MoveTarget(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::MoveTarget)),
+        }
+    }
+
+    /// Consumes the value into a [`MultihitType`].
+    pub fn multihit_type(self) -> Result<MultihitType> {
+        match self {
+            Self::Fraction(val) => Ok(MultihitType::Static(
+                val.floor().try_into().map_err(integer_overflow_error)?,
+            )),
+            Self::UFraction(val) => Ok(MultihitType::Static(
+                val.floor().try_into().map_err(integer_overflow_error)?,
+            )),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to a multihit type",
+                val.value_type(),
+            ))),
+        }
+    }
+
+    /// Consumes the value into a [`NaturalGiftData`].
+    pub fn natural_gift_data(self) -> Result<NaturalGiftData> {
+        match self {
+            Self::NaturalGiftData(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::NaturalGiftData,
+            )),
+        }
+    }
+
+    /// Consumes the value into a [`Nature`].
+    pub fn nature(self) -> Result<Nature> {
+        match self {
+            Self::String(val) => Nature::from_str(&val).map_err(general_error),
+            Self::Nature(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Nature)),
+        }
+    }
+
+    /// Consumes the value into a [`SpecialItemData`].
+    pub fn special_item_data(self) -> Result<SpecialItemData> {
+        match self {
+            Self::SpecialItemData(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::SpecialItemData,
+            )),
+        }
+    }
+
+    /// Consumes the value into a [`Stat`].
+    pub fn stat(self) -> Result<Stat> {
+        match self {
+            Self::Stat(val) => Ok(val),
+            Self::String(val) => Stat::from_str(&val).map_err(general_error),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Stat)),
+        }
+    }
+
+    /// Consumes the value into a [`StatTable`].
+    pub fn stat_table(self) -> Result<StatTable> {
+        match self {
+            Self::StatTable(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::StatTable)),
+        }
+    }
+
+    /// Consumes the value into a [`Type`].
+    pub fn mon_type(self) -> Result<Type> {
+        match self {
+            Self::String(val) => Type::from_str(&val).map_err(general_error),
+            Self::Type(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Type)),
+        }
+    }
+
+    /// Consumes the value into a [`DynamicEffectStateConnector`].
+    pub fn effect_state(self) -> Result<DynamicEffectStateConnector> {
+        match self {
+            Self::EffectState(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::EffectState)),
         }
     }
 
@@ -591,33 +778,6 @@ impl Value {
     /// Consumes the value into a [`Vec<String>`].
     pub fn strings_list(self) -> Result<Vec<String>> {
         self.list()?.into_iter().map(|val| val.string()).collect()
-    }
-
-    /// Consumes the value into a [`HitEffect`].
-    pub fn hit_effect(self) -> Result<HitEffect> {
-        match self {
-            Self::HitEffect(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::HitEffect)),
-        }
-    }
-
-    /// Consumes the value into a [`SecondaryEffectData`].
-    pub fn secondary_hit_effect(self) -> Result<SecondaryEffectData> {
-        match self {
-            Self::SecondaryHitEffect(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(
-                val.value_type(),
-                ValueType::SecondaryHitEffect,
-            )),
-        }
-    }
-
-    /// Consumes the value into a [`DynamicEffectStateConnector`].
-    pub fn effect_state(self) -> Result<DynamicEffectStateConnector> {
-        match self {
-            Self::EffectState(val) => Ok(val),
-            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::EffectState)),
-        }
     }
 
     /// Consumes the value into a [`Vec<SecondaryEffectData>`].
@@ -1359,6 +1519,179 @@ impl<'eval> ValueRefMut<'eval> {
             Self::List(_) => ValueType::List,
             Self::Object(_) => ValueType::Object,
         }
+    }
+
+    pub fn assign(self, val: Value) -> Result<()> {
+        let self_type = self.value_type();
+        let assigning_type = val.value_type();
+        match self {
+            // A variable can be initialized to any value.
+            ValueRefMut::Undefined(var) => *var = val,
+            ValueRefMut::Boolean(var) => {
+                *var = val.boolean()?;
+            }
+            ValueRefMut::OptionalBoolean(var) => {
+                *var = (!val.is_undefined()).then(|| val.boolean()).transpose()?;
+            }
+            ValueRefMut::I8(var) => {
+                *var = val.integer_i8()?;
+            }
+            ValueRefMut::U16(var) => {
+                *var = val.integer_u16()?;
+            }
+            ValueRefMut::U32(var) => {
+                *var = val.integer_u32()?;
+            }
+            ValueRefMut::U64(var) => {
+                *var = val.integer_u64()?;
+            }
+            ValueRefMut::I64(var) => {
+                *var = val.integer_i64()?;
+            }
+            ValueRefMut::OptionalISize(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.integer_isize())
+                    .transpose()?;
+            }
+            ValueRefMut::OptionalU16(var) => {
+                *var = Some(val.integer_u16()?);
+            }
+            ValueRefMut::Fraction(var) => {
+                *var = val.fraction_i64()?;
+            }
+            ValueRefMut::UFraction(var) => {
+                *var = val.fraction_u64()?;
+            }
+            ValueRefMut::OptionalFractionU16(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.fraction_u16())
+                    .transpose()?;
+            }
+            ValueRefMut::String(var) => {
+                *var = val.string()?;
+            }
+            ValueRefMut::OptionalString(var) => {
+                *var = (!val.is_undefined()).then(|| val.string()).transpose()?;
+            }
+            ValueRefMut::OptionalId(var) => {
+                *var = (!val.is_undefined()).then(|| val.id()).transpose()?;
+            }
+            ValueRefMut::Battle => {
+                if !val.is_battle() {
+                    return Err(Value::incompatible_type(assigning_type, self_type));
+                }
+            }
+            ValueRefMut::Field => {
+                if !val.is_field() {
+                    return Err(Value::incompatible_type(assigning_type, self_type));
+                }
+            }
+            ValueRefMut::Format => {
+                if !val.is_format() {
+                    return Err(Value::incompatible_type(assigning_type, self_type));
+                }
+            }
+            ValueRefMut::Side(var) => {
+                *var = val.side_index()?;
+            }
+            ValueRefMut::Player(var) => {
+                *var = val.player_index()?;
+            }
+            ValueRefMut::Mon(var) => {
+                *var = val.mon_handle()?;
+            }
+            ValueRefMut::OptionalMon(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.mon_handle())
+                    .transpose()?;
+            }
+            ValueRefMut::Effect(var) => {
+                *var = val.effect_handle()?;
+            }
+            ValueRefMut::ActiveMove(var) => {
+                *var = val.active_move()?;
+            }
+            ValueRefMut::HitEffect(var) => {
+                *var = val.hit_effect()?;
+            }
+            ValueRefMut::OptionalHitEffect(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.hit_effect())
+                    .transpose()?;
+            }
+            ValueRefMut::SecondaryHitEffect(var) => {
+                *var = val.secondary_hit_effect()?;
+            }
+            ValueRefMut::SecondaryHitEffectList(var) => {
+                *var = val.secondary_hit_effects_list()?;
+            }
+            ValueRefMut::Accuracy(var) => {
+                *var = val.accuracy()?;
+            }
+            ValueRefMut::Boost(var) => {
+                *var = val.boost()?;
+            }
+            ValueRefMut::BoostTable(var) => {
+                *var = val.boost_table()?;
+            }
+            ValueRefMut::OptionalBoostTable(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.boost_table())
+                    .transpose()?;
+            }
+            ValueRefMut::FieldEnvironment(var) => {
+                *var = val.field_environment()?;
+            }
+            ValueRefMut::FlingData(var) => {
+                *var = val.fling_data()?;
+            }
+            ValueRefMut::Gender(var) => {
+                *var = val.gender()?;
+            }
+            ValueRefMut::MoveCategory(var) => {
+                *var = val.move_category()?;
+            }
+            ValueRefMut::MoveSlot(var) => {
+                *var = val.move_slot()?;
+            }
+            ValueRefMut::MoveTarget(var) => {
+                *var = val.move_target()?;
+            }
+            ValueRefMut::OptionalMultihitType(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.multihit_type())
+                    .transpose()?;
+            }
+            ValueRefMut::NaturalGiftData(var) => {
+                *var = val.natural_gift_data()?;
+            }
+            ValueRefMut::Nature(var) => {
+                *var = val.nature()?;
+            }
+            ValueRefMut::SpecialItemData(var) => {
+                *var = val.special_item_data()?;
+            }
+            ValueRefMut::Stat(var) => {
+                *var = val.stat()?;
+            }
+            ValueRefMut::StatTable(var) => {
+                *var = val.stat_table()?;
+            }
+            ValueRefMut::Type(var) => {
+                *var = val.mon_type()?;
+            }
+            ValueRefMut::EffectState(var) => {
+                *var = val.effect_state()?;
+            }
+            ValueRefMut::List(var) => {
+                *var = val.list()?;
+            }
+            ValueRefMut::Object(var) => {
+                *var = val.object()?;
+            }
+            _ => return Err(general_error("variable is unassignable")),
+        }
+        Ok(())
     }
 }
 
