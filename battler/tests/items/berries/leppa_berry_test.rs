@@ -101,11 +101,11 @@ fn leppa_berry_restores_move_with_zero_pp() {
         r#"[
             "move|mon:Smeargle,player-1,1|name:Draco Meteor|target:Blissey,player-2,1",
             "split|side:1",
-            "damage|mon:Blissey,player-2,1|health:265/315",
-            "damage|mon:Blissey,player-2,1|health:85/100",
+            "damage|mon:Blissey,player-2,1|health:290/315",
+            "damage|mon:Blissey,player-2,1|health:93/100",
+            "unboost|mon:Smeargle,player-1,1|stat:spa|by:0",
             "itemend|mon:Smeargle,player-1,1|item:Leppa Berry|eat",
             "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry",
-            "unboost|mon:Smeargle,player-1,1|stat:spa|by:0",
             "residual",
             "turn|turn:6"
         ]"#,
