@@ -941,8 +941,7 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
-    "ignore_ability": true
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "moongeistbeam": {
     "name": "Moongeist Beam",
@@ -952,8 +951,7 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"],
-    "ignore_ability": true
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "tearfullook": {
     "name": "Tearful Look",
@@ -1032,8 +1030,7 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"],
-    "ignore_ability": true
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "lightthatburnsthesky": {
     "name": "Light That Burns the Sky",
@@ -1043,8 +1040,7 @@
     "accuracy": "exempt",
     "base_power": 200,
     "target": "Normal",
-    "flags": ["NoMetronome"],
-    "ignore_ability": true
+    "flags": ["NoMetronome"]
   },
   "searingsunrazesmash": {
     "name": "Searing Sunraze Smash",
@@ -1054,8 +1050,7 @@
     "accuracy": "exempt",
     "base_power": 200,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome"],
-    "ignore_ability": true
+    "flags": ["Contact", "NoMetronome"]
   },
   "menacingmoonrazemaelstrom": {
     "name": "Menacing Moonraze Maelstrom",
@@ -1065,8 +1060,7 @@
     "accuracy": "exempt",
     "base_power": 200,
     "target": "Normal",
-    "flags": ["NoMetronome"],
-    "ignore_ability": true
+    "flags": ["NoMetronome"]
   },
   "letssnuggleforever": {
     "name": "Let's Snuggle Forever",

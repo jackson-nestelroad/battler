@@ -159,9 +159,6 @@ pub struct MoveData {
     /// Critical hit ratio.
     #[serde(default = "default_crit_ratio")]
     pub crit_ratio: Option<u8>,
-    /// Ignore ability effects?
-    #[serde(default)]
-    pub ignore_ability: bool,
     /// Ignore accuracy modifiers?
     #[serde(default)]
     pub ignore_accuracy: bool,
