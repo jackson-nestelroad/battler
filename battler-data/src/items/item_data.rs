@@ -28,6 +28,12 @@ pub struct NaturalGiftData {
     pub typ: Type,
 }
 
+/// Data for what happens when "Judgment" is used with this item.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JudgmentData {
+    pub typ: Type,
+}
+
 /// Data for what happens when "Techno Blast" is used with this item.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TechnoBlastData {
@@ -45,6 +51,7 @@ pub struct MultiAttackData {
 pub struct SpecialItemData {
     pub fling: Option<FlingData>,
     pub natural_gift: Option<NaturalGiftData>,
+    pub judgment: Option<JudgmentData>,
     pub techno_blast: Option<TechnoBlastData>,
     pub multi_attack: Option<MultiAttackData>,
 }
@@ -64,8 +71,6 @@ pub struct ItemData {
     /// Data for special item effects associated with individual moves.
     #[serde(default)]
     pub special_data: SpecialItemData,
-    /// The type of this item if it is a plate.
-    pub plate_type: Option<Type>,
     /// The species that this item allows Mega Evolution from.
     pub mega_evolves_from: Option<String>,
     /// The species that this item allows Mega Evolution into.

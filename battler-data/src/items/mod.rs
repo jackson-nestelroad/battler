@@ -6,6 +6,7 @@ mod item_target;
 pub use item_data::{
     FlingData,
     ItemData,
+    JudgmentData,
     MultiAttackData,
     NaturalGiftData,
     SpecialItemData,

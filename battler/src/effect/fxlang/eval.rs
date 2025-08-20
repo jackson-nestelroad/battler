@@ -645,6 +645,11 @@ where
                         None => ValueRef::Undefined,
                     }
                 }
+                "to_string" => {
+                    value = ValueRef::TempString(
+                        MaybeReferenceValueForOperation::from(value).for_formatted_string()?,
+                    )
+                }
                 _ => {
                     let mut effect_matched = false;
                     if let Some(effect_handle) = value.effect_handle() {
@@ -864,9 +869,6 @@ where
                             ),
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
-                            }
-                            "base_species" => {
-                                ValueRef::Str(&context.mon(mon_handle)?.base_species.as_ref())
                             }
                             "base_stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
@@ -1263,6 +1265,11 @@ where
                                 .as_ref()
                                 .map(ValueRef::FlingData)
                                 .unwrap_or(ValueRef::Undefined),
+                            "judgment" => special_item_data
+                                .judgment
+                                .as_ref()
+                                .map(ValueRef::JudgmentData)
+                                .unwrap_or(ValueRef::Undefined),
                             "natural_gift" => special_item_data
                                 .natural_gift
                                 .as_ref()
@@ -1285,6 +1292,11 @@ where
                         value = match *member {
                             "power" => ValueRef::UFraction(natural_gift_data.power.into()),
                             "type" => ValueRef::Type(natural_gift_data.typ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::JudgmentData(judgment_data) = value {
+                        value = match *member {
+                            "type" => ValueRef::Type(judgment_data.typ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::EffectState(connector) = value {

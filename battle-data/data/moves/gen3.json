@@ -563,11 +563,27 @@
         "on_try_immunity": [
           "return !func_call(has_ability: $target stickyhold)"
         ],
+        "on_try_hit": [
+          "if $target.item.is_defined:",
+          [
+            "$target_item = func_call(take_item: $target dry_run)",
+            "if !$target_item or !func_call(set_item: $source $target_item dry_run):",
+            ["return false"]
+          ],
+          "if $source.item.is_defined:",
+          [
+            "$source_item = func_call(take_item: $source dry_run)",
+            "if !$source_item or !func_call(set_item: $target $source_item dry_run):",
+            ["return false"]
+          ]
+        ],
         "on_hit": [
           "if !$source.item and !$target.item:",
           ["return false"],
           "$target_item = func_call(take_item: $target)",
           "$source_item = func_call(take_item: $source)",
+          "if !$target_item and !$source_item:",
+          ["return false"],
           "if $target_item.is_defined:",
           ["set_item: $source $target_item"],
           "if $source_item.is_defined:",

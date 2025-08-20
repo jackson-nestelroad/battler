@@ -22,6 +22,7 @@ use battler_data::{
     HitEffect,
     Id,
     Identifiable,
+    JudgmentData,
     MoveCategory,
     MoveTarget,
     MultihitType,
@@ -95,6 +96,7 @@ pub enum ValueType {
     FieldEnvironment,
     FlingData,
     Gender,
+    JudgmentData,
     MoveCategory,
     MoveSlot,
     MoveTarget,
@@ -158,6 +160,7 @@ pub enum Value {
     FieldEnvironment(FieldEnvironment),
     FlingData(FlingData),
     Gender(Gender),
+    JudgmentData(JudgmentData),
     MoveCategory(MoveCategory),
     MoveSlot(MoveSlot),
     MoveTarget(MoveTarget),
@@ -202,6 +205,7 @@ impl Value {
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
+            Self::JudgmentData(_) => ValueType::JudgmentData,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
@@ -247,14 +251,38 @@ impl Value {
         }
 
         match value_type {
-            ValueType::Undefined if self.is_undefined() => Ok(Value::Undefined),
+            ValueType::Undefined => {
+                if self.is_undefined() {
+                    Ok(Value::Undefined)
+                } else {
+                    Err(Self::incompatible_type(self.value_type(), value_type))
+                }
+            }
             ValueType::Boolean => self.boolean().map(Value::Boolean),
             ValueType::Fraction => self.fraction_i64().map(Value::Fraction),
             ValueType::UFraction => self.fraction_u64().map(Value::UFraction),
             ValueType::String => self.string().map(Value::String),
-            ValueType::Battle if self.is_battle() => Ok(Value::Battle),
-            ValueType::Field if self.is_field() => Ok(Value::Field),
-            ValueType::Format if self.is_format() => Ok(Value::Format),
+            ValueType::Battle => {
+                if self.is_battle() {
+                    Ok(Value::Battle)
+                } else {
+                    Err(Self::incompatible_type(self.value_type(), value_type))
+                }
+            }
+            ValueType::Field => {
+                if self.is_field() {
+                    Ok(Value::Field)
+                } else {
+                    Err(Self::incompatible_type(self.value_type(), value_type))
+                }
+            }
+            ValueType::Format => {
+                if self.is_format() {
+                    Ok(Value::Format)
+                } else {
+                    Err(Self::incompatible_type(self.value_type(), value_type))
+                }
+            }
             ValueType::Side => self.side_index().map(Value::Side),
             ValueType::Player => self.player_index().map(Value::Player),
             ValueType::Mon => self.mon_handle().map(Value::Mon),
@@ -270,6 +298,7 @@ impl Value {
             ValueType::FieldEnvironment => self.field_environment().map(Value::FieldEnvironment),
             ValueType::FlingData => self.fling_data().map(Value::FlingData),
             ValueType::Gender => self.gender().map(Value::Gender),
+            ValueType::JudgmentData => self.judgment_data().map(Value::JudgmentData),
             ValueType::MoveCategory => self.move_category().map(Value::MoveCategory),
             ValueType::MoveSlot => self.move_slot().map(Value::MoveSlot),
             ValueType::MoveTarget => self.move_target().map(Value::MoveTarget),
@@ -282,7 +311,6 @@ impl Value {
             ValueType::EffectState => self.effect_state().map(Value::EffectState),
             ValueType::List => self.list().map(Value::List),
             ValueType::Object => self.object().map(Value::Object),
-            _ => Err(Self::incompatible_type(self.value_type(), value_type)),
         }
     }
 
@@ -616,6 +644,17 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`JudgmentData`].
+    pub fn judgment_data(self) -> Result<JudgmentData> {
+        match self {
+            Self::JudgmentData(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::JudgmentData,
+            )),
+        }
+    }
+
     /// Consumes the value into a [`MoveCategory`].
     pub fn move_category(self) -> Result<MoveCategory> {
         match self {
@@ -828,6 +867,7 @@ pub enum MaybeReferenceValue<'eval> {
     FieldEnvironment(FieldEnvironment),
     FlingData(FlingData),
     Gender(Gender),
+    JudgmentData(JudgmentData),
     MoveCategory(MoveCategory),
     MoveSlot(MoveSlot),
     MoveTarget(MoveTarget),
@@ -874,6 +914,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
+            Self::JudgmentData(_) => ValueType::JudgmentData,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
@@ -920,6 +961,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::FlingData(val) => Value::FlingData(val.clone()),
             Self::Gender(val) => Value::Gender(*val),
+            Self::JudgmentData(val) => Value::JudgmentData(val.clone()),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
             Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
@@ -1021,6 +1063,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(val),
+            Value::JudgmentData(val) => Self::JudgmentData(val),
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
@@ -1086,6 +1129,7 @@ pub enum ValueRef<'eval> {
     FieldEnvironment(FieldEnvironment),
     FlingData(&'eval FlingData),
     Gender(Gender),
+    JudgmentData(&'eval JudgmentData),
     MoveCategory(MoveCategory),
     MoveSlot(&'eval MoveSlot),
     MoveTarget(MoveTarget),
@@ -1134,6 +1178,7 @@ impl<'eval> ValueRef<'eval> {
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
+            Self::JudgmentData(_) => ValueType::JudgmentData,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
@@ -1182,6 +1227,7 @@ impl<'eval> ValueRef<'eval> {
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::FlingData(val) => Value::FlingData((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
+            Self::JudgmentData(val) => Value::JudgmentData((*val).clone()),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
@@ -1339,6 +1385,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(*val),
+            Value::JudgmentData(val) => Self::JudgmentData(val),
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
@@ -1441,6 +1488,7 @@ pub enum ValueRefMut<'eval> {
     FieldEnvironment(&'eval mut FieldEnvironment),
     FlingData(&'eval mut FlingData),
     Gender(&'eval mut Gender),
+    JudgmentData(&'eval mut JudgmentData),
     MoveCategory(&'eval mut MoveCategory),
     MoveSlot(&'eval mut MoveSlot),
     MoveTarget(&'eval mut MoveTarget),
@@ -1502,6 +1550,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
+            Self::JudgmentData(_) => ValueType::JudgmentData,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
@@ -1648,6 +1697,9 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::Gender(var) => {
                 *var = val.gender()?;
             }
+            ValueRefMut::JudgmentData(var) => {
+                *var = val.judgment_data()?;
+            }
             ValueRefMut::MoveCategory(var) => {
                 *var = val.move_category()?;
             }
@@ -1722,6 +1774,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(val),
+            Value::JudgmentData(val) => Self::JudgmentData(val),
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
@@ -1779,6 +1832,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     FieldEnvironment(FieldEnvironment),
     FlingData(&'eval FlingData),
     Gender(Gender),
+    JudgmentData(&'eval JudgmentData),
     MoveCategory(MoveCategory),
     MoveSlot(&'eval MoveSlot),
     MoveTarget(MoveTarget),
@@ -1830,6 +1884,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
+            Self::JudgmentData(_) => ValueType::JudgmentData,
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
@@ -1881,6 +1936,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::FlingData(val) => Value::FlingData((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
+            Self::JudgmentData(val) => Value::JudgmentData((*val).clone()),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
@@ -1935,16 +1991,17 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::FieldEnvironment(_) => 153,
             Self::FlingData(_) => 154,
             Self::Gender(_) => 155,
-            Self::MoveCategory(_) => 156,
-            Self::MoveSlot(_) => 157,
-            Self::MoveTarget(_) => 158,
-            Self::NaturalGiftData(_) => 159,
-            Self::Nature(_) => 160,
-            Self::SpecialItemData(_) => 161,
-            Self::TempSpecialItemData(_) => 162,
-            Self::Stat(_) => 163,
-            Self::StatTable(_) => 164,
-            Self::Type(_) => 165,
+            Self::JudgmentData(_) => 156,
+            Self::MoveCategory(_) => 157,
+            Self::MoveSlot(_) => 158,
+            Self::MoveTarget(_) => 159,
+            Self::NaturalGiftData(_) => 160,
+            Self::Nature(_) => 161,
+            Self::SpecialItemData(_) => 162,
+            Self::TempSpecialItemData(_) => 163,
+            Self::Stat(_) => 164,
+            Self::StatTable(_) => 165,
+            Self::Type(_) => 166,
 
             Self::EffectState(_) => 200,
 
@@ -2395,6 +2452,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::FieldEnvironment(lhs), Self::FieldEnvironment(rhs)) => lhs.eq(rhs),
             (Self::FlingData(lhs), Self::FlingData(rhs)) => lhs.eq(rhs),
             (Self::Gender(lhs), Self::Gender(rhs)) => lhs.eq(rhs),
+            (Self::JudgmentData(lhs), Self::JudgmentData(rhs)) => lhs.eq(rhs),
             (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
             (Self::MoveSlot(lhs), Self::MoveSlot(rhs)) => lhs.eq(rhs),
             (Self::MoveTarget(lhs), Self::MoveTarget(rhs)) => lhs.eq(rhs),
@@ -2540,7 +2598,14 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::String(val) => (*val).clone(),
             Self::Str(val) => val.to_string(),
             Self::TempString(val) => val.clone(),
+            Self::Boost(val) => val.to_string(),
+            Self::FieldEnvironment(val) => val.to_string(),
+            Self::Gender(val) => val.to_string(),
+            Self::MoveCategory(val) => val.to_string(),
+            Self::MoveTarget(val) => val.to_string(),
+            Self::Nature(val) => val.to_string(),
             Self::Type(val) => val.to_string(),
+            Self::Stat(val) => val.to_string(),
             _ => {
                 return Err(general_error(format!(
                     "{} value is not string formattable",
@@ -2579,6 +2644,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(*val),
+            Value::JudgmentData(val) => Self::JudgmentData(val),
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
@@ -2624,6 +2690,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             MaybeReferenceValue::FlingData(val) => Self::FlingData(val),
             MaybeReferenceValue::Gender(val) => Self::Gender(*val),
+            MaybeReferenceValue::JudgmentData(val) => Self::JudgmentData(val),
             MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
             MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
             MaybeReferenceValue::MoveTarget(val) => Self::MoveTarget(*val),
@@ -2674,6 +2741,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(val),
             ValueRef::FlingData(val) => Self::FlingData(val),
             ValueRef::Gender(val) => Self::Gender(val),
+            ValueRef::JudgmentData(val) => Self::JudgmentData(val),
             ValueRef::MoveCategory(val) => Self::MoveCategory(val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(val),
@@ -2727,6 +2795,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             ValueRef::FlingData(val) => Self::FlingData(*val),
             ValueRef::Gender(val) => Self::Gender(*val),
+            ValueRef::JudgmentData(val) => Self::JudgmentData(*val),
             ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(*val),

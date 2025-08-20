@@ -106,6 +106,7 @@ pub fn run_function(
         "append" => append(context).map(|val| Some(val)),
         "apply_drain" => apply_drain(context).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context).map(|()| None),
+        "base_species" => base_species(context).map(|val| Some(val)),
         "boost" => boost(context).map(|val| Some(val)),
         "boost_table" => boost_table(context).map(|val| Some(val)),
         "boostable_stats" => Ok(Some(boostable_stats())),
@@ -3257,10 +3258,12 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid item")?;
     let item = Id::from(item);
+    let dry_run = context.has_flag("dry_run");
 
     Ok(Value::Boolean(core_battle_actions::set_item(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
+        dry_run,
     )?))
 }
 
@@ -3887,4 +3890,14 @@ fn swap_boosts(mut context: FunctionContext) -> Result<()> {
             .forward_effect_to_applying_effect(target, Some(source))?,
         &boosts,
     )
+}
+
+fn base_species(mut context: FunctionContext) -> Result<Value> {
+    let mon = context
+        .pop_front()
+        .wrap_expectation("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let context = context.evaluation_context_mut().mon_context(mon)?;
+    Mon::base_species_of_species(&context).map(|id| Value::String(id.to_string()))
 }

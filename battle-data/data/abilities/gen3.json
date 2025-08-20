@@ -929,7 +929,7 @@
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],
         "on_weather_change": [
-          "if $target.base_species != castform or $target.transformed:",
+          "if func_call(base_species: $target) != castform or $target.transformed:",
           ["return"],
           "$weather = $target.effective_weather",
           "if !$weather:",

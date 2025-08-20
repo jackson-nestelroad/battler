@@ -55,6 +55,7 @@ mod abilities {
     mod gen4 {
         mod aftermath_test;
         mod mold_breaker_test;
+        mod multitype_test;
     }
 
     mod gen5 {
@@ -261,6 +262,7 @@ mod moves {
         mod gravity_test;
         mod gyro_ball_test;
         mod healing_wish_test;
+        mod judgment_test;
         mod last_resort_test;
         mod magnet_rise_test;
         mod me_first_test;

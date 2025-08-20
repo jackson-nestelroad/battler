@@ -368,7 +368,14 @@ pub struct Mon {
     pub side: usize,
 
     pub name: String,
+
+    /// The base species of the Mon, which represents the Mon's permanent physical appearance. In
+    /// other words, this species is preserved on switch out.
+    ///
+    /// NOTE: Not the same as [`battler_data::SpeciesData::base_species`].
     pub base_species: Id,
+    /// The current species of the Mon. May have changed via some forme change or move (e.g.,
+    /// Transform).
     pub species: Id,
 
     /// `true` if the Mon is in an active position.
@@ -1568,7 +1575,7 @@ impl Mon {
                 .unwrap_or(Id::from_known("noability"));
         }
 
-        context.mon_mut().base_species = Id::from(species.data.base_species.clone());
+        context.mon_mut().base_species = species.id().clone();
 
         let mon_handle = context.mon_handle();
         let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
@@ -1607,6 +1614,20 @@ impl Mon {
         context.mon_mut().weight = species.data.weight;
 
         Ok(context.mon().species != previous_species)
+    }
+
+    /// Looks up the base species of this Mon's base species.
+    pub fn base_species_of_species(context: &MonContext) -> Result<Id> {
+        Ok(Id::from(
+            context
+                .battle()
+                .dex
+                .species
+                .get_by_id(&context.mon().base_species)?
+                .data
+                .base_species
+                .as_str(),
+        ))
     }
 
     /// Overwrites the move slot at the given index.

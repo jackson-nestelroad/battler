@@ -173,7 +173,8 @@
     "effects": {
       "callbacks": {
         "on_source_base_power": [
-          "if ($source.base_species == latias or $source.base_species == latios) and ($move.type == psychic or $move.type == dragon):",
+          "$base_species = func_call(base_species: $source)",
+          "if ($base_species == latias or $base_species == latios) and ($move.type == psychic or $move.type == dragon):",
           ["return $base_power * 6/5"]
         ]
       }
@@ -187,7 +188,8 @@
     "effect": {
       "callbacks": {
         "on_modify_spd": [
-          "if $target.base_species == clamperl:",
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == clamperl:",
           ["return $spd * 2"]
         ]
       }
@@ -200,7 +202,8 @@
     "effect": {
       "callbacks": {
         "on_modify_spd": [
-          "if $target.base_species == clamperl:",
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == clamperl:",
           ["return $spd * 2"]
         ]
       }
@@ -294,11 +297,13 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": [
-          "if $target.base_species == pikachu:",
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == pikachu:",
           ["return $atk * 2"]
         ],
         "on_modify_spa": [
-          "if $target.base_species == pikachu:",
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == pikachu:",
           ["return $spa * 2"]
         ]
       }
@@ -540,7 +545,8 @@
     "effect": {
       "callbacks": {
         "on_modify_crit_ratio": [
-          "if $user.base_species == chansey:",
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == chansey:",
           ["return $crit_ratio * 2"]
         ]
       }
@@ -563,7 +569,8 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": [
-          "if $target.base_species == cubone or $target.base_species == marowak:",
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == cubone or $base_species == marowak:",
           ["return $atk * 2"]
         ]
       }
@@ -576,7 +583,8 @@
     "effect": {
       "callbacks": {
         "on_modify_crit_ratio": [
-          "if $user.base_species == farfetchd:",
+          "$base_species = func_call(base_species: $user)",
+          "if $base_species == farfetchd:",
           ["return $crit_ratio + 2"]
         ]
       }
@@ -792,115 +800,120 @@
   },
   "flameplate": {
     "name": "Flame Plate",
-    "plate_type": "Fire",
     "force_forme": "Arceus-Fire",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Fire" } }
   },
   "splashplate": {
     "name": "Splash Plate",
-    "plate_type": "Water",
     "force_forme": "Arceus-Water",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Water" } }
   },
   "zapplate": {
     "name": "Zap Plate",
-    "plate_type": "Electric",
     "force_forme": "Arceus-Electric",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Electric" }
+    }
   },
   "meadowplate": {
     "name": "Meadow Plate",
-    "plate_type": "Grass",
     "force_forme": "Arceus-Grass",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Grass" } }
   },
   "icicleplate": {
     "name": "Icicle Plate",
-    "plate_type": "Ice",
     "force_forme": "Arceus-Ice",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Ice" } }
   },
   "fistplate": {
     "name": "Fist Plate",
-    "plate_type": "Fighting",
     "force_forme": "Arceus-Fighting",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Fighting" }
+    }
   },
   "toxicplate": {
     "name": "Toxic Plate",
-    "plate_type": "Poison",
     "force_forme": "Arceus-Poison",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Poison" }
+    }
   },
   "earthplate": {
     "name": "Earth Plate",
-    "plate_type": "Ground",
     "force_forme": "Arceus-Ground",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Ground" }
+    }
   },
   "skyplate": {
     "name": "Sky Plate",
-    "plate_type": "Flying",
     "force_forme": "Arceus-Flying",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Flying" }
+    }
   },
   "mindplate": {
     "name": "Mind Plate",
-    "plate_type": "Psychic",
     "force_forme": "Arceus-Psychic",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Psychic" }
+    }
   },
   "insectplate": {
     "name": "Insect Plate",
-    "plate_type": "Bug",
     "force_forme": "Arceus-Bug",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Bug" } }
   },
   "stoneplate": {
     "name": "Stone Plate",
-    "plate_type": "Rock",
     "force_forme": "Arceus-Rock",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Rock" } }
   },
   "spookyplate": {
     "name": "Spooky Plate",
-    "plate_type": "Ghost",
     "force_forme": "Arceus-Ghost",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Ghost" } }
   },
   "dracoplate": {
     "name": "Draco Plate",
-    "plate_type": "Dragon",
     "force_forme": "Arceus-Dragon",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "typ": "Dragon" }
+    }
   },
   "dreadplate": {
     "name": "Dread Plate",
-    "plate_type": "Dark",
     "force_forme": "Arceus-Dark",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Dark" } }
   },
   "ironplate": {
     "name": "Iron Plate",
-    "plate_type": "Steel",
     "force_forme": "Arceus-Steel",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Steel" } }
   },
   "oddincense": {
     "name": "Odd Incense",
@@ -1060,10 +1073,9 @@
   },
   "pixieplate": {
     "name": "Pixie Plate",
-    "plate_type": "Fairy",
     "force_forme": "Arceus-Fairy",
     "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Fairy" } }
   },
   "luminousmoss": {
     "name": "Luminous Moss",

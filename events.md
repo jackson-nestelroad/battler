@@ -268,6 +268,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Set Item
 
 1. Item `End`.
+1. `SetItem`.
 1. Item `Start`.
 
 ## Use Item

@@ -104,7 +104,57 @@
   "honeygather": { "name": "Honey Gather", "flags": [] },
   "frisk": { "name": "Frisk", "flags": [] },
   "reckless": { "name": "Reckless", "flags": [] },
-  "multitype": { "name": "Multitype", "flags": ["Permanent"] },
+  "multitype": {
+    "name": "Multitype",
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_types": {
+          "order": 1,
+          "program": [
+            "# Each Arceus forme has its own species data, so the type of each forme is actually set directly by the forme.",
+            "# Multitype technically alters the Mon's type directly, so we implement dynamic type changing logic here as well.",
+            "if $mon.transformed or !$mon.item:",
+            ["return $types"],
+            "$type = normal",
+            "$data = func_call(special_item_data: $mon.item)",
+            "if $data.is_defined and $data.judgment.is_defined:",
+            ["$type = $data.judgment.type.to_string"],
+            "return [$type]"
+          ]
+        },
+        "on_update": [
+          "# Ensure Arceus is the correct forme.",
+          "# Note that when team validation is used, Arceus is forced into the correct forme.",
+          "if func_call(base_species: $mon) != arceus or $mon.transformed or !$mon.item:",
+          ["return"],
+          "$type = normal",
+          "$data = func_call(special_item_data: $mon.item)",
+          "if $data.is_defined and $data.judgment.is_defined:",
+          ["$type = $data.judgment.type.to_string"],
+          "$species = func_call(get_species: str('arceus-{}', $type))",
+          "if !$species:",
+          ["return"],
+          "if $mon.species != $species.id:",
+          ["forme_change: $mon $species.id permanent"]
+        ],
+        "on_take_item": [
+          "# Item cannot be taken if Multitype is using it.",
+          "if $target.transformed:",
+          ["return"],
+          "$data = func_call(special_item_data: $item.id)",
+          "return !$data or !$data.judgment"
+        ],
+        "on_set_item": [
+          "# Item cannot be given if Multitype would use it.",
+          "if $target.transformed:",
+          ["return"],
+          "$data = func_call(special_item_data: $item.id)",
+          "return !$data or !$data.judgment"
+        ]
+      }
+    }
+  },
   "flowergift": { "name": "Flower Gift", "flags": ["NoRolePlay", "NoTrace"] },
   "baddreams": { "name": "Bad Dreams", "flags": [] }
 }

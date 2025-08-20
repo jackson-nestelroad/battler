@@ -802,6 +802,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "SetAbility"]
     SetAbility,
+    /// Runs when an item is being given to a Mon.
+    ///
+    /// Can prevent the item from being set.
+    ///
+    /// Runs on the item and in the context of an applying effect on a Mon.
+    #[string = "SetItem"]
+    SetItem,
     /// Runs when the Mon's last move selected is being set.
     ///
     /// Runs in the context of a Mon.
@@ -1219,6 +1226,7 @@ impl BattleEvent {
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::RestorePp => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::SetAbility => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::SetItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetTerrain => CommonCallbackType::FieldEffectResult as u32,
@@ -1337,6 +1345,7 @@ impl BattleEvent {
             }
             Self::RestorePp => &[("pp", ValueType::UFraction, true)],
             Self::SetAbility => &[("ability", ValueType::Effect, true)],
+            Self::SetItem => &[("item", ValueType::Effect, true)],
             Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
                 &[("status", ValueType::Effect, true)]
             }
@@ -1433,9 +1442,9 @@ impl BattleEvent {
     ///   not need to run the weather events in the `Types` event.
     pub fn callback_lookup_layer(&self) -> usize {
         match self {
-            Self::Types => 0,
-            Self::SuppressMonItem => 1,
-            Self::SuppressMonAbility => 2,
+            Self::SuppressMonItem => 0,
+            Self::SuppressMonAbility => 1,
+            Self::Types => 2,
             Self::IsGrounded => 3,
             Self::IsSemiInvulnerable => 3,
             Self::SuppressFieldTerrain => 4,
@@ -1754,6 +1763,7 @@ pub struct Callbacks {
     pub on_restart: Callback,
     pub on_restore_pp: Callback,
     pub on_set_ability: Callback,
+    pub on_set_item: Callback,
     pub on_set_last_move: Callback,
     pub on_set_status: Callback,
     pub on_set_terrain: Callback,
@@ -1927,6 +1937,7 @@ impl Callbacks {
             BattleEvent::Restart => &self.on_restart,
             BattleEvent::RestorePp => &self.on_restore_pp,
             BattleEvent::SetAbility => &self.on_set_ability,
+            BattleEvent::SetItem => &self.on_set_item,
             BattleEvent::SetLastMove => &self.on_set_last_move,
             BattleEvent::SetStatus => &self.on_set_status,
             BattleEvent::SetTerrain => &self.on_set_terrain,

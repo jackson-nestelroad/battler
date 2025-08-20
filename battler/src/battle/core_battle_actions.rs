@@ -4365,20 +4365,41 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
 }
 
 /// Sets the target Mon's item.
-pub fn set_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> {
+pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -> Result<bool> {
     if context.target().hp == 0 || !context.target().active {
         return Ok(false);
     }
 
     end_item_internal(context, EndItemType::End, EndItemLog::TrueSilent)?;
 
-    let item = context.battle().dex.items.get_by_id(item)?;
+    let item_id = context.battle().dex.items.get_by_id(item)?.id().clone();
+
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item_id)?
+        .clone();
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::SetItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
+    ) || !core_battle_effects::run_mon_item_event_expecting_bool(
+        context,
+        fxlang::BattleEvent::SetItem,
+    )
+    .unwrap_or(true)
+    {
+        return Ok(false);
+    }
+
+    if dry_run {
+        return Ok(true);
+    }
 
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
     context.target_mut().item = Some(ItemSlot {
-        id: item.id().clone(),
+        id: item_id,
         effect_state: fxlang::EffectState::initial_effect_state(
             context.as_battle_context_mut(),
             Some(&effect_handle),

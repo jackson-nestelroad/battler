@@ -184,6 +184,7 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::Restart, callbacks)?;
         parsed.parse_and_save(BattleEvent::RestorePp, callbacks)?;
         parsed.parse_and_save(BattleEvent::SetAbility, callbacks)?;
+        parsed.parse_and_save(BattleEvent::SetItem, callbacks)?;
         parsed.parse_and_save(BattleEvent::SetLastMove, callbacks)?;
         parsed.parse_and_save(BattleEvent::SetStatus, callbacks)?;
         parsed.parse_and_save(BattleEvent::SetTerrain, callbacks)?;
