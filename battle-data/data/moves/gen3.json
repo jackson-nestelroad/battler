@@ -1913,28 +1913,7 @@
       "delegate": "condition:chargemovebase"
     },
     "condition": {
-      "duration": 2,
-      "callbacks": {
-        "is_semi_invulnerable": ["return true"],
-        "on_invulnerability": [
-          "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
-          ["return"],
-          "return false"
-        ],
-        "on_source_modify_damage": [
-          "if [gust, twister] has $move.id:",
-          ["return $damage * 2"]
-        ],
-        "on_after_add_pseudo_weather": [
-          "if $pseudo_weather.id == gravity:",
-          [
-            "log_activate: with_target use_effect_state_target use_source_effect",
-            "$mon = $effect_state.target",
-            "remove_volatile: $mon $this.id",
-            "cancel_move: $mon"
-          ]
-        ]
-      }
+      "delegate": "movecondition:fly"
     }
   },
   "mudshot": {
