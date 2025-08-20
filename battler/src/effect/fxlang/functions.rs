@@ -230,10 +230,10 @@ pub fn run_function(
         "run_event" => run_event(context).map(|val| Some(val)),
         "run_event_for_each_active_mon" => run_event_for_each_active_mon(context).map(|()| None),
         "run_event_for_mon" => run_event_for_mon(context).map(|val| Some(val)),
-        "run_event_on_mon_ability" => run_event_on_mon_ability(context).map(|()| None),
-        "run_event_on_mon_item" => run_event_on_mon_item(context).map(|()| None),
-        "run_event_on_mon_volatile" => run_event_on_mon_volatile(context).map(|()| None),
-        "run_event_on_move" => run_event_on_move(context).map(|()| None),
+        "run_event_on_mon_ability" => run_event_on_mon_ability(context),
+        "run_event_on_mon_item" => run_event_on_mon_item(context),
+        "run_event_on_mon_volatile" => run_event_on_mon_volatile(context),
+        "run_event_on_move" => run_event_on_move(context),
         "sample" => sample(context),
         "save_move_hit_data_flag_against_target" => {
             save_move_hit_data_flag_against_target(context).map(|()| None)
@@ -425,10 +425,6 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn no_source_effect(&mut self) -> bool {
         self.has_flag("no_source_effect")
-    }
-
-    fn on_user(&mut self) -> bool {
-        self.has_flag("on_user")
     }
 
     fn residual(&mut self) -> bool {
@@ -1517,35 +1513,35 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
     )
 }
 
-fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<()> {
+fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<Option<Value>> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    core_battle_effects::run_mon_ability_event(
+    Ok(core_battle_effects::run_mon_ability_event(
         &mut context.forward_to_applying_effect_context()?,
         event,
-    );
-    Ok(())
+        VariableInput::default(),
+    ))
 }
 
-fn run_event_on_mon_item(mut context: FunctionContext) -> Result<()> {
+fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    core_battle_effects::run_mon_item_event(
+    Ok(core_battle_effects::run_mon_item_event(
         &mut context.forward_to_applying_effect_context()?,
         event,
-    );
-    Ok(())
+        VariableInput::default(),
+    ))
 }
 
-fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<()> {
+fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<Option<Value>> {
     let status = context
         .pop_front()
         .wrap_expectation("missing volatile")?
@@ -1558,41 +1554,51 @@ fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<()> {
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    core_battle_effects::run_mon_volatile_event(
+    Ok(core_battle_effects::run_mon_volatile_event(
         &mut context.forward_to_applying_effect_context()?,
         event,
+        VariableInput::default(),
         &status,
-    );
-    Ok(())
+    ))
 }
 
-fn run_event_on_move(mut context: FunctionContext) -> Result<()> {
-    let on_user = context.on_user();
-    let target = match (on_user, context.target_handle()) {
-        (true, _) => core_battle_effects::MoveTargetForEvent::User,
-        (_, Some(target_handle)) => core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-        (_, None) => match context.evaluation_context().side_index() {
-            Some(side_index) => core_battle_effects::MoveTargetForEvent::Side(side_index),
-            None => core_battle_effects::MoveTargetForEvent::None,
-        },
-    };
+fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let event = context
         .pop_front()
         .wrap_expectation("missing event")?
         .string()
         .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
+
+    let target_handle = context.target_handle();
+    let source_handle = context.source_handle();
+    let side_index = context.evaluation_context().side_index();
+
     let mut context = context
         .evaluation_context_mut()
         .source_active_move_context()?
         .wrap_expectation("source effect is not an active move")?;
-    let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    core_battle_effects::run_active_move_event_expecting_void(
+
+    let user_handle = context.mon_handle();
+
+    let target = match (target_handle, side_index) {
+        (Some(target_handle), _) => {
+            if target_handle == user_handle {
+                core_battle_effects::MoveTargetForEvent::UserWithTarget(source_handle)
+            } else {
+                core_battle_effects::MoveTargetForEvent::Mon(target_handle)
+            }
+        }
+        (None, Some(side_index)) => core_battle_effects::MoveTargetForEvent::Side(side_index),
+        (None, None) => core_battle_effects::MoveTargetForEvent::None,
+    };
+
+    Ok(core_battle_effects::run_active_move_event(
         &mut context,
         event,
         target,
         VariableInput::default(),
-    );
-    Ok(())
+    ))
 }
 
 fn use_callback_on_different_effect(mut context: FunctionContext) -> Result<Option<Value>> {

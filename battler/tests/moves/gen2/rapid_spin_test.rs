@@ -27,7 +27,8 @@ fn forretress() -> Result<TeamData> {
                         "Spikes",
                         "Toxic Spikes",
                         "Leech Seed",
-                        "Bind"
+                        "Bind",
+                        "Substitute"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -137,4 +138,40 @@ fn rapid_spin_clears_user_entry_hazards() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn rapid_spin_clears_user_entry_hazards_even_if_hitting_substitute() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, forretress().unwrap(), forretress().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Forretress,player-1,1|name:Rapid Spin|target:Forretress,player-2,1",
+            "resisted|mon:Forretress,player-2,1",
+            "activate|mon:Forretress,player-2,1|move:Substitute|damage",
+            "end|mon:Forretress,player-1,1|move:Bind",
+            "end|mon:Forretress,player-1,1|move:Leech Seed",
+            "sideend|side:0|move:Spikes",
+            "sideend|side:0|move:Toxic Spikes",
+            "residual",
+            "turn|turn:7"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 6, &expected_logs);
 }

@@ -305,7 +305,8 @@ fn run_active_move_event_with_errors(
     Ok(result.value)
 }
 
-fn run_active_move_event(
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+pub fn run_active_move_event(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
     target: MoveTargetForEvent,
@@ -500,7 +501,7 @@ fn run_callback_under_mon(
     .flatten()
 }
 
-fn run_mon_status_event_internal(
+pub fn run_mon_status_event(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -523,7 +524,8 @@ fn run_mon_status_event_internal(
     )
 }
 
-fn run_mon_volatile_event_internal(
+/// Runs an event on the target [`Mon`]'s volatile status.
+pub fn run_mon_volatile_event(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -546,7 +548,8 @@ fn run_mon_volatile_event_internal(
     )
 }
 
-fn run_mon_ability_event_internal(
+/// Runs an event on the target [`Mon`]'s current ability.
+pub fn run_mon_ability_event(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -564,7 +567,8 @@ fn run_mon_ability_event_internal(
     )
 }
 
-fn run_mon_item_event_internal(
+/// Runs an event on the target [`Mon`]'s current item.
+pub fn run_mon_item_event(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -582,7 +586,7 @@ fn run_mon_item_event_internal(
     )
 }
 
-fn run_mon_inactive_move_event_internal(
+pub fn run_mon_inactive_move_event(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -600,7 +604,8 @@ fn run_mon_inactive_move_event_internal(
     )
 }
 
-fn run_side_condition_event_internal(
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
+pub fn run_side_condition_event(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -623,7 +628,8 @@ fn run_side_condition_event_internal(
     )
 }
 
-fn run_slot_condition_event_internal(
+/// Runs an event on the target [`Side`][`crate::battle::Side`]'s slot condition.
+pub fn run_slot_condition_event(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -647,7 +653,8 @@ fn run_slot_condition_event_internal(
     )
 }
 
-fn run_terrain_event_internal(
+/// Runs an event on the [`Field`][`crate::battle::Field`]'s current terrain.
+pub fn run_terrain_event(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -665,7 +672,8 @@ fn run_terrain_event_internal(
     )
 }
 
-fn run_weather_event_internal(
+/// Runs an event on the [`Field`][`crate::battle::Field`]'s current weather.
+pub fn run_weather_event(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -683,7 +691,8 @@ fn run_weather_event_internal(
     )
 }
 
-fn run_pseudo_weather_event_internal(
+/// Runs an event on one of the [`Field`][`crate::battle::Field`]'s pseudo-weather.
+pub fn run_pseudo_weather_event(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -701,7 +710,8 @@ fn run_pseudo_weather_event_internal(
     )
 }
 
-fn run_applying_effect_event_internal(
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+pub fn run_applying_effect_event(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -721,7 +731,8 @@ fn run_applying_effect_event_internal(
     }
 }
 
-fn run_effect_event_internal(
+/// Runs an event on the [`Effect`][`crate::effect::Effect`].
+pub fn run_effect_event(
     context: &mut EffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
@@ -2112,7 +2123,7 @@ pub fn run_mon_status_event_expecting_u8(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<u8> {
-    run_mon_status_event_internal(context, event, fxlang::VariableInput::default())?
+    run_mon_status_event(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
 }
@@ -2124,18 +2135,18 @@ pub fn run_mon_status_event_expecting_bool(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_mon_status_event_internal(context, event, fxlang::VariableInput::default())?
+    run_mon_status_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
 
 /// Runs an event on the target [`Mon`]'s volatile status.
-pub fn run_mon_volatile_event(
+pub fn run_mon_volatile_event_expecting_void(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     status: &Id,
 ) {
-    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status);
+    run_mon_volatile_event(context, event, fxlang::VariableInput::default(), status);
 }
 
 /// Runs an event on the target [`Mon`]'s volatile status.
@@ -2146,7 +2157,7 @@ pub fn run_mon_volatile_event_expecting_bool(
     event: fxlang::BattleEvent,
     status: &Id,
 ) -> Option<bool> {
-    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status)?
+    run_mon_volatile_event(context, event, fxlang::VariableInput::default(), status)?
         .boolean()
         .ok()
 }
@@ -2159,19 +2170,25 @@ pub fn run_mon_volatile_event_expecting_u8(
     event: fxlang::BattleEvent,
     status: &Id,
 ) -> Option<u8> {
-    run_mon_volatile_event_internal(context, event, fxlang::VariableInput::default(), status)?
+    run_mon_volatile_event(context, event, fxlang::VariableInput::default(), status)?
         .integer_u8()
         .ok()
 }
 
 /// Runs an event on the target [`Mon`]'s current ability.
-pub fn run_mon_ability_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
-    run_mon_ability_event_internal(context, event, fxlang::VariableInput::default());
+pub fn run_mon_ability_event_expecting_void(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) {
+    run_mon_ability_event(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the target [`Mon`]'s current item.
-pub fn run_mon_item_event(context: &mut ApplyingEffectContext, event: fxlang::BattleEvent) {
-    run_mon_item_event_internal(context, event, fxlang::VariableInput::default());
+pub fn run_mon_item_event_expecting_void(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) {
+    run_mon_item_event(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the target [`Mon`]'s current item.
@@ -2181,7 +2198,7 @@ pub fn run_mon_item_event_expecting_bool(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_mon_item_event_internal(context, event, fxlang::VariableInput::default())?
+    run_mon_item_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
@@ -2194,18 +2211,18 @@ pub fn run_mon_inactive_move_event_expecting_move_target(
     event: fxlang::BattleEvent,
     mov: &Id,
 ) -> Option<MoveTarget> {
-    run_mon_inactive_move_event_internal(context, event, fxlang::VariableInput::default(), mov)?
+    run_mon_inactive_move_event(context, event, fxlang::VariableInput::default(), mov)?
         .move_target()
         .ok()
 }
 
 /// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
-pub fn run_side_condition_event(
+pub fn run_side_condition_event_expecting_void(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
     condition: &Id,
 ) {
-    run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition);
+    run_side_condition_event(context, event, fxlang::VariableInput::default(), condition);
 }
 
 /// Runs an event on the target [`Side`][`crate::battle::Side`]'s side condition.
@@ -2216,7 +2233,7 @@ pub fn run_side_condition_event_expecting_bool(
     event: fxlang::BattleEvent,
     condition: &Id,
 ) -> Option<bool> {
-    run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition)?
+    run_side_condition_event(context, event, fxlang::VariableInput::default(), condition)?
         .boolean()
         .ok()
 }
@@ -2229,13 +2246,13 @@ pub fn run_side_condition_event_expecting_u8(
     event: fxlang::BattleEvent,
     condition: &Id,
 ) -> Option<u8> {
-    run_side_condition_event_internal(context, event, fxlang::VariableInput::default(), condition)?
+    run_side_condition_event(context, event, fxlang::VariableInput::default(), condition)?
         .integer_u8()
         .ok()
 }
 
 /// Runs an event on the target [`Side`][`crate::battle::Side`]'s slot condition.
-pub fn run_slot_condition_event(
+pub fn run_slot_condition_event_expecting_void(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
     slot: usize,
@@ -2243,7 +2260,7 @@ pub fn run_slot_condition_event(
 ) {
     match TryInto::<u64>::try_into(slot) {
         Ok(value) => {
-            run_slot_condition_event_internal(
+            run_slot_condition_event(
                 context,
                 event,
                 fxlang::VariableInput::from_iter([fxlang::Value::UFraction(value.into())]),
@@ -2264,7 +2281,7 @@ pub fn run_slot_condition_event_expecting_bool(
     slot: usize,
     condition: &Id,
 ) -> Option<bool> {
-    run_slot_condition_event_internal(
+    run_slot_condition_event(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
@@ -2286,7 +2303,7 @@ pub fn run_slot_condition_event_expecting_u8(
     slot: usize,
     condition: &Id,
 ) -> Option<u8> {
-    run_slot_condition_event_internal(
+    run_slot_condition_event(
         context,
         event,
         fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
@@ -2300,8 +2317,11 @@ pub fn run_slot_condition_event_expecting_u8(
 }
 
 /// Runs an event on the [`Field`][`crate::battle::Field`]'s current weather.
-pub fn run_weather_event(context: &mut FieldEffectContext, event: fxlang::BattleEvent) {
-    run_weather_event_internal(context, event, fxlang::VariableInput::default());
+pub fn run_weather_event_expecting_void(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+) {
+    run_weather_event(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the [`Field`][`crate::battle::Field`]'s weather.
@@ -2311,7 +2331,7 @@ pub fn run_weather_event_expecting_bool(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_weather_event_internal(context, event, fxlang::VariableInput::default())?
+    run_weather_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
@@ -2323,14 +2343,17 @@ pub fn run_weather_event_expecting_u8(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<u8> {
-    run_weather_event_internal(context, event, fxlang::VariableInput::default())?
+    run_weather_event(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
 }
 
 /// Runs an event on the [`Field`][`crate::battle::Field`]'s current terrain.
-pub fn run_terrain_event(context: &mut FieldEffectContext, event: fxlang::BattleEvent) {
-    run_terrain_event_internal(context, event, fxlang::VariableInput::default());
+pub fn run_terrain_event_expecting_void(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+) {
+    run_terrain_event(context, event, fxlang::VariableInput::default());
 }
 
 /// Runs an event on the [`Field`][`crate::battle::Field`]'s terrain.
@@ -2340,7 +2363,7 @@ pub fn run_terrain_event_expecting_bool(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_terrain_event_internal(context, event, fxlang::VariableInput::default())?
+    run_terrain_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }
@@ -2352,18 +2375,18 @@ pub fn run_terrain_event_expecting_u8(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<u8> {
-    run_terrain_event_internal(context, event, fxlang::VariableInput::default())?
+    run_terrain_event(context, event, fxlang::VariableInput::default())?
         .integer_u8()
         .ok()
 }
 
 /// Runs an event on one of the [`Field`][`crate::battle::Field`]'s pseudo-weather.
-pub fn run_pseudo_weather_event(
+pub fn run_pseudo_weather_event_expecting_void(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     pseudo_weather: &Id,
 ) {
-    run_pseudo_weather_event_internal(
+    run_pseudo_weather_event(
         context,
         event,
         fxlang::VariableInput::default(),
@@ -2379,7 +2402,7 @@ pub fn run_pseudo_weather_event_expecting_bool(
     event: fxlang::BattleEvent,
     pseudo_weather: &Id,
 ) -> Option<bool> {
-    run_pseudo_weather_event_internal(
+    run_pseudo_weather_event(
         context,
         event,
         fxlang::VariableInput::default(),
@@ -2397,7 +2420,7 @@ pub fn run_pseudo_weather_event_expecting_u8(
     event: fxlang::BattleEvent,
     pseudo_weather: &Id,
 ) -> Option<u8> {
-    run_pseudo_weather_event_internal(
+    run_pseudo_weather_event(
         context,
         event,
         fxlang::VariableInput::default(),
@@ -2408,12 +2431,12 @@ pub fn run_pseudo_weather_event_expecting_u8(
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
-pub fn run_applying_effect_event(
+pub fn run_applying_effect_event_expecting_void(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) {
-    run_applying_effect_event_internal(context, event, input);
+    run_applying_effect_event(context, event, input);
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
@@ -2422,7 +2445,7 @@ pub fn run_applying_effect_event_expecting_bool(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> Option<bool> {
-    run_applying_effect_event_internal(context, event, input)?
+    run_applying_effect_event(context, event, input)?
         .boolean()
         .ok()
 }
@@ -2433,7 +2456,7 @@ pub fn run_applying_effect_event_expecting_u64(
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
 ) -> Option<u64> {
-    run_applying_effect_event_internal(context, event, input)?
+    run_applying_effect_event(context, event, input)?
         .integer_u64()
         .ok()
 }
@@ -2445,7 +2468,7 @@ pub fn run_effect_event_expecting_bool(
     context: &mut EffectContext,
     event: fxlang::BattleEvent,
 ) -> Option<bool> {
-    run_effect_event_internal(context, event, fxlang::VariableInput::default())?
+    run_effect_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }

@@ -136,17 +136,7 @@
     "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "crit_ratio": 2,
     "effect": {
-      "callbacks": {
-        "on_try_use_move": [
-          "if func_call(remove_volatile: $user $this.id):",
-          ["return"],
-          "log_prepare_move",
-          "if !func_call(run_event: ChargeMove):",
-          ["return"],
-          "add_volatile: $user twoturnmove link",
-          "return stop"
-        ]
-      }
+      "delegate": "condition:chargemovebase"
     }
   },
   "swordsdance": {
@@ -227,17 +217,7 @@
       "Protect"
     ],
     "effect": {
-      "callbacks": {
-        "on_try_use_move": [
-          "if func_call(remove_volatile: $user $this.id):",
-          ["return"],
-          "log_prepare_move",
-          "if !func_call(run_event: ChargeMove):",
-          ["return"],
-          "add_volatile: $user twoturnmove link",
-          "return stop"
-        ]
-      }
+      "delegate": "condition:chargemovebase"
     },
     "condition": {
       "duration": 2,
@@ -1079,22 +1059,16 @@
     "target": "Normal",
     "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "effect": {
+      "delegate": "condition:chargemovebase",
       "callbacks": {
-        "on_try_use_move": [
-          "if func_call(remove_volatile: $user $this.id):",
-          ["return"],
-          "log_prepare_move",
+        "on_charge_move": [
           "$weather = $user.effective_weather",
           "if $weather.is_defined and $weather.is_sunny:",
           [
             "do_not_animate_last_move",
             "log_animate_move: $user $this.name $target",
-            "return"
-          ],
-          "if !func_call(run_event: ChargeMove):",
-          ["return"],
-          "add_volatile: $user twoturnmove link",
-          "return stop"
+            "return false"
+          ]
         ],
         "on_move_base_power": [
           "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
@@ -1281,17 +1255,7 @@
       "Protect"
     ],
     "effect": {
-      "callbacks": {
-        "on_try_use_move": [
-          "if func_call(remove_volatile: $user $this.id):",
-          ["return"],
-          "log_prepare_move",
-          "if !func_call(run_event: ChargeMove):",
-          ["return"],
-          "add_volatile: $user twoturnmove link",
-          "return stop"
-        ]
-      }
+      "delegate": "condition:chargemovebase"
     },
     "condition": {
       "duration": 2,
@@ -1935,17 +1899,9 @@
       "Protect"
     ],
     "effect": {
+      "delegate": "condition:chargemovebase",
       "callbacks": {
-        "on_try_use_move": [
-          "if func_call(remove_volatile: $user $this.id):",
-          ["return"],
-          "log_prepare_move",
-          "boost: $user 'def:1'",
-          "if !func_call(run_event: ChargeMove):",
-          ["return"],
-          "add_volatile: $user twoturnmove link",
-          "return stop"
-        ]
+        "on_charge_move": ["boost: $user 'def:1'"]
       }
     }
   },
@@ -2109,17 +2065,7 @@
       { "chance": "30%", "target": { "volatile_status": "flinch" } }
     ],
     "effect": {
-      "callbacks": {
-        "on_try_use_move": [
-          "if func_call(remove_volatile: $user $this.id):",
-          ["return"],
-          "log_prepare_move",
-          "if !func_call(run_event: ChargeMove):",
-          ["return"],
-          "add_volatile: $user twoturnmove link",
-          "return stop"
-        ]
-      }
+      "delegate": "condition:chargemovebase"
     }
   },
   "transform": {

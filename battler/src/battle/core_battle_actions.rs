@@ -3028,7 +3028,11 @@ pub fn remove_volatile(
         return Ok(true);
     }
 
-    core_battle_effects::run_mon_volatile_event(context, fxlang::BattleEvent::End, &volatile);
+    core_battle_effects::run_mon_volatile_event_expecting_void(
+        context,
+        fxlang::BattleEvent::End,
+        &volatile,
+    );
 
     let mon_handle = context.target_handle();
     LinkedEffectsManager::remove(
@@ -3195,7 +3199,7 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
         return Ok(false);
     }
 
-    core_battle_effects::run_side_condition_event(
+    core_battle_effects::run_side_condition_event_expecting_void(
         context,
         fxlang::BattleEvent::SideEnd,
         &condition,
@@ -3632,7 +3636,10 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
         ) {
             return Ok(false);
         }
-        core_battle_effects::run_weather_event(context, fxlang::BattleEvent::FieldEnd);
+        core_battle_effects::run_weather_event_expecting_void(
+            context,
+            fxlang::BattleEvent::FieldEnd,
+        );
 
         LinkedEffectsManager::remove_by_id(
             context.as_effect_context_mut(),
@@ -3754,7 +3761,10 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
         ) {
             return Ok(false);
         }
-        core_battle_effects::run_terrain_event(context, fxlang::BattleEvent::FieldEnd);
+        core_battle_effects::run_terrain_event_expecting_void(
+            context,
+            fxlang::BattleEvent::FieldEnd,
+        );
 
         LinkedEffectsManager::remove_by_id(
             context.as_effect_context_mut(),
@@ -3882,7 +3892,7 @@ pub fn remove_pseudo_weather(
     context: &mut FieldEffectContext,
     pseudo_weather: &Id,
 ) -> Result<bool> {
-    core_battle_effects::run_pseudo_weather_event(
+    core_battle_effects::run_pseudo_weather_event_expecting_void(
         context,
         fxlang::BattleEvent::FieldEnd,
         pseudo_weather,
@@ -3928,7 +3938,7 @@ pub fn end_ability_even_if_exiting(
         core_battle_logs::ability_end(context)?;
     }
 
-    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::End);
+    core_battle_effects::run_mon_ability_event_expecting_void(context, fxlang::BattleEvent::End);
 
     Ok(())
 }
@@ -3947,7 +3957,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     if !silent {
         core_battle_logs::ability(context)?;
     }
-    core_battle_effects::run_mon_ability_event(context, fxlang::BattleEvent::Start);
+    core_battle_effects::run_mon_ability_event_expecting_void(context, fxlang::BattleEvent::Start);
     Ok(())
 }
 
@@ -4225,7 +4235,7 @@ pub fn remove_slot_condition(
         return Ok(false);
     }
 
-    core_battle_effects::run_slot_condition_event(
+    core_battle_effects::run_slot_condition_event_expecting_void(
         context,
         fxlang::BattleEvent::SlotEnd,
         slot,
@@ -4306,7 +4316,7 @@ fn end_item_internal(
         EndItemType::Discard => None,
     };
     if let Some(event) = event {
-        core_battle_effects::run_mon_item_event(context, event);
+        core_battle_effects::run_mon_item_event_expecting_void(context, event);
     }
 
     Ok(())
@@ -4349,7 +4359,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
     if !silent {
         core_battle_logs::item(context)?;
     }
-    core_battle_effects::run_mon_item_event(context, fxlang::BattleEvent::Start);
+    core_battle_effects::run_mon_item_event_expecting_void(context, fxlang::BattleEvent::Start);
 
     Ok(())
 }
@@ -4651,7 +4661,7 @@ pub fn player_use_item_internal(
     }
 
     match target {
-        Some(target) => core_battle_effects::run_applying_effect_event(
+        Some(target) => core_battle_effects::run_applying_effect_event_expecting_void(
             &mut context.as_battle_context_mut().applying_effect_context(
                 EffectHandle::Item(item_id.clone()),
                 None,

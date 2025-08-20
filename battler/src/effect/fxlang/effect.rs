@@ -375,7 +375,7 @@ pub enum BattleEvent {
     ChangeBoosts,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
-    /// Runs in the context of a move user.
+    /// Runs on the active move and in the context of a move user.
     #[string = "ChargeMove"]
     ChargeMove,
     /// Runs when the field's terrain is being cleared.
@@ -1132,7 +1132,7 @@ impl BattleEvent {
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
-            Self::ChargeMove => CommonCallbackType::SourceMoveVoid as u32,
+            Self::ChargeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::CopyVolatile => CommonCallbackType::ApplyingEffectResult as u32,

@@ -696,12 +696,7 @@
       "volatile_status": "protect"
     },
     "effect": {
-      "callbacks": {
-        "on_prepare_hit": [
-          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
-        ],
-        "on_hit": ["add_volatile: $target stall"]
-      }
+      "delegate": "move:protect"
     }
   },
   "bonerush": {
@@ -1568,19 +1563,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "effect": {
-      "callbacks": {
-        "on_hit": [
-          "$weather = $target.effective_weather",
-          "if !$weather:",
-          ["$factor = 1/2"],
-          "else if $weather.is_sunny:",
-          ["$factor = 2/3"],
-          "else:",
-          ["$factor = 1/4"],
-          "if !func_call(heal: $target expr($target.max_hp * $factor)):",
-          ["log_fail_heal"]
-        ]
-      }
+      "delegate": "move:morningsun"
     }
   },
   "moonlight": {
@@ -1592,19 +1575,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "effect": {
-      "callbacks": {
-        "on_hit": [
-          "$weather = $target.effective_weather",
-          "if !$weather:",
-          ["$factor = 1/2"],
-          "else if $weather.is_sunny:",
-          ["$factor = 2/3"],
-          "else:",
-          ["$factor = 1/4"],
-          "if !func_call(heal: $target expr($target.max_hp * $factor)):",
-          ["log_fail_heal"]
-        ]
-      }
+      "delegate": "move:morningsun"
     }
   },
   "hiddenpower": {

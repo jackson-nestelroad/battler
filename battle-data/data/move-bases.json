@@ -1,0 +1,22 @@
+{
+  "chargemovebase": {
+    "name": "Charge Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(remove_volatile: $user $this.id):",
+          ["return"],
+          "log_prepare_move",
+          "$charge_move = func_call(run_event_on_move: ChargeMove)",
+          "if $charge_move.is_defined and !$charge_move:",
+          ["return"],
+          "if !func_call(run_event: ChargeMove):",
+          ["return"],
+          "add_volatile: $user twoturnmove link",
+          "return stop"
+        ]
+      }
+    }
+  }
+}
