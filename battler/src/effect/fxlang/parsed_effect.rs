@@ -151,6 +151,7 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::IsSunny, callbacks)?;
         parsed.parse_and_save(BattleEvent::LockMove, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifyAccuracy, callbacks)?;
+        parsed.parse_and_save(BattleEvent::ModifyActionSpeed, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifyAtk, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifyBoosts, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifyCatchRate, callbacks)?;

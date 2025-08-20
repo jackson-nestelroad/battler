@@ -1142,7 +1142,11 @@ impl Mon {
     /// Calculates the speed value to use for battle action ordering.
     pub fn action_speed(context: &mut MonContext) -> Result<u16> {
         let speed = Self::get_stat(context, Stat::Spe, false, false)?;
-        // TODO: If Trick Room, return u16::MAX - speed. CalculateSpeed event?
+        let speed = core_battle_effects::run_event_for_mon_expecting_u16(
+            context,
+            fxlang::BattleEvent::ModifyActionSpeed,
+            speed,
+        );
         Ok(speed)
     }
 

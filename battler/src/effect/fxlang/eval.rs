@@ -1154,6 +1154,16 @@ where
                             "environment" => ValueRef::FieldEnvironment(
                                 context.battle_context().battle().field.environment,
                             ),
+                            "sides" => ValueRef::TempList(
+                                context
+                                    .battle_context()
+                                    .battle()
+                                    .side_indices()
+                                    .map(|side_index| {
+                                        ValueRefToStoredValue::new(None, ValueRef::Side(side_index))
+                                    })
+                                    .collect(),
+                            ),
                             "weather" => {
                                 match context.battle_context().battle().field.weather.clone() {
                                     Some(weather) => ValueRef::Effect(

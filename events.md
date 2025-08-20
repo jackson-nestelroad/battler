@@ -71,6 +71,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. Move `ModifyPriority`.
 1. Move `SubPriority`.
 1. Calculate Mon speed for action sorting.
+   1. `ModifyActionSpeed`.
 
 ## Forfeit
 

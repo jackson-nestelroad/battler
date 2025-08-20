@@ -122,6 +122,7 @@ pub fn run_function(
         "clause_type_value" => clause_type_value(context),
         "clear_boosts" => clear_boosts(context).map(|()| None),
         "clear_negative_boosts" => clear_negative_boosts(context).map(|()| None),
+        "clear_terrain" => clear_terrain(context).map(|val| Some(val)),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
         "clone_active_move" => clone_active_move(context).map(|val| Some(val)),
         "cure_status" => cure_status(context).map(|val| Some(val)),
@@ -2742,6 +2743,10 @@ fn set_weather(mut context: FunctionContext) -> Result<Value> {
 
 fn clear_weather(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::clear_weather(&mut context.forward_to_field_effect()?).map(Value::Boolean)
+}
+
+fn clear_terrain(mut context: FunctionContext) -> Result<Value> {
+    core_battle_actions::clear_terrain(&mut context.forward_to_field_effect()?).map(Value::Boolean)
 }
 
 fn transform_into(mut context: FunctionContext) -> Result<Value> {

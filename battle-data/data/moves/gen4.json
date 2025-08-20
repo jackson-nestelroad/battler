@@ -1557,7 +1557,36 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "eva": -1
+      }
+    },
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$remove_from_target_side = [reflect, lightscreen, auroraveil, safeguard, mist]",
+          "$remove_from_both_sides = [spikes, toxicspikes, stealthrock, stickyweb]",
+          "$success = false",
+          "foreach $condition in $remove_from_target_side:",
+          [
+            "if func_call(remove_side_condition: $target.side $condition):",
+            ["$success = true"]
+          ],
+          "foreach $condition in $remove_from_both_sides:",
+          [
+            "foreach $side in $field.sides:",
+            [
+              "if func_call(remove_side_condition: $side $condition):",
+              ["$success = true"]
+            ]
+          ],
+          "clear_terrain",
+          "return $success"
+        ]
+      }
+    }
   },
   "trickroom": {
     "name": "Trick Room",
@@ -1567,7 +1596,22 @@
     "accuracy": "exempt",
     "priority": -7,
     "target": "All",
-    "flags": ["Mirror"]
+    "flags": ["Mirror"],
+    "hit_effect": {
+      "pseudo_weather": "trickroom"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_field_start": ["log_field_start"],
+        "on_field_restart": ["remove_pseudo_weather: $this.id"],
+        "on_modify_action_speed": [
+          "$spe = $spe % 10000",
+          "return (10000 - $spe) % 8192"
+        ],
+        "on_field_end": ["log_field_end"]
+      }
+    }
   },
   "dracometeor": {
     "name": "Draco Meteor",
@@ -1746,7 +1790,19 @@
     "pp": 20,
     "accuracy": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "spa": -2
+      }
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_immunity": [
+          "return ($target.gender == m and $source.gender == f) or ($target.gender == f or $source.gender == m)"
+        ]
+      }
+    }
   },
   "stealthrock": {
     "name": "Stealth Rock",

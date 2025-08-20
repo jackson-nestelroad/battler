@@ -627,6 +627,11 @@ pub enum BattleEvent {
     /// Runs in the context of a move target.
     #[string = "ModifyAccuracy"]
     ModifyAccuracy,
+    /// Runs when calculating the speed of an action.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ModifyActionSpeed"]
+    ModifyActionSpeed,
     /// Runs when calculating a Mon's Atk stat.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1181,6 +1186,7 @@ impl BattleEvent {
             Self::IsSunny => CommonCallbackType::NoContextResult as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAccuracy => CommonCallbackType::MoveModifier as u32,
+            Self::ModifyActionSpeed => CommonCallbackType::MonModifier as u32,
             Self::ModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ModifyCatchRate => CommonCallbackType::ApplyingEffectModifier as u32,
@@ -1303,6 +1309,7 @@ impl BattleEvent {
             Self::ModifyAccuracy | Self::SourceModifyAccuracy => {
                 &[("acc", ValueType::UFraction, true)]
             }
+            Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
             Self::ModifyAtk | Self::SourceModifyAtk => &[("atk", ValueType::UFraction, true)],
             Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::ModifyCatchRate => &[("catch_rate", ValueType::UFraction, true)],
@@ -1714,6 +1721,7 @@ pub struct Callbacks {
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
     pub on_modify_accuracy: Callback,
+    pub on_modify_action_speed: Callback,
     pub on_modify_atk: Callback,
     pub on_modify_boosts: Callback,
     pub on_modify_catch_rate: Callback,
@@ -1886,6 +1894,7 @@ impl Callbacks {
             BattleEvent::IsSunny => &self.is_sunny,
             BattleEvent::LockMove => &self.on_lock_move,
             BattleEvent::ModifyAccuracy => &self.on_modify_accuracy,
+            BattleEvent::ModifyActionSpeed => &self.on_modify_action_speed,
             BattleEvent::ModifyAtk => &self.on_modify_atk,
             BattleEvent::ModifyBoosts => &self.on_modify_boosts,
             BattleEvent::ModifyCatchRate => &self.on_modify_catch_rate,

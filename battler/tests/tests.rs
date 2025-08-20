@@ -254,6 +254,7 @@ mod moves {
         mod aqua_ring_test;
         mod assurance_test;
         mod copycat_test;
+        mod defog_test;
         mod feint_test;
         mod fling_test;
         mod gastro_acid_test;
@@ -275,6 +276,7 @@ mod moves {
         mod roost_test;
         mod sucker_punch_test;
         mod toxic_spikes_test;
+        mod trick_room_test;
         mod trump_card_test;
     }
 
