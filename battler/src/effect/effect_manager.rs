@@ -6,7 +6,10 @@ use std::{
 use anyhow::Result;
 
 use crate::{
-    battle::CoreBattle,
+    battle::{
+        Context,
+        CoreBattle,
+    },
     common::LruCache,
     effect::{
         Effect,
@@ -16,7 +19,7 @@ use crate::{
             DynamicEffectStateConnector,
             EvaluationContext,
             Evaluator,
-            ParsedCallbacks,
+            ParsedEffect,
             ProgramEvalResult,
             VariableInput,
         },
@@ -28,18 +31,20 @@ use crate::{
 };
 /// Module for managing fxlang effect programs and their evaluation.
 pub struct EffectManager {
-    callbacks: LruCache<String, Arc<ParsedCallbacks>>,
+    effects: LruCache<String, Arc<ParsedEffect>>,
     stack: usize,
 }
 
 impl EffectManager {
-    const MAX_SAVED_EFFECTS: usize = 6 * 4 * 2 + 16;
+    // 2 teams per battle, 6 Mons per team, 6 effects per Mon (4 moves + 1 ability + 1 item), 2
+    // fxlang effects per effect (1 effect + 1 condition), plus an additional buffer.
+    const MAX_SAVED_EFFECTS: usize = 2 * 6 * 6 * 2 + 16;
     const MAX_STACK_SIZE: usize = 10;
 
     /// Creates a new effect manager.
     pub fn new() -> Self {
         Self {
-            callbacks: LruCache::new(Self::MAX_SAVED_EFFECTS),
+            effects: LruCache::new(Self::MAX_SAVED_EFFECTS),
             stack: 0,
         }
     }
@@ -52,16 +57,6 @@ impl EffectManager {
         input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
-        let effect = match CoreBattle::get_effect_by_handle(context.battle_context(), effect_handle)
-        {
-            Ok(effect) => effect,
-            Err(_) => return Ok(ProgramEvalResult::default()),
-        };
-
-        // SAFETY: Effects are guaranteed to live at least through this turn, and no effect is
-        // allowed to change the turn of the battle.
-        let effect: Effect = unsafe { mem::transmute(effect) };
-
         context
             .battle_context_mut()
             .battle_mut()
@@ -76,19 +71,13 @@ impl EffectManager {
             > Self::MAX_STACK_SIZE
         {
             return Err(general_error(format!(
-                "fxlang effect callback stack size exceeded for {event} callback of effect {}",
-                effect.full_name(),
+                "fxlang effect callback stack size exceeded for {event} callback of effect {:?}",
+                effect_handle,
             )));
         }
 
-        let result = Self::evaluate_internal(
-            context,
-            effect_handle,
-            &effect,
-            event,
-            input,
-            effect_state_connector,
-        );
+        let result =
+            Self::evaluate_internal(context, effect_handle, event, input, effect_state_connector);
 
         context
             .battle_context_mut()
@@ -99,56 +88,90 @@ impl EffectManager {
         result
     }
 
-    fn get_parsed_effect(
-        &mut self,
+    pub fn parsed_effect(
+        context: &mut Context,
         effect_handle: &EffectHandle,
-        effect: &Effect,
-    ) -> Result<Arc<ParsedCallbacks>> {
-        let id = if effect.unlinked() {
-            effect_handle.unlinked_internal_fxlang_id().wrap_expectation_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
-        } else {
-            effect.internal_fxlang_id()
+    ) -> Result<Option<Arc<ParsedEffect>>> {
+        let effect = match CoreBattle::get_effect_by_handle(context, effect_handle) {
+            Ok(effect) => effect,
+            Err(_) => return Ok(None),
         };
 
+        // SAFETY: Effects are guaranteed to live at least through this turn. We only detach the
+        // lifetime of this reference for looking up parsed callbacks in the EffectManager.
+        let effect: Effect = unsafe { mem::transmute(effect) };
+
+        let id = if effect.unlinked() {
+            effect_handle.unlinked_fxlang_id().wrap_expectation_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?
+        } else {
+            effect.fxlang_id()
+        };
+
+        // Callbacks are cached.
+        //
         // TODO: Borrow checker is too strict to remove the extra lookup here.
-        if self.callbacks.contains_key(&id) {
-            return self
-                .callbacks
+        if context.battle().effect_manager.effects.contains_key(&id) {
+            return Ok(context
+                .battle_mut()
+                .effect_manager
+                .effects
                 .get(&id)
-                .cloned()
-                .wrap_expectation_with_format(format_args!(
-                    "callbacks cache contains {id} but lookup failed"
-                ));
+                .cloned());
         }
-        self.callbacks.push(
-            id.clone(),
-            Arc::new(ParsedCallbacks::from(
-                effect.fxlang_effect().map(|effect| &effect.callbacks),
-            )?),
-        );
-        self.callbacks
+
+        // Parse the effect's callbacks.
+        let parsed_effect = match effect.fxlang_effect() {
+            Some(fxlang_effect) => {
+                let parsed_effect = ParsedEffect::new(
+                    &fxlang_effect.callbacks,
+                    fxlang_effect.attributes.condition.clone(),
+                )?;
+                if let Some(delegate) = &fxlang_effect.attributes.delegate {
+                    // If we are delegating to some effect, look it up and merge our callbacks in
+                    // after.
+                    let delegate_effect_handle = EffectHandle::from_fxlang_id(delegate);
+
+                    // NOTE: We don't protect against circular dependencies here.
+                    let mut delegate_effect =
+                        Self::parsed_effect(context, &delegate_effect_handle)?
+                            .map(|effect| effect.as_ref().clone())
+                            .unwrap_or_default();
+
+                    delegate_effect.extend(parsed_effect);
+                    delegate_effect
+                } else {
+                    parsed_effect
+                }
+            }
+            None => ParsedEffect::default(),
+        };
+
+        context
+            .battle_mut()
+            .effect_manager
+            .effects
+            .push(id.clone(), Arc::new(parsed_effect));
+
+        Ok(context
+            .battle_mut()
+            .effect_manager
+            .effects
             .get(&id)
-            .cloned()
-            .wrap_expectation("pushing to effect cache failed, so parsed program was lost")
+            .cloned())
     }
 
     fn evaluate_internal(
         context: &mut EvaluationContext,
         effect_handle: &EffectHandle,
-        effect: &Effect,
         event: BattleEvent,
         input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
         let mut evaluator = Evaluator::new(event);
-        let callbacks = context
-            .battle_context_mut()
-            .battle_mut()
-            .effect_manager
-            .get_parsed_effect(&effect_handle, effect)?;
-        match callbacks.event(event) {
-            Some(program) => {
-                evaluator.evaluate_program(context, input, program, effect_state_connector)
+        let effect = Self::parsed_effect(context.battle_context_mut(), effect_handle)?;
+        match effect.as_ref().map(|effect| effect.event(event)).flatten() {
+            Some(callback) => {
+                evaluator.evaluate_program(context, input, callback, effect_state_connector)
             }
             None => Ok(ProgramEvalResult::new(None)),
         }

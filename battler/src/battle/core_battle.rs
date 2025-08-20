@@ -3,6 +3,7 @@ use std::{
     collections::VecDeque,
     marker::PhantomPinned,
     mem,
+    sync::Arc,
     time::{
         SystemTime,
         UNIX_EPOCH,
@@ -2166,6 +2167,23 @@ impl<'d> CoreBattle<'d> {
     ) -> Result<Effect<'context>> {
         let effect_handle = context.battle_mut().get_effect_handle_by_id(id)?.clone();
         Self::get_effect_by_handle(context, &effect_handle)
+    }
+
+    /// Gets a [`fxlang::ParsedEffect`] by handle.
+    pub fn get_parsed_effect_by_handle(
+        context: &mut Context,
+        effect_handle: &EffectHandle,
+    ) -> Result<Option<Arc<fxlang::ParsedEffect>>> {
+        EffectManager::parsed_effect(context, effect_handle)
+    }
+
+    /// Gets a [`fxlang::ParsedEffect`] by ID.
+    pub fn get_parsed_effect_by_id(
+        context: &mut Context,
+        id: &Id,
+    ) -> Result<Option<Arc<fxlang::ParsedEffect>>> {
+        let effect_handle = context.battle_mut().get_effect_handle_by_id(id)?.clone();
+        Self::get_parsed_effect_by_handle(context, &effect_handle)
     }
 
     /// Sorts the given items by speed.

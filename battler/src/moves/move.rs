@@ -81,7 +81,7 @@ pub struct Move {
     id: Id,
     pub data: MoveData,
     pub effect: fxlang::Effect,
-    pub condition: fxlang::Condition,
+    pub condition: fxlang::Effect,
 
     /// Custom STAB modifier, if any.
     pub stab_modifier: Option<Fraction<u32>>,

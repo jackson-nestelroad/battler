@@ -19,6 +19,7 @@ use crate::{
         Context,
         MoveHandle,
     },
+    common::split_once_optional,
     conditions::Condition,
     config::Clause,
     effect::fxlang,
@@ -122,6 +123,27 @@ pub enum EffectHandle {
 }
 
 impl EffectHandle {
+    /// Creates an [`EffectHandle`] from the fxlang ID of the effect.
+    pub fn from_fxlang_id(fxlang_id: &str) -> Self {
+        let (effect_type, id) = split_once_optional(fxlang_id, ':');
+        let (effect_type, id) = match id {
+            Some(id) => (effect_type, id),
+            None => ("condition", fxlang_id),
+        };
+        let id = Id::from(id);
+        match effect_type {
+            "ability" => Self::Ability(id),
+            "abilitycondition" => Self::AbilityCondition(id),
+            "clause" => Self::Clause(id),
+            "item" => Self::Item(id),
+            "itemcondition" => Self::ItemCondition(id),
+            "move" => Self::InactiveMove(id),
+            "movecondition" => Self::MoveCondition(id),
+            "species" => Self::Species(id),
+            _ => Self::Condition(id),
+        }
+    }
+
     /// Is the effect handle an ability?
     pub fn is_ability(&self) -> bool {
         match self {
@@ -195,13 +217,13 @@ impl EffectHandle {
         }
     }
 
-    /// The internal ID for the effect for unlinked effects.
+    /// The ID for the effect for unlinked effects.
     ///
     /// Only applicable for active moves that use local data with modified effect callbacks. For
     /// example, the move "Bide" executes a special version of the move with custom effect
     /// callbacks. To avoid the cached "Bide" move effects from being used, this ID forces the
     /// evaluation of the custom effects.
-    pub fn unlinked_internal_fxlang_id(&self) -> Option<String> {
+    pub fn unlinked_fxlang_id(&self) -> Option<String> {
         match self {
             Self::ActiveMove(active_move_handle, _) => {
                 Some(format!("activemove:{active_move_handle}"))
@@ -349,7 +371,7 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    fn internal_effect_type_name(&self) -> String {
+    fn fxlang_id_effect_type_name(&self) -> String {
         match self {
             Self::ActiveMove(_, hit_effect_type) => match hit_effect_type.secondary_index() {
                 None => "move".to_owned(),
@@ -370,9 +392,9 @@ impl<'borrow> Effect<'borrow> {
         }
     }
 
-    /// The internal ID of the effect, used for caching fxlang effect callbacks.
-    pub fn internal_fxlang_id(&self) -> String {
-        match self.internal_effect_type_name().as_str() {
+    /// The ID of the effect, used for caching fxlang effect callbacks.
+    pub fn fxlang_id(&self) -> String {
+        match self.fxlang_id_effect_type_name().as_str() {
             "" => format!("{}", self.id()),
             prefix => format!("{prefix}:{}", self.id()),
         }
@@ -401,27 +423,16 @@ impl<'borrow> Effect<'borrow> {
             Self::ActiveMove(active_move, hit_effect_type) => {
                 active_move.fxlang_effect(*hit_effect_type)
             }
-            Self::MoveCondition(mov) => Some(&mov.condition.effect),
+            Self::MoveCondition(mov) => Some(&mov.condition),
             Self::InactiveMove(mov) => Some(&mov.effect),
             Self::Ability(ability) => Some(&ability.effect),
-            Self::AbilityCondition(ability) => Some(&ability.condition.effect),
-            Self::Condition(condition) => Some(&condition.condition.effect),
+            Self::AbilityCondition(ability) => Some(&ability.condition),
+            Self::Condition(condition) => Some(&condition.condition),
             Self::Item(item) => Some(&item.effect),
-            Self::ItemCondition(item) => Some(&item.condition.effect),
+            Self::ItemCondition(item) => Some(&item.condition),
             Self::Clause(clause) => Some(&clause.effect),
             Self::Species(_) => None,
             Self::NonExistent(_) => None,
-        }
-    }
-
-    /// The associated [`fxlang::Condition`].
-    pub fn fxlang_condition<'effect>(&'effect self) -> Option<&'effect fxlang::Condition> {
-        match self {
-            Self::Condition(condition) => Some(&condition.condition),
-            Self::MoveCondition(mov) => Some(&mov.condition),
-            Self::AbilityCondition(ability) => Some(&ability.condition),
-            Self::ItemCondition(item) => Some(&item.condition),
-            _ => None,
         }
     }
 

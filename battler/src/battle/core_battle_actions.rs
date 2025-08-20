@@ -290,9 +290,8 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
     let boosts = source_context.mon().boosts.clone();
     let mut volatiles = HashMap::default();
     for (volatile, state) in source_context.mon().volatiles.clone() {
-        if CoreBattle::get_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
-            .fxlang_condition()
-            .is_some_and(|condition| condition.no_copy)
+        if CoreBattle::get_parsed_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
+            .is_some_and(|condition| condition.condition().no_copy)
         {
             continue;
         }
@@ -2805,20 +2804,20 @@ pub fn try_set_status(
         source_handle,
     )?;
 
-    if let Some(condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &status_effect_handle)?
-            .fxlang_condition()
-    {
-        if let Some(duration) = condition.duration {
+    if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
+        context.as_battle_context_mut(),
+        &status_effect_handle,
+    )? {
+        if let Some(duration) = condition.condition().duration {
             context.target_mut().status_state.set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_mon_status_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-        ) {
-            context.target_mut().status_state.set_duration(duration);
-        }
+    if let Some(duration) = core_battle_effects::run_mon_status_event_expecting_u8(
+        context,
+        fxlang::BattleEvent::Duration,
+    ) {
+        context.target_mut().status_state.set_duration(duration);
     }
 
     if !core_battle_effects::run_mon_status_event_expecting_bool(
@@ -2940,11 +2939,11 @@ pub fn try_add_volatile(
         .volatiles
         .insert(volatile.clone(), effect_state);
 
-    if let Some(condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &volatile_effect_handle)?
-            .fxlang_condition()
-    {
-        if let Some(duration) = condition.duration {
+    if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
+        context.as_battle_context_mut(),
+        &volatile_effect_handle,
+    )? {
+        if let Some(duration) = condition.condition().duration {
             context
                 .target_mut()
                 .volatiles
@@ -2952,19 +2951,19 @@ pub fn try_add_volatile(
                 .wrap_expectation("expected volatile state to exist")?
                 .set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_mon_volatile_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-            &volatile,
-        ) {
-            context
-                .target_mut()
-                .volatiles
-                .get_mut(&volatile)
-                .wrap_expectation("expected volatile state to exist")?
-                .set_duration(duration);
-        }
+    if let Some(duration) = core_battle_effects::run_mon_volatile_event_expecting_u8(
+        context,
+        fxlang::BattleEvent::Duration,
+        &volatile,
+    ) {
+        context
+            .target_mut()
+            .volatiles
+            .get_mut(&volatile)
+            .wrap_expectation("expected volatile state to exist")?
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_mon_volatile_event_expecting_bool(
@@ -3132,11 +3131,11 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         .conditions
         .insert(condition.clone(), effect_state);
 
-    if let Some(side_condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &side_condition_handle)?
-            .fxlang_condition()
-    {
-        if let Some(duration) = side_condition.duration {
+    if let Some(side_condition) = CoreBattle::get_parsed_effect_by_handle(
+        context.as_battle_context_mut(),
+        &side_condition_handle,
+    )? {
+        if let Some(duration) = side_condition.condition().duration {
             context
                 .side_mut()
                 .conditions
@@ -3144,19 +3143,19 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
                 .wrap_expectation("expected side condition state to exist")?
                 .set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_side_condition_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-            &condition,
-        ) {
-            context
-                .side_mut()
-                .conditions
-                .get_mut(&condition)
-                .wrap_expectation("expected side condition state to exist")?
-                .set_duration(duration);
-        }
+    if let Some(duration) = core_battle_effects::run_side_condition_event_expecting_u8(
+        context,
+        fxlang::BattleEvent::Duration,
+        &condition,
+    ) {
+        context
+            .side_mut()
+            .conditions
+            .get_mut(&condition)
+            .wrap_expectation("expected side condition state to exist")?
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_side_condition_event_expecting_bool(
@@ -3583,27 +3582,25 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
     )?;
 
     if let Some(weather_condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
-            .fxlang_condition()
+        CoreBattle::get_parsed_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
     {
-        if let Some(duration) = weather_condition.duration {
+        if let Some(duration) = weather_condition.condition().duration {
             context
                 .battle_mut()
                 .field
                 .weather_state
                 .set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_weather_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-        ) {
-            context
-                .battle_mut()
-                .field
-                .weather_state
-                .set_duration(duration);
-        }
+    if let Some(duration) =
+        core_battle_effects::run_weather_event_expecting_u8(context, fxlang::BattleEvent::Duration)
+    {
+        context
+            .battle_mut()
+            .field
+            .weather_state
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_weather_event_expecting_bool(
@@ -3710,27 +3707,25 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
     )?;
 
     if let Some(terrain_condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &terrain_handle)?
-            .fxlang_condition()
+        CoreBattle::get_parsed_effect_by_handle(context.as_battle_context_mut(), &terrain_handle)?
     {
-        if let Some(duration) = terrain_condition.duration {
+        if let Some(duration) = terrain_condition.condition().duration {
             context
                 .battle_mut()
                 .field
                 .terrain_state
                 .set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_terrain_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-        ) {
-            context
-                .battle_mut()
-                .field
-                .terrain_state
-                .set_duration(duration);
-        }
+    if let Some(duration) =
+        core_battle_effects::run_terrain_event_expecting_u8(context, fxlang::BattleEvent::Duration)
+    {
+        context
+            .battle_mut()
+            .field
+            .terrain_state
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_terrain_event_expecting_bool(
@@ -3829,11 +3824,11 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         .pseudo_weathers
         .insert(pseudo_weather.clone(), effect_state);
 
-    if let Some(pseudo_weather_condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &pseudo_weather_handle)?
-            .fxlang_condition()
-    {
-        if let Some(duration) = pseudo_weather_condition.duration {
+    if let Some(pseudo_weather_condition) = CoreBattle::get_parsed_effect_by_handle(
+        context.as_battle_context_mut(),
+        &pseudo_weather_handle,
+    )? {
+        if let Some(duration) = pseudo_weather_condition.condition().duration {
             context
                 .battle_mut()
                 .field
@@ -3842,20 +3837,20 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
                 .wrap_expectation("expected pseudo weather state to exist")?
                 .set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_pseudo_weather_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-            &pseudo_weather,
-        ) {
-            context
-                .battle_mut()
-                .field
-                .pseudo_weathers
-                .get_mut(&pseudo_weather)
-                .wrap_expectation("expected pseudo weather state to exist")?
-                .set_duration(duration);
-        }
+    if let Some(duration) = core_battle_effects::run_pseudo_weather_event_expecting_u8(
+        context,
+        fxlang::BattleEvent::Duration,
+        &pseudo_weather,
+    ) {
+        context
+            .battle_mut()
+            .field
+            .pseudo_weathers
+            .get_mut(&pseudo_weather)
+            .wrap_expectation("expected pseudo weather state to exist")?
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_pseudo_weather_event_expecting_bool(
@@ -4152,11 +4147,11 @@ pub fn add_slot_condition(
         .or_default()
         .insert(condition.clone(), effect_state);
 
-    if let Some(slot_condition) =
-        CoreBattle::get_effect_by_handle(context.as_battle_context_mut(), &slot_condition_handle)?
-            .fxlang_condition()
-    {
-        if let Some(duration) = slot_condition.duration {
+    if let Some(slot_condition) = CoreBattle::get_parsed_effect_by_handle(
+        context.as_battle_context_mut(),
+        &slot_condition_handle,
+    )? {
+        if let Some(duration) = slot_condition.condition().duration {
             context
                 .side_mut()
                 .slot_conditions
@@ -4166,22 +4161,22 @@ pub fn add_slot_condition(
                 .wrap_expectation("expected slot condition state to exist")?
                 .set_duration(duration);
         }
+    }
 
-        if let Some(duration) = core_battle_effects::run_slot_condition_event_expecting_u8(
-            context,
-            fxlang::BattleEvent::Duration,
-            slot,
-            &condition,
-        ) {
-            context
-                .side_mut()
-                .slot_conditions
-                .entry(slot)
-                .or_default()
-                .get_mut(&condition)
-                .wrap_expectation("expected side condition state to exist")?
-                .set_duration(duration);
-        }
+    if let Some(duration) = core_battle_effects::run_slot_condition_event_expecting_u8(
+        context,
+        fxlang::BattleEvent::Duration,
+        slot,
+        &condition,
+    ) {
+        context
+            .side_mut()
+            .slot_conditions
+            .entry(slot)
+            .or_default()
+            .get_mut(&condition)
+            .wrap_expectation("expected side condition state to exist")?
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_slot_condition_event_expecting_bool(

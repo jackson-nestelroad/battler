@@ -105,6 +105,7 @@ fn leppa_berry_restores_move_with_zero_pp() {
             "damage|mon:Blissey,player-2,1|health:85/100",
             "itemend|mon:Smeargle,player-1,1|item:Leppa Berry|eat",
             "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry",
+            "unboost|mon:Smeargle,player-1,1|stat:spa|by:0",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -170,6 +171,7 @@ fn leppa_berry_restores_pp_when_used_from_bag() {
             "split|side:1",
             "damage|mon:Blissey,player-2,1|health:305/315",
             "damage|mon:Blissey,player-2,1|health:97/100",
+            "unboost|mon:Smeargle,player-1,1|stat:spa|by:2",
             "residual",
             "turn|turn:4",
             ["time"],

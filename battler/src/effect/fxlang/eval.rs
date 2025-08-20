@@ -59,13 +59,13 @@ use crate::{
             EffectStateConnector,
             MaybeReferenceValue,
             MaybeReferenceValueForOperation,
-            ParsedProgram,
             ParsedProgramBlock,
             Value,
             ValueRef,
             ValueRefMut,
             ValueRefToStoredValue,
             ValueType,
+            parsed_effect::ParsedCallback,
             run_function,
             tree,
         },
@@ -1805,13 +1805,13 @@ impl Evaluator {
         &mut self,
         context: &mut EvaluationContext,
         input: VariableInput,
-        program: &ParsedProgram,
+        callback: &ParsedCallback,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
         self.initialize_vars(context, input, effect_state_connector)?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
-            .evaluate_program_block(context, &program.block, &root_state)
+            .evaluate_program_block(context, &callback.program.block, &root_state)
             .wrap_error_with_format(format_args!("error on statement {}", self.statement))?
         {
             ProgramStatementEvalResult::ReturnStatement(value) => value,

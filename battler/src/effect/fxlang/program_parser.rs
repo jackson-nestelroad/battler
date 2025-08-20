@@ -12,7 +12,7 @@ use crate::{
     },
 };
 /// A parsed program block, which should be executed as a unit.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ParsedProgramBlock {
     Leaf(tree::Statement),
     Branch(Vec<ParsedProgramBlock>),
@@ -32,7 +32,7 @@ impl ParsedProgramBlock {
 }
 
 /// A parsed version of [`Program`], which can be evaluated in the context of an ongoing battle.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParsedProgram {
     pub block: ParsedProgramBlock,
 }

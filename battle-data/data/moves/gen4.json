@@ -1281,14 +1281,7 @@
     "target": "Normal",
     "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome", "Protect"],
     "effect": {
-      "callbacks": {
-        "on_try_immunity": [
-          "use_callback_on_different_effect: func_call(get_move: trick)"
-        ],
-        "on_hit": [
-          "use_callback_on_different_effect: func_call(get_move: trick)"
-        ]
-      }
+      "delegate": "move:trick"
     }
   },
   "gigaimpact": {

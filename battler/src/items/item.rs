@@ -12,7 +12,7 @@ pub struct Item {
     id: Id,
     pub data: ItemData,
     pub effect: fxlang::Effect,
-    pub condition: fxlang::Condition,
+    pub condition: fxlang::Effect,
 }
 
 impl Item {

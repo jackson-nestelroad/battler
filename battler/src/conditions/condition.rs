@@ -11,11 +11,11 @@ use crate::effect::fxlang;
 pub struct Condition {
     id: Id,
     pub data: ConditionData,
-    pub condition: fxlang::Condition,
+    pub condition: fxlang::Effect,
 }
 
 impl Condition {
-    /// Creates a new condtion.
+    /// Creates a new condition.
     pub fn new(id: Id, data: ConditionData) -> Self {
         let condition = data.condition.clone().try_into().unwrap_or_default();
         Self {

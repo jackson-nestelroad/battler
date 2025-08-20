@@ -12,7 +12,7 @@ pub struct Ability {
     id: Id,
     pub data: AbilityData,
     pub effect: fxlang::Effect,
-    pub condition: fxlang::Condition,
+    pub condition: fxlang::Effect,
 }
 
 impl Ability {

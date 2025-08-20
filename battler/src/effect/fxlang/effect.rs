@@ -1981,53 +1981,57 @@ impl Callbacks {
     }
 }
 
+/// Attributes for an [`Effect`] that are meaningful when attaching to some part of a battle.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ConditionAttributes {
+    /// The static duration of the effect.
+    ///
+    /// Can be overwritten by the [`on_duration`][`Callbacks::on_duration`] callback.
+    pub duration: Option<u8>,
+
+    /// Whether or not the effect can be copied to another Mon.
+    ///
+    /// If true, moves like "Baton Pass" will not copy this effect. `false` by default.
+    #[serde(default)]
+    pub no_copy: bool,
+}
+
+/// Attributes for an [`Effect`].
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct EffectAttributes {
+    /// Effect to delegate to.
+    ///
+    /// Format is an effect's fxlang ID: `${type}:${id}`.
+    ///
+    /// Callbacks from the delegate effect are imported. Any callback on this effect overwrites
+    /// imported callbacks.
+    pub delegate: Option<String>,
+
+    /// Attributes for an effect that attaches to some part of a battle.
+    #[serde(flatten)]
+    pub condition: ConditionAttributes,
+}
+
 /// An effect, whose callbacks are triggered in the context of an ongoing battle.
 ///
 /// When an effect is active, its event callbacks are triggered throughout the course of a battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Effect {
     /// Event callbacks for the effect.
+    #[serde(default)]
     pub callbacks: Callbacks,
 
     /// Local data for the effects.
     #[serde(default)]
     pub local_data: LocalData,
+
+    #[serde(flatten)]
+    pub attributes: EffectAttributes,
 }
 
 impl TryFrom<serde_json::Value> for Effect {
     type Error = Error;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         serde_json::from_value(value).wrap_error_with_message("invalid fxlang effect")
-    }
-}
-
-/// A condition enabled by an effect.
-///
-/// While an effect has its own set of callbacks, an effect can also apply a condition to some
-/// entity, which will repeatedly apply its callbacks for the specified duration.
-///
-/// Note that an effect's condition can outlive the effect itself.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct Condition {
-    /// The static duration of the condition.
-    ///
-    /// Can be overwritten by the [`on_duration`][`Callbacks::on_duration`] callback.
-    pub duration: Option<u8>,
-
-    /// Whether or not the condition can be copied to another Mon.
-    ///
-    /// If true, moves like "Baton Pass" will not copy this condition. `false` by default.
-    #[serde(default)]
-    pub no_copy: bool,
-
-    /// The effect of the condition.
-    #[serde(flatten)]
-    pub effect: Effect,
-}
-
-impl TryFrom<serde_json::Value> for Condition {
-    type Error = Error;
-    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        serde_json::from_value(value).wrap_error_with_message("invalid fxlang condition")
     }
 }

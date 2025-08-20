@@ -26,7 +26,8 @@ fn miltank() -> Result<TeamData> {
                     "ability": "No Ability",
                     "moves": [
                         "Rollout",
-                        "Defense Curl"
+                        "Defense Curl",
+                        "Ice Ball"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -256,6 +257,128 @@ fn rollout_doubles_power_with_defense_curl() {
             "damage|mon:Blissey,player-2,1|health:0",
             "faint|mon:Blissey,player-2,1",
             "residual"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn ice_ball_doubles_power_for_consecutive_hits() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 12345, miltank().unwrap(), blissey().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:574/620",
+            "damage|mon:Blissey,player-2,1|health:93/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:483/620",
+            "damage|mon:Blissey,player-2,1|health:78/100",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:302/620",
+            "damage|mon:Blissey,player-2,1|health:49/100",
+            "residual",
+            "turn|turn:4",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:0",
+            "damage|mon:Blissey,player-2,1|health:0",
+            "faint|mon:Blissey,player-2,1",
+            "residual",
+            ["time"],
+            "split|side:1",
+            ["switch", "player-2", "Blissey"],
+            ["switch", "player-2", "Blissey"],
+            "turn|turn:5",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:0",
+            "damage|mon:Blissey,player-2,1|health:0",
+            "faint|mon:Blissey,player-2,1",
+            "residual",
+            ["time"],
+            "split|side:1",
+            ["switch", "player-2", "Blissey"],
+            ["switch", "player-2", "Blissey"],
+            "turn|turn:6",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:574/620",
+            "damage|mon:Blissey,player-2,1|health:93/100",
+            "residual",
+            "turn|turn:7"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn ice_ball_power_resets_if_fails() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, miltank().unwrap(), blissey().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values([(3, 99)]);
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:574/620",
+            "damage|mon:Blissey,player-2,1|health:93/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|noanim",
+            "miss|mon:Blissey,player-2,1",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Miltank,player-1,1|name:Ice Ball|target:Blissey,player-2,1",
+            "split|side:1",
+            "damage|mon:Blissey,player-2,1|health:528/620",
+            "damage|mon:Blissey,player-2,1|health:86/100",
+            "residual",
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

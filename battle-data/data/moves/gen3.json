@@ -1326,37 +1326,10 @@
       "Protect"
     ],
     "effect": {
-      "callbacks": {
-        "on_move_base_power": [
-          "$base_power = $move.base_power",
-          "$rollout_state = func_call(volatile_effect_state: $source $this.id)",
-          "if $rollout_state.is_defined:",
-          [
-            "$base_power = $base_power * 2 ^ $rollout_state.hit_count",
-            "# Update the hit count for the next use of the move.",
-            "$rollout_state.hit_count = $rollout_state.hit_count + 1",
-            "# If we are not on the last hit, update the duration to keep us locked into this move.",
-            "# The reason for manually updating the duration is that if the next use of the move is interrupted, the move will end by default.",
-            "if $rollout_state.hit_count < 5:",
-            ["$rollout_state.duration = 2"]
-          ],
-          "if func_call(has_volatile: $source defensecurl):",
-          ["$base_power = $base_power * 2"],
-          "return $base_power"
-        ],
-        "on_use_move": ["add_volatile: $user $this.id"]
-      }
+      "delegate": "move:rollout"
     },
     "condition": {
-      "duration": 1,
-      "callbacks": {
-        "on_start": ["$effect_state.hit_count = 0"],
-        "on_residual": [
-          "if $target.last_move.is_defined and $target.last_move.id == struggle:",
-          ["remove_volatile: $target $this.id"]
-        ],
-        "on_lock_move": ["return $this.id"]
-      }
+      "delegate": "movecondition:rollout"
     }
   },
   "needlearm": {

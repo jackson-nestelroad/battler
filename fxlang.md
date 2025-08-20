@@ -293,12 +293,7 @@ Below is another example for the move "Haze":
 
 Over the course of a battle, the callbacks for an effect may need to be evaluated numerous times. For example, many conditions apply themselves for multiple turns.
 
-It would be inefficient to parse a program every time one of its event callbacks must be executed. Instead, all the event callbacks for an effect are parsed at the same time at the effect's first appearance in the battle. The collection of parsed callbacks are then cached in the battle. The effect cache is implemented as an LRU (least-recently-used) cache that discards effects that were least-recently used when the cache size exceeds some threshold. Today, the maximum number of parsed callbacks in memory at a time per battle is `6 * 4 * 2 + 16`.
-
-- 6 Mons per team.
-- 4 moves per Mon.
-- 2 teams per battle.
-- Buffer of 16.
+It would be inefficient to parse a program every time one of its event callbacks must be executed. Instead, all the event callbacks for an effect are parsed at the same time at the effect's first appearance in the battle. The collection of parsed callbacks are then cached in the battle. The effect cache is implemented as an LRU (least-recently-used) cache that discards effects that were least-recently used when the cache size exceeds some threshold.
 
 ### Evaluation
 

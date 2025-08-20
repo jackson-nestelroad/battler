@@ -15,8 +15,9 @@ pub use effect::{
     CallbackFlag,
     CallbackInput,
     Callbacks,
-    Condition,
+    ConditionAttributes,
     Effect,
+    EffectAttributes,
     Program,
     ProgramWithPriority,
 };
@@ -33,7 +34,7 @@ pub use eval::{
 };
 pub use functions::run_function;
 pub use local_data::LocalData;
-pub use parsed_effect::ParsedCallbacks;
+pub use parsed_effect::ParsedEffect;
 pub use program_parser::{
     ParsedProgram,
     ParsedProgramBlock,

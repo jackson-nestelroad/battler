@@ -1322,24 +1322,17 @@ fn get_speed_orderable_effect_handle_internal(
 
     let speed = callback_handle.speed(context)?;
 
-    // Ensure the effect exists.
-    let effect = match CoreBattle::get_effect_by_handle(
+    // Ensure the event callback exists. An empty callback is ignored.
+    let effect = CoreBattle::get_parsed_effect_by_handle(
         context,
         &callback_handle.applied_effect_handle.effect_handle,
-    ) {
-        Ok(effect) => effect,
-        Err(_) => return Ok(None),
-    };
-
-    // Ensure the event callback exists. An empty callback is ignored.
-    let callback = match effect.fxlang_effect() {
-        Some(effect) => {
-            let callback = effect.callbacks.event(callback_handle.event);
-            if !callback.has_program() {
-                return Ok(None);
-            }
-            callback
-        }
+    )?;
+    let callback = match effect
+        .as_ref()
+        .map(|effect| effect.event(callback_handle.event))
+        .flatten()
+    {
+        Some(callback) => callback,
         None => return Ok(None),
     };
 

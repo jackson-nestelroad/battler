@@ -6,12 +6,12 @@ use std::{
 use battler_data::Fraction;
 
 /// Bool -> "true" | "false"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct BoolLiteral(pub bool);
 
 /// Number -> ("+" | "-")? [0-9]+ ("/" [0-9]+)?
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NumberLiteral {
     Unsigned(Fraction<u64>),
     Signed(Fraction<i64>),
@@ -22,12 +22,12 @@ pub enum NumberLiteral {
 /// QuotedChar -> [^'] | "\\'"
 ///
 /// UnquotedString -> [a-zA-Z0-9_\-:]+
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct StringLiteral(pub String);
 
 /// List -> "[" Values "]"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct List(pub Values);
 
 /// Identifier -> IdentifierStart IdentifierChar*
@@ -35,29 +35,29 @@ pub struct List(pub Values);
 /// IdentifierStart -> [a-zA-Z_\-]
 ///
 /// IdentifierChar -> [a-zA-Z0-9_\-]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct Identifier(pub String);
 
 /// ValueExpr -> "expr(" Expr ")"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ValueExpr(pub Box<Expr>);
 
 /// ValueFunctionCall -> "func_call(" FunctionCall ")"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ValueFunctionCall(pub FunctionCall);
 
 /// FormattedString -> "str(" StringLiteral ("," Values)? ")"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FormattedString {
     pub template: StringLiteral,
     pub args: Values,
 }
 
 /// Var -> "$" Identifier ("." Identifier)*
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Var {
     pub name: Identifier,
     pub member_access: Vec<Identifier>,
@@ -75,7 +75,7 @@ impl Var {
 }
 
 /// Value -> "undefined" | Bool | Number | String | List | Var | ValueExpr | ValueFunctionCall
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Value {
     UndefinedLiteral,
     BoolLiteral(BoolLiteral),
@@ -91,19 +91,19 @@ pub enum Value {
 /// Values -> "" | Value (" " Value)*
 ///
 /// Delimiter may be comma or space depending on the context.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct Values(pub Vec<Value>);
 
 /// FunctionCall -> Identifier (":" Values)?
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FunctionCall {
     pub function: Identifier,
     pub args: Values,
 }
 
 /// Assignment -> Var "=" Expr
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Assignment {
     pub lhs: Var,
     pub rhs: Expr,
@@ -173,7 +173,7 @@ impl Display for Operator {
 }
 
 /// Expr -> Value | PrefixUnaryExpr | BinaryExpr
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     Value(Value),
     PrefixUnaryExpr(PrefixUnaryExpr),
@@ -181,55 +181,55 @@ pub enum Expr {
 }
 
 /// PrefixUnaryExpr -> Operator Expr
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PrefixUnaryExpr {
     pub ops: Vec<Operator>,
     pub expr: Box<Expr>,
 }
 
 /// BinaryExprRhs -> Operator Expr
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BinaryExprRhs {
     pub op: Operator,
     pub expr: Box<Expr>,
 }
 
 /// BinaryExpr -> Expr (BinaryExprRhs)+
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BinaryExpr {
     pub lhs: Box<Expr>,
     pub rhs: Vec<BinaryExprRhs>,
 }
 
 /// IfStatement -> "if" Expr ":"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct IfStatement(pub Expr);
 
 /// IfStatement -> "else" (IfStatement | ":")
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ElseIfStatement(pub Option<IfStatement>);
 
 /// ForEachStatement -> "foreach" Var "in" Value ":"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ForEachStatement {
     pub var: Var,
     pub range: Value,
 }
 
 /// ReturnStatement -> "return" (Expr)
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ReturnStatement(pub Option<Expr>);
 
 /// ContinueStatement -> "continue"
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ContinueStatement;
 
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
 /// ForEachStatement | ReturnStatement
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Statement {
     Empty,
     FunctionCall(FunctionCall),
