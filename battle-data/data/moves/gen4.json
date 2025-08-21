@@ -1904,7 +1904,10 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "delegate": "move:pluck"
+    }
   },
   "chargebeam": {
     "name": "Charge Beam",
