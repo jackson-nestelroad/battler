@@ -564,6 +564,10 @@
           "return !func_call(has_ability: $target stickyhold)"
         ],
         "on_try_hit": [
+          "# No items.",
+          "if !$source.item and !$target.item:",
+          ["return false"],
+          "# Check that we can take and give items.",
           "if $target.item.is_defined:",
           [
             "$target_item = func_call(take_item: $target dry_run)",
@@ -578,8 +582,6 @@
           ]
         ],
         "on_hit": [
-          "if !$source.item and !$target.item:",
-          ["return false"],
           "$target_item = func_call(take_item: $target)",
           "$source_item = func_call(take_item: $source)",
           "if !$target_item and !$source_item:",

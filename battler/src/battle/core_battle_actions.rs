@@ -4370,7 +4370,9 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
         return Ok(false);
     }
 
-    end_item_internal(context, EndItemType::End, EndItemLog::TrueSilent)?;
+    if !dry_run {
+        end_item_internal(context, EndItemType::End, EndItemLog::TrueSilent)?;
+    }
 
     let item_id = context.battle().dex.items.get_by_id(item)?.id().clone();
 
