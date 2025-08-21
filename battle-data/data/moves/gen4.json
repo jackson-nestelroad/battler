@@ -1824,7 +1824,7 @@
           "$move.used_by = $effect_state.source",
           "$type_modifier = func_call(type_effectiveness: $move $mon)",
           "$type_modifier = func_call(clamp_number: $type_modifier -6 6)",
-          "damage: $mon expr($mon.max_hp * (+2 ^ $type_modifier) / 8)"
+          "damage: $mon expr($mon.max_hp * (2 ^ $type_modifier) / 8)"
         ],
         "on_side_end": ["log_side_end"]
       }
