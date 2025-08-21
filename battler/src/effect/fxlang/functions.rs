@@ -1335,7 +1335,6 @@ fn item_has_flag(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing item")?
         .item_id()
         .wrap_error_with_message("invalid item")?;
-    let item_id = Id::from(item_id);
     let item_flag = context
         .pop_front()
         .wrap_expectation("missing item flag")?
@@ -1362,7 +1361,6 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing ability")?
         .ability_id()
         .wrap_error_with_message("invalid ability")?;
-    let ability_id = Id::from(ability_id);
     let ability_flag = context
         .pop_front()
         .wrap_expectation("missing ability flag")?
