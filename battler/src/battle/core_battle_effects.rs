@@ -786,9 +786,9 @@ fn find_callbacks_on_mon(
         ));
     }
     for volatile in context.mon().volatiles.clone().keys() {
-        let volatile_effect_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
+        let volatile_status_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
         callbacks.push(CallbackHandle::new(
-            volatile_effect_handle.clone(),
+            volatile_status_handle.clone(),
             event,
             AppliedEffectLocation::MonVolatile(mon),
         ));

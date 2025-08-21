@@ -2247,7 +2247,7 @@ fn apply_move_effects(
                 }
 
                 if let Some(volatile_status) = hit_effect.volatile_status {
-                    let added_volatile = try_add_volatile(
+                    let added_volatile = add_volatile(
                         &mut target_context.applying_effect_context()?,
                         &Id::from(volatile_status),
                         !is_secondary && !is_self,
@@ -2880,8 +2880,8 @@ pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Res
     Ok(try_set_status(context, None, false)?.success())
 }
 
-/// Tries to add the volatile effect to a Mon.
-pub fn try_add_volatile(
+/// Add the volatile status to a Mon.
+pub fn add_volatile(
     context: &mut ApplyingEffectContext,
     volatile: &Id,
     is_primary_move_effect: bool,
@@ -2891,11 +2891,11 @@ pub fn try_add_volatile(
         return Ok(false);
     }
 
-    let volatile_effect_handle = context
+    let volatile_status_handle = context
         .battle_mut()
         .get_effect_handle_by_id(volatile)?
         .clone();
-    let volatile = volatile_effect_handle
+    let volatile = volatile_status_handle
         .try_id()
         .wrap_expectation("volatile must have an id")?
         .clone();
@@ -2910,7 +2910,7 @@ pub fn try_add_volatile(
     }
 
     if check_immunity(
-        &mut context.forward_applying_effect_context(volatile_effect_handle.clone())?,
+        &mut context.forward_applying_effect_context(volatile_status_handle.clone())?,
     )? {
         if is_primary_move_effect {
             core_battle_logs::immune(&mut context.target_context()?, None)?;
@@ -2920,7 +2920,7 @@ pub fn try_add_volatile(
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::AddVolatile,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(volatile_effect_handle.clone())]),
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(volatile_status_handle.clone())]),
     ) {
         return Ok(false);
     }
@@ -2941,7 +2941,7 @@ pub fn try_add_volatile(
 
     if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
         context.as_battle_context_mut(),
-        &volatile_effect_handle,
+        &volatile_status_handle,
     )? {
         if let Some(duration) = condition.condition().duration {
             context
@@ -2983,7 +2983,7 @@ pub fn try_add_volatile(
             context.as_battle_context_mut(),
             link_to,
             &AppliedEffectHandle::new(
-                volatile_effect_handle,
+                volatile_status_handle,
                 AppliedEffectLocation::MonVolatile(target_handle),
             ),
         )?;
@@ -3010,11 +3010,11 @@ pub fn remove_volatile(
         return Ok(false);
     }
 
-    let volatile_effect_handle = context
+    let volatile_status_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&volatile)?
         .clone();
-    let volatile = volatile_effect_handle
+    let volatile = volatile_status_handle
         .try_id()
         .wrap_expectation("volatile must have an id")?
         .clone();
@@ -3037,7 +3037,7 @@ pub fn remove_volatile(
     let mon_handle = context.target_handle();
     LinkedEffectsManager::remove(
         context.as_effect_context_mut(),
-        volatile_effect_handle,
+        volatile_status_handle,
         AppliedEffectLocation::MonVolatile(mon_handle),
     )?;
 

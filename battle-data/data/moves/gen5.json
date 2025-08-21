@@ -413,7 +413,7 @@
           "if func_call(has_volatile: $source $this.id):",
           [
             "# Ensure we are targeting the original target.",
-            "$immobilizing_effect_state = func_call(volatile_effect_state: $source immobilizingmove)",
+            "$immobilizing_effect_state = func_call(volatile_status_state: $source immobilizingmove)",
             "if !$immobilizing_effect_state or $target != $immobilizing_effect_state.source:",
             ["return false"],
             "remove_volatile: $source immobilizingmove"

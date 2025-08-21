@@ -912,12 +912,12 @@
       "callbacks": {
         "on_before_turn": ["add_volatile: $mon $this.id"],
         "on_try_use_move": [
-          "$effect_state = func_call(volatile_effect_state: $user $this.id)",
+          "$effect_state = func_call(volatile_status_state: $user $this.id)",
           "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
           ["return false"]
         ],
         "on_move_damage": [
-          "$effect_state = func_call(volatile_effect_state: $source $this.id)",
+          "$effect_state = func_call(volatile_status_state: $source $this.id)",
           "if !$effect_state:",
           ["return 0"],
           "return $effect_state.damage"

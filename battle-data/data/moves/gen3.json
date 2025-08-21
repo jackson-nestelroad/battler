@@ -80,7 +80,7 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "$stockpile_state = func_call(volatile_effect_state: $user $this.id)",
+          "$stockpile_state = func_call(volatile_status_state: $user $this.id)",
           "if $stockpile_state.is_defined and $stockpile_state.layers >= 3:",
           ["return false"]
         ]
@@ -141,7 +141,7 @@
       "callbacks": {
         "on_try_use_move": ["return func_call(has_volatile: $user stockpile)"],
         "on_move_base_power": [
-          "$stockpile_state = func_call(volatile_effect_state: $source stockpile)",
+          "$stockpile_state = func_call(volatile_status_state: $source stockpile)",
           "if !$stockpile_state:",
           ["return 0"],
           "return $stockpile_state.layers * 100"
@@ -162,7 +162,7 @@
       "callbacks": {
         "on_try_use_move": ["return func_call(has_volatile: $user stockpile)"],
         "on_hit": [
-          "$stockpile_state = func_call(volatile_effect_state: $source stockpile)",
+          "$stockpile_state = func_call(volatile_status_state: $source stockpile)",
           "if !$stockpile_state:",
           ["return false"],
           "if $stockpile_state.layers <= 1:",
@@ -310,7 +310,7 @@
       "callbacks": {
         "on_priority_charge_move": ["add_volatile: $mon $this.id"],
         "on_before_move": [
-          "$volatile_state = func_call(volatile_effect_state: $user $this.id)",
+          "$volatile_state = func_call(volatile_status_state: $user $this.id)",
           "if !$volatile_state or $volatile_state.lost_focus:",
           ["log_cant", "return false"]
         ]

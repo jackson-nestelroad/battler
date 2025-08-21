@@ -268,7 +268,7 @@ pub fn run_function(
         "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
-        "volatile_effect_state" => volatile_effect_state(context),
+        "volatile_status_state" => volatile_status_state(context),
         "will_move_this_turn" => will_move_this_turn(context).map(|val| Some(val)),
         _ => Err(general_error(format!(
             "undefined function: {function_name}"
@@ -1417,7 +1417,7 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value> {
     let volatile = Id::from(volatile);
     let link_to = context.link_handle()?;
 
-    core_battle_actions::try_add_volatile(
+    core_battle_actions::add_volatile(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &volatile,
         false,
@@ -1953,7 +1953,7 @@ fn disable_move(mut context: FunctionContext) -> Result<()> {
     )
 }
 
-fn volatile_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
+fn volatile_status_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
