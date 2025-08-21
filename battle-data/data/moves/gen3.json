@@ -1122,7 +1122,7 @@
       "Protect"
     ],
     "effect": {
-      "delegate": "condition:chargemovebase"
+      "delegates": ["condition:chargemovebase"]
     },
     "condition": {
       "duration": 2,
@@ -1334,10 +1334,10 @@
       "Protect"
     ],
     "effect": {
-      "delegate": "move:rollout"
+      "delegates": ["move:rollout"]
     },
     "condition": {
-      "delegate": "movecondition:rollout"
+      "delegates": ["movecondition:rollout"]
     }
   },
   "needlearm": {
@@ -1928,10 +1928,10 @@
       }
     ],
     "effect": {
-      "delegate": "condition:chargemovebase"
+      "delegates": ["condition:chargemovebase"]
     },
     "condition": {
-      "delegate": "movecondition:fly"
+      "delegates": ["movecondition:fly"]
     }
   },
   "mudshot": {

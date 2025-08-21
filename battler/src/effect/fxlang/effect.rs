@@ -2016,16 +2016,28 @@ pub struct ConditionAttributes {
     pub no_copy: bool,
 }
 
+impl ConditionAttributes {
+    /// Extends the condition attributes with some other attribute object, overriding data if
+    /// applicable.
+    pub fn extend(&mut self, other: Self) {
+        if let Some(duration) = other.duration {
+            self.duration = Some(duration);
+        }
+        self.no_copy = other.no_copy || self.no_copy;
+    }
+}
+
 /// Attributes for an [`Effect`].
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct EffectAttributes {
-    /// Effect to delegate to.
+    /// Effects to delegate to.
     ///
     /// Format is an effect's fxlang ID: `${type}:${id}`.
     ///
-    /// Callbacks from the delegate effect are imported. Any callback on this effect overwrites
+    /// Callbacks from delegate effects are imported. Any callback on this effect overwrites
     /// imported callbacks.
-    pub delegate: Option<String>,
+    #[serde(default)]
+    pub delegates: Vec<String>,
 
     /// Attributes for an effect that attaches to some part of a battle.
     #[serde(flatten)]

@@ -696,7 +696,7 @@
       "volatile_status": "protect"
     },
     "effect": {
-      "delegate": "move:protect"
+      "delegates": ["move:protect"]
     }
   },
   "bonerush": {
@@ -1563,7 +1563,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "effect": {
-      "delegate": "move:morningsun"
+      "delegates": ["move:morningsun"]
     }
   },
   "moonlight": {
@@ -1575,7 +1575,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "effect": {
-      "delegate": "move:morningsun"
+      "delegates": ["move:morningsun"]
     }
   },
   "hiddenpower": {

@@ -126,22 +126,22 @@ impl EffectManager {
                     &fxlang_effect.callbacks,
                     fxlang_effect.attributes.condition.clone(),
                 )?;
-                if let Some(delegate) = &fxlang_effect.attributes.delegate {
-                    // If we are delegating to some effect, look it up and merge our callbacks in
-                    // after.
+                let mut combined_effect = ParsedEffect::default();
+                // If we are delegating to other effects, look them up and merge our callbacks in at
+                // the end.
+                for delegate in &fxlang_effect.attributes.delegates {
                     let delegate_effect_handle = EffectHandle::from_fxlang_id(delegate);
 
                     // NOTE: We don't protect against circular dependencies here.
-                    let mut delegate_effect =
-                        Self::parsed_effect(context, &delegate_effect_handle)?
-                            .map(|effect| effect.as_ref().clone())
-                            .unwrap_or_default();
+                    let delegate_effect = Self::parsed_effect(context, &delegate_effect_handle)?
+                        .map(|effect| effect.as_ref().clone())
+                        .unwrap_or_default();
 
-                    delegate_effect.extend(parsed_effect);
-                    delegate_effect
-                } else {
-                    parsed_effect
+                    combined_effect.extend(delegate_effect);
                 }
+
+                combined_effect.extend(parsed_effect);
+                combined_effect
             }
             None => ParsedEffect::default(),
         };

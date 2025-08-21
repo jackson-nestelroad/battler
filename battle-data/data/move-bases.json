@@ -1,4 +1,13 @@
 {
+  "breakprotectmovebase": {
+    "name": "Break Protect Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    }
+  },
   "chargemovebase": {
     "name": "Charge Move Base",
     "condition_type": "Built-in",

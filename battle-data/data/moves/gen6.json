@@ -82,9 +82,7 @@
       "NoSleepTalk"
     ],
     "effect": {
-      "callbacks": {
-        "on_try_hit": ["add_volatile: $target breakprotect"]
-      }
+      "delegates": ["condition:breakprotectmovebase"]
     }
   },
   "trickortreat": {
@@ -421,9 +419,7 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome"],
     "effect": {
-      "callbacks": {
-        "on_try_hit": ["add_volatile: $target breakprotect"]
-      }
+      "delegates": ["condition:breakprotectmovebase"]
     }
   },
   "watershuriken": {
@@ -754,9 +750,7 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "NoSketch"],
     "effect": {
-      "callbacks": {
-        "on_try_hit": ["add_volatile: $target breakprotect"]
-      }
+      "delegates": ["condition:breakprotectmovebase"]
     }
   }
 }

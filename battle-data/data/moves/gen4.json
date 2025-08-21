@@ -232,9 +232,7 @@
     "target": "Normal",
     "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome"],
     "effect": {
-      "callbacks": {
-        "on_try_hit": ["add_volatile: $target breakprotect"]
-      }
+      "delegates": ["condition:breakprotectmovebase"]
     }
   },
   "pluck": {
@@ -1282,7 +1280,7 @@
     "target": "Normal",
     "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome", "Protect"],
     "effect": {
-      "delegate": "move:trick"
+      "delegates": ["move:trick"]
     }
   },
   "gigaimpact": {
@@ -1841,7 +1839,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
-      "delegate": "move:lowkick"
+      "delegates": ["move:lowkick"]
     }
   },
   "chatter": {
@@ -1907,7 +1905,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
-      "delegate": "move:pluck"
+      "delegates": ["move:pluck"]
     }
   },
   "chargebeam": {
@@ -2086,7 +2084,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
-      "delegate": "move:wringout"
+      "delegates": ["move:wringout"]
     }
   },
   "magmastorm": {
@@ -2185,10 +2183,10 @@
       "NoSleepTalk"
     ],
     "effect": {
-      "delegate": "condition:chargemovebase",
-      "callbacks": {
-        "on_try_hit": ["add_volatile: $target breakprotect"]
-      }
+      "delegates": [
+        "condition:chargemovebase",
+        "condition:breakprotectmovebase"
+      ]
     },
     "condition": {
       "duration": 2,

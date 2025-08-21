@@ -251,6 +251,7 @@ impl ParsedEffect {
     /// Extends the callbacks for this effect.
     pub fn extend(&mut self, other: Self) {
         self.callbacks.extend(other.callbacks);
+        self.condition.extend(other.condition);
     }
 
     /// Returns the [`ParsedCallback`] for the given event.

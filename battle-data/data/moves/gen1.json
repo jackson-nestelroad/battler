@@ -136,7 +136,7 @@
     "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "crit_ratio": 2,
     "effect": {
-      "delegate": "condition:chargemovebase"
+      "delegates": ["condition:chargemovebase"]
     }
   },
   "swordsdance": {
@@ -217,7 +217,7 @@
       "Protect"
     ],
     "effect": {
-      "delegate": "condition:chargemovebase"
+      "delegates": ["condition:chargemovebase"]
     },
     "condition": {
       "duration": 2,
@@ -1059,7 +1059,7 @@
     "target": "Normal",
     "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "effect": {
-      "delegate": "condition:chargemovebase",
+      "delegates": ["condition:chargemovebase"],
       "callbacks": {
         "on_charge_move": [
           "$weather = $user.effective_weather",
@@ -1255,7 +1255,7 @@
       "Protect"
     ],
     "effect": {
-      "delegate": "condition:chargemovebase"
+      "delegates": ["condition:chargemovebase"]
     },
     "condition": {
       "duration": 2,
@@ -1899,7 +1899,7 @@
       "Protect"
     ],
     "effect": {
-      "delegate": "condition:chargemovebase",
+      "delegates": ["condition:chargemovebase"],
       "callbacks": {
         "on_charge_move": ["boost: $user 'def:1'"]
       }
@@ -2065,7 +2065,7 @@
       { "chance": "30%", "target": { "volatile_status": "flinch" } }
     ],
     "effect": {
-      "delegate": "condition:chargemovebase"
+      "delegates": ["condition:chargemovebase"]
     }
   },
   "transform": {
