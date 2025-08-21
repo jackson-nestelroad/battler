@@ -145,11 +145,11 @@ pub fn run_function(
         "floor" => floor(context).map(|val| Some(val)),
         "forme_change" => forme_change(context).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context).map(|val| Some(val)),
-        "get_ability" => get_ability(context).map(|val| Some(val)),
+        "get_ability" => get_ability(context),
         "get_boost" => get_boost(context).map(|val| Some(val)),
-        "get_item" => get_item(context).map(|val| Some(val)),
-        "get_move" => get_move(context).map(|val| Some(val)),
-        "get_species" => get_species(context).map(|val| Some(val)),
+        "get_item" => get_item(context),
+        "get_move" => get_move(context),
+        "get_species" => get_species(context),
         "get_stat" => get_stat(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
         "has_item" => has_item(context).map(|val| Some(val)),
@@ -2622,40 +2622,64 @@ fn target_location_of_mon(mut context: FunctionContext) -> Result<Value> {
     ))
 }
 
-fn get_move(mut context: FunctionContext) -> Result<Value> {
+fn effect_handle_exists_or_none(
+    context: FunctionContext,
+    effect_handle: EffectHandle,
+) -> Option<Value> {
+    CoreBattle::get_effect_by_handle(
+        context.evaluation_context().battle_context(),
+        &effect_handle,
+    )
+    .is_ok()
+    .then(|| Value::Effect(effect_handle))
+}
+
+fn get_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let move_id = context
         .pop_front()
         .wrap_expectation("missing move id")?
         .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move id")?;
-    Ok(Value::Effect(EffectHandle::InactiveMove(move_id)))
+    Ok(effect_handle_exists_or_none(
+        context,
+        EffectHandle::InactiveMove(move_id),
+    ))
 }
 
-fn get_ability(mut context: FunctionContext) -> Result<Value> {
+fn get_ability(mut context: FunctionContext) -> Result<Option<Value>> {
     let ability_id = context
         .pop_front()
         .wrap_expectation("missing ability id")?
         .ability_id()
         .wrap_error_with_message("invalid ability id")?;
-    Ok(Value::Effect(EffectHandle::Ability(ability_id)))
+    Ok(effect_handle_exists_or_none(
+        context,
+        EffectHandle::Ability(ability_id),
+    ))
 }
 
-fn get_item(mut context: FunctionContext) -> Result<Value> {
+fn get_item(mut context: FunctionContext) -> Result<Option<Value>> {
     let item_id = context
         .pop_front()
         .wrap_expectation("missing item id")?
         .item_id()
         .wrap_error_with_message("invalid item id")?;
-    Ok(Value::Effect(EffectHandle::Item(item_id)))
+    Ok(effect_handle_exists_or_none(
+        context,
+        EffectHandle::Item(item_id),
+    ))
 }
 
-fn get_species(mut context: FunctionContext) -> Result<Value> {
+fn get_species(mut context: FunctionContext) -> Result<Option<Value>> {
     let species_id = context
         .pop_front()
         .wrap_expectation("missing item id")?
         .species_id()
         .wrap_error_with_message("invalid species id")?;
-    Ok(Value::Effect(EffectHandle::Species(species_id)))
+    Ok(effect_handle_exists_or_none(
+        context,
+        EffectHandle::Species(species_id),
+    ))
 }
 
 fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
