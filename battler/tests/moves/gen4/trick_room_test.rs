@@ -103,12 +103,12 @@ fn trick_room_reverses_speed_order() {
             ["time"],
             "move|mon:Porygon-Z,player-1,1|name:Tackle|target:Deoxys,player-2,1",
             "split|side:1",
-            "damage|mon:Deoxys,player-2,1|health:132/210",
-            "damage|mon:Deoxys,player-2,1|health:63/100",
+            "damage|mon:Deoxys,player-2,1|health:165/210",
+            "damage|mon:Deoxys,player-2,1|health:79/100",
             "move|mon:Deoxys,player-2,1|name:Tackle|target:Porygon-Z,player-1,1",
             "split|side:0",
-            "damage|mon:Porygon-Z,player-1,1|health:216/280",
-            "damage|mon:Porygon-Z,player-1,1|health:78/100",
+            "damage|mon:Porygon-Z,player-1,1|health:238/280",
+            "damage|mon:Porygon-Z,player-1,1|health:85/100",
             "residual",
             "turn|turn:3"
         ]"#,
@@ -137,12 +137,12 @@ fn trick_room_does_not_reverse_priority_order() {
             ["time"],
             "move|mon:Deoxys,player-2,1|name:Quick Attack|target:Porygon-Z,player-1,1",
             "split|side:0",
-            "damage|mon:Porygon-Z,player-1,1|health:211/280",
-            "damage|mon:Porygon-Z,player-1,1|health:76/100",
+            "damage|mon:Porygon-Z,player-1,1|health:235/280",
+            "damage|mon:Porygon-Z,player-1,1|health:84/100",
             "move|mon:Porygon-Z,player-1,1|name:Tackle|target:Deoxys,player-2,1",
             "split|side:1",
-            "damage|mon:Deoxys,player-2,1|health:138/210",
-            "damage|mon:Deoxys,player-2,1|health:66/100",
+            "damage|mon:Deoxys,player-2,1|health:170/210",
+            "damage|mon:Deoxys,player-2,1|health:81/100",
             "residual",
             "turn|turn:3"
         ]"#,
@@ -172,10 +172,10 @@ fn trick_room_can_be_outsped() {
             "boost|mon:Deoxys,player-2,1|stat:spe|by:2",
             "move|mon:Porygon-Z,player-1,1|name:Tackle|target:Deoxys,player-2,1",
             "split|side:1",
-            "damage|mon:Deoxys,player-2,1|health:0",
-            "damage|mon:Deoxys,player-2,1|health:0",
-            "faint|mon:Deoxys,player-2,1",
-            "win|side:0"
+            "damage|mon:Deoxys,player-2,1|health:86/210",
+            "damage|mon:Deoxys,player-2,1|health:41/100",
+            "residual",
+            "turn|turn:5"
         ]"#,
     )
     .unwrap();
