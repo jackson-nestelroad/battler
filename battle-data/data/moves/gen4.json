@@ -2084,7 +2084,10 @@
     "pp": 5,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "delegate": "move:wringout"
+    }
   },
   "magmastorm": {
     "name": "Magma Storm",
@@ -2106,7 +2109,20 @@
     "pp": 10,
     "accuracy": 50,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "NoSketch", "Protect", "Reflectable", "SleepInducing"]
+    "flags": ["Mirror", "NoSketch", "Protect", "Reflectable", "SleepInducing"],
+    "hit_effect": {
+      "status": "slp"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if $move.effect_state.reflected:",
+          ["return"],
+          "if $user.species != darkrai:",
+          ["return false"]
+        ]
+      }
+    }
   },
   "seedflare": {
     "name": "Seed Flare",
@@ -2169,8 +2185,16 @@
       "NoSleepTalk"
     ],
     "effect": {
+      "delegate": "condition:chargemovebase",
       "callbacks": {
         "on_try_hit": ["add_volatile: $target breakprotect"]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "is_semi_invulnerable": ["return true"],
+        "on_invulnerability": ["return false"]
       }
     }
   }

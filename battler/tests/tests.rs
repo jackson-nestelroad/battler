@@ -255,6 +255,7 @@ mod moves {
         mod aqua_ring_test;
         mod assurance_test;
         mod copycat_test;
+        mod dark_void_test;
         mod defog_test;
         mod feint_test;
         mod fling_test;
@@ -277,6 +278,7 @@ mod moves {
         mod psycho_shift_test;
         mod punishment_test;
         mod roost_test;
+        mod shadow_force_test;
         mod stealth_rock_test;
         mod sucker_punch_test;
         mod toxic_spikes_test;
