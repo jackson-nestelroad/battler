@@ -3108,6 +3108,7 @@ fn deduct_pp(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn restore_pp(mut context: FunctionContext) -> Result<Value> {
+    let silent = context.silent();
     let mon_handle = context
         .pop_front()
         .wrap_expectation("missing mon")?
@@ -3128,6 +3129,7 @@ fn restore_pp(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &move_id,
         pp,
+        silent,
     )
     .map(|val| Value::UFraction(val.into()))
 }

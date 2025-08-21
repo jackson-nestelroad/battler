@@ -161,8 +161,9 @@
     "condition": {
       "callbacks": {
         "on_switch_in": [
-          "if $mon.fainted or $mon.hp >= $mon.max_hp or !$mon.status:",
+          "if $mon.fainted or ($mon.hp >= $mon.max_hp and !$mon.status):",
           ["return"],
+          "log_activate: with_target",
           "heal: $mon $mon.max_hp",
           "cure_status: $mon",
           "remove_slot_condition: $mon.side $mon.position $this.id"
@@ -2043,7 +2044,38 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Dance", "Heal", "Snatch"],
-    "self_destruct": true
+    "self_destruct": "ifhit",
+    "hit_effect": {
+      "slot_condition": "lunardance"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if !func_call(can_switch: $target.player):",
+          ["return false"]
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_switch_in": [
+          "$needs_pp_restore = false",
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.pp < $move_slot.max_pp:",
+            ["$needs_pp_restore = true"]
+          ],
+          "if $mon.fainted or ($mon.hp >= $mon.max_hp and !$mon.status and !$needs_pp_restore):",
+          ["return"],
+          "log_activate: with_target",
+          "heal: $mon $mon.max_hp",
+          "cure_status: $mon",
+          "foreach $move_slot in $mon.move_slots:",
+          ["restore_pp: $mon $move_slot.id $move_slot.max_pp silent"],
+          "remove_slot_condition: $mon.side $mon.position $this.id"
+        ]
+      }
+    }
   },
   "crushgrip": {
     "name": "Crush Grip",

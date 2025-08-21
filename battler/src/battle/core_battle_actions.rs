@@ -4730,14 +4730,19 @@ pub fn deduct_pp(context: &mut ApplyingEffectContext, move_id: &Id, amount: u8) 
 }
 
 /// Restores PP to the given move.
-pub fn restore_pp(context: &mut ApplyingEffectContext, move_id: &Id, amount: u8) -> Result<u8> {
+pub fn restore_pp(
+    context: &mut ApplyingEffectContext,
+    move_id: &Id,
+    amount: u8,
+    silent: bool,
+) -> Result<u8> {
     let amount = core_battle_effects::run_event_for_applying_effect_expecting_u8(
         context,
         fxlang::BattleEvent::RestorePp,
         amount,
     );
     let delta = context.target_mut().restore_pp(move_id, amount);
-    if delta != 0 {
+    if delta != 0 && !silent {
         core_battle_logs::restore_pp(context, move_id, delta)?;
     }
     Ok(delta)

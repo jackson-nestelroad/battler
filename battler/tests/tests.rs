@@ -264,6 +264,7 @@ mod moves {
         mod healing_wish_test;
         mod judgment_test;
         mod last_resort_test;
+        mod lunar_dance_test;
         mod magnet_rise_test;
         mod me_first_test;
         mod metal_burst_test;

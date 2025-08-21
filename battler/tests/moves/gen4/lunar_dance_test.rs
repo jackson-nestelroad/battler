@@ -5,6 +5,7 @@ use battler::{
     DataStore,
     LocalDataStore,
     PublicCoreBattle,
+    Request,
     TeamData,
     WrapResultError,
 };
@@ -14,16 +15,16 @@ use battler_test_utils::{
     assert_logs_since_turn_eq,
 };
 
-fn lopunny() -> Result<TeamData> {
+fn cresselia() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Lopunny",
-                    "species": "Lopunny",
+                    "name": "Cresselia",
+                    "species": "Cresselia",
                     "ability": "No Ability",
                     "moves": [
-                        "Healing Wish",
+                        "Lunar Dance",
                         "Tackle",
                         "Spore"
                     ],
@@ -36,16 +37,16 @@ fn lopunny() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn three_lopunny() -> Result<TeamData> {
+fn three_cresselia() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Lopunny",
-                    "species": "Lopunny",
+                    "name": "Cresselia",
+                    "species": "Cresselia",
                     "ability": "No Ability",
                     "moves": [
-                        "Healing Wish",
+                        "Lunar Dance",
                         "Tackle",
                         "Spore"
                     ],
@@ -53,11 +54,11 @@ fn three_lopunny() -> Result<TeamData> {
                     "level": 50
                 },
                 {
-                    "name": "Lopunny",
-                    "species": "Lopunny",
+                    "name": "Cresselia",
+                    "species": "Cresselia",
                     "ability": "No Ability",
                     "moves": [
-                        "Healing Wish",
+                        "Lunar Dance",
                         "Tackle",
                         "Spore"
                     ],
@@ -65,11 +66,11 @@ fn three_lopunny() -> Result<TeamData> {
                     "level": 50
                 },
                 {
-                    "name": "Lopunny",
-                    "species": "Lopunny",
+                    "name": "Cresselia",
+                    "species": "Cresselia",
                     "ability": "No Ability",
                     "moves": [
-                        "Healing Wish",
+                        "Lunar Dance",
                         "Tackle",
                         "Spore"
                     ],
@@ -102,9 +103,9 @@ fn make_battle(
 }
 
 #[test]
-fn healing_wish_fails_if_cannot_switch() {
+fn lunar_dance_fails_if_cannot_switch() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, lopunny().unwrap(), lopunny().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, cresselia().unwrap(), cresselia().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -112,8 +113,8 @@ fn healing_wish_fails_if_cannot_switch() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Lopunny,player-1,1|name:Healing Wish|noanim",
-            "fail|mon:Lopunny,player-1,1",
+            "move|mon:Cresselia,player-1,1|name:Lunar Dance|noanim",
+            "fail|mon:Cresselia,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -123,14 +124,20 @@ fn healing_wish_fails_if_cannot_switch() {
 }
 
 #[test]
-fn healing_wish_faints_user_and_heals_slot() {
+fn lunar_dance_faints_user_and_heals_slot() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle =
-        make_battle(&data, 0, three_lopunny().unwrap(), three_lopunny().unwrap()).unwrap();
+    let mut battle = make_battle(
+        &data,
+        0,
+        three_cresselia().unwrap(),
+        three_cresselia().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
@@ -142,41 +149,47 @@ fn healing_wish_faints_user_and_heals_slot() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    // PP was restored.
+    assert_matches::assert_matches!(battle.request_for_player("player-1"),
+    Ok(Some(Request::Turn(request))) => {     assert_eq!(request.active[0].moves[1].pp,
+    request.active[0].moves[1].max_pp); });
+
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Lopunny,player-1,1|name:Healing Wish|target:Lopunny,player-1,1",
-            "faint|mon:Lopunny,player-1,1",
+            "move|mon:Cresselia,player-1,1|name:Lunar Dance|target:Cresselia,player-1,1",
+            "faint|mon:Cresselia,player-1,1",
             "residual",
             ["time"],
             "split|side:0",
-            ["switch", "health:125/125"],
-            ["switch", "health:100/100"],
+            "switch|player:player-1|position:1|name:Cresselia|health:180/180|species:Cresselia|level:50|gender:U",
+            "switch|player:player-1|position:1|name:Cresselia|health:100/100|species:Cresselia|level:50|gender:U",
             "turn|turn:5",
             ["time"],
-            "move|mon:Lopunny,player-2,1|name:Tackle|target:Lopunny,player-1,1",
+            "move|mon:Cresselia,player-2,1|name:Tackle|target:Cresselia,player-1,1",
             "split|side:0",
-            "damage|mon:Lopunny,player-1,1|health:100/125",
-            "damage|mon:Lopunny,player-1,1|health:80/100",
+            "damage|mon:Cresselia,player-1,1|health:168/180",
+            "damage|mon:Cresselia,player-1,1|health:94/100",
             "residual",
             "turn|turn:6",
             ["time"],
             "split|side:0",
-            ["switch", "health:100/125", "status:Sleep"],
-            ["switch", "health:80/100", "status:Sleep"],
-            "activate|mon:Lopunny,player-1,1|move:Healing Wish",
+            "switch|player:player-1|position:1|name:Cresselia|health:169/180|status:Sleep|species:Cresselia|level:50|gender:U",
+            "switch|player:player-1|position:1|name:Cresselia|health:94/100|status:Sleep|species:Cresselia|level:50|gender:U",
+            "activate|mon:Cresselia,player-1,1|move:Lunar Dance",
             "split|side:0",
-            "heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:125/125",
-            "heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:100/100",
-            "curestatus|mon:Lopunny,player-1,1|status:Sleep|from:move:Healing Wish",
+            "heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:180/180",
+            "heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:100/100",
+            "curestatus|mon:Cresselia,player-1,1|status:Sleep|from:move:Lunar Dance",
             "residual",
             "turn|turn:7",
             ["time"],
             "split|side:0",
-            ["switch", "health:100/125"],
-            ["switch", "health:80/100"],
+            "switch|player:player-1|position:1|name:Cresselia|health:168/180|species:Cresselia|level:50|gender:U",
+            "switch|player:player-1|position:1|name:Cresselia|health:94/100|species:Cresselia|level:50|gender:U",
             "residual",
             "turn|turn:8"
         ]"#,
