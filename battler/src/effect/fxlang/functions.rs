@@ -261,6 +261,7 @@ pub fn run_function(
         "type_effectiveness" => type_effectiveness(context).map(|val| Some(val)),
         "type_has_no_effect_against" => type_has_no_effect_against(context).map(|val| Some(val)),
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
+        "type_modifier" => type_modifier(context).map(|val| Some(val)),
         "type_modifier_against_target" => type_modifier_against_target(context),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
         "use_callback_on_different_effect" => use_callback_on_different_effect(context),
@@ -3510,21 +3511,25 @@ fn move_makes_contact(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn type_effectiveness(mut context: FunctionContext) -> Result<Value> {
-    let active_move = context
-        .pop_front()
-        .wrap_expectation("missing move")?
-        .active_move()
-        .wrap_error_with_message("invalid move")?;
     let target = context
         .pop_front()
         .wrap_expectation("missing target")?
         .mon_handle()
         .wrap_error_with_message("invalid target")?;
     core_battle_actions::type_effectiveness(
-        &mut context
-            .evaluation_context_mut()
-            .active_move_context(active_move)?
-            .target_context(target)?,
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+    )
+    .map(|val| Value::Fraction(val.into()))
+}
+
+fn type_modifier(mut context: FunctionContext) -> Result<Value> {
+    let target = context
+        .pop_front()
+        .wrap_expectation("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    core_battle_actions::type_modifier(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
     )
     .map(|val| Value::Fraction(val.into()))
 }

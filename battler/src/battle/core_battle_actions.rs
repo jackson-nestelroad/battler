@@ -1589,31 +1589,42 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     modify_damage(context, base_damage)
 }
 
-/// Calculates the type effectiveness of a move against a target.
-pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8> {
-    if context.active_move().data.typeless {
+/// Calculates the type effectiveness of an effect against a target.
+pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
+    if context
+        .effect()
+        .move_effect()
+        .map(|mov| mov.data.typeless)
+        .unwrap_or(false)
+    {
         return Ok(0);
     }
 
-    let move_type = context.active_move().data.primary_type;
-    let target_handle = context.target_mon_handle();
+    let offense = match context.effect().move_effect() {
+        Some(mov) => mov.data.primary_type,
+        None => return Ok(0),
+    };
+    let target_handle = context.target_handle();
     let mut total = 0;
-    for defense in mon_states::effective_types(&mut context.target_mon_context()?) {
-        let modifier = context
-            .battle()
-            .check_type_effectiveness(move_type, defense);
-        let modifier = core_battle_effects::run_active_move_event_expecting_i8(
-            context.as_active_move_context_mut(),
-            fxlang::BattleEvent::Effectiveness,
-            core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-            fxlang::VariableInput::from_iter([
-                fxlang::Value::Fraction(modifier.into()),
-                fxlang::Value::Type(defense),
-            ]),
-        )
-        .unwrap_or(modifier);
+    for defense in mon_states::effective_types(&mut context.target_context()?) {
+        let modifier = context.battle().check_type_effectiveness(offense, defense);
+
+        let modifier = match context.active_move_context()? {
+            Some(mut context) => core_battle_effects::run_active_move_event_expecting_i8(
+                &mut context,
+                fxlang::BattleEvent::Effectiveness,
+                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                fxlang::VariableInput::from_iter([
+                    fxlang::Value::Fraction(modifier.into()),
+                    fxlang::Value::Type(defense),
+                ]),
+            )
+            .unwrap_or(modifier),
+            None => modifier,
+        };
+
         let modifier = core_battle_effects::run_event_for_applying_effect_expecting_i8(
-            &mut context.applying_effect_context()?,
+            context,
             fxlang::BattleEvent::Effectiveness,
             modifier,
             fxlang::VariableInput::from_iter([fxlang::Value::Type(defense)]),
@@ -1621,6 +1632,12 @@ pub fn type_effectiveness(context: &mut ActiveTargetContext) -> Result<i8> {
         total += modifier;
     }
     Ok(total)
+}
+
+/// Calculates the type modifier of an effect against a target.
+pub fn type_modifier(context: &mut ApplyingEffectContext) -> Result<i8> {
+    let type_modifier = type_effectiveness(context)?;
+    Ok(type_modifier.max(-6).min(6))
 }
 
 /// Modifies the damage dealt against a target.
@@ -1669,8 +1686,7 @@ fn modify_damage(
     }
 
     // Type effectiveness.
-    let type_modifier = type_effectiveness(context)?;
-    let type_modifier = type_modifier.max(-6).min(6);
+    let type_modifier = type_modifier(&mut context.applying_effect_context()?)?;
     context
         .active_move_mut()
         .hit_data_mut(target_mon_handle)

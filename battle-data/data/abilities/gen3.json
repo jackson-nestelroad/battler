@@ -405,7 +405,7 @@
         "on_try_hit": [
           "if $target == $source or $move.category == status or $move.typeless or $move.id == struggle:",
           ["return"],
-          "if func_call(type_effectiveness: $move $target) <= 0:",
+          "if func_call(type_effectiveness: $target use_source_effect) <= 0:",
           ["log_immune: $target from_effect", "return stop"]
         ]
       }

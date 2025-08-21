@@ -405,6 +405,7 @@ impl<'borrow> Effect<'borrow> {
         match self {
             Self::ActiveMove(active_move, _) => Some(active_move.deref()),
             Self::InactiveMove(mov) => Some(mov),
+            Self::MoveCondition(mov) => Some(mov),
             _ => None,
         }
     }
