@@ -86,6 +86,8 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::AfterMoveSecondaryEffects, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterSubstituteDamage, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AfterTakeItem, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AfterUseItem, callbacks)?;
         parsed.parse_and_save(BattleEvent::AllySetStatus, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnyDamage, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;

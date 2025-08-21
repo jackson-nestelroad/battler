@@ -303,6 +303,16 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterSubstituteDamage"]
     AfterSubstituteDamage,
+    /// Runs after a Mon has its item taken.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterTakeItem"]
+    AfterTakeItem,
+    /// Runs after a Mon uses its item.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterUseItem"]
+    AfterUseItem,
     /// [`SetStatus`][`Self::SetStatus`] but triggers for an ally Mon.
     #[string = "AllySetStatus"]
     AllySetStatus,
@@ -1128,6 +1138,8 @@ impl BattleEvent {
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
+            Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AnyDamage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
@@ -1301,6 +1313,7 @@ impl BattleEvent {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::AfterTakeItem | Self::AfterUseItem => &[("item", ValueType::Effect, true)],
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
             }
@@ -1675,6 +1688,8 @@ pub struct Callbacks {
     pub on_after_move_secondary_effects: Callback,
     pub on_after_set_status: Callback,
     pub on_after_substitute_damage: Callback,
+    pub on_after_take_item: Callback,
+    pub on_after_use_item: Callback,
     pub on_ally_set_status: Callback,
     pub on_any_damage: Callback,
     pub on_any_exit: Callback,
@@ -1839,6 +1854,8 @@ impl Callbacks {
             BattleEvent::AfterMoveSecondaryEffects => &self.on_after_move_secondary_effects,
             BattleEvent::AfterSetStatus => &self.on_after_set_status,
             BattleEvent::AfterSubstituteDamage => &self.on_after_substitute_damage,
+            BattleEvent::AfterTakeItem => &self.on_after_take_item,
+            BattleEvent::AfterUseItem => &self.on_after_use_item,
             BattleEvent::AllySetStatus => &self.on_ally_set_status,
             BattleEvent::AnyDamage => &self.on_any_damage,
             BattleEvent::AnyExit => &self.on_any_exit,

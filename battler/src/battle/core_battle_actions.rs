@@ -4461,15 +4461,27 @@ pub fn take_item(
 
     context.target_mut().item = None;
 
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterTakeItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    );
+
     Ok(Some(item_id))
 }
 
 fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool> {
+    let item_handle = context.battle_mut().get_effect_handle_by_id(&item)?.clone();
+
     context.target_mut().item_used_this_turn = true;
     context.target_mut().last_item = Some(item);
     context.target_mut().item = None;
 
-    // TODO: AfterUseItem event.
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterUseItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    );
 
     Ok(true)
 }

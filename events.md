@@ -275,17 +275,20 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `TryUseItem`.
 1. Item `Use`.
+1. `AfterUseItem`.
 
 ## Eat Item
 
 1. `TryEatItem`.
 1. Item `Eat`.
 1. `EatItem`.
+1. `AfterUseItem`.
 
 ## Take Item
 
 1. `TakeItem`.
 1. Item `End`.
+1. `AfterTakeItem`.
 
 ## Restore PP
 
