@@ -168,7 +168,7 @@ fn copycat_copies_recharge_move() {
             "split|side:0",
             "damage|mon:Mew,player-1,1|health:99/160",
             "damage|mon:Mew,player-1,1|health:62/100",
-            "mustrecharge|mon:Mew,player-2,1",
+            "activate|mon:Mew,player-2,1|condition:Must Recharge",
             "residual",
             "turn|turn:3"
         ]"#,

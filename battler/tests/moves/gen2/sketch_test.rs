@@ -125,7 +125,7 @@ fn sketch_copies_targets_last_move() {
             "turn|turn:2",
             ["time"],
             "move|mon:Smeargle,player-1,1|name:Sketch|target:Smeargle,player-2,1",
-            "activate|move:Sketch|mon:Smeargle,player-1,1|newmove:Flamethrower",
+            "activate|mon:Smeargle,player-1,1|move:Sketch|newmove:Flamethrower",
             "move|mon:Smeargle,player-2,1|name:Sketch|noanim",
             "fail|mon:Smeargle,player-2,1",
             "residual",

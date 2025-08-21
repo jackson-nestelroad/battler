@@ -172,6 +172,7 @@ pub fn run_function(
         "log_animate_move" => log_animate_move(context).map(|()| None),
         "log_block" => log_block(context).map(|()| None),
         "log_cant" => log_cant(context).map(|()| None),
+        "log_custom_effect" => log_custom_effect(context).map(|()| None),
         "log_end" => log_end(context).map(|()| None),
         "log_fail" => log_fail(context).map(|()| None),
         "log_fail_heal" => log_fail_heal(context).map(|()| None),
@@ -759,6 +760,15 @@ fn log_effect_activation_base(
         header.to_owned(),
         activation,
     )
+}
+
+fn log_custom_effect(mut context: FunctionContext) -> Result<()> {
+    let header = context
+        .pop_front()
+        .wrap_expectation("missing header")?
+        .string()
+        .wrap_error_with_message("invalid header")?;
+    log_effect_activation_base(context, &header, LogEffectActivationBaseContext::default())
 }
 
 fn log_ability(mut context: FunctionContext) -> Result<()> {

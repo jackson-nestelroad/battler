@@ -1720,7 +1720,6 @@ fn alter_battle_state_for_entry(
         | "item"
         | "itemend"
         | "miss"
-        | "mustrecharge"
         | "ohko"
         | "prepare"
         | "resisted"

@@ -123,7 +123,7 @@ fn recharge_moves_require_recharge_turn() {
             "split|side:1",
             "damage|mon:Venusaur,player-2,1|health:74/140",
             "damage|mon:Venusaur,player-2,1|health:53/100",
-            "mustrecharge|mon:Venusaur,player-1,1",
+            "activate|mon:Venusaur,player-1,1|condition:Must Recharge",
             "residual",
             "turn|turn:2",
             ["time"],

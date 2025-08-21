@@ -28,7 +28,7 @@
           ["return false"],
           "$sketch_index = func_call(move_slot_index: $source $this.id)",
           "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move) override_base_slot",
-          "log_activate: str('mon:{}', $source.position_details) str('newmove:{}', $last_move.name)"
+          "log_activate: with_target use_source str('newmove:{}', $last_move.name)"
         ]
       }
     }
@@ -1726,7 +1726,7 @@
       "callbacks": {
         "on_hit": [
           "$source.boosts = $target.boosts",
-          "log: copyboosts str('mon:{}', $source.position_details) str('of:{}', $target.position_details)",
+          "log_custom_effect: copyboosts no_effect with_target use_source with_source use_target_as_source",
           "$volatiles = [focusenergy]",
           "foreach $volatile in $volatiles:",
           [

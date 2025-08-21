@@ -512,9 +512,7 @@
     "condition": {
       "duration": 2,
       "callbacks": {
-        "on_start": [
-          "log: mustrecharge str('mon:{}', $target.position_details)"
-        ],
+        "on_start": ["log_activate: with_target"],
         "on_before_move": {
           "priority": 11,
           "program": [
@@ -580,7 +578,8 @@
           "$target = func_call(mon_in_position: $side $slot)",
           "if !$target or !$target.active or $target == $effect_state.source:",
           ["return"],
-          "log_end: use_effect_state_source_effect with_source use_effect_state_source_as_source str('mon:{}', $target.position_details)",
+          "$effect_state.target = $target",
+          "log_end: with_target use_effect_state_target use_effect_state_source_effect with_source use_effect_state_source_as_source",
           "remove_volatile: $target protect",
           "remove_volatile: $target endure",
           "use_active_move: $effect_state.source $move $target indirect"
