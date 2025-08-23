@@ -92,7 +92,7 @@ fn doom_desire_attacks_slot_three_turns_later() {
             "residual",
             "turn|turn:3",
             ["time"],
-            "end|move:Doom Desire|mon:Blaziken,player-2,2|of:Jirachi,player-1,1",
+            "end|mon:Blaziken,player-2,2|move:Doom Desire|of:Jirachi,player-1,1",
             "animatemove|mon:Jirachi,player-1,1|name:Doom Desire|target:Blaziken,player-2,2",
             "resisted|mon:Blaziken,player-2,2",
             "split|side:1",
