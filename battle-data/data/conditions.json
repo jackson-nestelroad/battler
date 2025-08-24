@@ -378,7 +378,7 @@
             "if !func_call(chance: 33 100):",
             ["return"],
             "$damage = func_call(calculate_confusion_damage: $user 40)",
-            "damage: no_source $user $damage",
+            "damage: $user $damage no_source",
             "return false"
           ]
         }
@@ -861,7 +861,7 @@
           [
             "log_activate: with_target confusion",
             "$damage = func_call(calculate_confusion_damage: $user 40)",
-            "damage: no_source $user $damage"
+            "damage: $user $damage no_source"
           ],
           "else:",
           ["log_activate: with_target"],
