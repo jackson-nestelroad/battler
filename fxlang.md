@@ -969,12 +969,17 @@ When a Mon has the Flash Fire ability, if it is hit by a Fire-type move, it is i
 {
   "effect": {
     "callbacks": {
+      "on_start": [
+        "if $effect_state.activated:",
+        ["add_volatile: $target $this.id"]
+      ],
       "on_try_hit": [
         "if $target == $source or $move.type != fire:",
         ["return"],
         "$move.accuracy = exempt",
         "if !func_call(add_volatile: $target $this.id):",
         ["log_immune: $target from_effect"],
+        "$effect_state.activated = true",
         "return stop"
       ],
       "on_end": ["remove_volatile: $target $this.id"]
@@ -983,20 +988,27 @@ When a Mon has the Flash Fire ability, if it is hit by a Fire-type move, it is i
   "condition": {
     "no_copy": true,
     "callbacks": {
-      "on_start": ["log_start"],
+      "on_start": [
+        "$ability_effect_state = func_call(ability_effect_state: $target)",
+        "if $ability_effect_state.is_defined and $ability_effect_state.activated:",
+        ["log_start: silent", "return"],
+        "log_start"
+      ],
       "on_end": ["log_end: silent"],
       "on_modify_atk": [
-        "if $effect.is_defined and $effect.type == fire and func_call(has_ability: $target $this.id):",
+        "if $effect.is_defined and $effect.type == fire:",
         ["return $atk * 3/2"]
       ],
       "on_modify_spa": [
-        "if $effect.is_defined and $effect.type == fire and func_call(has_ability: $target $this.id):",
+        "if $effect.is_defined and $effect.type == fire:",
         ["return $spa * 3/2"]
       ]
     }
   }
 }
 ```
+
+We keep track of `$effect_state.activated` for ability suppression. When an ability is suppressed, the `End` event runs. When an ability is unsuppressed, the `Start` event runs. The volatile status is only given to the Mon when the ability is active and unsuppressed.
 
 ##### Status: Paralysis
 
