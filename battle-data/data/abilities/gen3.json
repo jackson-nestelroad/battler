@@ -594,8 +594,7 @@
           "$targets = []",
           "foreach $target in func_call(adjacent_foes: $mon):",
           [
-            "$ability = func_call(get_ability: $target.ability)",
-            "if !func_call(ability_has_flag: $ability permanent) and !func_call(ability_has_flag: $ability notrace):",
+            "if !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability notrace):",
             ["$targets = func_call(append: $targets $target)"]
           ],
           "if $targets.is_empty:",

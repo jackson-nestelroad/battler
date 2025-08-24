@@ -622,8 +622,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "$ability = func_call(get_ability: $target.ability)",
-          "if func_call(ability_has_flag: $ability unsuppressible):",
+          "if func_call(ability_has_flag: $target.ability unsuppressible):",
           ["return false"]
         ]
       }
@@ -632,8 +631,7 @@
       "callbacks": {
         "on_start": ["end_ability"],
         "on_copy_volatile": [
-          "$ability = func_call(get_ability: $target.ability)",
-          "if func_call(ability_has_flag: $ability unsuppressible):",
+          "if func_call(ability_has_flag: $target.ability unsuppressible):",
           ["return false"]
         ],
         "on_end": [
@@ -818,8 +816,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "$ability = func_call(get_ability: $target.ability)",
-          "if func_call(ability_has_flag: $ability permanent) or func_call(ability_has_flag: $ability noworryseed):",
+          "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noworryseed):",
           ["return false"]
         ],
         "on_hit": [

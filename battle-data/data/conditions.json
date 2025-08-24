@@ -59,10 +59,9 @@
         "suppress_mon_ability": {
           "priority": 10,
           "program": [
-            "$ability = func_call(get_ability: $mon.ability)",
-            "if $mon.transformed and func_call(ability_has_flag: $ability notransform):",
+            "if $mon.transformed and func_call(ability_has_flag: $mon.ability notransform):",
             ["return true"],
-            "if func_call(ability_has_flag: $ability unsuppressible):",
+            "if func_call(ability_has_flag: $mon.ability unsuppressible):",
             ["return false"]
           ]
         }

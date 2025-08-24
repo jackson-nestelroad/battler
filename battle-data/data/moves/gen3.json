@@ -607,9 +607,7 @@
         "on_try_hit": [
           "if $source.ability == $target.ability:",
           ["return false"],
-          "$target_ability = func_call(get_ability: $target.ability)",
-          "$source_ability = func_call(get_ability: $source.ability)",
-          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noroleplay):",
+          "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $source.ability permanent) or func_call(ability_has_flag: $target.ability noroleplay):",
           ["return false"]
         ],
         "on_hit": [
@@ -914,29 +912,29 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "$target_ability = func_call(get_ability: $target.ability)",
-          "$source_ability = func_call(get_ability: $source.ability)",
+          "$target_ability = $target.ability",
+          "$source_ability = $source.ability",
           "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap):",
           ["return false"],
-          "if !func_call(set_ability: $source $target_ability.id use_target_as_source dry_run):",
+          "if !func_call(set_ability: $source $target_ability use_target_as_source dry_run):",
           ["return false"],
-          "if !func_call(set_ability: $target $source_ability.id dry_run):",
+          "if !func_call(set_ability: $target $source_ability dry_run):",
           ["return false"]
         ],
         "on_hit": [
-          "$target_ability = func_call(get_ability: $target.ability)",
-          "$source_ability = func_call(get_ability: $source.ability)",
+          "$target_ability = $target.ability",
+          "$source_ability = $source.ability",
           "log_activate: with_target with_source",
           "$allies = func_call(is_ally: $target $source)",
           "if $allies:",
           [
-            "set_ability: $source $target_ability.id use_target_as_source silent",
-            "set_ability: $target $source_ability.id silent"
+            "set_ability: $source $target_ability use_target_as_source silent",
+            "set_ability: $target $source_ability silent"
           ],
           "else:",
           [
-            "set_ability: $source $target_ability.id use_target_as_source",
-            "set_ability: $target $source_ability.id"
+            "set_ability: $source $target_ability use_target_as_source",
+            "set_ability: $target $source_ability"
           ]
         ]
       }
