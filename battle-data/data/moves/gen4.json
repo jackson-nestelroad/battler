@@ -410,7 +410,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "suppress_mon_item": ["return true"],
+        "suppress_mon_item": ["if $effect_state.started:", ["return true"]],
         "on_prevent_used_items": ["return true"],
         "on_start": ["log_start", "end_item: silent"],
         "on_end": ["log_end", "start_item: silent"]
@@ -432,12 +432,12 @@
           "$item = $user.effective_item",
           "if !$item:",
           ["return false"],
-          "# User can lose its item.",
-          "if !func_call(take_item: $user dry_run):",
-          ["return false"],
           "# Item can be flung.",
           "$data = func_call(special_item_data: $item)",
           "if !$data or !$data.fling:",
+          ["return false"],
+          "# User can lose its item.",
+          "if !func_call(take_item: $user dry_run):",
           ["return false"],
           "# Modify move according to the item being flung.",
           "$effect_state.item = $item.id",

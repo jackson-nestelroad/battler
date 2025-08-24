@@ -710,8 +710,7 @@
     "effect": {
       "callbacks": {
         "on_weather": [
-          "$weather = $target.effective_weather",
-          "if $weather.is_defined and $weather.is_raining:",
+          "if $effect.is_raining:",
           ["heal: $target expr($target.base_max_hp / 16)"]
         ]
       }
@@ -952,6 +951,11 @@
           "else:",
           ["$forme = castform"],
           "forme_change: $target $forme"
+        ],
+        "on_end": [
+          "if func_call(base_species: $target) != castform or $target.transformed:",
+          ["return"],
+          "forme_change: $target castform"
         ]
       }
     }
@@ -1168,16 +1172,7 @@
     "name": "Air Lock",
     "flags": [],
     "effect": {
-      "callbacks": {
-        "suppress_field_weather": ["return true"],
-        "on_switch_in": ["$effect_state.switching_in = true"],
-        "on_start": [
-          "if $effect_state.switching_in:",
-          ["log_ability", "$effect_state.switching_in = false"],
-          "run_event_for_each_active_mon: WeatherChange"
-        ],
-        "on_end": ["run_event_for_each_active_mon: WeatherChange"]
-      }
+      "delegates": ["ability:cloudnine"]
     }
   }
 }

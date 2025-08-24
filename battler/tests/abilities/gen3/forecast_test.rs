@@ -27,7 +27,8 @@ fn castform() -> Result<TeamData> {
                         "Sunny Day",
                         "Hail",
                         "Snowscape",
-                        "Sandstorm"
+                        "Sandstorm",
+                        "Fling"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -50,7 +51,11 @@ fn opponents() -> Result<TeamData> {
                         "Transform",
                         "Thunder Shock",
                         "Vine Whip",
-                        "Aurora Beam"
+                        "Aurora Beam",
+                        "Trick",
+                        "Embargo",
+                        "Gastro Acid",
+                        "Worry Seed"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -270,6 +275,163 @@ fn forecast_reverts_due_to_suppressed_weather() {
             "weather|weather:Rain|residual",
             "residual",
             "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn forecast_reverts_due_to_gaining_weather_suppressing_item() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut opponents = opponents().unwrap();
+    opponents.members[0].item = Some("Utility Umbrella".to_owned());
+    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Castform,player-1,1|name:Rain Dance",
+            "weather|weather:Rain",
+            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Ditto,player-2,1|name:Trick|target:Castform,player-1,1",
+            "itemend|mon:Ditto,player-2,1|item:Utility Umbrella|from:move:Trick",
+            "item|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
+            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast|of:Ditto,player-2,1",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Castform,player-1,1|name:Fling|target:Ditto,player-2,1",
+            "activate|mon:Castform,player-1,1|move:Fling|item:Utility Umbrella",
+            "split|side:1",
+            "damage|mon:Ditto,player-2,1|health:71/108",
+            "damage|mon:Ditto,player-2,1|health:66/100",
+            "itemend|mon:Castform,player-1,1|item:Utility Umbrella|silent|from:move:Fling",
+            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn forecast_activates_due_to_suppressing_weather_suppressing_item() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut opponents = opponents().unwrap();
+    opponents.members[0].item = Some("Utility Umbrella".to_owned());
+    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 5"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Castform,player-1,1|name:Rain Dance",
+            "weather|weather:Rain",
+            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Ditto,player-2,1|name:Trick|target:Castform,player-1,1",
+            "itemend|mon:Ditto,player-2,1|item:Utility Umbrella|from:move:Trick",
+            "item|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
+            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast|of:Ditto,player-2,1",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Ditto,player-2,1|name:Embargo|target:Castform,player-1,1",
+            "start|mon:Castform,player-1,1|move:Embargo",
+            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast|of:Ditto,player-2,1",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn forecast_reverts_due_to_weather_suppressing_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 6"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Castform,player-1,1|name:Rain Dance",
+            "weather|weather:Rain",
+            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Ditto,player-2,1|name:Gastro Acid|target:Castform,player-1,1",
+            "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Gastro Acid|of:Ditto,player-2,1",
+            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast|of:Ditto,player-2,1",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn forecast_reverts_due_to_losing_ability() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 7"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Castform,player-1,1|name:Rain Dance",
+            "weather|weather:Rain",
+            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Ditto,player-2,1|name:Worry Seed|target:Castform,player-1,1",
+            "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1",
+            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast|of:Ditto,player-2,1",
+            "ability|mon:Castform,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Ditto,player-2,1",
+            "weather|weather:Rain|residual",
+            "residual",
+            "turn|turn:3"
         ]"#,
     )
     .unwrap();

@@ -1327,13 +1327,8 @@
           "if $field.weather.is_defined and ($field.weather.is_raining or $field.weather.is_sunny):",
           ["return true"]
         ],
-        "on_weather": {
-          "order": 1,
-          "program": [
-            "if $field.weather.is_defined and ($field.weather.is_raining or $field.weather.is_sunny):",
-            ["return false"]
-          ]
-        }
+        "on_start": ["run_event: WeatherChange"],
+        "on_end": ["run_event: WeatherChange"]
       }
     }
   },

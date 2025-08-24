@@ -87,7 +87,7 @@ pub enum MoveFlag {
     /// A one-hit KO move.
     #[string = "OHKO"]
     OHKO,
-    /// Gems will not active, and cannot be redirected by Storm Drain or Lightning Rod.
+    /// Gems will not activate, and cannot be redirected by Storm Drain or Lightning Rod.
     #[string = "PledgeCombo"]
     PledgeCombo,
     /// A powder move.

@@ -4328,10 +4328,11 @@ fn end_item_internal(
     }
 
     let event = match end_item_type {
-        EndItemType::End | EndItemType::Take => Some(fxlang::BattleEvent::End),
+        EndItemType::End | EndItemType::Take | EndItemType::Discard => {
+            Some(fxlang::BattleEvent::End)
+        }
         EndItemType::Use => Some(fxlang::BattleEvent::Use),
         EndItemType::Eat => Some(fxlang::BattleEvent::Eat),
-        EndItemType::Discard => None,
     };
     if let Some(event) = event {
         core_battle_effects::run_mon_item_event_expecting_void(context, event);

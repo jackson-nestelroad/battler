@@ -1367,9 +1367,6 @@ where
                                 .data
                                 .primary_type,
                         ),
-                        "used_by" => ValueRefMut::OptionalMon(
-                            &mut context.active_move_mut(**active_move_handle)?.used_by,
-                        ),
                         "user_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
