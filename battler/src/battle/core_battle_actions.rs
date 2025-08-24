@@ -2758,11 +2758,13 @@ pub fn try_set_status(
     let status = match status {
         Some(status) => status,
         None => {
-            core_battle_effects::run_event_for_applying_effect(
+            if !core_battle_effects::run_event_for_applying_effect(
                 context,
                 fxlang::BattleEvent::CureStatus,
                 fxlang::VariableInput::default(),
-            );
+            ) {
+                return Ok(ApplyMoveEffectResult::Failed);
+            }
             if let Some(status) = context.target().status.clone() {
                 let target_handle = context.target_handle();
                 LinkedEffectsManager::remove_by_id(

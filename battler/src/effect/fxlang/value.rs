@@ -492,6 +492,18 @@ impl Value {
         }
     }
 
+    /// Consumes the value into an effect ID.
+    pub fn effect_id(self) -> Result<Id> {
+        match self {
+            Self::String(val) => Ok(Id::from(val)),
+            Self::Effect(val) => val.try_id().cloned().wrap_expectation("effect has no id"),
+            val @ _ => Err(general_error(format!(
+                "value of type {} cannot be converted to an effect id",
+                val.value_type(),
+            ))),
+        }
+    }
+
     /// Consumes the value into a move ID.
     pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id> {
         match self {

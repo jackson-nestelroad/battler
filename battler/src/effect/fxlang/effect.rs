@@ -1161,7 +1161,7 @@ impl BattleEvent {
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::CopyVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::CriticalHit => CommonCallbackType::MoveResult as u32,
-            Self::CureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::CureStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
