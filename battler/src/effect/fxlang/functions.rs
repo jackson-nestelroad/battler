@@ -55,6 +55,7 @@ use crate::{
         AppliedEffectHandle,
         EffectHandle,
         EffectManager,
+        MonAbilityEffectStateConnector,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
         SideConditionEffectStateConnector,
@@ -90,6 +91,7 @@ pub fn run_function(
 ) -> Result<Option<Value>> {
     let context = FunctionContext::new(context, args, event, effect_state);
     match function_name {
+        "ability_effect_state" => ability_effect_state(context),
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
@@ -1915,6 +1917,16 @@ fn volatile_status_state(mut context: FunctionContext) -> Result<Option<Value>> 
 fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context.target_handle_positional()?;
     let effect_state = MonStatusEffectStateConnector::new(mon_handle);
+    if effect_state.exists(context.battle_context_mut())? {
+        Ok(Some(Value::EffectState(effect_state.make_dynamic())))
+    } else {
+        Ok(None)
+    }
+}
+
+fn ability_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
+    let mon_handle = context.target_handle_positional()?;
+    let effect_state = MonAbilityEffectStateConnector::new(mon_handle);
     if effect_state.exists(context.battle_context_mut())? {
         Ok(Some(Value::EffectState(effect_state.make_dynamic())))
     } else {
