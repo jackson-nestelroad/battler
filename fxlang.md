@@ -404,7 +404,7 @@ Event callbacks may also take in special input values, depending on the goal of 
 
 ##### Persistent State
 
-Another special variable, `$effect_state`, is also defined before a program starts. The effect state is a generic object of key-value pairs that can be accessed and set however the effect sees fit. When a program terminates, the evaluator saves the `$effect_state` value to the battle engine. When a callback on the same effect runs again, the `$effect_state` will be set to the saved value from the battle engine.
+Another special variable, `$effect_state`, is also defined before a program starts. The effect state is a generic object of key-value pairs that can be accessed and set however the effect sees fit. Any mutation to the effect state is updated in the battle engine immediately, so mutations to the state from other callbacks will be visible immediately.
 
 You can think of `$effect_state` as a little persistent disk for an effect. It is mounted to the evaluation context of each event callback for an effect. For example, every time a callback of the "Toxic" status is run for a Mon, the same `$effect_state` is supplied, allowing the damage stacking part of the status to be easily implemented:
 
