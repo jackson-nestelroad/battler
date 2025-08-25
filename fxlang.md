@@ -508,7 +508,7 @@ Super Fang has a custom damage calculation, where it exactly cuts the target's H
 {
   "effect": {
     "callbacks": {
-      "on_move_damage": ["return func_call(max: expr($target.hp / 2), 1)"]
+      "on_move_damage": ["return func_call(max: expr($target.hp / 2) 1)"]
     }
   }
 }
