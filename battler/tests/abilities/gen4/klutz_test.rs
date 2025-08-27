@@ -25,7 +25,9 @@ fn lopunny() -> Result<TeamData> {
                     "moves": [
                         "Thunder Wave",
                         "Fling",
-                        "Natural Gift"
+                        "Natural Gift",
+                        "Splash",
+                        "Trick"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -139,6 +141,71 @@ fn klutz_prevents_natural_gift() {
             "fail|mon:Lopunny,player-1,1",
             "residual",
             "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn klutz_does_not_suppress_power_anklet_even_when_swapped() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team_1 = lopunny().unwrap();
+    team_1.members[0].item = Some("Power Anklet".to_owned());
+    let mut team_2 = lopunny().unwrap();
+    team_2.members[0].item = Some("Toxic Orb".to_owned());
+    let mut battle = make_battle(&data, 0, team_1, team_2).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 3"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Lopunny,player-2,1|name:Splash|target:Lopunny,player-2,1",
+            "activate|move:Splash",
+            "move|mon:Lopunny,player-1,1|name:Splash|target:Lopunny,player-1,1",
+            "activate|move:Splash",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Lopunny,player-1,1|name:Trick|target:Lopunny,player-2,1",
+            "itemend|mon:Lopunny,player-2,1|item:Toxic Orb|from:move:Trick|of:Lopunny,player-1,1",
+            "itemend|mon:Lopunny,player-1,1|item:Power Anklet|from:move:Trick",
+            "item|mon:Lopunny,player-1,1|item:Toxic Orb|from:move:Trick",
+            "item|mon:Lopunny,player-2,1|item:Power Anklet|from:move:Trick|of:Lopunny,player-1,1",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Lopunny,player-1,1|name:Splash|target:Lopunny,player-1,1",
+            "activate|move:Splash",
+            "move|mon:Lopunny,player-2,1|name:Splash|target:Lopunny,player-2,1",
+            "activate|move:Splash",
+            "residual",
+            "turn|turn:4",
+            ["time"],
+            "move|mon:Lopunny,player-1,1|name:Trick|target:Lopunny,player-2,1",
+            "itemend|mon:Lopunny,player-2,1|item:Power Anklet|from:move:Trick|of:Lopunny,player-1,1",
+            "itemend|mon:Lopunny,player-1,1|item:Toxic Orb|from:move:Trick",
+            "item|mon:Lopunny,player-1,1|item:Power Anklet|from:move:Trick",
+            "item|mon:Lopunny,player-2,1|item:Toxic Orb|from:move:Trick|of:Lopunny,player-1,1",
+            "residual",
+            "turn|turn:5",
+            ["time"],
+            "move|mon:Lopunny,player-2,1|name:Splash|target:Lopunny,player-2,1",
+            "activate|move:Splash",
+            "move|mon:Lopunny,player-1,1|name:Splash|target:Lopunny,player-1,1",
+            "activate|move:Splash",
+            "residual",
+            "turn|turn:6"
         ]"#,
     )
     .unwrap();

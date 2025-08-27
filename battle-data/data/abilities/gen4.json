@@ -393,19 +393,20 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "# An ability cannot suppress items directly.",
-          "add_volatile: $target $this.id"
+        "suppress_mon_item": [
+          "if $effect_state.started and $mon.item.is_defined and !func_call(item_has_flag: $mon.item noklutz):",
+          ["return true"]
         ],
-        "on_end": ["remove_volatile: $target $this.id"]
+        "on_start": [
+          "if !$target.item or func_call(item_has_flag: $target.item noklutz):",
+          ["return"],
+          "end_item: $target silent"
+        ],
+        "on_end": ["start_item: $target silent"]
       }
     },
     "condition": {
-      "callbacks": {
-        "suppress_mon_item": ["if $effect_state.started:", ["return true"]],
-        "on_start": ["end_item: $target"],
-        "on_end": ["start_item: $target"]
-      }
+      "callbacks": {}
     }
   },
   "moldbreaker": {

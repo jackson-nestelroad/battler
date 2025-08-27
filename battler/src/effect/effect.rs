@@ -206,14 +206,28 @@ impl EffectHandle {
     }
 
     /// Returns the associated condition handle.
-    ///
-    /// Only applicable for active moves.
     pub fn condition_handle(&self, context: &Context) -> Result<Option<EffectHandle>> {
         match self {
             Self::ActiveMove(active_move_handle, _) => Ok(Some(EffectHandle::MoveCondition(
                 context.active_move(*active_move_handle)?.id().clone(),
             ))),
+            Self::InactiveMove(id) => Ok(Some(EffectHandle::MoveCondition(id.clone()))),
+            Self::Ability(id) => Ok(Some(EffectHandle::AbilityCondition(id.clone()))),
+            Self::Item(id) => Ok(Some(EffectHandle::ItemCondition(id.clone()))),
             _ => Ok(None),
+        }
+    }
+
+    /// Returns the associated non-condition handle.
+    ///
+    /// If the effect is already not a condition, it is returned unmodified.
+    pub fn non_condition_handle(&self) -> Option<EffectHandle> {
+        match self {
+            EffectHandle::MoveCondition(id) => Some(EffectHandle::InactiveMove(id.clone())),
+            EffectHandle::AbilityCondition(id) => Some(EffectHandle::Ability(id.clone())),
+            EffectHandle::ItemCondition(id) => Some(EffectHandle::Item(id.clone())),
+            EffectHandle::Condition(_) => None,
+            handle @ _ => Some(handle.clone()),
         }
     }
 

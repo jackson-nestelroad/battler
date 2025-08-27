@@ -33,6 +33,9 @@ pub enum ItemFlag {
     /// Medicine.
     #[string = "Medicine"]
     Medicine,
+    /// Not affected by Klutz.
+    #[string = "NoKlutz"]
+    NoKlutz,
 }
 
 #[cfg(test)]

@@ -8,6 +8,7 @@ use battler_data::{
     Id,
     MoveTarget,
     SecondaryEffectData,
+    StatTable,
     Type,
 };
 
@@ -228,6 +229,9 @@ fn run_effect_event_with_errors(
             effect_state_connector
                 .get_mut(context.battle_context_mut())?
                 .set_started(true);
+            effect_state_connector
+                .get_mut(context.battle_context_mut())?
+                .set_ending(false);
         }
 
         if event.ends_effect() {
@@ -3083,6 +3087,25 @@ pub fn run_event_for_mon_expecting_boost_table(
     ) {
         Some(value) => value.boost_table().unwrap_or(boost_table),
         None => boost_table,
+    }
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`StatTable`].
+pub fn run_event_for_mon_expecting_stat_table(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    stat_table: StatTable,
+) -> StatTable {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::StatTable(stat_table.clone())]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.stat_table().unwrap_or(stat_table),
+        None => stat_table,
     }
 }
 

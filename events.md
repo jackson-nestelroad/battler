@@ -265,6 +265,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `SetAbility`.
 1. Ability `End`.
 1. Ability `Start`.
+1. `AfterSetAbility`.
 
 ## Set Item
 
@@ -299,6 +300,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Giving Experience
 
 1. Gain EVs.
+   1. `ModifyEvYield`.
 1. Recalculate stats.
 1. Calculate experience gain:
    1. `ModifyExperience`.

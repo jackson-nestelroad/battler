@@ -773,8 +773,14 @@
   },
   "poweranklet": {
     "name": "Power Anklet",
-    "flags": [],
-    "special_data": { "fling": { "power": 70 } }
+    "flags": ["NoKlutz"],
+    "special_data": { "fling": { "power": 70 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"],
+        "on_modify_ev_yield": ["$evs.spe = 8", "return $evs"]
+      }
+    }
   },
   "powerweight": {
     "name": "Power Weight",
@@ -1363,6 +1369,15 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "callbacks": {
+        "on_before_switch_in": [
+          "# Abilities start before items, so we must start this item before an ability tries to start and thinks it is suppressed.",
+          "start_item: silent"
+        ],
+        "on_start": [
+          "# Items cannot modify ability suppression, so we use a condition.",
+          "add_volatile: $target $this.id"
+        ],
+        "on_end": ["remove_volatile: $target $this.id"],
         "on_set_ability": [
           "if $effect.id != trace or !$effect_state.logged_for_trace:",
           ["log_block: with_target", "$effect_state.logged_for_trace = true"],
@@ -1371,8 +1386,15 @@
         "on_try_hit": [
           "if $move.id == gastroacid:",
           ["log_block: with_target", "return false"]
-        ],
-        "suppress_mon_ability": { "priority": 1, "program": ["return false"] }
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "suppress_mon_ability": {
+          "priority": 1,
+          "program": ["return false"]
+        }
       }
     }
   },

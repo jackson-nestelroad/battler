@@ -34,6 +34,7 @@ pub mod CallbackFlag {
     pub const TakesOptionalEffect: u32 = 1 << 10;
     pub const TakesPlayer: u32 = 1 << 11;
 
+    pub const ReturnsStatTable: u32 = 1 << 20;
     pub const ReturnsMoveTarget: u32 = 1 << 21;
     pub const ReturnsStrings: u32 = 1 << 22;
     pub const ReturnsSecondaryEffects: u32 = 1 << 23;
@@ -180,6 +181,8 @@ enum CommonCallbackType {
     MonValidator = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsStrings,
     MonMoveTarget =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsMoveTarget | CallbackFlag::ReturnsVoid,
+    MonStatTableModifier =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsStatTable | CallbackFlag::ReturnsVoid,
 
     PlayerValidator = CallbackFlag::TakesPlayer | CallbackFlag::ReturnsStrings,
 
@@ -329,6 +332,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    /// Runs after a Mon has its ability set.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterSetAbility"]
+    AfterSetAbility,
     /// Runs after a Mon has its item set.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -696,6 +704,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyDef"]
     ModifyDef,
+    /// Runs when calculating the EV yield gained by a Mon.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ModifyEvYield"]
+    ModifyEvYield,
     /// Runs when calculating the amount of experience gained by a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -1121,6 +1134,7 @@ impl BattleEvent {
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
+            Self::AfterSetAbility => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
@@ -1188,6 +1202,7 @@ impl BattleEvent {
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDef => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
@@ -1302,6 +1317,7 @@ impl BattleEvent {
                 &[("damage", ValueType::UFraction, true)]
             }
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
+            Self::ModifyEvYield => &[("evs", ValueType::BoostTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],
@@ -1317,7 +1333,7 @@ impl BattleEvent {
             Self::PlayerUse => &[("input", ValueType::Object, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::RestorePp => &[("pp", ValueType::UFraction, true)],
-            Self::SetAbility => &[("ability", ValueType::Effect, true)],
+            Self::SetAbility | Self::AfterSetAbility => &[("ability", ValueType::Effect, true)],
             Self::SetItem => &[("item", ValueType::Effect, true)],
             Self::SetStatus | Self::AfterSetStatus => &[("status", ValueType::Effect, true)],
             Self::SetTerrain => &[("terrain", ValueType::Effect, true)],
@@ -1353,6 +1369,7 @@ impl BattleEvent {
                     | CallbackFlag::ReturnsMoveTarget,
             ),
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
+            Some(ValueType::StatTable) => self.has_flag(CallbackFlag::ReturnsStatTable),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
             Some(ValueType::List) => self.has_flag(
                 CallbackFlag::ReturnsTypes
@@ -1413,8 +1430,8 @@ impl BattleEvent {
     ///   not need to run the weather events in the `Types` event.
     pub fn callback_lookup_layer(&self) -> usize {
         match self {
-            Self::SuppressMonItem => 0,
-            Self::SuppressMonAbility => 1,
+            Self::SuppressMonAbility => 0,
+            Self::SuppressMonItem => 1,
             Self::Types => 2,
             Self::IsGrounded => 3,
             Self::IsSemiInvulnerable => 3,

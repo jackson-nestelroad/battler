@@ -3467,6 +3467,12 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
             .data
             .ev_yield
             .clone();
+        let ev_yield = core_battle_effects::run_event_for_mon_expecting_stat_table(
+            &mut context,
+            fxlang::BattleEvent::ModifyEvYield,
+            ev_yield,
+        );
+
         for (stat, value) in ev_yield.entries() {
             let current_ev_sum = context.mon().evs.sum();
             let ev_limit = context.battle().format.rules.numeric_rules.ev_limit;
@@ -4023,12 +4029,17 @@ pub fn set_ability(
         return Ok(false);
     }
 
+    let ability_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&ability)?
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected ability to have non-condition handle")?;
+
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetAbility,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(EffectHandle::Ability(
-            ability.clone(),
-        ))]),
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(ability_handle.clone())]),
     ) {
         return Ok(false);
     }
@@ -4049,6 +4060,12 @@ pub fn set_ability(
     };
 
     start_ability(context, silent)?;
+
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterSetAbility,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(ability_handle)]),
+    );
 
     Ok(true)
 }
@@ -4325,13 +4342,7 @@ fn end_item_internal(
     end_item_type: EndItemType,
     end_item_log: EndItemLog,
 ) -> Result<()> {
-    if context.target().hp == 0
-        || context
-            .target()
-            .item
-            .as_ref()
-            .is_none_or(|item| !item.effect_state.started())
-    {
+    if context.target().hp == 0 {
         return Ok(());
     }
 
@@ -4350,6 +4361,15 @@ fn end_item_internal(
             end_item_log == EndItemLog::LogSilent,
             eat,
         )?;
+    }
+
+    if context
+        .target()
+        .item
+        .as_ref()
+        .is_none_or(|item| !item.effect_state.started())
+    {
+        return Ok(());
     }
 
     let event = match end_item_type {
@@ -4395,14 +4415,15 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         return Ok(());
     }
 
+    if !silent {
+        core_battle_logs::item(context)?;
+    }
+
     // Item is suppressed.
     if mon_states::effective_item(&mut context.target_context()?).is_none() {
         return Ok(());
     }
 
-    if !silent {
-        core_battle_logs::item(context)?;
-    }
     core_battle_effects::run_mon_item_event_expecting_void(context, fxlang::BattleEvent::Start);
 
     Ok(())
@@ -4423,7 +4444,9 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
     let item_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&item_id)?
-        .clone();
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected item to have non-condition handle")?;
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetItem,
@@ -4481,7 +4504,9 @@ pub fn take_item(
     let item_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&item_id)?
-        .clone();
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected item to have non-condition handle")?;
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::TakeItem,
@@ -4521,7 +4546,12 @@ pub fn take_item(
 }
 
 fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool> {
-    let item_handle = context.battle_mut().get_effect_handle_by_id(&item)?.clone();
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(&item)?
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected item to have non-condition handle")?;
 
     context.target_mut().item_used_this_turn = true;
     context.target_mut().last_item = Some(item);
@@ -4550,7 +4580,9 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
     let item_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&item_id)?
-        .clone();
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected item to have non-condition handle")?;
 
     if !core_battle_effects::run_event_for_applying_effect(
         context,
@@ -4591,7 +4623,12 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
         fxlang::VariableInput::default(),
     );
 
-    let item_handle = context.battle_mut().get_effect_handle_by_id(item)?.clone();
+    let item_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(item)?
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected item to have non-condition handle")?;
 
     core_battle_effects::run_event_for_applying_effect(
         context,
@@ -4616,7 +4653,9 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
     let item_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&item_id)?
-        .clone();
+        .clone()
+        .non_condition_handle()
+        .wrap_expectation("expected item to have non-condition handle")?;
 
     if !core_battle_effects::run_event_for_applying_effect(
         context,
