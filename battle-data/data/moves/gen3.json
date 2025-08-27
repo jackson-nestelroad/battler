@@ -1034,7 +1034,7 @@
     "condition": {
       "duration": 1,
       "callbacks": {
-        "log_start": ["log_single_turn"],
+        "on_start": ["log_single_turn: with_target"],
         "on_any_prepare_hit": [
           "if !func_call(move_has_flag: $move snatch) or ($move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == $this.id):",
           ["return"],

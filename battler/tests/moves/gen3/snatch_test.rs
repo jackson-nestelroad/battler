@@ -69,6 +69,7 @@ fn snatch_steals_beneficial_status_move() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Shuppet,player-1,1|name:Snatch|target:Shuppet,player-1,1",
+            "singleturn|mon:Shuppet,player-1,1|move:Snatch",
             "move|mon:Shuppet,player-2,1|name:Flamethrower|target:Shuppet,player-1,1",
             "split|side:0",
             "damage|mon:Shuppet,player-1,1|health:35/104",
@@ -77,6 +78,7 @@ fn snatch_steals_beneficial_status_move() {
             "turn|turn:2",
             ["time"],
             "move|mon:Shuppet,player-1,1|name:Snatch|target:Shuppet,player-1,1",
+            "singleturn|mon:Shuppet,player-1,1|move:Snatch",
             "move|mon:Shuppet,player-2,1|name:Amnesia|target:Shuppet,player-2,1",
             "activate|mon:Shuppet,player-1,1|move:Snatch",
             "move|mon:Shuppet,player-1,1|name:Amnesia|target:Shuppet,player-1,1|from:move:Snatch",
