@@ -62,8 +62,8 @@ fn speed_boost_boosts_speed_at_end_of_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "boost|mon:Yanma,player-1,1|stat:spe|by:1",
-            "boost|mon:Yanma,player-2,1|stat:spe|by:1",
+            "boost|mon:Yanma,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
+            "boost|mon:Yanma,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
             "residual",
             "turn|turn:2"
         ]"#,

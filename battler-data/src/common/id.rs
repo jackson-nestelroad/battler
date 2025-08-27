@@ -1,5 +1,8 @@
 use std::{
-    borrow::Cow,
+    borrow::{
+        Borrow,
+        Cow,
+    },
     fmt::{
         self,
         Debug,
@@ -86,6 +89,12 @@ impl Eq for IdRef<'_> {}
 impl PartialEq<Id> for IdRef<'_> {
     fn eq(&self, other: &Id) -> bool {
         self.chars().eq(other.chars())
+    }
+}
+
+impl Borrow<str> for Id {
+    fn borrow(&self) -> &str {
+        &self.0
     }
 }
 

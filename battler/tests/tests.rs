@@ -53,9 +53,44 @@ mod abilities {
     }
 
     mod gen4 {
+        mod adaptability_test;
         mod aftermath_test;
+        mod anger_point_test;
+        mod anticipation_test;
+        mod bad_dreams_test;
+        mod download_test;
+        mod dry_skin_test;
+        mod filter_test;
+        mod flower_gift_test;
+        mod forewarn_test;
+        mod frisk_test;
+        mod hydration_test;
+        mod ice_body_test;
+        mod iron_fist_test;
+        mod klutz_test;
+        mod leaf_guard_test;
+        mod magic_guard_test;
         mod mold_breaker_test;
+        mod motor_drive_test;
         mod multitype_test;
+        mod no_guard_test;
+        mod normalize_test;
+        mod poison_heal_test;
+        mod reckless_test;
+        mod rivalry_test;
+        mod scrappy_test;
+        mod simple_test;
+        mod skill_link_test;
+        mod slow_start_test;
+        mod sniper_test;
+        mod solar_power_test;
+        mod stall_test;
+        mod steadfast_test;
+        mod storm_drain_test;
+        mod technician_test;
+        mod tinted_lens_test;
+        mod unaware_test;
+        mod unburden_test;
     }
 
     mod gen5 {

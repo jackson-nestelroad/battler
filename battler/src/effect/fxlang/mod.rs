@@ -1,6 +1,7 @@
 mod effect;
 mod effect_state;
 mod eval;
+mod event_state;
 mod functions;
 mod local_data;
 mod parsed_effect;
@@ -32,6 +33,7 @@ pub use eval::{
     ProgramEvalResult,
     VariableInput,
 };
+pub use event_state::EventState;
 pub use functions::run_function;
 pub use local_data::LocalData;
 pub use parsed_effect::ParsedEffect;

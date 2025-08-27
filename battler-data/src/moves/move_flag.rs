@@ -129,6 +129,9 @@ pub enum MoveFlag {
     /// A thawing move.
     #[string = "Thawing"]
     Thawing,
+    /// Thaws the target when hit.
+    #[string = "ThawsTarget"]
+    ThawsTarget,
     /// A wind move.
     #[string = "Wind"]
     Wind,

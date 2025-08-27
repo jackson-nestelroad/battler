@@ -81,7 +81,7 @@ fn lightning_rod_redirects_electric_moves() {
         r#"[
             "activate|mon:Pikachu,player-1,1|ability:Lightning Rod",
             "move|mon:Pikachu,player-1,1|name:Thunderbolt|target:Pikachu,player-2,1",
-            "boost|mon:Pikachu,player-2,1|stat:spa|by:1",
+            "boost|mon:Pikachu,player-2,1|stat:spa|by:1|from:ability:Lightning Rod",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -91,7 +91,7 @@ fn lightning_rod_redirects_electric_moves() {
 }
 
 #[test]
-fn me_first_takes_priority_over_lightning_rod() {
+fn follow_me_takes_priority_over_lightning_rod() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut player = team().unwrap();
     player.members[0].ability = "Lightning Rod".to_owned();

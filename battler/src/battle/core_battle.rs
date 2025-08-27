@@ -2115,6 +2115,11 @@ impl<'d> CoreBattle<'d> {
         EffectHandle::NonExistent(id)
     }
 
+    /// Resolve an effect's ID if it an alias by performing an effect lookup.
+    pub fn resolve_effect_id(&mut self, id: &Id) -> Option<Id> {
+        self.get_effect_handle_by_id(id).ok()?.try_id().cloned()
+    }
+
     /// Gets an [`Effect`] by handle.
     ///
     /// [`EffectHandle`] is considered a stable way to look up any effect in the dex.

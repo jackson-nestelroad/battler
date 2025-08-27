@@ -104,8 +104,8 @@ where
         }
     }
 
-    fn cache_data(&self, id: &Id) -> Result<()> {
-        let data = self.lookup_data_by_id(id)?;
+    fn cache_data(&self, id: &Id, real_id: &Id) -> Result<()> {
+        let data = self.lookup_data_by_id(id, real_id)?;
         let resource = W::wrap(id.clone(), data);
         if !self.cache.save(id, resource) {
             Err(general_error(format!(
@@ -123,18 +123,18 @@ where
 
     /// Retrieves a resource by ID.
     pub fn get_by_id(&self, id: &Id) -> Result<ElementRef<'_, T>> {
-        let id = self.resolve_alias(id.clone())?;
+        let real_id = self.resolve_alias(id.clone())?;
         // The borrow checker struggles if we use pattern matching here, so we have to do two
         // lookups.
-        if self.cache.is_cached(&id) {
+        if self.cache.is_cached(id) {
             return self
                 .cache
-                .get(&id)
+                .get(id)
                 .map_err(|err| err.convert_error_with_message(format!("cached resource {id}")));
         }
-        self.cache_data(&id)?;
+        self.cache_data(id, &real_id)?;
         self.cache
-            .get(&id)
+            .get(id)
             .map_err(|err| err.convert_error_with_message(format!("cached resource {id}")))
     }
 
@@ -151,8 +151,8 @@ where
     }
 
     /// Looks up a resource by ID using the internal [`ResourceLookup`] implementation.
-    fn lookup_data_by_id(&self, id: &Id) -> Result<D> {
-        self.lookup.lookup(&id)
+    fn lookup_data_by_id(&self, id: &Id, real_id: &Id) -> Result<D> {
+        self.lookup.lookup_alias(&id, real_id)
     }
 }
 
@@ -319,10 +319,10 @@ mod dex_test {
         assert_eq!(a.unwrap().deref(), b.as_ref().unwrap().deref());
         assert_eq!(b.unwrap().data.id, c.as_ref().unwrap().data.id);
         assert_eq!(c.unwrap().data.id, d.unwrap().data.id);
-        // Only a single lookup occurred for the resolved alias.
+        // Multiple lookups for each alias.
         assert_eq!(
             *dex.lookup.lookup_calls.borrow(),
-            HashMap::from_iter([(Id::from("native"), 1)])
+            HashMap::from_iter([(Id::from("native"), 3)])
         );
     }
 }

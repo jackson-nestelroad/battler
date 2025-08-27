@@ -35,6 +35,8 @@ pub(crate) type ModifyStateFromSide = fn(&mut MoveContext, MonType);
 pub(crate) type ModifyStateFromMon = fn(&mut MoveContext, MonType);
 /// Modifies the move being used.
 pub(crate) type ModifyMove = fn(&mut MoveContext);
+/// Checks if the move ignores immunity.
+pub(crate) type MoveIgnoresImmunity = fn(&MoveContext) -> bool;
 /// Fails the move before it hits.
 pub(crate) type FailMoveBeforeHit = fn(&mut MoveContext, &mut Hit) -> bool;
 /// Applies fixed damage.
@@ -208,6 +210,9 @@ pub(crate) static MODIFY_MOVE_HOOKS: LazyLock<IndexMap<&str, ModifyMove>> = Lazy
         }) as _,
     )])
 });
+
+pub(crate) static MOVE_IGNORES_IMMUNITY: LazyLock<IndexMap<&str, MoveIgnoresImmunity>> =
+    LazyLock::new(|| IndexMap::from_iter([("move:Thunder Wave", (|_: &MoveContext| true) as _)]));
 
 pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBeforeHit>> =
     LazyLock::new(|| {

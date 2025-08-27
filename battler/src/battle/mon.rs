@@ -1046,16 +1046,34 @@ impl Mon {
 
         let mut value = context.mon().stats.get(stat);
         if !unboosted {
-            let boosts = context.mon().boosts.clone();
-            let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
-                &mut context.as_battle_context_mut().mon_context(stat_user)?,
-                fxlang::BattleEvent::ModifyBoosts,
-                boosts,
-            );
-            let boost = match boost {
-                Some(boost) => boost,
-                None => boosts.get(stat.try_into()?),
+            let mut boosts = context.mon().boosts.clone();
+
+            if let Some(boost) = boost {
+                boosts.set(stat.try_into()?, boost);
+            }
+
+            let boosts = match &calculate_stat_context {
+                Some(calculate_stat_context) => {
+                    core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
+                        &mut context.as_battle_context_mut().applying_effect_context(
+                            calculate_stat_context.effect.clone(),
+                            Some(calculate_stat_context.source),
+                            stat_user,
+                            None,
+                        )?,
+                        fxlang::BattleEvent::ModifyBoosts,
+                        boosts,
+                    )
+                }
+                None => core_battle_effects::run_event_for_mon_expecting_boost_table(
+                    &mut context.as_battle_context_mut().mon_context(stat_user)?,
+                    fxlang::BattleEvent::ModifyBoosts,
+                    boosts,
+                ),
             };
+
+            let boost = boosts.get(stat.try_into()?);
+
             static BOOST_TABLE: LazyLock<[Fraction<u16>; 7]> = LazyLock::new(|| {
                 [
                     Fraction::new(1, 1),
@@ -1084,9 +1102,9 @@ impl Mon {
                 Stat::SpDef => Some(fxlang::BattleEvent::ModifySpD),
                 Stat::Spe => Some(fxlang::BattleEvent::ModifySpe),
             } {
-                let mon_handle = context.mon_handle();
                 value = match calculate_stat_context {
                     Some(calculate_stat_context) => {
+                        let mon_handle = context.mon_handle();
                         core_battle_effects::run_event_for_applying_effect_expecting_u16(
                             &mut context.as_battle_context_mut().applying_effect_context(
                                 calculate_stat_context.effect,

@@ -51,6 +51,7 @@ use crate::{
             CallbackFlag,
             DynamicEffectStateConnector,
             EffectStateConnector,
+            EventState,
             MaybeReferenceValue,
             MaybeReferenceValueForOperation,
             ParsedProgramBlock,
@@ -570,6 +571,13 @@ where
                         effect_matched = true;
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "base_power" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::UFraction(mov.data.base_power.into()))
+                            .unwrap_or(ValueRef::Undefined),
                             "category" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -621,6 +629,13 @@ where
                                 .name()
                                 .to_owned(),
                             ),
+                            "ohko" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Boolean(mov.data.ohko_type.is_some()))
+                            .unwrap_or(ValueRef::Undefined),
                             "type" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -688,6 +703,15 @@ where
                                 .as_ref()
                                 .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
+                            "multiaccuracy" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.data.multiaccuracy,
+                            ),
+                            "multihit" => context
+                                .active_move(active_move_handle)?
+                                .data
+                                .multihit
+                                .map(|val| ValueRef::MultihitType(val))
+                                .unwrap_or(ValueRef::Undefined),
                             "ohko" => ValueRef::Boolean(
                                 context
                                     .active_move(active_move_handle)?
@@ -732,9 +756,6 @@ where
                             }
                             "target" => ValueRef::MoveTarget(
                                 context.active_move(active_move_handle)?.data.target,
-                            ),
-                            "thaws_target" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.data.thaws_target,
                             ),
                             "total_damage" => ValueRef::UFraction(
                                 context.active_move(active_move_handle)?.total_damage.into(),
@@ -1208,6 +1229,11 @@ where
                             "type" => ValueRef::Type(natural_gift_data.typ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
+                    } else if let ValueRef::MultihitType(multihit) = value {
+                        value = match *member {
+                            "max" => ValueRef::UFraction(multihit.max().into()),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
                     } else if let ValueRef::JudgmentData(judgment_data) = value {
                         value = match *member {
                             "type" => ValueRef::Type(judgment_data.typ),
@@ -1340,11 +1366,11 @@ where
                                 .data
                                 .hit_effect,
                         ),
-                        "ignore_immunity" => ValueRefMut::OptionalBoolean(
+                        "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
                                 .data
-                                .ignore_immunity,
+                                .multiaccuracy,
                         ),
                         "multihit" => ValueRefMut::OptionalMultihitType(
                             &mut context.active_move_mut(**active_move_handle)?.data.multihit,
@@ -1562,19 +1588,21 @@ impl ProgramEvalResult {
 ///
 /// Holds the global state of an fxlang [`ParsedProgram`] during evaluation. Individual blocks
 /// ([`ParsedProgramBlock`]) are evaluated recursively and get their own local state.
-pub struct Evaluator {
+pub struct Evaluator<'event_state> {
     statement: usize,
     vars: VariableRegistry,
     event: BattleEvent,
+    event_state: &'event_state EventState,
 }
 
-impl Evaluator {
+impl<'event_state> Evaluator<'event_state> {
     /// Creates a new evaluator.
-    pub fn new(event: BattleEvent) -> Self {
+    pub fn new(event: BattleEvent, event_state: &'event_state EventState) -> Self {
         Self {
             statement: 0,
             vars: VariableRegistry::new(),
             event,
+            event_state,
         }
     }
 
@@ -2002,8 +2030,15 @@ impl Evaluator {
             .get("effect_state")?
             .map(|val| (*val).clone().effect_state().ok())
             .flatten();
-        run_function(context, function_name, args, self.event, effect_state)
-            .map(|val| val.map(|val| MaybeReferenceValue::from(val)))
+        run_function(
+            context,
+            function_name,
+            args,
+            self.event,
+            self.event_state,
+            effect_state,
+        )
+        .map(|val| val.map(|val| MaybeReferenceValue::from(val)))
     }
 
     fn evaluate_prefix_operator<'eval>(

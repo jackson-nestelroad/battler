@@ -407,8 +407,8 @@ fn neutralizing_gas_restarts_abilities_on_exit() {
             "faint|mon:Koffing,player-1,1",
             "end|mon:Koffing,player-1,1|ability:Neutralizing Gas",
             "activate|mon:Mightyena,player-1,2|ability:Intimidate",
-            "unboost|mon:Psyduck,player-2,1|stat:atk|by:1",
-            "unboost|mon:Castform,player-2,2|stat:atk|by:1",
+            "unboost|mon:Psyduck,player-2,1|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
+            "unboost|mon:Castform,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -458,8 +458,8 @@ fn neutralizing_gas_restarts_abilities_on_end() {
             "abilityend|mon:Koffing,player-1,1|ability:Neutralizing Gas|from:move:Gastro Acid|of:Psyduck,player-2,1",
             "end|mon:Koffing,player-1,1|ability:Neutralizing Gas",
             "activate|mon:Mightyena,player-1,2|ability:Intimidate",
-            "unboost|mon:Psyduck,player-2,1|stat:atk|by:1",
-            "unboost|mon:Castform,player-2,2|stat:atk|by:1",
+            "unboost|mon:Psyduck,player-2,1|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
+            "unboost|mon:Castform,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -515,8 +515,8 @@ fn neutralizing_gas_does_not_suppress_with_ability_shield() {
             "faint|mon:Koffing,player-1,1",
             "end|mon:Koffing,player-1,1|ability:Neutralizing Gas",
             "activate|mon:Mightyena,player-1,2|ability:Intimidate",
-            "unboost|mon:Psyduck,player-2,1|stat:atk|by:1",
-            "unboost|mon:Castform,player-2,2|stat:atk|by:1",
+            "unboost|mon:Psyduck,player-2,1|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
+            "unboost|mon:Castform,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
             "formechange|mon:Castform,player-2,2|species:Castform|from:ability:Forecast",
             "residual",
             "turn|turn:2"
@@ -586,7 +586,7 @@ fn neutralizing_gas_does_not_end_when_another_mon_has_ability() {
             "faint|mon:Koffing,player-1,1",
             "end|mon:Koffing,player-1,1|ability:Neutralizing Gas",
             "activate|mon:Mightyena,player-1,2|ability:Intimidate",
-            "unboost|mon:Ditto,player-2,2|stat:atk|by:1",
+            "unboost|mon:Ditto,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
             "weather|weather:Rain|residual",
             "residual",
             "turn|turn:3"
@@ -661,7 +661,7 @@ fn neutralizing_gas_does_not_activate_when_transformed() {
             "faint|mon:Koffing,player-1,1",
             "end|mon:Koffing,player-1,1|ability:Neutralizing Gas",
             "activate|mon:Mightyena,player-1,2|ability:Intimidate",
-            "unboost|mon:Ditto,player-2,2|stat:atk|by:1",
+            "unboost|mon:Ditto,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
             "weather|weather:Rain|residual",
             "residual",
             "turn|turn:3"

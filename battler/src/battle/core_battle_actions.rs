@@ -1419,8 +1419,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     let target_mon_handle = context.target_mon_handle();
     // Type immunity.
     let move_type = context.active_move().data.primary_type;
-    let ignore_immunity =
-        context.active_move().data.ignore_immunity() || context.active_move().data.typeless;
+    let ignore_immunity = ignore_type_immunity(context)?;
     if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
         return Ok(MoveOutcomeOnTarget::Failure);
     }
@@ -1682,6 +1681,12 @@ fn modify_damage(
             .clone()
             .stab_modifier
             .unwrap_or(Fraction::new(3, 2));
+        let stab_modifier =
+            core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
+                &mut context.applying_effect_context()?,
+                fxlang::BattleEvent::ModifyStab,
+                stab_modifier.convert(),
+            );
         base_damage = modify_32(base_damage, stab_modifier);
     }
 
@@ -1841,10 +1846,11 @@ mod direct_move_step {
     ) -> Result<()> {
         let move_type = context.active_move().data.primary_type;
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            // TODO: IgnoreImmunity event for the move (Thousand Arrows has a special rule).
-            let immune = !context.active_move().data.ignore_immunity();
+            let ignore_immunity = core_battle_actions::ignore_type_immunity(
+                &mut context.target_context(target.handle)?,
+            )?;
             let mut target_context = context.target_mon_context(target.handle)?;
-            let immune = immune && Mon::is_immune(&mut target_context, move_type)?;
+            let immune = !ignore_immunity && Mon::is_immune(&mut target_context, move_type)?;
             if immune {
                 core_battle_logs::immune(&mut target_context, None)?;
                 target.outcome = MoveOutcome::Failed;
@@ -2516,7 +2522,7 @@ pub fn boost(
 
         // We are careful to only log stat changes that should be visible to the user.
         if delta != 0 || capped || (!is_secondary && !is_self && user_intended && !suppressed) {
-            core_battle_logs::boost(&mut context.target_context()?, boost, delta, original_delta)?;
+            core_battle_logs::boost(context, boost, delta, original_delta)?;
         }
     }
 
@@ -2856,6 +2862,25 @@ pub fn try_set_status(
     );
 
     Ok(ApplyMoveEffectResult::Success)
+}
+
+fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
+    let ignore_immunity = context.active_move().data.typeless
+        || context.active_move().data.category == MoveCategory::Status;
+    let target = context.target_mon_handle();
+    let ignore_immunity = core_battle_effects::run_active_move_event_expecting_bool(
+        context.as_active_move_context_mut(),
+        fxlang::BattleEvent::IgnoreImmunity,
+        core_battle_effects::MoveTargetForEvent::Mon(target),
+    )
+    .unwrap_or(ignore_immunity);
+    let ignore_immunity =
+        core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+            &mut context.applying_effect_context()?,
+            fxlang::BattleEvent::IgnoreImmunity,
+            ignore_immunity,
+        );
+    Ok(ignore_immunity)
 }
 
 /// Checks the immunity of a Mon from an effect.
@@ -4430,6 +4455,12 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
     });
 
     start_item(context, false)?;
+
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterSetItem,
+        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+    );
 
     Ok(true)
 }

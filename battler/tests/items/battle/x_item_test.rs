@@ -78,7 +78,7 @@ fn x_attack_boosts_attack() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "useitem|player:player-1|name:X Attack|target:Pikachu,player-1,1",
-            "boost|mon:Pikachu,player-1,1|stat:atk|by:2",
+            "boost|mon:Pikachu,player-1,1|stat:atk|by:2|from:item:X Attack",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -140,11 +140,11 @@ fn max_mushrooms_boost_multiple_stats() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "useitem|player:player-1|name:Max Mushrooms|target:Pikachu,player-1,1",
-            "boost|mon:Pikachu,player-1,1|stat:atk|by:1",
-            "boost|mon:Pikachu,player-1,1|stat:def|by:1",
-            "boost|mon:Pikachu,player-1,1|stat:spa|by:1",
-            "boost|mon:Pikachu,player-1,1|stat:spd|by:1",
-            "boost|mon:Pikachu,player-1,1|stat:spe|by:1",
+            "boost|mon:Pikachu,player-1,1|stat:atk|by:1|from:item:Max Mushrooms",
+            "boost|mon:Pikachu,player-1,1|stat:def|by:1|from:item:Max Mushrooms",
+            "boost|mon:Pikachu,player-1,1|stat:spa|by:1|from:item:Max Mushrooms",
+            "boost|mon:Pikachu,player-1,1|stat:spd|by:1|from:item:Max Mushrooms",
+            "boost|mon:Pikachu,player-1,1|stat:spe|by:1|from:item:Max Mushrooms",
             "residual",
             "turn|turn:2"
         ]"#,

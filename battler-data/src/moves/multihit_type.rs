@@ -13,12 +13,22 @@ use serde::{
 };
 
 /// The number of hits done by a multihit move.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MultihitType {
     /// A static number of hits.
     Static(u8),
     /// A range of numbers to choose from.
     Range(u8, u8),
+}
+
+impl MultihitType {
+    /// The maximum number of times the move can hit.
+    pub fn max(&self) -> u8 {
+        match self {
+            Self::Static(val) => *val,
+            Self::Range(_, max) => *max,
+        }
+    }
 }
 
 impl Display for MultihitType {

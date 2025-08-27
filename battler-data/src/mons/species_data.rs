@@ -177,8 +177,13 @@ impl SpeciesData {
 
     /// Creates cosmetic forme data by moving and modifying this instance of [`SpeciesData`].
     pub fn create_cosmetic_forme_data(mut self, forme: String) -> Self {
-        self.name = format!("{}-{forme}", self.base_species);
-        self.forme = Some(forme);
+        self.forme = Some(
+            forme
+                .strip_prefix(&format!("{}-", self.base_species))
+                .map(|s| s.to_owned())
+                .unwrap_or(forme.clone()),
+        );
+        self.name = forme;
         self.base_forme = None;
         self.cosmetic_formes.clear();
         self

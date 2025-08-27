@@ -19,6 +19,7 @@ use crate::{
             DynamicEffectStateConnector,
             EvaluationContext,
             Evaluator,
+            EventState,
             ParsedEffect,
             ProgramEvalResult,
             VariableInput,
@@ -55,6 +56,7 @@ impl EffectManager {
         effect_handle: &EffectHandle,
         event: BattleEvent,
         input: VariableInput,
+        event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
         context
@@ -76,8 +78,14 @@ impl EffectManager {
             )));
         }
 
-        let result =
-            Self::evaluate_internal(context, effect_handle, event, input, effect_state_connector);
+        let result = Self::evaluate_internal(
+            context,
+            effect_handle,
+            event,
+            input,
+            event_state,
+            effect_state_connector,
+        );
 
         context
             .battle_context_mut()
@@ -165,9 +173,10 @@ impl EffectManager {
         effect_handle: &EffectHandle,
         event: BattleEvent,
         input: VariableInput,
+        event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
-        let mut evaluator = Evaluator::new(event);
+        let mut evaluator = Evaluator::new(event, event_state);
         let effect = Self::parsed_effect(context.battle_context_mut(), effect_handle)?;
         match effect.as_ref().map(|effect| effect.event(event)).flatten() {
             Some(callback) => {

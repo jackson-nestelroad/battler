@@ -100,6 +100,7 @@ pub enum ValueType {
     MoveCategory,
     MoveSlot,
     MoveTarget,
+    MultihitType,
     NaturalGiftData,
     Nature,
     SpecialItemData,
@@ -164,6 +165,7 @@ pub enum Value {
     MoveCategory(MoveCategory),
     MoveSlot(MoveSlot),
     MoveTarget(MoveTarget),
+    MultihitType(MultihitType),
     NaturalGiftData(NaturalGiftData),
     Nature(Nature),
     SpecialItemData(SpecialItemData),
@@ -209,6 +211,7 @@ impl Value {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
@@ -302,6 +305,7 @@ impl Value {
             ValueType::MoveCategory => self.move_category().map(Value::MoveCategory),
             ValueType::MoveSlot => self.move_slot().map(Value::MoveSlot),
             ValueType::MoveTarget => self.move_target().map(Value::MoveTarget),
+            ValueType::MultihitType => self.multihit_type().map(Value::MultihitType),
             ValueType::NaturalGiftData => self.natural_gift_data().map(Value::NaturalGiftData),
             ValueType::Nature => self.nature().map(Value::Nature),
             ValueType::SpecialItemData => self.special_item_data().map(Value::SpecialItemData),
@@ -351,6 +355,13 @@ impl Value {
 
     /// Consumes the value into a [`Fraction<u16>`].
     pub fn fraction_u16(self) -> Result<Fraction<u16>> {
+        self.fraction_u64()?
+            .try_convert()
+            .map_err(integer_overflow_error)
+    }
+
+    /// Consumes the value into a [`Fraction<u32>`].
+    pub fn fraction_u32(self) -> Result<Fraction<u32>> {
         self.fraction_u64()?
             .try_convert()
             .map_err(integer_overflow_error)
@@ -725,6 +736,7 @@ impl Value {
             Self::UFraction(val) => Ok(MultihitType::Static(
                 val.floor().try_into().map_err(integer_overflow_error)?,
             )),
+            Self::MultihitType(val) => Ok(val),
             val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to a multihit type",
                 val.value_type(),
@@ -883,6 +895,7 @@ pub enum MaybeReferenceValue<'eval> {
     MoveCategory(MoveCategory),
     MoveSlot(MoveSlot),
     MoveTarget(MoveTarget),
+    MultihitType(MultihitType),
     NaturalGiftData(NaturalGiftData),
     Nature(Nature),
     SpecialItemData(SpecialItemData),
@@ -930,6 +943,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
@@ -975,8 +989,9 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Gender(val) => Value::Gender(*val),
             Self::JudgmentData(val) => Value::JudgmentData(val.clone()),
             Self::MoveCategory(val) => Value::MoveCategory(*val),
-            Self::MoveTarget(val) => Value::MoveTarget(*val),
             Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
+            Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MultihitType(val) => Value::MultihitType(*val),
             Self::NaturalGiftData(val) => Value::NaturalGiftData(val.clone()),
             Self::Nature(val) => Value::Nature(*val),
             Self::SpecialItemData(val) => Value::SpecialItemData(val.clone()),
@@ -1079,6 +1094,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
+            Value::MultihitType(val) => Self::MultihitType(val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(val),
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
@@ -1145,6 +1161,7 @@ pub enum ValueRef<'eval> {
     MoveCategory(MoveCategory),
     MoveSlot(&'eval MoveSlot),
     MoveTarget(MoveTarget),
+    MultihitType(MultihitType),
     NaturalGiftData(&'eval NaturalGiftData),
     Nature(Nature),
     SpecialItemData(&'eval SpecialItemData),
@@ -1194,6 +1211,7 @@ impl<'eval> ValueRef<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
@@ -1243,6 +1261,7 @@ impl<'eval> ValueRef<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MultihitType(val) => Value::MultihitType(*val),
             Self::NaturalGiftData(val) => Value::NaturalGiftData((*val).clone()),
             Self::Nature(val) => Value::Nature(*val),
             Self::SpecialItemData(val) => Value::SpecialItemData((*val).clone()),
@@ -1401,6 +1420,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
+            Value::MultihitType(val) => Self::MultihitType(*val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(*val),
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
@@ -1504,6 +1524,7 @@ pub enum ValueRefMut<'eval> {
     MoveCategory(&'eval mut MoveCategory),
     MoveSlot(&'eval mut MoveSlot),
     MoveTarget(&'eval mut MoveTarget),
+    MultihitType(&'eval mut MultihitType),
     OptionalMultihitType(&'eval mut Option<MultihitType>),
     NaturalGiftData(&'eval mut NaturalGiftData),
     Nature(&'eval mut Nature),
@@ -1566,7 +1587,8 @@ impl<'eval> ValueRefMut<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
-            Self::OptionalMultihitType(_) => ValueType::UFraction,
+            Self::MultihitType(_) => ValueType::MultihitType,
+            Self::OptionalMultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
@@ -1721,6 +1743,9 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::MoveTarget(var) => {
                 *var = val.move_target()?;
             }
+            ValueRefMut::MultihitType(var) => {
+                *var = val.multihit_type()?;
+            }
             ValueRefMut::OptionalMultihitType(var) => {
                 *var = (!val.is_undefined())
                     .then(|| val.multihit_type())
@@ -1790,6 +1815,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
+            Value::MultihitType(val) => Self::MultihitType(val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(val),
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
@@ -1848,6 +1874,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     MoveCategory(MoveCategory),
     MoveSlot(&'eval MoveSlot),
     MoveTarget(MoveTarget),
+    MultihitType(MultihitType),
     NaturalGiftData(&'eval NaturalGiftData),
     Nature(Nature),
     SpecialItemData(&'eval SpecialItemData),
@@ -1900,6 +1927,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
@@ -1952,6 +1980,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MultihitType(val) => Value::MultihitType(*val),
             Self::NaturalGiftData(val) => Value::NaturalGiftData((*val).clone()),
             Self::Nature(val) => Value::Nature(*val),
             Self::SpecialItemData(val) => Value::SpecialItemData((*val).clone()),
@@ -2007,13 +2036,14 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(_) => 157,
             Self::MoveSlot(_) => 158,
             Self::MoveTarget(_) => 159,
-            Self::NaturalGiftData(_) => 160,
-            Self::Nature(_) => 161,
-            Self::SpecialItemData(_) => 162,
-            Self::TempSpecialItemData(_) => 163,
-            Self::Stat(_) => 164,
-            Self::StatTable(_) => 165,
-            Self::Type(_) => 166,
+            Self::MultihitType(_) => 160,
+            Self::NaturalGiftData(_) => 161,
+            Self::Nature(_) => 162,
+            Self::SpecialItemData(_) => 163,
+            Self::TempSpecialItemData(_) => 164,
+            Self::Stat(_) => 165,
+            Self::StatTable(_) => 166,
+            Self::Type(_) => 167,
 
             Self::EffectState(_) => 200,
 
@@ -2468,6 +2498,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
             (Self::MoveSlot(lhs), Self::MoveSlot(rhs)) => lhs.eq(rhs),
             (Self::MoveTarget(lhs), Self::MoveTarget(rhs)) => lhs.eq(rhs),
+            (Self::MultihitType(lhs), Self::MultihitType(rhs)) => lhs.eq(rhs),
             (Self::NaturalGiftData(lhs), Self::NaturalGiftData(rhs)) => lhs.eq(rhs),
             (Self::Nature(lhs), Self::Nature(rhs)) => lhs.eq(rhs),
             (Self::SpecialItemData(lhs), Self::SpecialItemData(rhs)) => lhs.eq(rhs),
@@ -2660,6 +2691,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
+            Value::MultihitType(val) => Self::MultihitType(*val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(*val),
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
@@ -2706,6 +2738,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
             MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
             MaybeReferenceValue::MoveTarget(val) => Self::MoveTarget(*val),
+            MaybeReferenceValue::MultihitType(val) => Self::MultihitType(*val),
             MaybeReferenceValue::NaturalGiftData(val) => Self::NaturalGiftData(val),
             MaybeReferenceValue::Nature(val) => Self::Nature(*val),
             MaybeReferenceValue::SpecialItemData(val) => Self::SpecialItemData(val),
@@ -2757,6 +2790,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::MoveCategory(val) => Self::MoveCategory(val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(val),
+            ValueRef::MultihitType(val) => Self::MultihitType(val),
             ValueRef::NaturalGiftData(val) => Self::NaturalGiftData(val),
             ValueRef::Nature(val) => Self::Nature(val),
             ValueRef::SpecialItemData(val) => Self::SpecialItemData(val),
@@ -2811,6 +2845,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(*val),
+            ValueRef::MultihitType(val) => Self::MultihitType(*val),
             ValueRef::NaturalGiftData(val) => Self::NaturalGiftData(*val),
             ValueRef::Nature(val) => Self::Nature(*val),
             ValueRef::SpecialItemData(val) => Self::SpecialItemData(*val),

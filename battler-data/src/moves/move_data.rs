@@ -104,9 +104,6 @@ pub struct MoveData {
     ///
     /// If a target has this type, it is immune.
     pub ohko_type: Option<OhkoType>,
-    /// Thaws the target?
-    #[serde(default)]
-    pub thaws_target: bool,
     /// Type of switch that occurs on the user.
     pub user_switch: Option<SwitchType>,
     /// How the user self destructs.
@@ -168,9 +165,6 @@ pub struct MoveData {
     /// Ignore evasion modifiers?
     #[serde(default)]
     pub ignore_evasion: bool,
-    /// Ignore immunity?
-    #[serde(default)]
-    pub ignore_immunity: Option<bool>,
     /// Ignore offensive modifiers?
     #[serde(default)]
     pub ignore_offensive: bool,
@@ -195,14 +189,4 @@ pub struct MoveData {
     /// Dynamic battle effects of the condition created by this move.
     #[serde(default)]
     pub condition: serde_json::Value,
-}
-
-impl MoveData {
-    /// Does the move ignore immunity?
-    ///
-    /// The default value of this depends on the [`MoveCategory`].
-    pub fn ignore_immunity(&self) -> bool {
-        self.ignore_immunity
-            .unwrap_or(self.category == MoveCategory::Status)
-    }
 }

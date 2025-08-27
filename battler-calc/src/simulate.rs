@@ -780,7 +780,7 @@ fn calculate_status_effect_for_hit(
 }
 
 fn calculate_immunity(context: &mut MoveContext) -> Result<Option<Hit>> {
-    let ignore_immunity = context.move_data.ignore_immunity() || context.move_data.typeless;
+    let ignore_immunity = move_ignores_immunity(context);
     if !ignore_immunity
         && !context.mon_negates_immunity(MonType::Defender)
         && context.mon_is_immune(MonType::Defender)
@@ -1593,6 +1593,15 @@ fn apply_fixed_damage(context: &MoveContext) -> Option<Range<u64>> {
         }
     }
     None
+}
+
+fn move_ignores_immunity(context: &MoveContext) -> bool {
+    let effects = all_effects(context, None);
+    let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MOVE_IGNORES_IMMUNITY);
+    hooks
+        .first()
+        .map(|(_, hook)| hook(context))
+        .unwrap_or(context.move_data.category == MoveCategory::Status || context.move_data.typeless)
 }
 
 fn modify_move_data(context: &mut MoveContext) {

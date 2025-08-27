@@ -264,8 +264,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Thawing"],
-    "thaws_target": true
+    "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"]
   },
   "ruination": {
     "name": "Ruination",
@@ -586,8 +585,7 @@
     "accuracy": 90,
     "base_power": 80,
     "target": "AllAdjacentFoes",
-    "flags": ["Heal", "Mirror", "Protect", "Thawing"],
-    "thaws_target": true,
+    "flags": ["Heal", "Mirror", "Protect", "Thawing", "ThawsTarget"],
     "drain_percent": "1/2"
   },
   "syrupbomb": {

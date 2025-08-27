@@ -169,7 +169,8 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. Apply damage modifiers:
                         1. `WeatherModifyDamage`.
                         1. Randomize base damage.
-                        1. Type effectiveness: `Effectiveness`.
+                        1. `ModifyStab`.
+                        1. Type effectiveness: `IgnoreImmunity`, `Effectiveness`.
                         1. `ModifyDamage`.
                   1. Apply damage for each target:
                      1. Check immunity: `Immunity`.
@@ -270,6 +271,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. Item `End`.
 1. `SetItem`.
 1. Item `Start`.
+1. `AfterSetItem`.
 
 ## Use Item
 

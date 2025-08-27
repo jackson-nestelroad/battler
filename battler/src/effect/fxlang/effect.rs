@@ -90,6 +90,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesOptionalEffect
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
+    MaybeApplyingEffectBoostModifier = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesOptionalEffect
+        | CallbackFlag::ReturnsBoosts
+        | CallbackFlag::ReturnsVoid,
 
     EffectResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -286,6 +291,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    /// Runs after a Mon has its item set.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterSetItem"]
+    AfterSetItem,
     /// Runs after a Mon's status effect is changed.
     ///
     /// Only runs if the status has been set successfully. This event will not undo a status
@@ -313,15 +323,30 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterUseItem"]
     AfterUseItem,
+    /// [`ModifyAtk`][`Self::ModifyAtk`] but triggers for an ally Mon.
+    #[string = "AllyModifyAtk"]
+    AllyModifyAtk,
+    /// [`ModifySpD`][`Self::ModifySpD`] but triggers for an ally Mon.
+    #[string = "AllyModifySpD"]
+    AllyModifySpD,
     /// [`SetStatus`][`Self::SetStatus`] but triggers for an ally Mon.
     #[string = "AllySetStatus"]
     AllySetStatus,
+    /// [`AccuracyExempt`][`Self::AccuracyExempt`] but triggers for any Mon.
+    #[string = "AnyAccuracyExempt"]
+    AnyAccuracyExempt,
     /// [`Damage`][`Self::Damage`] but triggers for any Mon.
     #[string = "AnyDamage"]
     AnyDamage,
     /// [`Exit`][`Self::Exit`] but triggers for any Mon.
     #[string = "AnyExit"]
     AnyExit,
+    /// [`Invulnerability`][`Self::Invulnerability`] but triggers for any Mon.
+    #[string = "AnyInvulnerability"]
+    AnyInvulnerability,
+    /// [`ModifyBoosts`][`Self::ModifyBoosts`] but triggers for any Mon.
+    #[string = "AnyModifyBoosts"]
+    AnyModifyBoosts,
     /// [`PrepareHit`][`Self::PrepareHit`] but triggers for any Mon.
     #[string = "AnyPrepareHit"]
     AnyPrepareHit,
@@ -560,6 +585,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of an applying effect on a side.
     #[string = "HitSide"]
     HitSide,
+    /// Runs when determining if a move should ignore type immunity.
+    ///
+    /// Runs on the active move and in the context of a move target.
+    #[string = "IgnoreImmunity"]
+    IgnoreImmunity,
     /// Runs when determining if a Mon is immune to some status.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -679,11 +709,6 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyDef"]
     ModifyDef,
-    /// Runs when calculating a Mon's SpA stat.
-    ///
-    /// Runs in the context of an applying effect on a Mon.
-    #[string = "ModifySpA"]
-    ModifySpA,
     /// Runs when calculating the amount of experience gained by a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -704,6 +729,11 @@ pub enum BattleEvent {
     /// Runs in the context of a move target.
     #[string = "ModifySecondaryEffects"]
     ModifySecondaryEffects,
+    /// Runs when calculating a Mon's SpA stat.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "ModifySpA"]
+    ModifySpA,
     /// Runs when calculating a Mon's SpD stat.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -714,6 +744,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpe"]
     ModifySpe,
+    /// Runs when calculating a move's STAB multiplier.
+    ///
+    /// Runs in the context of a move user.
+    #[string = "ModifyStab"]
+    ModifyStab,
     /// Runs before a move is used, to modify the target Mon.
     ///
     /// Runs on the active move and in the context of a move user.
@@ -894,6 +929,9 @@ pub enum BattleEvent {
     /// [`BasePower`][`Self::BasePower`] but triggers for the source Mon of the event.
     #[string = "SourceBasePower"]
     SourceBasePower,
+    /// [`IgnoreImmunity`][`Self::IgnoreImmunity`] but triggers for the source Mon of the event.
+    #[string = "SourceIgnoreImmunity"]
+    SourceIgnoreImmunity,
     /// [`Invulnerability`][`Self::Invulnerability`] but triggers for the source Mon of the event.
     #[string = "SourceInvulnerability"]
     SourceInvulnerability,
@@ -1136,13 +1174,19 @@ impl BattleEvent {
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
+            Self::AfterSetItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AllyModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::AllyModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AnyAccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AnyDamage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::AnyExit => CommonCallbackType::MonVoid as u32,
+            Self::AnyInvulnerability => CommonCallbackType::MoveResult as u32,
+            Self::AnyModifyBoosts => CommonCallbackType::MaybeApplyingEffectBoostModifier as u32,
             Self::AnyPrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::AnyRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1190,6 +1234,7 @@ impl BattleEvent {
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
+            Self::IgnoreImmunity => CommonCallbackType::MoveResult as u32,
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
@@ -1207,7 +1252,7 @@ impl BattleEvent {
             Self::ModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::ModifyActionSpeed => CommonCallbackType::MonModifier as u32,
             Self::ModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::ModifyBoosts => CommonCallbackType::MonBoostModifier as u32,
+            Self::ModifyBoosts => CommonCallbackType::MaybeApplyingEffectBoostModifier as u32,
             Self::ModifyCatchRate => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyCritChance => CommonCallbackType::MoveModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
@@ -1220,6 +1265,7 @@ impl BattleEvent {
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifyStab => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
@@ -1254,6 +1300,7 @@ impl BattleEvent {
             Self::SlotStart => CommonCallbackType::SideResult as u32,
             Self::SourceAccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::SourceBasePower => CommonCallbackType::MoveModifier as u32,
+            Self::SourceIgnoreImmunity => CommonCallbackType::MoveResult as u32,
             Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
             Self::SourceModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::SourceModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1313,7 +1360,9 @@ impl BattleEvent {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
-            Self::AfterTakeItem | Self::AfterUseItem => &[("item", ValueType::Effect, true)],
+            Self::AfterSetItem | Self::AfterTakeItem | Self::AfterUseItem => {
+                &[("item", ValueType::Effect, true)]
+            }
             Self::BasePower | Self::SourceBasePower => {
                 &[("base_power", ValueType::UFraction, true)]
             }
@@ -1331,8 +1380,12 @@ impl BattleEvent {
                 &[("acc", ValueType::UFraction, true)]
             }
             Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
-            Self::ModifyAtk | Self::SourceModifyAtk => &[("atk", ValueType::UFraction, true)],
-            Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
+            Self::ModifyAtk | Self::AllyModifyAtk | Self::SourceModifyAtk => {
+                &[("atk", ValueType::UFraction, true)]
+            }
+            Self::ModifyBoosts | Self::AnyModifyBoosts => {
+                &[("boosts", ValueType::BoostTable, true)]
+            }
             Self::ModifyCatchRate => &[("catch_rate", ValueType::UFraction, true)],
             Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
@@ -1346,8 +1399,9 @@ impl BattleEvent {
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
             Self::ModifySpA | Self::SourceModifySpA => &[("spa", ValueType::UFraction, true)],
-            Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
+            Self::ModifySpD | Self::AllyModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
+            Self::ModifyStab => &[("stab", ValueType::UFraction, true)],
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
@@ -1509,6 +1563,8 @@ impl BattleEvent {
     /// Returns the associated ally event.
     pub fn ally_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::ModifyAtk => Some(Self::AllyModifyAtk),
+            Self::ModifySpD => Some(Self::AllyModifySpD),
             Self::SetStatus => Some(Self::AllySetStatus),
             _ => None,
         }
@@ -1531,6 +1587,7 @@ impl BattleEvent {
         match self {
             Self::AccuracyExempt => Some(Self::SourceAccuracyExempt),
             Self::BasePower => Some(Self::SourceBasePower),
+            Self::IgnoreImmunity => Some(Self::SourceIgnoreImmunity),
             Self::Invulnerability => Some(Self::SourceInvulnerability),
             Self::ModifyAccuracy => Some(Self::SourceModifyAccuracy),
             Self::ModifyAtk => Some(Self::SourceModifyAtk),
@@ -1547,8 +1604,11 @@ impl BattleEvent {
     /// Returns the associated any event.
     pub fn any_event(&self) -> Option<BattleEvent> {
         match self {
+            Self::AccuracyExempt => Some(Self::AnyAccuracyExempt),
             Self::Damage => Some(Self::AnyDamage),
             Self::Exit => Some(Self::AnyExit),
+            Self::Invulnerability => Some(Self::AnyInvulnerability),
+            Self::ModifyBoosts => Some(Self::AnyModifyBoosts),
             Self::PrepareHit => Some(Self::AnyPrepareHit),
             Self::RedirectTarget => Some(Self::AnyRedirectTarget),
             Self::SetStatus => Some(Self::AnySetStatus),
@@ -1686,13 +1746,19 @@ pub struct Callbacks {
     pub on_after_hit: Callback,
     pub on_after_move: Callback,
     pub on_after_move_secondary_effects: Callback,
+    pub on_after_set_item: Callback,
     pub on_after_set_status: Callback,
     pub on_after_substitute_damage: Callback,
     pub on_after_take_item: Callback,
     pub on_after_use_item: Callback,
+    pub on_ally_modify_atk: Callback,
+    pub on_ally_modify_spd: Callback,
     pub on_ally_set_status: Callback,
+    pub on_any_accuracy_exempt: Callback,
     pub on_any_damage: Callback,
     pub on_any_exit: Callback,
+    pub on_any_invulnerability: Callback,
+    pub on_any_modify_boosts: Callback,
     pub on_any_prepare_hit: Callback,
     pub on_any_redirect_target: Callback,
     pub on_any_set_status: Callback,
@@ -1741,6 +1807,7 @@ pub struct Callbacks {
     pub on_hit: Callback,
     pub on_hit_field: Callback,
     pub on_hit_side: Callback,
+    pub on_ignore_immunity: Callback,
     pub on_immunity: Callback,
     pub on_invulnerability: Callback,
     pub on_lock_move: Callback,
@@ -1760,6 +1827,7 @@ pub struct Callbacks {
     pub on_modify_spa: Callback,
     pub on_modify_spd: Callback,
     pub on_modify_spe: Callback,
+    pub on_modify_stab: Callback,
     pub on_modify_target: Callback,
     pub on_move_aborted: Callback,
     pub on_move_base_power: Callback,
@@ -1794,6 +1862,7 @@ pub struct Callbacks {
     pub on_slot_start: Callback,
     pub on_source_accuracy_exempt: Callback,
     pub on_source_base_power: Callback,
+    pub on_source_ignore_immunity: Callback,
     pub on_source_invulnerability: Callback,
     pub on_source_modify_accuracy: Callback,
     pub on_source_modify_atk: Callback,
@@ -1852,13 +1921,19 @@ impl Callbacks {
             BattleEvent::AfterHit => &self.on_after_hit,
             BattleEvent::AfterMove => &self.on_after_move,
             BattleEvent::AfterMoveSecondaryEffects => &self.on_after_move_secondary_effects,
+            BattleEvent::AfterSetItem => &self.on_after_set_item,
             BattleEvent::AfterSetStatus => &self.on_after_set_status,
             BattleEvent::AfterSubstituteDamage => &self.on_after_substitute_damage,
             BattleEvent::AfterTakeItem => &self.on_after_take_item,
             BattleEvent::AfterUseItem => &self.on_after_use_item,
+            BattleEvent::AllyModifyAtk => &self.on_ally_modify_atk,
+            BattleEvent::AllyModifySpD => &self.on_ally_modify_spd,
             BattleEvent::AllySetStatus => &self.on_ally_set_status,
+            BattleEvent::AnyAccuracyExempt => &self.on_any_accuracy_exempt,
             BattleEvent::AnyDamage => &self.on_any_damage,
             BattleEvent::AnyExit => &self.on_any_exit,
+            BattleEvent::AnyInvulnerability => &self.on_any_invulnerability,
+            BattleEvent::AnyModifyBoosts => &self.on_any_modify_boosts,
             BattleEvent::AnyPrepareHit => &self.on_any_prepare_hit,
             BattleEvent::AnyRedirectTarget => &self.on_any_redirect_target,
             BattleEvent::AnySetStatus => &self.on_any_set_status,
@@ -1906,6 +1981,7 @@ impl Callbacks {
             BattleEvent::Hit => &self.on_hit,
             BattleEvent::HitField => &self.on_hit_field,
             BattleEvent::HitSide => &self.on_hit_side,
+            BattleEvent::IgnoreImmunity => &self.on_ignore_immunity,
             BattleEvent::Immunity => &self.on_immunity,
             BattleEvent::Invulnerability => &self.on_invulnerability,
             BattleEvent::IsAsleep => &self.is_asleep,
@@ -1936,6 +2012,7 @@ impl Callbacks {
             BattleEvent::ModifySpA => &self.on_modify_spa,
             BattleEvent::ModifySpD => &self.on_modify_spd,
             BattleEvent::ModifySpe => &self.on_modify_spe,
+            BattleEvent::ModifyStab => &self.on_modify_stab,
             BattleEvent::ModifyTarget => &self.on_modify_target,
             BattleEvent::MoveAborted => &self.on_move_aborted,
             BattleEvent::MoveBasePower => &self.on_move_base_power,
@@ -1970,6 +2047,7 @@ impl Callbacks {
             BattleEvent::SlotStart => &self.on_slot_start,
             BattleEvent::SourceAccuracyExempt => &self.on_source_accuracy_exempt,
             BattleEvent::SourceBasePower => &self.on_source_base_power,
+            BattleEvent::SourceIgnoreImmunity => &self.on_source_ignore_immunity,
             BattleEvent::SourceInvulnerability => &self.on_source_invulnerability,
             BattleEvent::SourceModifyAccuracy => &self.on_source_modify_accuracy,
             BattleEvent::SourceModifyAtk => &self.on_source_modify_atk,

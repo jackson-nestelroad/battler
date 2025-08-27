@@ -644,6 +644,11 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 30, "hit_effect": { "status": "tox" } }
+    },
+    "effect": {
+      "callbacks": {
+        "on_residual": ["set_status: $target tox"]
+      }
     }
   },
   "flameorb": {
@@ -1049,7 +1054,7 @@
       "callbacks": {
         "on_damaging_hit": [
           "if $move.type == electric and func_call(can_boost: $target 'atk:1'):",
-          ["use_item: $target"]
+          ["use_item: $target use_target_as_source"]
         ],
         "on_use": ["boost: $mon 'atk:1'"]
       }

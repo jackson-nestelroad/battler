@@ -1180,8 +1180,12 @@
     "accuracy": 90,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "ignore_immunity": false,
-    "hit_effect": { "status": "par" }
+    "hit_effect": { "status": "par" },
+    "effect": {
+      "callbacks": {
+        "on_ignore_immunity": ["return false"]
+      }
+    }
   },
   "thunder": {
     "name": "Thunder",
@@ -1368,7 +1372,7 @@
       "callbacks": {
         "on_hit": [
           "if $target != $source and $move.category != status:",
-          ["boost: $target 'atk:1'"]
+          ["boost: $target 'atk:1' use_target_as_source"]
         ],
         "on_before_move": ["remove_volatile: $user $this.id"]
       }
@@ -1698,10 +1702,10 @@
             "priority": 1,
             "target": "Scripted",
             "flags": ["Contact", "Protect"],
-            "ignore_immunity": true,
             "no_random_target": true,
             "effect": {
               "callbacks": {
+                "on_ignore_immunity": ["return true"],
                 "on_try_use_move": [
                   "# Fail if no direct damage was received.",
                   "if $move.damage == 0:",
@@ -2338,7 +2342,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_damage": ["return func_call(max: expr($target.hp / 2), 1)"]
+        "on_move_damage": ["return func_call(max: expr($target.hp / 2) 1)"]
       }
     }
   },
@@ -2442,7 +2446,6 @@
     ],
     "no_pp_boosts": true,
     "struggle_recoil": true,
-    "ignore_immunity": true,
     "typeless": true
   },
   "recharge": {

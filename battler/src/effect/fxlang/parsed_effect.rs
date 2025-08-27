@@ -84,13 +84,19 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::AfterHit, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterMove, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterMoveSecondaryEffects, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AfterSetItem, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterSetStatus, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterSubstituteDamage, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterTakeItem, callbacks)?;
         parsed.parse_and_save(BattleEvent::AfterUseItem, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AllyModifyAtk, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AllyModifySpD, callbacks)?;
         parsed.parse_and_save(BattleEvent::AllySetStatus, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AnyAccuracyExempt, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnyDamage, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnyExit, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AnyInvulnerability, callbacks)?;
+        parsed.parse_and_save(BattleEvent::AnyModifyBoosts, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnyPrepareHit, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnyRedirectTarget, callbacks)?;
         parsed.parse_and_save(BattleEvent::AnySetStatus, callbacks)?;
@@ -138,6 +144,7 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::Hit, callbacks)?;
         parsed.parse_and_save(BattleEvent::HitField, callbacks)?;
         parsed.parse_and_save(BattleEvent::HitSide, callbacks)?;
+        parsed.parse_and_save(BattleEvent::IgnoreImmunity, callbacks)?;
         parsed.parse_and_save(BattleEvent::Immunity, callbacks)?;
         parsed.parse_and_save(BattleEvent::Invulnerability, callbacks)?;
         parsed.parse_and_save(BattleEvent::IsAsleep, callbacks)?;
@@ -168,6 +175,7 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::ModifySpA, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifySpD, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifySpe, callbacks)?;
+        parsed.parse_and_save(BattleEvent::ModifyStab, callbacks)?;
         parsed.parse_and_save(BattleEvent::ModifyTarget, callbacks)?;
         parsed.parse_and_save(BattleEvent::MoveAborted, callbacks)?;
         parsed.parse_and_save(BattleEvent::MoveBasePower, callbacks)?;
@@ -202,6 +210,7 @@ impl ParsedEffect {
         parsed.parse_and_save(BattleEvent::SlotStart, callbacks)?;
         parsed.parse_and_save(BattleEvent::SourceAccuracyExempt, callbacks)?;
         parsed.parse_and_save(BattleEvent::SourceBasePower, callbacks)?;
+        parsed.parse_and_save(BattleEvent::SourceIgnoreImmunity, callbacks)?;
         parsed.parse_and_save(BattleEvent::SourceInvulnerability, callbacks)?;
         parsed.parse_and_save(BattleEvent::SourceModifyAccuracy, callbacks)?;
         parsed.parse_and_save(BattleEvent::SourceModifyAtk, callbacks)?;

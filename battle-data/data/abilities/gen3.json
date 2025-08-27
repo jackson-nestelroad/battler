@@ -154,7 +154,7 @@
         "on_try_hit": [
           "if $target != $source and $move.type == water:",
           [
-            "if func_call(heal: $target expr($target.base_max_hp / 4) use_target_as_source) > 0:",
+            "if func_call(heal: $target expr($target.base_max_hp / 4) use_target_as_source) == 0:",
             ["log_immune: $target from_effect"],
             "return stop"
           ]
@@ -166,6 +166,7 @@
     "name": "Oblivious",
     "flags": ["Breakable"],
     "effect": {
+      "delegates": ["condition:resistintimidateabilitybase"],
       "callbacks": {
         "on_update": [
           "if func_call(has_volatile: $mon attract):",
@@ -177,14 +178,6 @@
         "on_try_hit": [
           "if [attract, captivate, taunt] has $move.id:",
           ["log_immune: $target from_effect", "return stop"]
-        ],
-        "on_try_boost": [
-          "if $effect.id == intimidate and $boosts.atk != 0:",
-          [
-            "$boosts.atk = 0",
-            "log_fail_unboost: $target from_effect atk",
-            "return $boosts"
-          ]
         ]
       }
     }
@@ -327,6 +320,7 @@
     "name": "Own Tempo",
     "flags": ["Breakable"],
     "effect": {
+      "delegates": ["condition:resistintimidateabilitybase"],
       "callbacks": {
         "on_update": [
           "if func_call(has_volatile: $mon confusion):",
@@ -337,14 +331,6 @@
         "on_try_hit": [
           "if $move.hit_effect.volatile_status == confusion:",
           ["log_immune: $target from_effect", "return stop"]
-        ],
-        "on_try_boost": [
-          "if $effect.id == intimidate and $boosts.atk != 0:",
-          [
-            "$boosts.atk = 0",
-            "log_fail_unboost: $target from_effect atk",
-            "return $boosts"
-          ]
         ]
       }
     }
@@ -580,19 +566,7 @@
     "name": "Illuminate",
     "flags": ["Breakable"],
     "effect": {
-      "callbacks": {
-        "on_try_boost": [
-          "if $target == $source:",
-          ["return"],
-          "if $boosts.acc < 0:",
-          [
-            "$boosts.acc = 0",
-            "if !$effect.is_move_secondary:",
-            ["log_fail_unboost: $target from_effect acc"],
-            "return $boosts"
-          ]
-        ]
-      }
+      "delegates": ["ability:keeneye"]
     }
   },
   "trace": {
@@ -640,16 +614,9 @@
     "name": "Inner Focus",
     "flags": ["Breakable"],
     "effect": {
+      "delegates": ["condition:resistintimidateabilitybase"],
       "callbacks": {
-        "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]],
-        "on_try_boost": [
-          "if $effect.id == intimidate and $boosts.atk != 0:",
-          [
-            "$boosts.atk = 0",
-            "log_fail_unboost: $target from_effect atk",
-            "return $boosts"
-          ]
-        ]
+        "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]]
       }
     }
   },
@@ -919,15 +886,7 @@
     "name": "Minus",
     "flags": [],
     "effect": {
-      "callbacks": {
-        "on_modify_spa": [
-          "foreach $ally in func_call(all_active_mons_on_side: $target.side):",
-          [
-            "if $ally != $target and ($ally.ability == plus or $ally.ability == minus):",
-            ["return $spa * 3/2"]
-          ]
-        ]
-      }
+      "delegats": ["ability:plus"]
     }
   },
   "forecast": {
@@ -950,7 +909,8 @@
           ["$forme = castformsnowy"],
           "else:",
           ["$forme = castform"],
-          "forme_change: $target $forme"
+          "if $target.species != $forme:",
+          ["forme_change: $target $forme"]
         ],
         "on_end": [
           "if func_call(base_species: $target) != castform or $target.transformed:",
@@ -991,6 +951,11 @@
     "flags": [],
     "effect": {
       "callbacks": {
+        "on_modify_damage": {
+          "order": 1,
+          "priority": 1,
+          "program": ["skip_effect_callback: brn"]
+        },
         "on_modify_atk": ["if $target.status.is_defined:", ["return $atk * 2"]]
       }
     }

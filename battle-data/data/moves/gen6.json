@@ -406,8 +406,7 @@
     "accuracy": 95,
     "base_power": 110,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect", "Thawing"],
-    "thaws_target": true
+    "flags": ["Mirror", "NoMetronome", "Protect", "Thawing", "ThawsTarget"]
   },
   "hyperspacehole": {
     "name": "Hyperspace Hole",

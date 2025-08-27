@@ -167,7 +167,7 @@ fn ripen_doubles_stat_boost_by_kee_berry() {
             "damage|mon:Applin,player-1,1|health:44/100",
             "activate|mon:Applin,player-1,1|ability:Ripen",
             "itemend|mon:Applin,player-1,1|item:Kee Berry|eat",
-            "boost|mon:Applin,player-1,1|stat:def|by:2",
+            "boost|mon:Applin,player-1,1|stat:def|by:2|from:item:Kee Berry",
             "residual",
             "turn|turn:2"
         ]"#,

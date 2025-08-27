@@ -603,6 +603,7 @@ Effects may also wish to reveal themselves on the battle log, in order for clien
 - `log_ability` - A Mon's ability is announced. Only required if there is no other log when the ability activates.
 - `log_activate` - An effect has activated, typically on some Mon but not necessarily. This is the most common function.
 - `log_animate_move` - A move was used, but it should only be animated. Used for multihit moves.
+- `log_announce_item` - A Mon's item is announced.
 - `log_block` - An effect blocked some other effect.
 - `log_cant` - An effect is preventing a Mon from using a move.
 - `log_custom_effect` - Logs an effect with a custom header. Should be used sparingly.

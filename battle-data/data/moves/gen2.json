@@ -1797,9 +1797,9 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Future"],
-    "ignore_immunity": true,
     "effect": {
       "callbacks": {
+        "on_ignore_immunity": ["return true"],
         "on_try_move": [
           "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
           ["return false"],

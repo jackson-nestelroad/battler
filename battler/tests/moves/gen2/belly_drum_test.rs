@@ -83,7 +83,7 @@ fn belly_drum_maximizes_attack() {
             "split|side:0",
             "damage|mon:Snorlax,player-1,1|health:110/220",
             "damage|mon:Snorlax,player-1,1|health:50/100",
-            "boost|mon:Snorlax,player-1,1|stat:atk|by:10",
+            "boost|mon:Snorlax,player-1,1|stat:atk|by:10|max",
             "residual",
             "turn|turn:4"
         ]"#,

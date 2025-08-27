@@ -850,21 +850,40 @@ pub fn hit_count(context: &mut Context, hits: u8) -> Result<()> {
     Ok(())
 }
 
-pub fn boost(context: &mut MonContext, boost: Boost, delta: i8, original_delta: i8) -> Result<()> {
+pub fn boost(
+    context: &mut ApplyingEffectContext,
+    boost: Boost,
+    delta: i8,
+    original_delta: i8,
+) -> Result<()> {
     let (delta, message) = if original_delta >= 0 {
         (delta as u8, "boost")
     } else {
         (-delta as u8, "unboost")
     };
 
-    let event = battle_log_entry!(
-        message,
-        ("mon", Mon::position_details(context)?),
-        ("stat", boost),
-        ("by", delta)
-    );
-    context.battle_mut().log(event);
-    Ok(())
+    let mut additional = vec![format!("stat:{boost}"), format!("by:{delta}")];
+
+    if original_delta >= 12 {
+        additional.push("max".to_owned());
+    } else if original_delta <= -12 {
+        additional.push("min".to_owned());
+    }
+
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ignore_active_move_source_effect: true,
+        additional,
+        ..Default::default()
+    };
+
+    effect_activation(
+        context.as_battle_context_mut(),
+        message.to_owned(),
+        activation,
+    )
 }
 
 pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Result<()> {

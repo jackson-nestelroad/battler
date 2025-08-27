@@ -1,0 +1,18 @@
+{
+  "resistintimidateabilitybase": {
+    "name": "Resist Intimidate Ability Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_try_boost": [
+          "if $effect.id == intimidate and $boosts.atk != 0:",
+          [
+            "$boosts.atk = 0",
+            "log_fail_unboost: $target from_effect atk",
+            "return $boosts"
+          ]
+        ]
+      }
+    }
+  }
+}

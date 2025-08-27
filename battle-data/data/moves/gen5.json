@@ -347,8 +347,7 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Thawing"],
-    "thaws_target": true
+    "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"]
   },
   "shellsmash": {
     "name": "Shell Smash",

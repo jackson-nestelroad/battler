@@ -4,6 +4,7 @@ use ahash::HashSet;
 use anyhow::Result;
 use battler_data::{
     BoostTable,
+    Fraction,
     Id,
     MoveTarget,
     SecondaryEffectData,
@@ -152,6 +153,7 @@ fn run_effect_event_with_errors(
     effect_handle: &EffectHandle,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
+    event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
     suppressed: bool,
 ) -> Result<fxlang::ProgramEvalResult> {
@@ -215,6 +217,7 @@ fn run_effect_event_with_errors(
         effect_handle,
         event,
         input,
+        event_state,
         effect_state_connector.clone(),
     );
 
@@ -253,6 +256,7 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
+            &fxlang::EventState::default(),
             Some(effect_state_connector),
             false,
         )?,
@@ -261,6 +265,7 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
+            &fxlang::EventState::default(),
             Some(effect_state_connector),
             false,
         )?,
@@ -269,6 +274,7 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
+            &fxlang::EventState::default(),
             Some(effect_state_connector),
             false,
         )?,
@@ -279,6 +285,7 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
+            &fxlang::EventState::default(),
             Some(effect_state_connector),
             false,
         )?,
@@ -289,6 +296,7 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
+            &fxlang::EventState::default(),
             Some(effect_state_connector),
             false,
         )?,
@@ -297,6 +305,7 @@ fn run_active_move_event_with_errors(
             &effect_handle,
             event,
             input,
+            &fxlang::EventState::default(),
             Some(effect_state_connector),
             false,
         )?,
@@ -334,6 +343,7 @@ fn run_effect_event_by_handle(
     effect: &EffectHandle,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
+    event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
     suppressed: bool,
 ) -> fxlang::ProgramEvalResult {
@@ -342,6 +352,7 @@ fn run_effect_event_by_handle(
         &effect,
         event,
         input,
+        event_state,
         effect_state_connector,
         suppressed,
     ) {
@@ -414,6 +425,7 @@ impl CallbackHandle {
 fn run_callback_with_errors(
     mut context: UpcomingEvaluationContext,
     input: fxlang::VariableInput,
+    event_state: &fxlang::EventState,
     callback_handle: CallbackHandle,
 ) -> Result<Option<fxlang::Value>> {
     // Run the event callback for the event.
@@ -422,6 +434,7 @@ fn run_callback_with_errors(
         &callback_handle.applied_effect_handle.effect_handle,
         callback_handle.event,
         input,
+        event_state,
         callback_handle
             .applied_effect_handle
             .effect_state_connector(),
@@ -439,6 +452,7 @@ fn run_callback_under_applying_effect(
     run_callback_with_errors(
         UpcomingEvaluationContext::ApplyingEffect(context.into()),
         input,
+        &fxlang::EventState::default(),
         callback_handle,
     )
     .ok()
@@ -453,6 +467,7 @@ fn run_callback_under_effect(
     run_callback_with_errors(
         UpcomingEvaluationContext::Effect(context.into()),
         input,
+        &fxlang::EventState::default(),
         callback_handle,
     )
     .ok()
@@ -467,6 +482,7 @@ fn run_callback_under_side_effect(
     run_callback_with_errors(
         UpcomingEvaluationContext::SideEffect(context.into()),
         input,
+        &fxlang::EventState::default(),
         callback_handle,
     )
     .ok()
@@ -481,6 +497,7 @@ fn run_callback_under_field_effect(
     run_callback_with_errors(
         UpcomingEvaluationContext::FieldEffect(context.into()),
         input,
+        &fxlang::EventState::default(),
         callback_handle,
     )
     .ok()
@@ -495,6 +512,7 @@ fn run_callback_under_mon(
     run_callback_with_errors(
         UpcomingEvaluationContext::Mon(context.into()),
         input,
+        &fxlang::EventState::default(),
         callback_handle,
     )
     .ok()
@@ -1405,10 +1423,11 @@ impl Default for RunCallbacksOptions {
 fn run_callbacks_with_forwarding_input_with_errors(
     context: UpcomingEvaluationContext,
     input: &mut fxlang::VariableInput,
+    event_state: &fxlang::EventState,
     callback_handle: CallbackHandle,
     options: &RunCallbacksOptions,
 ) -> Result<Option<fxlang::Value>> {
-    let value = run_callback_with_errors(context, input.clone(), callback_handle)?;
+    let value = run_callback_with_errors(context, input.clone(), event_state, callback_handle)?;
     // Support for early exit.
     if let Some(value) = value {
         if value.signals_early_exit() || options.return_first_value {
@@ -1433,7 +1452,16 @@ fn run_mon_callbacks_with_errors(
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>> {
+    let event_state = fxlang::EventState::default();
     for callback_handle in callbacks {
+        if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
+            if let Some(id) = context.battle_mut().resolve_effect_id(id)
+                && !event_state.effect_should_run(id.as_ref())
+            {
+                continue;
+            }
+        }
+
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::ApplyingEffect(
@@ -1442,12 +1470,14 @@ fn run_mon_callbacks_with_errors(
                         .into(),
                 ),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Mon(context.into()),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
@@ -1469,7 +1499,16 @@ fn run_player_callbacks_with_errors(
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>> {
+    let event_state = fxlang::EventState::default();
     for callback_handle in callbacks {
+        if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
+            if let Some(id) = context.battle_mut().resolve_effect_id(id)
+                && !event_state.effect_should_run(id.as_ref())
+            {
+                continue;
+            }
+        }
+
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::PlayerEffect(
@@ -1478,12 +1517,14 @@ fn run_player_callbacks_with_errors(
                         .into(),
                 ),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Player(context.into()),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
@@ -1505,7 +1546,16 @@ fn run_side_callbacks_with_errors(
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>> {
+    let event_state = fxlang::EventState::default();
     for callback_handle in callbacks {
+        if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
+            if let Some(id) = context.battle_mut().resolve_effect_id(id)
+                && !event_state.effect_should_run(id.as_ref())
+            {
+                continue;
+            }
+        }
+
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::SideEffect(
@@ -1514,12 +1564,14 @@ fn run_side_callbacks_with_errors(
                         .into(),
                 ),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Side(context.into()),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
@@ -1541,7 +1593,16 @@ fn run_field_callbacks_with_errors(
     options: &RunCallbacksOptions,
     callbacks: Vec<CallbackHandle>,
 ) -> Result<Option<fxlang::Value>> {
+    let event_state = fxlang::EventState::default();
     for callback_handle in callbacks {
+        if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
+            if let Some(id) = context.battle_mut().resolve_effect_id(id)
+                && !event_state.effect_should_run(id.as_ref())
+            {
+                continue;
+            }
+        }
+
         let result = match source_effect {
             Some(source_effect) => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::FieldEffect(
@@ -1550,12 +1611,14 @@ fn run_field_callbacks_with_errors(
                         .into(),
                 ),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
             None => run_callbacks_with_forwarding_input_with_errors(
                 UpcomingEvaluationContext::Field(context.into()),
                 &mut input,
+                &event_state,
                 callback_handle,
                 options,
             )?,
@@ -1576,7 +1639,16 @@ fn run_residual_callbacks_with_errors(
     // Ensure we only decrease the duration of each event once.
     let mut duration_decreased = HashSet::default();
 
+    let event_state = fxlang::EventState::default();
     for callback_handle in callbacks {
+        if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
+            if let Some(id) = context.battle_mut().resolve_effect_id(id)
+                && !event_state.effect_should_run(id.as_ref())
+            {
+                continue;
+            }
+        }
+
         if context.battle().ending() {
             break;
         }
@@ -1626,6 +1698,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::Effect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1634,6 +1707,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1642,6 +1716,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1650,6 +1725,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1658,6 +1734,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1666,6 +1743,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1674,6 +1752,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1682,6 +1761,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1690,6 +1770,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1698,6 +1779,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1706,6 +1788,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1714,6 +1797,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1722,6 +1806,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::FieldEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1730,6 +1815,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::SideEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1738,6 +1824,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::SideEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1746,6 +1833,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::FieldEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -1754,6 +1842,7 @@ fn run_residual_callbacks_with_errors(
                 run_callback_with_errors(
                     UpcomingEvaluationContext::FieldEffect(context.into()),
                     fxlang::VariableInput::default(),
+                    &event_state,
                     callback_handle,
                 )?;
             }
@@ -2621,6 +2710,25 @@ pub fn run_event_for_applying_effect_expecting_u16(
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects an integer that can fit in a [`Fraction<u32>`].
+pub fn run_event_for_applying_effect_expecting_fraction_u32(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: Fraction<u32>,
+) -> Fraction<u32> {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.convert())]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.fraction_u32().unwrap_or(input),
         None => input,
     }
 }

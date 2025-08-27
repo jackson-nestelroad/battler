@@ -376,7 +376,7 @@ fn catching_mon_continues_battle() {
             "appear|player:wild|position:1|name:Gyarados|health:97/97|species:Gyarados|level:30|gender:M",
             "appear|player:wild|position:1|name:Gyarados|health:100/100|species:Gyarados|level:30|gender:M",
             "activate|mon:Gyarados,wild,1|ability:Intimidate",
-            "unboost|mon:Pikachu,protagonist,1|stat:atk|by:1",
+            "unboost|mon:Pikachu,protagonist,1|stat:atk|by:1|from:ability:Intimidate|of:Gyarados,wild,1",
             "turn|turn:3"
         ]"#,
     )
@@ -643,7 +643,7 @@ fn level_100_sleeping_blissey_in_master_ball() {
             "split|side:1",
             "damage|mon:Blissey,wild,1|health:63/714",
             "damage|mon:Blissey,wild,1|health:9/100",
-            "boost|mon:Blissey,wild,1|stat:atk|by:6",
+            "boost|mon:Blissey,wild,1|stat:atk|by:6|max",
             "residual",
             "turn|turn:2",
             ["time"],

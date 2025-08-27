@@ -54,7 +54,6 @@ use crate::{
     effect::{
         AppliedEffectHandle,
         EffectHandle,
-        EffectManager,
         MonAbilityEffectStateConnector,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
@@ -64,6 +63,7 @@ use crate::{
             DynamicEffectStateConnector,
             EffectStateConnector,
             EvaluationContext,
+            EventState,
             MaybeReferenceValueForOperation,
             Value,
             ValueType,
@@ -87,9 +87,10 @@ pub fn run_function(
     function_name: &str,
     args: VecDeque<Value>,
     event: BattleEvent,
+    event_state: &EventState,
     effect_state: Option<DynamicEffectStateConnector>,
 ) -> Result<Option<Value>> {
-    let context = FunctionContext::new(context, args, event, effect_state);
+    let context = FunctionContext::new(context, args, event, event_state, effect_state);
     match function_name {
         "ability_effect_state" => ability_effect_state(context),
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
@@ -104,6 +105,7 @@ pub fn run_function(
             all_active_mons_in_speed_order(context).map(|val| Some(val))
         }
         "all_active_mons_on_side" => all_active_mons_on_side(context).map(|val| Some(val)),
+        "all_foes" => all_foes(context).map(|val| Some(val)),
         "all_mons_in_party" => all_mons_in_party(context).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
@@ -175,6 +177,7 @@ pub fn run_function(
         "log_ability" => log_ability(context).map(|()| None),
         "log_activate" => log_activate(context).map(|()| None),
         "log_animate_move" => log_animate_move(context).map(|()| None),
+        "log_announce_item" => log_announce_item(context).map(|()| None),
         "log_block" => log_block(context).map(|()| None),
         "log_cant" => log_cant(context).map(|()| None),
         "log_custom_effect" => log_custom_effect(context).map(|()| None),
@@ -208,6 +211,7 @@ pub fn run_function(
         "move_hit_data_has_flag_against_target" => {
             move_hit_data_has_flag_against_target(context).map(|val| Some(val))
         }
+        "move_hit_target" => move_hit_target(context).map(|val| Some(val)),
         "move_makes_contact" => move_makes_contact(context).map(|val| Some(val)),
         "move_slot" => move_slot(context).map(|val| Some(val)),
         "move_slot_at_index" => move_slot_at_index(context),
@@ -256,6 +260,7 @@ pub fn run_function(
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
+        "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
         "special_item_data" => special_item_data(context).map(|val| Some(val)),
         "start_ability" => start_ability(context).map(|()| None),
         "start_item" => start_item(context).map(|()| None),
@@ -264,13 +269,14 @@ pub fn run_function(
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
+        "type_chart_effectiveness" => type_chart_effectiveness(context).map(|val| Some(val)),
+        "type_chart_immunity" => type_chart_immunity(context).map(|val| Some(val)),
         "type_effectiveness" => type_effectiveness(context).map(|val| Some(val)),
         "type_has_no_effect_against" => type_has_no_effect_against(context).map(|val| Some(val)),
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "type_modifier" => type_modifier(context).map(|val| Some(val)),
         "type_modifier_against_target" => type_modifier_against_target(context),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
-        "use_callback_on_different_effect" => use_callback_on_different_effect(context),
         "use_given_item" => use_given_item(context).map(|val| Some(val)),
         "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
@@ -287,6 +293,7 @@ struct FunctionContext<'eval, 'effect, 'context, 'battle, 'data> {
     context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
     args: VecDeque<Value>,
     event: BattleEvent,
+    event_state: &'eval EventState,
     effect_state: Option<DynamicEffectStateConnector>,
     flags: HashMap<String, bool>,
 }
@@ -298,12 +305,14 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         context: &'eval mut EvaluationContext<'effect, 'context, 'battle, 'data>,
         args: VecDeque<Value>,
         event: BattleEvent,
+        event_state: &'eval EventState,
         effect_state: Option<DynamicEffectStateConnector>,
     ) -> Self {
         Self {
             context,
             args,
             event,
+            event_state,
             effect_state,
             flags: HashMap::default(),
         }
@@ -319,8 +328,13 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.context
     }
 
+    #[allow(unused)]
     fn event(&self) -> BattleEvent {
         self.event
+    }
+
+    fn event_state(&self) -> &EventState {
+        self.event_state
     }
 
     fn effect_state(&self) -> Option<DynamicEffectStateConnector> {
@@ -809,22 +823,24 @@ fn log_effect_activation_base(
     header: &str,
     activation_base_context: LogEffectActivationBaseContext,
 ) -> Result<()> {
+    let effect = if !context.no_effect() {
+        Some(context.effect_handle_positional()?)
+    } else {
+        None
+    };
+    let target = if context.with_target() {
+        Some(context.target_handle_positional()?)
+    } else {
+        None
+    };
     let mut activation = core_battle_logs::EffectActivationContext {
-        effect: if !context.no_effect() {
-            Some(context.effect_handle_positional()?)
-        } else {
-            None
-        },
+        effect,
         side: if activation_base_context.include_side {
             context.target_side_index()
         } else {
             None
         },
-        target: if context.with_target() {
-            context.target_handle()
-        } else {
-            None
-        },
+        target,
         ignore_active_move_source_effect: true,
         ignore_source_effect_equal_to_effect: true,
         source_effect: if context.with_source_effect() {
@@ -865,6 +881,11 @@ fn log_ability(mut context: FunctionContext) -> Result<()> {
         "ability",
         LogEffectActivationBaseContext::default(),
     )
+}
+
+fn log_announce_item(mut context: FunctionContext) -> Result<()> {
+    let target = context.target_handle_positional()?;
+    core_battle_logs::item(&mut context.forward_to_applying_effect_context_with_target(target)?)
 }
 
 fn log_activate(context: FunctionContext) -> Result<()> {
@@ -1593,29 +1614,6 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
     ))
 }
 
-fn use_callback_on_different_effect(mut context: FunctionContext) -> Result<Option<Value>> {
-    let effect = context
-        .pop_front()
-        .wrap_expectation("missing effect")?
-        .effect_handle()
-        .wrap_error_with_message("invalid effect")?;
-    let mut input = Vec::default();
-    while let Some(val) = context.pop_front() {
-        input.push(val);
-    }
-    let input = VariableInput::from_iter(input);
-    let event = context.event();
-    let effect_state = context.effect_state();
-    EffectManager::evaluate(
-        context.evaluation_context_mut(),
-        &effect,
-        event,
-        input,
-        effect_state,
-    )
-    .map(|result| result.value)
-}
-
 fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
     core_battle_logs::do_not_animate_last_move(context.battle_context_mut());
     Ok(())
@@ -2096,6 +2094,22 @@ fn overwrite_move_slot(mut context: FunctionContext) -> Result<()> {
         .overwrite_move_slot(index, move_slot, override_base_slot)
 }
 
+fn move_hit_target(mut context: FunctionContext) -> Result<Value> {
+    let active_move_handle = context
+        .pop_front()
+        .wrap_expectation("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let mon_handle = context.target_handle_positional()?;
+    Ok(Value::Boolean(
+        context
+            .evaluation_context()
+            .active_move(active_move_handle)?
+            .hit_data(mon_handle)
+            .is_some(),
+    ))
+}
+
 fn move_crit_target(mut context: FunctionContext) -> Result<Value> {
     let active_move_handle = context
         .pop_front()
@@ -2241,6 +2255,15 @@ fn adjacent_foes(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Ok(Value::List(
         Mon::adjacent_foes(&mut context.mon_context(mon_handle)?)?
+            .map(|mon| Value::Mon(mon))
+            .collect(),
+    ))
+}
+
+fn all_foes(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    Ok(Value::List(
+        Mon::active_foes(&mut context.mon_context(mon_handle)?)
             .map(|mon| Value::Mon(mon))
             .collect(),
     ))
@@ -3212,6 +3235,52 @@ fn type_modifier(mut context: FunctionContext) -> Result<Value> {
     .map(|val| Value::Fraction(val.into()))
 }
 
+fn type_chart_effectiveness(mut context: FunctionContext) -> Result<Value> {
+    let offense = context
+        .pop_front()
+        .wrap_expectation("missing offensive type")?
+        .mon_type()
+        .wrap_error_with_message("invalid offensive type")?;
+    let defense = context
+        .pop_front()
+        .wrap_expectation("missing defensive types")?
+        .types_list()
+        .wrap_error_with_message("invalid defensive types")?;
+    Ok(Value::Fraction(
+        defense
+            .into_iter()
+            .map(|defense| {
+                context
+                    .evaluation_context()
+                    .battle_context()
+                    .battle()
+                    .check_type_effectiveness(offense, defense)
+            })
+            .sum::<i8>()
+            .into(),
+    ))
+}
+
+fn type_chart_immunity(mut context: FunctionContext) -> Result<Value> {
+    let offense = context
+        .pop_front()
+        .wrap_expectation("missing offensive type")?
+        .mon_type()
+        .wrap_error_with_message("invalid offensive type")?;
+    let defense = context
+        .pop_front()
+        .wrap_expectation("missing defensive types")?
+        .types_list()
+        .wrap_error_with_message("invalid defensive types")?;
+    Ok(Value::Boolean(
+        context
+            .evaluation_context()
+            .battle_context()
+            .battle()
+            .check_type_immunity(offense, &defense),
+    ))
+}
+
 fn forme_change(mut context: FunctionContext) -> Result<Value> {
     let permanent = context.has_flag("permanent");
     let target = context.target_handle_positional()?;
@@ -3516,6 +3585,8 @@ fn mon_ability_suppressed_by_this_effect(mut context: FunctionContext) -> Result
 }
 
 fn get_stat(mut context: FunctionContext) -> Result<Value> {
+    let unboosted = context.has_flag("unboosted");
+    let unmodified = context.has_flag("unmodified");
     let target_handle = context.target_handle_positional()?;
     let stat = context
         .pop_front()
@@ -3523,8 +3594,13 @@ fn get_stat(mut context: FunctionContext) -> Result<Value> {
         .stat()
         .wrap_error_with_message("invalid stat")?;
 
-    Mon::get_stat(&mut context.mon_context(target_handle)?, stat, false, false)
-        .map(|val| Value::UFraction(val.into()))
+    Mon::get_stat(
+        &mut context.mon_context(target_handle)?,
+        stat,
+        unboosted,
+        unmodified,
+    )
+    .map(|val| Value::UFraction(val.into()))
 }
 
 fn special_item_data(mut context: FunctionContext) -> Result<Value> {
@@ -3570,4 +3646,21 @@ fn base_species(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let context = context.mon_context(mon)?;
     Mon::base_species_of_species(&context).map(|id| Value::String(id.to_string()))
+}
+
+fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
+    let effect = context
+        .pop_front()
+        .wrap_expectation("missing effect")?
+        .effect_id()
+        .wrap_error_with_message("invalid effect")?;
+    if let Some(effect) = context
+        .battle_context_mut()
+        .battle_mut()
+        .resolve_effect_id(&effect)
+    {
+        context.event_state().skip_effect(effect);
+    }
+
+    Ok(())
 }
