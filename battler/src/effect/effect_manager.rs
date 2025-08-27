@@ -16,6 +16,7 @@ use crate::{
         EffectHandle,
         fxlang::{
             BattleEvent,
+            BattleEventModifier,
             DynamicEffectStateConnector,
             EvaluationContext,
             Evaluator,
@@ -55,6 +56,7 @@ impl EffectManager {
         context: &mut EvaluationContext,
         effect_handle: &EffectHandle,
         event: BattleEvent,
+        modifier: BattleEventModifier,
         input: VariableInput,
         event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
@@ -65,13 +67,7 @@ impl EffectManager {
             .effect_manager
             .stack += 1;
 
-        if context
-            .battle_context_mut()
-            .battle_mut()
-            .effect_manager
-            .stack
-            > Self::MAX_STACK_SIZE
-        {
+        if context.battle_context().battle().effect_manager.stack > Self::MAX_STACK_SIZE {
             return Err(general_error(format!(
                 "fxlang effect callback stack size exceeded for {event} callback of effect {:?}",
                 effect_handle,
@@ -82,6 +78,7 @@ impl EffectManager {
             context,
             effect_handle,
             event,
+            modifier,
             input,
             event_state,
             effect_state_connector,
@@ -172,13 +169,18 @@ impl EffectManager {
         context: &mut EvaluationContext,
         effect_handle: &EffectHandle,
         event: BattleEvent,
+        modifier: BattleEventModifier,
         input: VariableInput,
         event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
     ) -> Result<ProgramEvalResult> {
         let mut evaluator = Evaluator::new(event, event_state);
         let effect = Self::parsed_effect(context.battle_context_mut(), effect_handle)?;
-        match effect.as_ref().map(|effect| effect.event(event)).flatten() {
+        match effect
+            .as_ref()
+            .map(|effect| effect.event(event, modifier))
+            .flatten()
+        {
             Some(callback) => {
                 evaluator.evaluate_program(context, input, callback, effect_state_connector)
             }

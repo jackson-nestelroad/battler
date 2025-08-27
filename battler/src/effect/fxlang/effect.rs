@@ -1,3 +1,4 @@
+use ahash::HashMap;
 use anyhow::Error;
 use serde::{
     Deserialize,
@@ -229,6 +230,43 @@ enum CommonCallbackType {
         CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
 }
 
+/// A modifier on a [`BattleEvent`].
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
+)]
+pub enum BattleEventModifier {
+    /// The default event.
+    #[default]
+    #[string = ""]
+    None,
+    /// Runs for an ally of the target Mon.
+    #[string = "ally"]
+    Ally,
+    /// Runs for any Mon.
+    #[string = "any"]
+    Any,
+    /// Runs on the field.
+    #[string = "field"]
+    Field,
+    /// Runs for a foe of the target Mon.
+    #[string = "foe"]
+    Foe,
+    /// Runs for the side of the target Mon.
+    #[string = "side"]
+    Side,
+    /// Runs for the source of the effect.
+    #[string = "source"]
+    Source,
+}
+
 /// A battle event that can trigger a [`Callback`].
 #[derive(
     Debug,
@@ -323,42 +361,6 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterUseItem"]
     AfterUseItem,
-    /// [`ModifyAtk`][`Self::ModifyAtk`] but triggers for an ally Mon.
-    #[string = "AllyModifyAtk"]
-    AllyModifyAtk,
-    /// [`ModifySpD`][`Self::ModifySpD`] but triggers for an ally Mon.
-    #[string = "AllyModifySpD"]
-    AllyModifySpD,
-    /// [`SetStatus`][`Self::SetStatus`] but triggers for an ally Mon.
-    #[string = "AllySetStatus"]
-    AllySetStatus,
-    /// [`AccuracyExempt`][`Self::AccuracyExempt`] but triggers for any Mon.
-    #[string = "AnyAccuracyExempt"]
-    AnyAccuracyExempt,
-    /// [`Damage`][`Self::Damage`] but triggers for any Mon.
-    #[string = "AnyDamage"]
-    AnyDamage,
-    /// [`Exit`][`Self::Exit`] but triggers for any Mon.
-    #[string = "AnyExit"]
-    AnyExit,
-    /// [`Invulnerability`][`Self::Invulnerability`] but triggers for any Mon.
-    #[string = "AnyInvulnerability"]
-    AnyInvulnerability,
-    /// [`ModifyBoosts`][`Self::ModifyBoosts`] but triggers for any Mon.
-    #[string = "AnyModifyBoosts"]
-    AnyModifyBoosts,
-    /// [`PrepareHit`][`Self::PrepareHit`] but triggers for any Mon.
-    #[string = "AnyPrepareHit"]
-    AnyPrepareHit,
-    /// [`RedirectTarget`][`Self::RedirectTarget`] but triggers for any Mon.
-    #[string = "AnyRedirectTarget"]
-    AnyRedirectTarget,
-    /// [`SetStatus`][`Self::SetStatus`] but triggers for any Mon.
-    #[string = "AnySetStatus"]
-    AnySetStatus,
-    /// [`TryMove`][`Self::TryMove`] but triggers for any Mon.
-    #[string = "AnyTryMove"]
-    AnyTryMove,
     /// Runs when a move's base power is being calculated for a target.
     ///
     /// Runs on the active move and in the context of a move target.
@@ -541,21 +543,6 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Flinch"]
     Flinch,
-    /// [`BeforeMove`][`Self::BeforeMove`] but triggers for a foe Mon.
-    #[string = "FoeBeforeMove"]
-    FoeBeforeMove,
-    /// [`DeductPp`][`Self::DeductPp`] but triggers for a foe Mon.
-    #[string = "FoeDeductPp"]
-    FoeDeductPp,
-    /// [`DisableMove`][`Self::DisableMove`] but triggers for a foe Mon.
-    #[string = "FoeDisableMove"]
-    FoeDisableMove,
-    /// [`RedirectTarget`][`Self::RedirectTarget`] but triggers for a foe Mon.
-    #[string = "FoeRedirectTarget"]
-    FoeRedirectTarget,
-    /// [`TrapMon`][`Self::TrapMon`] but triggers for a foe Mon.
-    #[string = "FoeTrapMon"]
-    FoeTrapMon,
     /// Runs when a Mon is attempting to escape from battle, prior to any speed check.
     ///
     /// Runs in the context of a Mon.
@@ -920,46 +907,6 @@ pub enum BattleEvent {
     /// Runs in the context of the slot condition.
     #[string = "SlotStart"]
     SlotStart,
-    /// [`TryHitSide`][`Self::TryHitSide`] but triggers for a side.
-    #[string = "SideTryHitSide"]
-    SideTryHitSide,
-    /// [`AccuracyExempt`][`Self::AccuracyExempt`] but triggers for the source Mon of the event.
-    #[string = "SourceAccuracyExempt"]
-    SourceAccuracyExempt,
-    /// [`BasePower`][`Self::BasePower`] but triggers for the source Mon of the event.
-    #[string = "SourceBasePower"]
-    SourceBasePower,
-    /// [`IgnoreImmunity`][`Self::IgnoreImmunity`] but triggers for the source Mon of the event.
-    #[string = "SourceIgnoreImmunity"]
-    SourceIgnoreImmunity,
-    /// [`Invulnerability`][`Self::Invulnerability`] but triggers for the source Mon of the event.
-    #[string = "SourceInvulnerability"]
-    SourceInvulnerability,
-    /// [`ModifyAccuracy`][`Self::ModifyAccuracy`] but triggers for the source Mon of the event.
-    #[string = "SourceModifyAccuracy"]
-    SourceModifyAccuracy,
-    /// [`ModifyAtk`][`Self::ModifyAtk`] but triggers for the source Mon of the event.
-    #[string = "SourceModifyAtk"]
-    SourceModifyAtk,
-    /// [`ModifyDamage`][`Self::ModifyDamage`] but triggers for the source Mon of the event.
-    #[string = "SourceModifyDamage"]
-    SourceModifyDamage,
-    /// [`ModifySpA`][`Self::ModifySpA`] but triggers for the source Mon of the event.
-    #[string = "SourceModifySpA"]
-    SourceModifySpA,
-    /// [`TryHeal`][`Self::TryHeal`] but triggers for the source Mon of the event.
-    #[string = "SourceTryHeal"]
-    SourceTryHeal,
-    /// [`TryHit`][`Self::TryHit`] but triggers for the source Mon of the event.
-    #[string = "SourceTryHit"]
-    SourceTryHit,
-    /// [`TryPrimaryHit`][`Self::TryPrimaryHit`] but triggers for the source Mon of the event.
-    #[string = "SourceTryPrimaryHit"]
-    SourceTryPrimaryHit,
-    /// [`WeatherModifyDamage`][`Self::WeatherModifyDamage`] but triggers for the source Mon of the
-    /// event.
-    #[string = "SourceWeatherModifyDamage"]
-    SourceWeatherModifyDamage,
     /// Runs when a Mon attempts a stalling move (e.g., Protect).
     ///
     /// Can fail the stalling move (assuming the stalling move integrates with the event properly).
@@ -1094,7 +1041,7 @@ pub enum BattleEvent {
     /// Runs when a Mon tries to use an item.
     ///
     /// Runs in the context of an applying effect on a Mon.
-    #[string = "PlayerTryUseItem"]
+    #[string = "TryUseItem"]
     TryUseItem,
     /// Runs when a Mon is trying to use a move on a set of targets.
     ///
@@ -1179,18 +1126,6 @@ impl BattleEvent {
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
-            Self::AllyModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::AllyModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::AllySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::AnyAccuracyExempt => CommonCallbackType::MoveResult as u32,
-            Self::AnyDamage => CommonCallbackType::ApplyingEffectModifier as u32,
-            Self::AnyExit => CommonCallbackType::MonVoid as u32,
-            Self::AnyInvulnerability => CommonCallbackType::MoveResult as u32,
-            Self::AnyModifyBoosts => CommonCallbackType::MaybeApplyingEffectBoostModifier as u32,
-            Self::AnyPrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
-            Self::AnyRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
-            Self::AnySetStatus => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::AnyTryMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
@@ -1225,11 +1160,6 @@ impl BattleEvent {
             Self::FieldRestart => CommonCallbackType::FieldResult as u32,
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
-            Self::FoeBeforeMove => CommonCallbackType::SourceMoveResult as u32,
-            Self::FoeDeductPp => CommonCallbackType::MonModifier as u32,
-            Self::FoeDisableMove => CommonCallbackType::MonVoid as u32,
-            Self::FoeRedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
-            Self::FoeTrapMon => CommonCallbackType::MonResult as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
@@ -1294,22 +1224,9 @@ impl BattleEvent {
             Self::SideResidual => CommonCallbackType::SideVoid as u32,
             Self::SideRestart => CommonCallbackType::SideResult as u32,
             Self::SideStart => CommonCallbackType::SideResult as u32,
-            Self::SideTryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
             Self::SlotEnd => CommonCallbackType::SideResult as u32,
             Self::SlotRestart => CommonCallbackType::SideResult as u32,
             Self::SlotStart => CommonCallbackType::SideResult as u32,
-            Self::SourceAccuracyExempt => CommonCallbackType::MoveResult as u32,
-            Self::SourceBasePower => CommonCallbackType::MoveModifier as u32,
-            Self::SourceIgnoreImmunity => CommonCallbackType::MoveResult as u32,
-            Self::SourceInvulnerability => CommonCallbackType::MoveResult as u32,
-            Self::SourceModifyAccuracy => CommonCallbackType::MoveModifier as u32,
-            Self::SourceModifyAtk => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::SourceModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
-            Self::SourceModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::SourceTryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
-            Self::SourceTryHit => CommonCallbackType::MoveControllingResult as u32,
-            Self::SourceTryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
-            Self::SourceWeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::SubPriority => CommonCallbackType::SourceMoveModifier as u32,
@@ -1363,43 +1280,34 @@ impl BattleEvent {
             Self::AfterSetItem | Self::AfterTakeItem | Self::AfterUseItem => {
                 &[("item", ValueType::Effect, true)]
             }
-            Self::BasePower | Self::SourceBasePower => {
-                &[("base_power", ValueType::UFraction, true)]
-            }
+            Self::BasePower => &[("base_power", ValueType::UFraction, true)],
             Self::BerryEatingHealth => &[("hp", ValueType::UFraction, true)],
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
-            Self::Damage | Self::AnyDamage => &[("damage", ValueType::UFraction, true)],
-            Self::DeductPp | Self::FoeDeductPp => &[("pp", ValueType::UFraction, true)],
+            Self::Damage => &[("damage", ValueType::UFraction, true)],
+            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
             Self::EatItem => &[("item", ValueType::Effect, true)],
             Self::Effectiveness => &[
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
             ],
-            Self::ModifyAccuracy | Self::SourceModifyAccuracy => {
-                &[("acc", ValueType::UFraction, true)]
-            }
+            Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
             Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
-            Self::ModifyAtk | Self::AllyModifyAtk | Self::SourceModifyAtk => {
-                &[("atk", ValueType::UFraction, true)]
-            }
-            Self::ModifyBoosts | Self::AnyModifyBoosts => {
-                &[("boosts", ValueType::BoostTable, true)]
-            }
+            Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
+            Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::ModifyCatchRate => &[("catch_rate", ValueType::UFraction, true)],
             Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
-            Self::ModifyDamage
-            | Self::SourceModifyDamage
-            | Self::SourceWeatherModifyDamage
-            | Self::WeatherModifyDamage => &[("damage", ValueType::UFraction, true)],
+            Self::ModifyDamage | Self::WeatherModifyDamage => {
+                &[("damage", ValueType::UFraction, true)]
+            }
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
-            Self::ModifySpA | Self::SourceModifySpA => &[("spa", ValueType::UFraction, true)],
-            Self::ModifySpD | Self::AllyModifySpD => &[("spd", ValueType::UFraction, true)],
+            Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
+            Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::ModifyStab => &[("stab", ValueType::UFraction, true)],
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
@@ -1407,15 +1315,11 @@ impl BattleEvent {
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
             Self::PlayerTryUseItem => &[("input", ValueType::Object, true)],
             Self::PlayerUse => &[("input", ValueType::Object, true)],
-            Self::RedirectTarget | Self::AnyRedirectTarget | Self::FoeRedirectTarget => {
-                &[("target", ValueType::Mon, true)]
-            }
+            Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::RestorePp => &[("pp", ValueType::UFraction, true)],
             Self::SetAbility => &[("ability", ValueType::Effect, true)],
             Self::SetItem => &[("item", ValueType::Effect, true)],
-            Self::SetStatus | Self::AllySetStatus | Self::AfterSetStatus | Self::AnySetStatus => {
-                &[("status", ValueType::Effect, true)]
-            }
+            Self::SetStatus | Self::AfterSetStatus => &[("status", ValueType::Effect, true)],
             Self::SetTerrain => &[("terrain", ValueType::Effect, true)],
             Self::SetWeather => &[("weather", ValueType::Effect, true)],
             Self::SideConditionStart => &[("condition", ValueType::Effect, true)],
@@ -1427,7 +1331,7 @@ impl BattleEvent {
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::TryEatItem => &[("item", ValueType::Effect, true)],
             Self::TryUseItem => &[("item", ValueType::Effect, true)],
-            Self::TryHeal | Self::SourceTryHeal => &[("damage", ValueType::UFraction, true)],
+            Self::TryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
@@ -1560,64 +1464,9 @@ impl BattleEvent {
         }
     }
 
-    /// Returns the associated ally event.
-    pub fn ally_event(&self) -> Option<BattleEvent> {
-        match self {
-            Self::ModifyAtk => Some(Self::AllyModifyAtk),
-            Self::ModifySpD => Some(Self::AllyModifySpD),
-            Self::SetStatus => Some(Self::AllySetStatus),
-            _ => None,
-        }
-    }
-
-    /// Returns the associated foe event.
-    pub fn foe_event(&self) -> Option<BattleEvent> {
-        match self {
-            Self::BeforeMove => Some(Self::FoeBeforeMove),
-            Self::DeductPp => Some(Self::FoeDeductPp),
-            Self::DisableMove => Some(Self::FoeDisableMove),
-            Self::RedirectTarget => Some(Self::FoeRedirectTarget),
-            Self::TrapMon => Some(Self::FoeTrapMon),
-            _ => None,
-        }
-    }
-
-    /// Returns the associated source event.
-    pub fn source_event(&self) -> Option<BattleEvent> {
-        match self {
-            Self::AccuracyExempt => Some(Self::SourceAccuracyExempt),
-            Self::BasePower => Some(Self::SourceBasePower),
-            Self::IgnoreImmunity => Some(Self::SourceIgnoreImmunity),
-            Self::Invulnerability => Some(Self::SourceInvulnerability),
-            Self::ModifyAccuracy => Some(Self::SourceModifyAccuracy),
-            Self::ModifyAtk => Some(Self::SourceModifyAtk),
-            Self::ModifyDamage => Some(Self::SourceModifyDamage),
-            Self::ModifySpA => Some(Self::SourceModifySpA),
-            Self::TryHeal => Some(Self::SourceTryHeal),
-            Self::TryHit => Some(Self::SourceTryHit),
-            Self::TryPrimaryHit => Some(Self::SourceTryPrimaryHit),
-            Self::WeatherModifyDamage => Some(Self::SourceWeatherModifyDamage),
-            _ => None,
-        }
-    }
-
-    /// Returns the associated any event.
-    pub fn any_event(&self) -> Option<BattleEvent> {
-        match self {
-            Self::AccuracyExempt => Some(Self::AnyAccuracyExempt),
-            Self::Damage => Some(Self::AnyDamage),
-            Self::Exit => Some(Self::AnyExit),
-            Self::Invulnerability => Some(Self::AnyInvulnerability),
-            Self::ModifyBoosts => Some(Self::AnyModifyBoosts),
-            Self::PrepareHit => Some(Self::AnyPrepareHit),
-            Self::RedirectTarget => Some(Self::AnyRedirectTarget),
-            Self::SetStatus => Some(Self::AnySetStatus),
-            Self::TryMove => Some(Self::AnyTryMove),
-            _ => None,
-        }
-    }
-
-    /// Returns the associated field event.
+    /// The associated event on the field.
+    ///
+    /// Only used for events that are distinct when using modifiers.
     pub fn field_event(&self) -> Option<BattleEvent> {
         match self {
             Self::Residual => Some(Self::FieldResidual),
@@ -1625,11 +1474,12 @@ impl BattleEvent {
         }
     }
 
-    /// Returns the associated side event.
+    /// The associated event on the field.
+    ///
+    /// Only used for events that are distinct when using modifiers.
     pub fn side_event(&self) -> Option<BattleEvent> {
         match self {
             Self::Residual => Some(Self::SideResidual),
-            Self::TryHitSide => Some(Self::SideTryHitSide),
             _ => None,
         }
     }
@@ -1723,378 +1573,7 @@ impl SpeedOrderable for Callback {
 }
 
 /// A collection of callbacks for an effect.
-///
-/// All possible callbacks for an effect should be defined here.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct Callbacks {
-    pub is_asleep: Callback,
-    pub is_away_from_field: Callback,
-    pub is_behind_substitute: Callback,
-    pub is_contact_proof: Callback,
-    pub is_grounded: Callback,
-    pub is_immune_to_entry_hazards: Callback,
-    pub is_semi_invulnerable: Callback,
-    pub is_raining: Callback,
-    pub is_snowing: Callback,
-    pub is_soundproof: Callback,
-    pub is_sunny: Callback,
-    pub on_accuracy_exempt: Callback,
-    pub on_add_pseudo_weather: Callback,
-    pub on_add_volatile: Callback,
-    pub on_after_add_pseudo_weather: Callback,
-    pub on_after_add_volatile: Callback,
-    pub on_after_hit: Callback,
-    pub on_after_move: Callback,
-    pub on_after_move_secondary_effects: Callback,
-    pub on_after_set_item: Callback,
-    pub on_after_set_status: Callback,
-    pub on_after_substitute_damage: Callback,
-    pub on_after_take_item: Callback,
-    pub on_after_use_item: Callback,
-    pub on_ally_modify_atk: Callback,
-    pub on_ally_modify_spd: Callback,
-    pub on_ally_set_status: Callback,
-    pub on_any_accuracy_exempt: Callback,
-    pub on_any_damage: Callback,
-    pub on_any_exit: Callback,
-    pub on_any_invulnerability: Callback,
-    pub on_any_modify_boosts: Callback,
-    pub on_any_prepare_hit: Callback,
-    pub on_any_redirect_target: Callback,
-    pub on_any_set_status: Callback,
-    pub on_any_try_move: Callback,
-    pub on_base_power: Callback,
-    pub on_before_move: Callback,
-    pub on_before_switch_in: Callback,
-    pub on_before_switch_out: Callback,
-    pub on_before_turn: Callback,
-    pub on_berry_eating_health: Callback,
-    pub on_can_escape: Callback,
-    pub on_can_heal: Callback,
-    pub on_change_boosts: Callback,
-    pub on_charge_move: Callback,
-    pub on_clear_terrain: Callback,
-    pub on_clear_weather: Callback,
-    pub on_copy_volatile: Callback,
-    pub on_critical_hit: Callback,
-    pub on_cure_status: Callback,
-    pub on_damage: Callback,
-    pub on_damage_received: Callback,
-    pub on_damaging_hit: Callback,
-    pub on_disable_move: Callback,
-    pub on_deduct_pp: Callback,
-    pub on_drag_out: Callback,
-    pub on_duration: Callback,
-    pub on_eat: Callback,
-    pub on_eat_item: Callback,
-    pub on_effectiveness: Callback,
-    pub on_end: Callback,
-    pub on_end_battle: Callback,
-    pub on_entry_hazard: Callback,
-    pub on_exit: Callback,
-    pub on_faint: Callback,
-    pub on_field_end: Callback,
-    pub on_field_residual: Callback,
-    pub on_field_restart: Callback,
-    pub on_field_start: Callback,
-    pub on_flinch: Callback,
-    pub on_foe_before_move: Callback,
-    pub on_foe_deduct_pp: Callback,
-    pub on_foe_disable_move: Callback,
-    pub on_foe_redirect_target: Callback,
-    pub on_foe_trap_mon: Callback,
-    pub on_force_escape: Callback,
-    pub on_hit: Callback,
-    pub on_hit_field: Callback,
-    pub on_hit_side: Callback,
-    pub on_ignore_immunity: Callback,
-    pub on_immunity: Callback,
-    pub on_invulnerability: Callback,
-    pub on_lock_move: Callback,
-    pub on_modify_accuracy: Callback,
-    pub on_modify_action_speed: Callback,
-    pub on_modify_atk: Callback,
-    pub on_modify_boosts: Callback,
-    pub on_modify_catch_rate: Callback,
-    pub on_modify_crit_chance: Callback,
-    pub on_modify_crit_ratio: Callback,
-    pub on_modify_damage: Callback,
-    pub on_modify_def: Callback,
-    pub on_modify_experience: Callback,
-    pub on_modify_friendship_increase: Callback,
-    pub on_modify_priority: Callback,
-    pub on_modify_secondary_effects: Callback,
-    pub on_modify_spa: Callback,
-    pub on_modify_spd: Callback,
-    pub on_modify_spe: Callback,
-    pub on_modify_stab: Callback,
-    pub on_modify_target: Callback,
-    pub on_move_aborted: Callback,
-    pub on_move_base_power: Callback,
-    pub on_move_damage: Callback,
-    pub on_move_failed: Callback,
-    pub on_move_target_override: Callback,
-    pub on_negate_immunity: Callback,
-    pub on_override_move: Callback,
-    pub on_player_try_use_item: Callback,
-    pub on_player_use: Callback,
-    pub on_prepare_hit: Callback,
-    pub on_prevent_used_items: Callback,
-    pub on_priority_charge_move: Callback,
-    pub on_redirect_target: Callback,
-    pub on_residual: Callback,
-    pub on_restart: Callback,
-    pub on_restore_pp: Callback,
-    pub on_set_ability: Callback,
-    pub on_set_item: Callback,
-    pub on_set_last_move: Callback,
-    pub on_set_status: Callback,
-    pub on_set_terrain: Callback,
-    pub on_set_weather: Callback,
-    pub on_side_condition_start: Callback,
-    pub on_side_end: Callback,
-    pub on_side_residual: Callback,
-    pub on_side_restart: Callback,
-    pub on_side_start: Callback,
-    pub on_side_try_hit_side: Callback,
-    pub on_slot_end: Callback,
-    pub on_slot_restart: Callback,
-    pub on_slot_start: Callback,
-    pub on_source_accuracy_exempt: Callback,
-    pub on_source_base_power: Callback,
-    pub on_source_ignore_immunity: Callback,
-    pub on_source_invulnerability: Callback,
-    pub on_source_modify_accuracy: Callback,
-    pub on_source_modify_atk: Callback,
-    pub on_source_modify_damage: Callback,
-    pub on_source_modify_spa: Callback,
-    pub on_source_try_heal: Callback,
-    pub on_source_try_hit: Callback,
-    pub on_source_try_primary_hit: Callback,
-    pub on_source_weather_modify_damage: Callback,
-    pub on_stall_move: Callback,
-    pub on_start: Callback,
-    pub on_sub_priority: Callback,
-    pub on_switch_in: Callback,
-    pub on_switch_out: Callback,
-    pub on_take_item: Callback,
-    pub on_trap_mon: Callback,
-    pub on_try_boost: Callback,
-    pub on_try_eat_item: Callback,
-    pub on_try_heal: Callback,
-    pub on_try_hit: Callback,
-    pub on_try_hit_field: Callback,
-    pub on_try_hit_side: Callback,
-    pub on_try_immunity: Callback,
-    pub on_try_move: Callback,
-    pub on_try_primary_hit: Callback,
-    pub on_try_use_item: Callback,
-    pub on_try_use_move: Callback,
-    pub on_type_immunity: Callback,
-    pub on_types: Callback,
-    pub on_update: Callback,
-    pub on_use: Callback,
-    pub on_use_move: Callback,
-    pub on_use_move_message: Callback,
-    pub on_validate_battle: Callback,
-    pub on_validate_mon: Callback,
-    pub on_validate_team: Callback,
-    pub on_weather: Callback,
-    pub on_weather_change: Callback,
-    pub on_weather_modify_damage: Callback,
-    pub suppress_field_terrain: Callback,
-    pub suppress_field_weather: Callback,
-    pub suppress_mon_ability: Callback,
-    pub suppress_mon_item: Callback,
-    pub suppress_mon_terrain: Callback,
-    pub suppress_mon_weather: Callback,
-}
-
-impl Callbacks {
-    pub fn event(&self, event: BattleEvent) -> &Callback {
-        match event {
-            BattleEvent::AccuracyExempt => &self.on_accuracy_exempt,
-            BattleEvent::AddPseudoWeather => &self.on_add_pseudo_weather,
-            BattleEvent::AddVolatile => &self.on_add_volatile,
-            BattleEvent::AfterAddPseudoWeather => &self.on_after_add_pseudo_weather,
-            BattleEvent::AfterAddVolatile => &self.on_after_add_volatile,
-            BattleEvent::AfterHit => &self.on_after_hit,
-            BattleEvent::AfterMove => &self.on_after_move,
-            BattleEvent::AfterMoveSecondaryEffects => &self.on_after_move_secondary_effects,
-            BattleEvent::AfterSetItem => &self.on_after_set_item,
-            BattleEvent::AfterSetStatus => &self.on_after_set_status,
-            BattleEvent::AfterSubstituteDamage => &self.on_after_substitute_damage,
-            BattleEvent::AfterTakeItem => &self.on_after_take_item,
-            BattleEvent::AfterUseItem => &self.on_after_use_item,
-            BattleEvent::AllyModifyAtk => &self.on_ally_modify_atk,
-            BattleEvent::AllyModifySpD => &self.on_ally_modify_spd,
-            BattleEvent::AllySetStatus => &self.on_ally_set_status,
-            BattleEvent::AnyAccuracyExempt => &self.on_any_accuracy_exempt,
-            BattleEvent::AnyDamage => &self.on_any_damage,
-            BattleEvent::AnyExit => &self.on_any_exit,
-            BattleEvent::AnyInvulnerability => &self.on_any_invulnerability,
-            BattleEvent::AnyModifyBoosts => &self.on_any_modify_boosts,
-            BattleEvent::AnyPrepareHit => &self.on_any_prepare_hit,
-            BattleEvent::AnyRedirectTarget => &self.on_any_redirect_target,
-            BattleEvent::AnySetStatus => &self.on_any_set_status,
-            BattleEvent::AnyTryMove => &self.on_any_try_move,
-            BattleEvent::BasePower => &self.on_base_power,
-            BattleEvent::BeforeMove => &self.on_before_move,
-            BattleEvent::BeforeSwitchIn => &self.on_before_switch_in,
-            BattleEvent::BeforeSwitchOut => &self.on_before_switch_out,
-            BattleEvent::BeforeTurn => &self.on_before_turn,
-            BattleEvent::BerryEatingHealth => &self.on_berry_eating_health,
-            BattleEvent::ClearTerrain => &self.on_clear_terrain,
-            BattleEvent::ClearWeather => &self.on_clear_weather,
-            BattleEvent::CanEscape => &self.on_can_escape,
-            BattleEvent::CanHeal => &self.on_can_heal,
-            BattleEvent::ChangeBoosts => &self.on_change_boosts,
-            BattleEvent::ChargeMove => &self.on_charge_move,
-            BattleEvent::CopyVolatile => &self.on_copy_volatile,
-            BattleEvent::CriticalHit => &self.on_critical_hit,
-            BattleEvent::CureStatus => &self.on_cure_status,
-            BattleEvent::Damage => &self.on_damage,
-            BattleEvent::DamagingHit => &self.on_damaging_hit,
-            BattleEvent::DeductPp => &self.on_deduct_pp,
-            BattleEvent::DisableMove => &self.on_disable_move,
-            BattleEvent::DragOut => &self.on_drag_out,
-            BattleEvent::Duration => &self.on_duration,
-            BattleEvent::Eat => &self.on_eat,
-            BattleEvent::EatItem => &self.on_eat_item,
-            BattleEvent::Effectiveness => &self.on_effectiveness,
-            BattleEvent::End => &self.on_end,
-            BattleEvent::EndBattle => &self.on_end_battle,
-            BattleEvent::EntryHazard => &self.on_entry_hazard,
-            BattleEvent::Exit => &self.on_exit,
-            BattleEvent::Faint => &self.on_faint,
-            BattleEvent::FieldEnd => &self.on_field_end,
-            BattleEvent::FieldResidual => &self.on_field_residual,
-            BattleEvent::FieldRestart => &self.on_field_restart,
-            BattleEvent::FieldStart => &self.on_field_start,
-            BattleEvent::Flinch => &self.on_flinch,
-            BattleEvent::FoeBeforeMove => &self.on_foe_before_move,
-            BattleEvent::FoeDeductPp => &self.on_foe_deduct_pp,
-            BattleEvent::FoeDisableMove => &self.on_foe_disable_move,
-            BattleEvent::FoeRedirectTarget => &self.on_foe_redirect_target,
-            BattleEvent::FoeTrapMon => &self.on_foe_trap_mon,
-            BattleEvent::ForceEscape => &self.on_force_escape,
-            BattleEvent::Hit => &self.on_hit,
-            BattleEvent::HitField => &self.on_hit_field,
-            BattleEvent::HitSide => &self.on_hit_side,
-            BattleEvent::IgnoreImmunity => &self.on_ignore_immunity,
-            BattleEvent::Immunity => &self.on_immunity,
-            BattleEvent::Invulnerability => &self.on_invulnerability,
-            BattleEvent::IsAsleep => &self.is_asleep,
-            BattleEvent::IsAwayFromField => &self.is_away_from_field,
-            BattleEvent::IsBehindSubstitute => &self.is_behind_substitute,
-            BattleEvent::IsContactProof => &self.is_contact_proof,
-            BattleEvent::IsGrounded => &self.is_grounded,
-            BattleEvent::IsImmuneToEntryHazards => &self.is_immune_to_entry_hazards,
-            BattleEvent::IsRaining => &self.is_raining,
-            BattleEvent::IsSemiInvulnerable => &self.is_semi_invulnerable,
-            BattleEvent::IsSnowing => &self.is_snowing,
-            BattleEvent::IsSoundproof => &self.is_soundproof,
-            BattleEvent::IsSunny => &self.is_sunny,
-            BattleEvent::LockMove => &self.on_lock_move,
-            BattleEvent::ModifyAccuracy => &self.on_modify_accuracy,
-            BattleEvent::ModifyActionSpeed => &self.on_modify_action_speed,
-            BattleEvent::ModifyAtk => &self.on_modify_atk,
-            BattleEvent::ModifyBoosts => &self.on_modify_boosts,
-            BattleEvent::ModifyCatchRate => &self.on_modify_catch_rate,
-            BattleEvent::ModifyCritChance => &self.on_modify_crit_chance,
-            BattleEvent::ModifyCritRatio => &self.on_modify_crit_ratio,
-            BattleEvent::ModifyDamage => &self.on_modify_damage,
-            BattleEvent::ModifyDef => &self.on_modify_def,
-            BattleEvent::ModifyExperience => &self.on_modify_experience,
-            BattleEvent::ModifyFriendshipIncrease => &self.on_modify_friendship_increase,
-            BattleEvent::ModifyPriority => &self.on_modify_priority,
-            BattleEvent::ModifySecondaryEffects => &self.on_modify_secondary_effects,
-            BattleEvent::ModifySpA => &self.on_modify_spa,
-            BattleEvent::ModifySpD => &self.on_modify_spd,
-            BattleEvent::ModifySpe => &self.on_modify_spe,
-            BattleEvent::ModifyStab => &self.on_modify_stab,
-            BattleEvent::ModifyTarget => &self.on_modify_target,
-            BattleEvent::MoveAborted => &self.on_move_aborted,
-            BattleEvent::MoveBasePower => &self.on_move_base_power,
-            BattleEvent::MoveDamage => &self.on_move_damage,
-            BattleEvent::MoveFailed => &self.on_move_failed,
-            BattleEvent::MoveTargetOverride => &self.on_move_target_override,
-            BattleEvent::NegateImmunity => &self.on_negate_immunity,
-            BattleEvent::OverrideMove => &self.on_override_move,
-            BattleEvent::PlayerTryUseItem => &self.on_player_try_use_item,
-            BattleEvent::PlayerUse => &self.on_player_use,
-            BattleEvent::PrepareHit => &self.on_prepare_hit,
-            BattleEvent::PreventUsedItems => &self.on_prevent_used_items,
-            BattleEvent::PriorityChargeMove => &self.on_priority_charge_move,
-            BattleEvent::RedirectTarget => &self.on_redirect_target,
-            BattleEvent::Residual => &self.on_residual,
-            BattleEvent::Restart => &self.on_restart,
-            BattleEvent::RestorePp => &self.on_restore_pp,
-            BattleEvent::SetAbility => &self.on_set_ability,
-            BattleEvent::SetItem => &self.on_set_item,
-            BattleEvent::SetLastMove => &self.on_set_last_move,
-            BattleEvent::SetStatus => &self.on_set_status,
-            BattleEvent::SetTerrain => &self.on_set_terrain,
-            BattleEvent::SetWeather => &self.on_set_weather,
-            BattleEvent::SideConditionStart => &self.on_side_condition_start,
-            BattleEvent::SideEnd => &self.on_side_end,
-            BattleEvent::SideResidual => &self.on_side_residual,
-            BattleEvent::SideRestart => &self.on_side_restart,
-            BattleEvent::SideStart => &self.on_side_start,
-            BattleEvent::SideTryHitSide => &self.on_side_try_hit_side,
-            BattleEvent::SlotEnd => &self.on_slot_end,
-            BattleEvent::SlotRestart => &self.on_slot_restart,
-            BattleEvent::SlotStart => &self.on_slot_start,
-            BattleEvent::SourceAccuracyExempt => &self.on_source_accuracy_exempt,
-            BattleEvent::SourceBasePower => &self.on_source_base_power,
-            BattleEvent::SourceIgnoreImmunity => &self.on_source_ignore_immunity,
-            BattleEvent::SourceInvulnerability => &self.on_source_invulnerability,
-            BattleEvent::SourceModifyAccuracy => &self.on_source_modify_accuracy,
-            BattleEvent::SourceModifyAtk => &self.on_source_modify_atk,
-            BattleEvent::SourceModifyDamage => &self.on_source_modify_damage,
-            BattleEvent::SourceModifySpA => &self.on_source_modify_spa,
-            BattleEvent::SourceTryHeal => &self.on_source_try_heal,
-            BattleEvent::SourceTryHit => &self.on_source_try_hit,
-            BattleEvent::SourceTryPrimaryHit => &self.on_source_try_primary_hit,
-            BattleEvent::SourceWeatherModifyDamage => &self.on_source_weather_modify_damage,
-            BattleEvent::StallMove => &self.on_stall_move,
-            BattleEvent::Start => &self.on_start,
-            BattleEvent::SubPriority => &self.on_sub_priority,
-            BattleEvent::SuppressFieldTerrain => &self.suppress_field_terrain,
-            BattleEvent::SuppressFieldWeather => &self.suppress_field_weather,
-            BattleEvent::SuppressMonAbility => &self.suppress_mon_ability,
-            BattleEvent::SuppressMonItem => &self.suppress_mon_item,
-            BattleEvent::SuppressMonTerrain => &self.suppress_mon_terrain,
-            BattleEvent::SuppressMonWeather => &self.suppress_mon_weather,
-            BattleEvent::SwitchIn => &self.on_switch_in,
-            BattleEvent::SwitchOut => &self.on_switch_out,
-            BattleEvent::TakeItem => &self.on_take_item,
-            BattleEvent::TrapMon => &self.on_trap_mon,
-            BattleEvent::TryBoost => &self.on_try_boost,
-            BattleEvent::TryEatItem => &self.on_try_eat_item,
-            BattleEvent::TryHeal => &self.on_try_heal,
-            BattleEvent::TryHit => &self.on_try_hit,
-            BattleEvent::TryHitField => &self.on_try_hit_field,
-            BattleEvent::TryHitSide => &self.on_try_hit_side,
-            BattleEvent::TryImmunity => &self.on_try_immunity,
-            BattleEvent::TryMove => &self.on_try_move,
-            BattleEvent::TryPrimaryHit => &self.on_try_primary_hit,
-            BattleEvent::TryUseItem => &self.on_try_use_item,
-            BattleEvent::TryUseMove => &self.on_try_use_move,
-            BattleEvent::TypeImmunity => &self.on_type_immunity,
-            BattleEvent::Types => &self.on_types,
-            BattleEvent::Update => &self.on_update,
-            BattleEvent::Use => &self.on_use,
-            BattleEvent::UseMove => &self.on_use_move,
-            BattleEvent::UseMoveMessage => &self.on_use_move_message,
-            BattleEvent::ValidateMon => &self.on_validate_mon,
-            BattleEvent::ValidateTeam => &self.on_validate_team,
-            BattleEvent::Weather => &self.on_weather,
-            BattleEvent::WeatherChange => &self.on_weather_change,
-            BattleEvent::WeatherModifyDamage => &self.on_weather_modify_damage,
-        }
-    }
-}
+pub type Callbacks = HashMap<String, Callback>;
 
 /// Attributes for an [`Effect`] that are meaningful when attaching to some part of a battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

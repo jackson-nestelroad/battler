@@ -12,6 +12,7 @@ mod value;
 
 pub use effect::{
     BattleEvent,
+    BattleEventModifier,
     Callback,
     CallbackFlag,
     CallbackInput,
