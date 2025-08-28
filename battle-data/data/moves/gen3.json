@@ -392,6 +392,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": [
+      "CallsMove",
       "FailCopycat",
       "FailEncore",
       "FailInstruct",
@@ -648,6 +649,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": [
+      "CallsMove",
       "FailCopycat",
       "FailEncore",
       "FailInstruct",

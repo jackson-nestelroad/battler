@@ -48,6 +48,29 @@ pub enum FieldEnvironment {
     Volcano,
 }
 
+/// The time of day of the battle field.
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
+)]
+pub enum TimeOfDay {
+    #[default]
+    #[string = "Day"]
+    Day,
+    #[string = "Morning"]
+    Morning,
+    #[string = "Evening"]
+    Evening,
+    #[string = "Night"]
+    Night,
+}
+
 /// Data for the field of a battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FieldData {
@@ -58,6 +81,9 @@ pub struct FieldData {
     /// The environment of the field.
     #[serde(default)]
     pub environment: FieldEnvironment,
+    /// The time of day of the field.
+    #[serde(default)]
+    pub time: TimeOfDay,
 }
 
 /// The battle field, which represents the shared environment that all Mons (from both sides) battle
@@ -68,6 +94,7 @@ pub struct Field {
     pub default_weather: Option<Id>,
     pub default_terrain: Option<Id>,
     pub environment: FieldEnvironment,
+    pub time: TimeOfDay,
     pub weather: Option<Id>,
     pub weather_state: fxlang::EffectState,
     pub terrain: Option<Id>,
@@ -82,6 +109,7 @@ impl Field {
             default_weather: data.weather.map(|weather| Id::from(weather)),
             default_terrain: data.terrain.map(|terrain| Id::from(terrain)),
             environment: data.environment,
+            time: data.time,
             weather: None,
             weather_state: fxlang::EffectState::new(),
             terrain: None,

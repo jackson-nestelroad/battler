@@ -150,6 +150,7 @@ pub fn run_function(
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
+        "force_fully_heal" => force_fully_heal(context).map(|()| None),
         "forme_change" => forme_change(context).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context).map(|val| Some(val)),
         "get_ability" => get_ability(context),
@@ -163,6 +164,7 @@ pub fn run_function(
         "has_move" => has_move(context).map(|val| Some(val)),
         "has_pseudo_weather" => has_pseudo_weather(context).map(|val| Some(val)),
         "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
+        "has_species_registered" => has_species_registered(context).map(|val| Some(val)),
         "has_type" => has_type(context).map(|val| Some(val)),
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
         "heal" => heal(context).map(|val| Some(val)),
@@ -281,6 +283,7 @@ pub fn run_function(
         "use_item" => use_item(context).map(|val| Some(val)),
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
+        "value_from_local_data" => value_from_local_data(context),
         "volatile_status_state" => volatile_status_state(context),
         "will_move_this_turn" => will_move_this_turn(context).map(|val| Some(val)),
         _ => Err(general_error(format!(
@@ -1318,10 +1321,12 @@ fn has_volatile(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn cure_status(mut context: FunctionContext) -> Result<Value> {
+    let silent = context.silent();
     let no_effect = context.no_effect();
     let mon_handle = context.target_handle_positional()?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
-    core_battle_actions::cure_status(&mut context, !no_effect).map(|val| Value::Boolean(val))
+    core_battle_actions::cure_status(&mut context, silent, !no_effect)
+        .map(|val| Value::Boolean(val))
 }
 
 fn move_has_flag(mut context: FunctionContext) -> Result<Value> {
@@ -1793,7 +1798,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value> {
 
     core_battle_actions::try_set_status(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
-        Some(status),
+        status,
         false,
     )
     .map(|val| Value::Boolean(val.success()))
@@ -3663,4 +3668,45 @@ fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn value_from_local_data(mut context: FunctionContext) -> Result<Option<Value>> {
+    let effect_handle = context.effect_handle_positional()?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    Ok(CoreBattle::get_effect_by_handle(
+        context.evaluation_context().battle_context(),
+        &effect_handle,
+    )?
+    .fxlang_effect()
+    .wrap_expectation("effect does not have local data")?
+    .local_data
+    .values
+    .get(&key)
+    .map(|val| Value::String(val.clone())))
+}
+
+fn has_species_registered(mut context: FunctionContext) -> Result<Value> {
+    let player = context
+        .pop_front()
+        .wrap_expectation("missing player")?
+        .player_index()
+        .wrap_error_with_message("invalid player")?;
+    let species = context
+        .pop_front()
+        .wrap_expectation("missing species")?
+        .species_id()
+        .wrap_error_with_message("invalid species")?;
+    Ok(Value::Boolean(Player::has_species_registered(
+        &context.battle_context_mut().player_context(player)?,
+        &species,
+    )))
+}
+
+fn force_fully_heal(mut context: FunctionContext) -> Result<()> {
+    let target = context.target_handle_positional()?;
+    Mon::force_fully_heal(&mut context.mon_context(target)?)
 }

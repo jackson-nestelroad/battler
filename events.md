@@ -184,7 +184,6 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. `CanHeal`.
                         1. `TryHeal`.
                      1. Set status:
-                        1. `CureStatus`.
                         1. Check immunity.
                         1. `SetStatus`.
                         1. Status `Duration`.
@@ -239,9 +238,9 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. `DamagingHit`.
                      1. `AfterHit`.
                1. `Update`.
-            1. Process fainted Mons.
+            1. Process fainted/caught Mons.
                1. Give out experience.
-               1. `Faint`.
+               1. `Faint`/`Catch`.
                1. `Exit`.
                1. Clear volatile effects.
                1. Switch out.
@@ -255,6 +254,12 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `SetLastMove`.
 1. `DeductPp`.
+
+## Cure Status
+
+1. `CureStatus`.
+1. Status `End`.
+1. `AfterCureStatus`.
 
 ## Remove Volatile
 

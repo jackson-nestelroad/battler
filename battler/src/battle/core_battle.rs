@@ -798,8 +798,11 @@ impl<'d> CoreBattle<'d> {
             battle_log_entry!("info", ("battletype", &context.battle().format.battle_type));
         context.battle_mut().log(battle_type_event);
 
-        let environment_event =
-            battle_log_entry!("info", ("environment", context.battle().field.environment));
+        let environment_event = battle_log_entry!(
+            "info",
+            ("environment", context.battle().field.environment),
+            ("time", context.battle().field.time)
+        );
         context.battle_mut().log(environment_event);
 
         // Extract and sort all rule logs.
@@ -2017,6 +2020,21 @@ impl<'d> CoreBattle<'d> {
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
+            core_battle_effects::run_applying_effect_event_expecting_void(
+                &mut context.applying_effect_context(
+                    EffectHandle::Item(entry.item.clone()),
+                    None,
+                    None,
+                )?,
+                fxlang::BattleEvent::Catch,
+                fxlang::VariableInput::default(),
+            );
+            core_battle_effects::run_event_for_mon(
+                &mut context,
+                fxlang::BattleEvent::Catch,
+                fxlang::VariableInput::default(),
+            );
+
             core_battle_effects::run_event_for_mon(
                 &mut context,
                 fxlang::BattleEvent::Exit,
@@ -2026,14 +2044,7 @@ impl<'d> CoreBattle<'d> {
             Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
 
-            context.mon_mut().ball = context
-                .battle()
-                .dex
-                .items
-                .get_by_id(&entry.item)?
-                .data
-                .name
-                .clone();
+            context.mon_mut().ball = entry.item;
 
             context
                 .as_battle_context_mut()
@@ -2097,14 +2108,14 @@ impl<'d> CoreBattle<'d> {
         if self.dex.conditions.get_by_id(&id).is_ok() {
             return EffectHandle::Condition(id);
         }
-        if self.dex.moves.get_by_id(&id).is_ok() {
-            return EffectHandle::MoveCondition(id);
-        }
         if self.dex.abilities.get_by_id(&id).is_ok() {
             return EffectHandle::AbilityCondition(id);
         }
         if self.dex.items.get_by_id(&id).is_ok() {
             return EffectHandle::ItemCondition(id);
+        }
+        if self.dex.moves.get_by_id(&id).is_ok() {
+            return EffectHandle::MoveCondition(id);
         }
         if self.dex.clauses.get_by_id(&id).is_ok() {
             return EffectHandle::Clause(id);

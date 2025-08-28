@@ -114,7 +114,7 @@ fn player_can_hit_all_adjacent_foes() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "info|battletype:Multi",
-            "info|environment:Normal",
+            "info|environment:Normal|time:Day",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
             "maxsidelength|length:5",

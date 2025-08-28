@@ -943,6 +943,13 @@ where
                             }
                             "level" => ValueRef::UFraction(context.mon(mon_handle)?.level.into()),
                             "max_hp" => ValueRef::UFraction(context.mon(mon_handle)?.max_hp.into()),
+                            "move_last_turn_succeeded" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .move_last_turn_outcome
+                                    .map(|outcome| outcome.success())
+                                    .unwrap_or(false),
+                            ),
                             "move_slots" => ValueRef::TempList(
                                 context
                                     .mon(mon_handle)?
@@ -996,9 +1003,6 @@ where
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
                             },
-                            "status_state" => ValueRef::EffectState(
-                                MonStatusEffectStateConnector::new(mon_handle).make_dynamic(),
-                            ),
                             "transformed" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.transformed)
                             }
@@ -1055,6 +1059,9 @@ where
                                 .last_move()
                                 .map(|move_handle| ValueRef::ActiveMove(move_handle))
                                 .unwrap_or(ValueRef::Undefined),
+                            "turn" => {
+                                ValueRef::UFraction(context.battle_context().battle().turn().into())
+                            }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Field = value {
@@ -1095,6 +1102,9 @@ where
                                     })
                                     .collect(),
                             ),
+                            "time" => {
+                                ValueRef::TimeOfDay(context.battle_context().battle().field.time)
+                            }
                             "weather" => {
                                 match context.battle_context().battle().field.weather.clone() {
                                     Some(weather) => ValueRef::Effect(

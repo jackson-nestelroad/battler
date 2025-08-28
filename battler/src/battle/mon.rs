@@ -400,7 +400,7 @@ pub struct Mon {
     pub true_nature: Nature,
     pub gender: Gender,
     pub shiny: bool,
-    pub ball: String,
+    pub ball: Id,
     pub different_original_trainer: bool,
 
     pub base_move_slots: Vec<MoveSlot>,
@@ -443,6 +443,7 @@ pub struct Mon {
     pub last_move_used: Option<MoveHandle>,
 
     pub move_this_turn_outcome: Option<MoveOutcome>,
+    pub move_last_turn_outcome: Option<MoveOutcome>,
     pub last_move_target_location: Option<isize>,
     pub damaged_this_turn: bool,
     pub stats_raised_this_turn: bool,
@@ -473,7 +474,7 @@ impl Mon {
         let true_nature = data.true_nature.unwrap_or(data.nature);
         let gender = data.gender;
         let shiny = data.shiny;
-        let ball = data.ball;
+        let ball = Id::from(data.ball);
         let different_original_trainer = data.different_original_trainer;
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
@@ -592,6 +593,7 @@ impl Mon {
             last_move_used: None,
 
             move_this_turn_outcome: None,
+            move_last_turn_outcome: None,
             last_move_target_location: None,
             damaged_this_turn: false,
             stats_raised_this_turn: false,
@@ -1333,6 +1335,14 @@ impl Mon {
             ),
             None => None,
         };
+        let ball = context
+            .battle()
+            .dex
+            .items
+            .get_by_id(&context.mon().ball)?
+            .data
+            .name
+            .clone();
         Ok(MonSummaryData {
             name: context.mon().name.clone(),
             species,
@@ -1340,7 +1350,7 @@ impl Mon {
             gender: context.mon().gender,
             nature: context.mon().nature,
             shiny: context.mon().shiny,
-            ball: context.mon().ball.clone(),
+            ball,
             hp: context.mon().hp,
             friendship: context.mon().friendship,
             experience: context.mon().experience,
@@ -1458,6 +1468,8 @@ impl Mon {
             context.mon_mut().force_switch = None;
         }
 
+        context.mon_mut().move_this_turn_outcome = None;
+        context.mon_mut().move_last_turn_outcome = None;
         context.mon_mut().last_move = None;
         context.mon_mut().last_move_target_location = None;
         context.mon_mut().last_move_used = None;
@@ -1981,14 +1993,14 @@ impl Mon {
     }
 
     /// Heals the Mon.
-    pub fn heal(context: &mut MonContext, mut damage: u16) -> Result<u16> {
-        if context.mon().hp == 0 || damage == 0 || context.mon().hp > context.mon().max_hp {
+    pub fn heal(&mut self, mut damage: u16) -> Result<u16> {
+        if self.hp == 0 || damage == 0 || self.hp > self.max_hp {
             return Ok(0);
         }
-        context.mon_mut().hp += damage;
-        if context.mon().hp > context.mon().max_hp {
-            damage -= context.mon().hp - context.mon().max_hp;
-            context.mon_mut().hp = context.mon().max_hp;
+        self.hp += damage;
+        if self.hp > self.max_hp {
+            damage -= self.hp - self.max_hp;
+            self.hp = self.max_hp;
         }
         Ok(damage)
     }
@@ -2011,10 +2023,7 @@ impl Mon {
             MonExitType::Fainted => {
                 context.mon_mut().status = Some(Id::from_known("fnt"));
             }
-            MonExitType::Caught => {
-                // TODO: Consider how we communicate that a Mon was caught.
-                context.mon_mut().status = Some(Id::from_known("fnt"));
-            }
+            MonExitType::Caught => (),
         }
 
         Self::switch_out(context)?;
@@ -2098,6 +2107,7 @@ impl Mon {
         context.mon_mut().active_turns += 1;
 
         context.mon_mut().old_active_position = None;
+        context.mon_mut().move_last_turn_outcome = context.mon().move_this_turn_outcome;
         context.mon_mut().move_this_turn_outcome = None;
         context.mon_mut().damaged_this_turn = false;
         context.mon_mut().stats_raised_this_turn = false;
@@ -2274,6 +2284,29 @@ impl Mon {
 
         core_battle_logs::set_hp(context, None, None)?;
         Ok(delta)
+    }
+
+    /// Forces a Mon to be fully healed.
+    ///
+    /// WARNING: This method is completely silent, so the heal will not be made known and will run
+    /// no events. It is intended to be used by the "Heal Ball" item after catching a Mon.
+    pub fn force_fully_heal(context: &mut MonContext) -> Result<()> {
+        let max_hp = context.mon().max_hp;
+        context.mon_mut().heal(max_hp)?;
+
+        context.mon_mut().status = None;
+
+        for (move_id, max_pp) in context
+            .mon()
+            .base_move_slots
+            .iter()
+            .map(|move_slot| (move_slot.id.clone(), move_slot.max_pp))
+            .collect::<Vec<_>>()
+        {
+            context.mon_mut().restore_pp(&move_id, max_pp);
+        }
+
+        Ok(())
     }
 }
 

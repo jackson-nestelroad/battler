@@ -446,7 +446,7 @@ impl<'borrow> Effect<'borrow> {
             Self::Item(item) => Some(&item.effect),
             Self::ItemCondition(item) => Some(&item.condition),
             Self::Clause(clause) => Some(&clause.effect),
-            Self::Species(_) => None,
+            Self::Species(species) => Some(&species.effect),
             Self::NonExistent(_) => None,
         }
     }

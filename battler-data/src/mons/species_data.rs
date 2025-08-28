@@ -134,6 +134,10 @@ pub struct SpeciesData {
     /// Event giveaways for this species.
     #[serde(default)]
     pub events: HashMap<String, EventData>,
+
+    /// Dynamic battle effects.
+    #[serde(default)]
+    pub effect: serde_json::Value,
 }
 
 impl SpeciesData {

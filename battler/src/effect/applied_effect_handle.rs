@@ -151,7 +151,7 @@ impl AppliedEffectHandle {
             | AppliedEffectLocation::MonType(_) => Ok(false),
             AppliedEffectLocation::MonStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
-                core_battle_actions::clear_status(&mut context, false)
+                core_battle_actions::clear_status(&mut context)
             }
             AppliedEffectLocation::MonVolatile(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;

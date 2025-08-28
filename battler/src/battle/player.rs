@@ -205,6 +205,16 @@ pub struct PlayerOptions {
     pub mons_caught: u32,
 }
 
+/// A player's dex, noting what has previously been caught by the player.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct PlayerDex {
+    /// Species registered in the dex.
+    ///
+    /// Only base species involved in the battle really need to be added, if you want things like
+    /// "Repeat Ball" to work.
+    pub species: HashSet<String>,
+}
+
 /// Data for a single player of a battle.
 ///
 /// A player is exactly what it sounds like: a single participant in a battle. A player brings their
@@ -223,6 +233,9 @@ pub struct PlayerData {
     pub player_options: PlayerOptions,
     /// Team.
     pub team: TeamData,
+    /// Dex.
+    #[serde(default)]
+    pub dex: PlayerDex,
 }
 
 /// What the player has chosen to happen in the current turn.
@@ -413,6 +426,7 @@ pub struct Player {
     pub escaped: bool,
 
     pub bag: HashMap<Id, u16>,
+    pub dex: PlayerDex,
     pub caught: Vec<MonHandle>,
 }
 
@@ -428,6 +442,14 @@ impl Player {
         registry: &BattleRegistry,
     ) -> Result<Self> {
         let active = vec![None; battle_type.active_per_player()];
+        let player_dex = PlayerDex {
+            species: data
+                .dex
+                .species
+                .into_iter()
+                .map(|species| Id::from(species).to_string())
+                .collect(),
+        };
         let mut player = Self {
             id: data.id,
             name: data.name,
@@ -445,6 +467,7 @@ impl Player {
             escape_attempts: 0,
             escaped: false,
             bag: HashMap::default(),
+            dex: player_dex,
             caught: Vec::new(),
         };
         player.update_team(data.team, dex, registry)?;
@@ -1534,6 +1557,11 @@ impl Player {
     /// Puts an item in the player's bag.
     pub fn put_item_in_bag(context: &mut PlayerContext, item: Id) {
         *context.player_mut().bag.entry(item).or_default() += 1;
+    }
+
+    /// Checks if the player has the given species registered in its dex.
+    pub fn has_species_registered(context: &PlayerContext, species: &Id) -> bool {
+        context.player().dex.species.contains(species.as_ref())
     }
 }
 

@@ -4,17 +4,21 @@ use battler_data::{
     SpeciesData,
 };
 
+use crate::effect::fxlang;
+
 /// A Mon species.
 #[derive(Debug, Clone)]
 pub struct Species {
     id: Id,
     pub data: SpeciesData,
+    pub effect: fxlang::Effect,
 }
 
 impl Species {
     /// Constructs a new [`Species`] instance from [`SpeciesData`].
     pub fn new(id: Id, data: SpeciesData) -> Self {
-        Self { id, data }
+        let effect = data.effect.clone().try_into().unwrap_or_default();
+        Self { id, data, effect }
     }
 }
 

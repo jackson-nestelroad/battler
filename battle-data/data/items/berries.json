@@ -5,7 +5,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Fire" }
+      "natural_gift": { "power": 80, "type": "Fire" }
     },
     "effect": {
       "callbacks": {
@@ -25,7 +25,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Water" }
+      "natural_gift": { "power": 80, "type": "Water" }
     },
     "effect": {
       "callbacks": {
@@ -45,7 +45,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Electric" }
+      "natural_gift": { "power": 80, "type": "Electric" }
     },
     "effect": {
       "callbacks": {
@@ -71,7 +71,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Grass" }
+      "natural_gift": { "power": 80, "type": "Grass" }
     },
     "effect": {
       "callbacks": {
@@ -91,7 +91,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Ice" }
+      "natural_gift": { "power": 80, "type": "Ice" }
     },
     "effect": {
       "callbacks": {
@@ -112,7 +112,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Fighting" }
+      "natural_gift": { "power": 80, "type": "Fighting" }
     },
     "effect": {
       "callbacks": {
@@ -153,7 +153,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Poison" }
+      "natural_gift": { "power": 80, "type": "Poison" }
     },
     "effect": {
       "callbacks": {
@@ -173,7 +173,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Ground" }
+      "natural_gift": { "power": 80, "type": "Ground" }
     },
     "effect": {
       "callbacks": {
@@ -196,7 +196,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Flying" }
+      "natural_gift": { "power": 80, "type": "Flying" }
     },
     "effect": {
       "callbacks": {
@@ -223,7 +223,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Psychic" }
+      "natural_gift": { "power": 80, "type": "Psychic" }
     },
     "effect": {
       "callbacks": {
@@ -244,25 +244,25 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Bug" }
+      "natural_gift": { "power": 80, "type": "Bug" }
     },
     "effect": {
+      "delegates": [
+        "condition:eatberrybyhealthitembase",
+        "condition:healandconfusebytasteitembase"
+      ],
       "callbacks": {
         "on_player_try_use_item": [
           "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
-        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
-        "on_eat": [
-          "heal: $mon expr($mon.base_max_hp / 3)",
-          "if $mon.true_nature.drops == atk:",
-          ["add_volatile: $mon confusion"]
-        ]
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
+      },
+      "local_data": {
+        "values": {
+          "stat": "atk"
+        }
       }
     }
   },
@@ -272,25 +272,25 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Rock" }
+      "natural_gift": { "power": 80, "type": "Rock" }
     },
     "effect": {
+      "delegates": [
+        "condition:eatberrybyhealthitembase",
+        "condition:healandconfusebytasteitembase"
+      ],
       "callbacks": {
         "on_player_try_use_item": [
           "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
-        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
-        "on_eat": [
-          "heal: $mon expr($mon.base_max_hp / 3)",
-          "if $mon.true_nature.drops == spa:",
-          ["add_volatile: $mon confusion"]
-        ]
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
+      },
+      "local_data": {
+        "values": {
+          "stat": "spa"
+        }
       }
     }
   },
@@ -300,25 +300,25 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Ghost" }
+      "natural_gift": { "power": 80, "type": "Ghost" }
     },
     "effect": {
+      "delegates": [
+        "condition:eatberrybyhealthitembase",
+        "condition:healandconfusebytasteitembase"
+      ],
       "callbacks": {
         "on_player_try_use_item": [
           "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
-        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
-        "on_eat": [
-          "heal: $mon expr($mon.base_max_hp / 3)",
-          "if $mon.true_nature.drops == spe:",
-          ["add_volatile: $mon confusion"]
-        ]
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
+      },
+      "local_data": {
+        "values": {
+          "stat": "spe"
+        }
       }
     }
   },
@@ -328,25 +328,25 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Dragon" }
+      "natural_gift": { "power": 80, "type": "Dragon" }
     },
     "effect": {
+      "delegates": [
+        "condition:eatberrybyhealthitembase",
+        "condition:healandconfusebytasteitembase"
+      ],
       "callbacks": {
         "on_player_try_use_item": [
           "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
-        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
-        "on_eat": [
-          "heal: $mon expr($mon.base_max_hp / 3)",
-          "if $mon.true_nature.drops == spd:",
-          ["add_volatile: $mon confusion"]
-        ]
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
+      },
+      "local_data": {
+        "values": {
+          "stat": "spd"
+        }
       }
     }
   },
@@ -356,25 +356,25 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Dark" }
+      "natural_gift": { "power": 80, "type": "Dark" }
     },
     "effect": {
+      "delegates": [
+        "condition:eatberrybyhealthitembase",
+        "condition:healandconfusebytasteitembase"
+      ],
       "callbacks": {
         "on_player_try_use_item": [
           "if $target.exited or $target.hp >= $target.max_hp:",
           ["return false"]
         ],
         "on_player_use": ["eat_given_item: $mon $this.id"],
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
-        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]],
-        "on_eat": [
-          "heal: $mon expr($mon.base_max_hp / 3)",
-          "if $mon.true_nature.drops == def:",
-          ["add_volatile: $mon confusion"]
-        ]
+        "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
+      },
+      "local_data": {
+        "values": {
+          "stat": "def"
+        }
       }
     }
   },
@@ -383,7 +383,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Steel" }
+      "natural_gift": { "power": 80, "type": "Steel" }
     }
   },
   "blukberry": {
@@ -391,7 +391,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Fire" }
+      "natural_gift": { "power": 90, "type": "Fire" }
     }
   },
   "nanabberry": {
@@ -399,7 +399,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Water" }
+      "natural_gift": { "power": 90, "type": "Water" }
     }
   },
   "wepearberry": {
@@ -407,7 +407,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Electric" }
+      "natural_gift": { "power": 90, "type": "Electric" }
     }
   },
   "pinapberry": {
@@ -415,7 +415,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Grass" }
+      "natural_gift": { "power": 90, "type": "Grass" }
     }
   },
   "pomegberry": {
@@ -423,7 +423,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Ice" }
+      "natural_gift": { "power": 90, "type": "Ice" }
     }
   },
   "kelpsyberry": {
@@ -431,7 +431,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Fighting" }
+      "natural_gift": { "power": 90, "type": "Fighting" }
     }
   },
   "qualotberry": {
@@ -439,7 +439,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Poison" }
+      "natural_gift": { "power": 90, "type": "Poison" }
     }
   },
   "hondewberry": {
@@ -447,7 +447,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Ground" }
+      "natural_gift": { "power": 90, "type": "Ground" }
     }
   },
   "grepaberry": {
@@ -455,7 +455,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Flying" }
+      "natural_gift": { "power": 90, "type": "Flying" }
     }
   },
   "tamatoberry": {
@@ -463,7 +463,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Psychic" }
+      "natural_gift": { "power": 90, "type": "Psychic" }
     }
   },
   "cornnberry": {
@@ -471,7 +471,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Bug" }
+      "natural_gift": { "power": 90, "type": "Bug" }
     }
   },
   "magostberry": {
@@ -479,7 +479,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Rock" }
+      "natural_gift": { "power": 90, "type": "Rock" }
     }
   },
   "rabutaberry": {
@@ -487,7 +487,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Ghost" }
+      "natural_gift": { "power": 90, "type": "Ghost" }
     }
   },
   "nomelberry": {
@@ -495,7 +495,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Dragon" }
+      "natural_gift": { "power": 90, "type": "Dragon" }
     }
   },
   "spelonberry": {
@@ -503,7 +503,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Dark" }
+      "natural_gift": { "power": 90, "type": "Dark" }
     }
   },
   "pamtreberry": {
@@ -511,7 +511,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "typ": "Steel" }
+      "natural_gift": { "power": 90, "type": "Steel" }
     }
   },
   "watmelberry": {
@@ -519,7 +519,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Fire" }
+      "natural_gift": { "power": 100, "type": "Fire" }
     }
   },
   "durinberry": {
@@ -527,7 +527,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Water" }
+      "natural_gift": { "power": 100, "type": "Water" }
     }
   },
   "belueberry": {
@@ -535,7 +535,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Electric" }
+      "natural_gift": { "power": 100, "type": "Electric" }
     }
   },
   "occaberry": {
@@ -543,20 +543,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Fire" }
+      "natural_gift": { "power": 80, "type": "Fire" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == fire and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fire"
+        }
       }
     }
   },
@@ -565,20 +559,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Water" }
+      "natural_gift": { "power": 80, "type": "Water" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == water and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
       }
     }
   },
@@ -587,20 +575,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Electric" }
+      "natural_gift": { "power": 80, "type": "Electric" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == electric and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Electric"
+        }
       }
     }
   },
@@ -609,20 +591,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Grass" }
+      "natural_gift": { "power": 80, "type": "Grass" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == grass and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
       }
     }
   },
@@ -631,20 +607,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Ice" }
+      "natural_gift": { "power": 80, "type": "Ice" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == ice and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ice"
+        }
       }
     }
   },
@@ -653,20 +623,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Fighting" }
+      "natural_gift": { "power": 80, "type": "Fighting" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == fighting and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fighting"
+        }
       }
     }
   },
@@ -675,20 +639,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Poison" }
+      "natural_gift": { "power": 80, "type": "Poison" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == poison and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Poison"
+        }
       }
     }
   },
@@ -697,20 +655,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Ground" }
+      "natural_gift": { "power": 80, "type": "Ground" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == ground and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ground"
+        }
       }
     }
   },
@@ -719,20 +671,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Flying" }
+      "natural_gift": { "power": 80, "type": "Flying" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == flying and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Flying"
+        }
       }
     }
   },
@@ -741,20 +687,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Psychic" }
+      "natural_gift": { "power": 80, "type": "Psychic" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == psychic and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
       }
     }
   },
@@ -763,20 +703,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Bug" }
+      "natural_gift": { "power": 80, "type": "Bug" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == bug and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Bug"
+        }
       }
     }
   },
@@ -785,20 +719,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Rock" }
+      "natural_gift": { "power": 80, "type": "Rock" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == rock and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
       }
     }
   },
@@ -807,20 +735,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Ghost" }
+      "natural_gift": { "power": 80, "type": "Ghost" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == ghost and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ghost"
+        }
       }
     }
   },
@@ -829,20 +751,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Dragon" }
+      "natural_gift": { "power": 80, "type": "Dragon" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == dragon and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dragon"
+        }
       }
     }
   },
@@ -851,20 +767,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Dark" }
+      "natural_gift": { "power": 80, "type": "Dark" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == dark and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dark"
+        }
       }
     }
   },
@@ -873,20 +783,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Steel" }
+      "natural_gift": { "power": 80, "type": "Steel" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == steel and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Steel"
+        }
       }
     }
   },
@@ -895,20 +799,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Normal" }
+      "natural_gift": { "power": 80, "type": "Normal" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == normal and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Normal"
+        }
       }
     }
   },
@@ -917,14 +815,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Grass" }
+      "natural_gift": { "power": 100, "type": "Grass" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["boost: $mon 'atk:1'"]
       }
     }
@@ -934,14 +829,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Ice" }
+      "natural_gift": { "power": 100, "type": "Ice" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["boost: $mon 'def:1'"]
       }
     }
@@ -951,14 +843,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Fighting" }
+      "natural_gift": { "power": 100, "type": "Fighting" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["boost: $mon 'spe:1'"]
       }
     }
@@ -968,14 +857,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Poison" }
+      "natural_gift": { "power": 100, "type": "Poison" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["boost: $mon 'spa:1'"]
       }
     }
@@ -985,14 +871,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Ground" }
+      "natural_gift": { "power": 100, "type": "Ground" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["boost: $mon 'spd:1'"]
       }
     }
@@ -1002,14 +885,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Flying" }
+      "natural_gift": { "power": 100, "type": "Flying" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["add_volatile: $mon focusenergy"]
       }
     }
@@ -1019,14 +899,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Psychic" }
+      "natural_gift": { "power": 100, "type": "Psychic" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": [
           "$potential = []",
           "foreach $stat in func_call(boostable_stats):",
@@ -1049,21 +926,10 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Bug" }
+      "natural_gift": { "power": 100, "type": "Bug" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
-      }
+      "delegates": ["condition:damagereducingberryitembase"]
     }
   },
   "micleberry": {
@@ -1071,14 +937,11 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Rock" }
+      "natural_gift": { "power": 100, "type": "Rock" }
     },
     "effect": {
+      "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ],
         "on_eat": ["add_volatile: $mon $this.id"]
       }
     },
@@ -1096,7 +959,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Ghost" }
+      "natural_gift": { "power": 100, "type": "Ghost" }
     },
     "effect": {
       "callbacks": {
@@ -1119,7 +982,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Dragon" }
+      "natural_gift": { "power": 100, "type": "Dragon" }
     },
     "effect": {
       "callbacks": {
@@ -1140,7 +1003,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Dark" }
+      "natural_gift": { "power": 100, "type": "Dark" }
     },
     "effect": {
       "callbacks": {
@@ -1161,20 +1024,14 @@
     "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "typ": "Fairy" }
+      "natural_gift": { "power": 80, "type": "Fairy" }
     },
     "effect": {
-      "callbacks": {
-        "on_source_modify_damage": [
-          "if $move.type == fairy and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
-          ]
-        ]
+      "delegates": ["condition:damagereducingberryitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fairy"
+        }
       }
     }
   },
@@ -1183,7 +1040,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Fairy" }
+      "natural_gift": { "power": 100, "type": "Fairy" }
     },
     "effect": {
       "callbacks": {
@@ -1200,7 +1057,7 @@
     "flags": ["Berry"],
     "special_data": {
       "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "typ": "Dark" }
+      "natural_gift": { "power": 100, "type": "Dark" }
     },
     "effect": {
       "callbacks": {

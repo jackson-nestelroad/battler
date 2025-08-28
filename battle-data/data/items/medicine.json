@@ -260,7 +260,13 @@
   "ppup": { "name": "PP Up", "flags": ["Medicine"] },
   "zinc": { "name": "Zinc", "flags": ["Medicine"] },
   "ppmax": { "name": "PP Max", "flags": ["Medicine"] },
-  "oldgateau": { "name": "Old Gateau", "flags": ["Medicine"] },
+  "oldgateau": {
+    "name": "Old Gateau",
+    "flags": ["Medicine"],
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
+  },
   "blueflute": { "name": "Blue Flute", "flags": ["Medicine"] },
   "yellowflute": { "name": "Yellow Flute", "flags": ["Medicine"] },
   "redflute": { "name": "Red Flute", "flags": ["Medicine"] },

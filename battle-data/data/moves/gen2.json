@@ -124,7 +124,7 @@
       "callbacks": {
         "on_start": ["if !$target.is_asleep:", ["return false"], "log_start"],
         "on_residual": ["damage: $target expr($target.base_max_hp / 4)"],
-        "on_cure_status": ["remove_volatile: $target $this.id"]
+        "on_after_cure_status": ["remove_volatile: $target $this.id"]
       }
     }
   },
@@ -1038,6 +1038,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": [
+      "CallsMove",
       "FailCopycat",
       "FailEncore",
       "FailInstruct",

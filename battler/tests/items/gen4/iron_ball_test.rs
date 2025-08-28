@@ -14,35 +14,19 @@ use battler_test_utils::{
     assert_logs_since_turn_eq,
 };
 
-fn arceus() -> Result<TeamData> {
+fn talonflame() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Arceus",
-                    "species": "Arceus",
+                    "name": "Talonflame",
+                    "species": "Talonflame",
                     "ability": "No Ability",
+                    "item": "Iron Ball",
                     "moves": [
-                        "Judgment"
+                        "Earthquake",
+                        "Gravity"
                     ],
-                    "nature": "Hardy",
-                    "level": 50
-                }
-            ]
-        }"#,
-    )
-    .wrap_error()
-}
-
-fn kecleon() -> Result<TeamData> {
-    serde_json::from_str(
-        r#"{
-            "members": [
-                {
-                    "name": "Kecleon",
-                    "species": "Kecleon",
-                    "ability": "Color Change",
-                    "moves": [],
                     "nature": "Hardy",
                     "level": 50
                 }
@@ -72,20 +56,20 @@ fn make_battle(
 }
 
 #[test]
-fn judgment_is_normal_type_by_default() {
+fn iron_ball_grounds_holder_and_makes_ground_types_normal_effective() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, arceus().unwrap(), kecleon().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, talonflame().unwrap(), talonflame().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Arceus,player-1,1|name:Judgment|target:Kecleon,player-2,1",
-            "split|side:1",
-            "damage|mon:Kecleon,player-2,1|health:54/120",
-            "damage|mon:Kecleon,player-2,1|health:45/100",
+            "move|mon:Talonflame,player-2,1|name:Earthquake",
+            "split|side:0",
+            "damage|mon:Talonflame,player-1,1|health:89/138",
+            "damage|mon:Talonflame,player-1,1|health:65/100",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -95,23 +79,23 @@ fn judgment_is_normal_type_by_default() {
 }
 
 #[test]
-fn judgment_changes_type_from_plate() {
+fn iron_ball_does_not_modify_effectiveness_if_holder_is_grounded_by_other_effect() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut team = arceus().unwrap();
-    team.members[0].item = Some("Flame Plate".to_owned());
-    let mut battle = make_battle(&data, 0, team, kecleon().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 0, talonflame().unwrap(), talonflame().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Arceus,player-1,1|name:Judgment|target:Kecleon,player-2,1",
-            "split|side:1",
-            "damage|mon:Kecleon,player-2,1|health:68/120",
-            "damage|mon:Kecleon,player-2,1|health:57/100",
-            "typechange|mon:Kecleon,player-2,1|types:Fire",
+            "move|mon:Talonflame,player-1,1|name:Gravity",
+            "fieldstart|move:Gravity",
+            "move|mon:Talonflame,player-2,1|name:Earthquake",
+            "supereffective|mon:Talonflame,player-1,1",
+            "split|side:0",
+            "damage|mon:Talonflame,player-1,1|health:40/138",
+            "damage|mon:Talonflame,player-1,1|health:29/100",
             "residual",
             "turn|turn:2"
         ]"#,

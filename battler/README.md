@@ -8,7 +8,7 @@ The battle engine is designed off of a few principles:
 1. Separation between battle engine and battle clients. This engine is focused on generating a battle log, which can be easily displayed and replayed by battle clients.
 1. Support for high level of customization for all sorts of effects through an interpreted language written directly on effect data.
 
-All moves, abilities, and items through **Generation 3** have been implemented and validated to work on the battle engine.
+All moves, abilities, and items through **Generation 4** have been implemented and validated to work on the battle engine.
 
 ## Features
 

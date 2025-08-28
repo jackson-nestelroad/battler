@@ -17,6 +17,7 @@ use battler::{
     FormatData,
     FormatOptions,
     PlayerData,
+    PlayerDex,
     PlayerOptions,
     PlayerType,
     PublicCoreBattle,
@@ -24,6 +25,7 @@ use battler::{
     SerializedRuleSet,
     SideData,
     TeamData,
+    TimeOfDay,
     WildPlayerOptions,
 };
 use battler_service::BattlerService;
@@ -148,6 +150,11 @@ impl TestBattleBuilder {
         self
     }
 
+    pub fn with_catch_rate_logs(mut self, log_catch_rate: bool) -> Self {
+        self.engine_options.log_catch_rate = log_catch_rate;
+        self
+    }
+
     pub fn with_team_validation(mut self, team_validation: bool) -> Self {
         self.engine_options.validate_teams = team_validation;
         self
@@ -176,6 +183,7 @@ impl TestBattleBuilder {
             player_type: PlayerType::Trainer,
             player_options: PlayerOptions::default(),
             team: TeamData::default(),
+            dex: PlayerDex::default(),
         });
         self
     }
@@ -191,6 +199,7 @@ impl TestBattleBuilder {
                 mons_caught: 151,
             },
             team: TeamData::default(),
+            dex: PlayerDex::default(),
         });
         self
     }
@@ -202,6 +211,7 @@ impl TestBattleBuilder {
             player_type: PlayerType::Trainer,
             player_options: PlayerOptions::default(),
             team: TeamData::default(),
+            dex: PlayerDex::default(),
         });
         self
     }
@@ -218,12 +228,20 @@ impl TestBattleBuilder {
             player_type: PlayerType::Wild(options),
             player_options: PlayerOptions::default(),
             team: TeamData::default(),
+            dex: PlayerDex::default(),
         });
         self
     }
 
     pub fn with_team(mut self, player_id: &str, team: TeamData) -> Self {
         self.teams.insert(player_id.to_owned(), team);
+        self
+    }
+
+    pub fn with_player_dex(mut self, player_id: &str, dex: PlayerDex) -> Self {
+        if let Some(player) = self.players_mut().find(|player| player.id == player_id) {
+            player.dex = dex;
+        }
         self
     }
 
@@ -259,6 +277,11 @@ impl TestBattleBuilder {
 
     pub fn with_field_environment(mut self, environment: FieldEnvironment) -> Self {
         self.options.field.environment = environment;
+        self
+    }
+
+    pub fn with_time_of_day(mut self, time: TimeOfDay) -> Self {
+        self.options.field.time = time;
         self
     }
 }

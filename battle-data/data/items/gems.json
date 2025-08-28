@@ -3,17 +3,11 @@
     "name": "Fire Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == fire:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fire"
+        }
       }
     }
   },
@@ -21,17 +15,11 @@
     "name": "Water Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == water:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
       }
     }
   },
@@ -39,17 +27,11 @@
     "name": "Electric Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == electric:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Electric"
+        }
       }
     }
   },
@@ -57,17 +39,11 @@
     "name": "Grass Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == grass:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
       }
     }
   },
@@ -75,17 +51,11 @@
     "name": "Ice Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == ice:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ice"
+        }
       }
     }
   },
@@ -93,17 +63,11 @@
     "name": "Fighting Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == fighting:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fighting"
+        }
       }
     }
   },
@@ -111,17 +75,11 @@
     "name": "Poison Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == poison:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Poison"
+        }
       }
     }
   },
@@ -129,17 +87,11 @@
     "name": "Ground Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == ground:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ground"
+        }
       }
     }
   },
@@ -147,17 +99,11 @@
     "name": "Flying Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == flying:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Flying"
+        }
       }
     }
   },
@@ -165,17 +111,11 @@
     "name": "Psychic Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == psychic:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
       }
     }
   },
@@ -183,17 +123,11 @@
     "name": "Bug Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == bug:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Bug"
+        }
       }
     }
   },
@@ -201,17 +135,11 @@
     "name": "Rock Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == rock:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
       }
     }
   },
@@ -219,17 +147,11 @@
     "name": "Ghost Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == ghost:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ghost"
+        }
       }
     }
   },
@@ -237,17 +159,11 @@
     "name": "Dark Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == dark:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dark"
+        }
       }
     }
   },
@@ -255,17 +171,11 @@
     "name": "Steel Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == steel:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Steel"
+        }
       }
     }
   },
@@ -273,17 +183,11 @@
     "name": "Dragon Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == dragon:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dragon"
+        }
       }
     }
   },
@@ -291,17 +195,11 @@
     "name": "Normal Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == normal:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Normal"
+        }
       }
     }
   },
@@ -309,17 +207,11 @@
     "name": "Fairy Gem",
     "flags": ["Gem"],
     "effect": {
-      "callbacks": {
-        "on_source_try_primary_hit": {
-          "order": 1,
-          "program": [
-            "if $target == $source or $move.category == status:",
-            ["return"],
-            "if $move.type == fairy:",
-            ["use_item: $source"]
-          ]
-        },
-        "on_use": ["add_volatile: $mon gem"]
+      "delegates": ["condition:gemitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fairy"
+        }
       }
     }
   }

@@ -16,4 +16,8 @@ pub struct LocalData {
     /// Custom moves that can be used by the effect.
     #[serde(default)]
     pub moves: HashMap<Id, MoveData>,
+
+    /// Values that can be referenced by effect callbacks.
+    #[serde(default)]
+    pub values: HashMap<String, String>,
 }

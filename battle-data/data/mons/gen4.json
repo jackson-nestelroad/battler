@@ -10254,6 +10254,14 @@
       "toxic": ["M"],
       "twister": ["T"],
       "willowisp": ["M"]
+    },
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.item == griseousorb or $mon.item == griseouscore:",
+          ["forme_change: $mon giratinaorigin"]
+        ]
+      }
     }
   },
   "cresselia": {
@@ -13851,7 +13859,12 @@
     "required_items": ["Griseous Orb"],
     "changes_from": "Giratina-Altered",
     "tags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_update": ["if !$mon.item:", ["forme_change: $mon giratina"]]
+      }
+    }
   },
   "rotomheat": {
     "name": "Rotom-Heat",

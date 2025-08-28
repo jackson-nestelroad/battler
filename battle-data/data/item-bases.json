@@ -1,0 +1,76 @@
+{
+  "boosttypepowerby20percentitembase": {
+    "name": "Boost Type Power By 20 Percent Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.type == func_call(value_from_local_data: type):",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
+  },
+  "eatberrybyhealthitembase": {
+    "name": "Eat Berry By Health Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.hp <= $mon.berry_eating_health:",
+          ["eat_item: $mon"]
+        ]
+      }
+    }
+  },
+  "damagereducingberryitembase": {
+    "name": "Damage-Reducing Berry Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "$type = func_call(value_from_local_data: type)",
+          "if (!$type or $move.type == $type) and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          [
+            "if func_call(eat_item: $target use_target_as_source):",
+            [
+              "log_activate: with_target use_source weaken",
+              "return $damage / 2"
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "healandconfusebytasteitembase": {
+    "name": "Heal And Confuse By Taste Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_eat": [
+          "heal: $mon expr($mon.base_max_hp / 3)",
+          "if $mon.true_nature.drops == func_call(value_from_local_data: stat):",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
+  },
+  "gemitembase": {
+    "name": "Gem Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_source_try_primary_hit": {
+          "order": 1,
+          "program": [
+            "if $target == $source or $move.category == status:",
+            ["return"],
+            "if $move.type == func_call(value_from_local_data: type):",
+            ["use_item: $source"]
+          ]
+        },
+        "on_use": ["add_volatile: $mon gem"]
+      }
+    }
+  }
+}

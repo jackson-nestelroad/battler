@@ -927,6 +927,7 @@ impl Side {
 pub struct Field {
     pub sides: Vec<Side>,
     pub environment: Option<String>,
+    pub time: Option<String>,
     pub weather: Option<String>,
     pub conditions: BTreeMap<String, ConditionData>,
     pub rules: Vec<String>,
@@ -1872,6 +1873,9 @@ fn alter_battle_state_for_entry(
             if let Some(environment) = entry.value::<String>("environment") {
                 state.field.environment = Some(environment);
             }
+            if let Some(time) = entry.value::<String>("time") {
+                state.field.time = Some(time);
+            }
         }
         "learnedmove" => {
             let mon = entry.value_or_else("mon")?;
@@ -2248,7 +2252,7 @@ mod state_test {
     fn constructs_sides_and_players_before_battle_start() {
         let log = Log::new(&[
             "info|battletype:Singles",
-            "info|environment:Normal",
+            "info|environment:Normal|time:Evening",
             "side|id:0|name:Side 1",
             "side|id:1|name:Side 2",
             "maxsidelength|length:1",
@@ -2272,6 +2276,7 @@ mod state_test {
                 battle_type: "singles".to_owned(),
                 field: Field {
                     environment: Some("Normal".to_owned()),
+                    time: Some("Evening".to_owned()),
                     sides: Vec::from_iter([
                         Side {
                             name: "Side 1".to_owned(),

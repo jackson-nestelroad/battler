@@ -25,24 +25,28 @@ pub struct FlingData {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NaturalGiftData {
     pub power: u32,
+    #[serde(rename = "type")]
     pub typ: Type,
 }
 
 /// Data for what happens when "Judgment" is used with this item.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JudgmentData {
+    #[serde(rename = "type")]
     pub typ: Type,
 }
 
 /// Data for what happens when "Techno Blast" is used with this item.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TechnoBlastData {
+    #[serde(rename = "type")]
     pub typ: Type,
 }
 
 /// Data for what happens when "Multi-Attack" is used with this item.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MultiAttackData {
+    #[serde(rename = "type")]
     pub typ: Type,
 }
 

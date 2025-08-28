@@ -77,6 +77,7 @@ pub use field::{
     Field,
     FieldData,
     FieldEnvironment,
+    TimeOfDay,
 };
 pub use mon::{
     AbilitySlot,
@@ -105,6 +106,7 @@ pub use player::{
     Player,
     PlayerBattleData,
     PlayerData,
+    PlayerDex,
     PlayerOptions,
     PlayerType,
     WildPlayerOptions,

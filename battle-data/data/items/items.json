@@ -21,12 +21,30 @@
   "adamantorb": {
     "name": "Adamant Orb",
     "flags": [],
-    "special_data": { "fling": { "power": 60 } }
+    "special_data": { "fling": { "power": 60 } },
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "$base_species = func_call(base_species: $source)",
+          "if $base_species == dialga and ($move.type == steel or $move.type == dragon):",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
   "lustrousorb": {
     "name": "Lustrous Orb",
     "flags": [],
-    "special_data": { "fling": { "power": 60 } }
+    "special_data": { "fling": { "power": 60 } },
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "$base_species = func_call(base_species: $source)",
+          "if $base_species == palkia and ($move.type == water or $move.type == dragon):",
+          ["return $base_power * 6/5"]
+        ]
+      }
+    }
   },
   "brightpowder": {
     "name": "Bright Powder",
@@ -157,11 +175,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == bug:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Bug"
+        }
       }
     }
   },
@@ -170,7 +188,8 @@
   "souldew": {
     "name": "Soul Dew",
     "flags": [],
-    "effects": {
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
       "callbacks": {
         "on_source_base_power": [
           "$base_species = func_call(base_species: $source)",
@@ -178,8 +197,7 @@
           ["return $base_power * 6/5"]
         ]
       }
-    },
-    "special_data": { "fling": { "power": 30 } }
+    }
   },
   "deepseatooth": {
     "name": "Deep Sea Tooth",
@@ -253,11 +271,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == steel:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Steel"
+        }
       }
     }
   },
@@ -314,11 +332,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == ground:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ground"
+        }
       }
     }
   },
@@ -327,11 +345,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 100 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == rock:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
       }
     }
   },
@@ -340,11 +358,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == grass:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
       }
     }
   },
@@ -353,11 +371,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == dark:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dark"
+        }
       }
     }
   },
@@ -366,11 +384,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == fighting:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fighting"
+        }
       }
     }
   },
@@ -379,11 +397,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == electric:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Electric"
+        }
       }
     }
   },
@@ -392,11 +410,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == water:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
       }
     }
   },
@@ -405,11 +423,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 50 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == flying:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Flying"
+        }
       }
     }
   },
@@ -420,11 +438,11 @@
       "fling": { "power": 70, "hit_effect": { "status": "psn" } }
     },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == poison:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Poison"
+        }
       }
     }
   },
@@ -433,11 +451,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == ice:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ice"
+        }
       }
     }
   },
@@ -446,11 +464,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == ghost:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ghost"
+        }
       }
     }
   },
@@ -459,11 +477,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == psychic:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
       }
     }
   },
@@ -472,11 +490,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == fire:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fire"
+        }
       }
     }
   },
@@ -485,11 +503,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 70 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == dragon:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dragon"
+        }
       }
     }
   },
@@ -498,11 +516,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == normal:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Normal"
+        }
       }
     }
   },
@@ -524,11 +542,11 @@
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
     "effect": {
-      "callbacks": {
-        "on_source_base_power": [
-          "if $move.type == water:",
-          ["return $base_power * 6/5"]
-        ]
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
       }
     }
   },
@@ -598,22 +616,51 @@
   "widelens": {
     "name": "Wide Lens",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_source_modify_accuracy": ["return $acc * 11/10"]
+      }
+    }
   },
   "muscleband": {
     "name": "Muscle Band",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.category == physical:",
+          ["return $base_power * 11/10"]
+        ]
+      }
+    }
   },
   "wiseglasses": {
     "name": "Wise Glasses",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $move.category == special:",
+          ["return $base_power * 11/10"]
+        ]
+      }
+    }
   },
   "expertbelt": {
     "name": "Expert Belt",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_damage": [
+          "if func_call(type_modifier_against_target: $move $target) > 0:",
+          ["return $damage * 6/5"]
+        ]
+      }
+    }
   },
   "lightclay": {
     "name": "Light Clay",
@@ -637,7 +684,19 @@
   "powerherb": {
     "name": "Power Herb",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_charge_move": {
+          "priority": -1,
+          "program": [
+            "if !func_call(use_item: $user):",
+            ["return"],
+            "return false"
+          ]
+        }
+      }
+    }
   },
   "toxicorb": {
     "name": "Toxic Orb",
@@ -655,38 +714,119 @@
     "name": "Flame Orb",
     "flags": [],
     "special_data": {
-      "fling": { "power": 30, "hit_effect": { "status": "brn" } }
+      "fling": { "power": 30, "hit_effect": { "status": "brn" } },
+      "effect": {
+        "callbacks": {
+          "on_residual": ["set_status: $target brn"]
+        }
+      }
     }
   },
   "quickpowder": {
     "name": "Quick Powder",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": [
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == ditto and !$target.transformed:",
+          ["return $spe * 2"]
+        ]
+      }
+    }
   },
   "focussash": {
     "name": "Focus Sash",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_damage": {
+          "priority": -40,
+          "program": [
+            "if $target.hp == $target.max_hp and $damage >= $target.hp and $effect.is_move:",
+            ["if func_call(use_item: $target):", ["return $target.hp - 1"]]
+          ]
+        }
+      }
+    }
   },
   "zoomlens": {
     "name": "Zoom Lens",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_source_modify_accuracy": [
+          "if !func_call(will_move_this_turn: $target):",
+          ["return $acc * 6/5"]
+        ]
+      }
+    }
   },
   "metronome": {
     "name": "Metronome",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_start": ["add_volatile: $target $this.id"],
+        "on_end": ["remove_volatile: $target $this.id"]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["$effect_state.counter = 0"],
+        "on_try_move": {
+          "priority": -10,
+          "program": [
+            "# Moves that call other moves are ignored.",
+            "if func_call(move_has_flag: $move callsmove):",
+            ["return"],
+            "$in_charge_move = func_call(has_volatile: $user twoturnmove)",
+            "if $effect_state.last_move != $move.id:",
+            ["$effect_state.counter = 0"],
+            "else if $user.move_last_turn_succeeded or $in_charge_move:",
+            ["$effect_state.counter = $effect_state.counter + 1"],
+            "$effect_state.last_move = $move.id"
+          ]
+        },
+        "on_modify_damage": [
+          "$counter = func_call(min: $effect_state.counter 5)",
+          "return $damage * ($counter + 5) / 5"
+        ]
+      }
+    }
   },
   "ironball": {
     "name": "Iron Ball",
     "flags": [],
-    "special_data": { "fling": { "power": 130 } }
+    "special_data": { "fling": { "power": 130 } },
+    "effect": {
+      "callbacks": {
+        "is_grounded": ["return true"],
+        "on_modify_spe": ["return $spe / 2"],
+        "on_effectiveness": [
+          "# Target is grounded for other reasons.",
+          "if func_call(has_volatile: $target ingrain) or func_call(has_volatile: $target smackdown) or func_call(has_pseudo_weather: gravity):",
+          ["return"],
+          "# Overall effectiveness of Ground moves against a target with Flying type is 1x.",
+          "if $move.type == ground and func_call(has_type: $target flying):",
+          ["return 0"]
+        ]
+      }
+    }
   },
   "laggingtail": {
     "name": "Lagging Tail",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_sub_priority": ["return -1"]
+      }
+    }
   },
   "destinyknot": {
     "name": "Destiny Knot",
@@ -707,7 +847,17 @@
   "blacksludge": {
     "name": "Black Sludge",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if func_call(has_type: $target poison):",
+          ["heal: $target expr($target.base_max_hp / 16)"],
+          "else:",
+          ["damage: $target expr($target.base_max_hp / 8)"]
+        ]
+      }
+    }
   },
   "icyrock": {
     "name": "Icy Rock",
@@ -749,27 +899,67 @@
   "stickybarb": {
     "name": "Sticky Barb",
     "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": { "fling": { "power": 80 } },
+    "effect": {
+      "callbacks": {
+        "on_residual": ["damage: $target expr($target.base_max_hp / 8)"],
+        "on_hit": [
+          "if $source == $target or $source.item.is_defined or !func_call(move_makes_contact: $move):",
+          ["return"],
+          "# Make sure we can set the item first.",
+          "if !func_call(set_item: $source $target.item dry_run):",
+          ["return"],
+          "$item = func_call(take_item: $target)",
+          "if !$item:",
+          ["return"],
+          "set_item: $source $item"
+        ]
+      }
+    }
   },
   "powerbracer": {
     "name": "Power Bracer",
-    "flags": [],
-    "special_data": { "fling": { "power": 70 } }
+    "flags": ["NoKlutz"],
+    "special_data": { "fling": { "power": 70 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"],
+        "on_modify_ev_yield": ["$evs.atk = $evs.atk + 8", "return $evs"]
+      }
+    }
   },
   "powerbelt": {
     "name": "Power Belt",
-    "flags": [],
-    "special_data": { "fling": { "power": 70 } }
+    "flags": ["NoKlutz"],
+    "special_data": { "fling": { "power": 70 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"],
+        "on_modify_ev_yield": ["$evs.def = $evs.def + 8", "return $evs"]
+      }
+    }
   },
   "powerlens": {
     "name": "Power Lens",
-    "flags": [],
-    "special_data": { "fling": { "power": 70 } }
+    "flags": ["NoKlutz"],
+    "special_data": { "fling": { "power": 70 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"],
+        "on_modify_ev_yield": ["$evs.spa = $evs.spa + 8", "return $evs"]
+      }
+    }
   },
   "powerband": {
     "name": "Power Band",
-    "flags": [],
-    "special_data": { "fling": { "power": 70 } }
+    "flags": ["NoKlutz"],
+    "special_data": { "fling": { "power": 70 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"],
+        "on_modify_ev_yield": ["$evs.spd = $evs.spd = 8", "return $evs"]
+      }
+    }
   },
   "poweranklet": {
     "name": "Power Anklet",
@@ -778,24 +968,47 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.spe = 8", "return $evs"]
+        "on_modify_ev_yield": ["$evs.spe = $evs.spe + 8", "return $evs"]
       }
     }
   },
   "powerweight": {
     "name": "Power Weight",
-    "flags": [],
-    "special_data": { "fling": { "power": 70 } }
+    "flags": ["NoKlutz"],
+    "special_data": { "fling": { "power": 70 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": ["return $spe / 2"],
+        "on_modify_ev_yield": ["$evs.hp = $evs.hp + 8", "return $evs"]
+      }
+    }
   },
   "shedshell": {
     "name": "Shed Shell",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_trap_mon": {
+          "priority": 1,
+          "program": ["return false"]
+        }
+      }
+    }
   },
   "bigroot": {
     "name": "Big Root",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_try_heal": [
+          "$effects = [drain, leechseed, ingrain, aquaring, strengthsap]",
+          "if $effects has $effect:",
+          ["return $damage * 13/10"]
+        ]
+      }
+    }
   },
   "choicespecs": {
     "name": "Choice Specs",
@@ -813,13 +1026,35 @@
     "name": "Flame Plate",
     "force_forme": "Arceus-Fire",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Fire" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Fire" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fire"
+        }
+      }
+    }
   },
   "splashplate": {
     "name": "Splash Plate",
     "force_forme": "Arceus-Water",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Water" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Water" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
+      }
+    }
   },
   "zapplate": {
     "name": "Zap Plate",
@@ -827,20 +1062,47 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Electric" }
+      "judgment": { "type": "Electric" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Electric"
+        }
+      }
     }
   },
   "meadowplate": {
     "name": "Meadow Plate",
     "force_forme": "Arceus-Grass",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Grass" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Grass" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
+      }
+    }
   },
   "icicleplate": {
     "name": "Icicle Plate",
     "force_forme": "Arceus-Ice",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Ice" } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "type": "Ice" } },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ice"
+        }
+      }
+    }
   },
   "fistplate": {
     "name": "Fist Plate",
@@ -848,7 +1110,15 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Fighting" }
+      "judgment": { "type": "Fighting" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fighting"
+        }
+      }
     }
   },
   "toxicplate": {
@@ -857,7 +1127,15 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Poison" }
+      "judgment": { "type": "Poison" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Poison"
+        }
+      }
     }
   },
   "earthplate": {
@@ -866,7 +1144,15 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Ground" }
+      "judgment": { "type": "Ground" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ground"
+        }
+      }
     }
   },
   "skyplate": {
@@ -875,7 +1161,15 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Flying" }
+      "judgment": { "type": "Flying" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Flying"
+        }
+      }
     }
   },
   "mindplate": {
@@ -884,26 +1178,64 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Psychic" }
+      "judgment": { "type": "Psychic" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
+      }
     }
   },
   "insectplate": {
     "name": "Insect Plate",
     "force_forme": "Arceus-Bug",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Bug" } }
+    "special_data": { "fling": { "power": 90 }, "judgment": { "type": "Bug" } },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Bug"
+        }
+      }
+    }
   },
   "stoneplate": {
     "name": "Stone Plate",
     "force_forme": "Arceus-Rock",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Rock" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Rock" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
+      }
+    }
   },
   "spookyplate": {
     "name": "Spooky Plate",
     "force_forme": "Arceus-Ghost",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Ghost" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Ghost" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Ghost"
+        }
+      }
+    }
   },
   "dracoplate": {
     "name": "Draco Plate",
@@ -911,65 +1243,144 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 90 },
-      "judgment": { "typ": "Dragon" }
+      "judgment": { "type": "Dragon" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dragon"
+        }
+      }
     }
   },
   "dreadplate": {
     "name": "Dread Plate",
     "force_forme": "Arceus-Dark",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Dark" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Dark" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Dark"
+        }
+      }
+    }
   },
   "ironplate": {
     "name": "Iron Plate",
     "force_forme": "Arceus-Steel",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Steel" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Steel" }
+    }
   },
   "oddincense": {
     "name": "Odd Incense",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
+      }
+    }
   },
   "rockincense": {
     "name": "Rock Incense",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
+      }
+    }
   },
   "fullincense": {
     "name": "Full Incense",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "delegates": ["item:laggingtail"]
+    }
   },
   "waveincense": {
     "name": "Wave Incense",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
+      }
+    }
   },
   "roseincense": {
     "name": "Rose Incense",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
+      }
+    }
   },
   "luckincense": { "name": "Luck Incense", "flags": [] },
   "pureincense": { "name": "Pure Incense", "flags": [] },
   "razorclaw": {
     "name": "Razor Claw",
     "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": { "fling": { "power": 80 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_crit_ratio": ["return $crit_ratio + 1"]
+      }
+    }
   },
   "razorfang": {
     "name": "Razor Fang",
     "flags": [],
     "special_data": {
-      "fling": { "power": 30, "hit_effect": { "volatile_status": "flinch" } }
+      "fling": { "power": 30, "hit_effect": { "volatile_status": "flinch" } },
+      "effect": {
+        "delegates": ["item:kingsrock"]
+      }
     }
   },
   "griseousorb": {
     "name": "Griseous Orb",
     "force_forme": "Giratina-Origin",
     "flags": [],
-    "special_data": { "fling": { "power": 60 } }
+    "special_data": { "fling": { "power": 60 } },
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "$base_species = func_call(base_species: $source)",
+          "if $base_species == giratina and ($move.type == ghost or $move.type == dragon):",
+          ["return $base_power * 6/5"]
+        ],
+        "on_take_item": [
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == giratina:",
+          ["return false"]
+        ]
+      }
+    }
   },
   "dousedrive": {
     "name": "Douse Drive",
@@ -977,7 +1388,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 70 },
-      "techno_blast": { "typ": "Water" }
+      "techno_blast": { "type": "Water" }
     }
   },
   "shockdrive": {
@@ -986,7 +1397,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 70 },
-      "techno_blast": { "typ": "Electric" }
+      "techno_blast": { "type": "Electric" }
     }
   },
   "burndrive": {
@@ -995,7 +1406,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 70 },
-      "techno_blast": { "typ": "Fire" }
+      "techno_blast": { "type": "Fire" }
     }
   },
   "chilldrive": {
@@ -1004,7 +1415,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 70 },
-      "techno_blast": { "typ": "Ice" }
+      "techno_blast": { "type": "Ice" }
     }
   },
   "prismscale": {
@@ -1086,7 +1497,18 @@
     "name": "Pixie Plate",
     "force_forme": "Arceus-Fairy",
     "flags": [],
-    "special_data": { "fling": { "power": 90 }, "judgment": { "typ": "Fairy" } }
+    "special_data": {
+      "fling": { "power": 90 },
+      "judgment": { "type": "Fairy" }
+    },
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fairy"
+        }
+      }
+    }
   },
   "luminousmoss": {
     "name": "Luminous Moss",
@@ -1155,7 +1577,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Fighting" }
+      "multi_attack": { "type": "Fighting" }
     }
   },
   "flyingmemory": {
@@ -1164,7 +1586,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Flying" }
+      "multi_attack": { "type": "Flying" }
     }
   },
   "poisonmemory": {
@@ -1173,7 +1595,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Poison" }
+      "multi_attack": { "type": "Poison" }
     }
   },
   "groundmemory": {
@@ -1182,7 +1604,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Ground" }
+      "multi_attack": { "type": "Ground" }
     }
   },
   "rockmemory": {
@@ -1191,7 +1613,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Rock" }
+      "multi_attack": { "type": "Rock" }
     }
   },
   "bugmemory": {
@@ -1200,7 +1622,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Bug" }
+      "multi_attack": { "type": "Bug" }
     }
   },
   "ghostmemory": {
@@ -1209,7 +1631,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Ghost" }
+      "multi_attack": { "type": "Ghost" }
     }
   },
   "steelmemory": {
@@ -1218,7 +1640,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Steel" }
+      "multi_attack": { "type": "Steel" }
     }
   },
   "firememory": {
@@ -1227,7 +1649,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Fire" }
+      "multi_attack": { "type": "Fire" }
     }
   },
   "watermemory": {
@@ -1236,7 +1658,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Water" }
+      "multi_attack": { "type": "Water" }
     }
   },
   "grassmemory": {
@@ -1245,7 +1667,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Grass" }
+      "multi_attack": { "type": "Grass" }
     }
   },
   "electricmemory": {
@@ -1254,7 +1676,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Electric" }
+      "multi_attack": { "type": "Electric" }
     }
   },
   "psychicmemory": {
@@ -1263,7 +1685,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Psychic" }
+      "multi_attack": { "type": "Psychic" }
     }
   },
   "icememory": {
@@ -1272,7 +1694,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Ice" }
+      "multi_attack": { "type": "Ice" }
     }
   },
   "dragonmemory": {
@@ -1281,7 +1703,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Dragon" }
+      "multi_attack": { "type": "Dragon" }
     }
   },
   "darkmemory": {
@@ -1290,7 +1712,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Dark" }
+      "multi_attack": { "type": "Dark" }
     }
   },
   "fairymemory": {
@@ -1299,7 +1721,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 50 },
-      "multi_attack": { "typ": "Fairy" }
+      "multi_attack": { "type": "Fairy" }
     }
   },
   "throatspray": {
@@ -1356,7 +1778,10 @@
   "griseouscore": {
     "name": "Griseous Core",
     "force_forme": "Giratina-Origin",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["item:griseousorb"]
+    }
   },
   "boosterenergy": {
     "name": "Booster Energy",

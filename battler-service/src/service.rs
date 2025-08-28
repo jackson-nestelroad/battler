@@ -439,6 +439,7 @@ mod battler_service_test {
         StatTable,
         TeamData,
         ValidationError,
+        battle::PlayerDex,
     };
     use itertools::Itertools;
     use tokio::sync::broadcast;
@@ -531,6 +532,7 @@ mod battler_service_test {
                     player_type: PlayerType::Trainer,
                     player_options: PlayerOptions::default(),
                     team: team.clone(),
+                    dex: PlayerDex::default(),
                 }]),
             },
             side_2: SideData {
@@ -541,6 +543,7 @@ mod battler_service_test {
                     player_type: PlayerType::Trainer,
                     player_options: PlayerOptions::default(),
                     team: team.clone(),
+                    dex: PlayerDex::default(),
                 }]),
             },
         }

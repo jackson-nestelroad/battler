@@ -315,6 +315,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterAddVolatile"]
     AfterAddVolatile,
+    /// Runs after a Mon's current status is cured.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterCureStatus"]
+    AfterCureStatus,
     /// Runs after a Mon hits another Mon with a move.
     ///
     /// Runs on the active move.
@@ -413,6 +418,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "CanHeal"]
     CanHeal,
+    /// Runs when a Mon is caught.
+    ///
+    /// Runs on the item (used to catch the Mon) and in the context of a Mon.
+    #[string = "Catch"]
+    Catch,
     /// Runs when a group of stat boosts is being applied to a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -1131,6 +1141,7 @@ impl BattleEvent {
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterCureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
@@ -1148,6 +1159,7 @@ impl BattleEvent {
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
+            Self::Catch => CommonCallbackType::MonVoid as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
@@ -1317,7 +1329,7 @@ impl BattleEvent {
                 &[("damage", ValueType::UFraction, true)]
             }
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
-            Self::ModifyEvYield => &[("evs", ValueType::BoostTable, true)],
+            Self::ModifyEvYield => &[("evs", ValueType::StatTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],

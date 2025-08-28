@@ -19,9 +19,17 @@
           "log_prepare_move",
           "$charge_move = func_call(run_event_on_move: ChargeMove)",
           "if $charge_move.is_defined and !$charge_move:",
-          ["return"],
+          [
+            "do_not_animate_last_move",
+            "log_animate_move: $user $this.name $target",
+            "return"
+          ],
           "if !func_call(run_event: ChargeMove):",
-          ["return"],
+          [
+            "do_not_animate_last_move",
+            "log_animate_move: $user $this.name $target",
+            "return"
+          ],
           "add_volatile: $user twoturnmove link",
           "return stop"
         ]

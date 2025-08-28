@@ -45,6 +45,7 @@ fn tepig() -> Result<TeamData> {
                     "species": "Tepig",
                     "ability": "Blaze",
                     "moves": [
+                        "Air Slash",
                         "Flamethrower"
                     ],
                     "nature": "Hardy",
@@ -108,18 +109,28 @@ fn occa_berry_reduces_fire_type_super_effective_damage() {
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
+            "move|mon:Tepig,player-2,1|name:Air Slash|target:Snivy,player-1,1",
+            "supereffective|mon:Snivy,player-1,1",
+            "split|side:0",
+            "damage|mon:Snivy,player-1,1|health:57/105",
+            "damage|mon:Snivy,player-1,1|health:55/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
             "move|mon:Tepig,player-2,1|name:Flamethrower|target:Snivy,player-1,1",
             "supereffective|mon:Snivy,player-1,1",
             "itemend|mon:Snivy,player-1,1|item:Occa Berry|eat",
             "activate|mon:Snivy,player-1,1|item:Occa Berry|weaken",
             "split|side:0",
-            "damage|mon:Snivy,player-1,1|health:62/105",
-            "damage|mon:Snivy,player-1,1|health:60/100",
+            "damage|mon:Snivy,player-1,1|health:14/105",
+            "damage|mon:Snivy,player-1,1|health:14/100",
             "residual",
-            "turn|turn:2"
+            "turn|turn:3"
         ]"#,
     )
     .unwrap();
@@ -135,9 +146,9 @@ fn occa_berry_does_not_activate_on_substitute() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

@@ -246,7 +246,7 @@ fn make_battle_with_seed(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBa
 fn speed_ties_broken_randomly() {
     let mut data = TestDataStore::new_from_env("DATA_DIR").unwrap();
     add_test_moves(&mut data).unwrap();
-    let mut battle = make_battle_with_seed(&data, 12345).unwrap();
+    let mut battle = make_battle_with_seed(&data, 678910).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -278,8 +278,8 @@ fn speed_ties_broken_randomly() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
             "move|mon:Fast,player-1,1|name:Normal Priority|target:Slow,player-2,2",
+            "move|mon:Fast,player-2,1|name:Normal Priority|target:Slow,player-1,2",
             "residual",
             "turn|turn:2",
             ["time"],

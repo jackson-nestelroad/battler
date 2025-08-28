@@ -61,6 +61,8 @@ impl LocalDataStore {
     pub const MOVE_BASES_FILE: &str = "move-bases.json";
     /// Ability bases file name.
     pub const ABILITY_BASES_FILE: &str = "ability-bases.json";
+    /// Item bases file name.
+    pub const ITEM_BASES_FILE: &str = "item-bases.json";
     /// Abilities directory name.
     pub const ABILITIES_DIR: &str = "abilities";
     /// Items directory name.
@@ -149,6 +151,13 @@ impl LocalDataStore {
         )
         .context("failed to parse ability bases")?;
         self.conditions.extend(ability_bases);
+
+        let item_bases: HashMap<Id, ConditionData> = serde_json::from_reader(
+            File::open(Path::new(&self.root).join(Self::ITEM_BASES_FILE))
+                .context("failed to read item bases")?,
+        )
+        .context("failed to parse item bases")?;
+        self.conditions.extend(item_bases);
 
         self.abilities = self.read_all_files_in_directory::<AbilityData>(Self::ABILITIES_DIR)?;
         self.items = self.read_all_files_in_directory::<ItemData>(Self::ITEMS_DIR)?;

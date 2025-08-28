@@ -1064,11 +1064,7 @@
         "on_charge_move": [
           "$weather = $user.effective_weather",
           "if $weather.is_defined and $weather.is_sunny:",
-          [
-            "do_not_animate_last_move",
-            "log_animate_move: $user $this.name $target",
-            "return false"
-          ]
+          ["return false"]
         ],
         "on_move_base_power": [
           "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
@@ -1577,8 +1573,12 @@
     "flags": ["Snatch"],
     "hit_effect": { "side_condition": "lightscreen" },
     "condition": {
-      "duration": 5,
       "callbacks": {
+        "on_duration": [
+          "if $source.is_defined and func_call(has_item: $source lightclay):",
+          ["return 8"],
+          "return 5"
+        ],
         "on_source_modify_damage": [
           "if $target == $user or $move.category != special:",
           ["return"],
@@ -1621,8 +1621,12 @@
     "flags": ["Snatch"],
     "hit_effect": { "side_condition": "reflect" },
     "condition": {
-      "duration": 5,
       "callbacks": {
+        "on_duration": [
+          "if $source.is_defined and func_call(has_item: $source lightclay):",
+          ["return 8"],
+          "return 5"
+        ],
         "on_source_modify_damage": [
           "if $target == $user or $move.category != physical:",
           ["return"],
@@ -1726,6 +1730,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": [
+      "CallsMove",
       "FailCopycat",
       "FailEncore",
       "FailInstruct",
@@ -1754,6 +1759,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": [
+      "CallsMove",
       "FailCopycat",
       "FailEncore",
       "FailInstruct",
@@ -2238,8 +2244,9 @@
         "on_hit": [
           "if !func_call(set_status: $target slp):",
           ["return false"],
-          "$target.status_state.total_time = 3",
-          "$target.status_state.time = 3",
+          "$status_state = func_call(status_effect_state: $target)",
+          "$status_state.total_time = 3",
+          "$status_state.time = 3",
           "heal: $target $target.max_hp"
         ]
       }

@@ -21,6 +21,9 @@ pub enum MoveFlag {
     /// A bullet move.
     #[string = "Bullet"]
     Bullet,
+    /// A move that calls another move.
+    #[string = "CallsMove"]
+    CallsMove,
     /// A charge move, which causes a Mon to be unable to move between turns.
     #[string = "Charge"]
     Charge,

@@ -40,6 +40,7 @@ pub use battle::{
     MonSummaryData,
     PlayerBattleData,
     PlayerData,
+    PlayerDex,
     PlayerOptions,
     PlayerType,
     PublicCoreBattle,
@@ -49,6 +50,7 @@ pub use battle::{
     SideData,
     SwitchRequest,
     TeamPreviewRequest,
+    TimeOfDay,
     TurnRequest,
     WildPlayerOptions,
 };

@@ -320,7 +320,6 @@ fn level_5_magikarp_caught_in_poke_ball() {
                     ],
                     "ability": "Swift Swim",
                     "item": null,
-                    "status": "fnt",
                     "hidden_power_type": "Fighting"
                 }
             ]"#
@@ -528,7 +527,6 @@ fn level_100_metagross_caught_in_master_ball() {
                     "moves": [],
                     "ability": "Clear Body",
                     "item": null,
-                    "status": "fnt",
                     "hidden_power_type": "Fighting"
                 }
             ]"#

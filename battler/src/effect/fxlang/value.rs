@@ -49,6 +49,7 @@ use crate::{
         MoveHandle,
         MoveOutcomeOnTarget,
         MoveSlot,
+        TimeOfDay,
     },
     effect::{
         EffectHandle,
@@ -106,6 +107,7 @@ pub enum ValueType {
     SpecialItemData,
     Stat,
     StatTable,
+    TimeOfDay,
     Type,
 
     // Effect state.
@@ -171,6 +173,7 @@ pub enum Value {
     SpecialItemData(SpecialItemData),
     Stat(Stat),
     StatTable(StatTable),
+    TimeOfDay(TimeOfDay),
     Type(Type),
 
     EffectState(DynamicEffectStateConnector),
@@ -217,6 +220,7 @@ impl Value {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
 
             Self::EffectState(_) => ValueType::EffectState,
@@ -311,6 +315,7 @@ impl Value {
             ValueType::SpecialItemData => self.special_item_data().map(Value::SpecialItemData),
             ValueType::Stat => self.stat().map(Value::Stat),
             ValueType::StatTable => self.stat_table().map(Value::StatTable),
+            ValueType::TimeOfDay => self.time_of_day().map(Value::TimeOfDay),
             ValueType::Type => self.mon_type().map(Value::Type),
             ValueType::EffectState => self.effect_state().map(Value::EffectState),
             ValueType::List => self.list().map(Value::List),
@@ -792,7 +797,15 @@ impl Value {
         }
     }
 
-    /// Consumes the value into a [`Type`].
+    /// Consumes the value into a [`TimeOfDay`].
+    pub fn time_of_day(self) -> Result<TimeOfDay> {
+        match self {
+            Self::String(val) => TimeOfDay::from_str(&val).map_err(general_error),
+            Self::TimeOfDay(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::TimeOfDay)),
+        }
+    }
+
     pub fn mon_type(self) -> Result<Type> {
         match self {
             Self::String(val) => Type::from_str(&val).map_err(general_error),
@@ -901,6 +914,7 @@ pub enum MaybeReferenceValue<'eval> {
     SpecialItemData(SpecialItemData),
     Stat(Stat),
     StatTable(StatTable),
+    TimeOfDay(TimeOfDay),
     Type(Type),
 
     EffectState(DynamicEffectStateConnector),
@@ -949,6 +963,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
 
             Self::EffectState(_) => ValueType::EffectState,
@@ -997,6 +1012,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::SpecialItemData(val) => Value::SpecialItemData(val.clone()),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable(val.clone()),
+            Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
 
             Self::EffectState(val) => Value::EffectState(val.clone()),
@@ -1100,6 +1116,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TimeOfDay(val) => Self::TimeOfDay(val),
             Value::Type(val) => Self::Type(val),
 
             Value::EffectState(val) => Self::EffectState(val),
@@ -1167,6 +1184,7 @@ pub enum ValueRef<'eval> {
     SpecialItemData(&'eval SpecialItemData),
     Stat(Stat),
     StatTable(&'eval StatTable),
+    TimeOfDay(TimeOfDay),
     Type(Type),
 
     EffectState(DynamicEffectStateConnector),
@@ -1217,6 +1235,7 @@ impl<'eval> ValueRef<'eval> {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
 
             Self::EffectState(_) => ValueType::EffectState,
@@ -1267,6 +1286,7 @@ impl<'eval> ValueRef<'eval> {
             Self::SpecialItemData(val) => Value::SpecialItemData((*val).clone()),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
+            Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
 
             Self::EffectState(val) => Value::EffectState(val.clone()),
@@ -1426,6 +1446,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TimeOfDay(val) => Self::TimeOfDay(*val),
             Value::Type(val) => Self::Type(*val),
 
             Value::EffectState(val) => Self::EffectState(val.clone()),
@@ -1531,6 +1552,7 @@ pub enum ValueRefMut<'eval> {
     SpecialItemData(&'eval mut SpecialItemData),
     Stat(&'eval mut Stat),
     StatTable(&'eval mut StatTable),
+    TimeOfDay(&'eval mut TimeOfDay),
     Type(&'eval mut Type),
 
     EffectState(&'eval mut DynamicEffectStateConnector),
@@ -1594,6 +1616,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
 
             Self::EffectState(_) => ValueType::EffectState,
@@ -1766,6 +1789,9 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::StatTable(var) => {
                 *var = val.stat_table()?;
             }
+            ValueRefMut::TimeOfDay(var) => {
+                *var = val.time_of_day()?;
+            }
             ValueRefMut::Type(var) => {
                 *var = val.mon_type()?;
             }
@@ -1821,6 +1847,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TimeOfDay(val) => Self::TimeOfDay(val),
             Value::Type(val) => Self::Type(val),
 
             Value::EffectState(val) => Self::EffectState(val),
@@ -1881,6 +1908,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     TempSpecialItemData(SpecialItemData),
     Stat(Stat),
     StatTable(&'eval StatTable),
+    TimeOfDay(TimeOfDay),
     Type(Type),
 
     EffectState(DynamicEffectStateConnector),
@@ -1934,6 +1962,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::TempSpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
 
             Self::EffectState(_) => ValueType::EffectState,
@@ -1987,6 +2016,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::TempSpecialItemData(val) => Value::SpecialItemData(val.clone()),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
+            Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
 
             Self::EffectState(val) => Value::EffectState(val.clone()),
@@ -2043,7 +2073,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::TempSpecialItemData(_) => 164,
             Self::Stat(_) => 165,
             Self::StatTable(_) => 166,
-            Self::Type(_) => 167,
+            Self::TimeOfDay(_) => 167,
+            Self::Type(_) => 168,
 
             Self::EffectState(_) => 200,
 
@@ -2416,6 +2447,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Stat(rhs)) => {
                 Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::TimeOfDay(rhs)) => {
+                TimeOfDay::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::String(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -2444,6 +2478,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 Nature::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Str(lhs), Self::Stat(rhs)) => Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::TimeOfDay(rhs)) => {
+                TimeOfDay::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
             (Self::TempString(lhs), Self::Effect(rhs)) => rhs
@@ -2473,6 +2510,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::TempString(lhs), Self::Stat(rhs)) => {
                 Stat::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::TimeOfDay(rhs)) => {
+                TimeOfDay::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::TempString(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
@@ -2504,6 +2544,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::SpecialItemData(lhs), Self::SpecialItemData(rhs)) => lhs.eq(rhs),
             (Self::Stat(lhs), Self::Stat(rhs)) => lhs.eq(rhs),
             (Self::StatTable(lhs), Self::StatTable(rhs)) => lhs.eq(rhs),
+            (Self::TimeOfDay(lhs), Self::TimeOfDay(rhs)) => lhs.eq(rhs),
             (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -2647,6 +2688,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(val) => val.to_string(),
             Self::MoveTarget(val) => val.to_string(),
             Self::Nature(val) => val.to_string(),
+            Self::TimeOfDay(val) => val.to_string(),
             Self::Type(val) => val.to_string(),
             Self::Stat(val) => val.to_string(),
             _ => {
@@ -2697,6 +2739,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TimeOfDay(val) => Self::TimeOfDay(*val),
             Value::Type(val) => Self::Type(*val),
 
             Value::EffectState(val) => Self::EffectState(val.clone()),
@@ -2744,6 +2787,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::SpecialItemData(val) => Self::SpecialItemData(val),
             MaybeReferenceValue::Stat(val) => Self::Stat(*val),
             MaybeReferenceValue::StatTable(val) => Self::StatTable(val),
+            MaybeReferenceValue::TimeOfDay(val) => Self::TimeOfDay(*val),
             MaybeReferenceValue::Type(val) => Self::Type(*val),
 
             MaybeReferenceValue::EffectState(val) => Self::EffectState(val.clone()),
@@ -2796,6 +2840,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::SpecialItemData(val) => Self::SpecialItemData(val),
             ValueRef::Stat(val) => Self::Stat(val),
             ValueRef::StatTable(val) => Self::StatTable(val),
+            ValueRef::TimeOfDay(val) => Self::TimeOfDay(val),
             ValueRef::Type(val) => Self::Type(val),
 
             ValueRef::EffectState(val) => Self::EffectState(val),
@@ -2851,6 +2896,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::SpecialItemData(val) => Self::SpecialItemData(*val),
             ValueRef::Stat(val) => Self::Stat(*val),
             ValueRef::StatTable(val) => Self::StatTable(val),
+            ValueRef::TimeOfDay(val) => Self::TimeOfDay(*val),
             ValueRef::Type(val) => Self::Type(*val),
 
             ValueRef::EffectState(val) => Self::EffectState(val.clone()),

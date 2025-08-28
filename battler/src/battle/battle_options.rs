@@ -147,6 +147,11 @@ pub struct CoreBattleEngineOptions {
     /// string appended to their name of the pattern `###N` (where `N` is a number). Clients can
     /// simply strip off this string when displaying the Mon name.
     pub disambiguate_identical_names: bool,
+
+    /// Should catch rates and shake probabilities be logged?
+    ///
+    /// Helpful for debugging.
+    pub log_catch_rate: bool,
 }
 
 impl Default for CoreBattleEngineOptions {
@@ -164,6 +169,7 @@ impl Default for CoreBattleEngineOptions {
             log_side_conditions: false,
             log_slot_conditions: false,
             disambiguate_identical_names: false,
+            log_catch_rate: false,
         }
     }
 }

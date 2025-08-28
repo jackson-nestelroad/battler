@@ -147,6 +147,26 @@ mod items {
         mod white_herb_test;
     }
 
+    mod gen4 {
+        mod big_root_test;
+        mod black_sludge_test;
+        mod dusk_ball_test;
+        mod expert_belt_test;
+        mod focus_sash_test;
+        mod griseous_orb_test;
+        mod heal_ball_test;
+        mod iron_ball_test;
+        mod luxury_ball_test;
+        mod metronome_test;
+        mod power_herb_test;
+        mod power_item_test;
+        mod quick_ball_test;
+        mod repeat_ball_test;
+        mod shed_shell_test;
+        mod sticky_barb_test;
+        mod timer_ball_test;
+    }
+
     mod gen5 {
         mod cell_battery_test;
         mod gem_test;

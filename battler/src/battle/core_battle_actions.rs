@@ -2125,7 +2125,7 @@ fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
         return Ok(0);
     }
 
-    let healed = Mon::heal(&mut context.target_context()?, damage)?;
+    let healed = context.target_mut().heal(damage)?;
     if healed > 0 {
         core_battle_logs::heal(context)?;
     }
@@ -2257,7 +2257,7 @@ fn apply_move_effects(
                 if let Some(status) = hit_effect.status {
                     let set_status = try_set_status(
                         &mut target_context.applying_effect_context()?,
-                        Some(Id::from(status)),
+                        Id::from(status),
                         !is_secondary && !is_self,
                     )?;
                     match set_status {
@@ -2745,7 +2745,7 @@ impl ApplyMoveEffectResult {
 /// Tries to set the status of a Mon.
 pub fn try_set_status(
     context: &mut ApplyingEffectContext,
-    status: Option<Id>,
+    status: Id,
     is_primary_move_effect: bool,
 ) -> Result<ApplyMoveEffectResult> {
     if context.target().hp == 0 {
@@ -2753,38 +2753,9 @@ pub fn try_set_status(
     }
 
     // A Mon may only have one status set at a time.
-    match (&status, &context.target().status) {
-        (Some(_), Some(_)) => {
-            return Ok(ApplyMoveEffectResult::Failed);
-        }
-        _ => (),
+    if context.target().status.is_some() {
+        return Ok(ApplyMoveEffectResult::Failed);
     }
-
-    // Cure the current status and return early.
-    let status = match status {
-        Some(status) => status,
-        None => {
-            if !core_battle_effects::run_event_for_applying_effect(
-                context,
-                fxlang::BattleEvent::CureStatus,
-                fxlang::VariableInput::default(),
-            ) {
-                return Ok(ApplyMoveEffectResult::Failed);
-            }
-            if let Some(status) = context.target().status.clone() {
-                let target_handle = context.target_handle();
-                LinkedEffectsManager::remove_by_id(
-                    context.as_effect_context_mut(),
-                    &status,
-                    AppliedEffectLocation::MonStatus(target_handle),
-                )?;
-            }
-
-            context.target_mut().status = status;
-            context.target_mut().status_state = fxlang::EffectState::new();
-            return Ok(ApplyMoveEffectResult::Success);
-        }
-    };
 
     let status_effect_handle = context
         .battle_mut()
@@ -2899,28 +2870,54 @@ pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool> {
 /// Clears the status of a Mon.
 ///
 /// Different from curing in that a message is not displayed.
-pub fn clear_status(
-    context: &mut ApplyingEffectContext,
-    is_primary_move_effect: bool,
-) -> Result<bool> {
-    if context.target().hp == 0 || context.target().status.is_none() {
-        return Ok(false);
-    }
-    Ok(try_set_status(context, None, is_primary_move_effect)?.success())
+pub fn clear_status(context: &mut ApplyingEffectContext) -> Result<bool> {
+    cure_status(context, true, false)
 }
 
 /// Cures the status of a Mon.
-pub fn cure_status(context: &mut ApplyingEffectContext, log_effect: bool) -> Result<bool> {
+pub fn cure_status(
+    context: &mut ApplyingEffectContext,
+    silent: bool,
+    log_effect: bool,
+) -> Result<bool> {
     if context.target().hp == 0 {
         return Ok(false);
     }
-    match context.target().status.clone() {
+
+    let status = match context.target().status.clone() {
+        Some(status) => status,
         None => return Ok(false),
-        Some(status) => {
-            core_battle_logs::cure_status(context, &status, log_effect)?;
-        }
+    };
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::CureStatus,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
     }
-    Ok(try_set_status(context, None, false)?.success())
+
+    if !silent {
+        core_battle_logs::cure_status(context, &status, log_effect)?;
+    }
+
+    let target_handle = context.target_handle();
+    LinkedEffectsManager::remove_by_id(
+        context.as_effect_context_mut(),
+        &status,
+        AppliedEffectLocation::MonStatus(target_handle),
+    )?;
+
+    context.target_mut().status = None;
+    context.target_mut().status_state = fxlang::EffectState::new();
+
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterCureStatus,
+        fxlang::VariableInput::default(),
+    );
+
+    return Ok(true);
 }
 
 /// Add the volatile status to a Mon.
@@ -4435,6 +4432,10 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
         return Ok(false);
     }
 
+    if !dry_run && context.target().item.is_some() {
+        return Ok(false);
+    }
+
     if !dry_run {
         end_item_internal(context, EndItemType::End, EndItemLog::TrueSilent)?;
     }
@@ -4507,15 +4508,17 @@ pub fn take_item(
         .clone()
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
-    if !core_battle_effects::run_event_for_applying_effect(
-        context,
+    if !core_battle_effects::run_applying_effect_event_expecting_bool(
+        &mut context.forward_applying_effect_context(item_handle.clone())?,
         fxlang::BattleEvent::TakeItem,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
-    ) || !core_battle_effects::run_mon_item_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::TakeItem,
     )
     .unwrap_or(true)
+        || !core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::TakeItem,
+            fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
+        )
     {
         return Ok(None);
     }
@@ -4899,6 +4902,15 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
     )?;
 
     let shake_probability = calculate_shake_probability(catch_rate)?;
+
+    if context.battle().engine_options.log_catch_rate {
+        context.battle_mut().log(crate::battle_log_entry!(
+            "catchrate",
+            ("catchrate", format!("{catch_rate}/1044480")),
+            ("shakeprobability", format!("{shake_probability}/65536")),
+        ));
+    }
+
     let critical = check_critical_capture(context.as_player_context_mut(), shake_probability);
     let total_shakes = if critical { 1 } else { 4 };
     let mut shakes = 0;
@@ -4912,10 +4924,6 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
     }
 
     if shakes != total_shakes {
-        if critical && shakes == 0 {
-            shakes += 1;
-        }
-
         core_battle_logs::catch_failed(
             context.as_player_context_mut(),
             target,
@@ -4971,12 +4979,19 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
 }
 
 fn calculate_shake_probability(catch_rate: u64) -> Result<u64> {
-    let b = Fraction::new(catch_rate, 1044480);
+    // Use 128 bits, so that we can significantly extend our precision.
+    const MULTIPLIER_FOR_PRECISION: u128 = 4096;
+    const MAX_CATCH_RATE: u128 = 1044480;
+
+    let b = Fraction::new(
+        catch_rate as u128 * MULTIPLIER_FOR_PRECISION,
+        MAX_CATCH_RATE * MULTIPLIER_FOR_PRECISION,
+    );
     let b = b
         .pow(Fraction::new(3i32, 16i32))
         .map_err(integer_overflow_error)?;
     let b = b * 65536;
-    Ok(b.floor())
+    b.floor().try_into().map_err(integer_overflow_error)
 }
 
 fn check_critical_capture(context: &mut PlayerContext, catch_rate: u64) -> bool {

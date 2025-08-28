@@ -133,6 +133,100 @@ fn bind_partially_traps_target() {
 }
 
 #[test]
+fn bind_partially_traps_target_for_longer_with_grip_claw() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team = two_gyarados().unwrap();
+    team.members[0].item = Some("Grip Claw".to_owned());
+    let mut battle = make_battle(&data, team, two_gyarados().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "switch 1"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Gyarados is trapped")
+    );
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Gyarados,player-1,1|name:Bind|target:Gyarados,player-2,1",
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|health:144/155",
+            "damage|mon:Gyarados,player-2,1|health:93/100",
+            "activate|mon:Gyarados,player-2,1|move:Bind|of:Gyarados,player-1,1",
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:125/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:81/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:106/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:69/100",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:87/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:57/100",
+            "residual",
+            "turn|turn:4",
+            ["time"],
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:68/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:44/100",
+            "residual",
+            "turn|turn:5",
+            ["time"],
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:49/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:32/100",
+            "residual",
+            "turn|turn:6",
+            ["time"],
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:30/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:20/100",
+            "residual",
+            "turn|turn:7",
+            ["time"],
+            "split|side:1",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:11/155",
+            "damage|mon:Gyarados,player-2,1|from:move:Bind|health:8/100",
+            "residual",
+            "turn|turn:8",
+            ["time"],
+            "end|mon:Gyarados,player-2,1|move:Bind",
+            "residual",
+            "turn|turn:9",
+            ["time"],
+            "residual",
+            "turn|turn:10"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
 fn bind_ends_when_user_switches() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, two_gyarados().unwrap(), two_gyarados().unwrap()).unwrap();

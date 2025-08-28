@@ -921,7 +921,19 @@ fn find_callbacks_on_mon(
         }
     }
 
-    // TODO: Species.
+    callbacks.push(CallbackHandle::new(
+        EffectHandle::Species(context.mon().species.clone()),
+        event,
+        modifier,
+        AppliedEffectLocation::Mon(context.mon_handle()),
+    ));
+
+    callbacks.push(CallbackHandle::new(
+        EffectHandle::ItemCondition(context.mon().ball.clone()),
+        event,
+        modifier,
+        AppliedEffectLocation::Mon(context.mon_handle()),
+    ));
 
     if context.mon().different_original_trainer
         && context.mon().level > context.battle().format.options.obedience_cap
