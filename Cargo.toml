@@ -95,3 +95,6 @@ battler-wamprat-schema = "0.3.2"
 battler-wamprat-uri = "0.4.2"
 serde-struct-tuple = "0.1.3"
 serde-struct-tuple-enum = "0.1.0"
+
+[profile.test]
+opt-level = 2

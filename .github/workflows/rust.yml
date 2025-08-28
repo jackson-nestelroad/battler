@@ -22,7 +22,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler tests
-        run: cargo test --release -p battler -p battler-data -p battler-prng
+        run: cargo test -p battler -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
@@ -34,7 +34,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-service tests
-        run: cargo test --release -p "battler-service*"
+        run: cargo test -p "battler-service*"
 
   test-battler-client:
     name: Run battler-client tests
@@ -46,7 +46,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-client tests
-        run: cargo test --release -p "battler-client*"
+        run: cargo test -p "battler-client*"
 
   test-battler-calc:
     name: Run battler-calc tests
@@ -58,7 +58,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-calc tests
-        run: cargo test --release -p "battler-calc*"
+        run: cargo test -p "battler-calc*"
 
   test-battler-ai:
     name: Run battler-ai tests
@@ -70,7 +70,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-ai tests
-        run: cargo test --release -p "battler-ai*"
+        run: cargo test -p "battler-ai*"
 
   test-battler-wamp:
     name: Run battler-wamp tests
@@ -82,7 +82,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler-wamp tests
-        run: cargo test --release -p "battler-wamp*" -p "serde*" -- --test-threads=1
+        run: cargo test -p "battler-wamp*" -p "serde*" -- --test-threads=1
 
   formatting:
     name: Check formatting
