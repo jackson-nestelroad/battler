@@ -668,7 +668,7 @@ These conditions are implemented generically in the "Freeze" condition. However,
         ["cure_status: $user use_source_effect"]
       ],
       "on_after_move_secondary_effects": [
-        "if $move.thaws_target:",
+        "if func_call(move_has_flag: $move thawstarget):",
         ["cure_status: $target use_source_effect"]
       ],
       "on_damaging_hit": [
@@ -1024,11 +1024,27 @@ Paralysis is an independent condition; it is not attached to any single move or 
         "priority": 1,
         "program": ["if func_call(chance: 1 4):", ["log_cant", "return false"]]
       },
-      "on_modify_spe": [
-        "if !func_call(has_ability: $target quickfeet):",
-        ["return $spe / 2"]
-      ],
+      "on_modify_spe": {
+        "priority": -1,
+        "program": ["return $spe / 2"]
+      },
       "on_modify_catch_rate": ["return $catch_rate * 3/2"]
+    }
+  }
+}
+```
+
+Note that the ability "Quick Feet" should remove the speed modifier applied by paralysis. It does so through a special function:
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_modify_spe": [
+        "skip_effect_callback: par",
+        "if $target.status.is_defined:",
+        ["return $spe * 3/2"]
+      ]
     }
   }
 }
@@ -1119,8 +1135,12 @@ Light Screen halves the damage taken by Special moves on the user's side of the 
 {
   "hit_effect": { "side_condition": "lightscreen" },
   "condition": {
-    "duration": 5,
     "callbacks": {
+      "on_duration": [
+        "if $source.is_defined and func_call(has_item: $source lightclay):",
+        ["return 8"],
+        "return 5"
+      ],
       "on_source_modify_damage": [
         "if $target == $user or $move.category != special:",
         ["return"],
@@ -1228,7 +1248,10 @@ Most functions take in an ID for simplicity, since it is typically always availa
 
 ### Local Data
 
-An effect can define a `local_data` object, which is data that can be referenced and constructed in effect callbacks to simplify dynamic effects. Currently, `local_data` consists of a map of local moves that can be instantiated and used from within the effect callback, using the `new_active_move_from_local_data` function.
+An effect can define a `local_data` object, which is data that can be referenced and constructed in effect callbacks to simplify dynamic effects. Currently, `local_data` has the following fields and accessors:
+
+- `moves` - A map of local moves that can be instantiated and used from within the effect callback, using the `new_active_move_from_local_data` function.
+- `values` - A map of string values that can be accessed by key using the `value_from_local_data` function.
 
 #### Examples
 
@@ -1365,7 +1388,7 @@ However, the condition induced by the move Ingrain overwrites both of these effe
 }
 ```
 
-Thus, a Mon's grounded state need not be hardcoded into the battle engine or some list of complex effects and interactions. Like any other battle event, active effect callbacks are collected, ordered, and executed to determine a Mon's state.
+Thus, a Mon's grounded state need not be hard-coded into the battle engine or some list of complex effects and interactions. Like any other battle event, active effect callbacks are collected, ordered, and executed to determine a Mon's state.
 
 ##### Weather Suppression
 
@@ -1611,9 +1634,17 @@ The `ChargeMove` event is a special event that a move can implement to do someth
         "log_prepare_move",
         "$charge_move = func_call(run_event_on_move: ChargeMove)",
         "if $charge_move.is_defined and !$charge_move:",
-        ["return"],
+        [
+          "do_not_animate_last_move",
+          "log_animate_move: $user $this.name $target",
+          "return"
+        ],
         "if !func_call(run_event: ChargeMove):",
-        ["return"],
+        [
+          "do_not_animate_last_move",
+          "log_animate_move: $user $this.name $target",
+          "return"
+        ],
         "add_volatile: $user twoturnmove link",
         "return stop"
       ]
@@ -1645,11 +1676,7 @@ Solar Beam is a bit more complex; in sunny weather, the move is executed immedia
       "on_charge_move": [
         "$weather = $user.effective_weather",
         "if $weather.is_defined and $weather.is_sunny:",
-        [
-          "do_not_animate_last_move",
-          "log_animate_move: $user $this.name $target",
-          "return false"
-        ]
+        ["return false"]
       ],
       "on_move_base_power": [
         "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
