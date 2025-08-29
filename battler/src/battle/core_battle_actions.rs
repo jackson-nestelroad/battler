@@ -4951,6 +4951,7 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
     let hp_factor = max_hp_factor - 2 * context.target().hp as u64;
     let hp_factor = hp_factor / max_hp_factor;
     let a = hp_factor * 4096;
+
     let catch_rate = context
         .battle()
         .dex
@@ -4958,19 +4959,20 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
         .get_by_id(&context.target().base_species)?
         .data
         .catch_rate;
-    let a = a * catch_rate as u64;
 
-    let a = core_battle_effects::run_applying_effect_event_expecting_u64(
+    let catch_rate = core_battle_effects::run_event_for_applying_effect_expecting_u64(
         context,
-        fxlang::BattleEvent::ModifyCatchRate,
-        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(a.into())]),
-    )
-    .unwrap_or(a.floor());
+        fxlang::BattleEvent::ModifySpeciesCatchRate,
+        catch_rate as u64,
+    );
+
+    let catch_rate = catch_rate.min(255);
+    let a = a * catch_rate;
 
     let a = core_battle_effects::run_event_for_applying_effect_expecting_u64(
         context,
         fxlang::BattleEvent::ModifyCatchRate,
-        a,
+        a.floor(),
     );
 
     let a = a.min(1044480);

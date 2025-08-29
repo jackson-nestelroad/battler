@@ -134,10 +134,17 @@ mod items {
 
     mod gen2 {
         mod berry_juice_test;
+        mod fast_ball_test;
         mod focus_band_test;
+        mod friend_ball_test;
+        mod heavy_ball_test;
         mod kings_rock_test;
         mod leftovers_test;
+        mod level_ball_test;
         mod light_ball_test;
+        mod love_ball_test;
+        mod lure_ball_test;
+        mod moon_ball_test;
         mod quick_claw_test;
     }
 
@@ -170,6 +177,10 @@ mod items {
     mod gen5 {
         mod cell_battery_test;
         mod gem_test;
+    }
+
+    mod gen7 {
+        mod beast_ball_test;
     }
 
     mod medicine {

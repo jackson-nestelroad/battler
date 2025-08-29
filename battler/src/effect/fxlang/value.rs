@@ -42,6 +42,7 @@ use num::traits::{
 use zone_alloc::ElementRef;
 
 use crate::{
+    WildEncounterType,
     battle::{
         FieldEnvironment,
         MonHandle,
@@ -109,6 +110,7 @@ pub enum ValueType {
     StatTable,
     TimeOfDay,
     Type,
+    WildEncounterType,
 
     // Effect state.
     EffectState,
@@ -175,6 +177,7 @@ pub enum Value {
     StatTable(StatTable),
     TimeOfDay(TimeOfDay),
     Type(Type),
+    WildEncounterType(WildEncounterType),
 
     EffectState(DynamicEffectStateConnector),
 
@@ -222,6 +225,7 @@ impl Value {
             Self::StatTable(_) => ValueType::StatTable,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
+            Self::WildEncounterType(_) => ValueType::WildEncounterType,
 
             Self::EffectState(_) => ValueType::EffectState,
 
@@ -317,6 +321,9 @@ impl Value {
             ValueType::StatTable => self.stat_table().map(Value::StatTable),
             ValueType::TimeOfDay => self.time_of_day().map(Value::TimeOfDay),
             ValueType::Type => self.mon_type().map(Value::Type),
+            ValueType::WildEncounterType => {
+                self.wild_encounter_type().map(Value::WildEncounterType)
+            }
             ValueType::EffectState => self.effect_state().map(Value::EffectState),
             ValueType::List => self.list().map(Value::List),
             ValueType::Object => self.object().map(Value::Object),
@@ -806,11 +813,24 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`Type`].
     pub fn mon_type(self) -> Result<Type> {
         match self {
             Self::String(val) => Type::from_str(&val).map_err(general_error),
             Self::Type(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Type)),
+        }
+    }
+
+    /// Consumes the value into a [`WildEncounterType`].
+    pub fn wild_encounter_type(self) -> Result<WildEncounterType> {
+        match self {
+            Self::String(val) => WildEncounterType::from_str(&val).map_err(general_error),
+            Self::WildEncounterType(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::WildEncounterType,
+            )),
         }
     }
 
@@ -916,6 +936,7 @@ pub enum MaybeReferenceValue<'eval> {
     StatTable(StatTable),
     TimeOfDay(TimeOfDay),
     Type(Type),
+    WildEncounterType(WildEncounterType),
 
     EffectState(DynamicEffectStateConnector),
 
@@ -965,6 +986,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::StatTable(_) => ValueType::StatTable,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
+            Self::WildEncounterType(_) => ValueType::WildEncounterType,
 
             Self::EffectState(_) => ValueType::EffectState,
 
@@ -1014,6 +1036,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::StatTable(val) => Value::StatTable(val.clone()),
             Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
+            Self::WildEncounterType(val) => Value::WildEncounterType(*val),
 
             Self::EffectState(val) => Value::EffectState(val.clone()),
 
@@ -1118,6 +1141,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::StatTable(val) => Self::StatTable(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(val),
             Value::Type(val) => Self::Type(val),
+            Value::WildEncounterType(val) => Self::WildEncounterType(val),
 
             Value::EffectState(val) => Self::EffectState(val),
 
@@ -1186,6 +1210,7 @@ pub enum ValueRef<'eval> {
     StatTable(&'eval StatTable),
     TimeOfDay(TimeOfDay),
     Type(Type),
+    WildEncounterType(WildEncounterType),
 
     EffectState(DynamicEffectStateConnector),
 
@@ -1237,6 +1262,7 @@ impl<'eval> ValueRef<'eval> {
             Self::StatTable(_) => ValueType::StatTable,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
+            Self::WildEncounterType(_) => ValueType::WildEncounterType,
 
             Self::EffectState(_) => ValueType::EffectState,
 
@@ -1288,6 +1314,7 @@ impl<'eval> ValueRef<'eval> {
             Self::StatTable(val) => Value::StatTable((*val).clone()),
             Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
+            Self::WildEncounterType(val) => Value::WildEncounterType(*val),
 
             Self::EffectState(val) => Value::EffectState(val.clone()),
 
@@ -1448,6 +1475,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::StatTable(val) => Self::StatTable(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(*val),
             Value::Type(val) => Self::Type(*val),
+            Value::WildEncounterType(val) => Self::WildEncounterType(*val),
 
             Value::EffectState(val) => Self::EffectState(val.clone()),
 
@@ -1554,6 +1582,7 @@ pub enum ValueRefMut<'eval> {
     StatTable(&'eval mut StatTable),
     TimeOfDay(&'eval mut TimeOfDay),
     Type(&'eval mut Type),
+    WildEncounterType(&'eval mut WildEncounterType),
 
     EffectState(&'eval mut DynamicEffectStateConnector),
     TempEffectState(DynamicEffectStateConnector),
@@ -1618,6 +1647,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::StatTable(_) => ValueType::StatTable,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
+            Self::WildEncounterType(_) => ValueType::WildEncounterType,
 
             Self::EffectState(_) => ValueType::EffectState,
             Self::TempEffectState(_) => ValueType::EffectState,
@@ -1795,6 +1825,9 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::Type(var) => {
                 *var = val.mon_type()?;
             }
+            ValueRefMut::WildEncounterType(var) => {
+                *var = val.wild_encounter_type()?;
+            }
             ValueRefMut::EffectState(var) => {
                 *var = val.effect_state()?;
             }
@@ -1849,6 +1882,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::StatTable(val) => Self::StatTable(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(val),
             Value::Type(val) => Self::Type(val),
+            Value::WildEncounterType(val) => Self::WildEncounterType(val),
 
             Value::EffectState(val) => Self::EffectState(val),
 
@@ -1910,6 +1944,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     StatTable(&'eval StatTable),
     TimeOfDay(TimeOfDay),
     Type(Type),
+    WildEncounterType(WildEncounterType),
 
     EffectState(DynamicEffectStateConnector),
 
@@ -1964,6 +1999,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::StatTable(_) => ValueType::StatTable,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
+            Self::WildEncounterType(_) => ValueType::WildEncounterType,
 
             Self::EffectState(_) => ValueType::EffectState,
 
@@ -2018,6 +2054,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::StatTable(val) => Value::StatTable((*val).clone()),
             Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
+            Self::WildEncounterType(val) => Value::WildEncounterType(*val),
 
             Self::EffectState(val) => Value::EffectState(val.clone()),
 
@@ -2075,6 +2112,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::StatTable(_) => 166,
             Self::TimeOfDay(_) => 167,
             Self::Type(_) => 168,
+            Self::WildEncounterType(_) => 169,
 
             Self::EffectState(_) => 200,
 
@@ -2453,6 +2491,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::WildEncounterType(rhs)) => {
+                WildEncounterType::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Str(lhs), Self::Str(rhs)) => lhs.eq(rhs),
             (Self::Str(lhs), Self::TempString(rhs)) => lhs.eq(&rhs),
             (Self::Str(lhs), Self::Effect(rhs)) => {
@@ -2482,6 +2523,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 TimeOfDay::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Str(lhs), Self::Type(rhs)) => Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::WildEncounterType(rhs)) => {
+                WildEncounterType::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::TempString(lhs), Self::TempString(rhs)) => lhs.eq(rhs),
             (Self::TempString(lhs), Self::Effect(rhs)) => rhs
                 .try_id()
@@ -2517,6 +2561,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::TempString(lhs), Self::Type(rhs)) => {
                 Type::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::TempString(lhs), Self::WildEncounterType(rhs)) => {
+                WildEncounterType::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
             (Self::Battle, Self::Battle) => true,
             (Self::Field, Self::Field) => true,
             (Self::Format, Self::Format) => true,
@@ -2546,6 +2593,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::StatTable(lhs), Self::StatTable(rhs)) => lhs.eq(rhs),
             (Self::TimeOfDay(lhs), Self::TimeOfDay(rhs)) => lhs.eq(rhs),
             (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
+            (Self::WildEncounterType(lhs), Self::WildEncounterType(rhs)) => lhs.eq(rhs),
             (Self::List(lhs), Self::List(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::StoredList(rhs)) => Self::equal_lists(lhs, rhs)?,
             (Self::List(lhs), Self::TempList(rhs)) => Self::equal_lists(lhs, rhs)?,
@@ -2690,6 +2738,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Nature(val) => val.to_string(),
             Self::TimeOfDay(val) => val.to_string(),
             Self::Type(val) => val.to_string(),
+            Self::WildEncounterType(val) => val.to_string(),
             Self::Stat(val) => val.to_string(),
             _ => {
                 return Err(general_error(format!(
@@ -2741,6 +2790,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::StatTable(val) => Self::StatTable(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(*val),
             Value::Type(val) => Self::Type(*val),
+            Value::WildEncounterType(val) => Self::WildEncounterType(*val),
 
             Value::EffectState(val) => Self::EffectState(val.clone()),
 
@@ -2789,6 +2839,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::StatTable(val) => Self::StatTable(val),
             MaybeReferenceValue::TimeOfDay(val) => Self::TimeOfDay(*val),
             MaybeReferenceValue::Type(val) => Self::Type(*val),
+            MaybeReferenceValue::WildEncounterType(val) => Self::WildEncounterType(*val),
 
             MaybeReferenceValue::EffectState(val) => Self::EffectState(val.clone()),
 
@@ -2842,6 +2893,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::StatTable(val) => Self::StatTable(val),
             ValueRef::TimeOfDay(val) => Self::TimeOfDay(val),
             ValueRef::Type(val) => Self::Type(val),
+            ValueRef::WildEncounterType(val) => Self::WildEncounterType(val),
 
             ValueRef::EffectState(val) => Self::EffectState(val),
 
@@ -2898,6 +2950,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::StatTable(val) => Self::StatTable(val),
             ValueRef::TimeOfDay(val) => Self::TimeOfDay(*val),
             ValueRef::Type(val) => Self::Type(*val),
+            ValueRef::WildEncounterType(val) => Self::WildEncounterType(*val),
 
             ValueRef::EffectState(val) => Self::EffectState(val.clone()),
 

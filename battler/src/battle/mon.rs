@@ -1903,6 +1903,11 @@ impl Mon {
         context.mon_mut().friendship -= delta.min(max_delta);
     }
 
+    /// Sets friendship directly.
+    pub fn set_friendship(context: &mut MonContext, value: u8) {
+        context.mon_mut().friendship = value;
+    }
+
     /// Checks if the Mon is immune to the given type.
     pub fn is_immune(context: &mut MonContext, typ: Type) -> Result<bool> {
         if !context.mon().active {

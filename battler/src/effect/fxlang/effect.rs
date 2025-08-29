@@ -754,6 +754,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifySpe"]
     ModifySpe,
+    /// Runs when calculating the base species catch rate of a Mon.
+    ///
+    /// Runs in the context of the item and in the context of an applying effect on a Mon.
+    #[string = "ModifySpeciesCatchRate"]
+    ModifySpeciesCatchRate,
     /// Runs when calculating a move's STAB multiplier.
     ///
     /// Runs in the context of a move user.
@@ -1222,6 +1227,7 @@ impl BattleEvent {
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifySpeciesCatchRate => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyStab => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
@@ -1322,7 +1328,9 @@ impl BattleEvent {
             Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
             Self::ModifyBoosts => &[("boosts", ValueType::BoostTable, true)],
-            Self::ModifyCatchRate => &[("catch_rate", ValueType::UFraction, true)],
+            Self::ModifyCatchRate | Self::ModifySpeciesCatchRate => {
+                &[("catch_rate", ValueType::UFraction, true)]
+            }
             Self::ModifyCritChance => &[("chance", ValueType::UFraction, true)],
             Self::ModifyCritRatio => &[("crit_ratio", ValueType::UFraction, true)],
             Self::ModifyDamage | Self::WeatherModifyDamage => {
@@ -1460,6 +1468,8 @@ impl BattleEvent {
     pub fn run_callback_on_source_effect(&self) -> bool {
         match self {
             Self::Damage => true,
+            Self::ModifyCatchRate => true,
+            Self::ModifySpeciesCatchRate => true,
             Self::ModifyTarget => true,
             _ => false,
         }

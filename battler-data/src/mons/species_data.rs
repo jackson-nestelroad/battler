@@ -128,9 +128,9 @@ pub struct SpeciesData {
     /// The species and forme name this forme transforms from.
     pub changes_from: Option<String>,
 
-    /// Tags.
+    /// Flags.
     #[serde(default)]
-    pub tags: HashSet<SpeciesFlag>,
+    pub flags: HashSet<SpeciesFlag>,
     /// Event giveaways for this species.
     #[serde(default)]
     pub events: HashMap<String, EventData>,

@@ -1039,6 +1039,11 @@ where
                                     .map(|mon| ValueRefToStoredValue::new(None, ValueRef::Mon(mon)))
                                     .collect(),
                             ),
+                            "wild_encounter_type" => Player::wild_encounter_type(
+                                &mut context.battle_context_mut().player_context(player)?,
+                            )
+                            .map(|val| ValueRef::WildEncounterType(val))
+                            .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::MoveSlot(move_slot) = value {

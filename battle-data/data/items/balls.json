@@ -146,17 +146,154 @@
       }
     }
   },
-  "cherishball": { "name": "Cherish Ball", "flags": ["Ball"] },
-  "lureball": { "name": "Lure Ball", "flags": ["Ball"] },
-  "levelball": { "name": "Level Ball", "flags": ["Ball"] },
-  "moonball": { "name": "Moon Ball", "flags": ["Ball"] },
-  "heavyball": { "name": "Heavy Ball", "flags": ["Ball"] },
-  "fastball": { "name": "Fast Ball", "flags": ["Ball"] },
-  "friendball": { "name": "Friend Ball", "flags": ["Ball"] },
-  "loveball": { "name": "Love Ball", "flags": ["Ball"] },
-  "parkball": { "name": "Park Ball", "flags": ["Ball"] },
-  "sportball": { "name": "Sport Ball", "flags": ["Ball"] },
-  "dreamball": { "name": "Dream Ball", "flags": ["Ball"] },
-  "beastball": { "name": "Beast Ball", "flags": ["Ball"] },
-  "strangeball": { "name": "Strange Ball", "flags": ["Ball"] }
+  "cherishball": {
+    "name": "Cherish Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"]
+  },
+  "lureball": {
+    "name": "Lure Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "if $target.player.wild_encounter_type == fishing:",
+          ["return $catch_rate * 4"]
+        ]
+      }
+    }
+  },
+  "levelball": {
+    "name": "Level Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "if $source.level <= $target.level:",
+          ["return"],
+          "if $source.level < $target.level * 2:",
+          ["return $catch_rate * 2"],
+          "if $source.level < $target.level * 4:",
+          ["return $catch_rate * 4"],
+          "return $catch_rate * 8"
+        ]
+      }
+    }
+  },
+  "moonball": {
+    "name": "Moon Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "$evolve_by_moon_stone = [nidorina, nidorino, clefairy, jigglypuff, skitty, munna]",
+          "$base_species = func_call(base_species: $target)",
+          "if $evolve_by_moon_stone has $base_species:",
+          ["return $catch_rate * 4"]
+        ]
+      }
+    }
+  },
+  "heavyball": {
+    "name": "Heavy Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_species_catch_rate": [
+          "if $target.weight < 100:",
+          ["if $catch_rate < 20:", ["return 0"], "return $catch_rate - 20"],
+          "if $target.weight < 200:",
+          ["return $catch_rate"],
+          "if $target.weight < 300:",
+          ["return $catch_rate + 20"],
+          "return $catch_rate + 30"
+        ]
+      }
+    }
+  },
+  "fastball": {
+    "name": "Fast Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "if $target.base_stats.spe >= 100:",
+          ["return $catch_rate * 4"]
+        ]
+      }
+    }
+  },
+  "friendball": {
+    "name": "Friend Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_catch": ["set_friendship: $mon 150"]
+      }
+    }
+  },
+  "loveball": {
+    "name": "Love Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "if $target.gender == u or $source.gender == u:",
+          ["return"],
+          "if $target.gender != $source.gender:",
+          ["return $catch_rate * 8"]
+        ]
+      }
+    }
+  },
+  "parkball": {
+    "name": "Park Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"]
+  },
+  "sportball": {
+    "name": "Sport Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"]
+  },
+  "dreamball": {
+    "name": "Dream Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "if $target.is_asleep:",
+          ["return $catch_rate * 4"]
+        ]
+      }
+    }
+  },
+  "beastball": {
+    "name": "Beast Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"],
+    "effect": {
+      "callbacks": {
+        "on_modify_catch_rate": [
+          "$base_species = func_call(base_species: $target)",
+          "if func_call(species_has_flag: $base_species ultrabeast):",
+          ["return $catch_rate * 5"],
+          "return $catch_rate * 1/10"
+        ]
+      }
+    }
+  },
+  "strangeball": {
+    "name": "Strange Ball",
+    "target": "IsolatedFoe",
+    "flags": ["Ball"]
+  }
 }

@@ -52,6 +52,7 @@ pub use battle::{
     TeamPreviewRequest,
     TimeOfDay,
     TurnRequest,
+    WildEncounterType,
     WildPlayerOptions,
 };
 pub use battler_data::*;

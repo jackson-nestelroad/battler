@@ -109,6 +109,7 @@ pub use player::{
     PlayerDex,
     PlayerOptions,
     PlayerType,
+    WildEncounterType,
     WildPlayerOptions,
 };
 pub use queue::BattleQueue;

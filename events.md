@@ -82,6 +82,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `PlayerUse`.
 1. If the item is a ball:
    1. Calculate modified catch rate.
+      1. `ModifySpeciesCatchRate`.
       1. `ModifyCatchRate`.
       1. If caught, the catch will be processed later.
 

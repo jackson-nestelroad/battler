@@ -25,7 +25,7 @@
       "spd": 45,
       "spe": 65
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "floragato": {
@@ -56,7 +56,7 @@
     },
     "prevo": "Sprigatito",
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "meowscarada": {
@@ -88,7 +88,7 @@
     },
     "prevo": "Floragato",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "fuecoco": {
@@ -117,7 +117,7 @@
       "spd": 40,
       "spe": 36
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "crocalor": {
@@ -148,7 +148,7 @@
     },
     "prevo": "Fuecoco",
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "skeledirge": {
@@ -180,7 +180,7 @@
     },
     "prevo": "Crocalor",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "quaxly": {
@@ -209,7 +209,7 @@
       "spd": 45,
       "spe": 50
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "quaxwell": {
@@ -240,7 +240,7 @@
     },
     "prevo": "Quaxly",
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "quaquaval": {
@@ -272,7 +272,7 @@
     },
     "prevo": "Quaxwell",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "lechonk": {
@@ -301,7 +301,7 @@
       "spd": 45,
       "spe": 35
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "oinkologne": {
@@ -333,7 +333,7 @@
     },
     "prevo": "Lechonk",
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tarountula": {
@@ -362,7 +362,7 @@
       "spd": 40,
       "spe": 20
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "spidops": {
@@ -393,7 +393,7 @@
     },
     "prevo": "Tarountula",
     "evolution_data": { "method": "L", "condition": "", "level": 15 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "nymble": {
@@ -422,7 +422,7 @@
       "spd": 25,
       "spe": 45
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "lokix": {
@@ -454,7 +454,7 @@
     },
     "prevo": "Nymble",
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "pawmi": {
@@ -483,7 +483,7 @@
       "spd": 25,
       "spe": 60
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "pawmo": {
@@ -515,7 +515,7 @@
     },
     "prevo": "Pawmi",
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "pawmot": {
@@ -547,7 +547,7 @@
     },
     "prevo": "Pawmo",
     "evolution_data": { "method": "C", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tandemaus": {
@@ -576,7 +576,7 @@
       "spd": 45,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "maushold": {
@@ -608,7 +608,7 @@
     },
     "prevo": "Tandemaus",
     "evolution_data": { "method": "C", "condition": "", "level": 25 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "fidough": {
@@ -637,7 +637,7 @@
       "spd": 55,
       "spe": 65
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "dachsbun": {
@@ -668,7 +668,7 @@
     },
     "prevo": "Fidough",
     "evolution_data": { "method": "L", "condition": "", "level": 26 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "smoliv": {
@@ -698,7 +698,7 @@
       "spd": 51,
       "spe": 30
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "dolliv": {
@@ -730,7 +730,7 @@
     },
     "prevo": "Smoliv",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "arboliva": {
@@ -762,7 +762,7 @@
     },
     "prevo": "Dolliv",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "squawkabilly": {
@@ -793,7 +793,7 @@
       "spd": 51,
       "spe": 92
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "nacli": {
@@ -822,7 +822,7 @@
       "spd": 35,
       "spe": 25
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "naclstack": {
@@ -853,7 +853,7 @@
     },
     "prevo": "Nacli",
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "garganacl": {
@@ -884,7 +884,7 @@
     },
     "prevo": "Naclstack",
     "evolution_data": { "method": "L", "condition": "", "level": 38 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "charcadet": {
@@ -913,7 +913,7 @@
       "spd": 40,
       "spe": 35
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "armarouge": {
@@ -949,7 +949,7 @@
       "condition": "",
       "use_item": "Auspicious Armor"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ceruledge": {
@@ -985,7 +985,7 @@
       "condition": "",
       "use_item": "Malicious Armor"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tadbulb": {
@@ -1014,7 +1014,7 @@
       "spd": 35,
       "spe": 45
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "bellibolt": {
@@ -1049,7 +1049,7 @@
       "condition": "",
       "use_item": "Thunder Stone"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "wattrel": {
@@ -1079,7 +1079,7 @@
       "spd": 40,
       "spe": 70
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "kilowattrel": {
@@ -1111,7 +1111,7 @@
     },
     "prevo": "Wattrel",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "maschiff": {
@@ -1140,7 +1140,7 @@
       "spd": 51,
       "spe": 51
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "mabosstiff": {
@@ -1171,7 +1171,7 @@
     },
     "prevo": "Maschiff",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "shroodle": {
@@ -1201,7 +1201,7 @@
       "spd": 35,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "grafaiai": {
@@ -1233,7 +1233,7 @@
     },
     "prevo": "Shroodle",
     "evolution_data": { "method": "L", "condition": "", "level": 28 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "bramblin": {
@@ -1263,7 +1263,7 @@
       "spd": 35,
       "spe": 60
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "brambleghast": {
@@ -1295,7 +1295,7 @@
     },
     "prevo": "Bramblin",
     "evolution_data": { "method": "C", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "toedscool": {
@@ -1325,7 +1325,7 @@
       "spd": 100,
       "spe": 70
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "toedscruel": {
@@ -1357,7 +1357,7 @@
     },
     "prevo": "Toedscool",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "klawf": {
@@ -1386,7 +1386,7 @@
       "spd": 55,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "capsakid": {
@@ -1415,7 +1415,7 @@
       "spd": 40,
       "spe": 50
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "scovillain": {
@@ -1451,7 +1451,7 @@
       "condition": "",
       "use_item": "Fire Stone"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "rellor": {
@@ -1480,7 +1480,7 @@
       "spd": 58,
       "spe": 30
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "rabsca": {
@@ -1512,7 +1512,7 @@
     },
     "prevo": "Rellor",
     "evolution_data": { "method": "C", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "flittle": {
@@ -1541,7 +1541,7 @@
       "spd": 30,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "espathra": {
@@ -1572,7 +1572,7 @@
     },
     "prevo": "Flittle",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tinkatink": {
@@ -1602,7 +1602,7 @@
       "spd": 64,
       "spe": 58
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tinkatuff": {
@@ -1634,7 +1634,7 @@
     },
     "prevo": "Tinkatink",
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tinkaton": {
@@ -1666,7 +1666,7 @@
     },
     "prevo": "Tinkatuff",
     "evolution_data": { "method": "L", "condition": "", "level": 38 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "wiglett": {
@@ -1695,7 +1695,7 @@
       "spd": 25,
       "spe": 95
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "wugtrio": {
@@ -1726,7 +1726,7 @@
     },
     "prevo": "Wiglett",
     "evolution_data": { "method": "L", "condition": "", "level": 26 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "bombirdier": {
@@ -1756,7 +1756,7 @@
       "spd": 85,
       "spe": 82
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "finizen": {
@@ -1785,7 +1785,7 @@
       "spd": 40,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "palafin": {
@@ -1817,7 +1817,7 @@
     },
     "prevo": "Finizen",
     "evolution_data": { "method": "C", "condition": "", "level": 38 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "varoom": {
@@ -1847,7 +1847,7 @@
       "spd": 45,
       "spe": 47
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "revavroom": {
@@ -1879,7 +1879,7 @@
     },
     "prevo": "Varoom",
     "evolution_data": { "method": "L", "condition": "", "level": 40 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "cyclizar": {
@@ -1909,7 +1909,7 @@
       "spd": 65,
       "spe": 121
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "orthworm": {
@@ -1938,7 +1938,7 @@
       "spd": 55,
       "spe": 65
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "glimmet": {
@@ -1968,7 +1968,7 @@
       "spd": 60,
       "spe": 60
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "glimmora": {
@@ -2000,7 +2000,7 @@
     },
     "prevo": "Glimmet",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "greavard": {
@@ -2029,7 +2029,7 @@
       "spd": 55,
       "spe": 34
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "houndstone": {
@@ -2065,7 +2065,7 @@
       "level": 30,
       "time_of_day": "night"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "flamigo": {
@@ -2095,7 +2095,7 @@
       "spd": 64,
       "spe": 90
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "cetoddle": {
@@ -2124,7 +2124,7 @@
       "spd": 40,
       "spe": 43
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "cetitan": {
@@ -2159,7 +2159,7 @@
       "condition": "",
       "use_item": "Ice Stone"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "veluza": {
@@ -2189,7 +2189,7 @@
       "spd": 65,
       "spe": 70
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "dondozo": {
@@ -2218,7 +2218,7 @@
       "spd": 65,
       "spe": 35
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tatsugiri": {
@@ -2249,7 +2249,7 @@
       "spd": 95,
       "spe": 82
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "annihilape": {
@@ -2281,7 +2281,7 @@
     },
     "prevo": "Primeape",
     "evolution_data": { "method": "C", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "clodsire": {
@@ -2313,7 +2313,7 @@
     },
     "prevo": "Wooper",
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "farigiraf": {
@@ -2349,7 +2349,7 @@
       "condition": "",
       "knows_move": "Twin Beam"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "dudunsparce": {
@@ -2385,7 +2385,7 @@
       "condition": "",
       "knows_move": "Hyper Drill"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "kingambit": {
@@ -2417,7 +2417,7 @@
     },
     "prevo": "Bisharp",
     "evolution_data": { "method": "C", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "greattusk": {
@@ -2447,7 +2447,7 @@
       "spd": 53,
       "spe": 87
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "screamtail": {
@@ -2477,7 +2477,7 @@
       "spd": 115,
       "spe": 111
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "brutebonnet": {
@@ -2507,7 +2507,7 @@
       "spd": 99,
       "spe": 55
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "fluttermane": {
@@ -2537,7 +2537,7 @@
       "spd": 135,
       "spe": 135
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "slitherwing": {
@@ -2567,7 +2567,7 @@
       "spd": 105,
       "spe": 81
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "sandyshocks": {
@@ -2597,7 +2597,7 @@
       "spd": 85,
       "spe": 101
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "irontreads": {
@@ -2627,7 +2627,7 @@
       "spd": 70,
       "spe": 106
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironbundle": {
@@ -2657,7 +2657,7 @@
       "spd": 60,
       "spe": 136
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironhands": {
@@ -2687,7 +2687,7 @@
       "spd": 68,
       "spe": 50
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironjugulis": {
@@ -2717,7 +2717,7 @@
       "spd": 80,
       "spe": 108
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironmoth": {
@@ -2747,7 +2747,7 @@
       "spd": 110,
       "spe": 110
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironthorns": {
@@ -2777,7 +2777,7 @@
       "spd": 84,
       "spe": 72
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "frigibax": {
@@ -2807,7 +2807,7 @@
       "spd": 45,
       "spe": 55
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "arctibax": {
@@ -2839,7 +2839,7 @@
     },
     "prevo": "Frigibax",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "baxcalibur": {
@@ -2871,7 +2871,7 @@
     },
     "prevo": "Arctibax",
     "evolution_data": { "method": "L", "condition": "", "level": 54 },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gimmighoul": {
@@ -2901,7 +2901,7 @@
       "spd": 70,
       "spe": 10
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gholdengo": {
@@ -2933,7 +2933,7 @@
     },
     "prevo": "Gimmighoul",
     "evolution_data": { "method": "C", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "wochien": {
@@ -2963,7 +2963,7 @@
       "spd": 135,
       "spe": 70
     },
-    "tags": ["Sub-Legendary"],
+    "flags": ["Sub-Legendary"],
     "learnset": {}
   },
   "chienpao": {
@@ -2993,7 +2993,7 @@
       "spd": 65,
       "spe": 135
     },
-    "tags": ["Sub-Legendary"],
+    "flags": ["Sub-Legendary"],
     "learnset": {}
   },
   "tinglu": {
@@ -3023,7 +3023,7 @@
       "spd": 80,
       "spe": 45
     },
-    "tags": ["Sub-Legendary"],
+    "flags": ["Sub-Legendary"],
     "learnset": {}
   },
   "chiyu": {
@@ -3053,7 +3053,7 @@
       "spd": 120,
       "spe": 100
     },
-    "tags": ["Sub-Legendary"],
+    "flags": ["Sub-Legendary"],
     "learnset": {}
   },
   "roaringmoon": {
@@ -3083,7 +3083,7 @@
       "spd": 101,
       "spe": 119
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironvaliant": {
@@ -3113,7 +3113,7 @@
       "spd": 60,
       "spe": 116
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "koraidon": {
@@ -3144,7 +3144,7 @@
       "spd": 100,
       "spe": 135
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   },
   "miraidon": {
@@ -3175,7 +3175,7 @@
       "spd": 115,
       "spe": 135
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   },
   "walkingwake": {
@@ -3205,7 +3205,7 @@
       "spd": 83,
       "spe": 109
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "ironleaves": {
@@ -3235,7 +3235,7 @@
       "spd": 108,
       "spe": 104
     },
-    "tags": ["Paradox"],
+    "flags": ["Paradox"],
     "learnset": {}
   },
   "dipplin": {
@@ -3265,7 +3265,7 @@
       "spd": 80,
       "spe": 40
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "poltchageist": {
@@ -3297,7 +3297,7 @@
       "spe": 50
     },
     "cosmetic_formes": ["Poltchageist-Artisan"],
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "sinistcha": {
@@ -3329,7 +3329,7 @@
       "spe": 70
     },
     "cosmetic_formes": ["Sinistcha-Masterpiece"],
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "okidogi": {
@@ -3359,7 +3359,7 @@
       "spd": 86,
       "spe": 80
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "munkidori": {
@@ -3389,7 +3389,7 @@
       "spd": 90,
       "spe": 106
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "fezandipiti": {
@@ -3419,7 +3419,7 @@
       "spd": 125,
       "spe": 99
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ogerpon": {
@@ -3447,7 +3447,7 @@
       "spd": 96,
       "spe": 110
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "archaludon": {
@@ -3477,7 +3477,7 @@
       "spd": 65,
       "spe": 85
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "hydrapple": {
@@ -3507,7 +3507,7 @@
       "spd": 80,
       "spe": 44
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gougingfire": {
@@ -3536,7 +3536,7 @@
       "spd": 93,
       "spe": 91
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ragingbolt": {
@@ -3565,7 +3565,7 @@
       "spd": 89,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ironboulder": {
@@ -3594,7 +3594,7 @@
       "spd": 108,
       "spe": 124
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ironcrown": {
@@ -3623,7 +3623,7 @@
       "spd": 108,
       "spe": 98
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "terapagos": {
@@ -3651,7 +3651,7 @@
       "spd": 85,
       "spe": 60
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   },
   "pecharunt": {
@@ -3680,7 +3680,7 @@
       "spd": 88,
       "spe": 88
     },
-    "tags": ["Mythical"],
+    "flags": ["Mythical"],
     "learnset": {}
   },
   "oinkolognefemale": {
@@ -3710,7 +3710,7 @@
       "spd": 90,
       "spe": 65
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "dudunsparcethreesegment": {
@@ -3740,7 +3740,7 @@
       "spd": 75,
       "spe": 55
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "palafinhero": {
@@ -3771,7 +3771,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "mausholdfamilyofthree": {
@@ -3801,7 +3801,7 @@
       "spd": 75,
       "spe": 111
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tatsugiridroopy": {
@@ -3832,7 +3832,7 @@
       "spd": 95,
       "spe": 82
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "tatsugiristretchy": {
@@ -3863,7 +3863,7 @@
       "spd": 95,
       "spe": 82
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "squawkabillyblueplumage": {
@@ -3894,7 +3894,7 @@
       "spd": 51,
       "spe": 92
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "squawkabillyyellowplumage": {
@@ -3925,7 +3925,7 @@
       "spd": 51,
       "spe": 92
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "squawkabillywhiteplumage": {
@@ -3956,7 +3956,7 @@
       "spd": 51,
       "spe": 92
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gimmighoulroaming": {
@@ -3986,7 +3986,7 @@
       "spd": 45,
       "spe": 80
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "koraidonlimitedbuild": {
@@ -4017,7 +4017,7 @@
       "spd": 100,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "koraidonsprintingbuild": {
@@ -4048,7 +4048,7 @@
       "spd": 100,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "koraidonswimmingbuild": {
@@ -4079,7 +4079,7 @@
       "spd": 100,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "koraidonglidingbuild": {
@@ -4110,7 +4110,7 @@
       "spd": 100,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "miraidonlowpowermode": {
@@ -4141,7 +4141,7 @@
       "spd": 115,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "miraidondrivemode": {
@@ -4172,7 +4172,7 @@
       "spd": 115,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "miraidonaquaticmode": {
@@ -4203,7 +4203,7 @@
       "spd": 115,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "miraidonglidemode": {
@@ -4234,7 +4234,7 @@
       "spd": 115,
       "spe": 135
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ogerponwellspringmask": {
@@ -4264,7 +4264,7 @@
       "spd": 96,
       "spe": 110
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ogerponhearthflamemask": {
@@ -4294,7 +4294,7 @@
       "spd": 96,
       "spe": 110
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "ogerponcornerstonemask": {
@@ -4324,7 +4324,7 @@
       "spd": 96,
       "spe": 110
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "terapagosterastal": {
@@ -4354,7 +4354,7 @@
       "spe": 85
     },
     "battle_only_forme": true,
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   },
   "terapagosstellar": {
@@ -4384,7 +4384,7 @@
       "spe": 85
     },
     "battle_only_forme": true,
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   }
 }

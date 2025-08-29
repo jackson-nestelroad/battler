@@ -64,6 +64,19 @@
             "if func_call(ability_has_flag: $mon.ability unsuppressible):",
             ["return false"]
           ]
+        },
+        "on_modify_catch_rate": {
+          "priority": 1,
+          "program": [
+            "$base_species = func_call(base_species: $target)",
+            "if func_call(species_has_flag: $base_species ultrabeast):",
+            [
+              "if $effect.id == beastball or $effect.id == masterball:",
+              ["return"],
+              "skip_effect_callback: $effect.id",
+              "return $catch_rate * 1/10"
+            ]
+          ]
         }
       }
     }

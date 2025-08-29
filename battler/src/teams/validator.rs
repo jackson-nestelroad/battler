@@ -346,16 +346,16 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     fn validate_species(&self, species: &ElementRef<'d, Species>) -> Vec<String> {
         let mut problems = Vec::new();
 
-        let tags = species
+        let flags = species
             .data
-            .tags
+            .flags
             .iter()
             .map(|tag| Id::from(tag.to_string()))
             .collect::<Vec<_>>();
         let check = self.check_if_resource_is_allowed(
             [species.id(), &Id::from(species.data.base_species.as_ref())]
                 .into_iter()
-                .chain(tags.iter())
+                .chain(flags.iter())
                 .chain([&Id::from_known("allmons")].into_iter()),
         );
         match check {
@@ -415,7 +415,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let mut problems = Vec::new();
 
         // Check if item is allowed.
-        let tags = item
+        let flags = item
             .data
             .flags
             .iter()
@@ -424,7 +424,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let check = self.check_if_resource_is_allowed(
             [item.id()]
                 .into_iter()
-                .chain(tags.iter())
+                .chain(flags.iter())
                 .chain([&Id::from_known("allitems")].into_iter()),
         );
         match check {
@@ -502,7 +502,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let mut problems = Vec::new();
 
         // Check if move is allowed.
-        let tags = mov
+        let flags = mov
             .data
             .flags
             .iter()
@@ -511,7 +511,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let check = self.check_if_resource_is_allowed(
             [mov.id()]
                 .into_iter()
-                .chain(tags.iter())
+                .chain(flags.iter())
                 .chain([&Id::from_known("allmoves")].into_iter()),
         );
         match check {
@@ -731,7 +731,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let mut problems = Vec::new();
 
         // Check if ability is allowed.
-        let tags = ability
+        let flags = ability
             .data
             .flags
             .iter()
@@ -740,7 +740,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         let check = self.check_if_resource_is_allowed(
             [ability.id()]
                 .into_iter()
-                .chain(tags.iter())
+                .chain(flags.iter())
                 .chain([&Id::from_known("allabilities")].into_iter()),
         );
         match check {

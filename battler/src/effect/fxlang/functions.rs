@@ -24,6 +24,7 @@ use battler_data::{
     MoveFlag,
     MoveTarget,
     SecondaryEffectData,
+    SpeciesFlag,
     TypeEffectiveness,
 };
 use battler_prng::rand_util;
@@ -255,6 +256,7 @@ pub fn run_function(
         "secondary_hit_effect" => secondary_hit_effect().map(|val| Some(val)),
         "set_ability" => set_ability(context).map(|val| Some(val)),
         "set_boost" => set_boost(context).map(|val| Some(val)),
+        "set_friendship" => set_friendship(context).map(|()| None),
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
         "set_pp" => set_pp(context).map(|val| Some(val)),
@@ -264,6 +266,7 @@ pub fn run_function(
         "side_condition_effect_state" => side_condition_effect_state(context),
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
         "special_item_data" => special_item_data(context).map(|val| Some(val)),
+        "species_has_flag" => species_has_flag(context).map(|val| Some(val)),
         "start_ability" => start_ability(context).map(|()| None),
         "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
@@ -1404,6 +1407,32 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value> {
             .data
             .flags
             .contains(&ability_flag),
+    ))
+}
+
+fn species_has_flag(mut context: FunctionContext) -> Result<Value> {
+    let species_id = context
+        .pop_front()
+        .wrap_expectation("missing species")?
+        .species_id()
+        .wrap_error_with_message("invalid species")?;
+    let species_flag = context
+        .pop_front()
+        .wrap_expectation("missing species flag")?
+        .string()
+        .wrap_error_with_message("invalid species flag")?;
+    let species_flag = SpeciesFlag::from_str(&species_flag).map_err(general_error)?;
+    Ok(Value::Boolean(
+        context
+            .evaluation_context()
+            .battle_context()
+            .battle()
+            .dex
+            .species
+            .get_by_id(&species_id)?
+            .data
+            .flags
+            .contains(&species_flag),
     ))
 }
 
@@ -3352,6 +3381,17 @@ fn decrease_friendship(mut context: FunctionContext) -> Result<()> {
         &mut context.mon_context(mon_handle)?,
         [delta_1, delta_2, delta_3],
     );
+    Ok(())
+}
+
+fn set_friendship(mut context: FunctionContext) -> Result<()> {
+    let mon_handle = context.target_handle_positional()?;
+    let friendship = context
+        .pop_front()
+        .wrap_expectation("missing friendship")?
+        .integer_u8()
+        .wrap_error_with_message("invalid friendship")?;
+    Mon::set_friendship(&mut context.mon_context(mon_handle)?, friendship);
     Ok(())
 }
 

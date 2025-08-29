@@ -19,6 +19,9 @@ pub enum SpeciesFlag {
     Mythical,
     #[string = "Paradox"]
     Paradox,
+    #[string = "UltraBeast"]
+    #[alias = "Ultra Beast"]
+    UltraBeast,
 }
 
 #[cfg(test)]

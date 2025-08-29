@@ -26,6 +26,10 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_string_enum::{
+    DeserializeLabeledStringEnum,
+    SerializeLabeledStringEnum,
+};
 
 use crate::{
     WrapError,
@@ -76,6 +80,25 @@ use crate::{
     teams::TeamData,
 };
 
+/// How a wild player was encountered.
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
+)]
+pub enum WildEncounterType {
+    #[default]
+    #[string = "Normal"]
+    Normal,
+    #[string = "Fishing"]
+    Fishing,
+}
+
 /// Options for a wild [`Player`].
 ///
 /// For use on [`PlayerType`].
@@ -89,6 +112,8 @@ pub struct WildPlayerOptions {
     ///
     /// Important for scripted battles, where escaping moves (like Teleport) should not succeed.
     pub can_escape: bool,
+    /// The type of encounter.
+    pub encounter_type: WildEncounterType,
 }
 
 impl Default for WildPlayerOptions {
@@ -97,6 +122,7 @@ impl Default for WildPlayerOptions {
             catchable: true,
             escapable: true,
             can_escape: true,
+            encounter_type: WildEncounterType::Normal,
         }
     }
 }
@@ -183,6 +209,14 @@ impl PlayerType {
         match self {
             Self::Trainer | Self::Protagonist => true,
             _ => false,
+        }
+    }
+
+    /// The wild encounter type, if applicable.
+    pub fn wild_encounter_type(&self) -> Option<WildEncounterType> {
+        match self {
+            Self::Wild(wild) => Some(wild.encounter_type),
+            _ => None,
         }
     }
 }
@@ -1524,6 +1558,11 @@ impl Player {
                 .all(|foe| foe.player_type.forfeitable())
     }
 
+    /// The wild encounter type, if applicable.
+    pub fn wild_encounter_type(context: &PlayerContext) -> Option<WildEncounterType> {
+        context.player().player_type.wild_encounter_type()
+    }
+
     /// Gets the target Mon of an item based on this player's position.
     pub fn get_item_target(
         context: &mut PlayerContext,
@@ -1628,9 +1667,12 @@ mod move_choice_test {
 
 #[cfg(test)]
 mod player_type_test {
-    use crate::battle::{
-        PlayerType,
-        WildPlayerOptions,
+    use crate::{
+        WildEncounterType,
+        battle::{
+            PlayerType,
+            WildPlayerOptions,
+        },
     };
 
     #[test]
@@ -1641,14 +1683,16 @@ mod player_type_test {
                     "type": "wild",
                     "catchable": true,
                     "escapable": false,
-                    "can_escape": false
+                    "can_escape": false,
+                    "encounter_type": "Fishing"
                 }"#
             )
             .unwrap(),
             PlayerType::Wild(WildPlayerOptions {
                 catchable: true,
                 escapable: false,
-                can_escape: false
+                can_escape: false,
+                encounter_type: WildEncounterType::Fishing,
             })
         );
         assert_eq!(

@@ -25,7 +25,7 @@
       "spd": 45,
       "spe": 38
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "attract": ["M"],
@@ -140,7 +140,7 @@
     },
     "prevo": "Chespin",
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "attract": ["M"],
@@ -253,7 +253,7 @@
     },
     "prevo": "Quilladin",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "attract": ["M"],
@@ -375,7 +375,7 @@
       "spd": 60,
       "spe": 60
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "attract": ["M"],
       "confide": ["M"],
@@ -462,7 +462,7 @@
     },
     "prevo": "Fennekin",
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "attract": ["M"],
@@ -560,7 +560,7 @@
     },
     "prevo": "Braixen",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "attract": ["M"],
@@ -667,7 +667,7 @@
       "spd": 44,
       "spe": 71
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["M"],
       "aerialace": ["M"],
@@ -759,7 +759,7 @@
     },
     "prevo": "Froakie",
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["M"],
       "aerialace": ["M"],
@@ -850,7 +850,7 @@
     },
     "prevo": "Frogadier",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["M"],
       "aerialace": ["M"],
@@ -950,7 +950,7 @@
       "spd": 36,
       "spe": 57
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "agility": ["L1"],
       "attract": ["M"],
@@ -1045,7 +1045,7 @@
     },
     "prevo": "Bunnelby",
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "agility": ["L1"],
       "attract": ["M"],
@@ -1155,7 +1155,7 @@
       "spd": 38,
       "spe": 62
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["L39"],
       "aerialace": ["M"],
@@ -1231,7 +1231,7 @@
     },
     "prevo": "Fletchling",
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["L42"],
       "aerialace": ["M"],
@@ -1311,7 +1311,7 @@
     },
     "prevo": "Fletchinder",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["L44"],
       "aerialace": ["M"],
@@ -1417,7 +1417,7 @@
       "Scatterbug-Fancy",
       "Scatterbug-Poke-Ball"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "bugbite": ["L15"],
       "poisonpowder": ["E"],
@@ -1477,7 +1477,7 @@
       "Spewpa-Fancy",
       "Spewpa-Poke-Ball"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "bugbite": ["T"],
       "electroweb": ["T"],
@@ -1537,7 +1537,7 @@
       "Vivillon-Fancy",
       "Vivillon-Poke-Ball"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["M"],
       "aerialace": ["M"],
@@ -1624,7 +1624,7 @@
       "spd": 54,
       "spe": 72
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "attract": ["M"],
       "bulldoze": ["M"],
@@ -1714,7 +1714,7 @@
     },
     "prevo": "Litleo",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "attract": ["M"],
       "bounce": ["T"],
@@ -1807,7 +1807,7 @@
       "Flabébé-Blue",
       "Flabébé-White"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -1902,7 +1902,7 @@
       "Floette-Blue",
       "Floette-White"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -1997,7 +1997,7 @@
       "Florges-Blue",
       "Florges-White"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -2081,7 +2081,7 @@
       "spd": 57,
       "spe": 52
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "attract": ["M"],
       "brickbreak": ["M"],
@@ -2168,7 +2168,7 @@
     },
     "prevo": "Skiddo",
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["L1"],
       "attract": ["M"],
@@ -2257,7 +2257,7 @@
       "spd": 48,
       "spe": 43
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "armthrust": ["L7"],
@@ -2374,7 +2374,7 @@
     },
     "prevo": "Pancham",
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "armthrust": ["L1"],
@@ -2514,7 +2514,7 @@
       "Furfrou-Kabuki",
       "Furfrou-Pharaoh"
     ],
-    "tags": [],
+    "flags": [],
     "learnset": {
       "attract": ["M"],
       "babydolleyes": ["L9"],
@@ -2601,7 +2601,7 @@
       "spd": 60,
       "spe": 68
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "assist": ["E"],
@@ -2699,7 +2699,7 @@
     },
     "prevo": "Espurr",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "attract": ["M"],
@@ -2803,7 +2803,7 @@
       "spd": 37,
       "spe": 28
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["L22"],
       "afteryou": ["T"],
@@ -2883,7 +2883,7 @@
     },
     "prevo": "Honedge",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["L22"],
       "afteryou": ["T"],
@@ -2966,7 +2966,7 @@
       "condition": "",
       "use_item": "Dusk Stone"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["L1"],
       "afteryou": ["T"],
@@ -3048,7 +3048,7 @@
       "spd": 65,
       "spe": 23
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -3143,7 +3143,7 @@
       "condition": "",
       "holding_item": "Sachet"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -3234,7 +3234,7 @@
       "spd": 57,
       "spe": 49
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["E", "T"],
       "aromatherapy": ["L26"],
@@ -3323,7 +3323,7 @@
       "condition": "",
       "holding_item": "Whipped Dream"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "aromatherapy": ["L26"],
@@ -3406,7 +3406,7 @@
       "spd": 46,
       "spe": 45
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "allyswitch": ["T"],
@@ -3504,7 +3504,7 @@
     },
     "prevo": "Inkay",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "allyswitch": ["T"],
@@ -3602,7 +3602,7 @@
       "spd": 56,
       "spe": 50
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "ancientpower": ["L28"],
@@ -3714,7 +3714,7 @@
     },
     "prevo": "Binacle",
     "evolution_data": { "method": "L", "condition": "", "level": 39 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "ancientpower": ["L28"],
@@ -3832,7 +3832,7 @@
       "spd": 60,
       "spe": 30
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acid": ["L15"],
       "acidarmor": ["E"],
@@ -3916,7 +3916,7 @@
     },
     "prevo": "Skrelp",
     "evolution_data": { "method": "L", "condition": "", "level": 48 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acid": ["L15"],
       "aquatail": ["L35"],
@@ -3998,7 +3998,7 @@
       "spd": 63,
       "spe": 44
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aquajet": ["L43"],
       "aquatail": ["T"],
@@ -4079,7 +4079,7 @@
     },
     "prevo": "Clauncher",
     "evolution_data": { "method": "L", "condition": "", "level": 37 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aquajet": ["L49"],
       "aquatail": ["T"],
@@ -4167,7 +4167,7 @@
       "spd": 43,
       "spe": 70
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "agility": ["E"],
       "allyswitch": ["T"],
@@ -4261,7 +4261,7 @@
       "condition": "",
       "use_item": "Sun Stone"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "attract": ["M"],
@@ -4351,7 +4351,7 @@
       "spd": 45,
       "spe": 48
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "ancientpower": ["L26"],
@@ -4452,7 +4452,7 @@
       "level": 39,
       "time_of_day": "day"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "ancientpower": ["L26"],
@@ -4544,7 +4544,7 @@
       "spd": 63,
       "spe": 46
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "ancientpower": ["L26"],
       "aquatail": ["T"],
@@ -4652,7 +4652,7 @@
       "level": 39,
       "time_of_day": "night"
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "ancientpower": ["L26"],
       "aquatail": ["T"],
@@ -4755,7 +4755,7 @@
     },
     "prevo": "Eevee",
     "evolution_data": { "method": "L", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "attract": ["M"],
       "babydolleyes": ["L9"],
@@ -4841,7 +4841,7 @@
       "spd": 63,
       "spe": 118
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "acrobatics": ["M"],
       "aerialace": ["L16"],
@@ -4956,7 +4956,7 @@
       "spd": 67,
       "spe": 101
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "aerialace": ["M"],
       "allyswitch": ["T"],
@@ -5046,7 +5046,7 @@
       "spd": 150,
       "spe": 50
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -5133,7 +5133,7 @@
       "spd": 75,
       "spe": 40
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "absorb": ["L5"],
       "acidarmor": ["E"],
@@ -5207,7 +5207,7 @@
     },
     "prevo": "Goomy",
     "evolution_data": { "method": "L", "condition": "", "level": 40 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "absorb": ["L1"],
       "attract": ["M"],
@@ -5278,7 +5278,7 @@
     },
     "prevo": "Sliggoo",
     "evolution_data": { "method": "L", "condition": "", "level": 50 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "absorb": ["L1"],
       "aquatail": ["L1"],
@@ -5371,7 +5371,7 @@
       "spd": 87,
       "spe": 75
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "astonish": ["L8"],
       "attract": ["M"],
@@ -5458,7 +5458,7 @@
       "spd": 60,
       "spe": 38
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "astonish": ["L5"],
@@ -5559,7 +5559,7 @@
     },
     "prevo": "Phantump",
     "evolution_data": { "method": "T", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "astonish": ["L1"],
@@ -5665,7 +5665,7 @@
       "spd": 55,
       "spe": 51
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "astonish": ["L1"],
@@ -5764,7 +5764,7 @@
     },
     "prevo": "Pumpkaboo",
     "evolution_data": { "method": "T", "condition": "" },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "allyswitch": ["T"],
       "astonish": ["L1"],
@@ -5859,7 +5859,7 @@
       "spd": 35,
       "spe": 28
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "attract": ["M"],
@@ -5943,7 +5943,7 @@
     },
     "prevo": "Bergmite",
     "evolution_data": { "method": "L", "condition": "", "level": 37 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "attract": ["M"],
@@ -6036,7 +6036,7 @@
       "spd": 40,
       "spe": 55
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "absorb": ["L5"],
       "acrobatics": ["M"],
@@ -6134,7 +6134,7 @@
     },
     "prevo": "Noibat",
     "evolution_data": { "method": "L", "condition": "", "level": 48 },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "absorb": ["L1"],
       "acrobatics": ["M"],
@@ -6239,7 +6239,7 @@
     },
     "cosmetic_formes": ["Xerneas-Neutral"],
     "battle_only_forme": true,
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {
       "aromatherapy": ["L1"],
       "aurorabeam": ["L10"],
@@ -6329,7 +6329,7 @@
       "spd": 98,
       "spe": 99
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {
       "acrobatics": ["M"],
       "aerialace": ["M"],
@@ -6419,7 +6419,7 @@
       "spd": 95,
       "spe": 95
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {
       "bind": ["L18"],
       "bite": ["L1"],
@@ -6508,7 +6508,7 @@
       "spd": 150,
       "spe": 50
     },
-    "tags": ["Mythical"],
+    "flags": ["Mythical"],
     "learnset": {
       "afteryou": ["T"],
       "ancientpower": ["L27"],
@@ -6601,7 +6601,7 @@
       "spd": 130,
       "spe": 70
     },
-    "tags": ["Mythical"],
+    "flags": ["Mythical"],
     "learnset": {
       "allyswitch": ["L1"],
       "astonish": ["L6"],
@@ -6715,7 +6715,7 @@
       "spd": 90,
       "spe": 70
     },
-    "tags": ["Mythical"],
+    "flags": ["Mythical"],
     "learnset": {
       "bodyslam": ["L46"],
       "brickbreak": ["M"],
@@ -6806,7 +6806,7 @@
       "spd": 81,
       "spe": 104
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "aegislashblade": {
@@ -6837,7 +6837,7 @@
       "spe": 60
     },
     "battle_only_forme": true,
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "pumpkaboosmall": {
@@ -6868,7 +6868,7 @@
       "spd": 55,
       "spe": 56
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "pumpkaboolarge": {
@@ -6899,7 +6899,7 @@
       "spd": 55,
       "spe": 46
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "pumpkaboosuper": {
@@ -6930,7 +6930,7 @@
       "spd": 55,
       "spe": 41
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gourgeistsmall": {
@@ -6961,7 +6961,7 @@
       "spd": 75,
       "spe": 99
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gourgeistlarge": {
@@ -6992,7 +6992,7 @@
       "spd": 75,
       "spe": 69
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "gourgeistsuper": {
@@ -7023,7 +7023,7 @@
       "spd": 75,
       "spe": 54
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "floetteeternal": {
@@ -7053,7 +7053,7 @@
       "spd": 128,
       "spe": 92
     },
-    "tags": [],
+    "flags": [],
     "learnset": {
       "afteryou": ["T"],
       "allyswitch": ["T"],
@@ -7124,7 +7124,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
-    "tags": ["Mythical"],
+    "flags": ["Mythical"],
     "learnset": {}
   },
   "hoopaunbound": {
@@ -7154,7 +7154,7 @@
       "spd": 130,
       "spe": 80
     },
-    "tags": ["Mythical"],
+    "flags": ["Mythical"],
     "learnset": {}
   },
   "greninjabattlebond": {
@@ -7184,7 +7184,7 @@
       "spd": 71,
       "spe": 122
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "greninjaash": {
@@ -7215,7 +7215,7 @@
       "spe": 132
     },
     "battle_only_forme": true,
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "zygarde10powerconstruct": {
@@ -7245,7 +7245,7 @@
       "spd": 85,
       "spe": 115
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "zygarde50powerconstruct": {
@@ -7275,7 +7275,7 @@
       "spd": 95,
       "spe": 95
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "zygardecomplete": {
@@ -7305,7 +7305,7 @@
       "spd": 95,
       "spe": 85
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   },
   "zygarde10": {
@@ -7335,7 +7335,7 @@
       "spd": 85,
       "spe": 115
     },
-    "tags": ["Restricted Legendary"],
+    "flags": ["Restricted Legendary"],
     "learnset": {}
   },
   "sliggoohisui": {
@@ -7366,7 +7366,7 @@
       "spd": 113,
       "spe": 40
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "goodrahisui": {
@@ -7397,7 +7397,7 @@
       "spd": 150,
       "spe": 60
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   },
   "avalugghisui": {
@@ -7428,7 +7428,7 @@
       "spd": 36,
       "spe": 38
     },
-    "tags": [],
+    "flags": [],
     "learnset": {}
   }
 }
