@@ -752,7 +752,7 @@ async fn calls_procedure_with_timeout() {
 
     assert_matches::assert_matches!(results.last(), Some(Err(err)) => {
         assert_matches::assert_matches!(err.downcast_ref::<InteractionError>(), Some(InteractionError::Canceled), "{err:?}");
-    }, "{err:?}");
+    }, "{:?}", results.last());
 
     caller_handle.cancel().unwrap();
     caller_join_handle.await.unwrap();
@@ -841,7 +841,7 @@ async fn call_cancellation_cancels_invocation() {
 
     assert_matches::assert_matches!(results.last(), Some(Err(err)) => {
         assert_matches::assert_matches!(err.downcast_ref::<InteractionError>(), Some(InteractionError::Canceled), "{err:?}");
-    }, "{err:?}");
+    }, "{:?}", results.last());
 
     caller_handle.cancel().unwrap();
     caller_join_handle.await.unwrap();
