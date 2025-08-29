@@ -112,7 +112,7 @@ fn validates_empty_teams_before_start() {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
             assert!(err.problems().contains(&"Validation failed for Player 2: Empty team is not allowed."), "{err:?}");
-        });
+        }, "{err:?}");
     });
 
     assert_matches::assert_matches!(
@@ -123,7 +123,7 @@ fn validates_empty_teams_before_start() {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(!err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
             assert!(err.problems().contains(&"Validation failed for Player 2: Empty team is not allowed."), "{err:?}");
-        });
+        }, "{err:?}");
     });
 
     assert_matches::assert_matches!(
@@ -146,7 +146,7 @@ fn validates_team_legality_during_update() {
         Err(err) => {
             assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
                 assert!(err.problems().contains(&"You may only bring up to 2 Mons (your team has 3)."), "{err:?}");
-            });
+            }, "{err:?}");
         }
     );
 
@@ -154,7 +154,7 @@ fn validates_team_legality_during_update() {
     assert_matches::assert_matches!(battle.start(), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
-        });
+        }, "{err:?}");
     });
 }
 

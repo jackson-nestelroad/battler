@@ -151,7 +151,7 @@ async fn peer_invokes_procedure_from_another_peer() {
             )
             .await,
         Err(err) => {
-            assert_matches::assert_matches!(err.downcast_ref::<BasicError>(), Some(BasicError::InvalidArgument(_)));
+            assert_matches::assert_matches!(err.downcast_ref::<BasicError>(), Some(BasicError::InvalidArgument(_)), "{err:?}");
             assert_eq!(err.to_string(), "invalid number of arguments");
         }
     );
@@ -166,7 +166,7 @@ async fn peer_invokes_procedure_from_another_peer() {
             )
             .await,
         Err(err) => {
-            assert_matches::assert_matches!(err.downcast_ref::<BasicError>(), Some(BasicError::InvalidArgument(_)));
+            assert_matches::assert_matches!(err.downcast_ref::<BasicError>(), Some(BasicError::InvalidArgument(_)), "{err:?}");
             assert_eq!(err.to_string(), "invalid arguments");
         }
     );
