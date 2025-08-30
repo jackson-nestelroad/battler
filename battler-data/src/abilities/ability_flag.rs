@@ -30,12 +30,9 @@ pub enum AbilityFlag {
     /// Cannot be overwritten by Worry Seed.
     #[string = "NoWorrySeed"]
     NoWorrySeed,
-    /// The ability is permanently applied to the Mon.
+    /// The ability is permanently applied to the Mon. It cannot be changed or suppressed.
     #[string = "Permanent"]
     Permanent,
-    /// The ability cannot be suppressed.
-    #[string = "Unsuppressible"]
-    Unsuppressible,
 }
 
 #[cfg(test)]

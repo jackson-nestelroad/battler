@@ -189,6 +189,8 @@ pub fn switch_in(
         )));
     }
 
+    let previous_team_position = context.mon().effective_team_position;
+
     let mon_handle = context.mon_handle();
     if let Some(previous_mon) = context.player().active_or_exited_mon_handle(position) {
         let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
@@ -212,8 +214,16 @@ pub fn switch_in(
             if !switch_out_internal(&mut context, true, true, false)? {
                 return Ok(false);
             }
+
+            context.mon_mut().effective_team_position = previous_team_position;
         }
     }
+
+    core_battle_effects::run_event_for_mon(
+        context,
+        fxlang::BattleEvent::SwitchingIn,
+        fxlang::VariableInput::default(),
+    );
 
     Mon::switch_in(context, position)?;
 
@@ -250,12 +260,6 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
     core_battle_effects::run_event_for_mon(
         context,
         fxlang::BattleEvent::SwitchIn,
-        fxlang::VariableInput::default(),
-    );
-
-    core_battle_effects::run_event_for_mon(
-        context,
-        fxlang::BattleEvent::EntryHazard,
         fxlang::VariableInput::default(),
     );
 
@@ -2909,7 +2913,7 @@ pub fn cure_status(
     )?;
 
     context.target_mut().status = None;
-    context.target_mut().status_state = fxlang::EffectState::new();
+    context.target_mut().status_state = fxlang::EffectState::default();
 
     core_battle_effects::run_event_for_applying_effect(
         context,
@@ -3694,7 +3698,7 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
         )?;
 
         context.battle_mut().field.weather = None;
-        context.battle_mut().field.weather_state = fxlang::EffectState::new();
+        context.battle_mut().field.weather_state = fxlang::EffectState::default();
     }
 
     if let Some(default_weather) = context.battle().field.default_weather.clone() {
@@ -3819,7 +3823,7 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
         )?;
 
         context.battle_mut().field.terrain = None;
-        context.battle_mut().field.terrain_state = fxlang::EffectState::new();
+        context.battle_mut().field.terrain_state = fxlang::EffectState::default();
     }
 
     if let Some(default_terrain) = context.battle().field.default_terrain.clone() {
@@ -4047,13 +4051,19 @@ pub fn set_ability(
 
     end_ability(context, silent)?;
 
-    let ability_order = context.battle_mut().next_ability_order();
     let ability = context.battle().dex.abilities.get_by_id(ability)?;
 
+    let effect_handle = context.effect_handle().clone();
+    let target_handle = context.target_handle();
+    let source_handle = context.source_handle();
     context.target_mut().ability = AbilitySlot {
         id: ability.id().clone(),
-        order: ability_order,
-        effect_state: fxlang::EffectState::new(),
+        effect_state: fxlang::EffectState::initial_effect_state(
+            context.as_battle_context_mut(),
+            Some(&effect_handle),
+            Some(target_handle),
+            source_handle,
+        )?,
     };
 
     start_ability(context, silent)?;
@@ -4071,12 +4081,15 @@ pub fn set_ability(
 ///
 /// Used to implement the move "Transform."
 pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target().transformed {
+    if context.target().transformed || context.target().illusion.is_some() {
         return Ok(false);
     }
 
     let target_context = context.as_battle_context_mut().mon_context(target)?;
-    if !target_context.mon().active || target_context.mon().transformed {
+    if !target_context.mon().active
+        || target_context.mon().transformed
+        || target_context.mon().illusion.is_some()
+    {
         return Ok(false);
     }
 
@@ -4111,6 +4124,30 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
 
     core_battle_logs::transform(context, target)?;
 
+    Ok(true)
+}
+
+/// Sets the illusion of the target of the effect to the given target.
+pub fn set_illusion(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
+    if context.target().illusion.is_some() {
+        return Ok(false);
+    }
+    let illusion = Mon::physical_details(&context.as_battle_context_mut().mon_context(target)?)?;
+    context.target_mut().illusion = Some(illusion);
+
+    // We should not announce that we are starting an illusion. It is assumed that illusions only
+    // start before switching in.
+
+    Ok(true)
+}
+
+/// Ends the target's illusion.
+pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
+    if context.target().illusion.is_none() {
+        return Ok(false);
+    }
+    context.target_mut().illusion = None;
+    core_battle_logs::replace(&mut context.target_context()?)?;
     Ok(true)
 }
 

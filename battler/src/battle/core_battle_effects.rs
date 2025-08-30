@@ -1446,6 +1446,7 @@ struct SpeedOrderableCallbackHandle {
     pub priority: i32,
     pub speed: u32,
     pub sub_order: u32,
+    pub effect_order: u32,
 }
 
 impl SpeedOrderableCallbackHandle {
@@ -1456,6 +1457,7 @@ impl SpeedOrderableCallbackHandle {
             priority: 0,
             speed,
             sub_order: 0,
+            effect_order: 0,
         }
     }
 }
@@ -1480,26 +1482,38 @@ impl SpeedOrderable for SpeedOrderableCallbackHandle {
     fn sub_order(&self) -> u32 {
         self.sub_order
     }
+
+    fn effect_order(&self) -> u32 {
+        self.effect_order
+    }
 }
 
 fn get_speed_orderable_effect_handle_internal(
     context: &mut Context,
+    event: fxlang::BattleEvent,
     callback_handle: CallbackHandle,
 ) -> Result<Option<SpeedOrderableCallbackHandle>> {
     // Ensure the effect is not ending.
-    if let Some(effect_state) = callback_handle
+    let effect_order = if let Some(effect_state) = callback_handle
         .applied_effect_handle
         .effect_state_connector()
+        && effect_state.exists(context)?
     {
-        if effect_state.exists(context).unwrap_or(false) {
-            if effect_state
-                .get_mut(context)
-                .is_ok_and(|effect_state| effect_state.ending())
-            {
-                return Ok(None);
-            }
+        let effect_state = effect_state.get_mut(context)?;
+        if effect_state.ending() {
+            return Ok(None);
         }
-    }
+
+        effect_state.effect_order()
+    } else {
+        0
+    };
+
+    let effect_order = if event.order_using_effect_order() {
+        effect_order
+    } else {
+        0
+    };
 
     let speed = callback_handle.speed(context)?;
 
@@ -1521,14 +1535,16 @@ fn get_speed_orderable_effect_handle_internal(
     result.order = callback.order();
     result.priority = callback.priority();
     result.sub_order = callback.sub_order();
+    result.effect_order = effect_order;
     Ok(Some(result))
 }
 
 fn get_speed_orderable_effect_handle(
     context: &mut Context,
+    event: fxlang::BattleEvent,
     callback_handle: CallbackHandle,
 ) -> Result<Option<SpeedOrderableCallbackHandle>> {
-    match get_speed_orderable_effect_handle_internal(context, callback_handle.clone())? {
+    match get_speed_orderable_effect_handle_internal(context, event, callback_handle.clone())? {
         Some(handle) => Ok(Some(handle)),
         None => {
             if callback_handle.event.force_default_callback() {
@@ -1542,12 +1558,13 @@ fn get_speed_orderable_effect_handle(
 
 fn filter_and_order_effects_for_event(
     context: &mut Context,
+    event: fxlang::BattleEvent,
     callback_handles: Vec<CallbackHandle>,
 ) -> Result<Vec<CallbackHandle>> {
     let mut speed_orderable_handles = Vec::new();
     speed_orderable_handles.reserve(callback_handles.len());
     for effect_handle in callback_handles {
-        match get_speed_orderable_effect_handle(context, effect_handle)? {
+        match get_speed_orderable_effect_handle(context, event, effect_handle)? {
             Some(handle) => speed_orderable_handles.push(handle),
             None => (),
         }
@@ -2023,7 +2040,7 @@ fn run_event_with_errors(
             ));
         }
     }
-    let mut callbacks = filter_and_order_effects_for_event(context, callbacks)?;
+    let mut callbacks = filter_and_order_effects_for_event(context, event, callbacks)?;
     callbacks.dedup();
 
     match target {

@@ -25,12 +25,13 @@ use crate::{
 /// The persisted state of an individual [`Effect`][`crate::effect::Effect`].
 ///
 /// Allows fxlang variables to be persisted across multiple callbacks.
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct EffectState {
     initialized: bool,
     values: HashMap<String, Value>,
     linked_id: Option<Uuid>,
     linked_to: Vec<Uuid>,
+    effect_order: u32,
 }
 
 impl EffectState {
@@ -50,7 +51,7 @@ impl EffectState {
         target: Option<MonHandle>,
         source: Option<MonHandle>,
     ) -> Result<Self> {
-        let mut effect_state = Self::new();
+        let mut effect_state = Self::default();
         effect_state.initialize(context, source_effect, target, source)?;
         Ok(effect_state)
     }
@@ -63,6 +64,8 @@ impl EffectState {
         target: Option<MonHandle>,
         source: Option<MonHandle>,
     ) -> Result<()> {
+        self.effect_order = context.battle_mut().next_effect_order();
+
         if let Some(source_effect) = source_effect {
             self.set_source_effect(source_effect.stable_effect_handle(context)?);
         }
@@ -77,24 +80,9 @@ impl EffectState {
                 self.set_source_position(source_position)?;
             }
         }
+
         self.initialized = true;
         Ok(())
-    }
-
-    /// Creates a new, default instance.
-    ///
-    /// Prefer [`Self::initial_effect_state`] as much as possible, since callbacks can rely on
-    /// consistency between effect states.
-    ///
-    /// TODO: All calls to this should be migrated to an equivalent `initial_effect_state` call on
-    /// battle initialization.
-    pub fn new() -> Self {
-        Self {
-            initialized: false,
-            values: HashMap::default(),
-            linked_id: None,
-            linked_to: Vec::new(),
-        }
     }
 
     /// Returns true if the state is initialized.
@@ -254,6 +242,16 @@ impl EffectState {
     /// Adds the unique ID of a linked effect.
     pub fn add_link(&mut self, linked_id: Uuid) {
         self.linked_to.push(linked_id);
+    }
+
+    /// The effect order.
+    pub fn effect_order(&self) -> u32 {
+        self.effect_order
+    }
+
+    /// Updates the effect order.
+    pub fn set_effect_order(&mut self, effect_order: u32) {
+        self.effect_order = effect_order;
     }
 }
 

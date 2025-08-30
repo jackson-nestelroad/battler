@@ -22,7 +22,7 @@
   "corrosion": { "name": "Corrosion", "flags": [] },
   "comatose": {
     "name": "Comatose",
-    "flags": ["Unsuppressible", "Permanent"],
+    "flags": ["Permanent"],
     "effect": {
       "callbacks": {
         "is_asleep": ["return true"]
@@ -37,8 +37,8 @@
   "dazzling": { "name": "Dazzling", "flags": [] },
   "soulheart": { "name": "Soul-Heart", "flags": [] },
   "tanglinghair": { "name": "Tangling Hair", "flags": [] },
-  "receiver": { "name": "Receiver", "flags": ["Permanent"] },
-  "powerofalchemy": { "name": "Power of Alchemy", "flags": ["Permanent"] },
+  "receiver": { "name": "Receiver", "flags": [] },
+  "powerofalchemy": { "name": "Power of Alchemy", "flags": [] },
   "beastboost": { "name": "Beast Boost", "flags": [] },
   "rkssystem": { "name": "RKS System", "flags": ["Permanent"] },
   "electricsurge": { "name": "Electric Surge", "flags": [] },

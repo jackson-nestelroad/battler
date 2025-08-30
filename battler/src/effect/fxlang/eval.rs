@@ -888,6 +888,9 @@ where
                             "damaged_this_turn" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.damaged_this_turn)
                             }
+                            "illusion" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.illusion.is_some())
+                            }
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -1028,16 +1031,23 @@ where
                             "can_escape" => ValueRef::Boolean(Player::can_escape(
                                 &context.battle_context_mut().player_context(player)?,
                             )),
-                            "mons" | "team" => ValueRef::TempList(
+                            "team" => ValueRef::TempList(
                                 context
                                     .battle_context_mut()
                                     .player_context(player)?
                                     .player()
-                                    .mons
-                                    .iter()
-                                    .cloned()
-                                    .map(|mon| ValueRefToStoredValue::new(None, ValueRef::Mon(mon)))
+                                    .mon_handles()
+                                    .map(|mon| {
+                                        ValueRefToStoredValue::new(None, ValueRef::Mon(*mon))
+                                    })
                                     .collect(),
+                            ),
+                            "team_by_effective_position" => ValueRef::TempList(
+                                Player::mon_handles_by_effective_position(
+                                    &context.battle_context_mut().player_context(player)?,
+                                )?
+                                .map(|mon| ValueRefToStoredValue::new(None, ValueRef::Mon(mon)))
+                                .collect(),
                             ),
                             "wild_encounter_type" => Player::wild_encounter_type(
                                 &mut context.battle_context_mut().player_context(player)?,
@@ -1585,6 +1595,7 @@ enum ProgramStatementEvalResult<'program> {
     ForEachStatement(&'program str, &'program tree::Value),
     ReturnStatement(Option<Value>),
     ContinueStatement,
+    BreakStatement,
 }
 
 /// The result of evaluating a [`ParsedProgram`].
@@ -1863,6 +1874,9 @@ impl<'event_state> Evaluator<'event_state> {
                             ProgramStatementEvalResult::ContinueStatement => {
                                 continue;
                             }
+                            ProgramStatementEvalResult::BreakStatement => {
+                                break;
+                            }
                             _ => (),
                         }
                     }
@@ -1887,7 +1901,8 @@ impl<'event_state> Evaluator<'event_state> {
         for block in blocks {
             match self.evaluate_program_block(context, block, &state)? {
                 result @ ProgramStatementEvalResult::ReturnStatement(_)
-                | result @ ProgramStatementEvalResult::ContinueStatement => {
+                | result @ ProgramStatementEvalResult::ContinueStatement
+                | result @ ProgramStatementEvalResult::BreakStatement => {
                     // Early return.
                     return Ok(result);
                 }
@@ -1999,6 +2014,7 @@ impl<'event_state> Evaluator<'event_state> {
                 ))
             }
             tree::Statement::Continue(_) => Ok(ProgramStatementEvalResult::ContinueStatement),
+            tree::Statement::Break(_) => Ok(ProgramStatementEvalResult::BreakStatement),
         }
     }
 

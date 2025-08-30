@@ -61,7 +61,7 @@
           "program": [
             "if $mon.transformed and func_call(ability_has_flag: $mon.ability notransform):",
             ["return true"],
-            "if func_call(ability_has_flag: $mon.ability unsuppressible):",
+            "if func_call(ability_has_flag: $mon.ability permanent):",
             ["return false"]
           ]
         },

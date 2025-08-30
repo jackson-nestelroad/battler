@@ -227,6 +227,10 @@ pub struct ReturnStatement(pub Option<Expr>);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ContinueStatement;
 
+/// BreakStatement -> "break"
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BreakStatement;
+
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
 /// ForEachStatement | ReturnStatement
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -239,4 +243,5 @@ pub enum Statement {
     ForEachStatement(ForEachStatement),
     ReturnStatement(ReturnStatement),
     Continue(ContinueStatement),
+    Break(BreakStatement),
 }

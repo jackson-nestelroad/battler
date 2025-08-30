@@ -80,21 +80,31 @@ use crate::{
     teams::MonData,
 };
 
-/// Public [`Mon`] details, which are shared to both sides of a battle when the Mon
-/// appears or during Team Preview.
-pub struct PublicMonDetails {
+/// The physical details of a [`Mon`].
+///
+/// Copied by "Illusion."
+#[derive(Debug, Clone)]
+pub struct PhysicalMonDetails {
+    pub name: String,
     pub species: String,
-    pub level: u8,
     pub gender: Gender,
     pub shiny: bool,
 }
 
+/// Public [`Mon`] details, which are shared to both sides of a battle when the Mon
+/// appears or during Team Preview.
+#[derive(Debug, Clone)]
+pub struct PublicMonDetails {
+    pub physical_details: PhysicalMonDetails,
+    pub level: u8,
+}
+
 impl BattleLoggable for PublicMonDetails {
     fn log(&self, entry: &mut UncommittedBattleLogEntry) {
-        entry.set("species", self.species.clone());
+        entry.set("species", self.physical_details.species.clone());
         entry.set("level", self.level);
-        entry.set("gender", &self.gender);
-        if self.shiny {
+        entry.set("gender", &self.physical_details.gender);
+        if self.physical_details.shiny {
             entry.add_flag("shiny");
         }
     }
@@ -102,9 +112,9 @@ impl BattleLoggable for PublicMonDetails {
 
 /// Public details for an active [`Mon`], which are shared to both sides of a battle when the Mon
 /// appears in the battle.
+#[derive(Debug, Clone)]
 pub struct ActiveMonDetails {
     pub public_details: PublicMonDetails,
-    pub name: String,
     pub player_id: String,
     pub side_position: usize,
     pub health: String,
@@ -115,7 +125,7 @@ impl BattleLoggable for ActiveMonDetails {
     fn log(&self, entry: &mut UncommittedBattleLogEntry) {
         entry.set("player", self.player_id.clone());
         entry.set("position", self.side_position);
-        entry.set("name", self.name.clone());
+        entry.set("name", self.public_details.physical_details.name.clone());
         entry.set("health", &self.health);
         if !self.status.is_empty() {
             entry.set("status", &self.status);
@@ -187,7 +197,6 @@ impl MoveSlot {
 #[derive(Clone)]
 pub struct AbilitySlot {
     pub id: Id,
-    pub order: u32,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -279,6 +288,7 @@ pub struct MonBattleData {
     pub types: Vec<Type>,
     pub active: bool,
     pub player_team_position: usize,
+    pub player_effective_team_position: usize,
     pub player_active_position: Option<usize>,
     pub side_position: Option<usize>,
     pub stats: PartialStatTable,
@@ -386,7 +396,12 @@ pub struct Mon {
     pub active_move_actions: u32,
     pub active_position: Option<usize>,
     pub old_active_position: Option<usize>,
+
+    /// The position on the player's team when the battle started.
     pub team_position: usize,
+
+    /// The position on the player's team considering switches throughout the battle.
+    pub effective_team_position: usize,
 
     pub base_stored_stats: StatTable,
     pub stats: StatTable,
@@ -431,6 +446,7 @@ pub struct Mon {
     pub cannot_receive_items: bool,
     pub can_mega_evo: bool,
     pub transformed: bool,
+    pub illusion: Option<PhysicalMonDetails>,
 
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
@@ -506,14 +522,13 @@ impl Mon {
 
         let ability = AbilitySlot {
             id: Id::from(data.ability),
-            order: 0,
-            effect_state: fxlang::EffectState::new(),
+            effect_state: fxlang::EffectState::default(),
         };
 
         let item = match data.item {
             Some(item) => Some(ItemSlot {
                 id: Id::from(item),
-                effect_state: fxlang::EffectState::new(),
+                effect_state: fxlang::EffectState::default(),
             }),
             None => None,
         };
@@ -542,6 +557,7 @@ impl Mon {
             active_position: None,
             old_active_position: None,
             team_position,
+            effective_team_position: team_position,
 
             base_stored_stats: StatTable::default(),
             stats: StatTable::default(),
@@ -586,6 +602,7 @@ impl Mon {
             cannot_receive_items: false,
             can_mega_evo: false,
             transformed: false,
+            illusion: None,
 
             active_move: None,
             last_move_selected: None,
@@ -603,7 +620,7 @@ impl Mon {
             received_attacks: Vec::new(),
 
             status,
-            status_state: fxlang::EffectState::new(),
+            status_state: fxlang::EffectState::default(),
             volatiles: HashMap::default(),
 
             learnable_moves: Vec::new(),
@@ -700,8 +717,12 @@ impl Mon {
         format!("{}/{}", self.hp, self.max_hp)
     }
 
-    /// The public details for the Mon.
-    pub fn public_details(context: &MonContext) -> Result<PublicMonDetails> {
+    /// The physical details for the Mon.
+    pub fn physical_details(context: &MonContext) -> Result<PhysicalMonDetails> {
+        if let Some(illusion) = context.mon().illusion.clone() {
+            return Ok(illusion);
+        }
+
         let species = context
             .battle()
             .dex
@@ -710,11 +731,19 @@ impl Mon {
             .data
             .name
             .clone();
-        Ok(PublicMonDetails {
+        Ok(PhysicalMonDetails {
+            name: context.mon().name.clone(),
             species,
-            level: context.mon().level,
             gender: context.mon().gender.clone(),
             shiny: context.mon().shiny,
+        })
+    }
+
+    /// The public details for the Mon.
+    pub fn public_details(context: &MonContext) -> Result<PublicMonDetails> {
+        Ok(PublicMonDetails {
+            physical_details: Self::physical_details(context)?,
+            level: context.mon().level,
         })
     }
 
@@ -727,7 +756,6 @@ impl Mon {
         };
         Ok(ActiveMonDetails {
             public_details: Self::public_details(context)?,
-            name: context.mon().name.clone(),
             player_id: context.player().id.clone(),
             side_position: Self::position_on_side(context)
                 .wrap_expectation("expected mon to be active")?
@@ -751,10 +779,17 @@ impl Mon {
         Self::active_details(context, true)
     }
 
+    fn public_name(&self) -> &str {
+        match &self.illusion {
+            Some(illusion) => &illusion.name,
+            None => &self.name,
+        }
+    }
+
     /// The public details for the Mon when an action is made.
     pub fn position_details(context: &MonContext) -> Result<MonPositionDetails> {
         Ok(MonPositionDetails {
-            name: context.mon().name.clone(),
+            name: context.mon().public_name().to_owned(),
             player_id: context.player().id.clone(),
             side_position: Self::position_on_side(context).map(|position| position + 1),
         })
@@ -764,7 +799,7 @@ impl Mon {
     /// the Mon.
     pub fn position_details_or_previous(context: &MonContext) -> Result<MonPositionDetails> {
         Ok(MonPositionDetails {
-            name: context.mon().name.clone(),
+            name: context.mon().public_name().to_owned(),
             player_id: context.player().id.clone(),
             side_position: Self::position_on_side_or_previous(context).map(|position| position + 1),
         })
@@ -1283,6 +1318,7 @@ impl Mon {
             types: context.mon().types.clone(),
             active: context.mon().active,
             player_team_position: context.mon().team_position,
+            player_effective_team_position: context.mon().effective_team_position,
             player_active_position: context.mon().active_position,
             side_position,
             stats: context.mon().stats.without_hp(),
@@ -1501,6 +1537,8 @@ impl Mon {
 
         context.mon_mut().volatiles.clear();
 
+        context.mon_mut().illusion = None;
+
         let species = context.mon().base_species.clone();
         Self::set_species(context, &Id::from(species))?;
         Ok(())
@@ -1611,7 +1649,6 @@ impl Mon {
         let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
         context.mon_mut().base_ability = AbilitySlot {
             id: ability.id().clone(),
-            order: 0,
             effect_state: fxlang::EffectState::initial_effect_state(
                 context.as_battle_context_mut(),
                 Some(&EffectHandle::Condition(Id::from_known("start"))),
@@ -1742,6 +1779,7 @@ impl Mon {
         context.mon_mut().active_move_actions = 0;
         context.mon_mut().active_position = Some(position);
         context.mon_mut().newly_switched = true;
+        context.mon_mut().effective_team_position = position;
 
         let mon_handle = context.mon_handle();
         context
@@ -1751,8 +1789,24 @@ impl Mon {
         for move_slot in &mut context.mon_mut().move_slots {
             move_slot.used = false;
         }
-        let ability_order = context.battle_mut().next_ability_order();
-        context.mon_mut().ability.order = ability_order;
+
+        let ability_order = context.battle_mut().next_effect_order();
+        context
+            .mon_mut()
+            .ability
+            .effect_state
+            .set_effect_order(ability_order);
+
+        if context.mon().item.is_some() {
+            let item_order = context.battle_mut().next_effect_order();
+            context
+                .mon_mut()
+                .item
+                .as_mut()
+                .wrap_expectation("expected item")?
+                .effect_state
+                .set_effect_order(item_order);
+        }
         Ok(())
     }
 

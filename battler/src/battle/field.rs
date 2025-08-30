@@ -111,9 +111,9 @@ impl Field {
             environment: data.environment,
             time: data.time,
             weather: None,
-            weather_state: fxlang::EffectState::new(),
+            weather_state: fxlang::EffectState::default(),
             terrain: None,
-            terrain_state: fxlang::EffectState::new(),
+            terrain_state: fxlang::EffectState::default(),
             pseudo_weathers: HashMap::default(),
         }
     }

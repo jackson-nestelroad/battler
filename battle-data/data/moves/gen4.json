@@ -622,7 +622,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if func_call(ability_has_flag: $target.ability unsuppressible):",
+          "if func_call(ability_has_flag: $target.ability permanent):",
           ["return false"]
         ]
       }
@@ -632,7 +632,7 @@
         "suppress_mon_ability": ["if $effect_state.started:", ["return true"]],
         "on_start": ["end_ability"],
         "on_copy_volatile": [
-          "if func_call(ability_has_flag: $target.ability unsuppressible):",
+          "if func_call(ability_has_flag: $target.ability permanent):",
           ["return false"]
         ],
         "on_end": [
@@ -876,7 +876,7 @@
           "log_side_start: str('count:{}', $effect_state.layers)",
           "return true"
         ],
-        "on_entry_hazard": [
+        "on_switch_in": [
           "if !$mon.is_grounded:",
           ["return"],
           "if func_call(has_type: $mon poison):",
@@ -1817,7 +1817,7 @@
     "condition": {
       "callbacks": {
         "on_side_start": ["log_side_start"],
-        "on_entry_hazard": [
+        "on_switch_in": [
           "if $mon.is_immune_to_entry_hazards:",
           ["return"],
           "$type_modifier = func_call(type_modifier: $mon)",

@@ -94,6 +94,7 @@ mod abilities {
     }
 
     mod gen5 {
+        mod illusion_test;
         mod prankster_test;
     }
 

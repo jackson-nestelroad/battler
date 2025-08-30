@@ -447,9 +447,12 @@ pub struct Player {
     /// List of Mons registered by the player.
     ///
     /// Only used for record keeping between team updates.
-    pub registered_mons: Vec<MonHandle>,
+    registered_mons: Vec<MonHandle>,
+
     /// The player's current team.
-    pub mons: Vec<MonHandle>,
+    mons: Vec<MonHandle>,
+
+    /// The active Mons.
     active: Vec<Option<MonHandle>>,
     /// A mirror of the above list, but exited Mons are not unset.
     ///
@@ -659,6 +662,23 @@ impl Player {
         self.mons.iter()
     }
 
+    /// The number of Mons on the player's team.
+    pub fn team_size(&self) -> usize {
+        self.mons.len()
+    }
+
+    /// Creates an iterator over all Mons, ordered by effective position.
+    pub fn mon_handles_by_effective_position<'p, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'_, 'c, 'b, 'd>,
+    ) -> Result<impl Iterator<Item = MonHandle>> {
+        let mut mons = Vec::new();
+        for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
+            mons.push((mon, context.mon(mon)?.effective_team_position));
+        }
+        mons.sort_by(|(_, a), (_, b)| a.cmp(b));
+        Ok(mons.into_iter().map(|(mon, _)| mon))
+    }
+
     /// Creates an iterator over all inactive Mons.
     pub fn inactive_mon_handles<'p, 'c, 'b, 'd>(
         context: &'p PlayerContext<'_, 'c, 'b, 'd>,
@@ -745,6 +765,16 @@ impl Player {
 
 // Battle logic.
 impl Player {
+    /// Clears the player's team.
+    pub fn clear_team(&mut self) {
+        self.mons.clear();
+    }
+
+    /// Adds a Mon to the player's team.
+    pub fn add_mon_to_team(&mut self, mon: MonHandle) {
+        self.mons.push(mon);
+    }
+
     /// Makes a new request on the player.
     pub fn make_request(&mut self, request: Request) {
         self.request = Some(request);

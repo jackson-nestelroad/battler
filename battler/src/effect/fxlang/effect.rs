@@ -521,11 +521,6 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "EndBattle"]
     EndBattle,
-    /// Runs when a Mon is affected by an entry hazard.
-    ///
-    /// Runs in the context of a Mon.
-    #[string = "EntryHazard"]
-    EntryHazard,
     /// Runs when a Mon exits the battle (is no longer active).
     ///
     /// Runs in the context of a Mon.
@@ -989,6 +984,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "SwitchIn"]
     SwitchIn,
+    /// Runs when a Mon is switching in, prior to `SwitchIn`.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "SwitchingIn"]
+    SwitchingIn,
     /// Runs when a Mon is switching out.
     ///
     /// Runs in the context of a Mon.
@@ -1183,7 +1183,6 @@ impl BattleEvent {
             Self::EatItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::EndBattle => CommonCallbackType::MonVoid as u32,
-            Self::EntryHazard => CommonCallbackType::MonVoid as u32,
             Self::Exit => CommonCallbackType::MonVoid as u32,
             Self::Faint => CommonCallbackType::MaybeApplyingEffectVoid as u32,
             Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
@@ -1270,6 +1269,7 @@ impl BattleEvent {
             Self::SuppressMonTerrain => CommonCallbackType::MonResult as u32,
             Self::SuppressMonWeather => CommonCallbackType::MonResult as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
+            Self::SwitchingIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchOut => CommonCallbackType::MonVoid as u32,
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TrapMon => CommonCallbackType::MonResult as u32,
@@ -1483,6 +1483,15 @@ impl BattleEvent {
         match self {
             Self::FieldStart | Self::SideStart | Self::SlotStart | Self::Start => true,
             Self::FieldResidual | Self::SideResidual | Self::Residual => true,
+            _ => false,
+        }
+    }
+
+    /// Whether or not to use the effect's order (on its
+    /// [`EffectState`][`crate::effect::fxlang::EffectState`]) when ordering callbacks.
+    pub fn order_using_effect_order(&self) -> bool {
+        match self {
+            Self::Residual | Self::SwitchIn => true,
             _ => false,
         }
     }

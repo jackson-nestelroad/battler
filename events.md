@@ -30,8 +30,8 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. For each Mon in speed order:
       1. `BeforeSwitchIn`.
    1. For each Mon in speed order:
+      1. `SwitchingIn`.
       1. `SwitchIn`.
-      1. `EntryHazard`.
       1. Ability `Start`.
       1. Item `Start`.
 
@@ -89,7 +89,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Mon Caught
 
 1. Give out experience.
-1. Caught Mon pExit`.
+1. Caught Mon `Exit`.
 1. Ability `End`.
 1. Clear volatile effects.
 1. Switch out.

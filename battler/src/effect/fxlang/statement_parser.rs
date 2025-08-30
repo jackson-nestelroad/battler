@@ -60,6 +60,7 @@ pub(crate) enum Token {
     HasAnyKeyword,
     StrKeyword,
     ContinueKeyword,
+    BreakKeyword,
 }
 
 mod byte {
@@ -427,6 +428,7 @@ mod token {
                 "hasany" => Token::HasAnyKeyword,
                 "str" => Token::StrKeyword,
                 "continue" => Token::ContinueKeyword,
+                "break" => Token::BreakKeyword,
                 _ => Token::Identifier,
             }
         }
@@ -626,6 +628,7 @@ impl<'s> StatementParser<'s> {
             Some(Token::ContinueKeyword) => {
                 Ok(tree::Statement::Continue(self.parse_continue_statement()?))
             }
+            Some(Token::BreakKeyword) => Ok(tree::Statement::Break(self.parse_break_statement()?)),
             _ => Err(self.unexpected_token_error()),
         }
     }
@@ -705,6 +708,11 @@ impl<'s> StatementParser<'s> {
     fn parse_continue_statement(&mut self) -> Result<tree::ContinueStatement> {
         self.token_parser.consume_lexeme();
         Ok(tree::ContinueStatement)
+    }
+
+    fn parse_break_statement(&mut self) -> Result<tree::BreakStatement> {
+        self.token_parser.consume_lexeme();
+        Ok(tree::BreakStatement)
     }
 
     fn parse_function_call(&mut self) -> Result<tree::FunctionCall> {

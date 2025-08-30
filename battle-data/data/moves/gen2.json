@@ -539,7 +539,7 @@
           "log_side_start: str('count:{}', $effect_state.layers)",
           "return true"
         ],
-        "on_entry_hazard": [
+        "on_switch_in": [
           "if !$mon.is_grounded or $mon.is_immune_to_entry_hazards:",
           ["return"],
           "if $effect_state.layers == 1:",

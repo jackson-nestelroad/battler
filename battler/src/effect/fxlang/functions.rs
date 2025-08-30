@@ -147,6 +147,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "end_ability" => end_ability(context).map(|()| None),
+        "end_illusion" => end_illusion(context).map(|val| Some(val)),
         "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
@@ -241,6 +242,7 @@ pub fn run_function(
         "remove_slot_condition" => remove_slot_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
         "restore_pp" => restore_pp(context).map(|val| Some(val)),
+        "reverse" => reverse(context).map(|val| Some(val)),
         "revive" => revive(context).map(|val| Some(val)),
         "run_event" => run_event(context).map(|val| Some(val)),
         "run_event_for_each_active_mon" => run_event_for_each_active_mon(context).map(|()| None),
@@ -258,6 +260,7 @@ pub fn run_function(
         "set_boost" => set_boost(context).map(|val| Some(val)),
         "set_friendship" => set_friendship(context).map(|()| None),
         "set_hp" => set_hp(context).map(|val| Some(val)),
+        "set_illusion" => set_illusion(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
         "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
@@ -2673,6 +2676,30 @@ fn transform_into(mut context: FunctionContext) -> Result<Value> {
     .map(|val| Value::Boolean(val))
 }
 
+fn set_illusion(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let transform_into_handle = context
+        .pop_front()
+        .wrap_expectation("missing illusion target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid illusion target")?;
+
+    core_battle_actions::set_illusion(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        transform_into_handle,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn end_illusion(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+
+    core_battle_actions::end_illusion(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
 fn can_escape(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Mon::can_escape(&mut context.mon_context(mon_handle)?).map(|val| Value::Boolean(val))
@@ -2807,6 +2834,16 @@ fn index(mut context: FunctionContext) -> Result<Option<Value>> {
         .integer_usize()
         .wrap_error_with_message("invalid index")?;
     Ok(list.get(index).cloned())
+}
+
+fn reverse(mut context: FunctionContext) -> Result<Value> {
+    let mut list = context
+        .pop_front()
+        .wrap_expectation("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    list.reverse();
+    Ok(Value::List(list))
 }
 
 fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value> {

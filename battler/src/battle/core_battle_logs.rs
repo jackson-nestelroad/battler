@@ -193,6 +193,10 @@ pub fn species_change(context: &mut MonContext) -> Result<()> {
     full_mon_details(context, "specieschange")
 }
 
+pub fn replace(context: &mut MonContext) -> Result<()> {
+    full_mon_details(context, "replace")
+}
+
 pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
     let species = context
         .battle()

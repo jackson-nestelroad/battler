@@ -713,7 +713,7 @@
   },
   "multitype": {
     "name": "Multitype",
-    "flags": ["Permanent", "Unsuppressible"],
+    "flags": ["Permanent"],
     "effect": {
       "callbacks": {
         "on_types": {

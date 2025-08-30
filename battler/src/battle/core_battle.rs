@@ -247,7 +247,7 @@ pub struct CoreBattle<'d> {
     in_pre_battle: bool,
     ending: bool,
     ended: bool,
-    next_ability_order: u32,
+    next_effect_order: u32,
     next_forfeit_order: u32,
     last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
@@ -333,7 +333,7 @@ impl<'d> CoreBattle<'d> {
             in_pre_battle: false,
             ending: false,
             ended: false,
-            next_ability_order: 0,
+            next_effect_order: 0,
             next_forfeit_order: 0,
             last_move_log: None,
             last_move: None,
@@ -453,9 +453,8 @@ impl<'d> CoreBattle<'d> {
         side: usize,
     ) -> impl Iterator<Item = MonHandle> + 'b {
         self.players_on_side(side)
-            .map(|player| player.mons.iter())
+            .map(|player| player.mon_handles().cloned())
             .flatten()
-            .cloned()
     }
 
     fn active_positions_on_side<'b>(
@@ -497,9 +496,9 @@ impl<'d> CoreBattle<'d> {
             .collect())
     }
 
-    pub fn next_ability_order(&mut self) -> u32 {
-        let next = self.next_ability_order;
-        self.next_ability_order += 1;
+    pub fn next_effect_order(&mut self) -> u32 {
+        let next = self.next_effect_order;
+        self.next_effect_order += 1;
         next
     }
 
@@ -731,10 +730,10 @@ impl<'d> CoreBattle<'d> {
             context,
             fxlang::BattleEvent::ValidateTeam,
         );
-        if context.player().mons.is_empty() {
+        if context.player().team_size() == 0 {
             problems.push("Empty team is not allowed.".to_owned());
         }
-        for mon in context.player().mons.clone() {
+        for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
             let mut context = context.mon_context(mon)?;
 
             let mut mon_problems = core_battle_effects::run_event_for_mon_expecting_string_list(
@@ -929,7 +928,7 @@ impl<'d> CoreBattle<'d> {
                 battle_log_entry!(
                     "teamsize",
                     ("player", &player.id),
-                    ("size", player.mons.len()),
+                    ("size", player.team_size()),
                 )
             })
             .collect::<Vec<_>>();
@@ -1259,10 +1258,10 @@ impl<'d> CoreBattle<'d> {
             Action::Team(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
                 if action.index == 0 {
-                    context.player_mut().mons.clear();
+                    context.player_mut().clear_team();
                 }
                 context.mon_mut().team_position = action.index;
-                context.player_mut().mons.push(action.mon_action.mon);
+                context.player_mut().add_mon_to_team(action.mon_action.mon);
             }
             Action::Switch(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
@@ -1850,7 +1849,7 @@ impl<'d> CoreBattle<'d> {
                 }
                 let team_slot = (-target_location) as usize;
                 let team_slot = team_slot - 1;
-                Ok(team_slot < context.player().mons.len())
+                Ok(team_slot < context.player().team_size())
             }
             ItemTarget::Active => Ok(false),
             ItemTarget::Foe => {

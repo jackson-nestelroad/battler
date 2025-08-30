@@ -41,7 +41,31 @@
   "analytic": { "name": "Analytic", "flags": [] },
   "illusion": {
     "name": "Illusion",
-    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
+    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_switching_in": [
+          "foreach $target in func_call(reverse: $mon.player.team_by_effective_position):",
+          [
+            "if $target.exited:",
+            ["continue"],
+            "set_illusion: $mon $target",
+            "break"
+          ]
+        ],
+        "on_damaging_hit": [
+          "if !$target.illusion:",
+          ["return"],
+          "end_ability: $target silent"
+        ],
+        "on_end": [
+          "if !$target.illusion:",
+          ["return"],
+          "end_illusion: $target",
+          "log_end"
+        ]
+      }
+    }
   },
   "imposter": { "name": "Imposter", "flags": ["NoRolePlay", "NoTrace"] },
   "infiltrator": {

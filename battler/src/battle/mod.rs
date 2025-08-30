@@ -94,6 +94,7 @@ pub use mon::{
     MonPositionDetails,
     MonSummaryData,
     MoveSlot,
+    PhysicalMonDetails,
     PublicMonDetails,
     ReceivedAttackEntry,
 };

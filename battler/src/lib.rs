@@ -22,7 +22,6 @@ pub mod teams;
 // In theory, everything is public, but everything re-exported at the root level is intended
 // for users.
 pub use battle::{
-    ActiveMonDetails,
     BattleType,
     CoreBattleEngineOptions,
     CoreBattleEngineRandomizeBaseDamage,
@@ -44,7 +43,6 @@ pub use battle::{
     PlayerOptions,
     PlayerType,
     PublicCoreBattle,
-    PublicMonDetails,
     Request,
     RequestType,
     SideData,
