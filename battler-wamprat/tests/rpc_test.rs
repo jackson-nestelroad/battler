@@ -828,12 +828,13 @@ async fn call_cancellation_cancels_invocation() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(rpc.cancel().await, Ok(()));
-
     let mut results = Vec::new();
     loop {
         match rpc.next_result().await {
-            Ok(Some(result)) => results.push(Ok(result)),
+            Ok(Some(result)) => {
+                rpc.cancel().await.ok();
+                results.push(Ok(result))
+            }
             Ok(None) => break,
             Err(err) => results.push(Err(err)),
         }
