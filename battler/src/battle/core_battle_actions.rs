@@ -4129,7 +4129,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
 
 /// Sets the illusion of the target of the effect to the given target.
 pub fn set_illusion(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target().illusion.is_some() {
+    if context.target_handle() == target || context.target().illusion.is_some() {
         return Ok(false);
     }
     let illusion = Mon::physical_details(&context.as_battle_context_mut().mon_context(target)?)?;
