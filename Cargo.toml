@@ -73,12 +73,12 @@ pretty_assertions_sorted = "1.2"
 argon2 = "0.5"
 base64 = "0.22"
 hmac = "0.12"
-password-hash = "0.5"
+password-hash = { version = "0.5", features = ["getrandom"] }
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rustls = "0.23"
 sha2 = "0.10"
 stringprep = "0.1"
-tokio-tungstenite = { version = "0.24", features = ["rustls-tls-native-roots"] }
+tokio-tungstenite = { version = "0.27", features = ["rustls-tls-native-roots"] }
 
 # Macros.
 proc-macro2 = "1.0"

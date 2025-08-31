@@ -49,14 +49,16 @@ impl Stream for WebSocketTransport {
         match futures_util::ready!(self.stream.poll_next_unpin(cx)) {
             Some(Ok(message)) => {
                 if message.is_ping() {
-                    task::Poll::Ready(Some(Ok(TransportData::Ping(message.into_data()))))
+                    task::Poll::Ready(Some(Ok(TransportData::Ping(message.into_data().to_vec()))))
                 } else if message.is_text() || message.is_binary() {
                     if message.is_text() && self.binary {
                         task::Poll::Ready(Some(Err(Error::msg("expected binary"))))
                     } else if message.is_binary() && !self.binary {
                         task::Poll::Ready(Some(Err(Error::msg("expected text"))))
                     } else {
-                        task::Poll::Ready(Some(Ok(TransportData::Message(message.into_data()))))
+                        task::Poll::Ready(Some(Ok(TransportData::Message(
+                            message.into_data().to_vec(),
+                        ))))
                     }
                 } else if message.is_close() {
                     task::Poll::Ready(None)
@@ -85,12 +87,12 @@ impl Sink<TransportData> for WebSocketTransport {
         item: TransportData,
     ) -> std::result::Result<(), Self::Error> {
         let message = match item {
-            TransportData::Ping(data) => Message::Pong(data),
+            TransportData::Ping(data) => Message::Pong(data.into()),
             TransportData::Message(data) => {
                 if self.binary {
-                    Message::Binary(data)
+                    Message::Binary(data.into())
                 } else {
-                    Message::Text(str::from_utf8(&data)?.to_owned())
+                    Message::Text(str::from_utf8(&data)?.to_owned().into())
                 }
             }
         };
