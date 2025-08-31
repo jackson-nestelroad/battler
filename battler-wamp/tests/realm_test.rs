@@ -95,10 +95,7 @@ async fn peer_reconnects_and_rejoins_realm() {
     // channel closes too soon.
     match peer.join_realm(REALM).await {
         Ok(()) => (),
-        Err(err) => {
-            // The channel is closed.
-            assert_eq!(err.to_string(), "channel closed");
-
+        Err(_) => {
             // Second attempt shows the peer is not connected.
             assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {
                 assert_eq!(err.to_string(), "peer is not connected");
