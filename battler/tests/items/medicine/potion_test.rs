@@ -24,7 +24,8 @@ fn team() -> Result<TeamData> {
                     "ability": "Static",
                     "moves": [
                         "Tackle",
-                        "Embargo"
+                        "Embargo",
+                        "Heal Block"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -234,4 +235,46 @@ fn embargo_prevents_potion_usage_from_bag() {
         battle.set_player_choice("protagonist", "item potion,-1"),
         Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot use item: Potion cannot be used on Pikachu")
     );
+}
+
+#[test]
+fn potion_heals_despite_heal_block() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "move 2"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("protagonist", "item potion,-1"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("trainer", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Pikachu,trainer,1|name:Tackle|target:Pikachu,protagonist,1",
+            "split|side:0",
+            "damage|mon:Pikachu,protagonist,1|health:71/95",
+            "damage|mon:Pikachu,protagonist,1|health:75/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Pikachu,trainer,1|name:Heal Block",
+            "start|mon:Pikachu,protagonist,1|move:Heal Block",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "useitem|player:protagonist|name:Potion|target:Pikachu,protagonist,1",
+            "split|side:0",
+            "heal|mon:Pikachu,protagonist,1|from:item:Potion|health:91/95",
+            "heal|mon:Pikachu,protagonist,1|from:item:Potion|health:96/100",
+            "residual",
+            "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }

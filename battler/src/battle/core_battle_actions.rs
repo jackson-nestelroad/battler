@@ -2136,17 +2136,20 @@ fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     Ok(healed)
 }
 
+fn force_healing_effect(context: &ApplyingEffectContext) -> bool {
+    context
+        .source_effect_handle()
+        .map(|effect_handle| effect_handle.try_id() == Some(&Id::from_known("playeruseditem")))
+        .unwrap_or(false)
+}
+
 /// Heals a Mon.
 pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     if damage == 0 || context.target().hp == 0 || context.target().hp > context.target().max_hp {
         return Ok(0);
     }
 
-    let force = context
-        .source_effect_handle()
-        .map(|effect_handle| effect_handle.try_id() == Some(&Id::from_known("playeruseditem")))
-        .unwrap_or(false);
-    let damage = if force {
+    let damage = if force_healing_effect(context) {
         damage
     } else {
         core_battle_effects::run_event_for_applying_effect_expecting_u16(
@@ -2893,11 +2896,13 @@ pub fn cure_status(
         None => return Ok(false),
     };
 
-    if !core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::CureStatus,
-        fxlang::VariableInput::default(),
-    ) {
+    if !force_healing_effect(context)
+        && !core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::CureStatus,
+            fxlang::VariableInput::default(),
+        )
+    {
         return Ok(false);
     }
 
@@ -4877,11 +4882,15 @@ pub fn restore_pp(
     amount: u8,
     silent: bool,
 ) -> Result<u8> {
-    let amount = core_battle_effects::run_event_for_applying_effect_expecting_u8(
-        context,
-        fxlang::BattleEvent::RestorePp,
-        amount,
-    );
+    let amount = if force_healing_effect(context) {
+        amount
+    } else {
+        core_battle_effects::run_event_for_applying_effect_expecting_u8(
+            context,
+            fxlang::BattleEvent::RestorePp,
+            amount,
+        )
+    };
     let delta = context.target_mut().restore_pp(move_id, amount);
     if delta != 0 && !silent {
         core_battle_logs::restore_pp(context, move_id, delta)?;
