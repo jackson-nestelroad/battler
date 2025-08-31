@@ -3947,15 +3947,33 @@ pub fn remove_pseudo_weather(
     context: &mut FieldEffectContext,
     pseudo_weather: &Id,
 ) -> Result<bool> {
+    let pseudo_weather_handle = context
+        .battle_mut()
+        .get_effect_handle_by_id(pseudo_weather)?
+        .clone();
+    let pseudo_weather = pseudo_weather_handle
+        .try_id()
+        .wrap_expectation("pseudo weather must have an id")?
+        .clone();
+
+    if !context
+        .battle()
+        .field
+        .pseudo_weathers
+        .contains_key(&pseudo_weather)
+    {
+        return Ok(false);
+    }
+
     core_battle_effects::run_pseudo_weather_event_expecting_void(
         context,
         fxlang::BattleEvent::FieldEnd,
-        pseudo_weather,
+        &pseudo_weather,
     );
 
     LinkedEffectsManager::remove_by_id(
         context.as_effect_context_mut(),
-        pseudo_weather,
+        &pseudo_weather,
         AppliedEffectLocation::PseudoWeather,
     )?;
 
@@ -3963,7 +3981,7 @@ pub fn remove_pseudo_weather(
         .battle_mut()
         .field
         .pseudo_weathers
-        .remove(pseudo_weather);
+        .remove(&pseudo_weather);
 
     Ok(true)
 }
