@@ -1257,6 +1257,7 @@ where
                     } else if let ValueRef::MultihitType(multihit) = value {
                         value = match *member {
                             "max" => ValueRef::UFraction(multihit.max().into()),
+                            "min" => ValueRef::UFraction(multihit.min().into()),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::JudgmentData(judgment_data) = value {

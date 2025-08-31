@@ -749,6 +749,17 @@ impl Value {
                 val.floor().try_into().map_err(integer_overflow_error)?,
             )),
             Self::MultihitType(val) => Ok(val),
+            Self::List(val) => {
+                let val = val
+                    .into_iter()
+                    .map(|val| val.integer_u8())
+                    .collect::<Result<Vec<_>>>()?;
+                if val.len() != 2 {
+                    return Err(general_error("multihit list must have exactly 2 numbers"));
+                }
+                // SAFETY: List has exactly two elements.
+                Ok(MultihitType::Range(val[0], val[1]))
+            }
             val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to a multihit type",
                 val.value_type(),

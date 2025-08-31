@@ -1047,8 +1047,6 @@ fn move_hit_loop(
         }
     };
 
-    // TODO: Consider Loaded Dice item.
-
     let mut targets = targets
         .iter()
         .map(|target| MoveStepOutcomeOnTarget::new(*target))

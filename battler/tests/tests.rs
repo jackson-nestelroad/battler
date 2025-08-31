@@ -184,6 +184,10 @@ mod items {
         mod beast_ball_test;
     }
 
+    mod gen9 {
+        mod loaded_dice_test;
+    }
+
     mod medicine {
         mod potion_test;
         mod revive_test;

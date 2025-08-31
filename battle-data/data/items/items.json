@@ -1846,7 +1846,16 @@
   "loadeddice": {
     "name": "Loaded Dice",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if $move.multihit.is_defined and $move.multihit.max > 4:",
+          ["$move.multihit = [4, $move.multihit.max]"],
+          "$move.multiaccuracy = false"
+        ]
+      }
+    }
   },
   "auspiciousarmor": {
     "name": "Auspicious Armor",

@@ -22,6 +22,14 @@ pub enum MultihitType {
 }
 
 impl MultihitType {
+    /// The minimum number of times the move can hit.
+    pub fn min(&self) -> u8 {
+        match self {
+            Self::Static(val) => *val,
+            Self::Range(min, _) => *min,
+        }
+    }
+
     /// The maximum number of times the move can hit.
     pub fn max(&self) -> u8 {
         match self {
