@@ -47,7 +47,7 @@
         "on_switching_in": [
           "foreach $target in func_call(reverse: $mon.player.team_by_effective_position):",
           [
-            "if $target.exited:",
+            "if $target == $mon or $target.exited:",
             ["continue"],
             "set_illusion: $mon $target",
             "break"
