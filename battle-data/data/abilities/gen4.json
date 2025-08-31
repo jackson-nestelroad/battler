@@ -758,7 +758,8 @@
           ["return"],
           "$data = func_call(special_item_data: $item.id)",
           "return !$data or !$data.judgment"
-        ]
+        ],
+        "on_set_types": ["return false"]
       }
     }
   },

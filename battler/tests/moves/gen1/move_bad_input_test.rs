@@ -248,6 +248,17 @@ fn triples_team() -> Result<TeamData> {
                     "nature": "Adamant",
                     "gender": "M",
                     "level": 100
+                },
+                {
+                    "name": "Dodrio",
+                    "species": "Dodrio",
+                    "ability": "Early Bird",
+                    "moves": [
+                        "Acupressure"
+                    ],
+                    "nature": "Adamant",
+                    "gender": "U",
+                    "level": 100
                 }
             ]
         }"#,
@@ -405,9 +416,41 @@ fn target_adjacent_ally() {
 #[test]
 fn target_adjacent_ally_or_user() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let _ = make_triples_battle(&data).unwrap();
-    // TODO: Use an AdjacentAllyOrUser move.
-    // Acupressure is the only move that does this.
+    let mut battle = make_triples_battle(&data).unwrap();
+
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "switch 3;move 2;move 2"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "switch 3;move 2;move 2"),
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+
+    // Adjacent foe is not allowed.
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,3; move 2; move 2"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: invalid target for Acupressure")
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,2; move 2; move 2"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: invalid target for Acupressure")
+    );
+
+    // Adjacent ally or self is allowed.
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,-2; move 2; move 2"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,-1; move 2; move 2"),
+        Ok(())
+    );
 }
 
 fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {

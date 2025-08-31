@@ -266,6 +266,10 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. Volatile `End`.
 
+## Set Types
+
+1. `SetTypes`.
+
 ## Set Ability
 
 1. `SetAbility`.

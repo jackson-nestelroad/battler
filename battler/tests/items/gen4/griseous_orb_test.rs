@@ -56,6 +56,26 @@ fn empoleon() -> Result<TeamData> {
     .wrap_error()
 }
 
+fn ditto() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Ditto",
+                    "species": "Ditto",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Transform"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
 fn make_battle(
     data: &dyn DataStore,
     seed: u64,
@@ -172,4 +192,30 @@ fn giratina_transforms_into_altered_forme_if_incorrect() {
     )
     .unwrap();
     assert_logs_since_start_eq(&battle, &expected_logs);
+}
+
+#[test]
+fn ditto_does_not_transform_into_origin_forme() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team_1 = giratina().unwrap();
+    team_1.members[0].species = "Giratina".to_owned();
+    team_1.members[0].item = None;
+    let mut team_2 = ditto().unwrap();
+    team_2.members[0].item = Some("Griseous Orb".to_owned());
+    let mut battle = make_battle(&data, 0, team_1, team_2).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Ditto,player-2,1|name:Transform|target:Giratina,player-1,1",
+            "transform|mon:Ditto,player-2,1|into:Giratina,player-1,1|species:Giratina",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }

@@ -1521,11 +1521,9 @@ impl Mon {
         {
             let mon_handle = context.mon_handle();
             let volatiles = context.mon().volatiles.keys().cloned().collect::<Vec<_>>();
-            // TODO: We are not necessarily fainting here, but it's unlikely this effect handle is
-            // used for anything.
             let mut context = context
                 .as_battle_context_mut()
-                .effect_context(EffectHandle::Condition(Id::from_known("faint")), None)?;
+                .effect_context(EffectHandle::Condition(Id::from_known("switchout")), None)?;
             for volatile in volatiles {
                 LinkedEffectsManager::remove_by_id(
                     &mut context,
@@ -1662,7 +1660,6 @@ impl Mon {
 
     /// Sets the species of the Mon.
     pub fn set_species(context: &mut MonContext, species: &Id) -> Result<bool> {
-        // TODO: ModifySpecies event.
         let species = context.battle().dex.species.get_by_id(species)?;
 
         // SAFETY: Nothing we do below will invalidate any data.

@@ -114,7 +114,7 @@ impl EffectManager {
 
         // Callbacks are cached.
         //
-        // TODO: Borrow checker is too strict to remove the extra lookup here.
+        // Borrow checker is too strict to remove the extra lookup here.
         if context.battle().effect_manager.effects.contains_key(&id) {
             return Ok(context
                 .battle_mut()

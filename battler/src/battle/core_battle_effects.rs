@@ -921,12 +921,15 @@ fn find_callbacks_on_mon(
         }
     }
 
-    callbacks.push(CallbackHandle::new(
-        EffectHandle::Species(context.mon().species.clone()),
-        event,
-        modifier,
-        AppliedEffectLocation::Mon(context.mon_handle()),
-    ));
+    // Species only activates if we are truly that species.
+    if context.mon().species == context.mon().base_species {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Species(context.mon().species.clone()),
+            event,
+            modifier,
+            AppliedEffectLocation::Mon(context.mon_handle()),
+        ));
+    }
 
     callbacks.push(CallbackHandle::new(
         EffectHandle::ItemCondition(context.mon().ball.clone()),

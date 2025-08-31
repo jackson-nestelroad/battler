@@ -883,6 +883,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the field.
     #[string = "SetTerrain"]
     SetTerrain,
+    /// Runs when a Mon's types are being changed.
+    ///
+    /// Runs before the types are applied. Can be used to fail the type change.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "SetTypes"]
+    SetTypes,
     /// Runs when the field's weather is being set.
     ///
     /// Runs before the weather effect is applied. Can be used to fail the weather.
@@ -1250,6 +1257,7 @@ impl BattleEvent {
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetTerrain => CommonCallbackType::FieldEffectResult as u32,
+            Self::SetTypes => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::SideConditionStart => CommonCallbackType::SideVoid as u32,
             Self::SideEnd => CommonCallbackType::SideVoid as u32,
@@ -1357,6 +1365,7 @@ impl BattleEvent {
             Self::SetItem => &[("item", ValueType::Effect, true)],
             Self::SetStatus | Self::AfterSetStatus => &[("status", ValueType::Effect, true)],
             Self::SetTerrain => &[("terrain", ValueType::Effect, true)],
+            Self::SetTypes => &[("types", ValueType::List, true)],
             Self::SetWeather => &[("weather", ValueType::Effect, true)],
             Self::SideConditionStart => &[("condition", ValueType::Effect, true)],
             Self::SlotEnd => &[("slot", ValueType::UFraction, true)],

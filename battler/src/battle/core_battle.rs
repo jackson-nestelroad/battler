@@ -1229,9 +1229,6 @@ impl<'d> CoreBattle<'d> {
                     }
                 }
 
-                // TODO: Start event for species. Some forms changes happen at the very beginning of
-                // the battle.
-
                 // Clears the weather, which then sets the default weather.
                 core_battle_actions::clear_weather(&mut context.field_effect_context(
                     EffectHandle::Condition(Id::from_known("start")),

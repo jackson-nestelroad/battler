@@ -62,7 +62,6 @@ use crate::{
         modify_32,
         mon_states,
     },
-    common::UnsafelyDetachBorrow,
     effect::{
         AppliedEffectHandle,
         AppliedEffectLocation,
@@ -3270,7 +3269,16 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 
 /// Sets the types of a Mon.
 pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool> {
-    // TODO: SetTypes event (block Arceus and Silvally).
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::SetTypes,
+        fxlang::VariableInput::from_iter([fxlang::Value::List(
+            types.iter().map(|typ| fxlang::Value::Type(*typ)).collect(),
+        )]),
+    ) {
+        return Ok(false);
+    }
+
     if types.is_empty() {
         return Ok(false);
     }
@@ -3278,10 +3286,8 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
     let source = context.source_handle();
     let source_effect = context.source_effect_handle().cloned();
     let mut context = context.target_context()?;
-    let types = &context.mon().types;
-    // SAFETY: Types are not modified in the log statement.
-    let types = unsafe { types.unsafely_detach_borrow() };
-    core_battle_logs::type_change(&mut context, types, source_effect, source)?;
+    let types = context.mon().types.clone();
+    core_battle_logs::type_change(&mut context, &types, source_effect, source)?;
     Ok(true)
 }
 
