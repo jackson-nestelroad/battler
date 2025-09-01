@@ -3459,7 +3459,7 @@ fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>> {
         .battle()
         .format
         .rules
-        .numeric_value(&clause)
+        .numeric_value::<u64>(&clause)
         .map(|val| Value::UFraction(val.into())))
 }
 

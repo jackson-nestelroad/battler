@@ -4801,7 +4801,12 @@ pub fn player_use_item(
     target: Option<isize>,
     input: PlayerUseItemInput,
 ) -> Result<bool> {
-    if !context.battle().format.options.bag_items {
+    if !context
+        .battle()
+        .format
+        .rules
+        .has_rule(&Id::from_known("bagitems"))
+    {
         return Ok(false);
     }
 

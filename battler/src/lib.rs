@@ -54,10 +54,7 @@ pub use battle::{
     WildPlayerOptions,
 };
 pub use battler_data::*;
-pub use config::{
-    FormatData,
-    FormatOptions,
-};
+pub use config::FormatData;
 pub use dex::{
     AbilityDex,
     ClauseDex,

@@ -15,7 +15,7 @@ use battler::{
     FieldData,
     FieldEnvironment,
     FormatData,
-    FormatOptions,
+    Id,
     PlayerData,
     PlayerDex,
     PlayerOptions,
@@ -51,7 +51,6 @@ impl TestBattleBuilder {
                 format: FormatData {
                     battle_type: BattleType::Singles,
                     rules: SerializedRuleSet::new(),
-                    options: FormatOptions::default(),
                 },
                 field: FieldData::default(),
                 side_1: SideData {
@@ -246,17 +245,31 @@ impl TestBattleBuilder {
     }
 
     pub fn with_adjacency_reach(mut self, adjacency_reach: u8) -> Self {
-        self.options.format.options.adjacency_reach = adjacency_reach;
+        self.options.format.rules.insert(Rule::Value {
+            name: Id::from("Adjacency Reach"),
+            value: adjacency_reach.to_string(),
+        });
         self
     }
 
     pub fn with_obedience_cap(mut self, obedience_cap: u8) -> Self {
-        self.options.format.options.obedience_cap = obedience_cap;
+        self.options.format.rules.insert(Rule::Value {
+            name: Id::from("Obedience Cap"),
+            value: obedience_cap.to_string(),
+        });
         self
     }
 
     pub fn with_bag_items(mut self, bag_items: bool) -> Self {
-        self.options.format.options.bag_items = bag_items;
+        let rule = Rule::Value {
+            name: Id::from("Bag Items"),
+            value: String::default(),
+        };
+        if bag_items {
+            self.options.format.rules.insert(rule);
+        } else {
+            self.options.format.rules.remove(&rule);
+        }
         self
     }
 

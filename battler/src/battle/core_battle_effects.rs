@@ -939,7 +939,7 @@ fn find_callbacks_on_mon(
     ));
 
     if context.mon().different_original_trainer
-        && context.mon().level > context.battle().format.options.obedience_cap
+        && context.mon().level > context.battle().format.rules.numeric_rules.obedience_cap
     {
         callbacks.push(CallbackHandle::new(
             EffectHandle::Condition(Id::from_known("disobedience")),

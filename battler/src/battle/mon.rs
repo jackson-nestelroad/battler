@@ -992,7 +992,7 @@ impl Mon {
             other_position = mons_per_side - other_position - 1;
         }
 
-        let reach = context.battle().format.options.adjacency_reach as usize - 1;
+        let reach = context.battle().format.rules.numeric_rules.adjacency_reach as usize - 1;
         let diff = if position > other_position {
             position - other_position
         } else {

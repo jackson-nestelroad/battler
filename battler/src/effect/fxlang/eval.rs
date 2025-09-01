@@ -1148,7 +1148,8 @@ where
                                     .battle_context()
                                     .battle()
                                     .format
-                                    .options
+                                    .rules
+                                    .numeric_rules
                                     .obedience_cap
                                     .into(),
                             ),

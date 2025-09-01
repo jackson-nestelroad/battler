@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use ahash::{
     HashMap,
     HashSet,
@@ -26,7 +28,7 @@ use crate::{
 /// validation.
 ///
 /// New rules should likely not live here.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct NumericRules {
     pub players_per_side: Option<u32>,
     pub min_team_size: u32,
@@ -39,6 +41,32 @@ pub struct NumericRules {
     pub force_level: Option<u32>,
     pub adjust_level_down: Option<u32>,
     pub ev_limit: u32,
+
+    /// The number of steps away from a Mon that is counted as being adjacent to it for
+    /// adjacent-targeting attacks.
+    ///
+    /// By default, moves that target adjacent Mons can reach any Mon two steps away from it.
+    /// However, some battles (such as Horde Battles) require one Mon to be able to fight five Mons
+    /// at once. This requires an `adjacency_reach` of 3, since the Mons on the edges will be three
+    /// steps away from the center.
+    ///
+    /// For visualization, the following battle:
+    ///
+    /// ```ignore
+    /// 5  4  3  2  1
+    ///       1
+    /// ```
+    ///
+    /// maps to the following adjacency counts, relative to the single Mon on the bottom side
+    ///
+    /// ```ignore
+    /// 3  2  1  2  3
+    ///       0
+    /// ```
+    pub adjacency_reach: u8,
+
+    /// The maximum level that will obey its player if it originates from a different trainer.
+    pub obedience_cap: u8,
 }
 
 impl NumericRules {
@@ -148,30 +176,18 @@ impl NumericRules {
         rules.ev_limit = ruleset
             .numeric_value(&Id::from_known("evlimit"))
             .unwrap_or(510);
+        rules.adjacency_reach = ruleset
+            .numeric_value(&Id::from_known("adjacencyreach"))
+            .unwrap_or(2);
+        rules.obedience_cap = ruleset
+            .numeric_value(&Id::from_known("obediencecap"))
+            .unwrap_or(u8::MAX);
 
         if let Some("Auto") = ruleset.value(&Id::from_known("pickedteamsize")) {
             rules.picked_team_size = Some(battle_type.default_picked_team_size() as u32);
         }
 
         rules.validate(battle_type).map(|_| rules)
-    }
-}
-
-impl Default for NumericRules {
-    fn default() -> Self {
-        Self {
-            players_per_side: None,
-            min_team_size: 0,
-            max_team_size: 0,
-            picked_team_size: None,
-            max_move_count: 0,
-            min_level: 0,
-            max_level: 0,
-            default_level: 0,
-            force_level: None,
-            adjust_level_down: None,
-            ev_limit: 0,
-        }
     }
 }
 
@@ -341,7 +357,10 @@ impl RuleSet {
     }
 
     /// Returns the numeric value associated with a rule, if it exists.
-    pub fn numeric_value(&self, id: &Id) -> Option<u32> {
+    pub fn numeric_value<T>(&self, id: &Id) -> Option<T>
+    where
+        T: FromStr,
+    {
         self.value(id)?.parse().ok()
     }
 
@@ -500,7 +519,7 @@ mod rule_set_test {
         .unwrap();
         assert_eq!(ruleset.numeric_value(&Id::from("maxlevel")), Some(50));
         assert_eq!(ruleset.numeric_value(&Id::from("minlevel")), Some(1));
-        assert_eq!(ruleset.numeric_value(&Id::from("randomrule")), None);
+        assert_eq!(ruleset.numeric_value::<u32>(&Id::from("randomrule")), None);
     }
 
     #[test]
@@ -517,7 +536,9 @@ mod rule_set_test {
                 "Default Level = 100",
                 "Force Level = 100",
                 "Adjust Level Down = 150",
-                "EV Limit = 1500"
+                "EV Limit = 1500",
+                "Adjacency Reach = 3",
+                "Obedience Cap = 50"
             ]"#,
             &BattleType::Singles,
         )
@@ -533,6 +554,8 @@ mod rule_set_test {
         assert_eq!(ruleset.numeric_rules.force_level, Some(100));
         assert_eq!(ruleset.numeric_rules.adjust_level_down, Some(150));
         assert_eq!(ruleset.numeric_rules.ev_limit, 1500);
+        assert_eq!(ruleset.numeric_rules.adjacency_reach, 3);
+        assert_eq!(ruleset.numeric_rules.obedience_cap, 50);
     }
 
     #[test]
@@ -549,6 +572,8 @@ mod rule_set_test {
         assert_eq!(ruleset.numeric_rules.force_level, None);
         assert_eq!(ruleset.numeric_rules.adjust_level_down, None);
         assert_eq!(ruleset.numeric_rules.ev_limit, 510);
+        assert_eq!(ruleset.numeric_rules.adjacency_reach, 2);
+        assert_eq!(ruleset.numeric_rules.obedience_cap, u8::MAX);
     }
 
     #[test]

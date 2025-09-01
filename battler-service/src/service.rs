@@ -424,7 +424,6 @@ mod battler_service_test {
         CoreBattleOptions,
         FieldData,
         FormatData,
-        FormatOptions,
         Gender,
         LocalDataStore,
         MonData,
@@ -521,7 +520,6 @@ mod battler_service_test {
             format: FormatData {
                 battle_type: BattleType::Singles,
                 rules: HashSet::from_iter([Rule::value_name("Item Clause")]),
-                options: FormatOptions::default(),
             },
             field: FieldData::default(),
             side_1: SideData {

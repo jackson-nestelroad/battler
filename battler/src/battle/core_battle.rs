@@ -1824,7 +1824,7 @@ impl<'d> CoreBattle<'d> {
             |relative_location| {
                 move_target.valid_target(
                     relative_location,
-                    context.battle().format.options.adjacency_reach,
+                    context.battle().format.rules.numeric_rules.adjacency_reach,
                 )
             },
         ) {

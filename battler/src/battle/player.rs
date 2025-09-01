@@ -1417,7 +1417,12 @@ impl Player {
     }
 
     fn choose_item(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
-        if !context.battle().format.options.bag_items {
+        if !context
+            .battle()
+            .format
+            .rules
+            .has_rule(&Id::from_known("bagitems"))
+        {
             return Err(general_error("you cannot use items"));
         }
 
