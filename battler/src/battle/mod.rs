@@ -90,6 +90,7 @@ pub use mon::{
     MonLearnMoveRequest,
     MonMoveRequest,
     MonMoveSlotData,
+    MonNextTurnState,
     MonPersistentMoveData,
     MonPositionDetails,
     MonSummaryData,

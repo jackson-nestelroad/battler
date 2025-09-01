@@ -1035,7 +1035,7 @@ impl Player {
         let active_mon = context.mon(active_mon_handle)?;
         match context.player().request_type() {
             Some(RequestType::Turn) => {
-                if active_mon.trapped {
+                if active_mon.next_turn_state.trapped {
                     return Err(general_error(format!("{} is trapped", active_mon.name)));
                 }
             }
@@ -1202,8 +1202,7 @@ impl Player {
 
         let mut move_id = move_slot.id.clone();
 
-        let locked_move = Mon::locked_move(&mut context)?;
-        if let Some(locked_move) = locked_move {
+        if let Some(locked_move) = context.mon().next_turn_state.locked_move.clone() {
             let locked_move_target = context.mon().last_move_target_location;
             context
                 .player_mut()
@@ -1279,7 +1278,7 @@ impl Player {
         }
 
         // Mega evolution.
-        if choice.mega && !context.mon().can_mega_evo {
+        if choice.mega && !context.mon().next_turn_state.can_mega_evolve {
             return Err(general_error(format!(
                 "{} cannot mega evolve",
                 context.mon().name
@@ -1370,8 +1369,8 @@ impl Player {
             ))?;
 
         {
-            let mut context = context.mon_context(mon_handle)?;
-            if Mon::locked_move(&mut context)?.is_some() {
+            let context = context.mon_context(mon_handle)?;
+            if context.mon().next_turn_state.locked_move.is_some() {
                 return Err(general_error(format!(
                     "{} must use a move",
                     context.mon().name
@@ -1439,7 +1438,7 @@ impl Player {
             ))?;
         let mut context = context.mon_context(mon_handle)?;
 
-        if Mon::locked_move(&mut context)?.is_some() {
+        if context.mon().next_turn_state.locked_move.is_some() {
             return Err(general_error(format!(
                 "{} must use a move",
                 context.mon().name
@@ -1526,7 +1525,7 @@ impl Player {
                 move_slot: action.move_slot.clone(),
             };
 
-            let cannot_be_used = context.target().cannot_receive_items;
+            let cannot_be_used = context.target().next_turn_state.cannot_receive_items;
             let cannot_be_used = cannot_be_used
                 || (item_is_ball
                     && mon_states::is_semi_invulnerable(&mut context.target_context()?));

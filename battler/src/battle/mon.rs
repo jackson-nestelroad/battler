@@ -307,7 +307,7 @@ pub struct MonMoveRequest {
     #[serde(default)]
     pub trapped: bool,
     #[serde(default)]
-    pub can_mega_evo: bool,
+    pub can_mega_evolve: bool,
     #[serde(default)]
     pub locked_into_move: bool,
 }
@@ -370,6 +370,17 @@ pub struct CalculateStatContext {
 pub enum MonExitType {
     Fainted,
     Caught,
+}
+
+/// State for the Mon going into the next turn.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct MonNextTurnState {
+    pub locked_move: Option<String>,
+    pub trapped: bool,
+    pub cannot_receive_items: bool,
+    pub can_mega_evolve: bool,
+    pub can_dynamax: bool,
+    pub can_terastallize: bool,
 }
 
 /// A Mon in a battle, which battles against other Mons.
@@ -442,11 +453,10 @@ pub struct Mon {
     pub force_switch: Option<SwitchType>,
     pub skip_before_switch_out: bool,
     pub being_called_back: bool,
-    pub trapped: bool,
-    pub cannot_receive_items: bool,
-    pub can_mega_evo: bool,
     pub transformed: bool,
     pub illusion: Option<PhysicalMonDetails>,
+
+    pub next_turn_state: MonNextTurnState,
 
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
@@ -598,11 +608,10 @@ impl Mon {
             force_switch: None,
             skip_before_switch_out: false,
             being_called_back: false,
-            trapped: false,
-            cannot_receive_items: false,
-            can_mega_evo: false,
             transformed: false,
             illusion: None,
+
+            next_turn_state: MonNextTurnState::default(),
 
             active_move: None,
             last_move_selected: None,
@@ -818,25 +827,10 @@ impl Mon {
         context.mon().actual_health()
     }
 
-    /// Looks up the Mon's locked move, if any.
-    pub fn locked_move(context: &mut MonContext) -> Result<Option<String>> {
-        let locked_move = core_battle_effects::run_event_for_mon_expecting_string(
-            context,
-            fxlang::BattleEvent::LockMove,
-            fxlang::VariableInput::default(),
-        );
-        if locked_move.is_some() {
-            // A Mon with a locked move is trapped.
-            context.mon_mut().trapped = true;
-            context.mon_mut().cannot_receive_items = true;
-        }
-        Ok(locked_move)
-    }
-
     fn moves_and_locked_move(
         context: &mut MonContext,
     ) -> Result<(Vec<MonMoveSlotData>, Option<String>)> {
-        let locked_move = Self::locked_move(context)?;
+        let locked_move = context.mon().next_turn_state.locked_move.clone();
         let moves = Self::moves_with_locked_move(context, locked_move.as_deref())?;
         let has_usable_move = moves.iter().any(|mov| !mov.disabled);
         let moves = if has_usable_move { moves } else { Vec::new() };
@@ -1434,17 +1428,17 @@ impl Mon {
             team_position: context.mon().team_position,
             moves,
             trapped: false,
-            can_mega_evo: false,
+            can_mega_evolve: false,
             locked_into_move: false,
         };
 
         let can_switch = Player::can_switch(context.as_player_context_mut());
-        if can_switch && context.mon().trapped {
+        if can_switch && context.mon().next_turn_state.trapped {
             request.trapped = true;
         }
 
         if locked_move.is_none() {
-            request.can_mega_evo = context.mon().can_mega_evo;
+            request.can_mega_evolve = context.mon().next_turn_state.can_mega_evolve;
         } else {
             request.locked_into_move = true;
         }
@@ -2181,14 +2175,9 @@ impl Mon {
             fxlang::VariableInput::default(),
         );
 
-        context.mon_mut().trapped = false;
-        context.mon_mut().cannot_receive_items = false;
+        context.mon_mut().next_turn_state = MonNextTurnState::default();
 
-        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::TrapMon,
-            false,
-        ) {
+        if Self::trapped(context)? {
             core_battle_actions::trap_mon(context)?;
         }
 
@@ -2197,7 +2186,24 @@ impl Mon {
             fxlang::BattleEvent::PreventUsedItems,
             false,
         ) {
-            context.mon_mut().cannot_receive_items = true;
+            context.mon_mut().next_turn_state.cannot_receive_items = true;
+        }
+
+        if core_battle_actions::can_mega_evolve(context)? {
+            context.mon_mut().next_turn_state.can_mega_evolve = true;
+        }
+
+        if let Some(locked_move) = core_battle_effects::run_event_for_mon_expecting_string(
+            context,
+            fxlang::BattleEvent::LockMove,
+            fxlang::VariableInput::default(),
+        ) {
+            context.mon_mut().next_turn_state.locked_move = Some(locked_move);
+
+            // A Mon with a locked move is trapped and cannot do anything else.
+            context.mon_mut().next_turn_state.trapped = true;
+            context.mon_mut().next_turn_state.cannot_receive_items = true;
+            context.mon_mut().next_turn_state.can_mega_evolve = false;
         }
 
         Ok(())
@@ -2311,9 +2317,19 @@ impl Mon {
         Ok(())
     }
 
+    /// Checks if the Mon is trapped.
+    pub fn trapped(context: &mut MonContext) -> Result<bool> {
+        let trapped = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+            context,
+            fxlang::BattleEvent::TrapMon,
+            false,
+        );
+        Ok(trapped)
+    }
+
     /// Checks if the Mon can escape from battle.
     pub fn can_escape(context: &mut MonContext) -> Result<bool> {
-        let can_escape = !context.mon().trapped;
+        let can_escape = !Self::trapped(context)?;
         let can_escape = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
             context,
             fxlang::BattleEvent::CanEscape,

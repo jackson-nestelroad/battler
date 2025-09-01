@@ -406,7 +406,7 @@ fn do_move_internal(
     context.mon_mut().set_active_move(active_move_handle);
     let mut context = context.active_move_context(active_move_handle)?;
 
-    let locked_move_before = Mon::locked_move(context.as_mon_context_mut())?;
+    let locked_move_before = context.mon().next_turn_state.locked_move.clone();
 
     // Check that move has enough PP to be used.
     let move_id = context.active_move().id().clone();
@@ -3103,11 +3103,8 @@ pub fn trap_mon(context: &mut MonContext) -> Result<()> {
     if check_immunity(&mut context.applying_effect_context(effect_handle, None, None)?)? {
         return Ok(());
     }
-    if context.mon().trapped {
-        return Ok(());
-    }
-    context.mon_mut().trapped = true;
 
+    context.mon_mut().next_turn_state.trapped = true;
     Ok(())
 }
 
@@ -5087,4 +5084,8 @@ fn check_critical_capture(context: &mut PlayerContext, catch_rate: u64) -> bool 
     let c = c.floor();
     let rand = rand_util::range(context.battle_mut().prng.as_mut(), 0, 65536);
     rand < c
+}
+
+pub fn can_mega_evolve(_: &mut MonContext) -> Result<bool> {
+    Ok(false)
 }
