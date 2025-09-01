@@ -200,6 +200,7 @@
     },
     "prevo": "Dartrix",
     "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "formes": ["Decidueye-Hisui"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1158,6 +1159,7 @@
       "level": 20,
       "time_of_day": "day"
     },
+    "formes": ["Gumshoos-Totem"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1385,6 +1387,7 @@
     },
     "prevo": "Charjabug",
     "evolution_data": { "method": "L", "condition": "" },
+    "formes": ["Vikavolt-Totem"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L19"],
@@ -1646,6 +1649,7 @@
       "spd": 70,
       "spe": 93
     },
+    "formes": ["Oricorio-Pom-Pom", "Oricorio-Pau", "Oricorio-Sensu"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1823,6 +1827,7 @@
     },
     "prevo": "Cutiefly",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "formes": ["Ribombee-Totem"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -1912,6 +1917,7 @@
       "spd": 40,
       "spe": 60
     },
+    "formes": ["Rockruff-Own-Tempo"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1999,6 +2005,7 @@
       "level": 25,
       "time_of_day": "day"
     },
+    "formes": ["Lycanroc-Midnight", "Lycanroc-Dusk"],
     "flags": [],
     "learnset": {
       "accelerock": ["L1"],
@@ -2080,6 +2087,7 @@
       "spd": 25,
       "spe": 40
     },
+    "formes": ["Wishiwashi-School"],
     "flags": [],
     "learnset": {
       "aquaring": ["L17"],
@@ -2566,6 +2574,7 @@
     },
     "prevo": "Dewpider",
     "evolution_data": { "method": "L", "condition": "", "level": 22 },
+    "formes": ["Araquanid-Totem"],
     "flags": [],
     "learnset": {
       "aquaring": ["L26"],
@@ -2730,6 +2739,7 @@
       "level": 34,
       "time_of_day": "day"
     },
+    "formes": ["Lurantis-Totem"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3073,6 +3083,7 @@
       "level": 33,
       "gender": "F"
     },
+    "formes": ["Salazzle-Totem"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -4366,6 +4377,25 @@
     },
     "prevo": "Type: Null",
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "formes": [
+      "Silvally-Fighting",
+      "Silvally-Flying",
+      "Silvally-Poison",
+      "Silvally-Ground",
+      "Silvally-Rock",
+      "Silvally-Bug",
+      "Silvally-Ghost",
+      "Silvally-Steel",
+      "Silvally-Fire",
+      "Silvally-Water",
+      "Silvally-Grass",
+      "Silvally-Electric",
+      "Silvally-Psychic",
+      "Silvally-Ice",
+      "Silvally-Dragon",
+      "Silvally-Dark",
+      "Silvally-Fairy"
+    ],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["L20"],
@@ -6363,6 +6393,21 @@
       "spd": 100,
       "spe": 60
     },
+    "formes": [
+      "Minior-Orange-Meteor",
+      "Minior-Yellow-Meteor",
+      "Minior-Green-Meteor",
+      "Minior-Blue-Meteor",
+      "Minior-Indigo-Meteor",
+      "Minior-Violet-Meteor",
+      "Minior-Red",
+      "Minior-Orange",
+      "Minior-Yellow",
+      "Minior-Green",
+      "Minior-Blue",
+      "Minior-Indigo",
+      "Minior-Violet"
+    ],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -6633,6 +6678,7 @@
       "spd": 73,
       "spe": 96
     },
+    "formes": ["Togedemaru-Totem"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -6732,6 +6778,11 @@
       "spd": 105,
       "spe": 96
     },
+    "formes": [
+      "Mimikyu-Busted",
+      "Mimikyu-Totem-Disguised",
+      "Mimikyu-Totem-Busted"
+    ],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -7317,6 +7368,7 @@
     },
     "prevo": "Hakamo-o",
     "evolution_data": { "method": "L", "condition": "", "level": 45 },
+    "formes": ["Kommo-O-Totem"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -8678,6 +8730,7 @@
       "spd": 89,
       "spe": 79
     },
+    "formes": ["Necrozma-Dusk", "Necrozma-Dawn", "Necrozma-Ultra"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -8783,6 +8836,7 @@
       "spd": 115,
       "spe": 65
     },
+    "formes": ["Magearna-Original"],
     "flags": ["Mythical"],
     "learnset": {
       "afteryou": ["T"],
@@ -9433,6 +9487,7 @@
       "spd": 65,
       "spe": 34
     },
+    "formes": ["Melmetal-Gmax"],
     "flags": ["Mythical"],
     "learnset": {
       "acidarmor": ["L36"],
@@ -9662,6 +9717,7 @@
       "spd": 70,
       "spe": 93
     },
+    "changes_from": "Oricorio",
     "flags": [],
     "learnset": {}
   },
@@ -9692,6 +9748,7 @@
       "spd": 70,
       "spe": 93
     },
+    "changes_from": "Oricorio",
     "flags": [],
     "learnset": {}
   },
@@ -9722,6 +9779,7 @@
       "spd": 70,
       "spe": 93
     },
+    "changes_from": "Oricorio",
     "flags": [],
     "learnset": {}
   },
@@ -9848,6 +9906,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Wishiwashi",
     "flags": [],
     "learnset": {}
   },
@@ -10452,6 +10511,7 @@
       "spe": 96
     },
     "battle_only_forme": true,
+    "changes_from": "Mimikyu",
     "flags": [],
     "learnset": {}
   },
@@ -11069,6 +11129,7 @@
       "spd": 109,
       "spe": 77
     },
+    "changes_from": "Necrozma",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -11099,6 +11160,7 @@
       "spd": 127,
       "spe": 77
     },
+    "changes_from": "Necrozma",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -11129,6 +11191,7 @@
       "spd": 97,
       "spe": 129
     },
+    "changes_from": "Necrozma-Dawn-Wings",
     "flags": ["Restricted Legendary"],
     "learnset": { "moongeistbeam": ["R"], "sunsteelstrike": ["R"] }
   },
@@ -11159,6 +11222,7 @@
       "spe": 34
     },
     "battle_only_forme": true,
+    "changes_from": "Melmetal",
     "flags": ["Mythical"],
     "learnset": {}
   },

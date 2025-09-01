@@ -906,6 +906,7 @@
     },
     "prevo": "Dewott",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Samurott-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3474,6 +3475,7 @@
       "spd": 86,
       "spe": 50
     },
+    "formes": ["Audino-Mega"],
     "flags": [],
     "learnset": {
       "afteryou": ["L41"],
@@ -5098,6 +5100,7 @@
       "condition": "",
       "use_item": "Sun Stone"
     },
+    "formes": ["Lilligant-Hisui"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -5175,6 +5178,7 @@
       "spd": 55,
       "spe": 98
     },
+    "formes": ["Basculin-Blue-Striped", "Basculin-White-Striped"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -5571,6 +5575,7 @@
       "spd": 45,
       "spe": 50
     },
+    "formes": ["Darumaka-Galar"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -5667,6 +5672,11 @@
     },
     "prevo": "Darumaka",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "formes": [
+      "Darmanitan-Zen",
+      "Darmanitan-Galar-Standard",
+      "Darmanitan-Galar-Zen"
+    ],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -6352,6 +6362,7 @@
       "spd": 65,
       "spe": 30
     },
+    "formes": ["Yamask-Galar"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -7026,6 +7037,7 @@
     },
     "prevo": "Trubbish",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Garbodor-Gmax"],
     "flags": [],
     "learnset": {
       "acidspray": ["L12"],
@@ -7110,6 +7122,7 @@
       "spd": 40,
       "spe": 65
     },
+    "formes": ["Zorua-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7208,6 +7221,7 @@
     },
     "prevo": "Zorua",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": ["Zoroark-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -11399,6 +11413,7 @@
       "spd": 99,
       "spe": 32
     },
+    "formes": ["Stunfisk-Galar"],
     "flags": [],
     "learnset": {
       "aquatail": ["T"],
@@ -12412,6 +12427,7 @@
     },
     "prevo": "Rufflet",
     "evolution_data": { "method": "L", "condition": "", "level": 54 },
+    "formes": ["Braviary-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["L23"],
@@ -13608,6 +13624,7 @@
       "spd": 80,
       "spe": 111
     },
+    "formes": ["Tornadus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "acrobatics": ["M"],
@@ -13705,6 +13722,7 @@
       "spd": 80,
       "spe": 111
     },
+    "formes": ["Thundurus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "agility": ["L31"],
@@ -14009,6 +14027,7 @@
       "spd": 80,
       "spe": 101
     },
+    "formes": ["Landorus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "attract": ["M"],
@@ -14100,6 +14119,7 @@
       "spd": 90,
       "spe": 95
     },
+    "formes": ["Kyurem-Black", "Kyurem-White"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "ancientpower": ["L15"],
@@ -14196,6 +14216,7 @@
       "spd": 90,
       "spe": 108
     },
+    "formes": ["Keldeo-Resolute"],
     "flags": ["Mythical"],
     "learnset": {
       "aerialace": ["M"],
@@ -14287,6 +14308,7 @@
       "spd": 128,
       "spe": 90
     },
+    "formes": ["Meloetta-Pirouette"],
     "flags": ["Mythical"],
     "learnset": {
       "acrobatics": ["L26"],
@@ -14583,6 +14605,7 @@
       "spe": 128
     },
     "battle_only_forme": true,
+    "changes_from": "Meloetta",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -14612,6 +14635,7 @@
       "spd": 90,
       "spe": 121
     },
+    "changes_from": "Tornadus",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -14642,6 +14666,7 @@
       "spd": 80,
       "spe": 101
     },
+    "changes_from": "Thundurus",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -14672,6 +14697,7 @@
       "spd": 80,
       "spe": 91
     },
+    "changes_from": "Landorus",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -14702,6 +14728,7 @@
       "spd": 90,
       "spe": 95
     },
+    "changes_from": "Kyurem",
     "flags": ["Restricted Legendary"],
     "learnset": {
       "ancientpower": ["L15"],
@@ -14798,6 +14825,7 @@
       "spd": 100,
       "spe": 95
     },
+    "changes_from": "Kyurem",
     "flags": ["Restricted Legendary"],
     "learnset": {
       "ancientpower": ["L15"],
@@ -14894,6 +14922,7 @@
       "spd": 90,
       "spe": 108
     },
+    "changes_from": "Keldeo",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -14925,6 +14954,7 @@
       "spe": 50
     },
     "battle_only_forme": true,
+    "changes_from": "Audino",
     "flags": [],
     "learnset": {}
   },
@@ -15022,6 +15052,7 @@
       "spd": 55,
       "spe": 135
     },
+    "changes_from": "Darmanitan-Galar",
     "flags": [],
     "learnset": {}
   },
@@ -15113,6 +15144,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "changes_from": "Garbodor",
     "flags": [],
     "learnset": {}
   },

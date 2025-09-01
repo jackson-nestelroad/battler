@@ -253,6 +253,7 @@
     },
     "prevo": "Grovyle",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Sceptile-Mega"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -601,6 +602,7 @@
     },
     "prevo": "Combusken",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Blaziken-Mega"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -945,6 +947,7 @@
     },
     "prevo": "Marshtomp",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Swampert-Mega"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -1261,6 +1264,7 @@
       "spd": 41,
       "spe": 60
     },
+    "formes": ["Zigzagoon-Galar"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1372,6 +1376,7 @@
     },
     "prevo": "Zigzagoon",
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
+    "formes": ["Linoone-Galar"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3036,6 +3041,7 @@
     },
     "prevo": "Kirlia",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": ["Gardevoir-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T", "M"],
@@ -5147,6 +5153,7 @@
       "spd": 65,
       "spe": 50
     },
+    "formes": ["Sableye-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5287,6 +5294,7 @@
       "spd": 55,
       "spe": 50
     },
+    "formes": ["Mawile-Mega"],
     "flags": [],
     "learnset": {
       "ancientpower": ["E", "T"],
@@ -5623,6 +5631,7 @@
     },
     "prevo": "Lairon",
     "evolution_data": { "method": "L", "condition": "", "level": 42 },
+    "formes": ["Aggron-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5889,6 +5898,7 @@
     },
     "prevo": "Meditite",
     "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "formes": ["Medicham-Mega"],
     "flags": [],
     "learnset": {
       "acupressure": ["L33"],
@@ -6102,6 +6112,7 @@
     },
     "prevo": "Electrike",
     "evolution_data": { "method": "L", "condition": "", "level": 26 },
+    "formes": ["Manectric-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -7047,6 +7058,7 @@
     },
     "prevo": "Carvanha",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": ["Sharpedo-Mega"],
     "flags": [],
     "learnset": {
       "agility": ["L45"],
@@ -7448,6 +7460,7 @@
     },
     "prevo": "Numel",
     "evolution_data": { "method": "L", "condition": "", "level": 33 },
+    "formes": ["Camerupt-Mega"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -8640,6 +8653,7 @@
     },
     "prevo": "Swablu",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "formes": ["Altaria-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -10412,6 +10426,7 @@
       "spd": 70,
       "spe": 70
     },
+    "formes": ["Castform-Sunny", "Castform-Rainy", "Castform-Snowy"],
     "flags": [],
     "learnset": {
       "amnesia": ["E"],
@@ -10761,6 +10776,7 @@
     },
     "prevo": "Shuppet",
     "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "formes": ["Banette-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -11331,6 +11347,7 @@
       "spd": 60,
       "spe": 75
     },
+    "formes": ["Absol-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -11590,6 +11607,7 @@
     },
     "prevo": "Snorunt",
     "evolution_data": { "method": "L", "condition": "", "level": 42 },
+    "formes": ["Glalie-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -12601,6 +12619,7 @@
     },
     "prevo": "Shelgon",
     "evolution_data": { "method": "L", "condition": "", "level": 50 },
+    "formes": ["Salamence-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -12859,6 +12878,7 @@
     },
     "prevo": "Metang",
     "evolution_data": { "method": "L", "condition": "", "level": 45 },
+    "formes": ["Metagross-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -13294,6 +13314,7 @@
       "spd": 130,
       "spe": 110
     },
+    "formes": ["Latias-Mega"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -13423,6 +13444,7 @@
       "spd": 110,
       "spe": 110
     },
+    "formes": ["Latios-Mega"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -13546,6 +13568,7 @@
       "spd": 140,
       "spe": 90
     },
+    "formes": ["Kyogre-Primal"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "ancientpower": ["L1"],
@@ -13643,6 +13666,7 @@
       "spd": 90,
       "spe": 90
     },
+    "formes": ["Groudon-Primal"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -13762,6 +13786,7 @@
       "spd": 90,
       "spe": 95
     },
+    "formes": ["Rayquaza-Mega"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -14000,6 +14025,7 @@
       "spd": 50,
       "spe": 150
     },
+    "formes": ["Deoxys-Attack", "Deoxys-Defense", "Deoxys-Speed"],
     "flags": ["Mythical"],
     "learnset": {
       "aerialace": ["M"],
@@ -14144,6 +14170,7 @@
       "spd": 20,
       "spe": 150
     },
+    "changes_from": "Deoxys",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -14173,6 +14200,7 @@
       "spd": 160,
       "spe": 90
     },
+    "changes_from": "Deoxys",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -14202,6 +14230,7 @@
       "spd": 90,
       "spe": 180
     },
+    "changes_from": "Deoxys",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -14232,6 +14261,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "changes_from": "Castform",
     "flags": [],
     "learnset": {}
   },
@@ -14262,6 +14292,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "changes_from": "Castform",
     "flags": [],
     "learnset": {}
   },
@@ -14292,6 +14323,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "changes_from": "Castform",
     "flags": [],
     "learnset": {}
   },
@@ -14323,6 +14355,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Blaziken",
     "flags": [],
     "learnset": {}
   },
@@ -14354,6 +14387,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Gardevoir",
     "flags": [],
     "learnset": {}
   },
@@ -14385,6 +14419,7 @@
       "spe": 50
     },
     "battle_only_forme": true,
+    "changes_from": "Mawile",
     "flags": [],
     "learnset": {}
   },
@@ -14415,6 +14450,7 @@
       "spe": 50
     },
     "battle_only_forme": true,
+    "changes_from": "Aggron",
     "flags": [],
     "learnset": {}
   },
@@ -14446,6 +14482,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Medicham",
     "flags": [],
     "learnset": {}
   },
@@ -14476,6 +14513,7 @@
       "spe": 135
     },
     "battle_only_forme": true,
+    "changes_from": "Manectric",
     "flags": [],
     "learnset": {}
   },
@@ -14506,6 +14544,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "changes_from": "Banette",
     "flags": [],
     "learnset": {}
   },
@@ -14536,6 +14575,7 @@
       "spe": 115
     },
     "battle_only_forme": true,
+    "changes_from": "Absol",
     "flags": [],
     "learnset": {}
   },
@@ -14567,6 +14607,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "changes_from": "Latias",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -14598,6 +14639,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "changes_from": "Latios",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -14629,6 +14671,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "changes_from": "Swampert",
     "flags": [],
     "learnset": {}
   },
@@ -14660,6 +14703,7 @@
       "spe": 145
     },
     "battle_only_forme": true,
+    "changes_from": "Sceptile",
     "flags": [],
     "learnset": {}
   },
@@ -14691,6 +14735,7 @@
       "spe": 20
     },
     "battle_only_forme": true,
+    "changes_from": "Sableye",
     "flags": [],
     "learnset": {}
   },
@@ -14722,6 +14767,7 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "changes_from": "Altaria",
     "flags": [],
     "learnset": {}
   },
@@ -14753,6 +14799,7 @@
       "spe": 105
     },
     "battle_only_forme": true,
+    "changes_from": "Sharpedo",
     "flags": [],
     "learnset": {}
   },
@@ -14783,6 +14830,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Glalie",
     "flags": [],
     "learnset": {}
   },
@@ -14814,6 +14862,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "changes_from": "Metagross",
     "flags": [],
     "learnset": {}
   },
@@ -14906,6 +14955,7 @@
       "spe": 115
     },
     "battle_only_forme": true,
+    "changes_from": "Rayquaza",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -14937,6 +14987,7 @@
       "spe": 20
     },
     "battle_only_forme": true,
+    "changes_from": "Camerupt",
     "flags": [],
     "learnset": {}
   },
@@ -14968,6 +15019,7 @@
       "spe": 120
     },
     "battle_only_forme": true,
+    "changes_from": "Salamence",
     "flags": [],
     "learnset": {}
   },

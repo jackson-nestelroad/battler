@@ -510,6 +510,7 @@
     },
     "prevo": "Quilava",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Typhlosion-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3196,6 +3197,7 @@
     },
     "prevo": "Flaaffy",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": ["Ampharos-Mega"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -3741,7 +3743,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "holding_item": "King’s Rock"
+      "holding_item": "King's Rock"
     },
     "flags": [],
     "learnset": {
@@ -4535,6 +4537,7 @@
       "spd": 25,
       "spe": 15
     },
+    "formes": ["Wooper-Paldea"],
     "flags": [],
     "learnset": {
       "acidspray": ["E"],
@@ -5099,8 +5102,9 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "holding_item": "King’s Rock"
+      "holding_item": "King's Rock"
     },
+    "formes": ["Slowking-Galar"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -6026,6 +6030,7 @@
       "condition": "",
       "holding_item": "Metal Coat"
     },
+    "formes": ["Steelix-Mega"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -6400,6 +6405,7 @@
       "spd": 55,
       "spe": 85
     },
+    "formes": ["Qwilfish-Hisui"],
     "flags": [],
     "learnset": {
       "acidspray": ["E"],
@@ -6517,6 +6523,7 @@
       "condition": "",
       "holding_item": "Metal Coat"
     },
+    "formes": ["Scizor-Mega"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -6727,6 +6734,7 @@
       "spd": 95,
       "spe": 85
     },
+    "formes": ["Heracross-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["L10"],
@@ -6842,6 +6850,7 @@
       "spd": 75,
       "spe": 115
     },
+    "formes": ["Sneasel-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7616,6 +7625,7 @@
       "spd": 95,
       "spe": 35
     },
+    "formes": ["Corsola-Galar"],
     "flags": [],
     "learnset": {
       "amnesia": ["E", "M"],
@@ -8379,6 +8389,7 @@
     },
     "prevo": "Houndour",
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
+    "formes": ["Houndoom-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -10318,6 +10329,7 @@
     },
     "prevo": "Pupitar",
     "evolution_data": { "method": "L", "condition": "", "level": 55 },
+    "formes": ["Tyranitar-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -10833,6 +10845,7 @@
       "spe": 45
     },
     "battle_only_forme": true,
+    "changes_from": "Ampharos",
     "flags": [],
     "learnset": {}
   },
@@ -10864,6 +10877,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "changes_from": "Scizor",
     "flags": [],
     "learnset": {}
   },
@@ -10895,6 +10909,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "changes_from": "Heracross",
     "flags": [],
     "learnset": {}
   },
@@ -10926,6 +10941,7 @@
       "spe": 115
     },
     "battle_only_forme": true,
+    "changes_from": "Houndoom",
     "flags": [],
     "learnset": {}
   },
@@ -10957,6 +10973,7 @@
       "spe": 71
     },
     "battle_only_forme": true,
+    "changes_from": "Tyranitar",
     "flags": [],
     "learnset": {}
   },
@@ -10988,6 +11005,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Steelix",
     "flags": [],
     "learnset": {}
   },

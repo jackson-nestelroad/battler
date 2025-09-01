@@ -236,6 +236,7 @@
     },
     "prevo": "Ivysaur",
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
+    "formes": ["Venusaur-Mega", "Venusaur-Gmax"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -345,6 +346,38 @@
       "spe": 65
     },
     "flags": [],
+    "events": {
+      "surfingcharmanderfortest": {
+        "level": 5,
+        "shiny": false,
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        },
+        "hidden_ability": true,
+        "moves": ["surf"],
+        "ball": "Cherish"
+      },
+      "avalanchecharmanderfortest": {
+        "level": 5,
+        "shiny": true,
+        "ivs": {
+          "hp": 31,
+          "atk": 31,
+          "def": 31,
+          "spa": 31,
+          "spd": 31,
+          "spe": 31
+        },
+        "hidden_ability": true,
+        "moves": ["avalanche"],
+        "ball": "Cherish"
+      }
+    },
     "learnset": {
       "aerialace": ["M"],
       "aircutter": ["E"],
@@ -439,38 +472,6 @@
       "toxic": ["M"],
       "willowisp": ["M"],
       "workup": ["M"]
-    },
-    "events": {
-      "surfingcharmanderfortest": {
-        "level": 5,
-        "shiny": false,
-        "ivs": {
-          "hp": 31,
-          "atk": 31,
-          "def": 31,
-          "spa": 31,
-          "spd": 31,
-          "spe": 31
-        },
-        "hidden_ability": true,
-        "moves": ["surf"],
-        "ball": "Cherish"
-      },
-      "avalanchecharmanderfortest": {
-        "level": 5,
-        "shiny": true,
-        "ivs": {
-          "hp": 31,
-          "atk": 31,
-          "def": 31,
-          "spa": 31,
-          "spd": 31,
-          "spe": 31
-        },
-        "hidden_ability": true,
-        "moves": ["avalanche"],
-        "ball": "Cherish"
-      }
     }
   },
   "charmeleon": {
@@ -617,6 +618,7 @@
     },
     "prevo": "Charmeleon",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Charizard-Mega-X", "Charizard-Mega-Y", "Charizard-Gmax"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -985,6 +987,7 @@
     },
     "prevo": "Wartortle",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Blastoise-Mega", "Blastoise-Gmax"],
     "flags": [],
     "learnset": {
       "aquatail": ["L33"],
@@ -1183,6 +1186,7 @@
     },
     "prevo": "Metapod",
     "evolution_data": { "method": "L", "condition": "", "level": 10 },
+    "formes": ["Butterfree-Gmax"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1365,6 +1369,7 @@
     },
     "prevo": "Kakuna",
     "evolution_data": { "method": "L", "condition": "", "level": 10 },
+    "formes": ["Beedrill-Mega"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1661,6 +1666,7 @@
     },
     "prevo": "Pidgeotto",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Pidgeot-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1753,6 +1759,7 @@
       "spd": 35,
       "spe": 72
     },
+    "formes": ["Rattata-Alola"],
     "flags": [],
     "learnset": {
       "assurance": ["L19"],
@@ -1865,6 +1872,7 @@
     },
     "prevo": "Rattata",
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
+    "formes": ["Raticate-Alola", "Raticate-Totem-Alola"],
     "flags": [],
     "learnset": {
       "assurance": ["L19"],
@@ -2399,6 +2407,24 @@
     },
     "prevo": "Pichu",
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "formes": [
+      "Pikachu-Rock-Star",
+      "Pikachu-Belle",
+      "Pikachu-Pop-Star",
+      "Pikachu-Phd",
+      "Pikachu-Libre",
+      "Pikachu-Cosplay",
+      "Pikachu-Original-Cap",
+      "Pikachu-Hoenn-Cap",
+      "Pikachu-Sinnoh-Cap",
+      "Pikachu-Unova-Cap",
+      "Pikachu-Kalos-Cap",
+      "Pikachu-Alola-Cap",
+      "Pikachu-Partner-Cap",
+      "Pikachu-Starter",
+      "Pikachu-World-Cap",
+      "Pikachu-Gmax"
+    ],
     "flags": [],
     "learnset": {
       "agility": ["L45"],
@@ -2517,6 +2543,7 @@
       "condition": "",
       "use_item": "Thunder Stone"
     },
+    "formes": ["Raichu-Alola"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -2624,6 +2651,7 @@
       "spd": 30,
       "spe": 40
     },
+    "formes": ["Sandshrew-Alola"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -2740,6 +2768,7 @@
     },
     "prevo": "Sandshrew",
     "evolution_data": { "method": "L", "condition": "", "level": 22 },
+    "formes": ["Sandslash-Alola"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3897,6 +3926,7 @@
       "spd": 65,
       "spe": 65
     },
+    "formes": ["Vulpix-Alola"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -4006,6 +4036,7 @@
       "condition": "",
       "use_item": "Fire Stone"
     },
+    "formes": ["Ninetales-Alola"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -5319,6 +5350,7 @@
       "spd": 45,
       "spe": 95
     },
+    "formes": ["Diglett-Alola"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5415,6 +5447,7 @@
     },
     "prevo": "Diglett",
     "evolution_data": { "method": "L", "condition": "", "level": 26 },
+    "formes": ["Dugtrio-Alola"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5508,6 +5541,7 @@
       "spd": 40,
       "spe": 90
     },
+    "formes": ["Meowth-Alola", "Meowth-Galar", "Meowth-Gmax"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5634,6 +5668,7 @@
     },
     "prevo": "Meowth",
     "evolution_data": { "method": "L", "condition": "", "level": 28 },
+    "formes": ["Persian-Alola"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -6294,6 +6329,7 @@
       "spd": 50,
       "spe": 60
     },
+    "formes": ["Growlithe-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -6403,6 +6439,7 @@
       "condition": "",
       "use_item": "Fire Stone"
     },
+    "formes": ["Arcanine-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7080,6 +7117,7 @@
     },
     "prevo": "Kadabra",
     "evolution_data": { "method": "T", "condition": "" },
+    "formes": ["Alakazam-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["L36"],
@@ -7451,6 +7489,7 @@
     },
     "prevo": "Machoke",
     "evolution_data": { "method": "T", "condition": "" },
+    "formes": ["Machamp-Gmax"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -8087,6 +8126,7 @@
       "spd": 30,
       "spe": 20
     },
+    "formes": ["Geodude-Alola"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -8200,6 +8240,7 @@
     },
     "prevo": "Geodude",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "formes": ["Graveler-Alola"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -8310,6 +8351,7 @@
     },
     "prevo": "Graveler",
     "evolution_data": { "method": "T", "condition": "" },
+    "formes": ["Golem-Alola"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -8426,6 +8468,7 @@
       "spd": 65,
       "spe": 90
     },
+    "formes": ["Ponyta-Galar"],
     "flags": [],
     "learnset": {
       "agility": ["L37"],
@@ -8522,6 +8565,7 @@
     },
     "prevo": "Ponyta",
     "evolution_data": { "method": "L", "condition": "", "level": 40 },
+    "formes": ["Rapidash-Galar"],
     "flags": [],
     "learnset": {
       "agility": ["L37"],
@@ -8619,6 +8663,7 @@
       "spd": 40,
       "spe": 15
     },
+    "formes": ["Slowpoke-Galar"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -8750,6 +8795,7 @@
     },
     "prevo": "Slowpoke",
     "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "formes": ["Slowbro-Mega", "Slowbro-Galar"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -9060,8 +9106,8 @@
     }
   },
   "farfetchd": {
-    "name": "Farfetch’d",
-    "base_species": "Farfetch’d",
+    "name": "Farfetch'd",
+    "base_species": "Farfetch'd",
     "class": "Wild Duck",
     "color": "Brown",
     "primary_type": "Normal",
@@ -9086,6 +9132,7 @@
       "spd": 62,
       "spe": 60
     },
+    "formes": ["Farfetchd-Galar"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L37"],
@@ -9598,6 +9645,7 @@
       "spd": 50,
       "spe": 25
     },
+    "formes": ["Grimer-Alola"],
     "flags": [],
     "learnset": {
       "acidarmor": ["L43"],
@@ -9712,6 +9760,7 @@
     },
     "prevo": "Grimer",
     "evolution_data": { "method": "L", "condition": "", "level": 38 },
+    "formes": ["Muk-Alola"],
     "flags": [],
     "learnset": {
       "acidarmor": ["L46"],
@@ -10245,6 +10294,7 @@
     },
     "prevo": "Haunter",
     "evolution_data": { "method": "T", "condition": "" },
+    "formes": ["Gengar-Mega", "Gengar-Gmax"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -10854,6 +10904,7 @@
     },
     "prevo": "Krabby",
     "evolution_data": { "method": "L", "condition": "", "level": 28 },
+    "formes": ["Kingler-Gmax"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -10961,6 +11012,7 @@
       "spd": 55,
       "spe": 100
     },
+    "formes": ["Voltorb-Hisui"],
     "flags": [],
     "learnset": {
       "bide": ["M"],
@@ -11051,6 +11103,7 @@
     },
     "prevo": "Voltorb",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": ["Electrode-Hisui"],
     "flags": [],
     "learnset": {
       "bide": ["M"],
@@ -11258,6 +11311,7 @@
       "condition": "",
       "use_item": "Leaf Stone"
     },
+    "formes": ["Exeggutor-Alola"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -11487,6 +11541,7 @@
     },
     "prevo": "Cubone",
     "evolution_data": { "method": "L", "condition": "", "level": 28 },
+    "formes": ["Marowak-Alola", "Marowak-Totem"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -12081,6 +12136,7 @@
     },
     "prevo": "Koffing",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "formes": ["Weezing-Galar"],
     "flags": [],
     "learnset": {
       "assurance": ["L12"],
@@ -12719,6 +12775,7 @@
       "spd": 80,
       "spe": 90
     },
+    "formes": ["Kangaskhan-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -13468,6 +13525,7 @@
     },
     "prevo": "Mime Jr.",
     "evolution_data": { "method": "L", "condition": "", "knows_move": "Mimic" },
+    "formes": ["Mr-Mime-Galar"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -14084,6 +14142,7 @@
       "spd": 70,
       "spe": 85
     },
+    "formes": ["Pinsir-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -14195,6 +14254,11 @@
       "spd": 70,
       "spe": 110
     },
+    "formes": [
+      "Tauros-Paldea-Combat-Breed",
+      "Tauros-Paldea-Blaze-Breed",
+      "Tauros-Paldea-Aqua-Breed"
+    ],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -14342,6 +14406,7 @@
     },
     "prevo": "Magikarp",
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
+    "formes": ["Gyarados-Mega"],
     "flags": [],
     "learnset": {
       "aquatail": ["L30"],
@@ -14460,6 +14525,7 @@
       "spd": 95,
       "spe": 60
     },
+    "formes": ["Lapras-Gmax"],
     "flags": [],
     "learnset": {
       "ancientpower": ["E", "T"],
@@ -14612,6 +14678,7 @@
       "spd": 65,
       "spe": 55
     },
+    "formes": ["Eevee-Starter", "Eevee-Gmax"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -15601,6 +15668,7 @@
       "spd": 75,
       "spe": 130
     },
+    "formes": ["Aerodactyl-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -15724,6 +15792,7 @@
     },
     "prevo": "Munchlax",
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "formes": ["Snorlax-Gmax"],
     "flags": [],
     "learnset": {
       "afteryou": ["E", "T"],
@@ -15869,6 +15938,7 @@
       "spd": 125,
       "spe": 85
     },
+    "formes": ["Articuno-Galar"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -15972,6 +16042,7 @@
       "spd": 90,
       "spe": 100
     },
+    "formes": ["Zapdos-Galar"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -16073,6 +16144,7 @@
       "spd": 85,
       "spe": 90
     },
+    "formes": ["Moltres-Galar"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -16527,6 +16599,7 @@
       "spd": 90,
       "spe": 130
     },
+    "formes": ["Mewtwo-Mega-X", "Mewtwo-Mega-Y"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -16970,6 +17043,7 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "changes_from": "Venusaur",
     "flags": [],
     "learnset": {}
   },
@@ -17001,6 +17075,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Charizard",
     "flags": [],
     "learnset": {}
   },
@@ -17032,6 +17107,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Charizard",
     "flags": [],
     "learnset": {}
   },
@@ -17062,6 +17138,7 @@
       "spe": 78
     },
     "battle_only_forme": true,
+    "changes_from": "Blastoise",
     "flags": [],
     "learnset": {}
   },
@@ -17092,6 +17169,7 @@
       "spe": 150
     },
     "battle_only_forme": true,
+    "changes_from": "Alakazam",
     "flags": [],
     "learnset": {}
   },
@@ -17123,6 +17201,7 @@
       "spe": 130
     },
     "battle_only_forme": true,
+    "changes_from": "Gengar",
     "flags": [],
     "learnset": {}
   },
@@ -17153,6 +17232,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Kangaskhan",
     "flags": [],
     "learnset": {}
   },
@@ -17184,6 +17264,7 @@
       "spe": 105
     },
     "battle_only_forme": true,
+    "changes_from": "Pinsir",
     "flags": [],
     "learnset": {}
   },
@@ -17215,6 +17296,7 @@
       "spe": 81
     },
     "battle_only_forme": true,
+    "changes_from": "Gyarados",
     "flags": [],
     "learnset": {}
   },
@@ -17246,6 +17328,7 @@
       "spe": 150
     },
     "battle_only_forme": true,
+    "changes_from": "Aerodactyl",
     "flags": [],
     "learnset": {}
   },
@@ -17277,6 +17360,7 @@
       "spe": 130
     },
     "battle_only_forme": true,
+    "changes_from": "Mewtwo",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -17307,6 +17391,7 @@
       "spe": 140
     },
     "battle_only_forme": true,
+    "changes_from": "Mewtwo",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -17338,6 +17423,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Slowbro",
     "flags": [],
     "learnset": {}
   },
@@ -17369,6 +17455,7 @@
       "spe": 121
     },
     "battle_only_forme": true,
+    "changes_from": "Pidgeot",
     "flags": [],
     "learnset": {}
   },
@@ -17399,6 +17486,7 @@
       "spd": 50,
       "spe": 90
     },
+    "changes_from": "Pikachu-Cosplay",
     "flags": [],
     "learnset": { "meteormash": ["R"] }
   },
@@ -17429,6 +17517,7 @@
       "spd": 50,
       "spe": 90
     },
+    "changes_from": "Pikachu-Cosplay",
     "flags": [],
     "learnset": { "iciclecrash": ["R"] }
   },
@@ -17459,6 +17548,7 @@
       "spd": 50,
       "spe": 90
     },
+    "changes_from": "Pikachu-Cosplay",
     "flags": [],
     "learnset": { "drainingkiss": ["R"] }
   },
@@ -17489,6 +17579,7 @@
       "spd": 50,
       "spe": 90
     },
+    "changes_from": "Pikachu-Cosplay",
     "flags": [],
     "learnset": { "electricterrain": ["R"] }
   },
@@ -17519,6 +17610,7 @@
       "spd": 50,
       "spe": 90
     },
+    "changes_from": "Pikachu-Cosplay",
     "flags": [],
     "learnset": { "flyingpress": ["R"] }
   },
@@ -17623,6 +17715,7 @@
       "spe": 145
     },
     "battle_only_forme": true,
+    "changes_from": "Beedrill",
     "flags": [],
     "learnset": {}
   },
@@ -19955,7 +20048,7 @@
   },
   "farfetchdgalar": {
     "name": "Farfetchd-Galar",
-    "base_species": "Farfetch’d",
+    "base_species": "Farfetch'd",
     "forme": "Galar",
     "class": "Wild Duck",
     "color": "Brown",
@@ -20164,6 +20257,7 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "changes_from": "Venusaur",
     "flags": [],
     "learnset": {}
   },
@@ -20196,6 +20290,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Charizard",
     "flags": [],
     "learnset": {}
   },
@@ -20227,6 +20322,7 @@
       "spe": 78
     },
     "battle_only_forme": true,
+    "changes_from": "Blastoise",
     "flags": [],
     "learnset": {}
   },
@@ -20259,6 +20355,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "changes_from": "Butterfree",
     "flags": [],
     "learnset": {}
   },
@@ -20290,6 +20387,7 @@
       "spe": 90
     },
     "battle_only_forme": true,
+    "changes_from": "Pikachu",
     "flags": [],
     "learnset": {}
   },
@@ -20321,6 +20419,7 @@
       "spe": 90
     },
     "battle_only_forme": true,
+    "changes_from": "Meowth",
     "flags": [],
     "learnset": {}
   },
@@ -20352,6 +20451,7 @@
       "spe": 55
     },
     "battle_only_forme": true,
+    "changes_from": "Machamp",
     "flags": [],
     "learnset": {}
   },
@@ -20383,6 +20483,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "changes_from": "Gengar",
     "flags": [],
     "learnset": {}
   },
@@ -20414,6 +20515,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "changes_from": "Kingler",
     "flags": [],
     "learnset": {}
   },
@@ -20446,6 +20548,7 @@
       "spe": 60
     },
     "battle_only_forme": true,
+    "changes_from": "Lapras",
     "flags": [],
     "learnset": {}
   },
@@ -20477,6 +20580,7 @@
       "spe": 55
     },
     "battle_only_forme": true,
+    "changes_from": "Eevee",
     "flags": [],
     "learnset": {}
   },
@@ -20508,6 +20612,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Snorlax",
     "flags": [],
     "learnset": {}
   },

@@ -116,13 +116,19 @@ pub struct SpeciesData {
     ///
     /// For example, Giratina's base forme is "Altered".
     pub base_forme: Option<String>,
+    /// Formes, which have distinct species data.
+    #[serde(default)]
+    pub formes: HashSet<String>,
     /// Cosmetic formes, which have no impact on species data.
     #[serde(default)]
     pub cosmetic_formes: HashSet<String>,
     /// Is this forme available only in battles?
     #[serde(default)]
     pub battle_only_forme: bool,
-    /// Items required for transforming into this forme.
+    /// Moves required for transforming into this forme. At least one move must be known.
+    #[serde(default)]
+    pub required_moves: HashSet<String>,
+    /// Items required for transforming into this forme. At least one item must be held.
     #[serde(default)]
     pub required_items: HashSet<String>,
     /// The species and forme name this forme transforms from.

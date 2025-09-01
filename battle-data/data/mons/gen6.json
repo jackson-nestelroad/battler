@@ -850,6 +850,7 @@
     },
     "prevo": "Frogadier",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Greninja-Battle-Bond", "Greninja-Ash"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1896,6 +1897,7 @@
     },
     "prevo": "Flabébé",
     "evolution_data": { "method": "L", "condition": "", "level": 19 },
+    "formes": ["Floette-Eternal"],
     "cosmetic_formes": [
       "Floette-Yellow",
       "Floette-Orange",
@@ -2699,6 +2701,7 @@
     },
     "prevo": "Espurr",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "formes": ["Meowstic-Female"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -2966,6 +2969,7 @@
       "condition": "",
       "use_item": "Dusk Stone"
     },
+    "formes": ["Aegislash-Blade"],
     "flags": [],
     "learnset": {
       "aerialace": ["L1"],
@@ -5207,6 +5211,7 @@
     },
     "prevo": "Goomy",
     "evolution_data": { "method": "L", "condition": "", "level": 40 },
+    "formes": ["Sliggoo-Hisui"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -5278,6 +5283,7 @@
     },
     "prevo": "Sliggoo",
     "evolution_data": { "method": "L", "condition": "", "level": 50 },
+    "formes": ["Goodra-Hisui"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -5665,6 +5671,7 @@
       "spd": 55,
       "spe": 51
     },
+    "formes": ["Pumpkaboo-Small", "Pumpkaboo-Large", "Pumpkaboo-Super"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -5764,6 +5771,7 @@
     },
     "prevo": "Pumpkaboo",
     "evolution_data": { "method": "T", "condition": "" },
+    "formes": ["Gourgeist-Small", "Gourgeist-Large", "Gourgeist-Super"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -5943,6 +5951,7 @@
     },
     "prevo": "Bergmite",
     "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "formes": ["Avalugg-Hisui"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -6419,6 +6428,12 @@
       "spd": 95,
       "spe": 95
     },
+    "formes": [
+      "Zygarde-10-Power-Construct",
+      "Zygarde-50-Power-Construct",
+      "Zygarde-Complete",
+      "Zygarde-10"
+    ],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "bind": ["L18"],
@@ -6508,6 +6523,7 @@
       "spd": 150,
       "spe": 50
     },
+    "formes": ["Diancie-Mega"],
     "flags": ["Mythical"],
     "learnset": {
       "afteryou": ["T"],
@@ -6601,6 +6617,7 @@
       "spd": 130,
       "spe": 70
     },
+    "formes": ["Hoopa-Unbound"],
     "flags": ["Mythical"],
     "learnset": {
       "allyswitch": ["L1"],
@@ -6837,6 +6854,7 @@
       "spe": 60
     },
     "battle_only_forme": true,
+    "changes_from": "Aegislash",
     "flags": [],
     "learnset": {}
   },
@@ -7124,6 +7142,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "changes_from": "Diancie",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -7154,6 +7173,7 @@
       "spd": 130,
       "spe": 80
     },
+    "changes_from": "Hoopa",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -7215,6 +7235,7 @@
       "spe": 132
     },
     "battle_only_forme": true,
+    "changes_from": "Greninja-Bond",
     "flags": [],
     "learnset": {}
   },
@@ -7305,6 +7326,7 @@
       "spd": 95,
       "spe": 85
     },
+    "changes_from": "Zygarde",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -7335,6 +7357,7 @@
       "spd": 85,
       "spe": 115
     },
+    "changes_from": "Zygarde",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },

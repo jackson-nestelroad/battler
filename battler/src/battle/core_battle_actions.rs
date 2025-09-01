@@ -4043,6 +4043,7 @@ pub fn set_ability(
     context: &mut ApplyingEffectContext,
     ability: &Id,
     dry_run: bool,
+    force: bool,
     silent: bool,
 ) -> Result<bool> {
     if context.target().hp == 0 {
@@ -4064,11 +4065,13 @@ pub fn set_ability(
         .non_condition_handle()
         .wrap_expectation("expected ability to have non-condition handle")?;
 
-    if !core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::SetAbility,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(ability_handle.clone())]),
-    ) {
+    if !force
+        && !core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::SetAbility,
+            fxlang::VariableInput::from_iter([fxlang::Value::Effect(ability_handle.clone())]),
+        )
+    {
         return Ok(false);
     }
 
@@ -4146,7 +4149,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     context.target_mut().types = types;
     context.target_mut().stats = stats;
     context.target_mut().boosts = boosts;
-    set_ability(context, &ability_id, false, true)?;
+    set_ability(context, &ability_id, true, false, true)?;
     context.target_mut().move_slots = move_slots;
 
     core_battle_logs::transform(context, target)?;
@@ -4225,7 +4228,7 @@ pub fn forme_change(
     // Change the ability after logs, since battle effects start triggering.
     if forme_change_type.permanent() {
         let new_ability = context.target().base_ability.id.clone();
-        set_ability(context, &new_ability, false, true)?;
+        set_ability(context, &new_ability, true, false, true)?;
     }
 
     Ok(true)

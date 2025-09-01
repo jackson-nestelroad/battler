@@ -2495,6 +2495,7 @@
       "level": 20,
       "gender": "F"
     },
+    "formes": ["Wormadam-Sandy", "Wormadam-Trash"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -3936,6 +3937,7 @@
     },
     "prevo": "Buneary",
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "formes": ["Lopunny-Mega"],
     "flags": [],
     "learnset": {
       "afteryou": ["L43"],
@@ -5668,6 +5670,7 @@
     },
     "prevo": "Gabite",
     "evolution_data": { "method": "L", "condition": "", "level": 48 },
+    "formes": ["Garchomp-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -6012,6 +6015,7 @@
       "friendship": true,
       "time_of_day": "day"
     },
+    "formes": ["Lucario-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -7216,6 +7220,7 @@
     },
     "prevo": "Snover",
     "evolution_data": { "method": "L", "condition": "", "level": 40 },
+    "formes": ["Abomasnow-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -8859,6 +8864,7 @@
       "gender": "M",
       "use_item": "Dawn Stone"
     },
+    "formes": ["Gallade-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["L17"],
@@ -9330,6 +9336,13 @@
       "spd": 77,
       "spe": 91
     },
+    "formes": [
+      "Rotom-Heat",
+      "Rotom-Wash",
+      "Rotom-Frost",
+      "Rotom-Fan",
+      "Rotom-Mow"
+    ],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -9745,6 +9758,7 @@
       "spd": 100,
       "spe": 90
     },
+    "formes": ["Dialga-Origin"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -9856,6 +9870,7 @@
       "spd": 120,
       "spe": 100
     },
+    "formes": ["Palkia-Origin"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -10166,7 +10181,16 @@
       "spd": 120,
       "spe": 90
     },
+    "formes": ["Giratina-Origin"],
     "flags": ["Restricted Legendary"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.item == griseousorb or $mon.item == griseouscore:",
+          ["forme_change: $mon giratinaorigin"]
+        ]
+      }
+    },
     "learnset": {
       "aerialace": ["M"],
       "aircutter": ["T"],
@@ -10254,14 +10278,6 @@
       "toxic": ["M"],
       "twister": ["T"],
       "willowisp": ["M"]
-    },
-    "effect": {
-      "callbacks": {
-        "on_update": [
-          "if $mon.item == griseousorb or $mon.item == griseouscore:",
-          ["forme_change: $mon giratinaorigin"]
-        ]
-      }
     }
   },
   "cresselia": {
@@ -10675,6 +10691,7 @@
       "spd": 100,
       "spe": 100
     },
+    "formes": ["Shaymin-Sky"],
     "flags": ["Mythical"],
     "learnset": {
       "aircutter": ["T"],
@@ -10763,6 +10780,25 @@
       "spd": 120,
       "spe": 120
     },
+    "formes": [
+      "Arceus-Bug",
+      "Arceus-Dark",
+      "Arceus-Dragon",
+      "Arceus-Electric",
+      "Arceus-Fighting",
+      "Arceus-Fire",
+      "Arceus-Flying",
+      "Arceus-Ghost",
+      "Arceus-Grass",
+      "Arceus-Ground",
+      "Arceus-Ice",
+      "Arceus-Poison",
+      "Arceus-Psychic",
+      "Arceus-Rock",
+      "Arceus-Steel",
+      "Arceus-Water",
+      "Arceus-Fairy"
+    ],
     "flags": ["Mythical"],
     "learnset": {
       "aerialace": ["M"],
@@ -13826,7 +13862,20 @@
       "spd": 75,
       "spe": 127
     },
+    "changes_from": "Shaymin",
     "flags": ["Mythical"],
+    "effect": {
+      "callbacks": {
+        "on_update": [
+          "if $mon.status == frz or $field.time == night:",
+          ["forme_change: $target shaymin permanent"]
+        ],
+        "on_after_set_status": [
+          "if $status.id == frz:",
+          ["forme_change: $target shaymin permanent"]
+        ]
+      }
+    },
     "learnset": {}
   },
   "giratinaorigin": {
@@ -13859,12 +13908,15 @@
     "required_items": ["Griseous Orb"],
     "changes_from": "Giratina-Altered",
     "flags": ["Restricted Legendary"],
-    "learnset": {},
     "effect": {
       "callbacks": {
-        "on_update": ["if !$mon.item:", ["forme_change: $mon giratina"]]
+        "on_update": [
+          "if !$mon.item or ($mon.item != griseousorb and $mon.item != griseouscore):",
+          ["forme_change: $mon giratina"]
+        ]
       }
-    }
+    },
+    "learnset": {}
   },
   "rotomheat": {
     "name": "Rotom-Heat",
@@ -14049,6 +14101,7 @@
       "spe": 92
     },
     "battle_only_forme": true,
+    "changes_from": "Garchomp",
     "flags": [],
     "learnset": {}
   },
@@ -14080,6 +14133,7 @@
       "spe": 112
     },
     "battle_only_forme": true,
+    "changes_from": "Lucario",
     "flags": [],
     "learnset": {}
   },
@@ -14111,6 +14165,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Abomasnow",
     "flags": [],
     "learnset": {}
   },
@@ -14142,6 +14197,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "changes_from": "Gallade",
     "flags": [],
     "learnset": {}
   },
@@ -14173,6 +14229,7 @@
       "spe": 135
     },
     "battle_only_forme": true,
+    "changes_from": "Lopunny",
     "flags": [],
     "learnset": {}
   },
@@ -14204,6 +14261,7 @@
       "spd": 120,
       "spe": 90
     },
+    "changes_from": "Dialga",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -14235,6 +14293,7 @@
       "spd": 120,
       "spe": 120
     },
+    "changes_from": "Palkia",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   }

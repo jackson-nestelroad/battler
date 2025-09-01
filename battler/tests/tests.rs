@@ -79,6 +79,7 @@ mod abilities {
         mod reckless_test;
         mod rivalry_test;
         mod scrappy_test;
+        mod shaymin_test;
         mod simple_test;
         mod skill_link_test;
         mod slow_start_test;

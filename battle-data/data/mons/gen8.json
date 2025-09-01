@@ -87,6 +87,7 @@
     },
     "prevo": "Thwackey",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "formes": ["Rillaboom-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -178,6 +179,7 @@
     },
     "prevo": "Raboot",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "formes": ["Cinderace-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -269,6 +271,7 @@
     },
     "prevo": "Drizzile",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "formes": ["Inteleon-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -421,6 +424,7 @@
     },
     "prevo": "Corvisquire",
     "evolution_data": { "method": "L", "condition": "", "level": 38 },
+    "formes": ["Corviknight-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -514,6 +518,7 @@
     },
     "prevo": "Dottler",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": ["Orbeetle-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -755,6 +760,7 @@
     },
     "prevo": "Chewtle",
     "evolution_data": { "method": "L", "condition": "", "level": 22 },
+    "formes": ["Drednaw-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -908,6 +914,7 @@
     },
     "prevo": "Carkol",
     "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "formes": ["Coalossal-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -974,6 +981,7 @@
       "condition": "",
       "use_item": "Tart Apple"
     },
+    "formes": ["Flapple-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1010,6 +1018,7 @@
       "condition": "",
       "use_item": "Sweet Apple"
     },
+    "formes": ["Appletun-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1070,6 +1079,7 @@
     },
     "prevo": "Silicobra",
     "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "formes": ["Sandaconda-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1099,6 +1109,7 @@
       "spd": 95,
       "spe": 85
     },
+    "formes": ["Cramorant-Gulping", "Cramorant-Gorging"],
     "flags": [],
     "learnset": {}
   },
@@ -1222,6 +1233,11 @@
     },
     "prevo": "Toxel",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "formes": [
+      "Toxtricity-Low-Key",
+      "Toxtricity-Amped-Gmax",
+      "Toxtricity-Low-Key-Gmax"
+    ],
     "flags": [],
     "learnset": {}
   },
@@ -1284,6 +1300,7 @@
     },
     "prevo": "Sizzlipede",
     "evolution_data": { "method": "L", "condition": "", "level": 28 },
+    "formes": ["Centiskorch-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1504,6 +1521,7 @@
     },
     "prevo": "Hattrem",
     "evolution_data": { "method": "L", "condition": "", "level": 42 },
+    "formes": ["Hatterene-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1598,6 +1616,7 @@
     },
     "prevo": "Morgrem",
     "evolution_data": { "method": "L", "condition": "", "level": 42 },
+    "formes": ["Grimmsnarl-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1701,8 +1720,8 @@
     "learnset": {}
   },
   "sirfetchd": {
-    "name": "Sirfetch’d",
-    "base_species": "Sirfetch’d",
+    "name": "Sirfetch'd",
+    "base_species": "Sirfetch'd",
     "class": "Wild Duck",
     "color": "White",
     "primary_type": "Fighting",
@@ -1726,7 +1745,7 @@
       "spd": 82,
       "spe": 65
     },
-    "prevo": "Farfetch’d",
+    "prevo": "Farfetch'd",
     "evolution_data": { "method": "B", "condition": "" },
     "flags": [],
     "learnset": {}
@@ -1852,6 +1871,7 @@
     },
     "prevo": "Milcery",
     "evolution_data": { "method": "C", "condition": "" },
+    "formes": ["Alcremie-Gmax"],
     "cosmetic_formes": [
       "Alcremie-Ruby-Cream",
       "Alcremie-Matcha-Cream",
@@ -2044,6 +2064,7 @@
       "spd": 90,
       "spe": 50
     },
+    "formes": ["Eiscue-Noice"],
     "flags": [],
     "learnset": {}
   },
@@ -2075,6 +2096,7 @@
       "spd": 95,
       "spe": 95
     },
+    "formes": ["Indeedee-Female"],
     "flags": [],
     "learnset": {}
   },
@@ -2105,6 +2127,7 @@
       "spd": 58,
       "spe": 97
     },
+    "formes": ["Morpeko-Hangry"],
     "flags": [],
     "learnset": {}
   },
@@ -2165,6 +2188,7 @@
     },
     "prevo": "Cufant",
     "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "formes": ["Copperajah-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -2315,6 +2339,7 @@
       "spd": 50,
       "spe": 85
     },
+    "formes": ["Duraludon-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -2437,6 +2462,7 @@
       "spd": 115,
       "spe": 138
     },
+    "formes": ["Zacian-Crowned"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -2465,6 +2491,7 @@
       "spd": 115,
       "spe": 138
     },
+    "formes": ["Zamazenta-Crowned"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -2494,6 +2521,7 @@
       "spd": 95,
       "spe": 130
     },
+    "formes": ["Eternatus-Eternamax"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -2554,6 +2582,11 @@
     },
     "prevo": "Kubfu",
     "evolution_data": { "method": "C", "condition": "" },
+    "formes": [
+      "Urshifu-Rapid-Strike",
+      "Urshifu-Single-Strike-Gmax",
+      "Urshifu-Rapid-Strike-Gmax"
+    ],
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -2583,6 +2616,7 @@
       "spd": 95,
       "spe": 105
     },
+    "formes": ["Zarude-Dada"],
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -2724,6 +2758,7 @@
       "spd": 80,
       "spe": 80
     },
+    "formes": ["Calyrex-Ice", "Calyrex-Shadow"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -2828,6 +2863,7 @@
       "condition": "",
       "time_of_day": "full-moon"
     },
+    "formes": ["Ursaluna-Bloodmoon"],
     "flags": [],
     "learnset": {}
   },
@@ -2861,6 +2897,7 @@
     },
     "prevo": "Basculin",
     "evolution_data": { "method": "B", "condition": "" },
+    "formes": ["Basculegion-Female"],
     "flags": [],
     "learnset": {}
   },
@@ -2965,6 +3002,7 @@
       "spd": 80,
       "spe": 106
     },
+    "formes": ["Enamorus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -2995,6 +3033,7 @@
       "spd": 95,
       "spe": 85
     },
+    "changes_from": "Cramorant",
     "flags": [],
     "learnset": {}
   },
@@ -3025,6 +3064,7 @@
       "spd": 95,
       "spe": 85
     },
+    "changes_from": "Cramorant",
     "flags": [],
     "learnset": {}
   },
@@ -3085,6 +3125,7 @@
       "spd": 50,
       "spe": 130
     },
+    "changes_from": "Eiscue",
     "flags": [],
     "learnset": {}
   },
@@ -3146,6 +3187,7 @@
       "spd": 58,
       "spe": 97
     },
+    "changes_from": "Morpeko",
     "flags": [],
     "learnset": {}
   },
@@ -3176,6 +3218,7 @@
       "spd": 115,
       "spe": 148
     },
+    "changes_from": "Zacian",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3206,6 +3249,7 @@
       "spd": 140,
       "spe": 128
     },
+    "changes_from": "Zamazenta",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3328,6 +3372,7 @@
       "spd": 130,
       "spe": 50
     },
+    "changes_from": "Calyrex",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3358,6 +3403,7 @@
       "spd": 100,
       "spe": 150
     },
+    "changes_from": "Calyrex",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3389,6 +3435,7 @@
       "spe": 85
     },
     "battle_only_forme": true,
+    "changes_from": "Rillaboom",
     "flags": [],
     "learnset": {}
   },
@@ -3420,6 +3467,7 @@
       "spe": 119
     },
     "battle_only_forme": true,
+    "changes_from": "Cinderace",
     "flags": [],
     "learnset": {}
   },
@@ -3451,6 +3499,7 @@
       "spe": 120
     },
     "battle_only_forme": true,
+    "changes_from": "Inteleon",
     "flags": [],
     "learnset": {}
   },
@@ -3483,6 +3532,7 @@
       "spe": 67
     },
     "battle_only_forme": true,
+    "changes_from": "Corviknight",
     "flags": [],
     "learnset": {}
   },
@@ -3515,6 +3565,7 @@
       "spe": 90
     },
     "battle_only_forme": true,
+    "changes_from": "Orbeetle",
     "flags": [],
     "learnset": {}
   },
@@ -3547,6 +3598,7 @@
       "spe": 74
     },
     "battle_only_forme": true,
+    "changes_from": "Drednaw",
     "flags": [],
     "learnset": {}
   },
@@ -3579,6 +3631,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Coalossal",
     "flags": [],
     "learnset": {}
   },
@@ -3611,6 +3664,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "changes_from": "Flapple",
     "flags": [],
     "learnset": {}
   },
@@ -3643,6 +3697,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Appletun",
     "flags": [],
     "learnset": {}
   },
@@ -3674,6 +3729,7 @@
       "spe": 71
     },
     "battle_only_forme": true,
+    "changes_from": "Sandaconda",
     "flags": [],
     "learnset": {}
   },
@@ -3738,6 +3794,7 @@
       "spe": 65
     },
     "battle_only_forme": true,
+    "changes_from": "Centiskorch",
     "flags": [],
     "learnset": {}
   },
@@ -3770,6 +3827,7 @@
       "spe": 29
     },
     "battle_only_forme": true,
+    "changes_from": "Hatterene",
     "flags": [],
     "learnset": {}
   },
@@ -3802,6 +3860,7 @@
       "spe": 60
     },
     "battle_only_forme": true,
+    "changes_from": "Grimmsnarl",
     "flags": [],
     "learnset": {}
   },
@@ -3833,6 +3892,7 @@
       "spe": 64
     },
     "battle_only_forme": true,
+    "changes_from": "Alcremie",
     "flags": [],
     "learnset": {}
   },
@@ -3864,6 +3924,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "changes_from": "Copperajah",
     "flags": [],
     "learnset": {}
   },
@@ -3896,6 +3957,7 @@
       "spe": 85
     },
     "battle_only_forme": true,
+    "changes_from": "Duraludon",
     "flags": [],
     "learnset": {}
   },
@@ -3958,6 +4020,7 @@
       "spe": 97
     },
     "battle_only_forme": true,
+    "changes_from": "Urshifu-Rapid-Strike",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -3990,6 +4053,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "changes_from": "Toxtricity-Low-Key",
     "flags": [],
     "learnset": {}
   },
@@ -4051,6 +4115,7 @@
       "spd": 100,
       "spe": 46
     },
+    "changes_from": "Enamorus",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },

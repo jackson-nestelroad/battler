@@ -333,6 +333,7 @@
     },
     "prevo": "Lechonk",
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
+    "formes": ["Oinkologne-Female"],
     "flags": [],
     "learnset": {}
   },
@@ -608,6 +609,7 @@
     },
     "prevo": "Tandemaus",
     "evolution_data": { "method": "C", "condition": "", "level": 25 },
+    "formes": ["Maushold-Family-Of-Three"],
     "flags": [],
     "learnset": {}
   },
@@ -793,6 +795,11 @@
       "spd": 51,
       "spe": 92
     },
+    "formes": [
+      "Squawkabilly-Blue-Plumage",
+      "Squawkabilly-Yellow-Plumage",
+      "Squawkabilly-White-Plumage"
+    ],
     "flags": [],
     "learnset": {}
   },
@@ -1817,6 +1824,7 @@
     },
     "prevo": "Finizen",
     "evolution_data": { "method": "C", "condition": "", "level": 38 },
+    "formes": ["Palafin-Hero"],
     "flags": [],
     "learnset": {}
   },
@@ -2249,6 +2257,7 @@
       "spd": 95,
       "spe": 82
     },
+    "formes": ["Tatsugiri-Droopy", "Tatsugiri-Stretchy"],
     "flags": [],
     "learnset": {}
   },
@@ -2385,6 +2394,7 @@
       "condition": "",
       "knows_move": "Hyper Drill"
     },
+    "formes": ["Dudunsparce-Three-Segment"],
     "flags": [],
     "learnset": {}
   },
@@ -2901,6 +2911,7 @@
       "spd": 70,
       "spe": 10
     },
+    "formes": ["Gimmighoul-Roaming"],
     "flags": [],
     "learnset": {}
   },
@@ -3144,6 +3155,12 @@
       "spd": 100,
       "spe": 135
     },
+    "formes": [
+      "Koraidon-Limited-Build",
+      "Koraidon-Sprinting-Build",
+      "Koraidon-Swimming-Build",
+      "Koraidon-Gliding-Build"
+    ],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3175,6 +3192,12 @@
       "spd": 115,
       "spe": 135
     },
+    "formes": [
+      "Miraidon-Low-Power-Mode",
+      "Miraidon-Drive-Mode",
+      "Miraidon-Aquatic-Mode",
+      "Miraidon-Glide-Mode"
+    ],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3447,6 +3470,11 @@
       "spd": 96,
       "spe": 110
     },
+    "formes": [
+      "Ogerpon-Wellspring-Mask",
+      "Ogerpon-Hearthflame-Mask",
+      "Ogerpon-Cornerstone-Mask"
+    ],
     "flags": [],
     "learnset": {}
   },
@@ -3651,6 +3679,7 @@
       "spd": 85,
       "spe": 60
     },
+    "formes": ["Terapagos-Terastal", "Terapagos-Stellar"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -3771,6 +3800,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "changes_from": "Palafin",
     "flags": [],
     "learnset": {}
   },
@@ -4354,6 +4384,7 @@
       "spe": 85
     },
     "battle_only_forme": true,
+    "changes_from": "Terapagos",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -4384,6 +4415,7 @@
       "spe": 85
     },
     "battle_only_forme": true,
+    "changes_from": "Terapagos",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   }
