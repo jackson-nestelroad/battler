@@ -3193,8 +3193,8 @@ fn set_ability(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::set_ability(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &ability_id,
-        false,
         dry_run,
+        false,
         silent,
     )
     .map(|val| Value::Boolean(val))

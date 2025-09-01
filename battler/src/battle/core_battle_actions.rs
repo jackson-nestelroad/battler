@@ -4149,7 +4149,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     context.target_mut().types = types;
     context.target_mut().stats = stats;
     context.target_mut().boosts = boosts;
-    set_ability(context, &ability_id, true, false, true)?;
+    set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().move_slots = move_slots;
 
     core_battle_logs::transform(context, target)?;
@@ -4228,7 +4228,7 @@ pub fn forme_change(
     // Change the ability after logs, since battle effects start triggering.
     if forme_change_type.permanent() {
         let new_ability = context.target().base_ability.id.clone();
-        set_ability(context, &new_ability, true, false, true)?;
+        set_ability(context, &new_ability, false, true, true)?;
     }
 
     Ok(true)
