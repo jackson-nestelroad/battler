@@ -14101,6 +14101,7 @@
       "spe": 92
     },
     "battle_only_forme": true,
+    "required_items": ["Garchompite"],
     "changes_from": "Garchomp",
     "flags": [],
     "learnset": {}
@@ -14133,6 +14134,7 @@
       "spe": 112
     },
     "battle_only_forme": true,
+    "required_items": ["Lucarionite"],
     "changes_from": "Lucario",
     "flags": [],
     "learnset": {}
@@ -14165,6 +14167,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "required_items": ["Abomasite"],
     "changes_from": "Abomasnow",
     "flags": [],
     "learnset": {}
@@ -14197,6 +14200,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Galladite"],
     "changes_from": "Gallade",
     "flags": [],
     "learnset": {}
@@ -14229,6 +14233,7 @@
       "spe": 135
     },
     "battle_only_forme": true,
+    "required_items": ["Lopunnite"],
     "changes_from": "Lopunny",
     "flags": [],
     "learnset": {}
@@ -14261,6 +14266,7 @@
       "spd": 120,
       "spe": 90
     },
+    "required_items": ["Adamant Crystal"],
     "changes_from": "Dialga",
     "flags": ["Restricted Legendary"],
     "learnset": {}
@@ -14293,6 +14299,7 @@
       "spd": 120,
       "spe": 120
     },
+    "required_items": ["Lustrous Globe"],
     "changes_from": "Palkia",
     "flags": ["Restricted Legendary"],
     "learnset": {}

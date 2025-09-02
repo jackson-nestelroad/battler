@@ -14922,6 +14922,7 @@
       "spd": 90,
       "spe": 108
     },
+    "required_moves": ["Secret Sword"],
     "changes_from": "Keldeo",
     "flags": ["Mythical"],
     "learnset": {}
@@ -14954,6 +14955,7 @@
       "spe": 50
     },
     "battle_only_forme": true,
+    "required_items": ["Audinite"],
     "changes_from": "Audino",
     "flags": [],
     "learnset": {}

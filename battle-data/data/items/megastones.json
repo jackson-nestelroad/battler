@@ -4,7 +4,15 @@
     "mega_evolves_from": "Gengar",
     "mega_evolves_into": "Gengar-Mega",
     "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": { "fling": { "power": 80 } },
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "gengar"
+        }
+      }
+    }
   },
   "gardevoirite": {
     "name": "Gardevoirite",
@@ -25,7 +33,15 @@
     "mega_evolves_from": "Venusaur",
     "mega_evolves_into": "Venusaur-Mega",
     "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": { "fling": { "power": 80 } },
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "venusaur"
+        }
+      }
+    }
   },
   "charizarditex": {
     "name": "Charizardite X",

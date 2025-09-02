@@ -278,6 +278,19 @@ impl TestBattleBuilder {
         self
     }
 
+    pub fn with_mega_evolution(mut self, mega_evolution: bool) -> Self {
+        let rule = Rule::Value {
+            name: Id::from("Mega Evolution"),
+            value: String::default(),
+        };
+        if mega_evolution {
+            self.options.format.rules.insert(rule);
+        } else {
+            self.options.format.rules.remove(&rule);
+        }
+        self
+    }
+
     pub fn with_weather(mut self, weather: Option<String>) -> Self {
         self.options.field.weather = weather;
         self

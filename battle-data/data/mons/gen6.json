@@ -7142,6 +7142,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Diancite"],
     "changes_from": "Diancie",
     "flags": ["Mythical"],
     "learnset": {}

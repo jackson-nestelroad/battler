@@ -3218,6 +3218,7 @@
       "spd": 115,
       "spe": 148
     },
+    "required_items": ["Rusted Sword"],
     "changes_from": "Zacian",
     "flags": ["Restricted Legendary"],
     "learnset": {}
@@ -3249,6 +3250,7 @@
       "spd": 140,
       "spe": 128
     },
+    "required_items": ["Rusted Shield"],
     "changes_from": "Zamazenta",
     "flags": ["Restricted Legendary"],
     "learnset": {}

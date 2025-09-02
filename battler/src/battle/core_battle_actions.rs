@@ -3,7 +3,10 @@ use std::{
     sync::LazyLock,
 };
 
-use ahash::HashMap;
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use anyhow::Result;
 use battler_data::{
     Boost,
@@ -53,6 +56,7 @@ use crate::{
         MoveOutcomeOnTarget,
         Player,
         PlayerContext,
+        RecalculateBaseStatsHpPolicy,
         ReceivedAttackEntry,
         Side,
         SideEffectContext,
@@ -3339,7 +3343,7 @@ pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<()> {
     context.mon_mut().level = target_level;
 
     Mon::recalculate_stats(context)?;
-    Mon::recalculate_base_stats(context)?;
+    Mon::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::KeepHealthRatio)?;
     core_battle_logs::level_up(context)?;
 
     for level in old_level..target_level {
@@ -3490,7 +3494,8 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
             context.mon_mut().evs.set(stat, new_ev_value);
         }
         Mon::recalculate_stats(&mut context)?;
-        Mon::recalculate_base_stats(&mut context)?;
+        // NOTE: We do not recalculate base stats here, or else the Mon's HP can update
+        // unexpectedly.
 
         let exp = calculate_exp_gain(&mut context, fainted_mon_handle)?;
         let mon_handle = context.mon_handle();
@@ -4185,13 +4190,17 @@ pub enum FormeChangeType {
     Permanent,
     MegaEvolution,
     PrimalReversion,
+    RevertMegaEvolution,
 }
 
 impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
             Self::Temporary => false,
-            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion => true,
+            Self::Permanent
+            | Self::MegaEvolution
+            | Self::PrimalReversion
+            | Self::RevertMegaEvolution => true,
         }
     }
 }
@@ -4202,28 +4211,40 @@ pub fn forme_change(
     species: &Id,
     forme_change_type: FormeChangeType,
 ) -> Result<bool> {
-    // TODO: Validate forme change type is allowed.
-
     if !Mon::set_species(&mut context.target_context()?, species)? {
         return Ok(false);
     }
 
     if forme_change_type.permanent() {
-        core_battle_logs::species_change(&mut context.target_context()?)?;
-        Mon::set_base_species(&mut context.target_context()?, species, true)?;
+        let mut context = context.target_context()?;
+        core_battle_logs::species_change(&mut context)?;
 
-        // TODO: Mega Evolution and Primal Reversion logs.
+        let previous_base_species = context.mon().base_species.clone();
+        Mon::set_base_species(&mut context, species, true)?;
+
+        match forme_change_type {
+            FormeChangeType::MegaEvolution => {
+                context.mon_mut().base_species_revert_on_exit = Some(previous_base_species);
+            }
+            _ => (),
+        }
     }
 
     match forme_change_type {
         FormeChangeType::Temporary | FormeChangeType::Permanent => {
             core_battle_logs::forme_change(context)?;
         }
+        FormeChangeType::MegaEvolution => {
+            core_battle_logs::mega_evolution(context)?;
+        }
+        FormeChangeType::RevertMegaEvolution => {
+            core_battle_logs::revert_mega_evolution(context)?;
+        }
         _ => todo!("forme change log not implemented"),
     }
 
     // Change the ability after logs, since battle effects start triggering.
-    if forme_change_type.permanent() {
+    if forme_change_type.permanent() && context.target().hp != 0 {
         let new_ability = context.target().base_ability.id.clone();
         set_ability(context, &new_ability, false, true, true)?;
     }
@@ -5091,6 +5112,130 @@ fn check_critical_capture(context: &mut PlayerContext, catch_rate: u64) -> bool 
     rand < c
 }
 
-pub fn can_mega_evolve(_: &mut MonContext) -> Result<bool> {
-    Ok(false)
+/// Triggers effects when the battle has ended.
+pub fn end_battle(context: &mut Context) -> Result<()> {
+    core_battle_effects::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndBattle)?;
+
+    // Recalculate all base stats, in case EVs were updated.
+    for mon in context
+        .battle()
+        .all_active_mon_handles()
+        .collect::<Vec<_>>()
+    {
+        Mon::recalculate_base_stats(
+            &mut context.mon_context(mon)?,
+            RecalculateBaseStatsHpPolicy::KeepHealthRatioSilently,
+        )?;
+    }
+
+    Ok(())
+}
+
+pub struct MegaEvolution {
+    pub source_effect: EffectHandle,
+    pub species: Id,
+}
+
+/// Checks if the Mon can Mega Evolve.
+pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>> {
+    if !context.player().can_mega_evolve {
+        return Ok(None);
+    }
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.mon().base_species)?;
+
+    // First, check if there is a forme we can Mega Evolve into by knowing a move (e.g., Mega
+    // Rayquaza).
+    let forme = species
+        .data
+        .formes
+        .iter()
+        .map(|forme| Id::from(forme.as_ref()))
+        .find(|forme| {
+            context
+                .battle()
+                .dex
+                .species
+                .get_by_id(&forme)
+                .is_ok_and(|forme| forme.data.mega())
+        });
+    if let Some(forme) = forme {
+        let forme = context.battle().dex.species.get_by_id(&forme)?;
+        let required_moves = forme
+            .data
+            .required_moves
+            .iter()
+            .map(|move_name| Id::from(move_name.as_ref()))
+            .collect::<HashSet<_>>();
+        if !required_moves.is_empty() {
+            let base_moves = context
+                .mon()
+                .base_move_slots
+                .iter()
+                .map(|move_slot| move_slot.id.clone())
+                .collect();
+            let required_move_known = required_moves.intersection(&base_moves).next();
+            return Ok(
+                required_move_known.map(|required_move_known| MegaEvolution {
+                    source_effect: EffectHandle::InactiveMove(required_move_known.clone()),
+                    species: species.id().clone(),
+                }),
+            );
+        }
+    }
+
+    // Next, check if the item triggers Mega Evolution.
+    let item = match context.mon().item.as_ref().map(|item| item.id.clone()) {
+        Some(item) => item,
+        None => return Ok(None),
+    };
+
+    let item = context.battle().dex.items.get_by_id(&item)?;
+    let can_mega_evolve_with_item = item
+        .data
+        .mega_evolves_from
+        .as_ref()
+        .is_some_and(|from| &Id::from(from.as_ref()) == species.id());
+    if !can_mega_evolve_with_item {
+        return Ok(None);
+    }
+    let mega_evolves_into = item
+        .data
+        .mega_evolves_into
+        .as_ref()
+        .map(|s| Id::from(s.as_ref()));
+    return Ok(mega_evolves_into.map(|mega_evolves_into| MegaEvolution {
+        source_effect: EffectHandle::Item(item.id().clone()),
+        species: mega_evolves_into,
+    }));
+}
+
+/// Mega Evolves the Mon if it is able to do so.
+pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
+    let mega_evolution = match can_mega_evolve(context)? {
+        Some(mega_evolution) => mega_evolution,
+        None => return Ok(false),
+    };
+
+    let target = context.mon_handle();
+    if !forme_change(
+        &mut context.as_battle_context_mut().applying_effect_context(
+            mega_evolution.source_effect,
+            None,
+            target,
+            None,
+        )?,
+        &mega_evolution.species,
+        FormeChangeType::MegaEvolution,
+    )? {
+        context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
+        return Ok(false);
+    }
+
+    context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Success);
+    context.player_mut().can_mega_evolve = false;
+    Ok(true)
 }

@@ -17043,6 +17043,7 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "required_items": ["Venusaurite"],
     "changes_from": "Venusaur",
     "flags": [],
     "learnset": {}
@@ -17075,6 +17076,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Charizardite X"],
     "changes_from": "Charizard",
     "flags": [],
     "learnset": {}
@@ -17107,6 +17109,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Charizardite Y"],
     "changes_from": "Charizard",
     "flags": [],
     "learnset": {}
@@ -17138,6 +17141,7 @@
       "spe": 78
     },
     "battle_only_forme": true,
+    "required_items": ["Blastoisinite"],
     "changes_from": "Blastoise",
     "flags": [],
     "learnset": {}
@@ -17169,6 +17173,7 @@
       "spe": 150
     },
     "battle_only_forme": true,
+    "required_items": ["Alakazite"],
     "changes_from": "Alakazam",
     "flags": [],
     "learnset": {}
@@ -17201,6 +17206,7 @@
       "spe": 130
     },
     "battle_only_forme": true,
+    "required_items": ["Gengarite"],
     "changes_from": "Gengar",
     "flags": [],
     "learnset": {}
@@ -17232,6 +17238,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Kangaskhanite"],
     "changes_from": "Kangaskhan",
     "flags": [],
     "learnset": {}
@@ -17264,6 +17271,7 @@
       "spe": 105
     },
     "battle_only_forme": true,
+    "required_items": ["Pinsirite"],
     "changes_from": "Pinsir",
     "flags": [],
     "learnset": {}
@@ -17296,6 +17304,7 @@
       "spe": 81
     },
     "battle_only_forme": true,
+    "required_items": ["Gyaradosite"],
     "changes_from": "Gyarados",
     "flags": [],
     "learnset": {}
@@ -17328,6 +17337,7 @@
       "spe": 150
     },
     "battle_only_forme": true,
+    "required_items": ["Aerodactylite"],
     "changes_from": "Aerodactyl",
     "flags": [],
     "learnset": {}
@@ -17360,6 +17370,7 @@
       "spe": 130
     },
     "battle_only_forme": true,
+    "required_items": ["Mewtwonite X"],
     "changes_from": "Mewtwo",
     "flags": ["Restricted Legendary"],
     "learnset": {}
@@ -17391,6 +17402,7 @@
       "spe": 140
     },
     "battle_only_forme": true,
+    "required_items": ["Mewtwonite Y"],
     "changes_from": "Mewtwo",
     "flags": ["Restricted Legendary"],
     "learnset": {}
@@ -17423,6 +17435,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "required_items": ["Slowbronite"],
     "changes_from": "Slowbro",
     "flags": [],
     "learnset": {}
@@ -17455,6 +17468,7 @@
       "spe": 121
     },
     "battle_only_forme": true,
+    "required_items": ["Pidgeotite"],
     "changes_from": "Pidgeot",
     "flags": [],
     "learnset": {}
@@ -17715,6 +17729,7 @@
       "spe": 145
     },
     "battle_only_forme": true,
+    "required_items": ["Beedrillite"],
     "changes_from": "Beedrill",
     "flags": [],
     "learnset": {}

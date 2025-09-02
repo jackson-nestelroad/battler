@@ -11191,6 +11191,7 @@
       "spd": 97,
       "spe": 129
     },
+    "required_items": ["Ultranecrozium Z"],
     "changes_from": "Necrozma-Dawn-Wings",
     "flags": ["Restricted Legendary"],
     "learnset": { "moongeistbeam": ["R"], "sunsteelstrike": ["R"] }

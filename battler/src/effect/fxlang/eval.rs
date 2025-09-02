@@ -973,6 +973,9 @@ where
                                     .map(|outcome| !outcome.success())
                                     .unwrap_or(false),
                             ),
+                            "moved_this_turn" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.move_this_turn_outcome.is_some(),
+                            ),
                             "name" => ValueRef::String(&context.mon(mon_handle)?.name),
                             "nature" => ValueRef::Nature(context.mon(mon_handle)?.nature),
                             "needs_switch" => {

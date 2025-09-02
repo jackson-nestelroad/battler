@@ -10,12 +10,12 @@ use serde::{
 use crate::{
     battle::{
         BattleRegistry,
-        BattleType,
         MonHandle,
         Player,
         PlayerData,
         SideContext,
     },
+    config::Format,
     dex::Dex,
     effect::fxlang,
 };
@@ -53,7 +53,7 @@ impl Side {
     pub fn new(
         data: SideData,
         index: usize,
-        battle_type: &BattleType,
+        format: &Format,
         dex: &Dex,
         registry: &BattleRegistry,
     ) -> Result<(Self, Vec<Player>)> {
@@ -61,7 +61,7 @@ impl Side {
             .players
             .into_iter()
             .enumerate()
-            .map(|(i, data)| Player::new(data, index, i, battle_type, dex, registry))
+            .map(|(i, data)| Player::new(data, index, i, format, dex, registry))
             .collect::<Result<Vec<_>, _>>()?;
         Ok((
             Self {

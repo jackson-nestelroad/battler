@@ -36,7 +36,6 @@ use crate::{
     battle::{
         Action,
         BattleRegistry,
-        BattleType,
         CoreBattle,
         EscapeAction,
         EscapeActionInput,
@@ -67,6 +66,7 @@ use crate::{
         Captures,
         split_once_optional,
     },
+    config::Format,
     dex::Dex,
     effect::{
         EffectHandle,
@@ -459,6 +459,8 @@ pub struct Player {
     /// This is helpful for locating and switching out exited Mons.
     active_or_exited: Vec<Option<MonHandle>>,
 
+    pub can_mega_evolve: bool,
+
     pub escape_attempts: u16,
     pub escaped: bool,
 
@@ -474,11 +476,11 @@ impl Player {
         data: PlayerData,
         side: usize,
         position: usize,
-        battle_type: &BattleType,
+        format: &Format,
         dex: &Dex,
         registry: &BattleRegistry,
     ) -> Result<Self> {
-        let active = vec![None; battle_type.active_per_player()];
+        let active = vec![None; format.battle_type.active_per_player()];
         let player_dex = PlayerDex {
             species: data
                 .dex
@@ -501,6 +503,7 @@ impl Player {
             active: active.clone(),
             active_or_exited: active,
             request: None,
+            can_mega_evolve: format.rules.has_rule(&Id::from_known("megaevolution")),
             escape_attempts: 0,
             escaped: false,
             bag: HashMap::default(),

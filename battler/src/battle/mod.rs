@@ -97,6 +97,7 @@ pub use mon::{
     MoveSlot,
     PhysicalMonDetails,
     PublicMonDetails,
+    RecalculateBaseStatsHpPolicy,
     ReceivedAttackEntry,
 };
 pub use move_outcome::{

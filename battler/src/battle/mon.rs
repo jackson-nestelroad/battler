@@ -383,6 +383,32 @@ pub struct MonNextTurnState {
     pub can_terastallize: bool,
 }
 
+/// Policy for a Mon's HP should be updated when recalculating base stats.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub enum RecalculateBaseStatsHpPolicy {
+    #[default]
+    DoNotUpdate,
+    KeepHealthRatio,
+    KeepHealthRatioSilently,
+    KeepDamageTaken,
+}
+
+impl RecalculateBaseStatsHpPolicy {
+    fn keep_health_ratio(&self) -> bool {
+        match self {
+            Self::KeepHealthRatio | Self::KeepHealthRatioSilently => true,
+            _ => false,
+        }
+    }
+
+    fn silent(&self) -> bool {
+        match self {
+            Self::KeepHealthRatioSilently => true,
+            _ => false,
+        }
+    }
+}
+
 /// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -398,6 +424,8 @@ pub struct Mon {
     /// The current species of the Mon. May have changed via some forme change or move (e.g.,
     /// Transform).
     pub species: Id,
+    /// The base species of the Mon to revert to if the Mon exits (i.e., faints).
+    pub base_species_revert_on_exit: Option<Id>,
 
     /// `true` if the Mon is in an active position.
     ///
@@ -560,6 +588,7 @@ impl Mon {
             name,
             base_species: species.clone(),
             species,
+            base_species_revert_on_exit: None,
 
             active: false,
             active_turns: 0,
@@ -645,7 +674,7 @@ impl Mon {
         Self::set_base_species(context, &base_species, false)?;
 
         Self::clear_volatile(context, true)?;
-        Self::recalculate_base_stats(context)?;
+        Self::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::DoNotUpdate)?;
 
         // Generate level from experience points if needed.
         if context.mon().level == 0 {
@@ -1438,7 +1467,8 @@ impl Mon {
         }
 
         if locked_move.is_none() {
-            request.can_mega_evolve = context.mon().next_turn_state.can_mega_evolve;
+            request.can_mega_evolve =
+                context.player().can_mega_evolve && context.mon().next_turn_state.can_mega_evolve;
         } else {
             request.locked_into_move = true;
         }
@@ -1539,7 +1569,10 @@ impl Mon {
     /// Recalculates a Mon's base stats.
     ///
     /// Should only be used when a Mon levels up.
-    pub fn recalculate_base_stats(context: &mut MonContext) -> Result<()> {
+    pub fn recalculate_base_stats(
+        context: &mut MonContext,
+        hp_policy: RecalculateBaseStatsHpPolicy,
+    ) -> Result<()> {
         let species = context
             .battle()
             .dex
@@ -1558,19 +1591,63 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        let mut current_health = if context.mon().max_hp > 0 {
-            Fraction::new(context.mon().hp as u32, context.mon().max_hp as u32)
-        } else {
-            Fraction::from(1u32)
-        };
-        if current_health > 1 {
-            current_health = Fraction::from(1u32);
-        }
-        context.mon_mut().max_hp = stats.hp;
-        context.mon_mut().hp = (current_health * context.mon().max_hp as u32).floor() as u16;
+        let new_base_max_hp = stats.hp;
+        context.mon_mut().base_max_hp = new_base_max_hp;
 
-        context.mon_mut().base_max_hp = stats.hp;
+        Self::update_max_hp(context, hp_policy)?;
+
         context.mon_mut().base_stored_stats = stats.clone();
+
+        Ok(())
+    }
+
+    fn update_max_hp(
+        context: &mut MonContext,
+        hp_policy: RecalculateBaseStatsHpPolicy,
+    ) -> Result<()> {
+        let new_max_hp = context.mon().base_max_hp;
+
+        // Mon is being initialized.
+        if context.mon().max_hp == 0 || hp_policy == RecalculateBaseStatsHpPolicy::DoNotUpdate {
+            context.mon_mut().max_hp = new_max_hp;
+            context.mon_mut().hp = context.mon().hp.min(context.mon().max_hp);
+            return Ok(());
+        }
+
+        let new_hp = if hp_policy.keep_health_ratio() {
+            let mut current_health = if context.mon().max_hp > 0 {
+                Fraction::new(context.mon().hp as u32, context.mon().max_hp as u32)
+            } else {
+                Fraction::from(1u32)
+            };
+            if current_health > 1 {
+                current_health = Fraction::from(1u32);
+            }
+            (current_health * new_max_hp as u32).floor() as u16
+        } else {
+            let damage_taken = if context.mon().hp > context.mon().max_hp {
+                0
+            } else {
+                context.mon().max_hp - context.mon().hp
+            };
+            if context.mon().hp == 0 {
+                0
+            } else if new_max_hp < damage_taken {
+                1
+            } else {
+                new_max_hp - damage_taken
+            }
+        };
+
+        context.mon_mut().max_hp = new_max_hp;
+
+        let previous_hp = context.mon().hp;
+        context.mon_mut().hp = new_hp;
+
+        // Battle log must reflect new HP.
+        if previous_hp != context.mon().hp && !hp_policy.silent() {
+            core_battle_logs::set_hp(context, None, None)?;
+        }
 
         Ok(())
     }
@@ -2061,23 +2138,31 @@ impl Mon {
             MonExitType::Fainted => EffectHandle::Condition(Id::from_known("faint")),
             MonExitType::Caught => EffectHandle::Condition(Id::from_known("catch")),
         };
-        core_battle_actions::end_ability_even_if_exiting(
-            &mut context.applying_effect_context(effect, None, None)?,
-            true,
-        )?;
+        let mut context = context.applying_effect_context(effect, None, None)?;
+        core_battle_actions::end_ability_even_if_exiting(&mut context, true)?;
 
-        Self::clear_volatile(context, false)?;
+        if let Some(species) = context.target_mut().base_species_revert_on_exit.take() {
+            core_battle_actions::forme_change(
+                &mut context,
+                &species,
+                core_battle_actions::FormeChangeType::RevertMegaEvolution,
+            )?;
+        }
 
-        context.mon_mut().exited = Some(exit_type);
+        Self::clear_volatile(&mut context.target_context()?, false)?;
+
+        context.target_mut().exited = Some(exit_type);
         match exit_type {
             MonExitType::Fainted => {
-                context.mon_mut().status = Some(Id::from_known("fnt"));
+                context.target_mut().status = Some(Id::from_known("fnt"));
             }
             MonExitType::Caught => (),
         }
 
-        Self::switch_out(context)?;
-        Self::clear_volatile(context, true)?;
+        let mut context = context.target_context()?;
+        Self::switch_out(&mut context)?;
+        Self::clear_volatile(&mut context, true)?;
+
         Ok(())
     }
 
@@ -2091,6 +2176,7 @@ impl Mon {
         context.mon_mut().status = None;
         context.mon_mut().hp = 1;
         Self::set_hp(context, hp)?;
+        Self::clear_volatile(context, true)?;
         Ok(context.mon().hp)
     }
 
@@ -2189,7 +2275,7 @@ impl Mon {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
         }
 
-        if core_battle_actions::can_mega_evolve(context)? {
+        if core_battle_actions::can_mega_evolve(context)?.is_some() {
             context.mon_mut().next_turn_state.can_mega_evolve = true;
         }
 

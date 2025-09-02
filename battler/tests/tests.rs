@@ -195,6 +195,12 @@ mod items {
     }
 }
 
+mod mechanics {
+    mod mega {
+        mod mega_evolution_test;
+    }
+}
+
 mod moves {
     mod gen1 {
         mod accuracy_check_test;

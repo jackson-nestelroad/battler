@@ -278,10 +278,8 @@ impl<'d> CoreBattle<'d> {
         let faint_queue = VecDeque::new();
         let catch_queue = VecDeque::new();
         let field = Field::new(options.field);
-        let (side_1, mut players) =
-            Side::new(options.side_1, 0, &format.battle_type, &dex, &registry)?;
-        let (side_2, side_2_players) =
-            Side::new(options.side_2, 1, &format.battle_type, &dex, &registry)?;
+        let (side_1, mut players) = Side::new(options.side_1, 0, &format, &dex, &registry)?;
+        let (side_2, side_2_players) = Side::new(options.side_2, 1, &format, &dex, &registry)?;
         players.extend(side_2_players);
 
         let player_ids = players
@@ -1246,10 +1244,7 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().mid_turn = true;
             }
             Action::End(action) => {
-                core_battle_effects::run_event_for_each_active_mon(
-                    context,
-                    fxlang::BattleEvent::EndBattle,
-                )?;
+                core_battle_actions::end_battle(context)?;
                 Self::win(context, action.winning_side)?;
             }
             Action::Team(action) => {
@@ -1316,7 +1311,10 @@ impl<'d> CoreBattle<'d> {
                     fxlang::VariableInput::default(),
                 );
             }
-            Action::MegaEvo(_) => todo!("mega evolution is not implemented"),
+            Action::MegaEvo(action) => {
+                let mut context = context.mon_context(action.mon)?;
+                core_battle_actions::mega_evolve(&mut context)?;
+            }
             Action::Pass => (),
             Action::BeforeTurn => {
                 for mon_handle in context

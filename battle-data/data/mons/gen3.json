@@ -14355,6 +14355,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Blazikenite"],
     "changes_from": "Blaziken",
     "flags": [],
     "learnset": {}
@@ -14387,6 +14388,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Gardevoirite"],
     "changes_from": "Gardevoir",
     "flags": [],
     "learnset": {}
@@ -14419,6 +14421,7 @@
       "spe": 50
     },
     "battle_only_forme": true,
+    "required_items": ["Mawilite"],
     "changes_from": "Mawile",
     "flags": [],
     "learnset": {}
@@ -14450,6 +14453,7 @@
       "spe": 50
     },
     "battle_only_forme": true,
+    "required_items": ["Aggronite"],
     "changes_from": "Aggron",
     "flags": [],
     "learnset": {}
@@ -14482,6 +14486,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Medichamite"],
     "changes_from": "Medicham",
     "flags": [],
     "learnset": {}
@@ -14513,6 +14518,7 @@
       "spe": 135
     },
     "battle_only_forme": true,
+    "required_items": ["Manectite"],
     "changes_from": "Manectric",
     "flags": [],
     "learnset": {}
@@ -14544,6 +14550,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "required_items": ["Banettite"],
     "changes_from": "Banette",
     "flags": [],
     "learnset": {}
@@ -14575,6 +14582,7 @@
       "spe": 115
     },
     "battle_only_forme": true,
+    "required_items": ["Absolite"],
     "changes_from": "Absol",
     "flags": [],
     "learnset": {}
@@ -14607,6 +14615,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Latiasite"],
     "changes_from": "Latias",
     "flags": ["Sub-Legendary"],
     "learnset": {}
@@ -14639,6 +14648,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Latiosite"],
     "changes_from": "Latios",
     "flags": ["Sub-Legendary"],
     "learnset": {}
@@ -14671,6 +14681,7 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "required_items": ["Swampertite"],
     "changes_from": "Swampert",
     "flags": [],
     "learnset": {}
@@ -14703,6 +14714,7 @@
       "spe": 145
     },
     "battle_only_forme": true,
+    "required_items": ["Sceptilite"],
     "changes_from": "Sceptile",
     "flags": [],
     "learnset": {}
@@ -14735,6 +14747,7 @@
       "spe": 20
     },
     "battle_only_forme": true,
+    "required_items": ["Sablenite"],
     "changes_from": "Sableye",
     "flags": [],
     "learnset": {}
@@ -14767,6 +14780,7 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "required_items": ["Altarianite"],
     "changes_from": "Altaria",
     "flags": [],
     "learnset": {}
@@ -14799,6 +14813,7 @@
       "spe": 105
     },
     "battle_only_forme": true,
+    "required_items": ["Sharpedonite"],
     "changes_from": "Sharpedo",
     "flags": [],
     "learnset": {}
@@ -14830,6 +14845,7 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Glalitite"],
     "changes_from": "Glalie",
     "flags": [],
     "learnset": {}
@@ -14862,6 +14878,7 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Metagrossite"],
     "changes_from": "Metagross",
     "flags": [],
     "learnset": {}
@@ -14893,6 +14910,7 @@
       "spe": 90
     },
     "battle_only_forme": true,
+    "required_items": ["Blue Orb"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -14924,6 +14942,7 @@
       "spe": 90
     },
     "battle_only_forme": true,
+    "required_items": ["Red Orb"],
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
@@ -14955,6 +14974,7 @@
       "spe": 115
     },
     "battle_only_forme": true,
+    "required_moves": ["Dragon Ascent"],
     "changes_from": "Rayquaza",
     "flags": ["Restricted Legendary"],
     "learnset": {}
@@ -14987,6 +15007,7 @@
       "spe": 20
     },
     "battle_only_forme": true,
+    "required_items": ["Cameruptite"],
     "changes_from": "Camerupt",
     "flags": [],
     "learnset": {}
@@ -15019,6 +15040,7 @@
       "spe": 120
     },
     "battle_only_forme": true,
+    "required_items": ["Salamencite"],
     "changes_from": "Salamence",
     "flags": [],
     "learnset": {}

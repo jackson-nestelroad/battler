@@ -72,5 +72,18 @@
         "on_use": ["add_volatile: $mon gem"]
       }
     }
+  },
+  "untakablebyspeciesitembase": {
+    "name": "Untakable By Species Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_take_item": [
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species == func_call(value_from_local_data: species):",
+          ["return false"]
+        ]
+      }
+    }
   }
 }

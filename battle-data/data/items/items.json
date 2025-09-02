@@ -1368,17 +1368,18 @@
     "flags": [],
     "special_data": { "fling": { "power": 60 } },
     "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
       "callbacks": {
         "on_source_base_power": [
           "$base_species = func_call(base_species: $source)",
           "if $base_species == giratina and ($move.type == ghost or $move.type == dragon):",
           ["return $base_power * 6/5"]
-        ],
-        "on_take_item": [
-          "$base_species = func_call(base_species: $target)",
-          "if $base_species == giratina:",
-          ["return false"]
         ]
+      },
+      "local_data": {
+        "values": {
+          "species": "giratina"
+        }
       }
     }
   },

@@ -197,7 +197,7 @@ pub fn replace(context: &mut MonContext) -> Result<()> {
     full_mon_details(context, "replace")
 }
 
-pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
+fn forme_change_internal(context: &mut ApplyingEffectContext, header: String) -> Result<()> {
     let species = context
         .battle()
         .dex
@@ -213,11 +213,18 @@ pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
         additional: vec![format!("species:{species}")],
         ..Default::default()
     };
-    effect_activation(
-        context.as_battle_context_mut(),
-        "formechange".to_owned(),
-        activation,
-    )
+    effect_activation(context.as_battle_context_mut(), header, activation)
+}
+
+pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "formechange".to_owned())
+}
+
+pub fn mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "mega".to_owned())
+}
+pub fn revert_mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "revertmega".to_owned())
 }
 
 pub fn cant(

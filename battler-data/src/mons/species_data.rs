@@ -185,6 +185,14 @@ impl SpeciesData {
         !self.evos.is_empty()
     }
 
+    /// Is the species a Mega Evolution?
+    pub fn mega(&self) -> bool {
+        match self.forme.as_ref().map(|s| s.as_str()) {
+            Some("Mega" | "Mega-X" | "Mega-Y") => true,
+            _ => false,
+        }
+    }
+
     /// Creates cosmetic forme data by moving and modifying this instance of [`SpeciesData`].
     pub fn create_cosmetic_forme_data(mut self, forme: String) -> Self {
         self.forme = Some(

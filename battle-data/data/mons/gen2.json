@@ -10845,6 +10845,7 @@
       "spe": 45
     },
     "battle_only_forme": true,
+    "required_items": ["Ampharosite"],
     "changes_from": "Ampharos",
     "flags": [],
     "learnset": {}
@@ -10877,6 +10878,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "required_items": ["Scizorite"],
     "changes_from": "Scizor",
     "flags": [],
     "learnset": {}
@@ -10909,6 +10911,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "required_items": ["Heracronite"],
     "changes_from": "Heracross",
     "flags": [],
     "learnset": {}
@@ -10941,6 +10944,7 @@
       "spe": 115
     },
     "battle_only_forme": true,
+    "required_items": ["Houndoominite"],
     "changes_from": "Houndoom",
     "flags": [],
     "learnset": {}
@@ -10973,6 +10977,7 @@
       "spe": 71
     },
     "battle_only_forme": true,
+    "required_items": ["Tyranitarite"],
     "changes_from": "Tyranitar",
     "flags": [],
     "learnset": {}
@@ -11005,6 +11010,7 @@
       "spe": 30
     },
     "battle_only_forme": true,
+    "required_items": ["Steelixite"],
     "changes_from": "Steelix",
     "flags": [],
     "learnset": {}
