@@ -99,6 +99,7 @@ pub use mon::{
     PublicMonDetails,
     RecalculateBaseStatsHpPolicy,
     ReceivedAttackEntry,
+    SetBaseSpeciesAbility,
 };
 pub use move_outcome::{
     MoveEventResult,

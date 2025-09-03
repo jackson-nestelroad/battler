@@ -24,7 +24,7 @@ fn team() -> Result<TeamData> {
                 {
                     "name": "Venusaur",
                     "species": "Venusaur",
-                    "ability": "Overgrow",
+                    "ability": "Chlorophyll",
                     "item": "Venusaurite",
                     "moves": [
                         "Tackle"
@@ -290,8 +290,8 @@ fn mega_evolution_reverts_on_faint() {
             "move|mon:Charizard,player-2,1|name:Skill Swap|target:Venusaur,player-1,1",
             "activate|mon:Venusaur,player-1,1|move:Skill Swap|of:Charizard,player-2,1",
             "abilityend|mon:Charizard,player-2,1|ability:Blaze|from:move:Skill Swap|of:Venusaur,player-1,1",
-            "ability|mon:Charizard,player-2,1|ability:Overgrow|from:move:Skill Swap|of:Venusaur,player-1,1",
-            "abilityend|mon:Venusaur,player-1,1|ability:Overgrow|from:move:Skill Swap|of:Charizard,player-2,1",
+            "ability|mon:Charizard,player-2,1|ability:Chlorophyll|from:move:Skill Swap|of:Venusaur,player-1,1",
+            "abilityend|mon:Venusaur,player-1,1|ability:Chlorophyll|from:move:Skill Swap|of:Charizard,player-2,1",
             "ability|mon:Venusaur,player-1,1|ability:Blaze|from:move:Skill Swap|of:Charizard,player-2,1",
             "move|mon:Venusaur,player-1,1|name:Tackle|target:Charizard,player-2,1",
             "split|side:1",

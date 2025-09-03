@@ -223,6 +223,7 @@ pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
 pub fn mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> {
     forme_change_internal(context, "mega".to_owned())
 }
+
 pub fn revert_mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> {
     forme_change_internal(context, "revertmega".to_owned())
 }

@@ -409,6 +409,14 @@ impl RecalculateBaseStatsHpPolicy {
     }
 }
 
+/// How to change the Mon's ability when setting its base species.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub enum SetBaseSpeciesAbility {
+    #[default]
+    UseOriginalBaseAbility,
+    UseSpeciesFirstAbility,
+}
+
 /// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -416,6 +424,8 @@ pub struct Mon {
 
     pub name: String,
 
+    /// The original base species of the Mon when the battle started.
+    pub original_base_species: Id,
     /// The base species of the Mon, which represents the Mon's permanent physical appearance. In
     /// other words, this species is preserved on switch out.
     ///
@@ -424,8 +434,6 @@ pub struct Mon {
     /// The current species of the Mon. May have changed via some forme change or move (e.g.,
     /// Transform).
     pub species: Id,
-    /// The base species of the Mon to revert to if the Mon exits (i.e., faints).
-    pub base_species_revert_on_exit: Option<Id>,
 
     /// `true` if the Mon is in an active position.
     ///
@@ -460,6 +468,7 @@ pub struct Mon {
     pub base_move_slots: Vec<MoveSlot>,
     pub move_slots: Vec<MoveSlot>,
 
+    pub original_base_ability: Id,
     pub base_ability: AbilitySlot,
     pub ability: AbilitySlot,
 
@@ -511,6 +520,10 @@ pub struct Mon {
     pub volatiles: HashMap<Id, fxlang::EffectState>,
 
     pub learnable_moves: Vec<Id>,
+
+    pub mega_evolved: bool,
+    pub dynamaxed: bool,
+    pub terastallized: bool,
 }
 
 // Construction and initialization logic.
@@ -586,9 +599,9 @@ impl Mon {
             side: usize::MAX,
 
             name,
+            original_base_species: species.clone(),
             base_species: species.clone(),
             species,
-            base_species_revert_on_exit: None,
 
             active: false,
             active_turns: 0,
@@ -616,6 +629,7 @@ impl Mon {
             base_move_slots,
             move_slots,
 
+            original_base_ability: ability.id.clone(),
             base_ability: ability.clone(),
             ability,
 
@@ -662,6 +676,10 @@ impl Mon {
             volatiles: HashMap::default(),
 
             learnable_moves: Vec::new(),
+
+            mega_evolved: false,
+            dynamaxed: false,
+            terastallized: false,
         })
     }
 
@@ -671,7 +689,11 @@ impl Mon {
     /// the Mon, such as its stats.
     pub fn initialize(context: &mut MonContext) -> Result<()> {
         let base_species = context.mon().base_species.clone();
-        Self::set_base_species(context, &base_species, false)?;
+        Self::set_base_species(
+            context,
+            &base_species,
+            SetBaseSpeciesAbility::UseOriginalBaseAbility,
+        )?;
 
         Self::clear_volatile(context, true)?;
         Self::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::DoNotUpdate)?;
@@ -709,14 +731,15 @@ impl Mon {
 
         context.mon_mut().ability.effect_state = context.mon().base_ability.effect_state.clone();
 
+        let mon_handle = context.mon_handle();
+
         if let Some(item) = &context.mon().item {
-            let mon_handle = context.mon_handle();
             let item = context.battle().dex.items.get_by_id(&item.id)?;
             context.mon_mut().item = Some(ItemSlot {
                 id: item.id().clone(),
                 effect_state: fxlang::EffectState::initial_effect_state(
                     context.as_battle_context_mut(),
-                    Some(&EffectHandle::Condition(Id::from_known("start"))),
+                    None,
                     Some(mon_handle),
                     None,
                 )?,
@@ -1687,40 +1710,31 @@ impl Mon {
     pub fn set_base_species(
         context: &mut MonContext,
         base_species: &Id,
-        change_ability: bool,
+        ability: SetBaseSpeciesAbility,
     ) -> Result<()> {
         let species = context.battle().dex.species.get_by_id(base_species)?;
 
-        // Base ability can change.
-        //
-        // We don't set this at the start of the battle since we trust the result of team validation
-        // (or the lack thereof). Forme changes that happen within the battle, though, can force an
-        // ability change (think about Mega Evolution).
-        let mut base_ability = context.mon().base_ability.id.clone();
-        if change_ability
-            && !species
-                .data
-                .abilities
-                .iter()
-                .any(|ability| Id::from(ability.as_ref()) == base_ability)
-        {
-            base_ability = species
+        let ability = match ability {
+            SetBaseSpeciesAbility::UseOriginalBaseAbility => {
+                context.mon().original_base_ability.clone()
+            }
+            SetBaseSpeciesAbility::UseSpeciesFirstAbility => species
                 .data
                 .abilities
                 .first()
                 .map(|ability| Id::from(ability.as_ref()))
-                .unwrap_or(Id::from_known("noability"));
-        }
+                .unwrap_or(Id::from_known("noability")),
+        };
 
         context.mon_mut().base_species = species.id().clone();
 
         let mon_handle = context.mon_handle();
-        let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
+        let ability = context.battle().dex.abilities.get_by_id(&ability)?;
         context.mon_mut().base_ability = AbilitySlot {
             id: ability.id().clone(),
             effect_state: fxlang::EffectState::initial_effect_state(
                 context.as_battle_context_mut(),
-                Some(&EffectHandle::Condition(Id::from_known("start"))),
+                None,
                 Some(mon_handle),
                 None,
             )?,
@@ -2141,13 +2155,7 @@ impl Mon {
         let mut context = context.applying_effect_context(effect, None, None)?;
         core_battle_actions::end_ability_even_if_exiting(&mut context, true)?;
 
-        if let Some(species) = context.target_mut().base_species_revert_on_exit.take() {
-            core_battle_actions::forme_change(
-                &mut context,
-                &species,
-                core_battle_actions::FormeChangeType::RevertMegaEvolution,
-            )?;
-        }
+        core_battle_actions::revert_on_exit(&mut context)?;
 
         Self::clear_volatile(&mut context.target_context()?, false)?;
 

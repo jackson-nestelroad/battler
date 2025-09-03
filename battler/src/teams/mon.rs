@@ -29,7 +29,7 @@ pub struct MonPersistentBattleData {
 /// Data here is consistent across many battles and should not be modified inside of a battle. For
 /// example, if a Mon changes its ability in a battle, the `ability` field here should not be
 /// updated.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonData {
     /// Nickname.
     ///

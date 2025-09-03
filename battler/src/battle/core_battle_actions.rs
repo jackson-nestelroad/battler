@@ -58,6 +58,7 @@ use crate::{
         PlayerContext,
         RecalculateBaseStatsHpPolicy,
         ReceivedAttackEntry,
+        SetBaseSpeciesAbility,
         Side,
         SideEffectContext,
         SwitchEventsAction,
@@ -4109,149 +4110,6 @@ pub fn set_ability(
     Ok(true)
 }
 
-/// Transforms the Mon into the target Mon.
-///
-/// Used to implement the move "Transform."
-pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target().transformed || context.target().illusion.is_some() {
-        return Ok(false);
-    }
-
-    let target_context = context.as_battle_context_mut().mon_context(target)?;
-    if !target_context.mon().active
-        || target_context.mon().transformed
-        || target_context.mon().illusion.is_some()
-    {
-        return Ok(false);
-    }
-
-    // Collect all data specific to the target Mon that should be set after changing the
-    // species.
-    let weight = target_context.mon().weight;
-    let types = target_context.mon().types.clone();
-    let stats = target_context.mon().stats.clone();
-    let boosts = target_context.mon().boosts.clone();
-    let ability_id = target_context.mon().ability.id.clone();
-    let mut move_slots = target_context.mon().move_slots.clone();
-    for move_slot in &mut move_slots {
-        move_slot.pp = move_slot.max_pp.min(5);
-        move_slot.max_pp = move_slot.max_pp.min(5);
-        move_slot.disabled = false;
-        move_slot.used = false;
-        move_slot.simulated = true;
-    }
-
-    // Set the species first, for the baseline transformation.
-    let species = target_context.mon().species.clone();
-    context.target_mut().transformed = true;
-    Mon::set_species(&mut context.target_context()?, &Id::from(species))?;
-
-    // Then, manually set everything else.
-    context.target_mut().weight = weight;
-    context.target_mut().types = types;
-    context.target_mut().stats = stats;
-    context.target_mut().boosts = boosts;
-    set_ability(context, &ability_id, false, true, true)?;
-    context.target_mut().move_slots = move_slots;
-
-    core_battle_logs::transform(context, target)?;
-
-    Ok(true)
-}
-
-/// Sets the illusion of the target of the effect to the given target.
-pub fn set_illusion(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target_handle() == target || context.target().illusion.is_some() {
-        return Ok(false);
-    }
-    let illusion = Mon::physical_details(&context.as_battle_context_mut().mon_context(target)?)?;
-    context.target_mut().illusion = Some(illusion);
-
-    // We should not announce that we are starting an illusion. It is assumed that illusions only
-    // start before switching in.
-
-    Ok(true)
-}
-
-/// Ends the target's illusion.
-pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
-    if context.target().illusion.is_none() {
-        return Ok(false);
-    }
-    context.target_mut().illusion = None;
-    core_battle_logs::replace(&mut context.target_context()?)?;
-    Ok(true)
-}
-
-/// The type of forme change being applied to a Mon in [`forme_change`].
-#[derive(Clone, Copy)]
-pub enum FormeChangeType {
-    Temporary,
-    Permanent,
-    MegaEvolution,
-    PrimalReversion,
-    RevertMegaEvolution,
-}
-
-impl FormeChangeType {
-    pub fn permanent(&self) -> bool {
-        match self {
-            Self::Temporary => false,
-            Self::Permanent
-            | Self::MegaEvolution
-            | Self::PrimalReversion
-            | Self::RevertMegaEvolution => true,
-        }
-    }
-}
-
-/// Transforms the Mon into the target species.
-pub fn forme_change(
-    context: &mut ApplyingEffectContext,
-    species: &Id,
-    forme_change_type: FormeChangeType,
-) -> Result<bool> {
-    if !Mon::set_species(&mut context.target_context()?, species)? {
-        return Ok(false);
-    }
-
-    if forme_change_type.permanent() {
-        let mut context = context.target_context()?;
-        core_battle_logs::species_change(&mut context)?;
-
-        let previous_base_species = context.mon().base_species.clone();
-        Mon::set_base_species(&mut context, species, true)?;
-
-        match forme_change_type {
-            FormeChangeType::MegaEvolution => {
-                context.mon_mut().base_species_revert_on_exit = Some(previous_base_species);
-            }
-            _ => (),
-        }
-    }
-
-    match forme_change_type {
-        FormeChangeType::Temporary | FormeChangeType::Permanent => {
-            core_battle_logs::forme_change(context)?;
-        }
-        FormeChangeType::MegaEvolution => {
-            core_battle_logs::mega_evolution(context)?;
-        }
-        FormeChangeType::RevertMegaEvolution => {
-            core_battle_logs::revert_mega_evolution(context)?;
-        }
-        _ => todo!("forme change log not implemented"),
-    }
-
-    // Change the ability after logs, since battle effects start triggering.
-    if forme_change_type.permanent() && context.target().hp != 0 {
-        let new_ability = context.target().base_ability.id.clone();
-        set_ability(context, &new_ability, false, true, true)?;
-    }
-
-    Ok(true)
-}
-
 /// Adds a condition to the slot on the side.
 pub fn add_slot_condition(
     context: &mut SideEffectContext,
@@ -5213,6 +5071,169 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
     }));
 }
 
+/// Transforms the Mon into the target Mon.
+///
+/// Used to implement the move "Transform."
+pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
+    if context.target().transformed || context.target().illusion.is_some() {
+        return Ok(false);
+    }
+
+    let target_context = context.as_battle_context_mut().mon_context(target)?;
+    if !target_context.mon().active
+        || target_context.mon().transformed
+        || target_context.mon().illusion.is_some()
+    {
+        return Ok(false);
+    }
+
+    // Collect all data specific to the target Mon that should be set after changing the
+    // species.
+    let weight = target_context.mon().weight;
+    let types = target_context.mon().types.clone();
+    let stats = target_context.mon().stats.clone();
+    let boosts = target_context.mon().boosts.clone();
+    let ability_id = target_context.mon().ability.id.clone();
+    let mut move_slots = target_context.mon().move_slots.clone();
+    for move_slot in &mut move_slots {
+        move_slot.pp = move_slot.max_pp.min(5);
+        move_slot.max_pp = move_slot.max_pp.min(5);
+        move_slot.disabled = false;
+        move_slot.used = false;
+        move_slot.simulated = true;
+    }
+
+    // Set the species first, for the baseline transformation.
+    let species = target_context.mon().species.clone();
+    context.target_mut().transformed = true;
+    Mon::set_species(&mut context.target_context()?, &Id::from(species))?;
+
+    // Then, manually set everything else.
+    context.target_mut().weight = weight;
+    context.target_mut().types = types;
+    context.target_mut().stats = stats;
+    context.target_mut().boosts = boosts;
+    set_ability(context, &ability_id, false, true, true)?;
+    context.target_mut().move_slots = move_slots;
+
+    core_battle_logs::transform(context, target)?;
+
+    Ok(true)
+}
+
+/// Sets the illusion of the target of the effect to the given target.
+pub fn set_illusion(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
+    if context.target_handle() == target || context.target().illusion.is_some() {
+        return Ok(false);
+    }
+    let illusion = Mon::physical_details(&context.as_battle_context_mut().mon_context(target)?)?;
+    context.target_mut().illusion = Some(illusion);
+
+    // We should not announce that we are starting an illusion. It is assumed that illusions only
+    // start before switching in.
+
+    Ok(true)
+}
+
+/// Ends the target's illusion.
+pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
+    if context.target().illusion.is_none() {
+        return Ok(false);
+    }
+    context.target_mut().illusion = None;
+    core_battle_logs::replace(&mut context.target_context()?)?;
+    Ok(true)
+}
+
+/// The type of forme change being applied to a Mon in [`forme_change`].
+#[derive(Clone, Copy)]
+pub enum FormeChangeType {
+    Temporary,
+    Permanent,
+    MegaEvolution,
+    PrimalReversion,
+}
+
+impl FormeChangeType {
+    pub fn permanent(&self) -> bool {
+        match self {
+            Self::Temporary => false,
+            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion => true,
+        }
+    }
+}
+
+/// Transforms the Mon into the target species.
+pub fn forme_change(
+    context: &mut ApplyingEffectContext,
+    species: &Id,
+    forme_change_type: FormeChangeType,
+) -> Result<bool> {
+    if !Mon::set_species(&mut context.target_context()?, species)? {
+        return Ok(false);
+    }
+
+    if forme_change_type.permanent() {
+        let mut context = context.target_context()?;
+        core_battle_logs::species_change(&mut context)?;
+
+        Mon::set_base_species(
+            &mut context,
+            species,
+            SetBaseSpeciesAbility::UseSpeciesFirstAbility,
+        )?;
+    }
+
+    match forme_change_type {
+        FormeChangeType::Temporary | FormeChangeType::Permanent => {
+            core_battle_logs::forme_change(context)?;
+        }
+        FormeChangeType::MegaEvolution => {
+            core_battle_logs::mega_evolution(context)?;
+        }
+        _ => todo!("forme change log not implemented"),
+    }
+
+    // Change the ability after logs, since battle effects start triggering.
+    if forme_change_type.permanent() && context.target().hp != 0 {
+        let new_ability = context.target().base_ability.id.clone();
+        set_ability(context, &new_ability, false, true, true)?;
+    }
+
+    Ok(true)
+}
+
+/// Reverts the Mon when it is exiting, if applicable.
+pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
+    let needs_revert = context.target().mega_evolved
+        || context.target().dynamaxed
+        || context.target().terastallized;
+    if !needs_revert {
+        return Ok(());
+    }
+
+    let species = context.target().original_base_species.clone();
+
+    Mon::set_species(&mut context.target_context()?, &species)?;
+
+    {
+        let mut context = context.target_context()?;
+        core_battle_logs::species_change(&mut context)?;
+        Mon::set_base_species(
+            &mut context,
+            &species,
+            SetBaseSpeciesAbility::UseOriginalBaseAbility,
+        )?;
+    }
+
+    if context.target().mega_evolved {
+        core_battle_logs::revert_mega_evolution(context)?;
+        context.target_mut().mega_evolved = false;
+    }
+
+    Ok(())
+}
+
 /// Mega Evolves the Mon if it is able to do so.
 pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
     let mega_evolution = match can_mega_evolve(context)? {
@@ -5235,6 +5256,7 @@ pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
         return Ok(false);
     }
 
+    context.mon_mut().mega_evolved = true;
     context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Success);
     context.player_mut().can_mega_evolve = false;
     Ok(true)
