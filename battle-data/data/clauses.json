@@ -333,5 +333,21 @@
     "name": "Picked Team Size",
     "description": "Team size that can be brought out of Team Preview.",
     "requires_value": true
+  },
+  "adjacencyreach": {
+    "name": "Adjacency Reach",
+    "description": "The number of steps away from a Mon that is counted as being adjacent to it for adjacent-targeting attacks.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "obediencecap": {
+    "name": "Obedience Cap",
+    "description": "The maximum level that will obey its player if it originates from a different trainer.",
+    "requires_value": true,
+    "value_type": "PositiveInteger"
+  },
+  "megaevolution": {
+    "name": "Mega Evolution",
+    "description": "Allows Mega Evolution."
   }
 }

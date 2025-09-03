@@ -198,6 +198,7 @@ mod items {
 mod mechanics {
     mod mega {
         mod mega_evolution_test;
+        mod mega_stone_test;
     }
 }
 

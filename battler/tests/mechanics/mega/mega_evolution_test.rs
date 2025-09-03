@@ -304,3 +304,41 @@ fn mega_evolution_reverts_on_faint() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn mega_evolution_occurs_in_speed_order() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,mega"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:1",
+            ["specieschange", "player-2", "species:Charizard-Mega-X"],
+            ["specieschange", "player-2", "species:Charizard-Mega-X"],
+            "mega|mon:Charizard,player-2,1|species:Charizard-Mega-X|from:item:Charizardite X",
+            "split|side:0",
+            ["specieschange", "player-1", "species:Blastoise-Mega"],
+            ["specieschange", "player-1", "species:Blastoise-Mega"],
+            "mega|mon:Blastoise,player-1,1|species:Blastoise-Mega|from:item:Blastoisinite",
+            "move|mon:Charizard,player-2,1|name:Ember|target:Blastoise,player-1,1",
+            "resisted|mon:Blastoise,player-1,1",
+            "split|side:0",
+            "damage|mon:Blastoise,player-1,1|health:124/139",
+            "damage|mon:Blastoise,player-1,1|health:90/100",
+            "move|mon:Blastoise,player-1,1|name:Tackle|target:Charizard,player-2,1",
+            "split|side:1",
+            "damage|mon:Charizard,player-2,1|health:120/138",
+            "damage|mon:Charizard,player-2,1|health:87/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+}
