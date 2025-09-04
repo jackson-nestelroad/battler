@@ -237,6 +237,10 @@ pub struct PlayerOptions {
     /// Used for critical capture calculations.
     #[serde(default)]
     pub mons_caught: u32,
+
+    /// If the player cannot Mega Evolve, assuming Mega Evolution is allowed.
+    #[serde(default)]
+    pub cannot_mega_evolve: bool,
 }
 
 /// A player's dex, noting what has previously been caught by the player.
@@ -489,6 +493,8 @@ impl Player {
                 .map(|species| Id::from(species).to_string())
                 .collect(),
         };
+        let can_mega_evolve = !data.player_options.cannot_mega_evolve
+            && format.rules.has_rule(&Id::from_known("megaevolution"));
         let mut player = Self {
             id: data.id,
             name: data.name,
@@ -503,7 +509,7 @@ impl Player {
             active: active.clone(),
             active_or_exited: active,
             request: None,
-            can_mega_evolve: format.rules.has_rule(&Id::from_known("megaevolution")),
+            can_mega_evolve,
             escape_attempts: 0,
             escaped: false,
             bag: HashMap::default(),

@@ -323,6 +323,8 @@
   "megastickpin": { "name": "Mega Stickpin", "flags": [] },
   "megatiara": { "name": "Mega Tiara", "flags": [] },
   "megaanklet": { "name": "Mega Anklet", "flags": [] },
+  "megacuff": { "name": "Mega Cuff", "flags": [] },
+  "prisonbottle": { "name": "Prison Bottle", "flags": [] },
   "keystone": { "name": "Key Stone", "flags": [] },
   "meteoriteshard": { "name": "Meteorite Shard", "flags": [] },
   "eonflute": { "name": "Eon Flute", "flags": [] },

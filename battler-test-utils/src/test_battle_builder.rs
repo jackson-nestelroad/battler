@@ -196,6 +196,7 @@ impl TestBattleBuilder {
                 has_affection: true,
                 has_strict_bag: true,
                 mons_caught: 151,
+                cannot_mega_evolve: false,
             },
             team: TeamData::default(),
             dex: PlayerDex::default(),
