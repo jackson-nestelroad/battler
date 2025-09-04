@@ -87,6 +87,23 @@ fn make_battle(
 }
 
 #[test]
+fn mon_cannot_mega_evolve_with_wrong_stone() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team_1 = team().unwrap();
+    team_1.members[0].item = Some("Gengarite".to_owned());
+    let mut battle = make_battle(&data, 0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert!(!request.active[0].can_mega_evolve);
+    });
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Err(err) => {
+        assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Venusaur cannot mega evolve");
+    });
+}
+
+#[test]
 fn one_mon_can_mega_evolve() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();

@@ -754,6 +754,9 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
+                            "spread_hit" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.spread_hit,
+                            ),
                             "target" => ValueRef::MoveTarget(
                                 context.active_move(active_move_handle)?.data.target,
                             ),

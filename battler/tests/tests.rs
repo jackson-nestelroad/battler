@@ -197,7 +197,10 @@ mod items {
 
 mod mechanics {
     mod mega {
+        mod mega_charizard_test;
         mod mega_evolution_test;
+        mod mega_kangaskhan_test;
+        mod mega_rayquaza_test;
         mod mega_stone_test;
     }
 }

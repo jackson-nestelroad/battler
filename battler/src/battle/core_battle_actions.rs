@@ -5039,7 +5039,7 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
             return Ok(
                 required_move_known.map(|required_move_known| MegaEvolution {
                     source_effect: EffectHandle::InactiveMove(required_move_known.clone()),
-                    species: species.id().clone(),
+                    species: forme.id().clone(),
                 }),
             );
         }
