@@ -50,6 +50,7 @@ use crate::{
         MonContext,
         MonExitType,
         MonHandle,
+        MonSpecialFormeChangeType,
         MoveEventResult,
         MoveHandle,
         MoveOutcome,
@@ -58,7 +59,6 @@ use crate::{
         PlayerContext,
         RecalculateBaseStatsHpPolicy,
         ReceivedAttackEntry,
-        SetBaseSpeciesAbility,
         Side,
         SideEffectContext,
         SwitchEventsAction,
@@ -5177,11 +5177,18 @@ pub fn forme_change(
         let mut context = context.target_context()?;
         core_battle_logs::species_change(&mut context)?;
 
-        Mon::set_base_species(
-            &mut context,
-            species,
-            SetBaseSpeciesAbility::UseSpeciesFirstAbility,
-        )?;
+        let ability = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&species)?
+            .data
+            .abilities
+            .first()
+            .map(|ability| Id::from(ability.as_ref()))
+            .unwrap_or(Id::from_known("noability"));
+
+        Mon::set_base_species(&mut context, species, &ability)?;
     }
 
     match forme_change_type {
@@ -5191,7 +5198,9 @@ pub fn forme_change(
         FormeChangeType::MegaEvolution => {
             core_battle_logs::mega_evolution(context)?;
         }
-        _ => todo!("forme change log not implemented"),
+        FormeChangeType::PrimalReversion => {
+            core_battle_logs::primal_reversion(context)?;
+        }
     }
 
     // Change the ability after logs, since battle effects start triggering.
@@ -5205,30 +5214,45 @@ pub fn forme_change(
 
 /// Reverts the Mon when it is exiting, if applicable.
 pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
-    let needs_revert = context.target().mega_evolved
-        || context.target().dynamaxed
-        || context.target().terastallized;
+    let needs_mechanic_revert = context.target().dynamaxed || context.target().terastallized;
+    let needs_forme_change_revert = match context.target().special_forme_change_type {
+        Some(MonSpecialFormeChangeType::MegaEvolution | MonSpecialFormeChangeType::Gigantamax) => {
+            true
+        }
+        Some(MonSpecialFormeChangeType::PrimalReversion) | None => false,
+    };
+    let needs_revert = needs_mechanic_revert || needs_forme_change_revert;
     if !needs_revert {
         return Ok(());
     }
 
-    let species = context.target().original_base_species.clone();
+    revert(context)
+}
 
-    Mon::set_species(&mut context.target_context()?, &species)?;
+fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
+    if let Some(special_forme_change_type) = context.target().special_forme_change_type {
+        let species = context.target().original_base_species.clone();
+        let ability = context.target().original_base_ability.clone();
 
-    {
-        let mut context = context.target_context()?;
-        core_battle_logs::species_change(&mut context)?;
-        Mon::set_base_species(
-            &mut context,
-            &species,
-            SetBaseSpeciesAbility::UseOriginalBaseAbility,
-        )?;
-    }
+        Mon::set_species(&mut context.target_context()?, &species)?;
 
-    if context.target().mega_evolved {
-        core_battle_logs::revert_mega_evolution(context)?;
-        context.target_mut().mega_evolved = false;
+        {
+            let mut context = context.target_context()?;
+            core_battle_logs::species_change(&mut context)?;
+            Mon::set_base_species(&mut context, &species, &ability)?;
+        }
+
+        match special_forme_change_type {
+            MonSpecialFormeChangeType::MegaEvolution => {
+                core_battle_logs::revert_mega_evolution(context)?;
+            }
+            MonSpecialFormeChangeType::PrimalReversion => {
+                core_battle_logs::revert_primal_reversion(context)?;
+            }
+            _ => todo!("revert log not implemented"),
+        }
+
+        context.target_mut().special_forme_change_type = None;
     }
 
     Ok(())
@@ -5256,8 +5280,27 @@ pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
         return Ok(false);
     }
 
-    context.mon_mut().mega_evolved = true;
+    context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::MegaEvolution);
     context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Success);
     context.player_mut().can_mega_evolve = false;
+    Ok(true)
+}
+
+/// Initiates Primal Reversion on the Mon if it is able to do so.
+pub fn primal_reversion(context: &mut ApplyingEffectContext, species: &Id) -> Result<bool> {
+    if !context
+        .battle()
+        .format
+        .rules
+        .has_rule(&Id::from_known("primalreversion"))
+    {
+        return Ok(false);
+    }
+
+    if !forme_change(context, &species, FormeChangeType::PrimalReversion)? {
+        return Ok(false);
+    }
+    context.target_mut().special_forme_change_type =
+        Some(MonSpecialFormeChangeType::PrimalReversion);
     Ok(true)
 }

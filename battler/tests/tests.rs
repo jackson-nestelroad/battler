@@ -202,6 +202,7 @@ mod mechanics {
         mod mega_kangaskhan_test;
         mod mega_rayquaza_test;
         mod mega_stone_test;
+        mod primal_reversion_test;
     }
 }
 

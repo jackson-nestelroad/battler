@@ -349,5 +349,17 @@
   "megaevolution": {
     "name": "Mega Evolution",
     "description": "Allows Mega Evolution."
+  },
+  "primalreversion": {
+    "name": "Primal Reversion",
+    "description": "Allows Primal Reversion."
+  },
+  "dynamax": {
+    "name": "Dynamax",
+    "description": "Allows Dynamax."
+  },
+  "terastallization": {
+    "name": "Terastallization",
+    "description": "Allows Terastallization."
   }
 }

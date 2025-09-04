@@ -93,13 +93,13 @@ pub use mon::{
     MonNextTurnState,
     MonPersistentMoveData,
     MonPositionDetails,
+    MonSpecialFormeChangeType,
     MonSummaryData,
     MoveSlot,
     PhysicalMonDetails,
     PublicMonDetails,
     RecalculateBaseStatsHpPolicy,
     ReceivedAttackEntry,
-    SetBaseSpeciesAbility,
 };
 pub use move_outcome::{
     MoveEventResult,

@@ -149,8 +149,6 @@
   "whiteapricorn": { "name": "White Apricorn", "flags": [] },
   "blackapricorn": { "name": "Black Apricorn", "flags": [] },
   "dowsingmachine": { "name": "Dowsing Machine", "flags": [] },
-  "redorb": { "name": "Red Orb", "flags": [] },
-  "blueorb": { "name": "Blue Orb", "flags": [] },
   "jadeorb": { "name": "Jade Orb", "flags": [] },
   "enigmastone": { "name": "Enigma Stone", "flags": [] },
   "unownreport": { "name": "Unown Report", "flags": [] },

@@ -232,6 +232,7 @@ pub fn run_function(
         "pending_move_action_this_turn" => pending_move_action_this_turn(context),
         "plural" => plural(context).map(|val| Some(val)),
         "prepare_direct_move" => prepare_direct_move(context).map(|val| Some(val)),
+        "primal_reversion" => primal_reversion(context).map(|val| Some(val)),
         "random" => random(context).map(|val| Some(val)),
         "random_target" => random_target(context),
         "received_attack" => received_attack(context).map(|val| Some(val)),
@@ -3370,6 +3371,21 @@ fn forme_change(mut context: FunctionContext) -> Result<Value> {
         } else {
             core_battle_actions::FormeChangeType::Temporary
         },
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn primal_reversion(mut context: FunctionContext) -> Result<Value> {
+    let target = context.target_handle_positional()?;
+    let forme = context
+        .pop_front()
+        .wrap_expectation("missing forme")?
+        .string()
+        .wrap_error_with_message("invalid forme")?;
+    let forme = Id::from(forme);
+    core_battle_actions::primal_reversion(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+        &forme,
     )
     .map(|val| Value::Boolean(val))
 }

@@ -228,6 +228,14 @@ pub fn revert_mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> 
     forme_change_internal(context, "revertmega".to_owned())
 }
 
+pub fn primal_reversion(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "primal".to_owned())
+}
+
+pub fn revert_primal_reversion(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "revertprimal".to_owned())
+}
+
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,

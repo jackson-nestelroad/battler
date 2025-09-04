@@ -556,6 +556,38 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": { "callbacks": { "on_modify_accuracy": ["return $acc * 9/10"] } }
   },
+  "redorb": {
+    "name": "Red Orb",
+    "flags": [],
+    "effect": {
+      "delegates": [
+        "condition:untakablebyspeciesitembase",
+        "condition:primalreversionitembase"
+      ],
+      "local_data": {
+        "values": {
+          "species": "groudon",
+          "primalforme": "groudonprimal"
+        }
+      }
+    }
+  },
+  "blueorb": {
+    "name": "Blue Orb",
+    "flags": [],
+    "effect": {
+      "delegates": [
+        "condition:untakablebyspeciesitembase",
+        "condition:primalreversionitembase"
+      ],
+      "local_data": {
+        "values": {
+          "species": "kyogre",
+          "primalforme": "kyogreprimal"
+        }
+      }
+    }
+  },
   "luckypunch": {
     "name": "Lucky Punch",
     "flags": [],

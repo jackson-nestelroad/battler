@@ -384,7 +384,7 @@ pub struct MonNextTurnState {
 }
 
 /// Policy for a Mon's HP should be updated when recalculating base stats.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum RecalculateBaseStatsHpPolicy {
     #[default]
     DoNotUpdate,
@@ -409,12 +409,12 @@ impl RecalculateBaseStatsHpPolicy {
     }
 }
 
-/// How to change the Mon's ability when setting its base species.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub enum SetBaseSpeciesAbility {
-    #[default]
-    UseOriginalBaseAbility,
-    UseSpeciesFirstAbility,
+/// The type of forme change the Mon has undergone.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MonSpecialFormeChangeType {
+    MegaEvolution,
+    PrimalReversion,
+    Gigantamax,
 }
 
 /// A Mon in a battle, which battles against other Mons.
@@ -521,7 +521,7 @@ pub struct Mon {
 
     pub learnable_moves: Vec<Id>,
 
-    pub mega_evolved: bool,
+    pub special_forme_change_type: Option<MonSpecialFormeChangeType>,
     pub dynamaxed: bool,
     pub terastallized: bool,
 }
@@ -677,7 +677,7 @@ impl Mon {
 
             learnable_moves: Vec::new(),
 
-            mega_evolved: false,
+            special_forme_change_type: None,
             dynamaxed: false,
             terastallized: false,
         })
@@ -688,12 +688,9 @@ impl Mon {
     /// This *must* be called at the very beginning of a battle, as it sets up important fields on
     /// the Mon, such as its stats.
     pub fn initialize(context: &mut MonContext) -> Result<()> {
-        let base_species = context.mon().base_species.clone();
-        Self::set_base_species(
-            context,
-            &base_species,
-            SetBaseSpeciesAbility::UseOriginalBaseAbility,
-        )?;
+        let base_species = context.mon().original_base_species.clone();
+        let base_ability = context.mon().original_base_ability.clone();
+        Self::set_base_species(context, &base_species, &base_ability)?;
 
         Self::clear_volatile(context, true)?;
         Self::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::DoNotUpdate)?;
@@ -1392,7 +1389,7 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get_by_id(&context.mon().base_species)?
+            .get_by_id(&context.mon().original_base_species)?
             .data
             .name
             .clone();
@@ -1400,7 +1397,7 @@ impl Mon {
             .battle()
             .dex
             .abilities
-            .get_by_id(&context.mon().base_ability.id)?
+            .get_by_id(&context.mon().original_base_ability)?
             .data
             .name
             .clone();
@@ -1710,26 +1707,14 @@ impl Mon {
     pub fn set_base_species(
         context: &mut MonContext,
         base_species: &Id,
-        ability: SetBaseSpeciesAbility,
+        base_ability: &Id,
     ) -> Result<()> {
         let species = context.battle().dex.species.get_by_id(base_species)?;
-
-        let ability = match ability {
-            SetBaseSpeciesAbility::UseOriginalBaseAbility => {
-                context.mon().original_base_ability.clone()
-            }
-            SetBaseSpeciesAbility::UseSpeciesFirstAbility => species
-                .data
-                .abilities
-                .first()
-                .map(|ability| Id::from(ability.as_ref()))
-                .unwrap_or(Id::from_known("noability")),
-        };
 
         context.mon_mut().base_species = species.id().clone();
 
         let mon_handle = context.mon_handle();
-        let ability = context.battle().dex.abilities.get_by_id(&ability)?;
+        let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
         context.mon_mut().base_ability = AbilitySlot {
             id: ability.id().clone(),
             effect_state: fxlang::EffectState::initial_effect_state(

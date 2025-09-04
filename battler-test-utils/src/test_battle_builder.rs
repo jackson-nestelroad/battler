@@ -292,6 +292,19 @@ impl TestBattleBuilder {
         self
     }
 
+    pub fn with_primal_reversion(mut self, primal_reversion: bool) -> Self {
+        let rule = Rule::Value {
+            name: Id::from("Primal Reversion"),
+            value: String::default(),
+        };
+        if primal_reversion {
+            self.options.format.rules.insert(rule);
+        } else {
+            self.options.format.rules.remove(&rule);
+        }
+        self
+    }
+
     pub fn with_weather(mut self, weather: Option<String>) -> Self {
         self.options.field.weather = weather;
         self
