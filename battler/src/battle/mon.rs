@@ -446,8 +446,6 @@ pub struct MonVolatileState {
     pub item_state: fxlang::EffectState,
     /// The last item used.
     pub last_item: Option<Id>,
-    /// Effect state for the non-volatile status.
-    pub status_state: fxlang::EffectState,
     /// Volatile statuses.
     pub volatiles: HashMap<Id, fxlang::EffectState>,
 
@@ -536,6 +534,7 @@ pub struct Mon {
     pub base_ability: Id,
     pub item: Option<Id>,
     pub status: Option<Id>,
+    pub status_state: fxlang::EffectState,
 
     pub initial_hp: Option<u16>,
     pub hp: u16,
@@ -629,6 +628,7 @@ impl Mon {
                 .persistent_battle_data
                 .status
                 .map(|status| Id::from(status)),
+            status_state: fxlang::EffectState::default(),
             initial_hp: data.persistent_battle_data.hp,
             hp: 0,
             base_max_hp: 0,
@@ -688,6 +688,16 @@ impl Mon {
         context.mon_mut().hp = hp;
         if context.mon().hp == 0 {
             context.mon_mut().exited = Some(MonExitType::Fainted);
+        }
+
+        if context.mon().status.is_some() {
+            let mon_handle = context.mon_handle();
+            context.mon_mut().status_state = fxlang::EffectState::initial_effect_state(
+                context.as_battle_context_mut(),
+                None,
+                Some(mon_handle),
+                None,
+            )?;
         }
 
         Ok(())
@@ -1524,20 +1534,6 @@ impl Mon {
                 .transpose()?
                 .unwrap_or_default(),
             last_item: None,
-            status_state: context
-                .mon()
-                .status
-                .clone()
-                .map(|_| {
-                    Ok::<_, anyhow::Error>(fxlang::EffectState::initial_effect_state(
-                        context.as_battle_context_mut(),
-                        None,
-                        Some(mon_handle),
-                        None,
-                    )?)
-                })
-                .transpose()?
-                .unwrap_or_default(),
             volatiles: HashMap::default(),
             transformed: false,
             illusion: None,

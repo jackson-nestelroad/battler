@@ -137,9 +137,7 @@ impl fxlang::EffectStateConnector for MonStatusEffectStateConnector {
     }
 
     fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
-        Ok(Some(
-            &mut context.mon_mut(self.mon)?.volatile_state.status_state,
-        ))
+        Ok(Some(&mut context.mon_mut(self.mon)?.status_state))
     }
 
     fn applied_effect_location(&self) -> AppliedEffectLocation {

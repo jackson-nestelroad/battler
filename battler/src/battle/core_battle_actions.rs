@@ -2796,7 +2796,7 @@ pub fn try_set_status(
 
     // Save the previous status in case an effect callback cancels the status.
     let previous_status = context.target().status.clone();
-    let previous_status_state = context.target().volatile_state.status_state.clone();
+    let previous_status_state = context.target().status_state.clone();
 
     if !core_battle_effects::run_event_for_applying_effect(
         context,
@@ -2812,7 +2812,7 @@ pub fn try_set_status(
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().volatile_state.status_state = fxlang::EffectState::initial_effect_state(
+    context.target_mut().status_state = fxlang::EffectState::initial_effect_state(
         context.as_battle_context_mut(),
         Some(&effect_handle),
         Some(target_handle),
@@ -2824,11 +2824,7 @@ pub fn try_set_status(
         &status_effect_handle,
     )? {
         if let Some(duration) = condition.condition().duration {
-            context
-                .target_mut()
-                .volatile_state
-                .status_state
-                .set_duration(duration);
+            context.target_mut().status_state.set_duration(duration);
         }
     }
 
@@ -2836,11 +2832,7 @@ pub fn try_set_status(
         context,
         fxlang::BattleEvent::Duration,
     ) {
-        context
-            .target_mut()
-            .volatile_state
-            .status_state
-            .set_duration(duration);
+        context.target_mut().status_state.set_duration(duration);
     }
 
     if !core_battle_effects::run_mon_status_event_expecting_bool(
@@ -2850,7 +2842,7 @@ pub fn try_set_status(
     .unwrap_or(true)
     {
         context.target_mut().status = previous_status;
-        context.target_mut().volatile_state.status_state = previous_status_state;
+        context.target_mut().status_state = previous_status_state;
         return Ok(ApplyMoveEffectResult::Failed);
     }
 
@@ -2939,7 +2931,7 @@ pub fn cure_status(
     )?;
 
     context.target_mut().status = None;
-    context.target_mut().volatile_state.status_state = fxlang::EffectState::default();
+    context.target_mut().status_state = fxlang::EffectState::default();
 
     core_battle_effects::run_event_for_applying_effect(
         context,
